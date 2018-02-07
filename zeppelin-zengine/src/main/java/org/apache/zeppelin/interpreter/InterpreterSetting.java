@@ -261,6 +261,7 @@ public class InterpreterSetting {
 
   void postProcessing() {
     this.status = Status.READY;
+    this.id = this.name;
     if (this.lifecycleManager == null) {
       this.lifecycleManager = new NullLifecycleManager(conf);
     }
@@ -280,7 +281,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o) {
     this();
-    this.id = generateId();
+    this.id = o.name;
     this.name = o.name;
     this.group = o.group;
     this.properties = convertInterpreterProperties(
