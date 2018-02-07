@@ -48,6 +48,7 @@
 
     <!--plugin library versions-->
     <plugin.failsafe.version>2.16</plugin.failsafe.version>
+    <hadoop.version>2.7.3</hadoop.version>
   </properties>
 
   <dependencies>
@@ -60,6 +61,12 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>23.0</version>
+      <exclusions>
+          <exclusion>
+              <groupId>com.google.code.findbugs</groupId>
+              <artifactId>jsr305</artifactId>
+          </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
@@ -93,7 +100,7 @@
       </exclusions>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
@@ -115,13 +122,344 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
-    <!--test libraries-->
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-interpreter</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.grpc</groupId>
+          <artifactId>grpc-context</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- TODO(zjffdu) add hadoop3 support when spark support hadoop3 and the issue of hadoop3 shaded jar is fixed -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.avro</groupId>
+              <artifactId>avro</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.jackrabbit</groupId>
+              <artifactId>jackrabbit-webdav</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>commons-httpclient</groupId>
+              <artifactId>commons-httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.eclipse.jgit</groupId>
+              <artifactId>org.eclipse.jgit</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.jcraft</groupId>
+              <artifactId>jsch</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-compress</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xml-apis</groupId>
+              <artifactId>xml-apis</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.code.gson</groupId>
+              <artifactId>gson</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-server-tests</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+      <exclusions>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.avro</groupId>
+              <artifactId>avro</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.jackrabbit</groupId>
+              <artifactId>jackrabbit-webdav</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>commons-httpclient</groupId>
+              <artifactId>commons-httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.eclipse.jgit</groupId>
+              <artifactId>org.eclipse.jgit</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.jcraft</groupId>
+              <artifactId>jsch</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-compress</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xml-apis</groupId>
+              <artifactId>xml-apis</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-core-asl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-jaxrs</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-xc</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+      <exclusions>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.avro</groupId>
+              <artifactId>avro</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.jackrabbit</groupId>
+              <artifactId>jackrabbit-webdav</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>commons-httpclient</groupId>
+              <artifactId>commons-httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.eclipse.jgit</groupId>
+              <artifactId>org.eclipse.jgit</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.jcraft</groupId>
+              <artifactId>jsch</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-compress</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xml-apis</groupId>
+              <artifactId>xml-apis</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.codehaus.jackson</groupId>
+              <artifactId>jackson-core-asl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.code.gson</groupId>
+              <artifactId>gson</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+      <exclusions>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>javax.servlet</groupId>
+              <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.avro</groupId>
+              <artifactId>avro</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.jackrabbit</groupId>
+              <artifactId>jackrabbit-webdav</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>commons-httpclient</groupId>
+              <artifactId>commons-httpclient</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.eclipse.jgit</groupId>
+              <artifactId>org.eclipse.jgit</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.jcraft</groupId>
+              <artifactId>jsch</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-compress</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xml-apis</groupId>
+              <artifactId>xml-apis</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+          </exclusion>
+          <exclusion>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+
+
+      <!--test libraries-->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+</dependencies>
 
   <build>
     <plugins>
