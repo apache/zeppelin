@@ -57,10 +57,7 @@
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>groovy</module>
-    <module>spark/scala-2.10</module>
-    <module>spark/scala-2.11</module>
-    <module>spark/interpreter</module>
-    <module>spark/spark-dependencies</module>
+    <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>

@@ -182,7 +182,7 @@ public class IPySparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());
-//    assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
+    assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
   }
 
   private InterpreterContext getInterpreterContext() {
