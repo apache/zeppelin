@@ -61,6 +61,7 @@ user3 = password4, role2
 #knoxJwtRealm.providerUrl = https://domain.example.com/
 #knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html
 #knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout
+#knoxJwtRealm.logoutAPI = true
 #knoxJwtRealm.redirectParam = originalUrl
 #knoxJwtRealm.cookieName = hadoop-jwt
 #knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
