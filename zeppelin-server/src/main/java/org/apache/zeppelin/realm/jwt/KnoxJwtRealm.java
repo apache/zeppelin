@@ -60,6 +60,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   private String publicKeyPath;
   private String login;
   private String logout;
+  private Boolean logoutAPI;
 
   private String principalMapping;
   private String groupPrincipalMapping;
@@ -268,6 +269,14 @@ public class KnoxJwtRealm extends AuthorizingRealm {
 
   public void setLogout(String logout) {
     this.logout = logout;
+  }
+
+  public Boolean getLogoutAPI() {
+    return logoutAPI;
+  }
+
+  public void setLogoutAPI(Boolean logoutAPI) {
+    this.logoutAPI = logoutAPI;
   }
 
   public String getPrincipalMapping() {
