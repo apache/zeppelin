@@ -32,8 +32,8 @@
     <artifactId>spark-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.9.0-SNAPSHOT</version>
-    <name>spark-parent</name>
-    <description>Zeppelin spark support</description>
+    <name>Zeppelin: Spark Parent</name>
+    <description>Zeppelin Spark Support</description>
 
     <properties>
         <!--library versions-->
@@ -56,6 +56,14 @@
             http://d3kbcqa49mib13.cloudfront.net/${spark.archive}-bin-without-hadoop.tgz
         </spark.bin.download.url>
     </properties>
+
+    <modules>
+        <module>interpreter</module>
+        <module>spark-scala-parent</module>
+        <module>scala-2.10</module>
+        <module>scala-2.11</module>
+        <module>spark-dependencies</module>
+    </modules>
 
     <dependencies>
 
@@ -118,6 +126,13 @@
                         <phase>none</phase>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>${plugin.clean.version}</version>
+                <configuration combine.self="override"></configuration>
             </plugin>
 
             <plugin>
