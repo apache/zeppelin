@@ -251,14 +251,14 @@ function shutdown_hook() {
       sleep 3
       let "count+=1"
     else
-      rm -f "${ZEPPELIN_PID}"
       break
     fi
   if [[ "${count}" == "5" ]]; then
     $(kill -9 ${pid} > /dev/null 2> /dev/null)
-    rm -f "${ZEPPELIN_PID}"
   fi
   done
 }
 
 wait
+
+rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null
