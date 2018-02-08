@@ -107,17 +107,17 @@ matrix:
       dist: trusty
       env: PYTHON="2" SCALA_VER="2.11" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pweb-ci -Pspark-1.6 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-zengine,zeppelin-server,zeppelin-display,spark/interpreter,spark/scala-2.10,spark/scala-2.11,spark/spark-dependencies,python" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test python/pyspark with python 2, livy 0.2
+    # Test python/pyspark with python 2, livy 0.5
     - sudo: required
       dist: trusty
       jdk: "openjdk7"
-      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.1" HADOOP_VER="2.6" LIVY_VER="0.4.0-incubating" PROFILE="-Pspark-1.6 -Phadoop2 -Phadoop-2.6 -Plivy-0.2 -Pscala-2.10" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark/interpreter,spark/scala-2.10,spark/scala-2.11,spark/spark-dependencies,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-1.6 -Phadoop2 -Phadoop-2.6 -Pscala-2.10" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark/interpreter,spark/scala-2.10,spark/scala-2.11,spark/spark-dependencies,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
 
-    # Test python/pyspark with python 3, livy 0.3
+    # Test python/pyspark with python 3, livy 0.5
     - sudo: required
       dist: trusty
       jdk: "openjdk7"
-      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" LIVY_VER="0.4.0-incubating" PROFILE="-Pspark-2.0 -Phadoop3 -Phadoop-2.6 -Pscala-2.11 -Plivy-0.3" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark/interpreter,spark/scala-2.10,spark/scala-2.11,spark/spark-dependencies,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
+      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-2.0 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl .,zeppelin-interpreter,zeppelin-display,spark/interpreter,spark/scala-2.10,spark/scala-2.11,spark/spark-dependencies,python,livy" TEST_PROJECTS="-Dtest=LivySQLInterpreterTest,org.apache.zeppelin.spark.PySpark*Test,org.apache.zeppelin.python.* -Dpyspark.test.exclude='' -DfailIfNoTests=false"
       
 before_install:
   # check files included in commit range, clear bower_components if a bower.json file has changed.
