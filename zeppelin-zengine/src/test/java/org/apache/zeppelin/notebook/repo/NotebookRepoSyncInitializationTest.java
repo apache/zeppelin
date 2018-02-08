@@ -142,7 +142,7 @@ public class NotebookRepoSyncInitializationTest {
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     // check initialization of one default storage
     assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookGitRepo);
+    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepoWithVersionControl);
   }
   
   @Test
