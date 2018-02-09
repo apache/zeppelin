@@ -797,6 +797,9 @@ public class NotebookRestApi {
       note.initializeJobListenerForParagraph(paragraph);
     }
 
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    paragraph.setAuthenticationInfo(subject);
+
     paragraph.run();
 
     final InterpreterResult result = paragraph.getResult();

@@ -24,19 +24,19 @@ public interface ResourcePoolConnector {
    * Get list of resources from all other resource pools in remote processes
    * @return
    */
-  public ResourceSet getAllResources();
+  ResourceSet getAllResources();
 
   /**
    * Read remote object
    * @return
    */
-  public Object readResource(ResourceId id);
+  Object readResource(ResourceId id);
 
   /**
    * Invoke method of Resource and get return
    * @return
    */
-  public Object invokeMethod(
+  Object invokeMethod(
       ResourceId id,
       String methodName,
       Class[] paramTypes,
@@ -45,7 +45,7 @@ public interface ResourcePoolConnector {
   /**
    * Invoke method, put result into resource pool and return
    */
-  public Resource invokeMethod(
+  Resource invokeMethod(
       ResourceId id,
       String methodName,
       Class[] paramTypes,

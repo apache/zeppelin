@@ -380,15 +380,16 @@ public class RemoteInterpreter extends Interpreter {
         });
   }
 
-  //TODO(zjffdu) Share the Scheduler in the same session or in the same InterpreterGroup ?
+
   @Override
   public Scheduler getScheduler() {
     int maxConcurrency = Integer.parseInt(
         getProperty("zeppelin.interpreter.max.poolsize",
             ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue() + ""));
-
+    // one session own one Scheduler, so that when one session is closed, all the jobs/paragraphs
+    // running under the scheduler of this session will be aborted.
     Scheduler s = new RemoteScheduler(
-        RemoteInterpreter.class.getName() + "-" + sessionId,
+        RemoteInterpreter.class.getName() + "-" + getInterpreterGroup().getId() + "-" + sessionId,
         SchedulerFactory.singleton().getExecutor(),
         sessionId,
         this,

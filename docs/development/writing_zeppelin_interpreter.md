@@ -49,7 +49,7 @@ For your interpreter project, you need to make `interpreter-parent` as your pare
     <parent>
         <artifactId>interpreter-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.8.0-SNAPSHOT</version>
+        <version>0.9.0-SNAPSHOT</version>
         <relativePath>../interpreter-parent</relativePath>
     </parent>
     

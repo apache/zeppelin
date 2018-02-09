@@ -42,11 +42,12 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   private Path notebookDir;
 
   public FileSystemNotebookRepo(ZeppelinConfiguration zConf) throws IOException {
-    this.fs = FileSystemStorage.get(zConf);
+    this.fs = new FileSystemStorage(zConf, zConf.getNotebookDir());
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
+        " for Zeppelin Notebook.");
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
-
   }
 
   @Override

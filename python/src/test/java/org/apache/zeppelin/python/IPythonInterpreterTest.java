@@ -66,7 +66,7 @@ public class IPythonInterpreterTest {
   }
 
   @After
-  public void close() {
+  public void close() throws InterpreterException {
     interpreter.close();
   }
 
@@ -79,6 +79,9 @@ public class IPythonInterpreterTest {
   public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException, InterpreterException {
     // to make this test can run under both python2 and python3
     InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("import sys\nprint(sys.version_info)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // single output without print
@@ -195,6 +198,9 @@ public class IPythonInterpreterTest {
 
     context = getInterpreterContext();
     completions = interpreter.completion("sys.std", 7, context);
+    for (InterpreterCompletion completion : completions) {
+      System.out.println(completion.getValue());
+    }
     assertEquals(3, completions.size());
     assertEquals("stderr", completions.get(0).getValue());
     assertEquals("stdin", completions.get(1).getValue());
@@ -308,6 +314,7 @@ public class IPythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("from bokeh.io import output_notebook, show\n" +
         "from bokeh.plotting import figure\n" +
+        "import bkzep\n" +
         "output_notebook(notebook_type='zeppelin')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -329,10 +336,11 @@ public class IPythonInterpreterTest {
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.getInterpreterResultMessages();
-    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
     // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(0).getData().contains("docs_json"));
+    assertTrue(interpreterResultMessages.get(1).getData().contains("docs_json"));
 
     // ggplot
     context = getInterpreterContext();

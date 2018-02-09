@@ -14,28 +14,27 @@
 
 package org.apache.zeppelin.hbase;
 
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.jruby.embed.LocalContextScope;
+import org.jruby.embed.ScriptingContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.jruby.embed.ScriptingContainer;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Support for HBase Shell. All the commands documented here
@@ -74,27 +73,27 @@ public class HbaseInterpreter extends Interpreter {
     scriptingContainer.setOutput(this.writer);
 
     if (!Boolean.parseBoolean(getProperty(HBASE_TEST_MODE))) {
-      String hbase_home = getProperty(HBASE_HOME);
-      String ruby_src = getProperty(HBASE_RUBY_SRC);
-      Path abs_ruby_src = Paths.get(hbase_home, ruby_src).toAbsolutePath();
+      String hbaseHome = getProperty(HBASE_HOME);
+      String rubySrc = getProperty(HBASE_RUBY_SRC);
+      Path absRubySrc = Paths.get(hbaseHome, rubySrc).toAbsolutePath();
 
-      logger.info("Home:" + hbase_home);
-      logger.info("Ruby Src:" + ruby_src);
+      logger.info("Home:" + hbaseHome);
+      logger.info("Ruby Src:" + rubySrc);
 
-      File f = abs_ruby_src.toFile();
+      File f = absRubySrc.toFile();
       if (!f.exists() || !f.isDirectory()) {
-        throw new InterpreterException("HBase ruby sources is not available at '" + abs_ruby_src
+        throw new InterpreterException("HBase ruby sources is not available at '" + absRubySrc
             + "'");
       }
 
-      logger.info("Absolute Ruby Source:" + abs_ruby_src.toString());
+      logger.info("Absolute Ruby Source:" + absRubySrc.toString());
       // hirb.rb:41 requires the following system properties to be set.
       Properties sysProps = System.getProperties();
-      sysProps.setProperty(HBASE_RUBY_SRC, abs_ruby_src.toString());
+      sysProps.setProperty(HBASE_RUBY_SRC, absRubySrc.toString());
 
-      Path abs_hirb_path = Paths.get(hbase_home, "bin/hirb.rb");
+      Path absHirbPath = Paths.get(hbaseHome, "bin/hirb.rb");
       try {
-        FileInputStream fis = new FileInputStream(abs_hirb_path.toFile());
+        FileInputStream fis = new FileInputStream(absHirbPath.toFile());
         this.scriptingContainer.runScriptlet(fis, "hirb.rb");
         fis.close();
       } catch (IOException e) {

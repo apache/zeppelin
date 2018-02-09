@@ -17,10 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.Properties;
-
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
+
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
@@ -73,7 +73,8 @@ public class InterpreterTest {
         null,
         null));
     Properties p = new Properties();
-    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
+    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, " +
+        "#{replName}, #{noteId}, #{user}," +
         " #{authenticationInfo}");
     Interpreter intp = new DummyInterpreter(p);
     intp.setUserName(user);
@@ -81,7 +82,8 @@ public class InterpreterTest {
     InterpreterContext.remove();
 
     assertEquals(
-        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
+        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , " +
+                "%s, %s, #{authenticationInfo}", noteId,
             noteId, user),
         actual
     );
