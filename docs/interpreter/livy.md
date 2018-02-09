@@ -216,6 +216,10 @@ select * from products where ${product_id=1}
 
 And creating dynamic formst programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
 
+## Shared SparkContext
+Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.
+That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`, `$livy.sparkr`.
+
 ## FAQ
 
 Livy debugging: If you see any of these in error console

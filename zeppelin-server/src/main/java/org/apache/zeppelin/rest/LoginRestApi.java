@@ -211,6 +211,7 @@ public class LoginRestApi {
       KnoxJwtRealm knoxJwtRealm = getJTWRealm();
       Map<String, String> data = new HashMap<>();
       data.put("redirectURL", constructKnoxUrl(knoxJwtRealm, knoxJwtRealm.getLogout()));
+      data.put("isLogoutAPI", knoxJwtRealm.getLogoutAPI().toString());
       response = new JsonResponse(Status.UNAUTHORIZED, "", data);
     } else {
       response = new JsonResponse(Status.UNAUTHORIZED, "", "");

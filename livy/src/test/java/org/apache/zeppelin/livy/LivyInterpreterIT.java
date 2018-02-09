@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class LivyInterpreterIT {
 
@@ -76,7 +77,7 @@ public class LivyInterpreterIT {
   }
 
 
-//  @Test
+  @Test
   public void testSparkInterpreterRDD() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -197,7 +198,7 @@ public class LivyInterpreterIT {
   }
 
 
-//  @Test
+  @Test
   public void testSparkInterpreterDataFrame() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -285,7 +286,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkSQLInterpreter() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -320,7 +321,7 @@ public class LivyInterpreterIT {
   }
 
 
-//  @Test
+  @Test
   public void testSparkSQLCancellation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -401,7 +402,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testStringWithTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -462,7 +463,7 @@ public class LivyInterpreterIT {
   }
 
 
-//  @Test
+  @Test
   public void testStringWithoutTruncation() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -534,6 +535,7 @@ public class LivyInterpreterIT {
     }
 
     final LivyPySparkInterpreter pysparkInterpreter = new LivyPySparkInterpreter(properties);
+    pysparkInterpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
@@ -647,7 +649,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkInterpreterWithDisplayAppInfo() throws InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -686,13 +688,15 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testSparkRInterpreter() throws LivyException, InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
 
     final LivySparkRInterpreter sparkRInterpreter = new LivySparkRInterpreter(properties);
+    sparkRInterpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+
     try {
       sparkRInterpreter.getLivyVersion();
     } catch (APINotFoundException e) {
@@ -749,8 +753,7 @@ public class LivyInterpreterIT {
 
       // error
       result = sparkRInterpreter.interpret("cat(a)", context);
-      //TODO @zjffdu, it should be ERROR, it is due to bug of LIVY-313
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
       assertTrue(result.message().get(0).getData().contains("object 'a' not found"));
     } finally {
@@ -758,7 +761,7 @@ public class LivyInterpreterIT {
     }
   }
 
-//  @Test
+  @Test
   public void testLivyTutorialNote() throws IOException, InterpreterException {
     if (!checkPreCondition()) {
       return;
@@ -796,6 +799,114 @@ public class LivyInterpreterIT {
     }
   }
 
+  @Test
+  public void testSharedInterpreter() throws InterpreterException {
+    if (!checkPreCondition()) {
+      return;
+    }
+    InterpreterGroup interpreterGroup = new InterpreterGroup("group_1");
+    interpreterGroup.put("session_1", new ArrayList<Interpreter>());
+    LazyOpenInterpreter sparkInterpreter = new LazyOpenInterpreter(
+        new LivySparkInterpreter(properties));
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+    interpreterGroup.get("session_1").add(sparkInterpreter);
+
+    LazyOpenInterpreter sqlInterpreter = new LazyOpenInterpreter(
+        new LivySparkSQLInterpreter(properties));
+    interpreterGroup.get("session_1").add(sqlInterpreter);
+    sqlInterpreter.setInterpreterGroup(interpreterGroup);
+
+    LazyOpenInterpreter pysparkInterpreter = new LazyOpenInterpreter(
+        new LivyPySparkInterpreter(properties));
+    interpreterGroup.get("session_1").add(pysparkInterpreter);
+    pysparkInterpreter.setInterpreterGroup(interpreterGroup);
+
+    LazyOpenInterpreter sparkRInterpreter = new LazyOpenInterpreter(
+        new LivySparkRInterpreter(properties));
+    interpreterGroup.get("session_1").add(sparkRInterpreter);
+    sparkRInterpreter.setInterpreterGroup(interpreterGroup);
+
+    LazyOpenInterpreter sharedInterpreter = new LazyOpenInterpreter(
+        new LivySharedInterpreter(properties));
+    interpreterGroup.get("session_1").add(sharedInterpreter);
+    sharedInterpreter.setInterpreterGroup(interpreterGroup);
+
+    sparkInterpreter.open();
+    sqlInterpreter.open();
+    pysparkInterpreter.open();
+    sparkRInterpreter.open();
+
+    try {
+      AuthenticationInfo authInfo = new AuthenticationInfo("user1");
+      MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
+      InterpreterOutput output = new InterpreterOutput(outputListener);
+      InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
+          "title", "text", authInfo, null, null, null, null, null, null, output);
+      // detect spark version
+      InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+
+      boolean isSpark2 = isSpark2((BaseLivyInterpreter)sparkInterpreter.getInnerInterpreter(), context);
+
+      if (!isSpark2) {
+        result = sparkInterpreter.interpret(
+            "val df=sqlContext.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+        sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+
+        // access table from pyspark
+        result = pysparkInterpreter.interpret("sqlContext.sql(\"select * from df\").show()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("+-----+-----+\n" +
+                "|col_1|col_2|\n" +
+                "+-----+-----+\n" +
+                "|hello|   20|\n" +
+                "+-----+-----+"));
+
+        // access table from sparkr
+        result = sparkRInterpreter.interpret("head(sql(sqlContext, \"select * from df\"))", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
+      } else {
+        result = sparkInterpreter.interpret(
+            "val df=spark.createDataFrame(Seq((\"hello\",20))).toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+        sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
+
+        // access table from pyspark
+        result = pysparkInterpreter.interpret("spark.sql(\"select * from df\").show()", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData()
+            .contains("+-----+-----+\n" +
+                      "|col_1|col_2|\n" +
+                      "+-----+-----+\n" +
+                      "|hello|   20|\n" +
+                      "+-----+-----+"));
+
+        // access table from sparkr
+        result = sparkRInterpreter.interpret("head(sql(\"select * from df\"))", context);
+        assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        assertEquals(1, result.message().size());
+        assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
+      }
+    } finally {
+      sparkInterpreter.close();
+      sqlInterpreter.close();
+    }
+  }
 
   private boolean isSpark2(BaseLivyInterpreter interpreter, InterpreterContext context) {
     InterpreterResult result = null;
