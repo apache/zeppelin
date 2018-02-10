@@ -17,22 +17,11 @@
 
 package org.apache.zeppelin.elasticsearch.client;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
-import org.apache.zeppelin.elasticsearch.action.ActionResponse;
-import org.apache.zeppelin.elasticsearch.action.AggWrapper;
-import org.apache.zeppelin.elasticsearch.action.HitWrapper;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -56,15 +45,26 @@ import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregat
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
+import org.apache.zeppelin.elasticsearch.action.ActionResponse;
+import org.apache.zeppelin.elasticsearch.action.AggWrapper;
+import org.apache.zeppelin.elasticsearch.action.HitWrapper;
 
 /**
  * Elasticsearch client using the transport protocol.
  */
 public class TransportBasedClient implements ElasticsearchClient {
-
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private final Client client;
 
@@ -151,8 +151,7 @@ public class TransportBasedClient implements ElasticsearchClient {
         @SuppressWarnings("rawtypes")
         final Map source = gson.fromJson(query, Map.class);
         reqBuilder.setExtraSource(source);
-      }
-      catch (final JsonSyntaxException e) {
+      } catch (final JsonSyntaxException e) {
         // This is not a JSON (or maybe not well formatted...)
         reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
       }
@@ -168,8 +167,7 @@ public class TransportBasedClient implements ElasticsearchClient {
 
     if (searchResp.getAggregations() != null) {
       setAggregations(searchResp.getAggregations(), actionResp);
-    }
-    else {
+    } else {
       for (final SearchHit hit: searchResp.getHits()) {
         // Fields can be found either in _source, or in fields (it depends on the query)
         // => specific for elasticsearch's version < 5
@@ -197,12 +195,10 @@ public class TransportBasedClient implements ElasticsearchClient {
     if (agg instanceof InternalMetricsAggregation) {
       actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
           XContentHelper.toString((InternalMetricsAggregation) agg).toString()));
-    }
-    else if (agg instanceof InternalSingleBucketAggregation) {
+    } else if (agg instanceof InternalSingleBucketAggregation) {
       actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
           XContentHelper.toString((InternalSingleBucketAggregation) agg).toString()));
-    }
-    else if (agg instanceof InternalMultiBucketAggregation) {
+    } else if (agg instanceof InternalMultiBucketAggregation) {
       final Set<String> headerKeys = new HashSet<>();
       final List<Map<String, Object>> buckets = new LinkedList<>();
       final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
@@ -213,8 +209,7 @@ public class TransportBasedClient implements ElasticsearchClient {
           bucket.toXContent(builder, null);
           actionResp.addAggregation(
               new AggWrapper(AggWrapper.AggregationType.MULTI_BUCKETS, builder.string()));
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
           // Ignored
         }
       }
