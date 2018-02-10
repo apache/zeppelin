@@ -21,7 +21,7 @@ package org.apache.zeppelin.spark
 import java.io.File
 
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{JobProgressUtil, SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
@@ -93,19 +93,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def getProgress(jobGroup: String, context: InterpreterContext): Int = {
-    val jobIds = sc.statusTracker.getJobIdsForGroup(jobGroup)
-    val jobs = jobIds.flatMap { id => sc.statusTracker.getJobInfo(id) }
-    val stages = jobs.flatMap { job =>
-      job.stageIds().flatMap(sc.statusTracker.getStageInfo)
-    }
-
-    val taskCount = stages.map(_.numTasks).sum
-    val completedTaskCount = stages.map(_.numCompletedTasks).sum
-    if (taskCount == 0) {
-      0
-    } else {
-      (100 * completedTaskCount.toDouble / taskCount).toInt
-    }
+    JobProgressUtil.progress(sc, jobGroup)
   }
 
   protected def bind(name: String, tpe: String, value: Object, modifier: List[String]): Unit

@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.spark.JobProgressUtil;
 import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -44,10 +45,26 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
+import org.apache.spark.scheduler.SparkListenerApplicationEnd;
+import org.apache.spark.scheduler.SparkListenerApplicationStart;
+import org.apache.spark.scheduler.SparkListenerBlockManagerAdded;
+import org.apache.spark.scheduler.SparkListenerBlockManagerRemoved;
+import org.apache.spark.scheduler.SparkListenerBlockUpdated;
+import org.apache.spark.scheduler.SparkListenerEnvironmentUpdate;
+import org.apache.spark.scheduler.SparkListenerExecutorAdded;
+import org.apache.spark.scheduler.SparkListenerExecutorMetricsUpdate;
+import org.apache.spark.scheduler.SparkListenerExecutorRemoved;
+import org.apache.spark.scheduler.SparkListenerJobEnd;
 import org.apache.spark.scheduler.SparkListenerJobStart;
+import org.apache.spark.scheduler.SparkListenerStageCompleted;
+import org.apache.spark.scheduler.SparkListenerStageSubmitted;
+import org.apache.spark.scheduler.SparkListenerTaskEnd;
+import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
+import org.apache.spark.scheduler.SparkListenerTaskStart;
+import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
-import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.spark.scheduler.SparkListener;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -113,7 +130,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   private static InterpreterHookRegistry hooks;
   private static SparkEnv env;
   private static Object sparkSession;    // spark 2.x
-  private static JobProgressListener sparkListener;
+  private static SparkListener sparkListener;
   private static AbstractFile classOutputDir;
   private static Integer sharedInterpreterLock = new Integer(0);
   private static AtomicInteger numReferenceOfSparkContext = new AtomicInteger(0);
@@ -173,11 +190,10 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     }
   }
 
-  static JobProgressListener setupListeners(SparkContext context) {
-    JobProgressListener pl = new JobProgressListener(context.getConf()) {
+  static SparkListener setupListeners(SparkContext context) {
+    SparkListener pl = new SparkListener() {
       @Override
       public synchronized void onJobStart(SparkListenerJobStart jobStart) {
-        super.onJobStart(jobStart);
         int jobId = jobStart.jobId();
         String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
         String uiEnabled = jobStart.properties().getProperty("spark.ui.enabled");
@@ -207,6 +223,85 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
         return jobUrl;
       }
 
+      @Override
+      public void onBlockUpdated(SparkListenerBlockUpdated blockUpdated) {
+
+      }
+
+      @Override
+      public void onExecutorRemoved(SparkListenerExecutorRemoved executorRemoved) {
+
+      }
+
+      @Override
+      public void onExecutorAdded(SparkListenerExecutorAdded executorAdded) {
+
+      }
+
+      @Override
+      public void onExecutorMetricsUpdate(SparkListenerExecutorMetricsUpdate executorMetricsUpdate) {
+
+      }
+
+      @Override
+      public void onApplicationEnd(SparkListenerApplicationEnd applicationEnd) {
+
+      }
+
+      @Override
+      public void onApplicationStart(SparkListenerApplicationStart applicationStart) {
+
+      }
+
+      @Override
+      public void onUnpersistRDD(SparkListenerUnpersistRDD unpersistRDD) {
+
+      }
+
+      @Override
+      public void onBlockManagerAdded(SparkListenerBlockManagerAdded blockManagerAdded) {
+
+      }
+
+      @Override
+      public void onBlockManagerRemoved(SparkListenerBlockManagerRemoved blockManagerRemoved) {
+
+      }
+
+      @Override
+      public void onEnvironmentUpdate(SparkListenerEnvironmentUpdate environmentUpdate) {
+
+      }
+
+      @Override
+      public void onJobEnd(SparkListenerJobEnd jobEnd) {
+
+      }
+      
+      @Override
+      public void onStageCompleted(SparkListenerStageCompleted stageCompleted) {
+
+      }
+
+      @Override
+      public void onStageSubmitted(SparkListenerStageSubmitted stageSubmitted) {
+
+      }
+
+      @Override
+      public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
+
+      }
+
+      @Override
+      public void onTaskGettingResult(SparkListenerTaskGettingResult taskGettingResult) {
+
+      }
+
+      @Override
+      public void onTaskStart(SparkListenerTaskStart taskStart) {
+
+      }
     };
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
@@ -224,7 +319,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           continue;
         }
 
-        if (!parameterTypes[0].isAssignableFrom(JobProgressListener.class)) {
+        if (!parameterTypes[0].isAssignableFrom(SparkListener.class)) {
           continue;
         }
 
@@ -1274,48 +1369,10 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public int getProgress(InterpreterContext context) {
     String jobGroup = Utils.buildJobGroupId(context);
-    int completedTasks = 0;
-    int totalTasks = 0;
-
-    DAGScheduler scheduler = sc.dagScheduler();
-    if (scheduler == null) {
-      return 0;
-    }
-    HashSet<ActiveJob> jobs = scheduler.activeJobs();
-    if (jobs == null || jobs.size() == 0) {
-      return 0;
-    }
-    Iterator<ActiveJob> it = jobs.iterator();
-    while (it.hasNext()) {
-      ActiveJob job = it.next();
-      String g = (String) job.properties().get("spark.jobGroup.id");
-      if (jobGroup.equals(g)) {
-        int[] progressInfo = null;
-        try {
-          Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
-          if (sparkVersion.getProgress1_0()) {
-            progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
-          } else {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          }
-        } catch (IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException | NoSuchMethodException
-            | SecurityException e) {
-          logger.error("Can't get progress info", e);
-          return 0;
-        }
-        totalTasks += progressInfo[0];
-        completedTasks += progressInfo[1];
-      }
-    }
-
-    if (totalTasks == 0) {
-      return 0;
-    }
-    return completedTasks * 100 / totalTasks;
+    return JobProgressUtil.progress(sc, jobGroup);
   }
 
-  private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Object stage)
+  private int[] getProgressFromStage_1_0x(SparkListener sparkListener, Object stage)
       throws IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException, SecurityException {
     int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
@@ -1345,7 +1402,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     return new int[] {numTasks, completedTasks};
   }
 
-  private int[] getProgressFromStage_1_1x(JobProgressListener sparkListener, Object stage)
+  private int[] getProgressFromStage_1_1x(SparkListener sparkListener, Object stage)
       throws IllegalAccessException, IllegalArgumentException,
       InvocationTargetException, NoSuchMethodException, SecurityException {
     int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
@@ -1421,7 +1478,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     return FormType.NATIVE;
   }
 
-  public JobProgressListener getJobProgressListener() {
+  public SparkListener getJobProgressListener() {
     return sparkListener;
   }
 
