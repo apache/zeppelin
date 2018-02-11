@@ -28,7 +28,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-spark-dependencies_2.10</artifactId>
+  <artifactId>zeppelin-spark-dependencies</artifactId>
   <packaging>jar</packaging>
   <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Spark dependencies</name>
@@ -53,14 +53,6 @@
 
     <akka.group>org.spark-project.akka</akka.group>
     <akka.version>2.3.4-spark</akka.version>
-
-    <spark.archive>spark-${spark.version}</spark.archive>
-    <spark.src.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
-    </spark.src.download.url>
-    <spark.bin.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}-bin-without-hadoop.tgz
-    </spark.bin.download.url>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>

@@ -670,6 +670,10 @@
           <version>${hadoop.version}</version>
           <exclusions>
             <exclusion>
+              <groupId>com.amazonaws</groupId>
+              <artifactId>aws-java-sdk</artifactId>
+            </exclusion>
+            <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>
               <artifactId>jackson-annotations</artifactId>
             </exclusion>
@@ -789,6 +793,10 @@
           <artifactId>hadoop-aws</artifactId>
           <version>${hadoop.version}</version>
           <exclusions>
+            <exclusion>
+              <groupId>com.amazonaws</groupId>
+              <artifactId>aws-java-sdk</artifactId>
+            </exclusion>
             <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>
               <artifactId>jackson-annotations</artifactId>
