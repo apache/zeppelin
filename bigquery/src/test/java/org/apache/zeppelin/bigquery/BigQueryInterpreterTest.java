@@ -53,7 +53,6 @@ public class BigQueryInterpreterTest {
     }
   }
 
-  @SuppressWarnings("checkstyle:abbreviationaswordinname")
   protected static Constants constants = null;
 
   public BigQueryInterpreterTest()
