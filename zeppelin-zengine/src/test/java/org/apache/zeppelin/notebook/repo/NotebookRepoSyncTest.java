@@ -44,6 +44,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
@@ -89,9 +90,13 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
+    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), mainZepDir.getAbsolutePath() + "/conf");
+
     LOG.info("main Note dir : " + mainNotePath);
     LOG.info("secondary note dir : " + secNotePath);
     conf = ZeppelinConfiguration.create();
+
+    ConfigStorage.reset();
 
     this.schedulerFactory = SchedulerFactory.singleton();
 

@@ -518,7 +518,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (StringUtils.isBlank(fsConfigDir)) {
       LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
           "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
-      return "file://" + getConfDir();
+      return getConfDir();
     }
     return fsConfigDir;
   }
@@ -709,7 +709,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_CONFIG_FS_DIR("zeppelin.config.fs.dir", ""),
     ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
-        "org.apache.zeppelin.storage.FileSystemConfigStorage"),
+        "org.apache.zeppelin.storage.LocalConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
     ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
