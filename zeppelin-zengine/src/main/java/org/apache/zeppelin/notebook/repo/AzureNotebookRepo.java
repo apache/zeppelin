@@ -196,26 +196,6 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    // no-op
-    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
-    return Revision.EMPTY;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
     return Collections.emptyList();
@@ -226,10 +206,4 @@ public class AzureNotebookRepo implements NotebookRepo {
     LOG.warn("Method not implemented");
   }
 
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
 }

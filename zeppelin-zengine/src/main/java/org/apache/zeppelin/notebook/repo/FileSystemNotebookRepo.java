@@ -86,32 +86,6 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    LOGGER.warn("checkpoint is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOGGER.warn("get revId is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOGGER.warn("revisionHistory is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    LOGGER.warn("setNoteRevision is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOGGER.warn("getSettings is not implemented for HdfsNotebookRepo");
     return null;
@@ -121,4 +95,5 @@ public class FileSystemNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOGGER.warn("updateSettings is not implemented for HdfsNotebookRepo");
   }
+
 }

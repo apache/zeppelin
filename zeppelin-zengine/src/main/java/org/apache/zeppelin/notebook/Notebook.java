@@ -28,7 +28,8 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -367,22 +368,38 @@ public class Notebook implements NoteEventListener {
 
   public Revision checkpointNote(String noteId, String checkpointMessage,
       AuthenticationInfo subject) throws IOException {
-    return notebookRepo.checkpoint(noteId, checkpointMessage, subject);
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
+      return ((NotebookRepoWithVersionControl) notebookRepo).checkpoint(noteId, checkpointMessage, subject);
+    } else {
+      return null;
+
+    }
   }
 
-  public List<Revision> listRevisionHistory(String noteId,
-      AuthenticationInfo subject) {
-    return notebookRepo.revisionHistory(noteId, subject);
+  public List<Revision> listRevisionHistory(String noteId, AuthenticationInfo subject) {
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
+      return ((NotebookRepoWithVersionControl) notebookRepo).revisionHistory(noteId, subject);
+    } else {
+      return null;
+    }
   }
 
   public Note setNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    return notebookRepo.setNoteRevision(noteId, revisionId, subject);
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
+      return ((NotebookRepoWithVersionControl) notebookRepo).setNoteRevision(noteId, revisionId, subject);
+    } else {
+      return null;
+    }
   }
-  
+
   public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    return notebookRepo.get(noteId, revisionId, subject);
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
+      return ((NotebookRepoWithVersionControl) notebookRepo).get(noteId, revisionId, subject);
+    } else {
+      return null;
+    }
   }
 
   public void convertFromSingleResultToMultipleResultsFormat(Note note) {
@@ -478,6 +495,7 @@ public class Notebook implements NoteEventListener {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
+    note.setRevisionSupported(notebookRepo);
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
