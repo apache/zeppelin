@@ -15,98 +15,96 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.storage;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.apache.hadoop.fs.Path;
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
-import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+
 /**
- * It could be used either local file system or hadoop distributed file system,
- * because FileSystem support both local file system and hdfs.
- *
+ * Storing config in local file system
  */
-public class FileSystemConfigStorage extends ConfigStorage {
+public class LocalConfigStorage extends ConfigStorage {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigStorage.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(LocalConfigStorage.class);
 
-  private FileSystemStorage fs;
-  private Path interpreterSettingPath;
-  private Path authorizationPath;
-  private Path credentialPath;
+  private File interpreterSettingPath;
+  private File authorizationPath;
+  private File credentialPath;
 
-  public FileSystemConfigStorage(ZeppelinConfiguration zConf) throws IOException {
+  public LocalConfigStorage(ZeppelinConfiguration zConf) {
     super(zConf);
-    this.fs = new FileSystemStorage(zConf, zConf.getConfigFSDir());
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
-        " for Zeppelin Config");
-    Path configPath = this.fs.makeQualified(new Path(zConf.getConfigFSDir()));
-    this.fs.tryMkDir(configPath);
-    LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
-    this.interpreterSettingPath = fs.makeQualified(new Path(zConf.getInterpreterSettingPath()));
-    this.authorizationPath = fs.makeQualified(new Path(zConf.getNotebookAuthorizationPath()));
-    this.credentialPath = fs.makeQualified(new Path(zConf.getCredentialsPath()));
+    this.interpreterSettingPath = new File(zConf.getInterpreterSettingPath());
+    this.authorizationPath = new File(zConf.getNotebookAuthorizationPath());
+    this.credentialPath = new File(zConf.getCredentialsPath());
   }
 
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
-    LOGGER.info("Save Interpreter Settings to " + interpreterSettingPath);
-    fs.writeFile(settingInfos.toJson(), interpreterSettingPath, false);
+    writeToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
   @Override
   public InterpreterInfoSaving loadInterpreterSettings() throws IOException {
-    if (!fs.exists(interpreterSettingPath)) {
+    if (!interpreterSettingPath.exists()) {
       LOGGER.warn("Interpreter Setting file {} is not existed", interpreterSettingPath);
       return null;
     }
     LOGGER.info("Load Interpreter Setting from file: " + interpreterSettingPath);
-    String json = fs.readFile(interpreterSettingPath);
+    String json = readFromFile(interpreterSettingPath);
     return buildInterpreterInfoSaving(json);
   }
 
+  @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
     LOGGER.info("Save notebook authorization to file: " + authorizationPath);
-    fs.writeFile(authorizationInfoSaving.toJson(), authorizationPath, false);
+    writeToFile(authorizationInfoSaving.toJson(), authorizationPath);
   }
 
   @Override
   public NotebookAuthorizationInfoSaving loadNotebookAuthorization() throws IOException {
-    if (!fs.exists(authorizationPath)) {
-      LOGGER.warn("Notebook Authorization file {} is not existed", authorizationPath);
+    if (!authorizationPath.exists()) {
+      LOGGER.warn("NotebookAuthorization file {} is not existed", authorizationPath);
       return null;
     }
     LOGGER.info("Load notebook authorization from file: " + authorizationPath);
-    String json = this.fs.readFile(authorizationPath);
+    String json = readFromFile(authorizationPath);
     return NotebookAuthorizationInfoSaving.fromJson(json);
   }
 
   @Override
   public String loadCredentials() throws IOException {
-    if (!fs.exists(credentialPath)) {
+    if (!credentialPath.exists()) {
       LOGGER.warn("Credential file {} is not existed", credentialPath);
       return null;
     }
     LOGGER.info("Load Credential from file: " + credentialPath);
-    return this.fs.readFile(credentialPath);
+    return readFromFile(credentialPath);
   }
 
   @Override
   public void saveCredentials(String credentials) throws IOException {
     LOGGER.info("Save Credentials to file: " + credentialPath);
-    fs.writeFile(credentials, credentialPath, false);
+    writeToFile(credentials, credentialPath);
+  }
+
+  private String readFromFile(File file) throws IOException {
+    return IOUtils.toString(new FileInputStream(file));
+  }
+
+  private void writeToFile(String content, File file) throws IOException {
+    FileOutputStream out = new FileOutputStream(file);
+    IOUtils.write(content, out);
+    out.close();
   }
 
 }
