@@ -266,6 +266,12 @@ public class InterpreterSettingManager {
           this.interpreterRepositories.add(repo);
         }
       }
+
+      // force interpreter dependencies loading once the
+      // repositories have been loaded.
+      for (InterpreterSetting setting : interpreterSettings.values()) {
+        setting.setDependencies(setting.getDependencies());
+      }
     }
   }
 
