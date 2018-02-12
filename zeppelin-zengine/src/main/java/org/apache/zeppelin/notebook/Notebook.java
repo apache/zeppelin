@@ -386,7 +386,7 @@ public class Notebook implements NoteEventListener {
 
   public Revision checkpointNote(String noteId, String checkpointMessage,
       AuthenticationInfo subject) throws IOException {
-    if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo).checkpoint(noteId, checkpointMessage, subject);
     } else {
       return null;
@@ -395,7 +395,7 @@ public class Notebook implements NoteEventListener {
   }
 
   public List<Revision> listRevisionHistory(String noteId, AuthenticationInfo subject) {
-    if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo).revisionHistory(noteId, subject);
     } else {
       return null;
@@ -404,7 +404,7 @@ public class Notebook implements NoteEventListener {
 
   public Note setNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo).setNoteRevision(noteId, revisionId, subject);
     } else {
       return null;
@@ -413,7 +413,7 @@ public class Notebook implements NoteEventListener {
 
   public Note getNoteByRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
-    if (((NotebookRepoSync) notebookRepo).isDefaultRepoGit()) {
+    if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo).get(noteId, revisionId, subject);
     } else {
       return null;

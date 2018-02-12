@@ -431,11 +431,11 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
   }
 
-  public Boolean isDefaultRepoGit() {
-    return isRepoGit(0);
+  public Boolean isRevisionSupportedInDefaultRepo() {
+    return isRevisionSupportedInRepo(0);
   }
 
-  public Boolean isRepoGit(int repoIndex) {
+  public Boolean isRevisionSupportedInRepo(int repoIndex) {
     try {
       if (getRepo(repoIndex) instanceof NotebookRepoWithVersionControl) {
         return true;
@@ -458,7 +458,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        if (isRepoGit(i)) {
+        if (isRevisionSupportedInRepo(i)) {
           allRepoCheckpoints
               .add(((NotebookRepoWithVersionControl) getRepo(i)).checkpoint(noteId, checkpointMsg, subject));
         }
@@ -488,7 +488,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   public Note get(String noteId, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      if (isDefaultRepoGit()) {
+      if (isRevisionSupportedInDefaultRepo()) {
         revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, revId, subject);
       }
     } catch (IOException e) {
@@ -501,7 +501,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     List<Revision> revisions = Collections.emptyList();
     try {
-      if (isDefaultRepoGit()) {
+      if (isRevisionSupportedInDefaultRepo()) {
         revisions = ((NotebookRepoWithVersionControl) getRepo(0)).revisionHistory(noteId, subject);
       }
     } catch (IOException e) {
@@ -538,7 +538,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     Note currentNote = null, revisionNote = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        if (isRepoGit(i)) {
+        if (isRevisionSupportedInRepo(i)) {
           currentNote = ((NotebookRepoWithVersionControl) getRepo(i)).setNoteRevision(noteId, revId, subject);
         }
       } catch (IOException e) {
