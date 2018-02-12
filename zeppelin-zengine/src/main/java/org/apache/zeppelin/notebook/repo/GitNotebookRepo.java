@@ -52,7 +52,7 @@ import com.google.common.collect.Lists;
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo extends VFSNotebookRepo {
+class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
@@ -187,3 +187,4 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
 }
+
