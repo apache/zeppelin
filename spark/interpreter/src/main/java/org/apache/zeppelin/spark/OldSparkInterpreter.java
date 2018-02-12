@@ -239,7 +239,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
 
       @Override
-      public void onExecutorMetricsUpdate(SparkListenerExecutorMetricsUpdate executorMetricsUpdate) {
+      public void onExecutorMetricsUpdate(
+          SparkListenerExecutorMetricsUpdate executorMetricsUpdate) {
 
       }
 
