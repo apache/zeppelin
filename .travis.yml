@@ -118,7 +118,14 @@ matrix:
       dist: trusty
       jdk: "openjdk7"
       env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.0.0" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-2.0 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy" TEST_PROJECTS="-Dpyspark.test.exclude='' -DfailIfNoTests=false"
-      
+     
+     # CassandraSpark 1.3
+     - mvn clean package -DskipTests -Pspark-1.3 -Phadoop-2.3 -Pcassandra-spark-1.3 -B -pl 'zeppelin-interpreter,spark'
+     - mvn package -Pbuild-distr -Pspark-1.3 -Phadoop-2.3 -Pcassandra-spark-1.3 -B
+     - ./testing/startSparkCluster.sh 1.3.1 2.3
+     - SPARK_HOME=./spark-1.3.1-bin-hadoop2.3 mvn verify -Pspark-1.3 -Phadoop-2.3 -Pcassandra-spark-1.3 -B -pl 'zeppelin-interpreter,spark'
+     - ./testing/stopSparkCluster.sh 1.3.1 2.3
+     
 before_install:
   # check files included in commit range, clear bower_components if a bower.json file has changed.
   # bower cache clearing can also be forced by putting "bower clear" or "clear bower" in a commit message
