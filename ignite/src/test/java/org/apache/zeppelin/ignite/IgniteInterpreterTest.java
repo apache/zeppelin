@@ -16,22 +16,23 @@
  */
 package org.apache.zeppelin.ignite;
 
-import java.util.Collections;
-import java.util.Properties;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.Collections;
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 /**
  * Tests for Apache Ignite interpreter ({@link IgniteInterpreter}).
@@ -40,7 +41,8 @@ public class IgniteInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
   private static final InterpreterContext INTP_CONTEXT =
-      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null, null);
+      new InterpreterContext(null, null, null, null, null, null, null, null, null, null,
+              null, null, null);
 
   private IgniteInterpreter intp;
   private Ignite ignite;
@@ -61,7 +63,8 @@ public class IgniteInterpreterTest {
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL,
+            "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
     props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
     props.setProperty(IgniteInterpreter.IGNITE_PEER_CLASS_LOADING_ENABLED, "false");
     props.setProperty(IgniteInterpreter.IGNITE_ADDRESSES, HOST);
@@ -84,7 +87,8 @@ public class IgniteInterpreterTest {
             "val " + sizeVal + " = ignite.cluster().nodes().size()", INTP_CONTEXT);
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().get(0).getData().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
+    assertTrue(result.message().get(0).getData().contains(sizeVal + ": Int = " +
+            ignite.cluster().nodes().size()));
 
     result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -96,5 +100,4 @@ public class IgniteInterpreterTest {
 
     assertEquals(InterpreterResult.Code.ERROR, result.code());
   }
-
 }
