@@ -369,7 +369,8 @@ public class Notebook implements NoteEventListener {
   public Revision checkpointNote(String noteId, String checkpointMessage,
       AuthenticationInfo subject) throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
-      return ((NotebookRepoWithVersionControl) notebookRepo).checkpoint(noteId, checkpointMessage, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo)
+          .checkpoint(noteId, checkpointMessage, subject);
     } else {
       return null;
 
@@ -387,7 +388,8 @@ public class Notebook implements NoteEventListener {
   public Note setNoteRevision(String noteId, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
-      return ((NotebookRepoWithVersionControl) notebookRepo).setNoteRevision(noteId, revisionId, subject);
+      return ((NotebookRepoWithVersionControl) notebookRepo)
+          .setNoteRevision(noteId, revisionId, subject);
     } else {
       return null;
     }
