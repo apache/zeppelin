@@ -196,32 +196,6 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    LOG.warn("checkpoint is not implemented for GCSNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOG.warn("get revId is not implemented for GCSNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOG.warn("revisionHistory is not implemented for GCSNotebookRepo");
-    return Collections.emptyList();
-  }
-
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    LOG.warn("setNoteRevision is not implemented for GCSNotebookRepo");
-    return null;
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOG.warn("getSettings is not implemented for GCSNotebookRepo");
     return Collections.emptyList();

@@ -460,7 +460,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       try {
         if (isRevisionSupportedInRepo(i)) {
           allRepoCheckpoints
-              .add(((NotebookRepoWithVersionControl) getRepo(i)).checkpoint(noteId, checkpointMsg, subject));
+              .add(((NotebookRepoWithVersionControl) getRepo(i))
+                  .checkpoint(noteId, checkpointMsg, subject));
         }
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
@@ -539,7 +540,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     for (int i = 0; i < repoBound; i++) {
       try {
         if (isRevisionSupportedInRepo(i)) {
-          currentNote = ((NotebookRepoWithVersionControl) getRepo(i)).setNoteRevision(noteId, revId, subject);
+          currentNote = ((NotebookRepoWithVersionControl) getRepo(i))
+              .setNoteRevision(noteId, revId, subject);
         }
       } catch (IOException e) {
         // already logged
