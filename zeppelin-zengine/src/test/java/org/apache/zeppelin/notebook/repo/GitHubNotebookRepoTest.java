@@ -138,7 +138,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the Notebook repository is created, it pulls the latest changes from the remote repository
    */
   public void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
-    NotebookRepo.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, null).get(0);
+    NotebookRepoWithVersionControl.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, null).get(0);
 
     assert(this.firstCommitRevision.getName().equals(firstHistoryRevision.id));
   }
@@ -156,7 +156,7 @@ public class GitHubNotebookRepoTest {
     addParagraphToNotebook(TEST_NOTE_ID);
 
     // Commit and push the changes to remote repository
-    NotebookRepo.Revision thirdCommitRevision = gitHubNotebookRepo.checkpoint(
+    NotebookRepoWithVersionControl.Revision thirdCommitRevision = gitHubNotebookRepo.checkpoint(
             TEST_NOTE_ID, "Third commit from local repository", null);
 
     // Check all the commits as seen from the local repository. The commits are ordered chronologically. The last
@@ -184,7 +184,7 @@ public class GitHubNotebookRepoTest {
     addParagraphToNotebook(TEST_NOTE_ID);
 
     // Commit and push the changes to remote repository
-    NotebookRepo.Revision secondCommitRevision = gitHubNotebookRepo.checkpoint(
+    NotebookRepoWithVersionControl.Revision secondCommitRevision = gitHubNotebookRepo.checkpoint(
             TEST_NOTE_ID, "Second commit from local repository", null);
 
     // Check all the commits as seen from the remote repository. The commits are ordered chronologically. The last
