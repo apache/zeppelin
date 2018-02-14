@@ -258,18 +258,6 @@ If both are defined, then the **environment variables** will take priority.
     <td>Make notebook public (set only <code>owners</code>) by default when created/imported. If set to <code>false</code> will add <code>user</code> to <code>readers</code> and <code>writers</code> as well, making it private and invisible to other users unless permissions are granted.</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_INTERPRETERS</h6></td>
-    <td><h6 class="properties">zeppelin.interpreters</h6></td>
-  <description></description>
-    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
-    ...
-    </td>
-    <td>
-      Comma separated interpreter configurations [Class] <br/><br />
-      <span style="font-style:italic; color: gray">NOTE: This property is deprecated since Zeppelin-0.6.0 and will not be supported from Zeppelin-0.7.0.</span>
-    </td>
-  </tr>
-  <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_DIR</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.dir</h6></td>
     <td>interpreter</td>
@@ -280,6 +268,12 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.interpreter.dep.mvnRepo</h6></td>
     <td>http://repo1.maven.org/maven2/</td>
     <td>Remote principal repository for interpreter's additional dependency loading</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_MAX_POOL_SIZE</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.max.poolsize</h6></td>
+    <td>10</td>
+    <td>The maximum number of paragraphs that will be run at cron.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</h6></td>
