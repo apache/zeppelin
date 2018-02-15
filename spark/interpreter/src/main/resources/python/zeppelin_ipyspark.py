@@ -51,3 +51,17 @@ if intp.isSpark2():
     sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 else:
     sqlContext = sqlc = __zSqlc__ = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
+
+class IPySparkZeppelinContext(PyZeppelinContext):
+
+    def __init__(self, z):
+        super(IPySparkZeppelinContext, self).__init__(z)
+
+    def show(self, obj):
+        from pyspark.sql import DataFrame
+        if isinstance(obj, DataFrame):
+            print(self.z.showData(obj._jdf))
+        else:
+            super(IPySparkZeppelinContext, self).show(obj)
+
+z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext())
