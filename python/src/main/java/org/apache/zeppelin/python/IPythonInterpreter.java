@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -76,7 +77,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private IPythonClient ipythonClient;
   private GatewayServer gatewayServer;
 
-  private PythonZeppelinContext zeppelinContext;
+  protected BaseZeppelinContext zeppelinContext;
   private String pythonExecutable;
   private long ipythonLaunchTimeout;
   private String additionalPythonPath;
@@ -114,6 +115,12 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     this.useBuiltinPy4j = add;
   }
 
+  public BaseZeppelinContext buildZeppelinContext() {
+    return new PythonZeppelinContext(
+        getInterpreterGroup().getInterpreterHookRegistry(),
+        Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
+  }
+
   @Override
   public void open() throws InterpreterException {
     try {
@@ -130,9 +137,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       }
       ipythonLaunchTimeout = Long.parseLong(
           getProperty("zeppelin.ipython.launch.timeout", "30000"));
-      this.zeppelinContext = new PythonZeppelinContext(
-          getInterpreterGroup().getInterpreterHookRegistry(),
-          Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
+      this.zeppelinContext = buildZeppelinContext();
       int ipythonPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       int jvmGatewayPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       LOGGER.info("Launching IPython Kernel at port: " + ipythonPort);
@@ -312,6 +317,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   public InterpreterResult interpret(String st, InterpreterContext context) {
     zeppelinContext.setGui(context.getGui());
     zeppelinContext.setNoteGui(context.getNoteGui());
+    zeppelinContext.setInterpreterContext(context);
     interpreterOutput.setInterpreterOutput(context.out);
     ExecuteResponse response =
         ipythonClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
@@ -361,7 +367,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     return completions;
   }
 
-  public PythonZeppelinContext getZeppelinContext() {
+  public BaseZeppelinContext getZeppelinContext() {
     return zeppelinContext;
   }
 

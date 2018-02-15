@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -90,6 +91,11 @@ public class IPySparkInterpreter extends IPythonInterpreter {
       lazy.open();
     }
     return spark;
+  }
+
+  @Override
+  public BaseZeppelinContext buildZeppelinContext() {
+    return sparkInterpreter.getZeppelinContext();
   }
 
   @Override
