@@ -548,6 +548,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE);
   }
 
+  public String getRecentNotesFilePath(){
+    return getRelativeDir(String.format("%s/recentNotes.json", getConfDir()));
+  }
+
 
   public String getXFrameOptions() {
     return getString(ConfVars.ZEPPELIN_SERVER_XFRAME_OPTIONS);

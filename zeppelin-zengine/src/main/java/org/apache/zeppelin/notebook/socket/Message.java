@@ -129,7 +129,7 @@ public class Message implements JsonSerializable {
 
     ANGULAR_OBJECT_UPDATE,        // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,        // [s-c] add angular object del
-    
+
     ANGULAR_OBJECT_UPDATED,       // [c-s] angular object value updated,
 
     ANGULAR_OBJECT_CLIENT_BIND,   // [c-s] angular object updated from AngularJS z object
@@ -185,12 +185,18 @@ public class Message implements JsonSerializable {
     RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
-    REMOVE_NOTE_FORMS             // remove note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
+    RECENT_NOTES_LIST,            // [s-c] list of recent notes
+                                  // @param List<Notes>
+    GET_RECENT_NOTES,             // [c-s] ask list of recent notes
+    REMOVE_FROM_RECENT,           // [c-s] remove note from recent
+                                  // @param noteId
+    CLEAR_RECENT                  // [c-s] clear recent list for requesting user
   }
 
   private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
-  
+
   public OP op;
   public Map<String, Object> data = new HashMap<>();
   public String ticket = "anonymous";

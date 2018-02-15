@@ -86,7 +86,11 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
     websocketMsgSrv.getHomeNote()
   }
 
-  function logout() {
+  function getRecentNotes() {
+    websocketMsgSrv.getRecentNotes()
+  }
+
+  function logout () {
     let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout'
 
     $http.post(logoutURL).then(function () {}, function (response) {
@@ -213,6 +217,7 @@ function NavCtrl ($scope, $rootScope, $http, $routeParams, $location,
     listConfigurations()
     loadNotes()
     getHomeNote()
+    getRecentNotes()
   })
 
   /*

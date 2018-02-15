@@ -56,6 +56,7 @@ import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.storage.FileSystemConfigStorage;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.users.RecentNotesRepo;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.*;
@@ -80,6 +81,7 @@ public class ZeppelinServer extends Application {
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
   public static Helium helium;
+  public static RecentNotesRepo recentNotesRepo;
 
   private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
@@ -134,6 +136,7 @@ public class ZeppelinServer extends Application {
         conf.credentialsPersist(),
         conf.getCredentialsPath(),
         conf.getCredentialsEncryptKey());
+    this.recentNotesRepo = new RecentNotesRepo(conf.getRecentNotesFilePath());
     notebook = new Notebook(conf,
         notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
             noteSearchService, notebookAuthorization, credentials);
@@ -154,7 +157,7 @@ public class ZeppelinServer extends Application {
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
-    
+
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
     // to update fire websocket event on application event.

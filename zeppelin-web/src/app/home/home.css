@@ -123,6 +123,10 @@ body .navbar {
   margin: 5px 0;
 }
 
+#recent-names {
+  list-style: none;
+}
+
 .note-name-query {
   padding: 6px;
   color: #000;

@@ -21,6 +21,7 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
   ngToast.dismiss()
   let vm = this
   vm.notes = noteListFactory
+  vm.recentNotes = []
   vm.websocketMsgSrv = websocketMsgSrv
   vm.arrayOrderingSrv = arrayOrderingSrv
   vm.noteActionService = noteActionService
@@ -40,7 +41,14 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
 
   $scope.initHome = function () {
     websocketMsgSrv.getHomeNote()
+    $scope.initRecentList()
     vm.noteCustomHome = false
+  }
+
+  $scope.initRecentList = function() {
+    if ($rootScope.ticket !== undefined) {
+      websocketMsgSrv.getRecentNotes()
+    }
   }
 
   $scope.reloadNoteList = function () {
@@ -52,6 +60,10 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
     node.hidden = !node.hidden
   }
 
+  $scope.clearRecent = function() {
+    websocketMsgSrv.clearRecent()
+  }
+
   angular.element('#loginModal').on('hidden.bs.modal', function (e) {
     $rootScope.$broadcast('initLoginValues')
   })
@@ -59,6 +71,18 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
   /*
    ** $scope.$on functions below
    */
+
+  $scope.$on('updateRecentList', function(event, recentNotes) {
+    vm.recentNotes = []
+    for (let i = 0; i < recentNotes.length; ++i) {
+      let note = recentNotes[i]
+      note.isTrash = note.name
+        ? note.name.split('/')[0] === TRASH_FOLDER_ID : false
+      note.fromRecentList = true
+      vm.recentNotes.push(note)
+    }
+    vm.recentNotes.reverse()
+  })
 
   $scope.$on('setNoteMenu', function (event, notes) {
     $scope.isReloadingNotes = false
@@ -122,6 +146,10 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
     vm.noteActionService.removeNote(noteId, false)
   }
 
+  $scope.removeFromRecent = function (noteId) {
+    vm.noteActionService.removeFromRecent(noteId)
+  }
+
   $scope.removeFolder = function (folderId) {
     vm.noteActionService.removeFolder(folderId)
   }
@@ -135,7 +163,7 @@ function HomeCtrl ($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOr
   }
 
   $scope.isFilterNote = function (note) {
-    if (!$scope.query.q) {
+    if (!$scope.query.q || note.fromRecentList) {
       return true
     }
 

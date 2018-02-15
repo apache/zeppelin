@@ -63,6 +63,10 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
     })
   }
 
+  this.removeFromRecent = function (noteId) {
+    websocketMsgSrv.removeNoteFromRecent(noteId)
+  }
+
   this.removeFolder = function (folderId) {
     BootstrapDialog.confirm({
       type: BootstrapDialog.TYPE_WARNING,
