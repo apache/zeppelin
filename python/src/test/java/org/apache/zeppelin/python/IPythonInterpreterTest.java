@@ -56,9 +56,7 @@ public class IPythonInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(IPythonInterpreterTest.class);
   private IPythonInterpreter interpreter;
 
-  @Before
-  public void setUp() throws InterpreterException {
-    Properties properties = new Properties();
+  public void startInterpreter(Properties properties) throws InterpreterException {
     interpreter = new IPythonInterpreter(properties);
     InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
     interpreter.setInterpreterGroup(mockInterpreterGroup);
@@ -73,7 +71,43 @@ public class IPythonInterpreterTest {
 
   @Test
   public void testIPython() throws IOException, InterruptedException, InterpreterException {
+    startInterpreter(new Properties());
     testInterpreter(interpreter);
+  }
+
+  @Test
+  public void testGrpcFrameSize() throws InterpreterException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.ipython.grpc.framesize", "4");
+    startInterpreter(properties);
+
+    // to make this test can run under both python2 and python3
+    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 32 exceeds maximum: 4"));
+
+    // next call continue work
+    result = interpreter.interpret("print(1)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    close();
+
+    // increase framesize to make it work
+    properties.setProperty("zeppelin.ipython.grpc.framesize", "40");
+    startInterpreter(properties);
+    // to make this test can run under both python2 and python3
+    result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException, InterpreterException {
