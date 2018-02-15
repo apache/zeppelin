@@ -54,6 +54,7 @@
     "new-cap": 2,
     "no-caller": 2,
     "quotes": [2, "single"],
+    "semi": [2, "always"],
     "no-shadow": 0,
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],

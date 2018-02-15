@@ -19,12 +19,12 @@
 import {
   DefaultDisplayType,
   SpellResult,
-} from './spell-result'
+} from './spell-result';
 /* eslint-enable no-unused-vars */
 
 export class SpellBase {
   constructor (magic) {
-    this.magic = magic
+    this.magic = magic;
   }
 
   /**
@@ -35,7 +35,7 @@ export class SpellBase {
    * @return {SpellResult}
    */
   interpret (paragraphText, config) {
-    throw new Error('SpellBase.interpret() should be overrided')
+    throw new Error('SpellBase.interpret() should be overrided');
   }
 
   /**
@@ -44,6 +44,6 @@ export class SpellBase {
    * @return {string}
    */
   getMagic () {
-    return this.magic
+    return this.magic;
   }
 }

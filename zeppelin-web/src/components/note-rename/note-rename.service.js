@@ -12,12 +12,12 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('noteRenameService', NoteRenameService)
+angular.module('zeppelinWebApp').service('noteRenameService', NoteRenameService);
 
 function NoteRenameService($rootScope) {
-  'ngInject'
+  'ngInject';
 
-  let self = this
+  let self = this;
 
   /**
    * <options schema>
@@ -27,6 +27,6 @@ function NoteRenameService($rootScope) {
    * validator: (str: string)=>boolean - input validator
    */
   self.openRenameModal = function (options) {
-    $rootScope.$broadcast('openRenameModal', options)
-  }
+    $rootScope.$broadcast('openRenameModal', options);
+  };
 }

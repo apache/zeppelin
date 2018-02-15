@@ -12,18 +12,18 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl)
+angular.module('zeppelinWebApp').controller('ConfigurationCtrl', ConfigurationCtrl);
 
 function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast) {
-  'ngInject'
+  'ngInject';
 
-  $scope.configrations = []
-  ngToast.dismiss()
+  $scope.configrations = [];
+  ngToast.dismiss();
 
   let getConfigurations = function () {
     $http.get(baseUrlSrv.getRestApiBase() + '/configurations/all')
     .success(function (data, status, headers, config) {
-      $scope.configurations = data.body
+      $scope.configurations = data.body;
     })
     .error(function (data, status, headers, config) {
       if (status === 401) {
@@ -31,18 +31,18 @@ function ConfigurationCtrl ($scope, $http, baseUrlSrv, ngToast) {
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
           timeout: '3000'
-        })
+        });
         setTimeout(function () {
-          window.location = baseUrlSrv.getBase()
-        }, 3000)
+          window.location = baseUrlSrv.getBase();
+        }, 3000);
       }
-      console.log('Error %o %o', status, data.message)
-    })
-  }
+      console.log('Error %o %o', status, data.message);
+    });
+  };
 
   let init = function () {
-    getConfigurations()
-  }
+    getConfigurations();
+  };
 
-  init()
+  init();
 }

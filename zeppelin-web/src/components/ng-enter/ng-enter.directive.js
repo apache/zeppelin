@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('ngEnter', NgEnterDirective)
+angular.module('zeppelinWebApp').directive('ngEnter', NgEnterDirective);
 
 function NgEnterDirective() {
   return function (scope, element, attrs) {
@@ -20,11 +20,11 @@ function NgEnterDirective() {
       if (event.which === 13) {
         if (!event.shiftKey) {
           scope.$apply(function () {
-            scope.$eval(attrs.ngEnter)
-          })
+            scope.$eval(attrs.ngEnter);
+          });
         }
-        event.preventDefault()
+        event.preventDefault();
       }
-    })
-  }
+    });
+  };
 }

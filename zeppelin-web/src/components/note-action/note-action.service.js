@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('noteActionService', noteActionService)
+angular.module('zeppelinWebApp').service('noteActionService', noteActionService);
 
 function noteActionService(websocketMsgSrv, $location, noteRenameService, noteListFactory) {
-  'ngInject'
+  'ngInject';
 
   this.moveNoteToTrash = function (noteId, redirectToHome) {
     BootstrapDialog.confirm({
@@ -24,14 +24,14 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'This note will be moved to <strong>trash</strong>.',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.moveNoteToTrash(noteId)
+          websocketMsgSrv.moveNoteToTrash(noteId);
           if (redirectToHome) {
-            $location.path('/')
+            $location.path('/');
           }
         }
       }
-    })
-  }
+    });
+  };
 
   this.moveFolderToTrash = function (folderId) {
     BootstrapDialog.confirm({
@@ -40,11 +40,11 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'This folder will be moved to <strong>trash</strong>.',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.moveFolderToTrash(folderId)
+          websocketMsgSrv.moveFolderToTrash(folderId);
         }
       }
-    })
-  }
+    });
+  };
 
   this.removeNote = function (noteId, redirectToHome) {
     BootstrapDialog.confirm({
@@ -54,14 +54,14 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'This cannot be undone. Are you sure?',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.deleteNote(noteId)
+          websocketMsgSrv.deleteNote(noteId);
           if (redirectToHome) {
-            $location.path('/')
+            $location.path('/');
           }
         }
       }
-    })
-  }
+    });
+  };
 
   this.removeFolder = function (folderId) {
     BootstrapDialog.confirm({
@@ -71,11 +71,11 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'This cannot be undone. Are you sure?',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.removeFolder(folderId)
+          websocketMsgSrv.removeFolder(folderId);
         }
       }
-    })
-  }
+    });
+  };
 
   this.restoreAll = function () {
     BootstrapDialog.confirm({
@@ -85,11 +85,11 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       '<strong>merged</strong> into their original position.',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.restoreAll()
+          websocketMsgSrv.restoreAll();
         }
       }
-    })
-  }
+    });
+  };
 
   this.emptyTrash = function () {
     BootstrapDialog.confirm({
@@ -99,11 +99,11 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'This cannot be undone. Are you sure?',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.emptyTrash()
+          websocketMsgSrv.emptyTrash();
         }
       }
-    })
-  }
+    });
+  };
 
   this.clearAllParagraphOutput = function (noteId) {
     BootstrapDialog.confirm({
@@ -112,28 +112,28 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
       message: 'Do you want to clear all output?',
       callback: function (result) {
         if (result) {
-          websocketMsgSrv.clearAllParagraphOutput(noteId)
+          websocketMsgSrv.clearAllParagraphOutput(noteId);
         }
       }
-    })
-  }
+    });
+  };
 
   this.renameNote = function (noteId, notePath) {
     noteRenameService.openRenameModal({
       title: 'Rename note',
       oldName: notePath,
       callback: function (newName) {
-        websocketMsgSrv.renameNote(noteId, newName)
+        websocketMsgSrv.renameNote(noteId, newName);
       }
-    })
-  }
+    });
+  };
 
   this.renameFolder = function (folderId) {
     noteRenameService.openRenameModal({
       title: 'Rename folder',
       oldName: folderId,
       callback: function (newName) {
-        let newFolderId = normalizeFolderId(newName)
+        let newFolderId = normalizeFolderId(newName);
         if (_.has(noteListFactory.flatFolderMap, newFolderId)) {
           BootstrapDialog.confirm({
             type: BootstrapDialog.TYPE_WARNING,
@@ -142,42 +142,42 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
             message: 'The folder will be merged into <strong>' + newFolderId + '</strong>. Are you sure?',
             callback: function (result) {
               if (result) {
-                websocketMsgSrv.renameFolder(folderId, newFolderId)
+                websocketMsgSrv.renameFolder(folderId, newFolderId);
               }
             }
-          })
+          });
         } else {
-          websocketMsgSrv.renameFolder(folderId, newFolderId)
+          websocketMsgSrv.renameFolder(folderId, newFolderId);
         }
       }
-    })
-  }
+    });
+  };
 
   function normalizeFolderId (folderId) {
-    folderId = folderId.trim()
+    folderId = folderId.trim();
 
     while (folderId.indexOf('\\') > -1) {
-      folderId = folderId.replace('\\', '/')
+      folderId = folderId.replace('\\', '/');
     }
 
     while (folderId.indexOf('///') > -1) {
-      folderId = folderId.replace('///', '/')
+      folderId = folderId.replace('///', '/');
     }
 
-    folderId = folderId.replace('//', '/')
+    folderId = folderId.replace('//', '/');
 
     if (folderId === '/') {
-      return '/'
+      return '/';
     }
 
     if (folderId[0] === '/') {
-      folderId = folderId.substring(1)
+      folderId = folderId.substring(1);
     }
 
     if (folderId.slice(-1) === '/') {
-      folderId = folderId.slice(0, -1)
+      folderId = folderId.slice(0, -1);
     }
 
-    return folderId
+    return folderId;
   }
 }

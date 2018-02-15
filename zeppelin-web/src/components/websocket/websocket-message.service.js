@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMessageService)
+angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMessageService);
 
 function WebsocketMessageService ($rootScope, websocketEvents) {
-  'ngInject'
+  'ngInject';
 
   return {
 
     getHomeNote: function () {
-      websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'})
+      websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
     },
 
     createNotebook: function (noteName, defaultInterpreterId) {
@@ -30,79 +30,79 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           name: noteName,
           defaultInterpreterId: defaultInterpreterId
         }
-      })
+      });
     },
 
     moveNoteToTrash: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}})
+      websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
     },
 
     moveFolderToTrash: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}})
+      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
     },
 
     restoreNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}})
+      websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
     },
 
     restoreFolder: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}})
+      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
     },
 
     restoreAll: function () {
-      websocketEvents.sendNewEvent({op: 'RESTORE_ALL'})
+      websocketEvents.sendNewEvent({op: 'RESTORE_ALL'});
     },
 
     deleteNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}})
+      websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
     },
 
     removeFolder: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}})
+      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
     },
 
     emptyTrash: function () {
-      websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'})
+      websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
     },
 
     cloneNote: function (noteIdToClone, newNoteName) {
-      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}})
+      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
     },
 
     getNoteList: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_NOTES'})
+      websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
     },
 
     reloadAllNotesFromRepo: function () {
-      websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'})
+      websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'});
     },
 
     getNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}})
+      websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
     },
 
     updateNote: function (noteId, noteName, noteConfig) {
-      websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}})
+      websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
     },
 
     updatePersonalizedMode: function (noteId, modeValue) {
-      websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}})
+      websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
     },
 
     renameNote: function (noteId, noteName) {
-      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}})
+      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
     },
 
     renameFolder: function (folderId, folderName) {
-      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}})
+      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}});
     },
 
     moveParagraph: function (paragraphId, newIndex) {
-      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}})
+      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
     },
 
     insertParagraph: function (newIndex) {
-      websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}})
+      websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}});
     },
 
     copyParagraph: function (newIndex, paragraphTitle, paragraphData,
@@ -116,7 +116,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           config: paragraphConfig,
           params: paragraphParams
         }
-      })
+      });
     },
 
     updateAngularObject: function (noteId, paragraphId, name, value, interpreterGroupId) {
@@ -129,7 +129,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           value: value,
           interpreterGroupId: interpreterGroupId
         }
-      })
+      });
     },
 
     clientBindAngularObject: function (noteId, name, value, paragraphId) {
@@ -141,7 +141,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           value: value,
           paragraphId: paragraphId
         }
-      })
+      });
     },
 
     clientUnbindAngularObject: function (noteId, name, paragraphId) {
@@ -152,11 +152,11 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           name: name,
           paragraphId: paragraphId
         }
-      })
+      });
     },
 
     cancelParagraphRun: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}})
+      websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
     paragraphExecutedBySpell: function (paragraphId, paragraphTitle,
@@ -173,8 +173,8 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           results: {
             code: paragraphStatus,
             msg: paragraphResultsMsg.map(dataWithType => {
-              let serializedData = dataWithType.data
-              return { type: dataWithType.type, data: serializedData, }
+              let serializedData = dataWithType.data;
+              return { type: dataWithType.type, data: serializedData, };
             })
           },
           status: paragraphStatus,
@@ -184,7 +184,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           dateStarted: paragraphDateStarted,
           dateFinished: paragraphDateFinished,
         }
-      })
+      });
     },
 
     runParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
@@ -197,7 +197,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           config: paragraphConfig,
           params: paragraphParams
         }
-      })
+      });
     },
 
     runAllParagraphs: function (noteId, paragraphs) {
@@ -207,19 +207,19 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: noteId,
           paragraphs: JSON.stringify(paragraphs)
         }
-      })
+      });
     },
 
     removeParagraph: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}})
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
 
     clearParagraphOutput: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}})
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
     },
 
     clearAllParagraphOutput: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}})
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
     },
 
     completion: function (paragraphId, buf, cursor) {
@@ -230,7 +230,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           buf: buf,
           cursor: cursor
         }
-      })
+      });
     },
 
     commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId) {
@@ -244,7 +244,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           config: paragraphConfig,
           params: paragraphParams
         }
-      })
+      });
     },
 
     importNote: function (note) {
@@ -253,7 +253,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
         data: {
           note: note
         }
-      })
+      });
     },
 
     checkpointNote: function (noteId, commitMessage) {
@@ -263,7 +263,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: noteId,
           commitMessage: commitMessage
         }
-      })
+      });
     },
 
     setNoteRevision: function (noteId, revisionId) {
@@ -273,7 +273,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: noteId,
           revisionId: revisionId
         }
-      })
+      });
     },
 
     listRevisionHistory: function (noteId) {
@@ -282,7 +282,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
         data: {
           noteId: noteId
         }
-      })
+      });
     },
 
     getNoteByRevision: function (noteId, revisionId) {
@@ -292,7 +292,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: noteId,
           revisionId: revisionId
         }
-      })
+      });
     },
 
     getNoteByRevisionForCompare: function (noteId, revisionId, position) {
@@ -303,7 +303,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           revisionId: revisionId,
           position: position
         }
-      })
+      });
     },
 
     getEditorSetting: function (paragraphId, replName) {
@@ -313,42 +313,42 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           paragraphId: paragraphId,
           magic: replName
         }
-      })
+      });
     },
 
     isConnected: function () {
-      return websocketEvents.isConnected()
+      return websocketEvents.isConnected();
     },
 
     getJobs: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'})
+      websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'});
     },
 
     disconnectJobEvent: function () {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'})
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'});
     },
 
     getUpdateNoteJobsList: function (lastUpdateServerUnixTime) {
       websocketEvents.sendNewEvent(
         {op: 'LIST_UPDATE_NOTE_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
-      )
+      );
     },
 
     getInterpreterBindings: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}})
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}});
     },
 
     saveInterpreterBindings: function (noteId, selectedSettingIds) {
       websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-        data: {noteId: noteId, selectedSettingIds: selectedSettingIds}})
+        data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
     },
 
     listConfigurations: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'})
+      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
     },
 
     getInterpreterSettings: function () {
-      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'})
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
     },
 
     saveNoteForms: function (note) {
@@ -357,7 +357,7 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: note.id,
           noteParams: note.noteParams
         }
-      })
+      });
     },
 
     removeNoteForms: function (note, formName) {
@@ -366,8 +366,8 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           noteId: note.id,
           formName: formName
         }
-      })
+      });
     }
 
-  }
+  };
 }

@@ -17,11 +17,11 @@
  */
 export default class Visualization {
   constructor (targetEl, config) {
-    this.targetEl = targetEl
-    this.config = config
-    this._dirty = false
-    this._active = false
-    this._emitter = () => {}
+    this.targetEl = targetEl;
+    this.config = config;
+    this._dirty = false;
+    this._active = false;
+    this._emitter = () => {};
   }
 
   /**
@@ -31,7 +31,7 @@ export default class Visualization {
    */
   getTransformation () {
     // override this
-    throw new TypeError('Visualization.getTransformation() should be overrided')
+    throw new TypeError('Visualization.getTransformation() should be overrided');
   }
 
   /**
@@ -40,7 +40,7 @@ export default class Visualization {
    */
   render (tableData) {
     // override this
-    throw new TypeError('Visualization.render() should be overrided')
+    throw new TypeError('Visualization.render() should be overrided');
   }
 
   /**
@@ -74,24 +74,24 @@ export default class Visualization {
    */
   activate () {
     if (!this._active || this._dirty) {
-      this.refresh()
-      this._dirty = false
+      this.refresh();
+      this._dirty = false;
     }
-    this._active = true
+    this._active = true;
   }
 
   /**
    * Deactivate. Invoked when visualization is de selected.
    */
   deactivate () {
-    this._active = false
+    this._active = false;
   }
 
   /**
    * Is active.
    */
   isActive () {
-    return this._active
+    return this._active;
   }
 
   /**
@@ -99,9 +99,9 @@ export default class Visualization {
    */
   resize () {
     if (this.isActive()) {
-      this.refresh()
+      this.refresh();
     } else {
-      this._dirty = true
+      this._dirty = true;
     }
   }
 
@@ -109,11 +109,11 @@ export default class Visualization {
    * Set new config.
    */
   setConfig (config) {
-    this.config = config
+    this.config = config;
     if (this.isActive()) {
-      this.refresh()
+      this.refresh();
     } else {
-      this._dirty = true
+      this._dirty = true;
     }
   }
 
@@ -121,57 +121,57 @@ export default class Visualization {
    * Emit config. config will sent to server and saved.
    */
   emitConfig (config) {
-    this._emitter(config)
+    this._emitter(config);
   }
 
   /**
    * Render setting.
    */
   renderSetting (targetEl) {
-    let setting = this.getSetting()
+    let setting = this.getSetting();
     if (!setting) {
-      return
+      return;
     }
 
     // already readered
     if (this._scope) {
-      let self = this
+      let self = this;
       this._scope.$apply(function () {
         for (let k in setting.scope) {
-          self._scope[k] = setting.scope[k]
+          self._scope[k] = setting.scope[k];
         }
 
         for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
-            self._scope[k] = setting.scope[k]
+            self._scope[k] = setting.scope[k];
           }
         }
-      })
-      return
+      });
+      return;
     } else {
-      this._prevSettingScope = setting.scope
+      this._prevSettingScope = setting.scope;
     }
 
-    let scope = this._createNewScope()
+    let scope = this._createNewScope();
     for (let k in setting.scope) {
-      scope[k] = setting.scope[k]
+      scope[k] = setting.scope[k];
     }
-    let template = setting.template
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
       this._templateRequest(template).then(t =>
       _renderSetting(this, targetEl, t, scope)
-      )
+      );
     } else {
-      _renderSetting(this, targetEl, template, scope)
+      _renderSetting(this, targetEl, template, scope);
     }
   }
 }
 
 function _renderSetting (instance, targetEl, template, scope) {
-  instance._targetEl = targetEl
-  targetEl.html(template)
-  instance._compile(targetEl.contents())(scope)
-  instance._scope = scope
+  instance._targetEl = targetEl;
+  targetEl.html(template);
+  instance._compile(targetEl.contents())(scope);
+  instance._scope = scope;
 }

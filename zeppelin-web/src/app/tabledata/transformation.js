@@ -17,8 +17,8 @@
  */
 export default class Transformation {
   constructor (config) {
-    this.config = config
-    this._emitter = () => {}
+    this.config = config;
+    this._emitter = () => {};
   }
 
   /**
@@ -42,62 +42,62 @@ export default class Transformation {
    * render setting
    */
   renderSetting (targetEl) {
-    let setting = this.getSetting()
+    let setting = this.getSetting();
     if (!setting) {
-      return
+      return;
     }
 
     // already readered
     if (this._scope) {
-      let self = this
+      let self = this;
       this._scope.$apply(function () {
         for (let k in setting.scope) {
-          self._scope[k] = setting.scope[k]
+          self._scope[k] = setting.scope[k];
         }
 
         for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
-            self._scope[k] = setting.scope[k]
+            self._scope[k] = setting.scope[k];
           }
         }
-      })
-      return
+      });
+      return;
     } else {
-      this._prevSettingScope = setting.scope
+      this._prevSettingScope = setting.scope;
     }
 
-    let scope = this._createNewScope()
+    let scope = this._createNewScope();
     for (let k in setting.scope) {
-      scope[k] = setting.scope[k]
+      scope[k] = setting.scope[k];
     }
-    let template = setting.template
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      let self = this
+      let self = this;
       this._templateRequest(template).then(function (t) {
-        self._render(targetEl, t, scope)
-      })
+        self._render(targetEl, t, scope);
+      });
     } else {
-      this._render(targetEl, template, scope)
+      this._render(targetEl, template, scope);
     }
   }
 
   _render (targetEl, template, scope) {
-    this._targetEl = targetEl
-    targetEl.html(template)
-    this._compile(targetEl.contents())(scope)
-    this._scope = scope
+    this._targetEl = targetEl;
+    targetEl.html(template);
+    this._compile(targetEl.contents())(scope);
+    this._scope = scope;
   }
 
   setConfig (config) {
-    this.config = config
+    this.config = config;
   }
 
   /**
    * Emit config. config will sent to server and saved.
    */
   emitConfig (config) {
-    this._emitter(config)
+    this._emitter(config);
   }
 }

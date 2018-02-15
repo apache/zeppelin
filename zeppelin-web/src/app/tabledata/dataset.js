@@ -31,6 +31,6 @@ class Dataset {
 const DatasetType = Object.freeze({
   NETWORK: 'NETWORK',
   TABLE: 'TABLE'
-})
+});
 
-export {Dataset, DatasetType}
+export {Dataset, DatasetType};

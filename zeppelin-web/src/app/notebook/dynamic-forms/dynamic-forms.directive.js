@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-import './dynamic-forms.css'
+import './dynamic-forms.css';
 
-angular.module('zeppelinWebApp').directive('dynamicForms', DynamicFormDirective)
+angular.module('zeppelinWebApp').directive('dynamicForms', DynamicFormDirective);
 
 function DynamicFormDirective($templateRequest, $compile) {
   return {
@@ -31,32 +31,32 @@ function DynamicFormDirective($templateRequest, $compile) {
     },
 
     link: function (scope, element, attrs, controller) {
-      scope.loadForm = this.loadForm
-      scope.toggleCheckbox = this.toggleCheckbox
+      scope.loadForm = this.loadForm;
+      scope.toggleCheckbox = this.toggleCheckbox;
       $templateRequest('app/notebook/dynamic-forms/dynamic-forms.directive.html').then(function (formsHtml) {
-        let forms = angular.element(formsHtml)
-        element.append(forms)
-        $compile(forms)(scope)
-      })
+        let forms = angular.element(formsHtml);
+        element.append(forms);
+        $compile(forms)(scope);
+      });
     },
 
     loadForm: function (formulaire, params) {
-      let value = formulaire.defaultValue
+      let value = formulaire.defaultValue;
       if (params[formulaire.name]) {
-        value = params[formulaire.name]
+        value = params[formulaire.name];
       }
 
-      params[formulaire.name] = value
+      params[formulaire.name] = value;
     },
 
     toggleCheckbox: function (formulaire, option, params) {
-      let idx = params[formulaire.name].indexOf(option.value)
+      let idx = params[formulaire.name].indexOf(option.value);
       if (idx > -1) {
-        params[formulaire.name].splice(idx, 1)
+        params[formulaire.name].splice(idx, 1);
       } else {
-        params[formulaire.name].push(option.value)
+        params[formulaire.name].push(option.value);
       }
     }
 
-  }
+  };
 }

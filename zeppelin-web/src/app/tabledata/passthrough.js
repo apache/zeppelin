@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import Transformation from './transformation'
+import Transformation from './transformation';
 
 /**
  * passthough the data
@@ -20,13 +20,13 @@ import Transformation from './transformation'
 export default class PassthroughTransformation extends Transformation {
   // eslint-disable-next-line no-useless-constructor
   constructor (config) {
-    super(config)
+    super(config);
   }
 
   /**
    * Method will be invoked when tableData or config changes
    */
   transform (tableData) {
-    return tableData
+    return tableData;
   }
 }

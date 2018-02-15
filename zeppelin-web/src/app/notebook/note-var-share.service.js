@@ -12,28 +12,28 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('noteVarShareService', NoteVarShareService)
+angular.module('zeppelinWebApp').service('noteVarShareService', NoteVarShareService);
 
 function NoteVarShareService () {
-  'ngInject'
+  'ngInject';
 
-  let store = {}
+  let store = {};
 
   this.clear = function () {
-    store = {}
-  }
+    store = {};
+  };
 
   this.put = function (key, value) {
-    store[key] = value
-  }
+    store[key] = value;
+  };
 
   this.get = function (key) {
-    return store[key]
-  }
+    return store[key];
+  };
 
   this.del = function (key) {
-    let v = store[key]
-    delete store[key]
-    return v
-  }
+    let v = store[key];
+    delete store[key];
+    return v;
+  };
 }
