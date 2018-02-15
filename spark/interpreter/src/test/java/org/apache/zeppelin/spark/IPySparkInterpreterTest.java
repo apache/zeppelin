@@ -116,6 +116,15 @@ public class IPySparkInterpreterTest {
               "|  1|  a|\n" +
               "|  2|  b|\n" +
               "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+
+      context = getInterpreterContext();
+      result = iPySparkInterpreter.interpret("z.show(df)", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      assertEquals(
+          "_1	_2\n" +
+          "1	a\n" +
+          "2	b\n", interpreterResultMessages.get(0).getData());
     } else {
       result = iPySparkInterpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -127,6 +136,15 @@ public class IPySparkInterpreterTest {
               "|  1|  a|\n" +
               "|  2|  b|\n" +
               "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+
+      context = getInterpreterContext();
+      result = iPySparkInterpreter.interpret("z.show(df)", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      assertEquals(
+          "_1	_2\n" +
+          "1	a\n" +
+          "2	b\n", interpreterResultMessages.get(0).getData());
     }
 
     // cancel
