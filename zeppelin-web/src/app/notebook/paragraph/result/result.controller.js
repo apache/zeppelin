@@ -237,10 +237,15 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
       (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
-      if (DefaultDisplayType.TEXT !== $scope.type) {
+      // Check if result type is eiter TEXT or TABLE, if not then treat it like TEXT
+      if (![DefaultDisplayType.TEXT, DefaultDisplayType.TABLE].indexOf($scope.type)) {
         $scope.type = DefaultDisplayType.TEXT
       }
-      appendTextOutput(data.data)
+      if ($scope.type === DefaultDisplayType.TEXT) {
+        appendTextOutput(data.data)
+      } else if ($scope.type === DefaultDisplayType.TABLE) {
+        appendTableOutput(data)
+      }
     }
   })
 
@@ -510,6 +515,37 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     const elem = angular.element(`#${targetElemId}`)
     if (elem.length) {
       elem.children().remove()
+    }
+  }
+
+  function appendTableOutput(data) {
+    const elemId = `p${$scope.id}_table`
+    if (!$scope.$parent.result.data) {
+      $scope.$parent.result.data = []
+    }
+    if (!$scope.$parent.result.data[data.index]) {
+      $scope.$parent.result.data[data.index] = ''
+    }
+    $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(data.data)
+
+    if (tableData.columns.length === 0) {
+      $rootScope.$broadcast(
+        'updateResult',
+        {'data': $scope.$parent.result.data[data.index], 'type': 'TABLE'},
+        undefined,
+        paragraph,
+        data.index)
+      renderGraph(elemId, 'table', true)
+    } else {
+      let textRows = data.data.split('\n')
+      for (let i = 0; i < textRows.length; i++) {
+        if (textRows[i] !== '') {
+          let row = textRows[i].split('\t')
+          tableData.rows.push(row)
+          let builtInViz = builtInVisualizations['table']
+          builtInViz.instance.append([row], tableData.columns)
+        }
+      }
     }
   }
 
