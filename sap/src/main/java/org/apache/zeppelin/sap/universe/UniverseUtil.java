@@ -203,193 +203,193 @@ public class UniverseUtil {
 
   private String parseResultObj(String resultObj, Map<String, UniverseNodeInfo> nodeInfos)
       throws UniverseException {
-    UniverseNodeInfo nodeInfo = nodeInfos.get(resultObj.trim());
-    if (nodeInfo != null) {
-      return String.format(RESULT_OBJ_TEMPLATE, nodeInfo.getNodePath(), nodeInfo.getId());
+    if (StringUtils.isNotBlank(resultObj)) {
+      UniverseNodeInfo nodeInfo = nodeInfos.get(resultObj.trim());
+      if (nodeInfo != null) {
+        return String.format(RESULT_OBJ_TEMPLATE, nodeInfo.getNodePath(), nodeInfo.getId());
+      }
+      throw new UniverseException(String.format("Not found information about: \"%s\"", resultObj.trim()));
     }
-    throw new UniverseException(String.format("Not found information about: \"%s\"",
-        resultObj.trim()));
+
+    return StringUtils.EMPTY;
   }
 
   private String parseCondition(String condition, Map<String, UniverseNodeInfo> nodeInfos)
       throws UniverseException {
-    condition = condition.trim();
-    StringBuilder result = new StringBuilder();
-    StringBuilder elementBuf = new StringBuilder();
-    String element = null;
-    char[] condidionCharacters = condition.toCharArray();
-    boolean openedPath = false;
-    for (int i = 0; i < condidionCharacters.length; i++) {
-      char c = condidionCharacters[i];
-      elementBuf.append(c);
-      if (c == '[') {
-        openedPath = true;
-        continue;
-      }
-      if (openedPath && c == ']') {
-        openedPath = false;
-        if (i == condidionCharacters.length - 1) {
-          element = elementBuf.toString().trim();
+    if (StringUtils.isNotBlank(condition)) {
+      condition = condition.trim();
+      StringBuilder result = new StringBuilder();
+      StringBuilder elementBuf = new StringBuilder();
+      String element = null;
+      char[] condidionCharacters = condition.toCharArray();
+      boolean openedPath = false;
+      for (int i = 0; i < condidionCharacters.length; i++) {
+        char c = condidionCharacters[i];
+        elementBuf.append(c);
+        if (c == '[') {
+          openedPath = true;
+          continue;
         }
-        continue;
-      }
-      if ((c == '.' && elementBuf.toString().endsWith("].")) || openedPath) {
-        continue;
-      }
-
-      element = elementBuf.toString().trim();
-      break;
-    }
-
-    UniverseNodeInfo nodeInfo = null;
-    if (StringUtils.isNotBlank(element)) {
-      nodeInfo = nodeInfos.get(element);
-    }
-    if (nodeInfo != null) {
-      if (condition.length() > element.length()) {
-        char[] tmp = condition.substring(element.length()).toCharArray();
-        boolean possibleObjectOperand = false;
-        StringBuilder buf = new StringBuilder();
-        String operator = null;
-        for (int i = 0; i < tmp.length; i++) {
-          buf.append(tmp[i]);
-          if (operator == null) {
-            switch (buf.toString().toLowerCase().replaceAll("\\s*", "")) {
-              case "=":
-                operator = "EqualTo";
-                possibleObjectOperand = true;
-                break;
-              case "<":
-                if (i + 1 < tmp.length) {
-                  if (tmp[i + 1] == '=') {
-                    operator = "LessThanOrEqualTo";
-                    i++;
-                    break;
-                  } else if (tmp[i + 1] == '>') {
-                    operator = "NotEqualTo";
-                    i++;
-                    break;
-                  }
-                }
-                possibleObjectOperand = true;
-                operator = "LessThan";
-                break;
-              case ">":
-                possibleObjectOperand = true;
-                if (i + 1 < tmp.length) {
-                  if (tmp[i + 1] == '=') {
-                    operator = "GreaterThanOrEqualTo";
-                    i++;
-                    break;
-                  }
-                }
-                operator = "GreaterThan";
-                break;
-              case "in":
-                operator = "InList";
-                break;
-              case "notin":
-                operator = "NotInList";
-                break;
-              case "isnull":
-                operator = "IsNull";
-                break;
-              case "isnotnull":
-                operator = "IsNotNull";
-                break;
-            }
-
-            if (operator != null) {
-              buf = new StringBuilder();
-            }
+        if (openedPath && c == ']') {
+          openedPath = false;
+          if (i == condidionCharacters.length - 1) {
+            element = elementBuf.toString().trim();
           }
+          continue;
+        }
+        if ((c == '.' && elementBuf.toString().endsWith("].")) || openedPath) {
+          continue;
         }
 
-        if (StringUtils.isNotBlank(operator)) {
-          String conditionValue = buf.toString().trim().replaceAll("^\\(|\\)$", "").trim();
-          if (operator.equalsIgnoreCase("IsNotNull") || operator.equalsIgnoreCase("IsNull")) {
-            result.append(String.format(COMPARISON_FILTER, nodeInfo.getId(), nodeInfo.getNodePath(),
-                operator));
-          }
-          if (!conditionValue.isEmpty()) {
-            if (operator.equalsIgnoreCase("InList") || operator.equalsIgnoreCase("NotInList")) {
-              tmp = conditionValue.toCharArray();
-              boolean startItem = false;
-              List<String> values = new ArrayList<>();
-              StringBuilder value = new StringBuilder();
-              boolean isNumericList = false;
-              if (tmp[0] != '\'') {
-                isNumericList = true;
+        element = elementBuf.toString().trim();
+        break;
+      }
+
+      UniverseNodeInfo nodeInfo = null;
+      if (StringUtils.isNotBlank(element)) {
+        nodeInfo = nodeInfos.get(element);
+      }
+      if (nodeInfo != null) {
+        if (condition.length() > element.length()) {
+          char[] tmp = condition.substring(element.length()).toCharArray();
+          boolean possibleObjectOperand = false;
+          StringBuilder buf = new StringBuilder();
+          String operator = null;
+          for (int i = 0; i < tmp.length; i++) {
+            buf.append(tmp[i]);
+            if (operator == null) {
+              switch (buf.toString().toLowerCase().replaceAll("\\s*", "")) {
+                case "=":
+                  operator = "EqualTo";
+                  possibleObjectOperand = true;
+                  break;
+                case "<":
+                  if (i + 1 < tmp.length) {
+                    if (tmp[i + 1] == '=') {
+                      operator = "LessThanOrEqualTo";
+                      i++;
+                      break;
+                    } else if (tmp[i + 1] == '>') {
+                      operator = "NotEqualTo";
+                      i++;
+                      break;
+                    }
+                  }
+                  possibleObjectOperand = true;
+                  operator = "LessThan";
+                  break;
+                case ">":
+                  possibleObjectOperand = true;
+                  if (i + 1 < tmp.length) {
+                    if (tmp[i + 1] == '=') {
+                      operator = "GreaterThanOrEqualTo";
+                      i++;
+                      break;
+                    }
+                  }
+                  operator = "GreaterThan";
+                  break;
+                case "in":
+                  operator = "InList";
+                  break;
+                case "notin":
+                  operator = "NotInList";
+                  break;
+                case "isnull":
+                  operator = "IsNull";
+                  break;
+                case "isnotnull":
+                  operator = "IsNotNull";
+                  break;
               }
-              if (isNumericList) {
-                String[] nums = conditionValue.split(",");
-                for (String num : nums) {
-                  values.add(num.trim());
+
+              if (operator != null) {
+                buf = new StringBuilder();
+              }
+            }
+          }
+
+          if (StringUtils.isNotBlank(operator)) {
+            String conditionValue = buf.toString().trim().replaceAll("^\\(|\\)$", "").trim();
+            if (operator.equalsIgnoreCase("IsNotNull") || operator.equalsIgnoreCase("IsNull")) {
+              result.append(String.format(COMPARISON_FILTER, nodeInfo.getId(), nodeInfo.getNodePath(), operator));
+            }
+            if (!conditionValue.isEmpty()) {
+              if (operator.equalsIgnoreCase("InList") || operator.equalsIgnoreCase("NotInList")) {
+                tmp = conditionValue.toCharArray();
+                boolean startItem = false;
+                List<String> values = new ArrayList<>();
+                StringBuilder value = new StringBuilder();
+                boolean isNumericList = false;
+                if (tmp[0] != '\'') {
+                  isNumericList = true;
+                }
+                if (isNumericList) {
+                  String[] nums = conditionValue.split(",");
+                  for (String num : nums) {
+                    values.add(num.trim());
+                  }
+                } else {
+                  for (int i = 0; i < tmp.length; i++) {
+                    char c = tmp[i];
+                    if (c == '\'' && (i == 0 || tmp[i - 1] != '\\')) {
+                      startItem = !startItem;
+                      if (!startItem) {
+                        values.add(value.toString());
+                        value = new StringBuilder();
+                      }
+                      continue;
+                    }
+
+                    if (startItem) {
+                      value.append(c);
+                    }
+                  }
+                }
+
+                if (!values.isEmpty()) {
+                  result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(), operator, nodeInfo.getId()));
+                  result.append(CONST_OPERAND_START_TEMPLATE);
+                  String type = isNumericList ? "Numeric" : "String";
+                  for (String v : values) {
+                    result.append(String.format(CONST_OPERAND_VALUE_TEMPLATE, type, v));
+                  }
+                  result.append(CONST_OPERAND_END_TEMPLATE);
+                  result.append(COMPRASION_END_TEMPLATE);
+                }
+              } else if (possibleObjectOperand && conditionValue.startsWith("[")) {
+                UniverseNodeInfo operandObject = nodeInfos.get(conditionValue);
+                if (operandObject != null) {
+                  result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(), operator, nodeInfo.getId()));
+                  result.append(String.format(OBJECT_OPERAND_TEMPLATE, operandObject.getId(), operandObject.getNodePath()));
+                  result.append(COMPRASION_END_TEMPLATE);
                 }
               } else {
-                for (int i = 0; i < tmp.length; i++) {
-                  char c = tmp[i];
-                  if (c == '\'' && (i == 0 || tmp[i - 1] != '\\')) {
-                    startItem = !startItem;
-                    if (!startItem) {
-                      values.add(value.toString());
-                      value = new StringBuilder();
-                    }
-                    continue;
-                  }
-
-                  if (startItem) {
-                    value.append(c);
-                  }
+                String value = conditionValue.replaceAll("^'|'$", "").trim();
+                if (StringUtils.isNotBlank(value)) {
+                  String type = conditionValue.length() == value.length() ? "Numeric" : "String";
+                  result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(), operator, nodeInfo.getId()));
+                  result.append(CONST_OPERAND_START_TEMPLATE);
+                  result.append(String.format(CONST_OPERAND_VALUE_TEMPLATE, type, value));
+                  result.append(CONST_OPERAND_END_TEMPLATE);
+                  result.append(COMPRASION_END_TEMPLATE);
                 }
-              }
-
-              if (!values.isEmpty()) {
-                result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(),
-                    operator, nodeInfo.getId()));
-                result.append(CONST_OPERAND_START_TEMPLATE);
-                String type = isNumericList ? "Numeric" : "String";
-                for (String v : values) {
-                  result.append(String.format(CONST_OPERAND_VALUE_TEMPLATE, type, v));
-                }
-                result.append(CONST_OPERAND_END_TEMPLATE);
-                result.append(COMPRASION_END_TEMPLATE);
-              }
-            } else if (possibleObjectOperand && conditionValue.startsWith("[")) {
-              UniverseNodeInfo operandObject = nodeInfos.get(conditionValue);
-              if (operandObject != null) {
-                result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(),
-                    operator, nodeInfo.getId()));
-                result.append(String.format(OBJECT_OPERAND_TEMPLATE, operandObject.getId(),
-                    operandObject.getNodePath()));
-                result.append(COMPRASION_END_TEMPLATE);
-              }
-            } else {
-              String value = conditionValue.replaceAll("^'|'$", "").trim();
-              if (StringUtils.isNotBlank(value)) {
-                String type = conditionValue.length() == value.length() ? "Numeric" : "String";
-                result.append(String.format(COMPRASION_START_TEMPLATE, nodeInfo.getNodePath(),
-                    operator, nodeInfo.getId()));
-                result.append(CONST_OPERAND_START_TEMPLATE);
-                result.append(String.format(CONST_OPERAND_VALUE_TEMPLATE, type, value));
-                result.append(CONST_OPERAND_END_TEMPLATE);
-                result.append(COMPRASION_END_TEMPLATE);
               }
             }
           }
+        } else {
+          result.append(String.format(PREDEFINED_FILTER_TEMPLATE, nodeInfo.getNodePath(), nodeInfo.getId()));
         }
       } else {
-        result.append(String.format(PREDEFINED_FILTER_TEMPLATE, nodeInfo.getNodePath(),
-            nodeInfo.getId()));
+        throw new UniverseException(String.format("Not found information about: \"%s\"", condition.trim()));
       }
-    } else {
-      throw new UniverseException(String.format("Not found information about: \"%s\"",
-          condition.trim()));
+
+      if (StringUtils.isBlank(result.toString())) {
+        throw new UniverseException(String.format("Condition error: \"%s\"", condition.trim()));
+      }
+      return result.toString();
     }
 
-    if (StringUtils.isBlank(result.toString())) {
-      throw new UniverseException(String.format("Condition error: \"%s\"", condition.trim()));
-    }
-    return result.toString();
+    return StringUtils.EMPTY;
   }
 }
