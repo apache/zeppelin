@@ -148,7 +148,7 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
       )
 
       _editor.getSession().setValue(lines.join('\n'))
-      note.searchResult = lines;
+      note.searchResult = lines
     }
   }
 }
