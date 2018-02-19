@@ -17,14 +17,14 @@ import {Dataset, DatasetType} from './dataset';
  * Create table data object from paragraph table type result
  */
 export default class TableData extends Dataset {
-  constructor (columns, rows, comment) {
+  constructor(columns, rows, comment) {
     super();
     this.columns = columns || [];
     this.rows = rows || [];
     this.comment = comment || '';
   }
 
-  loadParagraphResult (paragraphResult) {
+  loadParagraphResult(paragraphResult) {
     if (!paragraphResult || paragraphResult.type !== DatasetType.TABLE) {
       console.log('Can not load paragraph result');
       return;

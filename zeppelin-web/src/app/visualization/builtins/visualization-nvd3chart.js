@@ -18,18 +18,18 @@ import Visualization from '../visualization';
  * Visualize data in table format
  */
 export default class Nvd3ChartVisualization extends Visualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
     this.targetEl.append('<svg></svg>');
   }
 
-  refresh () {
+  refresh() {
     if (this.chart) {
       this.chart.update();
     }
   }
 
-  render (data) {
+  render(data) {
     let type = this.type();
     let d3g = data.d3g;
 
@@ -60,19 +60,19 @@ export default class Nvd3ChartVisualization extends Visualization {
     d3.select('#' + this.targetEl[0].id + ' svg').style.height = height + 'px';
   }
 
-  type () {
+  type() {
     // override this and return chart type
   }
 
-  configureChart (chart) {
+  configureChart(chart) {
     // override this to configure chart
   }
 
-  groupedThousandsWith3DigitsFormatter (x) {
+  groupedThousandsWith3DigitsFormatter(x) {
     return d3.format(',')(d3.round(x, 3));
   }
 
-  customAbbrevFormatter (x) {
+  customAbbrevFormatter(x) {
     let s = d3.format('.3s')(x);
     switch (s[s.length - 1]) {
       case 'G': return s.slice(0, -1) + 'B';
@@ -80,11 +80,11 @@ export default class Nvd3ChartVisualization extends Visualization {
     return s;
   }
 
-  defaultY () {
+  defaultY() {
     return 0;
   }
 
-  xAxisTickFormat (d, xLabels) {
+  xAxisTickFormat(d, xLabels) {
     if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
       return xLabels[d];
     } else {
@@ -92,20 +92,20 @@ export default class Nvd3ChartVisualization extends Visualization {
     }
   }
 
-  yAxisTickFormat (d) {
+  yAxisTickFormat(d) {
     if (Math.abs(d) >= Math.pow(10, 6)) {
       return this.customAbbrevFormatter(d);
     }
     return this.groupedThousandsWith3DigitsFormatter(d);
   }
 
-  d3DataFromPivot (
+  d3DataFromPivot(
     schema, rows, keys, groups, values, allowTextXAxis, fillMissingValues, multiBarChart) {
     let self = this;
     // construct table data
     let d3g = [];
 
-    let concat = function (o, n) {
+    let concat = function(o, n) {
       if (!o) {
         return n;
       } else {
@@ -113,14 +113,16 @@ export default class Nvd3ChartVisualization extends Visualization {
       }
     };
 
-    const getSchemaUnderKey = function (key, s) {
+    const getSchemaUnderKey = function(key, s) {
       for (let c in key.children) {
-        s[c] = {};
-        getSchemaUnderKey(key.children[c], s[c]);
+        if(key.children.hasOwnProperty(c)) {
+          s[c] = {};
+          getSchemaUnderKey(key.children[c], s[c]);
+        }
       }
     };
 
-    const traverse = function (sKey, s, rKey, r, func, rowName, rowValue, colName) {
+    const traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
       // console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
 
       if (s.type === 'key') {
@@ -162,39 +164,43 @@ export default class Nvd3ChartVisualization extends Visualization {
     let rowIndexValue = {};
 
     for (let k in rows) {
-      traverse(sKey, schema[sKey], k, rows[k], function (rowName, rowValue, colName, value) {
-        // console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
-        if (rowNameIndex[rowValue] === undefined) {
-          rowIndexValue[rowIdx] = rowValue;
-          rowNameIndex[rowValue] = rowIdx++;
-        }
+      if (rows.hasOwnProperty(k)) {
+        traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
+          // console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
+          if (rowNameIndex[rowValue] === undefined) {
+            rowIndexValue[rowIdx] = rowValue;
+            rowNameIndex[rowValue] = rowIdx++;
+          }
 
-        if (colNameIndex[colName] === undefined) {
-          colNameIndex[colName] = colIdx++;
-        }
-        let i = colNameIndex[colName];
-        if (noKey && isMultiBarChart) {
-          i = 0;
-        }
+          if (colNameIndex[colName] === undefined) {
+            colNameIndex[colName] = colIdx++;
+          }
+          let i = colNameIndex[colName];
+          if (noKey && isMultiBarChart) {
+            i = 0;
+          }
 
-        if (!d3g[i]) {
-          d3g[i] = {
-            values: [],
-            key: (noKey && isMultiBarChart) ? 'values' : colName
-          };
-        }
+          if (!d3g[i]) {
+            d3g[i] = {
+              values: [],
+              key: (noKey && isMultiBarChart) ? 'values' : colName,
+            };
+          }
 
-        let xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
-        let yVar = self.defaultY();
-        if (xVar === undefined) { xVar = colName; }
-        if (value !== undefined) {
-          yVar = isNaN(value.value) ? self.defaultY() : parseFloat(value.value) / parseFloat(value.count);
-        }
-        d3g[i].values.push({
-          x: xVar,
-          y: yVar
+          let xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
+          let yVar = self.defaultY();
+          if (xVar === undefined) {
+            xVar = colName;
+          }
+          if (value !== undefined) {
+            yVar = isNaN(value.value) ? self.defaultY() : parseFloat(value.value) / parseFloat(value.count);
+          }
+          d3g[i].values.push({
+            x: xVar,
+            y: yVar,
+          });
         });
-      });
+      }
     }
 
     // clear aggregation name, if possible
@@ -203,11 +209,13 @@ export default class Nvd3ChartVisualization extends Visualization {
     let withoutAggr;
     // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
     for (colName in colNameIndex) {
-      withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-      if (!namesWithoutAggr[withoutAggr]) {
-        namesWithoutAggr[withoutAggr] = 1;
-      } else {
-        namesWithoutAggr[withoutAggr]++;
+      if (colNameIndex.hasOwnProperty(colName)) {
+        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+        if (!namesWithoutAggr[withoutAggr]) {
+          namesWithoutAggr[withoutAggr] = 1;
+        } else {
+          namesWithoutAggr[withoutAggr]++;
+        }
       }
     }
 
@@ -244,7 +252,7 @@ export default class Nvd3ChartVisualization extends Visualization {
 
     return {
       xLabels: rowIndexValue,
-      d3g: d3g
+      d3g: d3g,
     };
   }
 
@@ -252,7 +260,7 @@ export default class Nvd3ChartVisualization extends Visualization {
    * method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
-  destroy () {
+  destroy() {
     if (this.chart) {
       d3.selectAll('#' + this.targetEl[0].id + ' svg > *').remove();
       this.chart = undefined;

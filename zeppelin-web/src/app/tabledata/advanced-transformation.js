@@ -110,9 +110,15 @@ export default class AdvancedTransformation extends Transformation {
           }
 
           let comment = '';
-          if (minAxisCount) { comment = `min: ${minAxisCount}`; }
-          if (minAxisCount && maxAxisCount) { comment = `${comment}, `; }
-          if (maxAxisCount) { comment = `${comment}max: ${maxAxisCount}`; }
+          if (minAxisCount) {
+ comment = `min: ${minAxisCount}`;
+}
+          if (minAxisCount && maxAxisCount) {
+ comment = `${comment}, `;
+}
+          if (maxAxisCount) {
+ comment = `${comment}max: ${maxAxisCount}`;
+}
 
           if (comment !== '') {
             anno = `${anno} (${comment})`;
@@ -123,22 +129,34 @@ export default class AdvancedTransformation extends Transformation {
 
         getAxisAnnotationColor: (axisSpec) => {
           if (isAggregatorAxis(axisSpec)) {
-            return { 'background-color': '#5782bd' };
+            return {'background-color': '#5782bd'};
           } else if (isGroupAxis(axisSpec)) {
-            return { 'background-color': '#cd5c5c' };
+            return {'background-color': '#cd5c5c'};
           } else if (isKeyAxis(axisSpec)) {
-            return { 'background-color': '#906ebd' };
+            return {'background-color': '#906ebd'};
           } else {
-            return { 'background-color': '#62bda9' };
+            return {'background-color': '#62bda9'};
           }
         },
 
-        useSharedAxis: (chartName) => { return useSharedAxis(configInstance, chartName); },
-        isGroupAxis: (axisSpec) => { return isGroupAxis(axisSpec); },
-        isKeyAxis: (axisSpec) => { return isKeyAxis(axisSpec); },
-        isAggregatorAxis: (axisSpec) => { return isAggregatorAxis(axisSpec); },
-        isSingleDimensionAxis: (axisSpec) => { return isSingleDimensionAxis(axisSpec); },
-        getSingleDimensionAxis: (axisSpec) => { return getCurrentChartAxis(configInstance)[axisSpec.name]; },
+        useSharedAxis: (chartName) => {
+ return useSharedAxis(configInstance, chartName);
+},
+        isGroupAxis: (axisSpec) => {
+ return isGroupAxis(axisSpec);
+},
+        isKeyAxis: (axisSpec) => {
+ return isKeyAxis(axisSpec);
+},
+        isAggregatorAxis: (axisSpec) => {
+ return isAggregatorAxis(axisSpec);
+},
+        isSingleDimensionAxis: (axisSpec) => {
+ return isSingleDimensionAxis(axisSpec);
+},
+        getSingleDimensionAxis: (axisSpec) => {
+ return getCurrentChartAxis(configInstance)[axisSpec.name];
+},
 
         chartChanged: (selected) => {
           configInstance.chart.current = selected;
@@ -173,10 +191,18 @@ export default class AdvancedTransformation extends Transformation {
           self.emitChartChange(configInstance);
         },
 
-        isInputWidget: function(paramSpec) { return isInputWidget(paramSpec); },
-        isCheckboxWidget: function(paramSpec) { return isCheckboxWidget(paramSpec); },
-        isOptionWidget: function(paramSpec) { return isOptionWidget(paramSpec); },
-        isTextareaWidget: function(paramSpec) { return isTextareaWidget(paramSpec); },
+        isInputWidget: function(paramSpec) {
+ return isInputWidget(paramSpec);
+},
+        isCheckboxWidget: function(paramSpec) {
+ return isCheckboxWidget(paramSpec);
+},
+        isOptionWidget: function(paramSpec) {
+ return isOptionWidget(paramSpec);
+},
+        isTextareaWidget: function(paramSpec) {
+ return isTextareaWidget(paramSpec);
+},
 
         parameterChanged: (paramSpec) => {
           configInstance.chartChanged = false;
@@ -195,7 +221,7 @@ export default class AdvancedTransformation extends Transformation {
           event.stopPropagation(); /** avoid to conflict with paragraph shortcuts */
         },
 
-      }
+      },
     };
   }
 
@@ -212,7 +238,7 @@ export default class AdvancedTransformation extends Transformation {
     const paramSpecs = getCurrentChartParamSpecs(conf);
     const parsedParam = parseParameter(paramSpecs, param);
 
-    let { transformer, column, } = getTransformer(conf, tableData.rows, axisSpecs, axis);
+    let {transformer, column} = getTransformer(conf, tableData.rows, axisSpecs, axis);
 
     return {
       chartChanged: conf.chartChanged,

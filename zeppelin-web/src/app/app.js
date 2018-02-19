@@ -60,100 +60,102 @@ const requiredModules = [
 
 // headroom should not be used for CI, since we have to execute some integration tests.
 // otherwise, they will fail.
-if (!process.env.BUILD_CI) { requiredModules.push('headroom'); }
+if (!process.env.BUILD_CI) {
+  requiredModules.push('headroom');
+}
 
 let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
-  .filter('breakFilter', function () {
-    return function (text) {
+  .filter('breakFilter', function() {
+    return function(text) {
       // eslint-disable-next-line no-extra-boolean-cast
       if (!!text) {
         return text.replace(/\n/g, '<br />');
       }
     };
   })
-  .config(function ($httpProvider, $routeProvider, ngToastProvider) {
+  .config(function($httpProvider, $routeProvider, ngToastProvider) {
     // withCredentials when running locally via grunt
     $httpProvider.defaults.withCredentials = true;
 
     let visBundleLoad = {
-      load: ['heliumService', function (heliumService) {
+      load: ['heliumService', function(heliumService) {
         return heliumService.load;
-      }]
+      }],
     };
 
     $routeProvider
       .when('/', {
-        templateUrl: 'app/home/home.html'
+        templateUrl: 'app/home/home.html',
       })
       .when('/notebook/:noteId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad
+        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/paragraph?=:paragraphId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad
+        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad
+        resolve: visBundleLoad,
       })
       .when('/notebook/:noteId/revision/:revisionId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl',
-        resolve: visBundleLoad
+        resolve: visBundleLoad,
       })
       .when('/jobmanager', {
         templateUrl: 'app/jobmanager/jobmanager.html',
-        controller: 'JobManagerCtrl'
+        controller: 'JobManagerCtrl',
       })
       .when('/interpreter', {
         templateUrl: 'app/interpreter/interpreter.html',
-        controller: 'InterpreterCtrl'
+        controller: 'InterpreterCtrl',
       })
       .when('/notebookRepos', {
         templateUrl: 'app/notebook-repository/notebook-repository.html',
         controller: 'NotebookRepositoryCtrl',
-        controllerAs: 'noterepo'
+        controllerAs: 'noterepo',
       })
       .when('/credential', {
         templateUrl: 'app/credential/credential.html',
-        controller: 'CredentialCtrl'
+        controller: 'CredentialCtrl',
       })
       .when('/helium', {
         templateUrl: 'app/helium/helium.html',
-        controller: 'HeliumCtrl'
+        controller: 'HeliumCtrl',
       })
       .when('/configuration', {
         templateUrl: 'app/configuration/configuration.html',
-        controller: 'ConfigurationCtrl'
+        controller: 'ConfigurationCtrl',
       })
       .when('/search/:searchTerm', {
         templateUrl: 'app/search/result-list.html',
-        controller: 'SearchResultCtrl'
+        controller: 'SearchResultCtrl',
       })
       .otherwise({
-        redirectTo: '/'
+        redirectTo: '/',
       });
 
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,
       combineDuplications: true,
-      timeout: 6000
+      timeout: 6000,
     });
   })
 
   // handel logout on API failure
-    .config(function ($httpProvider, $provide) {
+    .config(function($httpProvider, $provide) {
       if (process.env.PROD) {
         $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
       }
-      $provide.factory('httpInterceptor', function ($q, $rootScope) {
+      $provide.factory('httpInterceptor', function($q, $rootScope) {
         return {
-          'responseError': function (rejection) {
+          'responseError': function(rejection) {
             if (rejection.status === 405) {
               let data = {};
               data.info = '';
@@ -161,14 +163,14 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
             }
             $rootScope.$broadcast('httpResponseError', rejection);
             return $q.reject(rejection);
-          }
+          },
         };
       });
       $httpProvider.interceptors.push('httpInterceptor');
     })
   .constant('TRASH_FOLDER_ID', '~Trash');
 
-function auth () {
+function auth() {
   let $http = angular.injector(['ng']).get('$http');
   let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
   // withCredentials when running locally via grunt
@@ -176,13 +178,13 @@ function auth () {
   jQuery.ajaxSetup({
     dataType: 'json',
     xhrFields: {
-      withCredentials: true
+      withCredentials: true,
     },
-    crossDomain: true
+    crossDomain: true,
   });
-  let config = (process.env.PROD) ? {headers: { 'X-Requested-With': 'XMLHttpRequest' }} : {};
-  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function (response) {
-    zeppelinWebApp.run(function ($rootScope) {
+  let config = (process.env.PROD) ? {headers: {'X-Requested-With': 'XMLHttpRequest'}} : {};
+  return $http.get(baseUrlSrv.getRestApiBase() + '/security/ticket', config).then(function(response) {
+    zeppelinWebApp.run(function($rootScope) {
       let res = angular.fromJson(response.data).body;
       if (res['redirectURL']) {
         window.location.href = res['redirectURL'] + window.location.href;
@@ -195,7 +197,7 @@ function auth () {
         }
       }
     });
-  }, function (errorResponse) {
+  }, function(errorResponse) {
     // Handle error case
     let redirect = errorResponse.headers('Location');
     if (errorResponse.status === 401 && redirect !== undefined) {
@@ -205,9 +207,9 @@ function auth () {
   });
 }
 
-function bootstrapApplication () {
-  zeppelinWebApp.run(function ($rootScope, $location) {
-    $rootScope.$on('$routeChangeStart', function (event, next, current) {
+function bootstrapApplication() {
+  zeppelinWebApp.run(function($rootScope, $location) {
+    $rootScope.$on('$routeChangeStart', function(event, next, current) {
       $rootScope.pageTitle = 'Zeppelin';
       if (!$rootScope.ticket && next.$$route && !next.$$route.publicAccess) {
         $location.path('/');
@@ -217,6 +219,6 @@ function bootstrapApplication () {
   angular.bootstrap(document, ['zeppelinWebApp']);
 }
 
-angular.element(document).ready(function () {
+angular.element(document).ready(function() {
   auth().then(bootstrapApplication);
 });

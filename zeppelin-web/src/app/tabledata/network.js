@@ -34,8 +34,8 @@ export default class NetworkTransformation extends Transformation {
         },
         saveConfig: function() {
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
   }
 

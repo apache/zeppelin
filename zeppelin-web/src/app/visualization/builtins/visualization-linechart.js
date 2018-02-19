@@ -20,7 +20,7 @@ import moment from 'moment';
  * Visualize data in line chart
  */
 export default class LinechartVisualization extends Nvd3ChartVisualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
@@ -32,7 +32,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  type () {
+  type() {
     if (this.config.lineWithFocus) {
       return 'lineWithFocusChart';
     } else {
@@ -40,11 +40,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  getTransformation () {
+  getTransformation() {
     return this.pivot;
   }
 
-  render (pivot) {
+  render(pivot) {
     let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -63,7 +63,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig (config) {
+  setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
 
@@ -74,11 +74,11 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  configureChart (chart) {
+  configureChart(chart) {
     let self = this;
     let configObj = self.config;
 
-    chart.xAxis.tickFormat(function (d) {
+    chart.xAxis.tickFormat(function(d) {
       if (self.config.isDateFormat) {
         if (self.config.dateFormat) {
           return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format(self.config.dateFormat);
@@ -88,7 +88,7 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       }
       return self.xAxisTickFormat(d, self.xLabels);
     });
-    chart.yAxis.tickFormat(function (d) {
+    chart.yAxis.tickFormat(function(d) {
       if (d === undefined) {
         return 'N/A';
       }
@@ -142,13 +142,13 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       self.emitConfig(configObj);
     };
 
-    self.config.setDateFormat = function (format) {
+    self.config.setDateFormat = function(format) {
       configObj.dateFormat = format;
       self.emitConfig(configObj);
     };
   }
 
-  getSetting (chart) {
+  getSetting(chart) {
     let self = this;
     let configObj = self.config;
 
@@ -199,14 +199,14 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       </ng-include>`,
       scope: {
         config: configObj,
-        save: function () {
+        save: function() {
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
   }
 
-  defaultY () {
+  defaultY() {
     return undefined;
   }
 }

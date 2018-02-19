@@ -19,7 +19,7 @@ import PivotTransformation from '../../tabledata/pivot';
  * Visualize data in area chart
  */
 export default class AreachartVisualization extends Nvd3ChartVisualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
@@ -31,15 +31,15 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  type () {
+  type() {
     return 'stackedAreaChart';
   }
 
-  getTransformation () {
+  getTransformation() {
     return this.pivot;
   }
 
-  render (pivot) {
+  render(pivot) {
     let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -58,17 +58,21 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig (config) {
+  setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
   }
 
-  configureChart (chart) {
+  configureChart(chart) {
     let self = this;
     let configObj = self.config;
 
-    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels); });
-    chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d); });
+    chart.xAxis.tickFormat(function(d) {
+ return self.xAxisTickFormat(d, self.xLabels);
+});
+    chart.yAxis.tickFormat(function(d) {
+ return self.yAxisTickFormat(d);
+});
     chart.yAxis.axisLabelDistance(50);
     chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
 
@@ -122,11 +126,11 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
 
     this.chart.style(this.config.style || 'stack');
 
-    this.chart.dispatch.on('stateChange', function (s) {
+    this.chart.dispatch.on('stateChange', function(s) {
       self.config.style = s.style;
 
       // give some time to animation finish
-      setTimeout(function () {
+      setTimeout(function() {
         self.emitConfig(self.config);
       }, 500);
     });
@@ -148,8 +152,8 @@ export default class AreachartVisualization extends Nvd3ChartVisualization {
     return {
       template: 'app/visualization/builtins/visualization-displayXAxis.html',
       scope: {
-        config: configObj
-      }
+        config: configObj,
+      },
     };
   }
 }

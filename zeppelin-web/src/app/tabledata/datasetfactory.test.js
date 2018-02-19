@@ -40,7 +40,9 @@ describe('DatasetFactory build', function() {
   });
 
   it('should thrown an Error', function() {
-    expect(function() { df.createDataset('text'); })
+    expect(function() {
+ df.createDataset('text');
+})
         .toThrow(new Error('Dataset type not found'));
   });
 });

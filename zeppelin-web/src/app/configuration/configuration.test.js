@@ -1,9 +1,9 @@
 import template from './configuration.html';
 
-describe('Controller: Configuration', function () {
+describe('Controller: Configuration', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  let baseUrlSrvMock = { getRestApiBase: () => '' };
+  let baseUrlSrvMock = {getRestApiBase: () => ''};
 
   let ctrl; // controller instance
   let $scope;
@@ -20,19 +20,19 @@ describe('Controller: Configuration', function () {
     ngToast = _ngToast_;
   }));
 
-  afterEach(function () {
+  afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
   });
 
   it('should get configuration initially', () => {
-    const conf = { 'conf1': 'value1' };
-    ctrl = $controller('ConfigurationCtrl', { $scope: $scope, baseUrlSrv: baseUrlSrvMock, });
+    const conf = {'conf1': 'value1'};
+    ctrl = $controller('ConfigurationCtrl', {$scope: $scope, baseUrlSrv: baseUrlSrvMock});
     expect(ctrl).toBeDefined();
 
     $httpBackend
       .when('GET', '/configurations/all')
-      .respond(200, { body: conf, });
+      .respond(200, {body: conf});
     $httpBackend.expectGET('/configurations/all');
     $httpBackend.flush();
 
@@ -40,7 +40,7 @@ describe('Controller: Configuration', function () {
   });
 
   it('should display ngToast when failed to get configuration properly', () => {
-    ctrl = $controller('ConfigurationCtrl', { $scope: $scope, baseUrlSrv: baseUrlSrvMock, });
+    ctrl = $controller('ConfigurationCtrl', {$scope: $scope, baseUrlSrv: baseUrlSrvMock});
     spyOn(ngToast, 'danger');
 
     $httpBackend.when('GET', '/configurations/all').respond(401, {});

@@ -14,10 +14,10 @@
 
 angular.module('zeppelinWebApp').service('saveAsService', SaveAsService);
 
-function SaveAsService (browserDetectService) {
+function SaveAsService(browserDetectService) {
   'ngInject';
 
-  this.saveAs = function (content, filename, extension) {
+  this.saveAs = function(content, filename, extension) {
     let BOM = '\uFEFF';
     if (browserDetectService.detectIE()) {
       angular.element('body').append('<iframe id="SaveAsId" style="display: none"></iframe>');

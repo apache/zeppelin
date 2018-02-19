@@ -22,53 +22,61 @@ export const HeliumConfFieldType = {
  * @param persisted <Object> including `type`, `description`, `defaultValue` for each conf key
  * @param spec <Object> including `value` for each conf key
  */
-export function mergePersistedConfWithSpec (persisted, spec) {
+export function mergePersistedConfWithSpec(persisted, spec) {
   const confs = [];
 
   for (let name in spec) {
-    const specField = spec[name];
-    const persistedValue = persisted[name];
+    if (spec.hasOwnProperty(name)) {
+      const specField = spec[name];
+      const persistedValue = persisted[name];
 
-    const value = (persistedValue) ? persistedValue : specField.defaultValue;
-    const merged = {
-      name: name,
-      type: specField.type,
-      description: specField.description,
-      value: value,
-      defaultValue: specField.defaultValue,
-    };
+      const value = (persistedValue) ? persistedValue : specField.defaultValue;
+      const merged = {
+        name: name,
+        type: specField.type,
+        description: specField.description,
+        value: value,
+        defaultValue: specField.defaultValue,
+      };
 
-    confs.push(merged);
+      confs.push(merged);
+    }
   }
 
   return confs;
 }
 
-export function createAllPackageConfigs (defaultPackages, persistedConfs) {
+export function createAllPackageConfigs(defaultPackages, persistedConfs) {
   let packageConfs = {};
 
   for (let name in defaultPackages) {
-    const pkgSearchResult = defaultPackages[name];
+    if (defaultPackages.hasOwnProperty(name)) {
+      const pkgSearchResult = defaultPackages[name];
 
-    const spec = pkgSearchResult.pkg.config;
-    if (!spec) { continue; }
+      const spec = pkgSearchResult.pkg.config;
+      if (!spec) {
+        continue;
+      }
 
-    const artifact = pkgSearchResult.pkg.artifact;
-    if (!artifact) { continue; }
+      const artifact = pkgSearchResult.pkg.artifact;
+      if (!artifact) {
+        continue;
+      }
 
-    let persistedConf = {};
-    if (persistedConfs[artifact]) {
-      persistedConf = persistedConfs[artifact];
+      let persistedConf = {};
+      if (persistedConfs[artifact]) {
+        persistedConf = persistedConfs[artifact];
+      }
+
+      const confs = mergePersistedConfWithSpec(persistedConf, spec);
+      packageConfs[name] = confs;
     }
-
-    const confs = mergePersistedConfWithSpec(persistedConf, spec);
-    packageConfs[name] = confs;
   }
 
   return packageConfs;
 }
 
-export function parseConfigValue (type, stringified) {
+export function parseConfigValue(type, stringified) {
   let value = stringified;
 
   try {
@@ -89,7 +97,7 @@ export function parseConfigValue (type, stringified) {
  * persist key-value only
  * since other info (e.g type, desc) can be provided by default config
  */
-export function createPersistableConfig (currentConfs) {
+export function createPersistableConfig(currentConfs) {
   const filtered = currentConfs.reduce((acc, c) => {
     acc[c.name] = parseConfigValue(c.type, c.value);
     return acc;

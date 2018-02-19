@@ -16,7 +16,7 @@ import './note-import.css';
 
 angular.module('zeppelinWebApp').controller('NoteImportCtrl', NoteImportCtrl);
 
-function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
+function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
   'ngInject';
 
   let vm = this;
@@ -27,23 +27,23 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
   let limit = 0;
 
   websocketMsgSrv.listConfigurations();
-  $scope.$on('configurationsInfo', function (scope, event) {
+  $scope.$on('configurationsInfo', function(scope, event) {
     limit = event.configurations['zeppelin.websocket.max.text.message.size'];
     $scope.maxLimit = Math.round(limit / 1048576);
   });
 
-  vm.resetFlags = function () {
+  vm.resetFlags = function() {
     $scope.note = {};
     $scope.note.step1 = true;
     $scope.note.step2 = false;
     angular.element('#noteImportFile').val('');
   };
 
-  $scope.uploadFile = function () {
+  $scope.uploadFile = function() {
     angular.element('#noteImportFile').click();
   };
 
-  $scope.importFile = function (element) {
+  $scope.importFile = function(element) {
     $scope.note.errorText = '';
     $scope.note.importFile = element.files[0];
     let file = $scope.note.importFile;
@@ -55,7 +55,7 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
       return;
     }
 
-    reader.onloadend = function () {
+    reader.onloadend = function() {
       vm.processImportJson(reader.result);
     };
 
@@ -64,23 +64,23 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
     }
   };
 
-  $scope.uploadURL = function () {
+  $scope.uploadURL = function() {
     $scope.note.errorText = '';
     $scope.note.step1 = false;
-    $timeout(function () {
+    $timeout(function() {
       $scope.note.step2 = true;
     }, 400);
   };
 
-  vm.importBack = function () {
+  vm.importBack = function() {
     $scope.note.errorText = '';
-    $timeout(function () {
+    $timeout(function() {
       $scope.note.step1 = true;
     }, 400);
     $scope.note.step2 = false;
   };
 
-  vm.importNote = function () {
+  vm.importNote = function() {
     $scope.note.errorText = '';
     if ($scope.note.importUrl) {
       jQuery.ajax({
@@ -89,12 +89,12 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
         dataType: 'json',
         jsonp: false,
         xhrFields: {
-          withCredentials: false
+          withCredentials: false,
         },
-        error: function (xhr, ajaxOptions, thrownError) {
+        error: function(xhr, ajaxOptions, thrownError) {
           $scope.note.errorText = 'Unable to Fetch URL';
           $scope.$apply();
-        }}).done(function (data) {
+        }}).done(function(data) {
           vm.processImportJson(data);
         });
     } else {
@@ -103,7 +103,7 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
     }
   };
 
-  vm.processImportJson = function (result) {
+  vm.processImportJson = function(result) {
     if (typeof result !== 'object') {
       try {
         result = JSON.parse(result);
@@ -131,7 +131,7 @@ function NoteImportCtrl ($scope, $timeout, websocketMsgSrv) {
    ** $scope.$on functions below
    */
 
-  $scope.$on('setNoteMenu', function (event, notes) {
+  $scope.$on('setNoteMenu', function(event, notes) {
     vm.resetFlags();
     angular.element('#noteImportModal').modal('hide');
   });

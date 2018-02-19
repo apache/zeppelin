@@ -23,7 +23,7 @@ import {
 /* eslint-enable no-unused-vars */
 
 export class SpellBase {
-  constructor (magic) {
+  constructor(magic) {
     this.magic = magic;
   }
 
@@ -34,7 +34,7 @@ export class SpellBase {
    * @param config {Object}
    * @return {SpellResult}
    */
-  interpret (paragraphText, config) {
+  interpret(paragraphText, config) {
     throw new Error('SpellBase.interpret() should be overrided');
   }
 
@@ -43,7 +43,7 @@ export class SpellBase {
    * (e.g `%flowchart`)
    * @return {string}
    */
-  getMagic () {
+  getMagic() {
     return this.magic;
   }
 }

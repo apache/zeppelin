@@ -13,7 +13,7 @@
  */
 
 export function JobManagerFilter() {
-  function filterContext (jobs, filterConfig) {
+  function filterContext(jobs, filterConfig) {
     let interpreter = filterConfig.interpreterFilterValue;
     let noteName = filterConfig.noteNameFilterValue;
     let isSortByAsc = filterConfig.isSortByAsc;
@@ -24,7 +24,7 @@ export function JobManagerFilter() {
         return typeof jobItem.interpreter === 'undefined';
       });
     } else if (interpreter !== '*') {
-      filteredJobs = filteredJobs.filter(j => j.interpreter === interpreter);
+      filteredJobs = filteredJobs.filter((j) => j.interpreter === interpreter);
     }
 
     // filter by note name

@@ -14,8 +14,8 @@
 
 import moment from 'moment';
 
-import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status';
-import { getJobColorByStatus, getJobIconByStatus } from '../job-status';
+import {ParagraphStatus} from '../../notebook/paragraph/paragraph.status';
+import {getJobColorByStatus, getJobIconByStatus} from '../job-status';
 
 import jobTemplate from './job.html';
 import './job.css';
@@ -48,18 +48,20 @@ class JobController {
       closable: true,
       title: 'Job Dialog',
       message: 'Run all paragraphs?',
-      callback: clickOk => {
-        if (!clickOk) { return; }
+      callback: (clickOk) => {
+        if (!clickOk) {
+ return;
+}
 
         const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
         this.JobManagerService.sendRunJobRequest(noteId)
-          .catch(response => {
+          .catch((response) => {
             let message = (response.data && response.data.message)
               ? response.data.message : 'SERVER ERROR';
             this.showErrorDialog('Execution Failure', message);
           });
-      }
+      },
     });
   }
 
@@ -68,27 +70,31 @@ class JobController {
       closable: true,
       title: 'Job Dialog',
       message: 'Stop all paragraphs?',
-      callback: clickOk => {
-        if (!clickOk) { return; }
+      callback: (clickOk) => {
+        if (!clickOk) {
+ return;
+}
 
         const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
         this.JobManagerService.sendStopJobRequest(noteId)
-          .catch(response => {
+          .catch((response) => {
             let message = (response.data && response.data.message)
               ? response.data.message : 'SERVER ERROR';
             this.showErrorDialog('Stop Failure', message);
           });
-      }
+      },
     });
   }
 
   showErrorDialog(title, errorMessage) {
-    if (!errorMessage) { errorMessage = 'SERVER ERROR'; }
+    if (!errorMessage) {
+ errorMessage = 'SERVER ERROR';
+}
     BootstrapDialog.alert({
       closable: true,
       title: title,
-      message: errorMessage
+      message: errorMessage,
     });
   }
 
@@ -104,7 +110,7 @@ class JobController {
 
   getInterpreterNameStyle() {
     return typeof this.note.interpreter === 'undefined'
-      ? { color: 'gray' } : { color: 'black' };
+      ? {color: 'gray'} : {color: 'black'};
   }
 
   getJobTypeIcon() {
@@ -128,8 +134,8 @@ class JobController {
 
   getProgress() {
     const paragraphs = this.getParagraphs();
-    let paragraphStatuses = paragraphs.map(p => p.status);
-    let runningOrFinishedParagraphs = paragraphStatuses.filter(status => {
+    let paragraphStatuses = paragraphs.map((p) => p.status);
+    let runningOrFinishedParagraphs = paragraphStatuses.filter((status) => {
       return status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED;
     });
 

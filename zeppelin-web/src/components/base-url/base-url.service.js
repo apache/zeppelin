@@ -15,7 +15,7 @@
 angular.module('zeppelinWebApp').service('baseUrlSrv', BaseUrlService);
 
 function BaseUrlService() {
-  this.getPort = function () {
+  this.getPort = function() {
     let port = Number(location.port);
     if (!port) {
       port = 80;
@@ -30,7 +30,7 @@ function BaseUrlService() {
     return port;
   };
 
-  this.getWebsocketUrl = function () {
+  this.getWebsocketUrl = function() {
     let wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     return wsProtocol + '//' + location.hostname + ':' + this.getPort() +
       skipTrailingSlash(location.pathname) + '/ws';
@@ -40,11 +40,11 @@ function BaseUrlService() {
     return location.protocol + '//' + location.hostname + ':' + this.getPort() + location.pathname;
   };
 
-  this.getRestApiBase = function () {
+  this.getRestApiBase = function() {
     return skipTrailingSlash(this.getBase()) + '/api';
   };
 
-  const skipTrailingSlash = function (path) {
+  const skipTrailingSlash = function(path) {
     return path.replace(/\/$/, '');
   };
 }

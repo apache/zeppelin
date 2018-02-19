@@ -13,10 +13,10 @@
  */
 
 import './job/job.component';
-import { JobManagerFilter } from './jobmanager.filter';
-import { JobManagerService} from './jobmanager.service';
+import {JobManagerFilter} from './jobmanager.filter';
+import {JobManagerService} from './jobmanager.service';
 
-import { getJobIconByStatus, getJobColorByStatus } from './job-status';
+import {getJobIconByStatus, getJobColorByStatus} from './job-status';
 
 angular.module('zeppelinWebApp')
   .controller('JobManagerCtrl', JobManagerController)
@@ -34,7 +34,9 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
   $scope.isFilterLoaded = false;
   $scope.jobs = [];
   $scope.sorter = {
-    availableDateSorter: Object.keys(JobDateSorter).map(key => { return JobDateSorter[key]; }),
+    availableDateSorter: Object.keys(JobDateSorter).map((key) => {
+ return JobDateSorter[key];
+}),
     currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
   };
   $scope.filteredJobs = $scope.jobs;
@@ -66,8 +68,9 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     return jobs.slice((cp - 1) * itp, (cp * itp));
   };
 
-  let asyncNotebookJobFilter = function (jobs, filterConfig) {
+  let asyncNotebookJobFilter = function(jobs, filterConfig) {
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line new-cap
       $scope.filteredJobs = JobManagerFilter(jobs, filterConfig);
       resolve($scope.filteredJobs);
     });
@@ -82,22 +85,22 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
   $scope.getJobIconByStatus = getJobIconByStatus;
   $scope.getJobColorByStatus = getJobColorByStatus;
 
-  $scope.filterJobs = function (jobs, filterConfig) {
+  $scope.filterJobs = function(jobs, filterConfig) {
     asyncNotebookJobFilter(jobs, filterConfig)
       .then(() => {
         $scope.isFilterLoaded = true;
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Failed to search jobs from server', error);
       });
   };
 
-  $scope.filterValueToName = function (filterValue, maxStringLength) {
+  $scope.filterValueToName = function(filterValue, maxStringLength) {
     if (typeof $scope.defaultInterpreters === 'undefined') {
       return;
     }
 
-    let index = $scope.defaultInterpreters.findIndex(intp => intp.value === filterValue);
+    let index = $scope.defaultInterpreters.findIndex((intp) => intp.value === filterValue);
     if (typeof $scope.defaultInterpreters[index].name !== 'undefined') {
       if (typeof maxStringLength !== 'undefined' &&
         maxStringLength > $scope.defaultInterpreters[index].name) {
@@ -109,7 +112,7 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     }
   };
 
-  $scope.setFilterValue = function (filterValue) {
+  $scope.setFilterValue = function(filterValue) {
     $scope.filterConfig.interpreterFilterValue = filterValue;
     $scope.filterJobs($scope.jobs, $scope.filterConfig);
   };
@@ -117,13 +120,13 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
   $scope.setJobs = function(jobs) {
     $scope.jobs = jobs;
     let interpreters = $scope.jobs
-      .filter(j => typeof j.interpreter !== 'undefined')
-      .map(j => j.interpreter);
+      .filter((j) => typeof j.interpreter !== 'undefined')
+      .map((j) => j.interpreter);
     interpreters = [...new Set(interpreters)]; // remove duplicated interpreters
 
-    $scope.defaultInterpreters = [ { name: 'ALL', value: '*' } ];
+    $scope.defaultInterpreters = [{name: 'ALL', value: '*'}];
     for (let i = 0; i < interpreters.length; i++) {
-      $scope.defaultInterpreters.push({ name: interpreters[i], value: interpreters[i] });
+      $scope.defaultInterpreters.push({name: interpreters[i], value: interpreters[i]});
     }
   };
 
@@ -132,7 +135,7 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     JobManagerService.subscribeSetJobs($scope, setJobsCallback);
     JobManagerService.subscribeUpdateJobs($scope, updateJobsCallback);
 
-    $scope.$on('$destroy', function () {
+    $scope.$on('$destroy', function() {
       JobManagerService.disconnect();
     });
   }
@@ -156,7 +159,7 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
     }, {});
 
     let updatedJobs = response.jobs;
-    updatedJobs.map(updatedJob => {
+    updatedJobs.map((updatedJob) => {
       if (typeof jobByNoteId[updatedJob.noteId] === 'undefined') {
         let newItem = angular.copy(updatedJob);
         jobs.push(newItem);
@@ -166,7 +169,7 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
 
         if (updatedJob.isRemoved === true) {
           delete jobByNoteId[updatedJob.noteId];
-          let removeIndex = jobs.findIndex(j => j.noteId === updatedJob.noteId);
+          let removeIndex = jobs.findIndex((j) => j.noteId === updatedJob.noteId);
           if (removeIndex) {
             jobs.splice(removeIndex, 1);
           }

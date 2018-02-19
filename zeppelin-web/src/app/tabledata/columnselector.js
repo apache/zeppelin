@@ -26,12 +26,12 @@ import Transformation from './transformation';
  *   ]
  */
 export default class ColumnselectorTransformation extends Transformation {
-  constructor (config, columnSelectorProp) {
+  constructor(config, columnSelectorProp) {
     super(config);
     this.props = columnSelectorProp;
   }
 
-  getSetting () {
+  getSetting() {
     let self = this;
     let configObj = self.config;
     return {
@@ -40,27 +40,27 @@ export default class ColumnselectorTransformation extends Transformation {
         config: self.config,
         props: self.props,
         tableDataColumns: self.tableDataColumns,
-        save: function () {
+        save: function() {
           self.emitConfig(configObj);
         },
-        remove: function (selectorName) {
+        remove: function(selectorName) {
           configObj[selectorName] = null;
           self.emitConfig(configObj);
-        }
-      }
+        },
+      },
     };
   }
 
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform (tableData) {
+  transform(tableData) {
     this.tableDataColumns = tableData.columns;
     this.removeUnknown();
     return tableData;
   }
 
-  removeUnknown () {
+  removeUnknown() {
     let fields = this.config;
     for (let f in fields) {
       if (fields[f]) {

@@ -19,18 +19,18 @@ import ColumnselectorTransformation from '../../tabledata/columnselector';
  * Visualize data in scatter char
  */
 export default class ScatterchartVisualization extends Nvd3ChartVisualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
 
     this.columnselectorProps = [
       {
-        name: 'xAxis'
+        name: 'xAxis',
       },
       {
-        name: 'yAxis'
+        name: 'yAxis',
       },
       {
-        name: 'group'
+        name: 'group',
       },
       {
         name: 'size',
@@ -39,21 +39,21 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
           'number of values in corresponding coordinate' will be used.
           Zeppelin considers values as discrete when input values contain a string
           or the number of distinct values is greater than 5% of the total number of values.
-          This field turns grey when the selected option is invalid.`
-      }
+          This field turns grey when the selected option is invalid.`,
+      },
     ];
     this.columnselector = new ColumnselectorTransformation(config, this.columnselectorProps);
   }
 
-  type () {
+  type() {
     return 'scatterChart';
   }
 
-  getTransformation () {
+  getTransformation() {
     return this.columnselector;
   }
 
-  render (tableData) {
+  render(tableData) {
     this.tableData = tableData;
     this.selectDefault();
     let d3Data = this.setScatterChart(tableData, true);
@@ -63,14 +63,14 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     super.render(d3Data);
   }
 
-  configureChart (chart) {
+  configureChart(chart) {
     let self = this;
 
-    chart.xAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
+    chart.xAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.xAxisTickFormat(Math.round(d * 1e3) / 1e3, self.xLabels);
     });
 
-    chart.yAxis.tickFormat(function (d) { // TODO remove round after bump to nvd3 > 1.8.5
+    chart.yAxis.tickFormat(function(d) { // TODO remove round after bump to nvd3 > 1.8.5
       return self.yAxisTickFormat(Math.round(d * 1e3) / 1e3, self.yLabels);
     });
 
@@ -78,7 +78,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     // handle the problem of tooltip not showing when muliple points have same value.
   }
 
-  yAxisTickFormat (d, yLabels) {
+  yAxisTickFormat(d, yLabels) {
     if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) { // to handle string type xlabel
       return yLabels[d];
     } else {
@@ -86,7 +86,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  selectDefault () {
+  selectDefault() {
     if (!this.config.xAxis && !this.config.yAxis) {
       if (this.tableData.columns.length > 1) {
         this.config.xAxis = this.tableData.columns[0];
@@ -97,7 +97,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  setScatterChart (data, refresh) {
+  setScatterChart(data, refresh) {
     let xAxis = this.config.xAxis;
     let yAxis = this.config.yAxis;
     let group = this.config.group;
@@ -125,7 +125,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
 
     if (!xAxis && !yAxis) {
       return {
-        d3g: []
+        d3g: [],
       };
     }
 
@@ -198,7 +198,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       if (!d3g[grpNameIndex[grpName]]) {
         d3g[grpNameIndex[grpName]] = {
           key: grpName,
-          values: []
+          values: [],
         };
       }
 
@@ -215,13 +215,13 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
       d3g[grpNameIndex[grpName]].values.push({
         x: xval,
         y: yval,
-        size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz)
+        size: isNaN(parseFloat(sz)) ? 1 : parseFloat(sz),
       });
     }
 
     // TODO remove sort and dedup after bump to nvd3 > 1.8.5
     let d3gvalues = d3g[grpNameIndex[grpName]].values;
-    d3gvalues.sort(function (a, b) {
+    d3gvalues.sort(function(a, b) {
       return ((a['x'] - b['x']) || (a['y'] - b['y']));
     });
 
@@ -237,11 +237,11 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     return {
       xLabels: rowIndexValue,
       yLabels: colIndexValue,
-      d3g: d3g
+      d3g: d3g,
     };
   }
 
-  setDiscreteScatterData (data) {
+  setDiscreteScatterData(data) {
     let xAxis = this.config.xAxis;
     let yAxis = this.config.yAxis;
     let group = this.config.group;
@@ -271,7 +271,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
           x: xValue,
           y: yValue,
           group: grp,
-          size: 1
+          size: 1,
         };
       } else {
         rows[key].size++;
@@ -281,18 +281,26 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     // change object into array
     let newRows = [];
     for (let r in rows) {
-      let newRow = [];
-      if (xAxis) { newRow[xAxis.index] = rows[r].x; }
-      if (yAxis) { newRow[yAxis.index] = rows[r].y; }
-      if (group) { newRow[group.index] = rows[r].group; }
-      newRow[data.rows[0].length] = rows[r].size;
-      newRows.push(newRow);
+      if (rows.hasOwnProperty(r)) {
+        let newRow = [];
+        if (xAxis) {
+          newRow[xAxis.index] = rows[r].x;
+        }
+        if (yAxis) {
+          newRow[yAxis.index] = rows[r].y;
+        }
+        if (group) {
+          newRow[group.index] = rows[r].group;
+        }
+        newRow[data.rows[0].length] = rows[r].size;
+        newRows.push(newRow);
+      }
     }
     return newRows;
   }
 
-  isDiscrete (field) {
-    let getUnique = function (f) {
+  isDiscrete(field) {
+    let getUnique = function(f) {
       let uniqObj = {};
       let uniqArr = [];
       let j = 0;
@@ -322,7 +330,7 @@ export default class ScatterchartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  isValidSizeOption (options) {
+  isValidSizeOption(options) {
     let xValues = [];
     let yValues = [];
     let rows = this.tableData.rows;

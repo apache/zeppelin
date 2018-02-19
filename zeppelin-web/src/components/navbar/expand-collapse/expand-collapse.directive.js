@@ -19,13 +19,13 @@ angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapseDirec
 function expandCollapseDirective() {
   return {
     restrict: 'EA',
-    link: function (scope, element, attrs) {
-      angular.element(element).click(function (event) {
+    link: function(scope, element, attrs) {
+      angular.element(element).click(function(event) {
         if (angular.element(element).next('.expandable:visible').length > 1) {
           angular.element(element).next('.expandable:visible').slideUp('slow');
           angular.element(element).find('i.fa-folder-open').toggleClass('fa-folder fa-folder-open');
         } else {
-          angular.element(element).next('.expandable').first().slideToggle('200', function () {
+          angular.element(element).next('.expandable').first().slideToggle('200', function() {
             // do not toggle trash folder
             if (angular.element(element).find('.fa-trash-o').length === 0) {
               angular.element(element).find('i').first().toggleClass('fa-folder fa-folder-open');
@@ -43,6 +43,6 @@ function expandCollapseDirective() {
 
         event.stopPropagation();
       });
-    }
+    },
   };
 }

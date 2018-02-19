@@ -26,7 +26,7 @@ function NoteRenameService($rootScope) {
    * callback: (newName: string)=>void - callback onButtonClick
    * validator: (str: string)=>boolean - input validator
    */
-  self.openRenameModal = function (options) {
+  self.openRenameModal = function(options) {
     $rootScope.$broadcast('openRenameModal', options);
   };
 }

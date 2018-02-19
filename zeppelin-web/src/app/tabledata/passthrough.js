@@ -19,14 +19,14 @@ import Transformation from './transformation';
  */
 export default class PassthroughTransformation extends Transformation {
   // eslint-disable-next-line no-useless-constructor
-  constructor (config) {
+  constructor(config) {
     super(config);
   }
 
   /**
    * Method will be invoked when tableData or config changes
    */
-  transform (tableData) {
+  transform(tableData) {
     return tableData;
   }
 }

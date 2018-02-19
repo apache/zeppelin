@@ -19,14 +19,14 @@ function ArrayOrderingService(TRASH_FOLDER_ID) {
 
   let arrayOrderingSrv = this;
 
-  this.noteListOrdering = function (note) {
+  this.noteListOrdering = function(note) {
     if (note.id === TRASH_FOLDER_ID) {
       return '\uFFFF';
     }
     return arrayOrderingSrv.getNoteName(note);
   };
 
-  this.getNoteName = function (note) {
+  this.getNoteName = function(note) {
     if (note.name === undefined || note.name.trim() === '') {
       return 'Note ' + note.id;
     } else {
@@ -34,7 +34,7 @@ function ArrayOrderingService(TRASH_FOLDER_ID) {
     }
   };
 
-  this.noteComparator = function (v1, v2) {
+  this.noteComparator = function(v1, v2) {
     let note1 = v1.value || v1;
     let note2 = v2.value || v2;
 

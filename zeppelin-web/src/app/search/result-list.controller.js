@@ -14,15 +14,15 @@
 
 angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl);
 
-function SearchResultCtrl ($scope, $routeParams, searchService) {
+function SearchResultCtrl($scope, $routeParams, searchService) {
   'ngInject';
 
   $scope.isResult = true;
   $scope.searchTerm = $routeParams.searchTerm;
   let results = searchService.search({'q': $routeParams.searchTerm}).query();
 
-  results.$promise.then(function (result) {
-    $scope.notes = result.body.map(function (note) {
+  results.$promise.then(function(result) {
+    $scope.notes = result.body.map(function(note) {
       // redirect to notebook when search result is a notebook itself,
       // not a paragraph
       if (!/\/paragraph\//.test(note.id)) {
@@ -40,7 +40,7 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
       $scope.isResult = true;
     }
 
-    $scope.$on('$routeChangeStart', function (event, next, current) {
+    $scope.$on('$routeChangeStart', function(event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
         searchService.searchTerm = '';
       }
@@ -50,19 +50,19 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
   $scope.page = 0;
   $scope.allResults = false;
 
-  $scope.highlightSearchResults = function (note) {
-    return function (_editor) {
-      function getEditorMode (text) {
+  $scope.highlightSearchResults = function(note) {
+    return function(_editor) {
+      function getEditorMode(text) {
         let editorModes = {
           'ace/mode/scala': /^%(\w*\.)?spark/,
           'ace/mode/python': /^%(\w*\.)?(pyspark|python)/,
           'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)/,
           'ace/mode/sql': /^%(\w*\.)?\wql/,
           'ace/mode/markdown': /^%md/,
-          'ace/mode/sh': /^%sh/
+          'ace/mode/sh': /^%sh/,
         };
 
-        return Object.keys(editorModes).reduce(function (res, mode) {
+        return Object.keys(editorModes).reduce(function(res, mode) {
           return editorModes[mode].test(text) ? mode : res;
         }, 'ace/mode/scala');
       }
@@ -76,8 +76,8 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
       _editor.setTheme('ace/theme/chrome');
       _editor.getSession().setMode(getEditorMode(note.text));
 
-      function getIndeces (term) {
-        return function (str) {
+      function getIndeces(term) {
+        return function(str) {
           let indeces = [];
           let i = -1;
           while ((i = str.indexOf(term, i + 1)) >= 0) {
@@ -96,7 +96,7 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
 
       let lines = result
         .split('\n')
-        .map(function (line, row) {
+        .map(function(line, row) {
           let match = line.match(/<B>(.+?)<\/B>/);
 
           // return early if nothing to highlight
@@ -111,7 +111,7 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
 
           let indeces = getIndeces(term)(__line);
 
-          indeces.forEach(function (start) {
+          indeces.forEach(function(start) {
             let end = start + term.length;
             if (note.header !== '' && row === 0) {
               _editor

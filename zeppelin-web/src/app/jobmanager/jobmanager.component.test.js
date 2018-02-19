@@ -9,18 +9,18 @@ describe('JobManagerComponent', () => {
   }));
 
   it('should set jobs using `setJobs`', () => {
-    let ctrl = $controller('JobManagerCtrl', { $scope: $scope, });
+    let ctrl = $controller('JobManagerCtrl', {$scope: $scope});
     expect(ctrl).toBeDefined();
 
     const mockJobs = [
-      { noteId: 'TN01', interpreter: 'spark', },
-      { noteId: 'TN02', interpreter: 'spark', },
+      {noteId: 'TN01', interpreter: 'spark'},
+      {noteId: 'TN02', interpreter: 'spark'},
     ];
 
     $scope.setJobs(mockJobs);
     expect($scope.defaultInterpreters).toEqual([
-      { name: 'ALL', value: '*', },
-      { name: 'spark', value: 'spark', },
+      {name: 'ALL', value: '*'},
+      {name: 'spark', value: 'spark'},
     ]);
   });
 });

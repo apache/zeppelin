@@ -1,15 +1,15 @@
-describe('Directive: ngEnter', function () {
+describe('Directive: ngEnter', function() {
   // load the directive's module
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
   let element;
   let scope;
 
-  beforeEach(inject(function ($rootScope) {
+  beforeEach(inject(function($rootScope) {
     scope = $rootScope.$new();
   }));
 
-  it('should be define', inject(function ($compile) {
+  it('should be define', inject(function($compile) {
     element = angular.element('<ng-enter></ng-enter>');
     element = $compile(element)(scope);
     expect(element.text()).toBeDefined();

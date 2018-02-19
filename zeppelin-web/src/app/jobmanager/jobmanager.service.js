@@ -24,12 +24,12 @@ export class JobManagerService {
 
   sendStopJobRequest(noteId) {
     const apiURL = this.BaseUrlService.getRestApiBase() + `/notebook/job/${noteId}`;
-    return this.$http({ method: 'DELETE', url: apiURL, });
+    return this.$http({method: 'DELETE', url: apiURL});
   }
 
   sendRunJobRequest(noteId) {
     const apiURL = this.BaseUrlService.getRestApiBase() + `/notebook/job/${noteId}`;
-    return this.$http({ method: 'POST', url: apiURL, });
+    return this.$http({method: 'POST', url: apiURL});
   }
 
   getJobs() {

@@ -32,7 +32,7 @@ describe('NetworkData build', function() {
     let jsonExpected = {nodes: [{id: 1}, {id: 2}], edges: [{source: 2, target: 1, id: 1}]};
     nd.loadParagraphResult({
       type: DatasetType.NETWORK,
-      msg: JSON.stringify(jsonExpected)
+      msg: JSON.stringify(jsonExpected),
     });
 
     expect(nd.columns.length).toBe(1);
@@ -49,7 +49,7 @@ describe('NetworkData build', function() {
       edges: [{source: 2, target: 1, id: 1, data: {source: 'Source Edge Data', target: 'Target Edge Data'}}]};
     nd.loadParagraphResult({
       type: DatasetType.NETWORK,
-      msg: JSON.stringify(jsonExpected)
+      msg: JSON.stringify(jsonExpected),
     });
 
     expect(nd.columns.length).toBe(3);

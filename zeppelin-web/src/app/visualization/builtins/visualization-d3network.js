@@ -33,8 +33,8 @@ export default class NetworkVisualization extends Visualization {
           linkDistance: 80,
         },
         zoom: {
-          minScale: 1.3
-        }
+          minScale: 1.3,
+        },
       };
     }
     this.targetEl.addClass('network');
@@ -138,7 +138,9 @@ export default class NetworkVisualization extends Visualization {
       .size([width, height])
       .on('start', () => {
         console.log('force layout start');
-        this.$timeout(() => { this.force.stop(); }, transformationConfig.d3Graph.forceLayout.timeout);
+        this.$timeout(() => {
+ this.force.stop();
+}, transformationConfig.d3Graph.forceLayout.timeout);
       })
       .on('end', () => {
         console.log('force layout stop');

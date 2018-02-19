@@ -54,7 +54,7 @@ const TABLE_OPTION_SPECS = [
  * Visualize data in table format
  */
 export default class TableVisualization extends Visualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
     this.passthrough = new PassthroughTransformation(config);
     this.emitTimeout = null;
@@ -68,16 +68,18 @@ export default class TableVisualization extends Visualization {
     const calculatedWidth = colName.length * 10;
 
     // use the broad one
-    if (calculatedWidth > width) { width = calculatedWidth; }
+    if (calculatedWidth > width) {
+ width = calculatedWidth;
+}
 
     return width;
   }
 
   createGridOptions(tableData, onRegisterApiCallback, config) {
     const rows = tableData.rows;
-    const columnNames = tableData.columns.map(c => c.name);
+    const columnNames = tableData.columns.map((c) => c.name);
 
-    const gridData = rows.map(r => {
+    const gridData = rows.map((r) => {
       return columnNames.reduce((acc, colName, index) => {
         acc[colName] = r[index];
         return acc;
@@ -94,7 +96,7 @@ export default class TableVisualization extends Visualization {
       fastWatch: false,
       treeRowHeaderAlwaysVisible: false,
 
-      columnDefs: columnNames.map(colName => {
+      columnDefs: columnNames.map((colName) => {
         return {
           displayName: colName,
           name: colName,
@@ -164,7 +166,9 @@ export default class TableVisualization extends Visualization {
   }
 
   updateColDefType(colDef, type) {
-    if (type === colDef.type) { return; }
+    if (type === colDef.type) {
+ return;
+}
 
     colDef.type = type;
     const colName = colDef.name;
@@ -176,12 +180,14 @@ export default class TableVisualization extends Visualization {
   }
 
   addColumnMenus(gridOptions) {
-    if (!gridOptions || !gridOptions.columnDefs) { return; }
+    if (!gridOptions || !gridOptions.columnDefs) {
+ return;
+}
 
     const self = this; // for closure
 
     // SHOULD use `function() { ... }` syntax for each action to get `this`
-    gridOptions.columnDefs.map(colDef => {
+    gridOptions.columnDefs.map((colDef) => {
       colDef.menuItems = [
         {
           title: 'Type: String',
@@ -218,7 +224,7 @@ export default class TableVisualization extends Visualization {
     // parse based on their type definitions
     const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue);
 
-    const { showAggregationFooter, useFilter, showPagination, } = parsed;
+    const {showAggregationFooter, useFilter, showPagination} = parsed;
 
     gridOptions.showGridFooter = false;
     gridOptions.showColumnFooter = showAggregationFooter;
@@ -241,7 +247,7 @@ export default class TableVisualization extends Visualization {
     gridOptions.enableSelectionBatchEvent = false;
   }
 
-  render (tableData) {
+  render(tableData) {
     const gridElemId = this.getGridElemId();
     let gridElem = document.getElementById(gridElemId);
 
@@ -282,15 +288,33 @@ export default class TableVisualization extends Visualization {
 
         // register callbacks for change evens
         // should persist `self.config` instead `config` (closure issue)
-        gridApi.core.on.columnVisibilityChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.colMovable.on.columnPositionChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.core.on.sortChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.core.on.filterChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.grouping.on.aggregationChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config); });
-        gridApi.colResizable.on.columnSizeChanged(scope, () => { self.persistConfigWithGridState(self.config); });
+        gridApi.core.on.columnVisibilityChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.colMovable.on.columnPositionChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.core.on.sortChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.core.on.filterChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.grouping.on.aggregationChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.grouping.on.groupingChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.treeBase.on.rowCollapsed(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.treeBase.on.rowExpanded(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
+        gridApi.colResizable.on.columnSizeChanged(scope, () => {
+ self.persistConfigWithGridState(self.config);
+});
 
         // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
         // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
@@ -313,7 +337,9 @@ export default class TableVisualization extends Visualization {
   }
 
   restoreGridState(gridState) {
-    if (!gridState) { return; }
+    if (!gridState) {
+ return;
+}
 
     // should set isRestoring to avoid that changed* events are triggered while restoring
     this.isRestoring = true;
@@ -328,10 +354,10 @@ export default class TableVisualization extends Visualization {
     }
   }
 
-  destroy () {
+  destroy() {
   }
 
-  getTransformation () {
+  getTransformation() {
     return this.passthrough;
   }
 
@@ -357,7 +383,9 @@ export default class TableVisualization extends Visualization {
   }
 
   persistConfigWithGridState(config) {
-    if (this.isRestoring) { return; }
+    if (this.isRestoring) {
+ return;
+}
 
     const gridApi = this.getGridApi();
     config.tableGridState = gridApi.saveState.save();
@@ -368,7 +396,7 @@ export default class TableVisualization extends Visualization {
     this.emitConfig(config);
   }
 
-  getSetting (chart) {
+  getSetting(chart) {
     const self = this; // for closure in scope
     const configObj = self.config;
 
@@ -412,8 +440,8 @@ export default class TableVisualization extends Visualization {
           }
 
           event.stopPropagation(); /** avoid to conflict with paragraph shortcuts */
-        }
-      }
+        },
+      },
     };
   }
 }

@@ -19,7 +19,7 @@ import PivotTransformation from '../../tabledata/pivot';
  * Visualize data in bar char
  */
 export default class BarchartVisualization extends Nvd3ChartVisualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     super(targetEl, config);
 
     this.pivot = new PivotTransformation(config);
@@ -31,15 +31,15 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
     }
   }
 
-  type () {
+  type() {
     return 'multiBarChart';
   }
 
-  getTransformation () {
+  getTransformation() {
     return this.pivot;
   }
 
-  render (pivot) {
+  render(pivot) {
     let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -57,17 +57,19 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
   /**
    * Set new config
    */
-  setConfig (config) {
+  setConfig(config) {
     super.setConfig(config);
     this.pivot.setConfig(config);
   }
 
-  configureChart (chart) {
+  configureChart(chart) {
     let self = this;
     let configObj = self.config;
 
     chart.yAxis.axisLabelDistance(50);
-    chart.yAxis.tickFormat(function (d) { return self.yAxisTickFormat(d); });
+    chart.yAxis.tickFormat(function(d) {
+ return self.yAxisTickFormat(d);
+});
 
     self.chart.stacked(this.config.stacked);
 
@@ -136,8 +138,8 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
     return {
       template: 'app/visualization/builtins/visualization-displayXAxis.html',
       scope: {
-        config: configObj
-      }
+        config: configObj,
+      },
     };
   }
 }

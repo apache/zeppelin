@@ -15,24 +15,24 @@
 import TableData from './tabledata.js';
 import PivotTransformation from './pivot.js';
 
-describe('TableData build', function () {
+describe('TableData build', function() {
   let td;
 
-  beforeEach(function () {
+  beforeEach(function() {
     console.log(TableData);
     td = new TableData();
   });
 
-  it('should initialize the default value', function () {
+  it('should initialize the default value', function() {
     expect(td.columns.length).toBe(0);
     expect(td.rows.length).toBe(0);
     expect(td.comment).toBe('');
   });
 
-  it('should able to create Tabledata from paragraph result', function () {
+  it('should able to create Tabledata from paragraph result', function() {
     td.loadParagraphResult({
       type: 'TABLE',
-      msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
+      msg: 'key\tvalue\na\t10\nb\t20\n\nhello',
     });
 
     expect(td.columns.length).toBe(2);
@@ -44,7 +44,7 @@ describe('TableData build', function () {
 describe('PivotTransformation build', function() {
   let pt;
 
-  beforeEach(function () {
+  beforeEach(function() {
     console.log(PivotTransformation);
     pt = new PivotTransformation();
   });
@@ -63,9 +63,9 @@ describe('PivotTransformation build', function() {
                  {index: 3, name: '3'},
                  {index: 5, name: '5'}],
           groups: [],
-          values: []
-        }
-      }
+          values: [],
+        },
+      },
     };
     pt.tableDataColumns = [
         {index: 1, name: '1'},
@@ -88,7 +88,7 @@ describe('PivotTransformation build', function() {
     let td = new TableData();
     td.loadParagraphResult({
       type: 'TABLE',
-      msg: 'key\tvalue\na\t10\na\tnull\na\t0\na\t1\n'
+      msg: 'key\tvalue\na\t10\na\tnull\na\t0\na\t1\n',
     });
 
     let config = {
@@ -98,18 +98,18 @@ describe('PivotTransformation build', function() {
             {
               'name': 'key',
               'index': 0.0,
-            }
+            },
           ],
           groups: [],
           values: [
             {
               'name': 'value',
               'index': 1.0,
-              'aggr': 'sum'
-            }
-          ]
-        }
-      }
+              'aggr': 'sum',
+            },
+          ],
+        },
+      },
     };
 
     pt.setConfig(config);

@@ -39,11 +39,21 @@ export const TableColumnType = {
 
 export const DefaultTableColumnType = TableColumnType.STRING;
 
-export function isInputWidget (spec) { return spec.widget === Widget.INPUT; }
-export function isOptionWidget (spec) { return spec.widget === Widget.OPTION; }
-export function isCheckboxWidget (spec) { return spec.widget === Widget.CHECKBOX; }
-export function isTextareaWidget (spec) { return spec.widget === Widget.TEXTAREA; }
-export function isBtnGroupWidget (spec) { return spec.widget === Widget.BTN_GROUP; }
+export function isInputWidget(spec) {
+ return spec.widget === Widget.INPUT;
+}
+export function isOptionWidget(spec) {
+ return spec.widget === Widget.OPTION;
+}
+export function isCheckboxWidget(spec) {
+ return spec.widget === Widget.CHECKBOX;
+}
+export function isTextareaWidget(spec) {
+ return spec.widget === Widget.TEXTAREA;
+}
+export function isBtnGroupWidget(spec) {
+ return spec.widget === Widget.BTN_GROUP;
+}
 
 export function resetTableOptionConfig(config) {
   delete config.tableOptionSpecHash;
@@ -57,9 +67,15 @@ export function resetTableOptionConfig(config) {
 }
 
 export function initializeTableConfig(config, tableOptionSpecs) {
-  if (typeof config.tableOptionValue === 'undefined') { config.tableOptionValue = {}; }
-  if (typeof config.tableGridState === 'undefined') { config.tableGridState = {}; }
-  if (typeof config.tableColumnTypeState === 'undefined') { config.tableColumnTypeState = {}; }
+  if (typeof config.tableOptionValue === 'undefined') {
+ config.tableOptionValue = {};
+}
+  if (typeof config.tableGridState === 'undefined') {
+ config.tableGridState = {};
+}
+  if (typeof config.tableColumnTypeState === 'undefined') {
+ config.tableColumnTypeState = {};
+}
 
   // should remove `$$hashKey` using angular.toJson
   const newSpecHash = JSON.stringify(JSON.parse(angular.toJson(tableOptionSpecs)));
@@ -92,10 +108,18 @@ export function parseTableOption(specs, persistedTableOption) {
 
     if (s.valueType === ValueType.INT &&
       typeof parsed[name] !== 'number') {
-      try { parsed[name] = parseInt(parsed[name]); } catch (error) { parsed[name] = s.defaultValue; }
+      try {
+ parsed[name] = parseInt(parsed[name]);
+} catch (error) {
+ parsed[name] = s.defaultValue;
+}
     } else if (s.valueType === ValueType.FLOAT &&
       typeof parsed[name] !== 'number') {
-      try { parsed[name] = parseFloat(parsed[name]); } catch (error) { parsed[name] = s.defaultValue; }
+      try {
+ parsed[name] = parseFloat(parsed[name]);
+} catch (error) {
+ parsed[name] = s.defaultValue;
+}
     } else if (s.valueType === ValueType.BOOLEAN) {
       if (parsed[name] === 'false') {
         parsed[name] = false;
@@ -106,7 +130,11 @@ export function parseTableOption(specs, persistedTableOption) {
       }
     } else if (s.valueType === ValueType.JSON) {
       if (parsed[name] !== null && typeof parsed[name] !== 'object') {
-        try { parsed[name] = JSON.parse(parsed[name]); } catch (error) { parsed[name] = s.defaultValue; }
+        try {
+ parsed[name] = JSON.parse(parsed[name]);
+} catch (error) {
+ parsed[name] = s.defaultValue;
+}
       } else if (parsed[name] === null) {
         parsed[name] = s.defaultValue;
       }
@@ -117,7 +145,9 @@ export function parseTableOption(specs, persistedTableOption) {
 }
 
 export function isColumnNameUpdated(prevColumnNames, newColumnNames) {
-  if (typeof prevColumnNames === 'undefined') { return true; }
+  if (typeof prevColumnNames === 'undefined') {
+ return true;
+}
 
   let columnNameUpdated = false;
 
@@ -141,7 +171,9 @@ export function isColumnNameUpdated(prevColumnNames, newColumnNames) {
 export function updateColumnTypeState(columns, config, columnDefs) {
   const columnTypeState = config.tableColumnTypeState;
 
-  if (!columnTypeState) { return; }
+  if (!columnTypeState) {
+ return;
+}
 
   // compare objects because order might be changed
   const prevColumnNames = columnTypeState.names || {};

@@ -17,8 +17,8 @@ angular.module('zeppelinWebApp').directive('numberWidget', InterpreterNumberDire
 function InterpreterNumberDirective() {
   return {
     require: 'ngModel',
-    link: function (scope, element, attrs, modelCtrl) {
-      modelCtrl.$parsers.push(function (inputValue) {
+    link: function(scope, element, attrs, modelCtrl) {
+      modelCtrl.$parsers.push(function(inputValue) {
         let transformedInput = inputValue ? inputValue.replace(/[^\d.-]/g, '') : null;
         if (transformedInput !== inputValue) {
           modelCtrl.$setViewValue(transformedInput);
@@ -26,6 +26,6 @@ function InterpreterNumberDirective() {
         }
         return transformedInput;
       });
-    }
+    },
   };
 }

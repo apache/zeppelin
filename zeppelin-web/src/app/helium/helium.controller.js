@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-import { HeliumType, } from './helium-type';
+import {HeliumType} from './helium-type';
 
-export default function HeliumCtrl ($scope, $rootScope, $sce,
+export default function HeliumCtrl($scope, $rootScope, $sce,
                                    baseUrlSrv, ngToast, heliumService) {
   'ngInject';
 
@@ -33,10 +33,10 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
   $scope.defaultPackageConfigs = {}; // { pkgName, [{name, type, desc, value, defaultValue}] }
   $scope.intpDefaultIcon = $sce.trustAsHtml('<img src="../assets/images/maven_default_icon.png" style="width: 12px"/>');
 
-  function init () {
+  function init() {
     // get all package info and set config
     heliumService.getAllPackageInfoAndDefaultPackages()
-      .then(({ pkgSearchResults, defaultPackages }) => {
+      .then(({pkgSearchResults, defaultPackages}) => {
         // pagination
         $scope.itemsPerPage = 10;
         $scope.currentPage = 1;
@@ -48,11 +48,11 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
 
         return heliumService.getAllPackageConfigs();
       })
-      .then(defaultPackageConfigs => {
+      .then((defaultPackageConfigs) => {
         $scope.defaultPackageConfigs = defaultPackageConfigs;
         return heliumService.getVisualizationPackageOrder();
       })
-      .then(visPackageOrder => {
+      .then((visPackageOrder) => {
         setVisPackageOrder(visPackageOrder);
       });
   }
@@ -62,7 +62,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     $scope.bundleOrderChanged = false;
   };
 
-  let orderPackageByPubDate = function (a, b) {
+  let orderPackageByPubDate = function(a, b) {
     if (!a.pkg.published) {
       // Because local registry pkgs don't have 'published' field, put current time instead to show them first
       a.pkg.published = new Date().getTime();
@@ -71,33 +71,35 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     return new Date(a.pkg.published).getTime() - new Date(b.pkg.published).getTime();
   };
 
-  const classifyPkgType = function (packageInfo) {
+  const classifyPkgType = function(packageInfo) {
     let allTypesOfPkg = {};
     let vizTypePkg = [];
     let spellTypePkg = [];
     let intpTypePkg = [];
     let appTypePkg = [];
 
-    let packageInfoArr = Object.keys(packageInfo).map(key => packageInfo[key]);
+    let packageInfoArr = Object.keys(packageInfo).map((key) => packageInfo[key]);
     packageInfoArr = packageInfoArr.sort(orderPackageByPubDate).reverse();
 
     for (let name in packageInfoArr) {
-      let pkgs = packageInfoArr[name];
-      let pkgType = pkgs.pkg.type;
+      if (packageInfoArr.hasOwnProperty(name)) {
+        let pkgs = packageInfoArr[name];
+        let pkgType = pkgs.pkg.type;
 
-      switch (pkgType) {
-        case HeliumType.VISUALIZATION:
-          vizTypePkg.push(pkgs);
-          break;
-        case HeliumType.SPELL:
-          spellTypePkg.push(pkgs);
-          break;
-        case HeliumType.INTERPRETER:
-          intpTypePkg.push(pkgs);
-          break;
-        case HeliumType.APPLICATION:
-          appTypePkg.push(pkgs);
-          break;
+        switch (pkgType) {
+          case HeliumType.VISUALIZATION:
+            vizTypePkg.push(pkgs);
+            break;
+          case HeliumType.SPELL:
+            spellTypePkg.push(pkgs);
+            break;
+          case HeliumType.INTERPRETER:
+            intpTypePkg.push(pkgs);
+            break;
+          case HeliumType.APPLICATION:
+            appTypePkg.push(pkgs);
+            break;
+        }
       }
     }
 
@@ -105,62 +107,66 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
       vizTypePkg,
       spellTypePkg,
       intpTypePkg,
-      appTypePkg
+      appTypePkg,
     ];
     for (let idx in _.keys(HeliumType)) {
-      allTypesOfPkg[_.keys(HeliumType)[idx]] = pkgsArr[idx];
+      if (_.keys(HeliumType).hasOwnProperty(idx)) {
+        allTypesOfPkg[_.keys(HeliumType)[idx]] = pkgsArr[idx];
+      }
     }
 
     $scope.allTypesOfPkg = allTypesOfPkg;
   };
 
   $scope.bundleOrderListeners = {
-    accept: function (sourceItemHandleScope, destSortableScope) { return true; },
-    itemMoved: function (event) {},
-    orderChanged: function (event) {
+    accept: function(sourceItemHandleScope, destSortableScope) {
+ return true;
+},
+    itemMoved: function(event) {},
+    orderChanged: function(event) {
       $scope.bundleOrderChanged = true;
-    }
+    },
   };
 
-  $scope.saveBundleOrder = function () {
+  $scope.saveBundleOrder = function() {
     const confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '',
       message: 'Save changes?',
-      callback: function (result) {
+      callback: function(result) {
         if (result) {
           confirm.$modalFooter.find('button').addClass('disabled');
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
           heliumService.setVisualizationPackageOrder($scope.bundleOrder)
-            .success(function (data, status) {
+            .success(function(data, status) {
               setVisPackageOrder($scope.bundleOrder);
               confirm.close();
             })
-            .error(function (data, status) {
+            .error(function(data, status) {
               confirm.close();
               console.log('Failed to save order');
               BootstrapDialog.show({
                 title: 'Error on saving order ',
-                message: data.message
+                message: data.message,
               });
             });
           return false;
         }
-      }
+      },
     });
   };
 
-  let getLicense = function (name, artifact) {
-    let filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function (p) {
+  let getLicense = function(name, artifact) {
+    let filteredPkgSearchResults = _.filter($scope.defaultPackages[name], function(p) {
       return p.artifact === artifact;
     });
 
     let license;
     if (filteredPkgSearchResults.length === 0) {
-      filteredPkgSearchResults = _.filter($scope.pkgSearchResults[name], function (p) {
+      filteredPkgSearchResults = _.filter($scope.pkgSearchResults[name], function(p) {
         return p.pkg.artifact === artifact;
       });
 
@@ -177,7 +183,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     return license;
   };
 
-  const getHeliumTypeText = function (type) {
+  const getHeliumTypeText = function(type) {
     if (type === HeliumType.VISUALIZATION) {
       return `<a target="_blank" href="https://zeppelin.apache.org/docs/${$rootScope.zeppelinVersion}/development/helium/writing_visualization.html">${type}</a>`; // eslint-disable-line max-len
     } else if (type === HeliumType.SPELL) {
@@ -187,7 +193,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     }
   };
 
-  $scope.enable = function (name, artifact, type, groupId, description) {
+  $scope.enable = function(name, artifact, type, groupId, description) {
     let license = getLicense(name, artifact);
     let mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
     let zeppelinVersion = $rootScope.zeppelinVersion;
@@ -206,7 +212,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
         mavenArtifactInfoToHTML + ' </code></pre>' +
         '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
         'For more detailed information, see <a target="_blank" href=' +
-        url + '>Interpreter Installation.</a></p>'
+        url + '>Interpreter Installation.</a></p>',
       });
     } else {
       confirm = BootstrapDialog.confirm({
@@ -226,61 +232,61 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
           '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
           '<div style="font-size: 14px;">License</div>' +
           `<div style="color:gray">${license}</div>`,
-        callback: function (result) {
+        callback: function(result) {
           if (result) {
             confirm.$modalFooter.find('button').addClass('disabled');
             confirm.$modalFooter.find('button:contains("OK")')
               .html('<i class="fa fa-circle-o-notch fa-spin"></i> Enabling');
-            heliumService.enable(name, artifact, type).success(function (data, status) {
+            heliumService.enable(name, artifact, type).success(function(data, status) {
               init();
               confirm.close();
-            }).error(function (data, status) {
+            }).error(function(data, status) {
               confirm.close();
               console.log('Failed to enable package %o %o. %o', name, artifact, data);
               BootstrapDialog.show({
                 title: 'Error on enabling ' + name,
-                message: data.message
+                message: data.message,
               });
             });
             return false;
           }
-        }
+        },
       });
     }
   };
 
-  $scope.disable = function (name, artifact) {
+  $scope.disable = function(name, artifact) {
     const confirm = BootstrapDialog.confirm({
       closable: false,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '<div style="font-weight: 300;">Do you want to disable Helium Package?</div>',
       message: artifact,
-      callback: function (result) {
+      callback: function(result) {
         if (result) {
           confirm.$modalFooter.find('button').addClass('disabled');
           confirm.$modalFooter.find('button:contains("OK")')
             .html('<i class="fa fa-circle-o-notch fa-spin"></i> Disabling');
           heliumService.disable(name)
-          .success(function (data, status) {
+          .success(function(data, status) {
             init();
             confirm.close();
           })
-          .error(function (data, status) {
+          .error(function(data, status) {
             confirm.close();
             console.log('Failed to disable package %o. %o', name, data);
             BootstrapDialog.show({
               title: 'Error on disabling ' + name,
-              message: data.message
+              message: data.message,
             });
           });
           return false;
         }
-      }
+      },
     });
   };
 
-  $scope.toggleVersions = function (pkgName) {
+  $scope.toggleVersions = function(pkgName) {
     if ($scope.showVersions[pkgName]) {
       $scope.showVersions[pkgName] = false;
     } else {
@@ -288,46 +294,46 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     }
   };
 
-  $scope.isLocalPackage = function (pkgSearchResult) {
+  $scope.isLocalPackage = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return pkg.artifact && !pkg.artifact.includes('@');
   };
 
-  $scope.hasNpmLink = function (pkgSearchResult) {
+  $scope.hasNpmLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.SPELL || pkg.type === HeliumType.VISUALIZATION) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
 
-  $scope.hasMavenLink = function (pkgSearchResult) {
+  $scope.hasMavenLink = function(pkgSearchResult) {
     const pkg = pkgSearchResult.pkg;
     return (pkg.type === HeliumType.APPLICATION || pkg.type === HeliumType.INTERPRETER) &&
       !$scope.isLocalPackage(pkgSearchResult);
   };
 
-  $scope.getPackageSize = function (pkgSearchResult, targetPkgType) {
+  $scope.getPackageSize = function(pkgSearchResult, targetPkgType) {
     let result = [];
-    _.map(pkgSearchResult, function (pkg) {
+    _.map(pkgSearchResult, function(pkg) {
       result.push(_.find(pkg, {type: targetPkgType}));
     });
     return _.compact(result).length;
   };
 
-  $scope.configExists = function (pkgSearchResult) {
+  $scope.configExists = function(pkgSearchResult) {
     // helium package config is persisted per version
     return pkgSearchResult.pkg.config && pkgSearchResult.pkg.artifact;
   };
 
-  $scope.configOpened = function (pkgSearchResult) {
+  $scope.configOpened = function(pkgSearchResult) {
     return pkgSearchResult.configOpened && !pkgSearchResult.configFetching;
   };
 
-  $scope.getConfigButtonClass = function (pkgSearchResult) {
+  $scope.getConfigButtonClass = function(pkgSearchResult) {
     return (pkgSearchResult.configOpened && pkgSearchResult.configFetching)
       ? 'disabled' : '';
   };
 
-  $scope.toggleConfigButton = function (pkgSearchResult) {
+  $scope.toggleConfigButton = function(pkgSearchResult) {
     if (pkgSearchResult.configOpened) {
       pkgSearchResult.configOpened = false;
       return;
@@ -339,13 +345,13 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     pkgSearchResult.configOpened = true;
 
     heliumService.getSinglePackageConfigs(pkg)
-      .then(confs => {
+      .then((confs) => {
         $scope.defaultPackageConfigs[pkgName] = confs;
         pkgSearchResult.configFetching = false;
       });
   };
 
-  $scope.saveConfig = function (pkgSearchResult) {
+  $scope.saveConfig = function(pkgSearchResult) {
     const pkgName = pkgSearchResult.pkg.name;
     const currentConf = $scope.defaultPackageConfigs[pkgName];
 
@@ -355,7 +361,7 @@ export default function HeliumCtrl ($scope, $rootScope, $sce,
     });
   };
 
-  $scope.getDescriptionText = function (pkgSearchResult) {
+  $scope.getDescriptionText = function(pkgSearchResult) {
     return $sce.trustAsHtml(pkgSearchResult.pkg.description);
   };
 

@@ -50,7 +50,7 @@ export default class NetworkData extends TableData {
     const comment = '';
     const entities = this.graph.nodes.concat(this.graph.edges);
     const baseColumnNames = [{name: 'id', index: 0, aggr: 'sum'}];
-    const containsLabelField = _.find(entities, (entity) => 'label' in entity) != null;
+    const containsLabelField = _.find(entities, (entity) => 'label' in entity) !== null;
     if (this.graph.labels || this.graph.types || containsLabelField) {
       baseColumnNames.push({name: 'label', index: 1, aggr: 'sum'});
     }

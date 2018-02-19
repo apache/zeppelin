@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('ElasticInputCtrl', ElasticInputCtrl);
 
-function ElasticInputCtrl () {
+function ElasticInputCtrl() {
   let vm = this;
   vm.showEditor = false;
   vm.value = '';

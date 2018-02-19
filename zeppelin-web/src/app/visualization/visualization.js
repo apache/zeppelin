@@ -16,7 +16,7 @@
  * Base class for visualization.
  */
 export default class Visualization {
-  constructor (targetEl, config) {
+  constructor(targetEl, config) {
     this.targetEl = targetEl;
     this.config = config;
     this._dirty = false;
@@ -29,7 +29,7 @@ export default class Visualization {
    * @abstract
    * @return {Transformation}
    */
-  getTransformation () {
+  getTransformation() {
     // override this
     throw new TypeError('Visualization.getTransformation() should be overrided');
   }
@@ -38,7 +38,7 @@ export default class Visualization {
    * Method will be invoked when data or configuration changed.
    * @abstract
    */
-  render (tableData) {
+  render(tableData) {
     // override this
     throw new TypeError('Visualization.render() should be overrided');
   }
@@ -46,7 +46,7 @@ export default class Visualization {
   /**
    * Refresh visualization.
    */
-  refresh () {
+  refresh() {
     // override this
     console.warn('A chart is missing refresh function, it might not work preperly')
   }
@@ -55,7 +55,7 @@ export default class Visualization {
    * Method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
-  destroy () {
+  destroy() {
     // override this
   }
 
@@ -65,14 +65,14 @@ export default class Visualization {
    *   scope : an object to bind to template scope
    * }
    */
-  getSetting () {
+  getSetting() {
     // override this
   }
 
   /**
    * Activate. Invoked when visualization is selected.
    */
-  activate () {
+  activate() {
     if (!this._active || this._dirty) {
       this.refresh();
       this._dirty = false;
@@ -83,21 +83,21 @@ export default class Visualization {
   /**
    * Deactivate. Invoked when visualization is de selected.
    */
-  deactivate () {
+  deactivate() {
     this._active = false;
   }
 
   /**
    * Is active.
    */
-  isActive () {
+  isActive() {
     return this._active;
   }
 
   /**
    * When window or paragraph is resized.
    */
-  resize () {
+  resize() {
     if (this.isActive()) {
       this.refresh();
     } else {
@@ -108,7 +108,7 @@ export default class Visualization {
   /**
    * Set new config.
    */
-  setConfig (config) {
+  setConfig(config) {
     this.config = config;
     if (this.isActive()) {
       this.refresh();
@@ -120,14 +120,14 @@ export default class Visualization {
   /**
    * Emit config. config will sent to server and saved.
    */
-  emitConfig (config) {
+  emitConfig(config) {
     this._emitter(config);
   }
 
   /**
    * Render setting.
    */
-  renderSetting (targetEl) {
+  renderSetting(targetEl) {
     let setting = this.getSetting();
     if (!setting) {
       return;
@@ -136,9 +136,11 @@ export default class Visualization {
     // already readered
     if (this._scope) {
       let self = this;
-      this._scope.$apply(function () {
+      this._scope.$apply(function() {
         for (let k in setting.scope) {
-          self._scope[k] = setting.scope[k];
+          if (setting.scope.hasOwnProperty(k)) {
+            self._scope[k] = setting.scope[k];
+          }
         }
 
         for (let k in self._prevSettingScope) {
@@ -154,13 +156,15 @@ export default class Visualization {
 
     let scope = this._createNewScope();
     for (let k in setting.scope) {
-      scope[k] = setting.scope[k];
+      if (setting.scope.hasOwnProperty(k)) {
+        scope[k] = setting.scope[k];
+      }
     }
     let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      this._templateRequest(template).then(t =>
+      this._templateRequest(template).then((t) =>
       _renderSetting(this, targetEl, t, scope)
       );
     } else {
@@ -169,7 +173,7 @@ export default class Visualization {
   }
 }
 
-function _renderSetting (instance, targetEl, template, scope) {
+function _renderSetting(instance, targetEl, template, scope) {
   instance._targetEl = targetEl;
   targetEl.html(template);
   instance._compile(targetEl.contents())(scope);

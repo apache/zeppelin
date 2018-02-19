@@ -1,8 +1,8 @@
 
-describe('Controller: Credential', function () {
+describe('Controller: Credential', function() {
   beforeEach(angular.mock.module('zeppelinWebApp'));
 
-  let baseUrlSrvMock = { getRestApiBase: () => '' };
+  let baseUrlSrvMock = {getRestApiBase: () => ''};
 
   let $scope;
   let $controller; // controller generator
@@ -14,21 +14,21 @@ describe('Controller: Credential', function () {
     $httpBackend = _$httpBackend_;
   }));
 
-  const credentialResponse = { 'spark.testCredential': { username: 'user1', password: 'password1' }, };
+  const credentialResponse = {'spark.testCredential': {username: 'user1', password: 'password1'}};
   const interpreterResponse = [
-    { 'name': 'spark', 'group': 'spark', },
-    { 'name': 'md', 'group': 'md', },
+    {'name': 'spark', 'group': 'spark'},
+    {'name': 'md', 'group': 'md'},
   ]; // simplified
 
   function setupInitialization(credentialRes, interpreterRes) {
     // requests should follow the exact order
     $httpBackend
       .when('GET', '/interpreter/setting')
-      .respond(200, { body: interpreterRes, });
+      .respond(200, {body: interpreterRes});
     $httpBackend.expectGET('/interpreter/setting');
     $httpBackend
       .when('GET', '/credential')
-      .respond(200, { body: { userCredentials: credentialRes, } });
+      .respond(200, {body: {userCredentials: credentialRes}});
     $httpBackend.expectGET('/credential');
 
     // should flush after calling this function
@@ -42,7 +42,7 @@ describe('Controller: Credential', function () {
     $httpBackend.flush();
 
     expect($scope.credentialInfo).toEqual(
-      [{ entity: 'spark.testCredential', username: 'user1', password: 'password1'}]
+      [{entity: 'spark.testCredential', username: 'user1', password: 'password1'}]
     );
     expect($scope.availableInterpreters).toEqual(
       ['spark.spark', 'md.md']
@@ -88,7 +88,7 @@ describe('Controller: Credential', function () {
     setupInitialization(credentialResponse, interpreterResponse);
 
     // when
-    const newCredential = { entity: 'spark.sql', username: 'user2', password: 'password2'};
+    const newCredential = {entity: 'spark.sql', username: 'user2', password: 'password2'};
 
     $httpBackend
       .when('PUT', '/credential', newCredential)
@@ -109,6 +109,6 @@ describe('Controller: Credential', function () {
   });
 
   function createController() {
-    return $controller('CredentialCtrl', { $scope: $scope, baseUrlSrv: baseUrlSrvMock, });
+    return $controller('CredentialCtrl', {$scope: $scope, baseUrlSrv: baseUrlSrvMock});
   }
 });
