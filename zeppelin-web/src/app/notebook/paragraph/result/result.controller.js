@@ -247,6 +247,13 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         appendTableOutput(data)
       }
     }
+    if (paragraph.id === data.paragraphId &&
+      resultIndex === data.index &&
+      paragraph.status === ParagraphStatus.FINISHED) {
+      if ($scope.type === DefaultDisplayType.TABLE) {
+        appendTableOutput(data)
+      }
+    }
   })
 
   const updateData = function (result, config, paragraphRef, index) {
@@ -519,22 +526,23 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
   }
 
   function appendTableOutput(data) {
-    const elemId = `p${$scope.id}_table`
     if (!$scope.$parent.result.data) {
       $scope.$parent.result.data = []
+      tableData = undefined
     }
     if (!$scope.$parent.result.data[data.index]) {
       $scope.$parent.result.data[data.index] = ''
     }
-    $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(data.data)
 
-    if (tableData.columns.length === 0) {
+    if (!tableData) {
+      $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(data.data)
       $rootScope.$broadcast(
         'updateResult',
         {'data': $scope.$parent.result.data[data.index], 'type': 'TABLE'},
         undefined,
         paragraph,
         data.index)
+      let elemId = `p${$scope.id}_table`
       renderGraph(elemId, 'table', true)
     } else {
       let textRows = data.data.split('\n')
