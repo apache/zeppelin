@@ -81,18 +81,33 @@ public class IPythonInterpreterTest {
     InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    result = interpreter.interpret("import sys\nprint(sys.version_info)", getInterpreterContext());
+
+    InterpreterContext context = getInterpreterContext();
+    result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    Thread.sleep(100);
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    boolean isPython2 = interpreterResultMessages.get(0).getData().equals("2\n");
 
     // single output without print
-    InterpreterContext context = getInterpreterContext();
+    context = getInterpreterContext();
     result = interpreter.interpret("'hello world'", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("'hello world'", interpreterResultMessages.get(0).getData());
 
+    // unicode
+    context = getInterpreterContext();
+    result = interpreter.interpret("print(u'你好')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals("你好\n", interpreterResultMessages.get(0).getData());
+    
     // only the last statement is printed
     context = getInterpreterContext();
     result = interpreter.interpret("'hello world'\n'hello world2'", context);

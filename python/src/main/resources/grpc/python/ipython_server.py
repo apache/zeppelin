@@ -27,7 +27,6 @@ import ipython_pb2_grpc
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
-
 is_py2 = sys.version[0] == '2'
 if is_py2:
     import Queue as queue
@@ -51,7 +50,7 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
 
     def execute(self, request, context):
         print("execute code:\n")
-        print(request.code)
+        print(request.code.encode('utf-8'))
         sys.stdout.flush()
         stdout_queue = queue.Queue(maxsize = 10)
         stderr_queue = queue.Queue(maxsize = 10)
