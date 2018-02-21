@@ -16,6 +16,7 @@ import {SpellResult} from '../../spell'
 import {isParagraphRunning, ParagraphStatus} from './paragraph.status'
 
 import moment from 'moment'
+import DiffMatchPatch from 'diff-match-patch'
 
 require('moment-duration-format')
 
@@ -41,6 +42,10 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.paragraph.results.msg = []
   $scope.originalText = ''
   $scope.editor = null
+  $scope.cursorPosition = null
+  $scope.indexSave = 0
+  $scope.indexLoad = 0
+  $scope.diffMatchPatch = new DiffMatchPatch()
 
   // transactional info for spell execution
   $scope.spellTransaction = {
@@ -698,9 +703,26 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     let dirtyText = session.getValue()
     $scope.dirtyText = dirtyText
     if ($scope.dirtyText !== $scope.originalText) {
-      $scope.startSaveTimer()
+      if ($scope.collaborativeMode) {
+        $scope.sendPatch()
+      } else {
+        $scope.startSaveTimer()
+      }
     }
     setParagraphMode(session, dirtyText, editor.getCursorPosition())
+    if ($scope.cursorPosition && $scope.cursorPosition && $scope.cursorPosition) {
+      editor.moveCursorToPosition($scope.cursorPosition)
+      console.log('Load: ' + $scope.indexLoad++ + ' | row: ' + $scope.cursorPosition.row +
+        ' | column: ' + $scope.cursorPosition.column)
+      $scope.cursorPosition = null
+    }
+  }
+
+  $scope.sendPatch = function () {
+    $scope.originalText = $scope.originalText ? $scope.originalText : ''
+    let patch = $scope.diffMatchPatch.patch_make($scope.originalText, $scope.dirtyText).toString()
+    $scope.originalText = $scope.dirtyText
+    patchParagraph($scope.paragraph, patch)
   }
 
   $scope.aceLoaded = function (_editor) {
@@ -970,6 +992,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName)
       $timeout(
         $scope.$on('editorSetting', function (event, data) {
+          $rootScope.$broadcast('collaborativeModeStatus', {'status': data.collaborativeModeStatus})
           if (paragraph.id === data.paragraphId) {
             deferred.resolve(data)
           }
@@ -1164,6 +1187,11 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
 
     return websocketMsgSrv.commitParagraph(id, title, text, config, params,
       $route.current.pathParams.noteId)
+  }
+
+  const patchParagraph = function (paragraph, patch) {
+    const id = paragraph.id
+    return websocketMsgSrv.patchParagraph(id, $route.current.pathParams.noteId, patch)
   }
 
   /** Utility function */
@@ -1459,6 +1487,26 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     }
 
     $scope.updateParagraph(oldPara, newPara, updateCallback)
+  })
+
+  $scope.$on('patchReceived', function (event, data) {
+    if (data.paragraphId === $scope.paragraph.id) {
+      let patch = data.patch
+      patch = $scope.diffMatchPatch.patch_fromText(patch)
+      if (!$scope.paragraph.text || $scope.paragraph.text === undefined) {
+        $scope.paragraph.text = ''
+      }
+      $scope.paragraph.text = $scope.diffMatchPatch.patch_apply(patch, $scope.paragraph.text)[0]
+      $scope.originalText = angular.copy($scope.paragraph.text)
+      let newPosition = $scope.editor.getCursorPosition()
+      if (newPosition && newPosition.row && newPosition.column) {
+        $scope.cursorPosition = $scope.editor.getCursorPosition()
+        console.log('Save: ' + $scope.indexSave++ + ' | row: ' + $scope.cursorPosition.row +
+          ' | column: ' + $scope.cursorPosition.column)
+      } else {
+        console.log('NOOOOOOO Save')
+      }
+    }
   })
 
   $scope.$on('updateProgress', function (event, data) {

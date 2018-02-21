@@ -247,6 +247,17 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
+    patchParagraph: function (paragraphId, noteId, patch) {
+      return websocketEvents.sendNewEvent({
+        op: 'PATCH_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          noteId: noteId,
+          patch: patch
+        }
+      })
+    },
+
     importNote: function (note) {
       websocketEvents.sendNewEvent({
         op: 'IMPORT_NOTE',

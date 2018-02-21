@@ -78,6 +78,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 
 /**
  * Zeppelin websocket service.
@@ -103,6 +104,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
 
+  private Map<String, Boolean> collaborativeModeList = new HashMap<>();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -359,6 +361,9 @@ public class NotebookServer extends WebSocketServlet
         case REMOVE_NOTE_FORMS:
           removeNoteForms(conn, userAndRoles, notebook, messagereceived);
           break;
+        case PATCH_PARAGRAPH:
+          patchParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
         default:
           break;
       }
@@ -415,6 +420,7 @@ public class NotebookServer extends WebSocketServlet
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
+      collaborativeStatusCheck(noteId, socketList);
     }
   }
 
@@ -424,6 +430,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketList != null) {
         socketList.remove(socket);
       }
+      collaborativeStatusCheck(noteId, socketList);
     }
   }
 
@@ -439,6 +446,20 @@ public class NotebookServer extends WebSocketServlet
       for (String noteId : keys) {
         removeConnectionFromNote(noteId, socket);
       }
+    }
+  }
+
+  private void collaborativeStatusCheck(String noteId, List<NotebookSocket> socketList) {
+    if (!collaborativeModeList.containsKey(noteId)) {
+      collaborativeModeList.put(noteId, false);
+    }
+    Boolean collaborativeStatusOld = collaborativeModeList.get(noteId);
+    Boolean collaborativeStatusNew = socketList.size() > 1;
+    if (collaborativeStatusNew != collaborativeStatusOld) {
+      collaborativeModeList.put(noteId, collaborativeStatusNew);
+      Message message = new Message(OP.COLLABORATIVE_MODE_STATUS);
+      message.put("status", collaborativeStatusNew);
+      broadcast(noteId, message);
     }
   }
 
@@ -1272,6 +1293,40 @@ public class NotebookServer extends WebSocketServlet
     } else {
       broadcastParagraph(note, p);
     }
+  }
+
+  private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                              Notebook notebook, Message fromMessage) throws IOException {
+    String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return;
+    }
+
+    String noteId = getOpenNoteId(conn);
+    if (noteId == null) {
+      noteId = (String) fromMessage.get("noteId");
+    }
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+
+    final Note note = notebook.getNote(noteId);
+    Paragraph p = note.getParagraph(paragraphId);
+
+    DiffMatchPatch dmp = new DiffMatchPatch();
+    String patchText = (String) fromMessage.get("patch");
+    patchText = patchText.replace(",@@", "@@");// javascript add "," if
+    LinkedList<DiffMatchPatch.Patch> patches =
+        (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
+
+    String paragraphText = p.getText();
+    paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];
+    p.setText(paragraphText);
+    Message message = new Message(OP.PATCH_PARAGRAPH).put("patch", patchText)
+                                                     .put("paragraphId", p.getId());
+    broadcastExcept(note.getId(), message, conn);
   }
 
   private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -2438,6 +2493,7 @@ public class NotebookServer extends WebSocketServlet
         notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
+    resp.put("collaborativeModeStatus", collaborativeModeList.get(noteId));
     conn.send(serializeMessage(resp));
   }
 

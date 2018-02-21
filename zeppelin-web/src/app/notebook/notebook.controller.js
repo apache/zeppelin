@@ -35,6 +35,7 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
   $scope.viewOnly = false
   $scope.showSetting = false
   $scope.showRevisionsComparator = false
+  $scope.collaborativeMode = false
   $scope.looknfeelOption = ['default', 'simple', 'report']
   $scope.cronOption = [
     {name: 'None', value: undefined},
@@ -1230,6 +1231,14 @@ function NotebookCtrl ($scope, $route, $routeParams, $location, $rootScope,
     }
 
     $scope.saveCursorPosition(paragraph)
+  })
+
+  $scope.$on('collaborativeModeStatus', function (event, data) {
+    $scope.collaborativeMode = Boolean(data.status)
+  })
+
+  $scope.$on('patchReceived', function (event, data) {
+    $scope.collaborativeMode = true
   })
 
   $scope.$on('runAllBelowAndCurrent', function (event, paragraph, isNeedConfirm) {
