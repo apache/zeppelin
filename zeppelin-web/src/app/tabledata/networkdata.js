@@ -42,15 +42,15 @@ export default class NetworkData extends TableData {
 
     this.graph.edges = this.graph.edges || [];
     this.networkNodes = angular.equals({}, this.graph.labels || {})
-            ? null : {count: this.graph.nodes.length, labels: this.graph.labels};
+      ? null : {count: this.graph.nodes.length, labels: this.graph.labels};
     this.networkRelationships = angular.equals([], this.graph.types || [])
-            ? null : {count: this.graph.edges.length, types: this.graph.types};
+      ? null : {count: this.graph.edges.length, types: this.graph.types};
 
     const rows = [];
     const comment = '';
     const entities = this.graph.nodes.concat(this.graph.edges);
     const baseColumnNames = [{name: 'id', index: 0, aggr: 'sum'}];
-    const containsLabelField = _.find(entities, (entity) => 'label' in entity) !== null;
+    const containsLabelField = _.find(entities, (entity) => 'label' in entity) !== undefined;
     if (this.graph.labels || this.graph.types || containsLabelField) {
       baseColumnNames.push({name: 'label', index: 1, aggr: 'sum'});
     }
@@ -71,7 +71,7 @@ export default class NetworkData extends TableData {
       for (let j = 0; j < columnNames.length; j++) {
         const name = columnNames[j].name;
         const value = name in entity && internalFieldsToJump.indexOf(name) === -1
-            ? entity[name] : entity.data[name];
+          ? entity[name] : entity.data[name];
         const parsedValue = value === null || value === undefined ? '' : value;
         col.push(parsedValue);
       }
