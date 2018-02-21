@@ -551,7 +551,9 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
           let row = textRows[i].split('\t')
           tableData.rows.push(row)
           let builtInViz = builtInVisualizations['table']
-          builtInViz.instance.append([row], tableData.columns)
+          if (builtInViz.instance !== undefined) {
+            builtInViz.instance.append([row], tableData.columns)
+          }
         }
       }
     }
