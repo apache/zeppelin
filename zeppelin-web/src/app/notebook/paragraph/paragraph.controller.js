@@ -673,6 +673,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
   $scope.changeColWidth = function (paragraph, width) {
     angular.element('.navbar-right.open').removeClass('open')
     paragraph.config.colWidth = width
+    $scope.$broadcast('paragraphResized', $scope.paragraph.id)
     commitParagraph(paragraph)
   }
 

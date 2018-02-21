@@ -48,6 +48,7 @@ export default class Visualization {
    */
   refresh () {
     // override this
+    console.warn('A chart is missing refresh function, it might not work preperly')
   }
 
   /**

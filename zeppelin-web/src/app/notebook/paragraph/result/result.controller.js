@@ -634,6 +634,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
         builtInViz.instance.setConfig(config)
         builtInViz.instance.render(transformed)
         builtInViz.instance.renderSetting(visualizationSettingTargetEl)
+        builtInViz.instance.activate()
       }
     } else {
       afterLoaded = function (loadedElem) {
@@ -755,7 +756,7 @@ function ResultCtrl ($scope, $rootScope, $route, $window, $routeParams, $locatio
     if (paragraphId === paragraph.id) {
       let builtInViz = builtInVisualizations[$scope.graphMode]
       if (builtInViz && builtInViz.instance) {
-        builtInViz.instance.resize()
+        $timeout(_ => builtInViz.instance.resize(), 200)
       }
     }
   })
