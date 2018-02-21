@@ -40,6 +40,12 @@
         "defaultValue": "30000",
         "description": "time out for ipython launch",
         "type": "number"
+      },
+      "zeppelin.ipython.grpc.framesize": {
+        "propertyName": "zeppelin.ipython.grpc.framesize",
+        "defaultValue": "33554432",
+        "description": "grpc framesize, default is 32M",
+        "type": "number"
       }
     },
     "editor": {

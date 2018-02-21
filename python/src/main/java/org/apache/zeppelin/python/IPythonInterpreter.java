@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.python;
 
+import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -142,7 +143,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       int jvmGatewayPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       LOGGER.info("Launching IPython Kernel at port: " + ipythonPort);
       LOGGER.info("Launching JVM Gateway at port: " + jvmGatewayPort);
-      ipythonClient = new IPythonClient("127.0.0.1", ipythonPort);
+      int framesize = Integer.parseInt(getProperty("zeppelin.ipython.grpc.framesize",
+          32 * 1024 * 1024 + ""));
+      ipythonClient = new IPythonClient(ManagedChannelBuilder.forAddress("127.0.0.1", ipythonPort)
+          .usePlaintext(true).maxInboundMessageSize(framesize));
       launchIPythonKernel(ipythonPort);
       setupJVMGateway(jvmGatewayPort);
     } catch (Exception e) {
