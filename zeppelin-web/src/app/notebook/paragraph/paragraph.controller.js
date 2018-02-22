@@ -876,6 +876,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete')
 
       // Show autocomplete on tab
+      /* 
       $scope.editor.commands.addCommand({
         name: 'tabAutocomplete',
         bindKey: {
@@ -901,6 +902,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
           }
         }
       })
+      */
 
       let keyBindingEditorFocusAction = function (scrollValue) {
         let numRows = $scope.editor.getSession().getLength()
