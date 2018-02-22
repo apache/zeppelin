@@ -63,72 +63,70 @@ public abstract class AbstractTestRestApi {
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
   protected static final boolean wasRunning = checkIfServerIsRunning();
-  static boolean pySpark = false;
-  static boolean sparkR = false;
   static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
   private static String zeppelinShiro =
       "[users]\n" +
-      "admin = password1, admin\n" +
-      "user1 = password2, role1, role2\n" +
-      "user2 = password3, role3\n" +
-      "user3 = password4, role2\n" +
-      "[main]\n" +
-      "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
-      "securityManager.sessionManager = $sessionManager\n" +
-      "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
-      "shiro.loginUrl = /api/login\n" +
-      "[roles]\n" +
-      "role1 = *\n" +
-      "role2 = *\n" +
-      "role3 = *\n" +
-      "admin = *\n" +
-      "[urls]\n" +
-      "/api/version = anon\n" +
-      "/** = authc";
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "user2 = password3, role3\n" +
+          "user3 = password4, role2\n" +
+          "[main]\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "role1 = *\n" +
+          "role2 = *\n" +
+          "role3 = *\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
 
   private static String zeppelinShiroKnox =
       "[users]\n" +
-      "admin = password1, admin\n" +
-      "user1 = password2, role1, role2\n" +
-      "[main]\n" +
-      "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n" +
-      "knoxJwtRealm.providerUrl = https://domain.example.com/\n" +
-      "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n" +
-      "knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout\n" +
-      "knoxJwtRealm.redirectParam = originalUrl\n" +
-      "knoxJwtRealm.cookieName = hadoop-jwt\n" +
-      "knoxJwtRealm.publicKeyPath = knox-sso.pem\n" +
-      "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
-      "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
-      "securityManager.sessionManager = $sessionManager\n" +
-      "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
-      "shiro.loginUrl = /api/login\n" +
-      "[roles]\n" +
-      "admin = *\n" +
-      "[urls]\n" +
-      "/api/version = anon\n" +
-      "/** = authc";
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "[main]\n" +
+          "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n" +
+          "knoxJwtRealm.providerUrl = https://domain.example.com/\n" +
+          "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n" +
+          "knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout\n" +
+          "knoxJwtRealm.redirectParam = originalUrl\n" +
+          "knoxJwtRealm.cookieName = hadoop-jwt\n" +
+          "knoxJwtRealm.publicKeyPath = knox-sso.pem\n" +
+          "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
 
   private static File knoxSsoPem = null;
   private static String KNOX_SSO_PEM =
       "-----BEGIN CERTIFICATE-----\n"
-      + "MIIChjCCAe+gAwIBAgIJALYrdDEXKwcqMA0GCSqGSIb3DQEBBQUAMIGEMQswCQYD\n"
-      + "VQQGEwJVUzENMAsGA1UECBMEVGVzdDENMAsGA1UEBxMEVGVzdDEPMA0GA1UEChMG\n"
-      + "SGFkb29wMQ0wCwYDVQQLEwRUZXN0MTcwNQYDVQQDEy5jdHItZTEzNS0xNTEyMDY5\n"
-      + "MDMyOTc1LTU0NDctMDEtMDAwMDAyLmh3eC5zaXRlMB4XDTE3MTIwNDA5NTIwMFoX\n"
-      + "DTE4MTIwNDA5NTIwMFowgYQxCzAJBgNVBAYTAlVTMQ0wCwYDVQQIEwRUZXN0MQ0w\n"
-      + "CwYDVQQHEwRUZXN0MQ8wDQYDVQQKEwZIYWRvb3AxDTALBgNVBAsTBFRlc3QxNzA1\n"
-      + "BgNVBAMTLmN0ci1lMTM1LTE1MTIwNjkwMzI5NzUtNTQ0Ny0wMS0wMDAwMDIuaHd4\n"
-      + "LnNpdGUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAILFoXdz3yCy2INncYM2\n"
-      + "y72fYrONoQIxeeIzeJIibXLTuowSju90Q6aThSyUsQ6NEia2flnlKiCgINTNAodh\n"
-      + "UPUVGyGT+NMrqJzzpXAll2UUa6gIUPnXYEzYNkMIpbQOAo5BAg7YamaidbPPiT3W\n"
-      + "wAD1rWo3AMUY+nZJrAi4dEH5AgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAB0R07/lo\n"
-      + "4hD+WeDEeyLTnsbFnPNXxBT1APMUmmuCjcky/19ZB8OphqTKIITONdOK/XHdjZHG\n"
-      + "JDOfhBkVknL42lSi45ahUAPS2PZOlQL08MbS8xajP1faterm+aHcdwJVK9dK76RB\n"
-      + "/bA8TFNPblPxavIOcd+R+RfFmT1YKfYIhco=\n"
-      + "-----END CERTIFICATE-----";
+          + "MIIChjCCAe+gAwIBAgIJALYrdDEXKwcqMA0GCSqGSIb3DQEBBQUAMIGEMQswCQYD\n"
+          + "VQQGEwJVUzENMAsGA1UECBMEVGVzdDENMAsGA1UEBxMEVGVzdDEPMA0GA1UEChMG\n"
+          + "SGFkb29wMQ0wCwYDVQQLEwRUZXN0MTcwNQYDVQQDEy5jdHItZTEzNS0xNTEyMDY5\n"
+          + "MDMyOTc1LTU0NDctMDEtMDAwMDAyLmh3eC5zaXRlMB4XDTE3MTIwNDA5NTIwMFoX\n"
+          + "DTE4MTIwNDA5NTIwMFowgYQxCzAJBgNVBAYTAlVTMQ0wCwYDVQQIEwRUZXN0MQ0w\n"
+          + "CwYDVQQHEwRUZXN0MQ8wDQYDVQQKEwZIYWRvb3AxDTALBgNVBAsTBFRlc3QxNzA1\n"
+          + "BgNVBAMTLmN0ci1lMTM1LTE1MTIwNjkwMzI5NzUtNTQ0Ny0wMS0wMDAwMDIuaHd4\n"
+          + "LnNpdGUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAILFoXdz3yCy2INncYM2\n"
+          + "y72fYrONoQIxeeIzeJIibXLTuowSju90Q6aThSyUsQ6NEia2flnlKiCgINTNAodh\n"
+          + "UPUVGyGT+NMrqJzzpXAll2UUa6gIUPnXYEzYNkMIpbQOAo5BAg7YamaidbPPiT3W\n"
+          + "wAD1rWo3AMUY+nZJrAi4dEH5AgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAB0R07/lo\n"
+          + "4hD+WeDEeyLTnsbFnPNXxBT1APMUmmuCjcky/19ZB8OphqTKIITONdOK/XHdjZHG\n"
+          + "JDOfhBkVknL42lSi45ahUAPS2PZOlQL08MbS8xajP1faterm+aHcdwJVK9dK76RB\n"
+          + "/bA8TFNPblPxavIOcd+R+RfFmT1YKfYIhco=\n"
+          + "-----END CERTIFICATE-----";
 
   protected static File zeppelinHome;
   protected static File confDir;
@@ -159,7 +157,7 @@ public abstract class AbstractTestRestApi {
     @Override
     public void run() {
       try {
-        ZeppelinServer.main(new String[] {""});
+        ZeppelinServer.main(new String[]{""});
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
         throw new RuntimeException(e);
@@ -190,7 +188,7 @@ public abstract class AbstractTestRestApi {
         isRunningWithAuth = true;
         // Set Anonymous session to false.
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
-        
+
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
         if (!shiroIni.exists()) {
@@ -246,65 +244,9 @@ public abstract class AbstractTestRestApi {
         throw new RuntimeException("Can not start Zeppelin server");
       }
       LOG.info("Test Zeppelin stared.");
-
-
-      // assume first one is spark
-      InterpreterSetting sparkIntpSetting = null;
-      for(InterpreterSetting intpSetting :
-          ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
-        if (intpSetting.getName().equals("spark")) {
-          sparkIntpSetting = intpSetting;
-        }
-      }
-
-      Map<String, InterpreterProperty> sparkProperties =
-          (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
-      // ci environment runs spark cluster for testing
-      // so configure zeppelin use spark cluster
-      if ("true".equals(System.getenv("CI"))) {
-        // set spark master and other properties
-        sparkProperties.put("master",
-            new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("spark.master",
-            new InterpreterProperty("spark.master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("spark.cores.max",
-            new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("zeppelin.spark.useHiveContext",
-            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
-        sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("zeppelin.spark.test", new InterpreterProperty("zeppelin.spark.test", "true", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkIntpSetting.setProperties(sparkProperties);
-        pySpark = true;
-        sparkR = true;
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
-      } else {
-        String sparkHome = getSparkHome();
-        LOG.info("SPARK HOME detected " + sparkHome);
-        if (sparkHome != null) {
-          if (System.getenv("SPARK_MASTER") != null) {
-            sparkProperties.put("master",
-                new InterpreterProperty("master", System.getenv("SPARK_MASTER"), InterpreterPropertyType.TEXTAREA.getValue()));
-          } else {
-            sparkProperties.put("master",
-                new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-          }
-          sparkProperties.put("spark.master",
-              new InterpreterProperty("spark.master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-          sparkProperties.put("spark.cores.max",
-              new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
-          sparkProperties.put("zeppelin.spark.useHiveContext",
-              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
-          sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
-          sparkProperties.put("zeppelin.spark.test", new InterpreterProperty("zeppelin.spark.test", "true", InterpreterPropertyType.TEXTAREA.getValue()));
-
-          pySpark = true;
-          sparkR = true;
-        }
-
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
-      }
     }
   }
+
 
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
     start(true, testClassName, true);
@@ -327,53 +269,12 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-  private static String getSparkHome() {
-    String sparkHome = System.getenv("SPARK_HOME");
-    if (sparkHome != null) {
-      return sparkHome;
-    }
-    sparkHome = getSparkHomeRecursively(new File(System.getProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName())));
-    return sparkHome;
-  }
-
-  boolean isPyspark() {
-    return pySpark;
-  }
-
-  boolean isSparkR() {
-    return sparkR;
-  }
-
-  private static String getSparkHomeRecursively(File dir) {
-    if (dir == null) return null;
-    File files []  = dir.listFiles();
-    if (files == null) return null;
-
-    File homeDetected = null;
-    for (File f : files) {
-      if (isActiveSparkHome(f)) {
-        homeDetected = f;
-        break;
-      }
-    }
-
-    if (homeDetected != null) {
-      return homeDetected.getAbsolutePath();
-    } else {
-      return getSparkHomeRecursively(dir.getParentFile());
-    }
-  }
-
-  private static boolean isActiveSparkHome(File dir) {
-    return dir.getName().matches("spark-[0-9\\.]+[A-Za-z-]*-bin-hadoop[0-9\\.]+");
-  }
-
   protected static void shutDown() throws Exception {
     shutDown(true);
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
-    if (!wasRunning) {
+    if (!wasRunning && ZeppelinServer.notebook != null) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
       if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
