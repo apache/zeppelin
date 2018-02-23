@@ -110,7 +110,7 @@ abstract public class AbstractZeppelinIT {
     WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
     block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteCreateModal")));
     clickAndWait(By.id("createNoteButton"));
-    block.until(ExpectedConditions.invisibilityOfElementLocated(By.className("pull-right")));
+    block.until(ExpectedConditions.invisibilityOfElementLocated(By.id("createNoteButton")));
   }
 
   protected void deleteTestNotebook(final WebDriver driver) {

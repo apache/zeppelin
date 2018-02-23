@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 
-import Visualization from '../visualization'
-import PassthroughTransformation from '../../tabledata/passthrough'
+import Visualization from '../visualization';
+import PassthroughTransformation from '../../tabledata/passthrough';
 
 import {
   Widget, ValueType,
@@ -22,9 +22,9 @@ import {
   initializeTableConfig, resetTableOptionConfig,
   DefaultTableColumnType, TableColumnType, updateColumnTypeState,
   parseTableOption,
-} from './visualization-util'
+} from './visualization-util';
 
-const SETTING_TEMPLATE = require('./visualization-table-setting.html')
+const SETTING_TEMPLATE = require('./visualization-table-setting.html');
 
 const TABLE_OPTION_SPECS = [
   {
@@ -48,41 +48,43 @@ const TABLE_OPTION_SPECS = [
     widget: Widget.CHECKBOX,
     description: 'Enable a footer for displaying aggregated values',
   },
-]
+];
 
 /**
  * Visualize data in table format
  */
 export default class TableVisualization extends Visualization {
-  constructor (targetEl, config) {
-    super(targetEl, config)
-    this.passthrough = new PassthroughTransformation(config)
-    this.emitTimeout = null
-    this.isRestoring = false
+  constructor(targetEl, config) {
+    super(targetEl, config);
+    this.passthrough = new PassthroughTransformation(config);
+    this.emitTimeout = null;
+    this.isRestoring = false;
 
-    initializeTableConfig(config, TABLE_OPTION_SPECS)
+    initializeTableConfig(config, TABLE_OPTION_SPECS);
   }
 
   getColumnMinWidth(colName) {
-    let width = 150 // default
-    const calculatedWidth = colName.length * 10
+    let width = 150; // default
+    const calculatedWidth = colName.length * 10;
 
     // use the broad one
-    if (calculatedWidth > width) { width = calculatedWidth }
+    if (calculatedWidth > width) {
+      width = calculatedWidth;
+    }
 
-    return width
+    return width;
   }
 
   createGridOptions(tableData, onRegisterApiCallback, config) {
-    const rows = tableData.rows
-    const columnNames = tableData.columns.map(c => c.name)
+    const rows = tableData.rows;
+    const columnNames = tableData.columns.map((c) => c.name);
 
-    const gridData = rows.map(r => {
+    const gridData = rows.map((r) => {
       return columnNames.reduce((acc, colName, index) => {
-        acc[colName] = r[index]
-        return acc
-      }, {})
-    })
+        acc[colName] = r[index];
+        return acc;
+      }, {});
+    });
 
     const gridOptions = {
       data: gridData,
@@ -94,7 +96,7 @@ export default class TableVisualization extends Visualization {
       fastWatch: false,
       treeRowHeaderAlwaysVisible: false,
 
-      columnDefs: columnNames.map(colName => {
+      columnDefs: columnNames.map((colName) => {
         return {
           displayName: colName,
           name: colName,
@@ -111,7 +113,7 @@ export default class TableVisualization extends Visualization {
           `,
           minWidth: this.getColumnMinWidth(colName),
           width: '*',
-        }
+        };
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
       enableRowHashing: true,
@@ -126,127 +128,131 @@ export default class TableVisualization extends Visualization {
       saveTreeView: true,
       saveFilter: true,
       saveSelection: false,
-    }
+    };
 
-    return gridOptions
+    return gridOptions;
   }
 
   getGridElemId() {
     // angular doesn't allow `-` in scope variable name
-    const gridElemId = `${this.targetEl[0].id}_grid`.replace('-', '_')
-    return gridElemId
+    const gridElemId = `${this.targetEl[0].id}_grid`.replace('-', '_');
+    return gridElemId;
   }
 
   getGridApiId() {
     // angular doesn't allow `-` in scope variable name
-    const gridApiId = `${this.targetEl[0].id}_gridApi`.replace('-', '_')
-    return gridApiId
+    const gridApiId = `${this.targetEl[0].id}_gridApi`.replace('-', '_');
+    return gridApiId;
   }
 
   refresh() {
-    const gridElemId = this.getGridElemId()
-    const gridElem = angular.element(`#${gridElemId}`)
+    const gridElemId = this.getGridElemId();
+    const gridElem = angular.element(`#${gridElemId}`);
 
     if (gridElem) {
-      gridElem.css('height', this.targetEl.height() - 10)
+      gridElem.css('height', this.targetEl.height() - 10);
     }
   }
 
   refreshGrid() {
-    const gridElemId = this.getGridElemId()
-    const gridElem = angular.element(`#${gridElemId}`)
+    const gridElemId = this.getGridElemId();
+    const gridElem = angular.element(`#${gridElemId}`);
 
     if (gridElem) {
-      const scope = this.getScope()
-      const gridApiId = this.getGridApiId()
-      scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.ALL)
+      const scope = this.getScope();
+      const gridApiId = this.getGridApiId();
+      scope[gridApiId].core.notifyDataChange(this._uiGridConstants.dataChange.ALL);
     }
   }
 
   updateColDefType(colDef, type) {
-    if (type === colDef.type) { return }
+    if (type === colDef.type) {
+      return;
+    }
 
-    colDef.type = type
-    const colName = colDef.name
-    const config = this.config
+    colDef.type = type;
+    const colName = colDef.name;
+    const config = this.config;
     if (config.tableColumnTypeState.names && config.tableColumnTypeState.names[colName]) {
-      config.tableColumnTypeState.names[colName] = type
-      this.persistConfigWithGridState(this.config)
+      config.tableColumnTypeState.names[colName] = type;
+      this.persistConfigWithGridState(this.config);
     }
   }
 
   addColumnMenus(gridOptions) {
-    if (!gridOptions || !gridOptions.columnDefs) { return }
+    if (!gridOptions || !gridOptions.columnDefs) {
+      return;
+    }
 
-    const self = this // for closure
+    const self = this; // for closure
 
     // SHOULD use `function() { ... }` syntax for each action to get `this`
-    gridOptions.columnDefs.map(colDef => {
+    gridOptions.columnDefs.map((colDef) => {
       colDef.menuItems = [
         {
           title: 'Type: String',
           action: function() {
-            self.updateColDefType(this.context.col.colDef, TableColumnType.STRING)
+            self.updateColDefType(this.context.col.colDef, TableColumnType.STRING);
           },
           active: function() {
-            return this.context.col.colDef.type === TableColumnType.STRING
+            return this.context.col.colDef.type === TableColumnType.STRING;
           },
         },
         {
           title: 'Type: Number',
           action: function() {
-            self.updateColDefType(this.context.col.colDef, TableColumnType.NUMBER)
+            self.updateColDefType(this.context.col.colDef, TableColumnType.NUMBER);
           },
           active: function() {
-            return this.context.col.colDef.type === TableColumnType.NUMBER
+            return this.context.col.colDef.type === TableColumnType.NUMBER;
           },
         },
         {
           title: 'Type: Date',
           action: function() {
-            self.updateColDefType(this.context.col.colDef, TableColumnType.DATE)
+            self.updateColDefType(this.context.col.colDef, TableColumnType.DATE);
           },
           active: function() {
-            return this.context.col.colDef.type === TableColumnType.DATE
+            return this.context.col.colDef.type === TableColumnType.DATE;
           },
         },
-      ]
-    })
+      ];
+    });
   }
 
   setDynamicGridOptions(gridOptions, config) {
     // parse based on their type definitions
-    const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue)
+    const parsed = parseTableOption(TABLE_OPTION_SPECS, config.tableOptionValue);
 
-    const { showAggregationFooter, useFilter, showPagination, } = parsed
+    const {showAggregationFooter, useFilter, showPagination} = parsed;
 
-    gridOptions.showGridFooter = false
-    gridOptions.showColumnFooter = showAggregationFooter
-    gridOptions.enableFiltering = useFilter
+    gridOptions.showGridFooter = false;
+    gridOptions.showColumnFooter = showAggregationFooter;
+    gridOptions.enableFiltering = useFilter;
 
-    gridOptions.enablePagination = showPagination
-    gridOptions.enablePaginationControls = showPagination
+    gridOptions.enablePagination = showPagination;
+    gridOptions.enablePaginationControls = showPagination;
 
     if (showPagination) {
-      gridOptions.paginationPageSize = 50
-      gridOptions.paginationPageSizes = [25, 50, 100, 250, 1000]
+      gridOptions.paginationPageSize = 50;
+      gridOptions.paginationPageSizes = [25, 50, 100, 250, 1000];
     }
 
     // selection can't be rendered dynamically in ui-grid 4.0.4
-    gridOptions.enableRowSelection = false
-    gridOptions.enableRowHeaderSelection = false
-    gridOptions.enableFullRowSelection = false
-    gridOptions.enableSelectAll = false
-    gridOptions.enableGroupHeaderSelection = false
-    gridOptions.enableSelectionBatchEvent = false
+    gridOptions.enableRowSelection = false;
+    gridOptions.enableRowHeaderSelection = false;
+    gridOptions.enableFullRowSelection = false;
+    gridOptions.enableSelectAll = false;
+    gridOptions.enableGroupHeaderSelection = false;
+    gridOptions.enableSelectionBatchEvent = false;
   }
 
-  render (tableData) {
-    const gridElemId = this.getGridElemId()
-    let gridElem = document.getElementById(gridElemId)
+  render(tableData) {
+    const gridElemId = this.getGridElemId();
+    let gridElem = document.getElementById(gridElemId);
 
-    const config = this.config
-    const self = this // for closure
+    const config = this.config;
+    const self = this; // for closure
 
     if (!gridElem) {
       // create, compile and append grid elem
@@ -261,125 +267,147 @@ export default class TableVisualization extends Visualization {
               ui-grid-move-columns
               ui-grid-grouping
               ui-grid-save-state
-              ui-grid-exporter></div>`)
+              ui-grid-exporter></div>`);
 
-      gridElem.css('height', this.targetEl.height() - 10)
-      const scope = this.getScope()
-      gridElem = this._compile(gridElem)(scope)
-      this.targetEl.append(gridElem)
+      gridElem.css('height', this.targetEl.height() - 10);
+      const scope = this.getScope();
+      gridElem = this._compile(gridElem)(scope);
+      this.targetEl.append(gridElem);
 
       // set gridOptions for this elem
-      const gridOptions = this.createGridOptions(tableData, onRegisterApiCallback, config)
-      this.setDynamicGridOptions(gridOptions, config)
-      this.addColumnMenus(gridOptions)
-      scope[gridElemId] = gridOptions
+      const gridOptions = this.createGridOptions(tableData, onRegisterApiCallback, config);
+      this.setDynamicGridOptions(gridOptions, config);
+      this.addColumnMenus(gridOptions);
+      scope[gridElemId] = gridOptions;
 
       // set gridApi for this elem
-      const gridApiId = this.getGridApiId()
+      const gridApiId = this.getGridApiId();
       const onRegisterApiCallback = (gridApi) => {
-        scope[gridApiId] = gridApi
+        scope[gridApiId] = gridApi;
         // should restore state before registering APIs
 
         // register callbacks for change evens
         // should persist `self.config` instead `config` (closure issue)
-        gridApi.core.on.columnVisibilityChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.colMovable.on.columnPositionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.core.on.sortChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.core.on.filterChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.grouping.on.aggregationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.grouping.on.groupingChanged(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.treeBase.on.rowCollapsed(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.treeBase.on.rowExpanded(scope, () => { self.persistConfigWithGridState(self.config) })
-        gridApi.colResizable.on.columnSizeChanged(scope, () => { self.persistConfigWithGridState(self.config) })
+        gridApi.core.on.columnVisibilityChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.colMovable.on.columnPositionChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.core.on.sortChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.core.on.filterChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.grouping.on.aggregationChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.grouping.on.groupingChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.treeBase.on.rowCollapsed(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.treeBase.on.rowExpanded(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
+        gridApi.colResizable.on.columnSizeChanged(scope, () => {
+          self.persistConfigWithGridState(self.config);
+        });
 
         // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
         // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         // TBD: do we need to propagate row selection?
         // gridApi.selection.on.rowSelectionChanged(scope, () => { self.persistConfigWithGridState(self.config) })
         // gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
-      }
-      gridOptions.onRegisterApi = onRegisterApiCallback
+      };
+      gridOptions.onRegisterApi = onRegisterApiCallback;
     } else {
       // don't need to update gridOptions.data since it's synchronized by paragraph execution
-      const gridOptions = this.getGridOptions()
-      this.setDynamicGridOptions(gridOptions, config)
-      this.refreshGrid()
+      const gridOptions = this.getGridOptions();
+      this.setDynamicGridOptions(gridOptions, config);
+      this.refreshGrid();
     }
 
-    const columnDefs = this.getGridOptions().columnDefs
-    updateColumnTypeState(tableData.columns, config, columnDefs)
+    const columnDefs = this.getGridOptions().columnDefs;
+    updateColumnTypeState(tableData.columns, config, columnDefs);
     // SHOULD restore grid state after columnDefs are updated
-    this.restoreGridState(config.tableGridState)
+    this.restoreGridState(config.tableGridState);
   }
 
   restoreGridState(gridState) {
-    if (!gridState) { return }
+    if (!gridState) {
+      return;
+    }
 
     // should set isRestoring to avoid that changed* events are triggered while restoring
-    this.isRestoring = true
-    const gridApi = this.getGridApi()
+    this.isRestoring = true;
+    const gridApi = this.getGridApi();
 
     // restore grid state when gridApi is available
     if (!gridApi) {
-      setTimeout(() => this.restoreGridState(gridState), 100)
+      setTimeout(() => this.restoreGridState(gridState), 100);
     } else {
-      gridApi.saveState.restore(this.getScope(), gridState)
-      this.isRestoring = false
+      gridApi.saveState.restore(this.getScope(), gridState);
+      this.isRestoring = false;
     }
   }
 
-  destroy () {
+  destroy() {
   }
 
-  getTransformation () {
-    return this.passthrough
+  getTransformation() {
+    return this.passthrough;
   }
 
   getScope() {
-    const scope = this.targetEl.scope()
-    return scope
+    const scope = this.targetEl.scope();
+    return scope;
   }
 
   getGridOptions() {
-    const scope = this.getScope()
-    const gridElemId = this.getGridElemId()
-    return scope[gridElemId]
+    const scope = this.getScope();
+    const gridElemId = this.getGridElemId();
+    return scope[gridElemId];
   }
 
   getGridApi() {
-    const scope = this.targetEl.scope()
-    const gridApiId = this.getGridApiId()
-    return scope[gridApiId]
+    const scope = this.targetEl.scope();
+    const gridApiId = this.getGridApiId();
+    return scope[gridApiId];
   }
 
   persistConfigImmediatelyWithGridState(config) {
-    this.persistConfigWithGridState(config)
+    this.persistConfigWithGridState(config);
   }
 
   persistConfigWithGridState(config) {
-    if (this.isRestoring) { return }
+    if (this.isRestoring) {
+      return;
+    }
 
-    const gridApi = this.getGridApi()
-    config.tableGridState = gridApi.saveState.save()
-    this.emitConfig(config)
+    const gridApi = this.getGridApi();
+    config.tableGridState = gridApi.saveState.save();
+    this.emitConfig(config);
   }
 
   persistConfig(config) {
-    this.emitConfig(config)
+    this.emitConfig(config);
   }
 
-  getSetting (chart) {
-    const self = this // for closure in scope
-    const configObj = self.config
+  getSetting(chart) {
+    const self = this; // for closure in scope
+    const configObj = self.config;
 
     // emit config if it's updated in `render`
     if (configObj.initialized) {
-      configObj.initialized = false
-      this.persistConfig(configObj) // should persist w/o state
+      configObj.initialized = false;
+      this.persistConfig(configObj); // should persist w/o state
     } else if (configObj.tableColumnTypeState &&
       configObj.tableColumnTypeState.updated) {
-      configObj.tableColumnTypeState.updated = false
-      this.persistConfig(configObj) // should persist w/o state
+      configObj.tableColumnTypeState.updated = false;
+      this.persistConfig(configObj); // should persist w/o state
     }
 
     return {
@@ -393,27 +421,27 @@ export default class TableVisualization extends Visualization {
         isTextareaWidget: isTextareaWidget,
         isBtnGroupWidget: isBtnGroupWidget,
         tableOptionValueChanged: () => {
-          self.persistConfigWithGridState(configObj)
+          self.persistConfigWithGridState(configObj);
         },
         saveTableOption: () => {
-          self.persistConfigWithGridState(configObj)
+          self.persistConfigWithGridState(configObj);
         },
         resetTableOption: () => {
-          resetTableOptionConfig(configObj)
-          initializeTableConfig(configObj, TABLE_OPTION_SPECS)
-          self.persistConfigWithGridState(configObj)
+          resetTableOptionConfig(configObj);
+          initializeTableConfig(configObj, TABLE_OPTION_SPECS);
+          self.persistConfigWithGridState(configObj);
         },
         tableWidgetOnKeyDown: (event, optSpec) => {
-          const code = event.keyCode || event.which
+          const code = event.keyCode || event.which;
           if (code === 13 && isInputWidget(optSpec)) {
-            self.persistConfigWithGridState(configObj)
+            self.persistConfigWithGridState(configObj);
           } else if (code === 13 && event.shiftKey && isTextareaWidget(optSpec)) {
-            self.persistConfigWithGridState(configObj)
+            self.persistConfigWithGridState(configObj);
           }
 
-          event.stopPropagation() /** avoid to conflict with paragraph shortcuts */
-        }
-      }
-    }
+          event.stopPropagation(); /** avoid to conflict with paragraph shortcuts */
+        },
+      },
+    };
   }
 }
