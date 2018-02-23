@@ -657,7 +657,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         builtInViz.instance.render(transformed);
         builtInViz.instance.renderSetting(visualizationSettingTargetEl);
         builtInViz.instance.activate();
-      }
+      };
     } else {
       afterLoaded = function(loadedElem) {
         loadedElem.height(height);
@@ -778,7 +778,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     if (paragraphId === paragraph.id) {
       let builtInViz = builtInVisualizations[$scope.graphMode];
       if (builtInViz && builtInViz.instance) {
-        $timeout(_ => builtInViz.instance.resize(), 200);
+        $timeout(() => builtInViz.instance.resize(), 200);
       }
     }
   });

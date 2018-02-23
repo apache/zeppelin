@@ -352,8 +352,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.results = {};
     $scope.paragraph.errorMessage = '';
     if (digestRequired) {
- $scope.$digest();
-}
+      $scope.$digest();
+    }
 
     try {
       // remove magic from paragraphText
@@ -677,7 +677,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     paragraph.config.colWidth = width;
     $scope.$broadcast('paragraphResized', $scope.paragraph.id);
     commitParagraph(paragraph);
-  }
+  };
 
   $scope.changeFontSize = function(paragraph, fontSize) {
     angular.element('.navbar-right.open').removeClass('open');
