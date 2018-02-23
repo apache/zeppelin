@@ -278,16 +278,19 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.$on('listRevisionHistory', function(event, data) {
     console.debug('received list of revisions %o', data);
     $scope.noteRevisions = data.revisionList;
-    if ($scope.noteRevisions.length === 0 || $scope.noteRevisions[0].id !== 'Head') {
-      $scope.noteRevisions.splice(0, 0, {
-        id: 'Head',
-        message: 'Head',
-      });
-    }
-    if ($routeParams.revisionId) {
-      let index = _.findIndex($scope.noteRevisions, {'id': $routeParams.revisionId});
-      if (index > -1) {
-        $scope.currentRevision = $scope.noteRevisions[index].message;
+    if ($scope.noteRevisions) {
+      if ($scope.noteRevisions.length === 0 || $scope.noteRevisions[0].id !== 'Head') {
+        $scope.noteRevisions.splice(0, 0, {
+          id: 'Head',
+          message: 'Head',
+        });
+      }
+      if ($routeParams.revisionId) {
+        let index = _.findIndex($scope.noteRevisions,
+          {'id': $routeParams.revisionId});
+        if (index > -1) {
+          $scope.currentRevision = $scope.noteRevisions[index].message;
+        }
       }
     }
   });
