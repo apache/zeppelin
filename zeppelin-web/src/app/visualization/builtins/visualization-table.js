@@ -16,12 +16,19 @@ import Visualization from '../visualization';
 import PassthroughTransformation from '../../tabledata/passthrough';
 
 import {
-  Widget, ValueType,
-  isInputWidget, isOptionWidget, isCheckboxWidget,
-  isTextareaWidget, isBtnGroupWidget,
-  initializeTableConfig, resetTableOptionConfig,
-  DefaultTableColumnType, TableColumnType, updateColumnTypeState,
+  DefaultTableColumnType,
+  initializeTableConfig,
+  isBtnGroupWidget,
+  isCheckboxWidget,
+  isInputWidget,
+  isOptionWidget,
+  isTextareaWidget,
   parseTableOption,
+  resetTableOptionConfig,
+  TableColumnType,
+  updateColumnTypeState,
+  ValueType,
+  Widget,
 } from './visualization-util';
 
 const SETTING_TEMPLATE = require('./visualization-table-setting.html');
@@ -245,6 +252,29 @@ export default class TableVisualization extends Visualization {
     gridOptions.enableSelectAll = false;
     gridOptions.enableGroupHeaderSelection = false;
     gridOptions.enableSelectionBatchEvent = false;
+  }
+
+  append(row, columns) {
+    const gridOptions = this.getGridOptions();
+    this.setDynamicGridOptions(gridOptions, this.config);
+    // this.refreshGrid()
+    const gridElemId = this.getGridElemId();
+    const gridElem = angular.element(`#${gridElemId}`);
+
+    if (gridElem) {
+      const scope = this.getScope();
+
+      const columnNames = columns.map((c) => c.name);
+      let gridData = row.map((r) => {
+        return columnNames.reduce((acc, colName, index) => {
+          acc[colName] = r[index];
+          return acc;
+        }, {});
+      });
+      gridData.map((data) => {
+        scope[gridElemId].data.push(data);
+      });
+    }
   }
 
   render(tableData) {

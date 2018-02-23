@@ -243,10 +243,22 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     if (paragraph.id === data.paragraphId &&
       resultIndex === data.index &&
       (paragraph.status === ParagraphStatus.PENDING || paragraph.status === ParagraphStatus.RUNNING)) {
-      if (DefaultDisplayType.TEXT !== $scope.type) {
+      // Check if result type is eiter TEXT or TABLE, if not then treat it like TEXT
+      if ([DefaultDisplayType.TEXT, DefaultDisplayType.TABLE].indexOf($scope.type) < 0) {
         $scope.type = DefaultDisplayType.TEXT;
       }
-      appendTextOutput(data.data);
+      if ($scope.type === DefaultDisplayType.TEXT) {
+        appendTextOutput(data.data);
+      } else if ($scope.type === DefaultDisplayType.TABLE) {
+        appendTableOutput(data);
+      }
+    }
+    if (paragraph.id === data.paragraphId &&
+      resultIndex === data.index &&
+      paragraph.status === ParagraphStatus.FINISHED) {
+      if ($scope.type === DefaultDisplayType.TABLE) {
+        appendTableOutput(data);
+      }
     }
   });
 
@@ -531,6 +543,39 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     }
   };
 
+  function appendTableOutput(data) {
+    if (!$scope.$parent.result.data) {
+      $scope.$parent.result.data = [];
+      tableData = undefined;
+    }
+    if (!$scope.$parent.result.data[data.index]) {
+      $scope.$parent.result.data[data.index] = '';
+    }
+    if (!tableData) {
+      $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(data.data);
+      $rootScope.$broadcast(
+        'updateResult',
+        {'data': $scope.$parent.result.data[data.index], 'type': 'TABLE'},
+        undefined,
+        paragraph,
+        data.index);
+      let elemId = `p${$scope.id}_table`;
+      renderGraph(elemId, 'table', true);
+    } else {
+      let textRows = data.data.split('\n');
+      for (let i = 0; i < textRows.length; i++) {
+        if (textRows[i] !== '') {
+          let row = textRows[i].split('\t');
+          tableData.rows.push(row);
+          let builtInViz = builtInVisualizations['table'];
+          if (builtInViz.instance !== undefined) {
+            builtInViz.instance.append([row], tableData.columns);
+          }
+        }
+      }
+    }
+  }
+
   function appendTextOutput(data) {
     const elemId = getTextResultElemId($scope.id);
     textResultQueueForAppend.push(data);
@@ -744,33 +789,32 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const commitVizConfigChange = function(config, vizId) {
-    let newConfig = angular.copy($scope.config);
-    if (!newConfig.graph) {
-      newConfig.graph = {};
+    if ([ParagraphStatus.RUNNING, ParagraphStatus.PENDING].indexOf(paragraph.status) < 0) {
+      let newConfig = angular.copy($scope.config);
+      if (!newConfig.graph) {
+        newConfig.graph = {};
+      }
+      // copy setting for vizId
+      if (!newConfig.graph.setting) {
+        newConfig.graph.setting = {};
+      }
+      newConfig.graph.setting[vizId] = angular.copy(config);
+      // copy common setting
+      if (newConfig.graph.setting[vizId]) {
+        newConfig.graph.commonSetting = newConfig.graph.setting[vizId].common;
+        delete newConfig.graph.setting[vizId].common;
+      }
+      // copy pivot setting
+      if (newConfig.graph.commonSetting && newConfig.graph.commonSetting.pivot) {
+        newConfig.graph.keys = newConfig.graph.commonSetting.pivot.keys;
+        newConfig.graph.groups = newConfig.graph.commonSetting.pivot.groups;
+        newConfig.graph.values = newConfig.graph.commonSetting.pivot.values;
+        delete newConfig.graph.commonSetting.pivot;
+      }
+      console.debug('committVizConfig', newConfig);
+      let newParams = angular.copy(paragraph.settings.params);
+      commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
     }
-
-    // copy setting for vizId
-    if (!newConfig.graph.setting) {
-      newConfig.graph.setting = {};
-    }
-    newConfig.graph.setting[vizId] = angular.copy(config);
-
-    // copy common setting
-    if (newConfig.graph.setting[vizId]) {
-      newConfig.graph.commonSetting = newConfig.graph.setting[vizId].common;
-      delete newConfig.graph.setting[vizId].common;
-    }
-
-    // copy pivot setting
-    if (newConfig.graph.commonSetting && newConfig.graph.commonSetting.pivot) {
-      newConfig.graph.keys = newConfig.graph.commonSetting.pivot.keys;
-      newConfig.graph.groups = newConfig.graph.commonSetting.pivot.groups;
-      newConfig.graph.values = newConfig.graph.commonSetting.pivot.values;
-      delete newConfig.graph.commonSetting.pivot;
-    }
-    console.debug('committVizConfig', newConfig);
-    let newParams = angular.copy(paragraph.settings.params);
-    commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
   };
 
   $scope.$on('paragraphResized', function(event, paragraphId) {
