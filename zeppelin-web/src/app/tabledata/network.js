@@ -12,37 +12,37 @@
  * limitations under the License.
  */
 
-import Transformation from './transformation'
+import Transformation from './transformation';
 
 /**
  * trasformation settings for network visualization
  */
 export default class NetworkTransformation extends Transformation {
   getSetting() {
-    let self = this
-    let configObj = self.config
+    let self = this;
+    let configObj = self.config;
     return {
       template: 'app/tabledata/network_settings.html',
       scope: {
         config: configObj,
         isEmptyObject: function(obj) {
-          obj = obj || {}
-          return angular.equals(obj, {})
+          obj = obj || {};
+          return angular.equals(obj, {});
         },
         setNetworkLabel: function(label, value) {
-          configObj.properties[label].selected = value
+          configObj.properties[label].selected = value;
         },
         saveConfig: function() {
-          self.emitConfig(configObj)
-        }
-      }
-    }
+          self.emitConfig(configObj);
+        },
+      },
+    };
   }
 
   setConfig(config) {
   }
 
   transform(networkData) {
-    return networkData
+    return networkData;
   }
 }

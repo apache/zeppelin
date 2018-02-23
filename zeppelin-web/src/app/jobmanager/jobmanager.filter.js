@@ -13,44 +13,44 @@
  */
 
 export function JobManagerFilter() {
-  function filterContext (jobs, filterConfig) {
-    let interpreter = filterConfig.interpreterFilterValue
-    let noteName = filterConfig.noteNameFilterValue
-    let isSortByAsc = filterConfig.isSortByAsc
-    let filteredJobs = jobs
+  function filterContext(jobs, filterConfig) {
+    let interpreter = filterConfig.interpreterFilterValue;
+    let noteName = filterConfig.noteNameFilterValue;
+    let isSortByAsc = filterConfig.isSortByAsc;
+    let filteredJobs = jobs;
 
     if (typeof interpreter === 'undefined') {
       filteredJobs = filteredJobs.filter((jobItem) => {
-        return typeof jobItem.interpreter === 'undefined'
-      })
+        return typeof jobItem.interpreter === 'undefined';
+      });
     } else if (interpreter !== '*') {
-      filteredJobs = filteredJobs.filter(j => j.interpreter === interpreter)
+      filteredJobs = filteredJobs.filter((j) => j.interpreter === interpreter);
     }
 
     // filter by note name
     if (noteName !== '') {
       filteredJobs = filteredJobs.filter((jobItem) => {
-        let lowerFilterValue = noteName.toLocaleLowerCase()
-        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase()
-        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'))
-      })
+        let lowerFilterValue = noteName.toLocaleLowerCase();
+        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
+        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
+      });
     }
 
     // sort by name
     filteredJobs = filteredJobs.sort((jobItem) => {
-      return jobItem.noteName.toLowerCase()
-    })
+      return jobItem.noteName.toLowerCase();
+    });
 
     // sort by timestamp
     filteredJobs = filteredJobs.sort((x, y) => {
       if (isSortByAsc) {
-        return x.unixTimeLastRun - y.unixTimeLastRun
+        return x.unixTimeLastRun - y.unixTimeLastRun;
       } else {
-        return y.unixTimeLastRun - x.unixTimeLastRun
+        return y.unixTimeLastRun - x.unixTimeLastRun;
       }
-    })
+    });
 
-    return filteredJobs
+    return filteredJobs;
   }
-  return filterContext
+  return filterContext;
 }

@@ -12,42 +12,42 @@
  * limitations under the License.
  */
 
-import TableData from './tabledata.js'
-import PivotTransformation from './pivot.js'
+import TableData from './tabledata.js';
+import PivotTransformation from './pivot.js';
 
-describe('TableData build', function () {
-  let td
+describe('TableData build', function() {
+  let td;
 
-  beforeEach(function () {
-    console.log(TableData)
-    td = new TableData()
-  })
+  beforeEach(function() {
+    console.log(TableData);
+    td = new TableData();
+  });
 
-  it('should initialize the default value', function () {
-    expect(td.columns.length).toBe(0)
-    expect(td.rows.length).toBe(0)
-    expect(td.comment).toBe('')
-  })
+  it('should initialize the default value', function() {
+    expect(td.columns.length).toBe(0);
+    expect(td.rows.length).toBe(0);
+    expect(td.comment).toBe('');
+  });
 
-  it('should able to create Tabledata from paragraph result', function () {
+  it('should able to create Tabledata from paragraph result', function() {
     td.loadParagraphResult({
       type: 'TABLE',
-      msg: 'key\tvalue\na\t10\nb\t20\n\nhello'
-    })
+      msg: 'key\tvalue\na\t10\nb\t20\n\nhello',
+    });
 
-    expect(td.columns.length).toBe(2)
-    expect(td.rows.length).toBe(2)
-    expect(td.comment).toBe('hello')
-  })
-})
+    expect(td.columns.length).toBe(2);
+    expect(td.rows.length).toBe(2);
+    expect(td.comment).toBe('hello');
+  });
+});
 
 describe('PivotTransformation build', function() {
-  let pt
+  let pt;
 
-  beforeEach(function () {
-    console.log(PivotTransformation)
-    pt = new PivotTransformation()
-  })
+  beforeEach(function() {
+    console.log(PivotTransformation);
+    pt = new PivotTransformation();
+  });
 
   it('check the result of keys, groups and values unique', function() {
     // set inited mock data
@@ -63,33 +63,33 @@ describe('PivotTransformation build', function() {
                  {index: 3, name: '3'},
                  {index: 5, name: '5'}],
           groups: [],
-          values: []
-        }
-      }
-    }
+          values: [],
+        },
+      },
+    };
     pt.tableDataColumns = [
         {index: 1, name: '1'},
         {index: 2, name: '2'},
         {index: 3, name: '3'},
         {index: 4, name: '4'},
-        {index: 5, name: '5'}]
+        {index: 5, name: '5'}];
 
-    pt.setConfig(config)
+    pt.setConfig(config);
 
-    pt.removeUnknown()
+    pt.removeUnknown();
 
-    expect(config.common.pivot.keys.length).toBe(3)
-    expect(config.common.pivot.keys[0].index).toBe(4)
-    expect(config.common.pivot.keys[1].index).toBe(3)
-    expect(config.common.pivot.keys[2].index).toBe(5)
-  })
+    expect(config.common.pivot.keys.length).toBe(3);
+    expect(config.common.pivot.keys[0].index).toBe(4);
+    expect(config.common.pivot.keys[1].index).toBe(3);
+    expect(config.common.pivot.keys[2].index).toBe(5);
+  });
 
   it('should aggregate values correctly', function() {
-    let td = new TableData()
+    let td = new TableData();
     td.loadParagraphResult({
       type: 'TABLE',
-      msg: 'key\tvalue\na\t10\na\tnull\na\t0\na\t1\n'
-    })
+      msg: 'key\tvalue\na\t10\na\tnull\na\t0\na\t1\n',
+    });
 
     let config = {
       common: {
@@ -98,34 +98,34 @@ describe('PivotTransformation build', function() {
             {
               'name': 'key',
               'index': 0.0,
-            }
+            },
           ],
           groups: [],
           values: [
             {
               'name': 'value',
               'index': 1.0,
-              'aggr': 'sum'
-            }
-          ]
-        }
-      }
-    }
+              'aggr': 'sum',
+            },
+          ],
+        },
+      },
+    };
 
-    pt.setConfig(config)
-    let transformed = pt.transform(td)
-    expect(transformed.rows['a']['value(sum)'].value).toBe(11)
+    pt.setConfig(config);
+    let transformed = pt.transform(td);
+    expect(transformed.rows['a']['value(sum)'].value).toBe(11);
 
-    pt.config.common.pivot.values[0].aggr = 'max'
-    transformed = pt.transform(td)
-    expect(transformed.rows['a']['value(max)'].value).toBe(10)
+    pt.config.common.pivot.values[0].aggr = 'max';
+    transformed = pt.transform(td);
+    expect(transformed.rows['a']['value(max)'].value).toBe(10);
 
-    pt.config.common.pivot.values[0].aggr = 'min'
-    transformed = pt.transform(td)
-    expect(transformed.rows['a']['value(min)'].value).toBe(0)
+    pt.config.common.pivot.values[0].aggr = 'min';
+    transformed = pt.transform(td);
+    expect(transformed.rows['a']['value(min)'].value).toBe(0);
 
-    pt.config.common.pivot.values[0].aggr = 'count'
-    transformed = pt.transform(td)
-    expect(transformed.rows['a']['value(count)'].value).toBe(4)
-  })
-})
+    pt.config.common.pivot.values[0].aggr = 'count';
+    transformed = pt.transform(td);
+    expect(transformed.rows['a']['value(count)'].value).toBe(4);
+  });
+});
