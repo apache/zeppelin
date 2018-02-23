@@ -50,8 +50,8 @@ class JobController {
       message: 'Run all paragraphs?',
       callback: (clickOk) => {
         if (!clickOk) {
- return;
-}
+          return;
+        }
 
         const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
@@ -72,8 +72,8 @@ class JobController {
       message: 'Stop all paragraphs?',
       callback: (clickOk) => {
         if (!clickOk) {
- return;
-}
+          return;
+        }
 
         const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
@@ -89,8 +89,8 @@ class JobController {
 
   showErrorDialog(title, errorMessage) {
     if (!errorMessage) {
- errorMessage = 'SERVER ERROR';
-}
+      errorMessage = 'SERVER ERROR';
+    }
     BootstrapDialog.alert({
       closable: true,
       title: title,

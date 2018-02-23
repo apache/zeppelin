@@ -58,8 +58,8 @@ function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
       let node = nodes.shift();
       let dir = _.find(curDir.children,
         function(c) {
- return c.name === node && c.children !== undefined;
-});
+          return c.name === node && c.children !== undefined;
+        });
       if (dir !== undefined) { // found an existing dir
         addNode(dir, nodes, noteId);
       } else {

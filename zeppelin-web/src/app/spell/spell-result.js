@@ -137,8 +137,8 @@ export class DataWithType {
     // handle non-specified dataWithTypes only
     if (type) {
       return new Promise((resolve) => {
- resolve([dataWithType]);
-});
+        resolve([dataWithType]);
+      });
     }
 
     let wrapped;

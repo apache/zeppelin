@@ -401,8 +401,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
    */
   $scope.isNoteRunning = function() {
     if (!$scope.note) {
- return false;
-}
+      return false;
+    }
 
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
       if (isParagraphRunning($scope.note.paragraphs[i])) {
@@ -522,8 +522,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
         // we need `$timeout` since angular DOM might not be initialized
         $timeout(() => {
- $scope.$broadcast('focusParagraph', para.id, 0, null, false);
-});
+          $scope.$broadcast('focusParagraph', para.id, 0, null, false);
+        });
       }
     });
   };
@@ -613,8 +613,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.interpreterSelectionListeners = {
     accept: function(sourceItemHandleScope, destSortableScope) {
- return true;
-},
+      return true;
+    },
     itemMoved: function(event) {},
     orderChanged: function(event) {},
   };
@@ -1213,8 +1213,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
     for (let i = 0; allParagraphs[i] !== paragraph; i++) {
       if (i === allParagraphs.length - 1) {
- return;
-} // if paragraph not in array of all paragraphs
+        return;
+      } // if paragraph not in array of all paragraphs
       toRunParagraphs.push(allParagraphs[i]);
     }
 
@@ -1252,8 +1252,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
     for (let i = allParagraphs.length - 1; allParagraphs[i] !== paragraph; i--) {
       if (i < 0) {
- return;
-} // if paragraph not in array of all paragraphs
+        return;
+      } // if paragraph not in array of all paragraphs
       toRunParagraphs.push(allParagraphs[i]);
     }
 

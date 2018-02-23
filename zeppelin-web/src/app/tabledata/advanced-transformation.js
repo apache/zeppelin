@@ -111,14 +111,14 @@ export default class AdvancedTransformation extends Transformation {
 
           let comment = '';
           if (minAxisCount) {
- comment = `min: ${minAxisCount}`;
-}
+            comment = `min: ${minAxisCount}`;
+          }
           if (minAxisCount && maxAxisCount) {
- comment = `${comment}, `;
-}
+            comment = `${comment}, `;
+          }
           if (maxAxisCount) {
- comment = `${comment}max: ${maxAxisCount}`;
-}
+            comment = `${comment}max: ${maxAxisCount}`;
+          }
 
           if (comment !== '') {
             anno = `${anno} (${comment})`;
@@ -140,23 +140,23 @@ export default class AdvancedTransformation extends Transformation {
         },
 
         useSharedAxis: (chartName) => {
- return useSharedAxis(configInstance, chartName);
-},
+          return useSharedAxis(configInstance, chartName);
+        },
         isGroupAxis: (axisSpec) => {
- return isGroupAxis(axisSpec);
-},
+          return isGroupAxis(axisSpec);
+        },
         isKeyAxis: (axisSpec) => {
- return isKeyAxis(axisSpec);
-},
+          return isKeyAxis(axisSpec);
+        },
         isAggregatorAxis: (axisSpec) => {
- return isAggregatorAxis(axisSpec);
-},
+          return isAggregatorAxis(axisSpec);
+        },
         isSingleDimensionAxis: (axisSpec) => {
- return isSingleDimensionAxis(axisSpec);
-},
+          return isSingleDimensionAxis(axisSpec);
+        },
         getSingleDimensionAxis: (axisSpec) => {
- return getCurrentChartAxis(configInstance)[axisSpec.name];
-},
+          return getCurrentChartAxis(configInstance)[axisSpec.name];
+        },
 
         chartChanged: (selected) => {
           configInstance.chart.current = selected;
@@ -192,17 +192,17 @@ export default class AdvancedTransformation extends Transformation {
         },
 
         isInputWidget: function(paramSpec) {
- return isInputWidget(paramSpec);
-},
+          return isInputWidget(paramSpec);
+        },
         isCheckboxWidget: function(paramSpec) {
- return isCheckboxWidget(paramSpec);
-},
+          return isCheckboxWidget(paramSpec);
+        },
         isOptionWidget: function(paramSpec) {
- return isOptionWidget(paramSpec);
-},
+          return isOptionWidget(paramSpec);
+        },
         isTextareaWidget: function(paramSpec) {
- return isTextareaWidget(paramSpec);
-},
+          return isTextareaWidget(paramSpec);
+        },
 
         parameterChanged: (paramSpec) => {
           configInstance.chartChanged = false;

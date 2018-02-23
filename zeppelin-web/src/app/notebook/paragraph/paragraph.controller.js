@@ -938,23 +938,23 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           switch (keyCode) {
             case 38:
               if (!e.shiftKey) {
- keyBindingEditorFocusAction(ROW_UP);
-}
+                keyBindingEditorFocusAction(ROW_UP);
+              }
               break;
             case 80:
               if (e.ctrlKey && !e.altKey) {
- keyBindingEditorFocusAction(ROW_UP);
-}
+                keyBindingEditorFocusAction(ROW_UP);
+              }
               break;
             case 40:
               if (!e.shiftKey) {
- keyBindingEditorFocusAction(ROW_DOWN);
-}
+                keyBindingEditorFocusAction(ROW_DOWN);
+              }
               break;
             case 78:
               if (e.ctrlKey && !e.altKey) {
- keyBindingEditorFocusAction(ROW_DOWN);
-}
+                keyBindingEditorFocusAction(ROW_DOWN);
+              }
               break;
           }
         }
@@ -967,8 +967,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraphFocused = focused;
 
     if ($scope.editor) {
- $scope.editor.setHighlightActiveLine(focused);
-}
+      $scope.editor.setHighlightActiveLine(focused);
+    }
 
     if (isDigestPass === false || isDigestPass === undefined) {
       // Protect against error in case digest is already running
@@ -1134,8 +1134,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     let desc = `Took ${durationFormat}. Last updated by ${user} at ${endFormat}.`;
 
     if ($scope.isResultOutdated(pdata)) {
- desc += ' (outdated)';
-}
+      desc += ' (outdated)';
+    }
 
     return desc;
   };
@@ -1430,8 +1430,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       if (paragraphs.length >= 2 && paragraphs[paragraphs.length - 2].id.indexOf($scope.paragraph.id) === 0) {
          // rendering output can took some time. So delay scrolling event firing for sometime.
         setTimeout(() => {
- $rootScope.$broadcast('scrollToCursor');
-}, 500);
+          $rootScope.$broadcast('scrollToCursor');
+        }, 500);
       }
     }
   };

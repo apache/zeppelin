@@ -139,8 +139,8 @@ export default class NetworkVisualization extends Visualization {
       .on('start', () => {
         console.log('force layout start');
         this.$timeout(() => {
- this.force.stop();
-}, transformationConfig.d3Graph.forceLayout.timeout);
+          this.force.stop();
+        }, transformationConfig.d3Graph.forceLayout.timeout);
       })
       .on('end', () => {
         console.log('force layout stop');

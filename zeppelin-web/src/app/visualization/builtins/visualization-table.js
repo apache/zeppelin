@@ -69,8 +69,8 @@ export default class TableVisualization extends Visualization {
 
     // use the broad one
     if (calculatedWidth > width) {
- width = calculatedWidth;
-}
+      width = calculatedWidth;
+    }
 
     return width;
   }
@@ -167,8 +167,8 @@ export default class TableVisualization extends Visualization {
 
   updateColDefType(colDef, type) {
     if (type === colDef.type) {
- return;
-}
+      return;
+    }
 
     colDef.type = type;
     const colName = colDef.name;
@@ -181,8 +181,8 @@ export default class TableVisualization extends Visualization {
 
   addColumnMenus(gridOptions) {
     if (!gridOptions || !gridOptions.columnDefs) {
- return;
-}
+      return;
+    }
 
     const self = this; // for closure
 
@@ -289,32 +289,32 @@ export default class TableVisualization extends Visualization {
         // register callbacks for change evens
         // should persist `self.config` instead `config` (closure issue)
         gridApi.core.on.columnVisibilityChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.colMovable.on.columnPositionChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.core.on.sortChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.core.on.filterChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.grouping.on.aggregationChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.grouping.on.groupingChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.treeBase.on.rowCollapsed(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.treeBase.on.rowExpanded(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
         gridApi.colResizable.on.columnSizeChanged(scope, () => {
- self.persistConfigWithGridState(self.config);
-});
+          self.persistConfigWithGridState(self.config);
+        });
 
         // pagination doesn't follow usual life-cycle in ui-grid v4.0.4
         // gridApi.pagination.on.paginationChanged(scope, () => { self.persistConfigWithGridState(self.config) })
@@ -338,8 +338,8 @@ export default class TableVisualization extends Visualization {
 
   restoreGridState(gridState) {
     if (!gridState) {
- return;
-}
+      return;
+    }
 
     // should set isRestoring to avoid that changed* events are triggered while restoring
     this.isRestoring = true;
@@ -384,8 +384,8 @@ export default class TableVisualization extends Visualization {
 
   persistConfigWithGridState(config) {
     if (this.isRestoring) {
- return;
-}
+      return;
+    }
 
     const gridApi = this.getGridApi();
     config.tableGridState = gridApi.saveState.save();

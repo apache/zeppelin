@@ -23,12 +23,12 @@ export const ParagraphStatus = {
 
 export function isParagraphRunning(paragraph) {
   if (!paragraph) {
- return false;
-}
+    return false;
+  }
   const status = paragraph.status;
   if (!status) {
- return false;
-}
+    return false;
+  }
 
   return status === ParagraphStatus.PENDING || status === ParagraphStatus.RUNNING;
 }

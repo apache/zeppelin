@@ -68,8 +68,8 @@ export default class BarchartVisualization extends Nvd3ChartVisualization {
 
     chart.yAxis.axisLabelDistance(50);
     chart.yAxis.tickFormat(function(d) {
- return self.yAxisTickFormat(d);
-});
+      return self.yAxisTickFormat(d);
+    });
 
     self.chart.stacked(this.config.stacked);
 

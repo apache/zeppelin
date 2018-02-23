@@ -35,8 +35,8 @@ function JobManagerController($scope, ngToast, JobManagerFilter, JobManagerServi
   $scope.jobs = [];
   $scope.sorter = {
     availableDateSorter: Object.keys(JobDateSorter).map((key) => {
- return JobDateSorter[key];
-}),
+      return JobDateSorter[key];
+    }),
     currentDateSorter: JobDateSorter.RECENTLY_UPDATED,
   };
   $scope.filteredJobs = $scope.jobs;

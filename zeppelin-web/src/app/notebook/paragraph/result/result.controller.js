@@ -162,11 +162,11 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   // prevent body area scrollbar from blocking due to scroll in paragraph results
   $scope.mouseOver = false;
   $scope.onMouseOver = function() {
- $scope.mouseOver = true;
-};
+    $scope.mouseOver = true;
+  };
   $scope.onMouseOut = function() {
- $scope.mouseOver = false;
-};
+    $scope.mouseOver = false;
+  };
   $scope.getPointerEvent = function() {
     return ($scope.mouseOver) ? {'pointer-events': 'auto'}
       : {'pointer-events': 'none'};
@@ -181,8 +181,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     visPackageOrder.map((visName) => {
       visPackages.map((vis) => {
         if (vis.name !== visName) {
- return;
-}
+          return;
+        }
         $scope.builtInTableDataVisualizationList.push({
           id: vis.id,
           name: vis.name,
@@ -431,12 +431,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   const renderElem = function(targetElemId, data) {
     const elem = angular.element(`#${targetElemId}`);
     handleData(() => {
- data(targetElemId);
-}, DefaultDisplayType.ELEMENT,
+      data(targetElemId);
+    }, DefaultDisplayType.ELEMENT,
       () => {}, /** HTML element will be filled with data. thus pass empty success callback */
       (error) => {
- elem.html(`${error.stack}`);
-}
+        elem.html(`${error.stack}`);
+      }
     );
   };
 
@@ -452,8 +452,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         MathJax.Hub.Queue(['Typeset', MathJax.Hub, elem[0]]);
       },
       (error) => {
- elem.html(`${error.stack}`);
-}
+        elem.html(`${error.stack}`);
+      }
     );
   };
 
@@ -466,8 +466,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         $compile(elem.contents())(paragraphScope);
       },
       (error) => {
- elem.html(`${error.stack}`);
-}
+        elem.html(`${error.stack}`);
+      }
     );
   };
 
@@ -515,12 +515,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         }
 
         elem.bind('mousewheel', (e) => {
- $scope.keepScrollDown = false;
-});
+          $scope.keepScrollDown = false;
+        });
       },
       (error) => {
- elem.html(`${error.stack}`);
-}
+        elem.html(`${error.stack}`);
+      }
     );
   };
 
@@ -568,8 +568,8 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     graphElem.height(height);
 
     if (!graphMode) {
- graphMode = 'table';
-}
+      graphMode = 'table';
+    }
 
     let builtInViz = builtInVisualizations[graphMode];
     if (!builtInViz) {

@@ -122,8 +122,8 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
     return $http.post(url, filtered)
       .then(() => {
         if (closeConfigPanelCallback) {
- closeConfigPanelCallback();
-}
+          closeConfigPanelCallback();
+        }
       }).catch((error) => {
         console.error(`Failed to save config for ${pkgArtifact}`, error);
       });
@@ -268,8 +268,8 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
       return bundles.reduce((acc, b) => {
         // filter out empty bundle
         if (b === '') {
- return acc;
-}
+          return acc;
+        }
         acc.push(b);
         return acc;
       }, []);
