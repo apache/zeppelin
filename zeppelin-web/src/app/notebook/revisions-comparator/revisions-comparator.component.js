@@ -12,81 +12,81 @@
  * limitations under the License.
  */
 
-import revisionsComparatorTemplate from './revisions-comparator.html'
-import './revisions-comparator.css'
-import moment from 'moment'
+import revisionsComparatorTemplate from './revisions-comparator.html';
+import './revisions-comparator.css';
+import moment from 'moment';
 
 function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
-  'ngInject'
+  'ngInject';
 
-  $scope.firstNoteRevisionForCompare = null
-  $scope.secondNoteRevisionForCompare = null
-  $scope.mergeNoteRevisionsForCompare = null
-  $scope.currentParagraphDiffDisplay = null
-  $scope.currentFirstRevisionForCompare = 'Choose...'
-  $scope.currentSecondRevisionForCompare = 'Choose...'
+  $scope.firstNoteRevisionForCompare = null;
+  $scope.secondNoteRevisionForCompare = null;
+  $scope.mergeNoteRevisionsForCompare = null;
+  $scope.currentParagraphDiffDisplay = null;
+  $scope.currentFirstRevisionForCompare = 'Choose...';
+  $scope.currentSecondRevisionForCompare = 'Choose...';
 
-  $scope.getNoteRevisionForReview = function (revision, position) {
+  $scope.getNoteRevisionForReview = function(revision, position) {
     if (position) {
       if (position === 'first') {
-        $scope.currentFirstRevisionForCompare = revision.message
+        $scope.currentFirstRevisionForCompare = revision.message;
       } else {
-        $scope.currentSecondRevisionForCompare = revision.message
+        $scope.currentSecondRevisionForCompare = revision.message;
       }
-      websocketMsgSrv.getNoteByRevisionForCompare($routeParams.noteId, revision.id, position)
+      websocketMsgSrv.getNoteByRevisionForCompare($routeParams.noteId, revision.id, position);
     }
-  }
+  };
 
   // compare revisions
-  $scope.compareRevisions = function () {
+  $scope.compareRevisions = function() {
     if ($scope.firstNoteRevisionForCompare && $scope.secondNoteRevisionForCompare) {
-      let paragraphs1 = $scope.firstNoteRevisionForCompare.note.paragraphs
-      let paragraphs2 = $scope.secondNoteRevisionForCompare.note.paragraphs
-      let added = 'added'
-      let deleted = 'deleted'
-      let compared = 'compared'
-      let merge = []
+      let paragraphs1 = $scope.firstNoteRevisionForCompare.note.paragraphs;
+      let paragraphs2 = $scope.secondNoteRevisionForCompare.note.paragraphs;
+      let added = 'added';
+      let deleted = 'deleted';
+      let compared = 'compared';
+      let merge = [];
       for (let p1 of paragraphs1) {
-        let p2 = null
+        let p2 = null;
         for (let p of paragraphs2) {
           if (p1.id === p.id) {
-            p2 = p
-            break
+            p2 = p;
+            break;
           }
         }
         if (p2 === null) {
-          merge.push({paragraph: p1, firstString: (p1.text || '').split('\n')[0], type: deleted})
+          merge.push({paragraph: p1, firstString: (p1.text || '').split('\n')[0], type: deleted});
         } else {
-          let colorClass = ''
-          let span = null
-          let text1 = p1.text || ''
-          let text2 = p2.text || ''
+          let colorClass = '';
+          let span = null;
+          let text1 = p1.text || '';
+          let text2 = p2.text || '';
 
-          let diff = window.JsDiff.diffLines(text1, text2)
-          let diffHtml = document.createDocumentFragment()
-          let identical = true
-          let identicalClass = 'color-black'
+          let diff = window.JsDiff.diffLines(text1, text2);
+          let diffHtml = document.createDocumentFragment();
+          let identical = true;
+          let identicalClass = 'color-black';
 
-          diff.forEach(function (part) {
-            colorClass = part.added ? 'color-green-row' : part.removed ? 'color-red-row' : identicalClass
-            span = document.createElement('span')
-            span.className = colorClass
+          diff.forEach(function(part) {
+            colorClass = part.added ? 'color-green-row' : part.removed ? 'color-red-row' : identicalClass;
+            span = document.createElement('span');
+            span.className = colorClass;
             if (identical && colorClass !== identicalClass) {
-              identical = false
+              identical = false;
             }
 
-            let str = part.value
+            let str = part.value;
 
             if (str[str.length - 1] !== '\n') {
-              str = str + '\n'
+              str = str + '\n';
             }
 
-            span.appendChild(document.createTextNode(str))
-            diffHtml.appendChild(span)
-          })
+            span.appendChild(document.createTextNode(str));
+            diffHtml.appendChild(span);
+          });
 
-          let pre = document.createElement('pre')
-          pre.appendChild(diffHtml)
+          let pre = document.createElement('pre');
+          pre.appendChild(diffHtml);
 
           merge.push(
             {
@@ -94,88 +94,88 @@ function RevisionsComparatorController($scope, websocketMsgSrv, $routeParams) {
               diff: pre.innerHTML,
               identical: identical,
               firstString: (p1.text || '').split('\n')[0],
-              type: compared
-            })
+              type: compared,
+            });
         }
       }
 
       for (let p2 of paragraphs2) {
-        let p1 = null
+        let p1 = null;
         for (let p of paragraphs1) {
           if (p2.id === p.id) {
-            p1 = p
-            break
+            p1 = p;
+            break;
           }
         }
         if (p1 === null) {
-          merge.push({paragraph: p2, firstString: (p2.text || '').split('\n')[0], type: added})
+          merge.push({paragraph: p2, firstString: (p2.text || '').split('\n')[0], type: added});
         }
       }
 
-      merge.sort(function (a, b) {
+      merge.sort(function(a, b) {
         if (a.type === added) {
-          return -1
+          return -1;
         }
         if (a.type === compared) {
-          return 1
+          return 1;
         }
         if (a.type === deleted) {
           if (b.type === compared) {
-            return -1
+            return -1;
           } else {
-            return 1
+            return 1;
           }
         }
-      })
+      });
 
-      $scope.mergeNoteRevisionsForCompare = merge
+      $scope.mergeNoteRevisionsForCompare = merge;
 
       if ($scope.currentParagraphDiffDisplay !== null) {
-        $scope.changeCurrentParagraphDiffDisplay($scope.currentParagraphDiffDisplay.paragraph.id)
+        $scope.changeCurrentParagraphDiffDisplay($scope.currentParagraphDiffDisplay.paragraph.id);
       }
     }
-  }
+  };
 
-  $scope.$on('noteRevisionForCompare', function (event, data) {
-    console.debug('received note revision for compare %o', data)
+  $scope.$on('noteRevisionForCompare', function(event, data) {
+    console.debug('received note revision for compare %o', data);
     if (data.note && data.position) {
       if (data.position === 'first') {
-        $scope.firstNoteRevisionForCompare = data
+        $scope.firstNoteRevisionForCompare = data;
       } else {
-        $scope.secondNoteRevisionForCompare = data
+        $scope.secondNoteRevisionForCompare = data;
       }
 
       if ($scope.firstNoteRevisionForCompare !== null && $scope.secondNoteRevisionForCompare !== null &&
         $scope.firstNoteRevisionForCompare.revisionId !== $scope.secondNoteRevisionForCompare.revisionId) {
-        $scope.compareRevisions()
+        $scope.compareRevisions();
       }
     }
-  })
+  });
 
-  $scope.formatRevisionDate = function (date) {
-    return moment.unix(date).format('MMMM Do YYYY, h:mm:ss a')
-  }
+  $scope.formatRevisionDate = function(date) {
+    return moment.unix(date).format('MMMM Do YYYY, h:mm:ss a');
+  };
 
-  $scope.changeCurrentParagraphDiffDisplay = function (paragraphId) {
+  $scope.changeCurrentParagraphDiffDisplay = function(paragraphId) {
     for (let p of $scope.mergeNoteRevisionsForCompare) {
       if (p.paragraph.id === paragraphId) {
-        $scope.currentParagraphDiffDisplay = p
-        return
+        $scope.currentParagraphDiffDisplay = p;
+        return;
       }
     }
-    $scope.currentParagraphDiffDisplay = null
-  }
+    $scope.currentParagraphDiffDisplay = null;
+  };
 }
 
 export const RevisionsComparatorComponent = {
   template: revisionsComparatorTemplate,
   controller: RevisionsComparatorController,
   bindings: {
-    noteRevisions: '<'
-  }
-}
+    noteRevisions: '<',
+  },
+};
 
 export const RevisionsComparatorModule = angular
   .module('zeppelinWebApp')
   .component('revisionsComparator', RevisionsComparatorComponent)
-  .name
+  .name;

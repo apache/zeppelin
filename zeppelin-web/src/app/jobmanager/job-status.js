@@ -19,36 +19,36 @@ export const JobStatus = {
   ERROR: 'ERROR',
   PENDING: 'PENDING',
   RUNNING: 'RUNNING',
-}
+};
 
 export function getJobIconByStatus(jobStatus) {
   if (jobStatus === JobStatus.READY) {
-    return 'fa fa-circle-o'
+    return 'fa fa-circle-o';
   } else if (jobStatus === JobStatus.FINISHED) {
-    return 'fa fa-circle'
+    return 'fa fa-circle';
   } else if (jobStatus === JobStatus.ABORT) {
-    return 'fa fa-circle'
+    return 'fa fa-circle';
   } else if (jobStatus === JobStatus.ERROR) {
-    return 'fa fa-circle'
+    return 'fa fa-circle';
   } else if (jobStatus === JobStatus.PENDING) {
-    return 'fa fa-circle'
+    return 'fa fa-circle';
   } else if (jobStatus === JobStatus.RUNNING) {
-    return 'fa fa-spinner'
+    return 'fa fa-spinner';
   }
 }
 
 export function getJobColorByStatus(jobStatus) {
   if (jobStatus === JobStatus.READY) {
-    return 'green'
+    return 'green';
   } else if (jobStatus === JobStatus.FINISHED) {
-    return 'green'
+    return 'green';
   } else if (jobStatus === JobStatus.ABORT) {
-    return 'orange'
+    return 'orange';
   } else if (jobStatus === JobStatus.ERROR) {
-    return 'red'
+    return 'red';
   } else if (jobStatus === JobStatus.PENDING) {
-    return 'gray'
+    return 'gray';
   } else if (jobStatus === JobStatus.RUNNING) {
-    return 'blue'
+    return 'blue';
   }
 }
