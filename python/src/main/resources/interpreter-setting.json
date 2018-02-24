@@ -41,10 +41,10 @@
         "description": "time out for ipython launch",
         "type": "number"
       },
-      "zeppelin.ipython.grpc.framesize": {
-        "propertyName": "zeppelin.ipython.grpc.framesize",
+      "zeppelin.ipython.grpc.message_size": {
+        "propertyName": "zeppelin.ipython.grpc.message_size",
         "defaultValue": "33554432",
-        "description": "grpc framesize, default is 32M",
+        "description": "grpc message size, default is 32M",
         "type": "number"
       }
     },
