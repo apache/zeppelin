@@ -149,6 +149,9 @@ public class Message implements JsonSerializable {
     NOTE_REVISION,                // [c-s] get certain revision of note
                                   // @param noteId
                                   // @param revisionId
+   NOTE_SNAPSHOT_VIEW,            // [c-s] get revision id of given snapshotId
+                                  // @param noteId
+                                  // @param snapshotId
     SET_NOTE_REVISION,            // [c-s] set current notebook head to this revision
                                   // @param noteId
                                   // @param revisionId

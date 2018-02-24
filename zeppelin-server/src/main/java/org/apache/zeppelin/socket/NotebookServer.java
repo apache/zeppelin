@@ -54,6 +54,7 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.notebook.snapshot.NotebookSnapshot;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -113,6 +114,11 @@ public class NotebookServer extends WebSocketServlet
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
+  private NotebookSnapshot notebookSnapshot;
+
+  public void setNotebookSnapshot(NotebookSnapshot notebookSnapshot){
+    this.notebookSnapshot = notebookSnapshot;
+  }
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue
@@ -325,6 +331,9 @@ public class NotebookServer extends WebSocketServlet
           break;
         case SET_NOTE_REVISION:
           setNoteRevision(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case NOTE_SNAPSHOT_VIEW:
+          getNoteBysnapshotId(conn, userAndRoles, notebook, messagereceived);
           break;
         case NOTE_REVISION:
           getNoteByRevision(conn, notebook, messagereceived);
@@ -1986,6 +1995,23 @@ public class NotebookServer extends WebSocketServlet
     conn.send(serializeMessage(
         new Message(OP.NOTE_REVISION).put("noteId", noteId).put("revisionId", revisionId)
             .put("note", revisionNote)));
+  }
+
+  private void getNoteBysnapshotId(NotebookSocket conn, HashSet<String> userAndRoles,
+                                   Notebook notebook, Message fromMessage) throws IOException {
+    String id = (String) fromMessage.get("id");
+    String snapshotId = (String) fromMessage.get("snapshotId");
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+
+    final String revisionId = notebookSnapshot.getRevisionId(id, snapshotId);
+    if (revisionId == null) {
+      sendNote(conn, userAndRoles, notebook, fromMessage);
+    } else {
+      Note revisionNote = notebook.getNoteByRevision(id, revisionId, subject);
+      conn.send(serializeMessage(
+        new Message(OP.NOTE_REVISION).put("noteId", id).put("revisionId", revisionId)
+          .put("note", revisionNote)));
+    }
   }
 
   private void getNoteByRevisionForCompare(NotebookSocket conn, Notebook notebook,

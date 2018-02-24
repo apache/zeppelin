@@ -322,6 +322,12 @@ limitations under the License.
               tooltip-placement="bottom" uib-tooltip="Note permissions">
           <i class="fa fa-lock" ng-style="{color: showPermissions ? '#3071A9' : 'black' }"></i>
         </span>
+        <span class="setting-btn"
+              type="button"
+              ng-click="toggleSnapshotView()"
+              tooltip-placement="bottom" uib-tooltip="Snapshot View">
+          <i class="fa fa-copy" ng-style="{color: showSnapshotView ? '#3071A9' : 'black' }"></i>
+        </span>
       </span>
 
       <span class="btn-group">

@@ -452,6 +452,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getConfigFSDir() + "/notebook-authorization.json";
   }
 
+  public String getNotebookRevisionViewPath() {
+    return getRelativeDir(String.format("%s/notebook-snapshot.json", getConfDir()));
+  }
+
   public Boolean credentialsPersist() {
     return getBoolean(ConfVars.ZEPPELIN_CREDENTIALS_PERSIST);
   }
