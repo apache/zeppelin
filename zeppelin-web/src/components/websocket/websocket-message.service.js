@@ -295,6 +295,17 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       });
     },
 
+    getNoteBySnapshotId: function(noteId, snapshotId) {
+      websocketEvents.sendNewEvent({
+        op: 'NOTE_SNAPSHOT_VIEW',
+        data: {
+          id: noteId,
+          noteId: noteId,
+          snapshotId: snapshotId,
+        },
+      });
+    },
+
     getNoteByRevisionForCompare: function(noteId, revisionId, position) {
       websocketEvents.sendNewEvent({
         op: 'NOTE_REVISION_FOR_COMPARE',

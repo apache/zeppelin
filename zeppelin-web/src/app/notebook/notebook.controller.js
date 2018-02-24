@@ -59,8 +59,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   let connectedOnce = false;
   let isRevisionPath = function(path) {
-    let pattern = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
-    return pattern.test(path);
+    let patternRevision = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/revision\/[a-zA-Z0-9_]*');
+    let patternView = new RegExp('^.*\/notebook\/[a-zA-Z0-9_]*\/view\/[a-zA-Z0-9_]*');
+    return patternRevision.test(path) || patternView.test(path);
   };
 
   $scope.noteRevisions = [];
@@ -140,6 +141,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     noteVarShareService.clear();
     if ($routeParams.revisionId) {
       websocketMsgSrv.getNoteByRevision($routeParams.noteId, $routeParams.revisionId);
+    } else if ($routeParams.snapshotId) {
+      websocketMsgSrv.getNoteBySnapshotId($routeParams.noteId, $routeParams.snapshotId);
     } else {
       websocketMsgSrv.getNote($routeParams.noteId);
     }
@@ -623,6 +626,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.closeSetting();
     $scope.closePermissions();
     $scope.closeRevisionsComparator();
+    $scope.closeSnapshotView();
   };
 
   $scope.openSetting = function() {
@@ -1428,6 +1432,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     // open interpreter binding setting when there're none selected
     getInterpreterBindings();
     getPermissions();
+    getSnapshotToRevisionMapping();
     let isPersonalized = $scope.note.config.personalizedMode;
     isPersonalized = isPersonalized === undefined ? 'false' : isPersonalized;
     $scope.note.config.personalizedMode = isPersonalized;
@@ -1525,4 +1530,115 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
     angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
   });
+
+  // Snapshot Code Start
+  $scope.closeSnapshotView = function() {
+    $scope.showSnapshotView = false;
+  };
+
+  $scope.openSnapshotView = function() {
+    $scope.showSnapshotView = true;
+    getSnapshotToRevisionMapping();
+  };
+
+  $scope.addSnapshotMapping = function() {
+    $scope.snapshotToRevisionIdMap.push(
+      {
+        'snapshotId': '',
+        'revisionId': $scope.noteRevisions[0].id,
+      });
+  };
+
+  $scope.saveSnapshotMapping = function() {
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/snapshot',
+      $scope.snapshotToRevisionIdMap, {withCredentials: true})
+      .success(function(data, status, headers, config) {
+        getSnapshotToRevisionMapping(function() {
+          $scope.showSnapshotView = false;
+          BootstrapDialog.alert({
+            closable: true,
+            title: 'Snapshot Mapping Saved Successfully',
+            message: 'Snapshot Id : Commit Name \n\n\n' +
+            revisionMapToTableString($scope.snapshotToRevisionIdMap),
+          });
+        });
+      })
+      .error(function(data, status, headers, config) {
+        $scope.showSnapshotView = false;
+      });
+  };
+
+  let revisionMapToTableString = function(snapshotToRevisionIdMap) {
+    return _.map(snapshotToRevisionIdMap, function(mapping) {
+      let revisionName = $scope.getRevisionName(mapping['revisionId']);
+      return mapping['snapshotId'] + ' : '+ revisionName;
+    }).join('\n\n');
+  };
+
+  $scope.removeSnapshotMapping = function(index) {
+    $scope.snapshotToRevisionIdMap = $scope.snapshotToRevisionIdMap.filter(function(value, i) {
+      return i !== index;
+    });
+  };
+
+  $scope.updateSnapshotRevision = function(index) {
+    $scope.snapshotToRevisionIdMap = $scope.snapshotToRevisionIdMap.map(function(value, i) {
+      if (i === index) {
+        return value;
+      } else {
+        return value;
+      }
+    });
+  };
+
+  let getSnapshotToRevisionMapping = function(callback) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/snapshot')
+      .success(function(data, status, headers, config) {
+        $scope.snapshotToRevisionIdMap = data.body;
+        $scope.snapshotToRevisionIdMapOrig = data.body;
+        if (callback) {
+          callback();
+        }
+      })
+      .error(function(data, status, headers, config) {
+        if (status !== 0) {
+          console.log('Error %o %o', status, data.message);
+        }
+      });
+  };
+
+  $scope.toggleSnapshotView = function() {
+    let principal = $rootScope.ticket.principal;
+    $scope.isAnonymous = principal === 'anonymous' ? true : false;
+    if (!!principal && $scope.isAnonymous) {
+      $scope.blockAnonUsers();
+    } else {
+      if ($scope.showSnapshotView) {
+        $scope.closeSnapshotView();
+      } else {
+        $scope.closeAdditionalBoards();
+        $scope.openSnapshotView();
+      }
+    }
+  };
+
+  $scope.getRevisionName = function(revisionId) {
+    let list = $scope.noteRevisions.filter(function(revision) {
+      return revision.id === revisionId;
+    });
+
+    return list[0].message;
+  };
+
+  $scope.setSnapshotRevisionId = function(index, revisionId) {
+    $scope.snapshotToRevisionIdMap = $scope.snapshotToRevisionIdMap.map(function(value, i) {
+      if (index === i) {
+        let newValue = angular.copy(value);
+        newValue['revisionId'] = revisionId;
+        return newValue;
+      }
+      return value;
+    });
+  };
+  // Snapshot Code Ends
 }

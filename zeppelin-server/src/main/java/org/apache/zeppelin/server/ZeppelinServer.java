@@ -40,6 +40,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.snapshot.NotebookSnapshot;
 import org.apache.zeppelin.rest.ConfigurationsRestApi;
 import org.apache.zeppelin.rest.CredentialRestApi;
 import org.apache.zeppelin.rest.HeliumRestApi;
@@ -290,6 +291,7 @@ public class ZeppelinServer extends Application {
   private static void setupNotebookServer(WebAppContext webapp,
                                           ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
+    notebookWsServer.setNotebookSnapshot(NotebookSnapshot.getInstance());
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
@@ -391,8 +393,9 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
+    final NotebookSnapshot revisionView = NotebookSnapshot.getInstance();
     NotebookRestApi notebookApi
-      = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
+      = new NotebookRestApi(notebook, notebookWsServer, noteSearchService, revisionView);
     singletons.add(notebookApi);
 
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);

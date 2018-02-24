@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.snapshot.NotebookSnapshot;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.NotFoundException;
@@ -69,15 +70,18 @@ public class NotebookRestApi {
   private NotebookServer notebookServer;
   private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
+  private NotebookSnapshot revisionView;
 
   public NotebookRestApi() {
   }
 
-  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
+  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer,
+                         SearchService search,  NotebookSnapshot revisionView) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
     this.noteSearchService = search;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
+    this.revisionView = revisionView;
   }
 
   /**
@@ -97,6 +101,51 @@ public class NotebookRestApi {
     permissionsMap.put("writers", notebookAuthorization.getWriters(noteId));
     permissionsMap.put("runners", notebookAuthorization.getRunners(noteId));
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
+  }
+
+  /**
+   * get note view to revision mapping information
+   */
+  @GET
+  @Path("{noteId}/snapshot")
+  @ZeppelinApi
+  public Response getRevisionView(@PathParam("noteId") String noteId) throws IOException {
+    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    final String errorMsg =
+      "Insufficient privileges you cannot get the list of permissions for this note";
+    checkIfUserCanRead(noteId, errorMsg);
+
+    final List<Map<String, String>> snapshotToRevisionIdMap =
+      revisionView.getSnapshotToRevisionIdMap(noteId);
+
+    return new JsonResponse<>(Status.OK, "", snapshotToRevisionIdMap).build();
+  }
+
+  /**
+   * get note view to revision mapping information
+   */
+  @PUT
+  @Path("{noteId}/snapshot")
+  @ZeppelinApi
+  public Response saveRevisionView(@PathParam("noteId") String noteId,
+                                   String req) throws IOException {
+    String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
+
+    checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
+    checkIfUserIsOwner(noteId,
+      ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
+
+    LOG.debug("Got Request " + req );
+    List<Map<String, String>> snapshotToRevisionIdMap =
+      gson.fromJson(req, new TypeToken<List<HashMap<String, String>>>() {}.getType());
+
+    revisionView.setSnapshotId(noteId, snapshotToRevisionIdMap);
+
+    return new JsonResponse<>(Status.OK, "", snapshotToRevisionIdMap).build();
   }
 
   private String ownerPermissionError(Set<String> current, Set<String> allowed) throws IOException {

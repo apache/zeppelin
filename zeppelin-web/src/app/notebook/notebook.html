@@ -118,6 +118,39 @@ limitations under the License.
     </div>
   </div>
 
+  <!-- revision-view-mapping -->
+  <div ng-if="showSnapshotView && ticket.principal && !isAnonymous" class="permissions">
+    <div>
+      <h4>View Mapping (Only note owners can change)</h4>
+    </div>
+    <hr/>
+    <div class="permissionsForm" data-ng-model="snapshotToRevisionIdMap">
+      <div ng-repeat="snapshotMap in snapshotToRevisionIdMap">
+        <input data-ng-model="snapshotMap.snapshotId" />
+        <span class="btn-group">
+              <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                  {{getRevisionName(snapshotMap.revisionId)}} <span class="caret"></span>
+              </button>
+               <ul class="dropdown-menu pull-right" role="menu">
+                    <li ng-repeat="revision in noteRevisions">
+                        <a style="cursor:pointer" ng-click="setSnapshotRevisionId($parent.$index,revision.id)">{{revision.message}}</a>
+                    </li>
+              </ul>
+          </span>
+        <button class="btn btn-default btn-sm fa fa-remove" ng-click="removeSnapshotMapping($index)"></button>
+        <a style="cursor:pointer" ng-href="/#/notebook/{{note.id}}/view/{{snapshotMap.snapshotId}}" target=_blank>
+          Open</a>
+        <br/>
+      </div>
+    </div>
+    <br/>
+    <div>
+      <button class="btn btn-default" ng-click="addSnapshotMapping()">Add</button>
+      <button class="btn btn-default" ng-click="saveSnapshotMapping()">Save</button>
+      <button class="btn btn-default" ng-click="closeSnapshotView()">Cancel</button>
+    </div>
+  </div>
+
   <div class="note-jump"></div>
   <div id="noteForms" ng-if="isShowNoteForms()" class="paragraph-space box">
     <div>
