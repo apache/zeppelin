@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# Script for installing R / Python dependencies for Travis CI
+# Script for installing R / Python dependencies for Travis CI and local development environments
 set -ev
 touch ~/.environ
 
@@ -35,8 +35,21 @@ fi
 
 # Install Python dependencies for Python specific tests
 if [[ -n "$PYTHON" ]] ; then
-  wget https://repo.continuum.io/miniconda/Miniconda${PYTHON}-4.2.12-Linux-x86_64.sh -O miniconda.sh
-  bash miniconda.sh -b -p $HOME/miniconda
+  case "$(uname)" in
+  Darwin)
+    os=MacOSX
+    ;;
+  *)
+    os=Linux
+    ;;
+  esac
+  if [ ! -e "$HOME/miniconda" ] ; then
+    if [ ! -e miniconda.sh ] ; then
+      wget "https://repo.continuum.io/miniconda/Miniconda${PYTHON}-4.2.12-$os-$(uname -m).sh" -O miniconda.sh.part
+      mv miniconda.sh.part miniconda.sh  # protect against partially downloaded file when interrupted
+    fi
+    bash miniconda.sh -b -p "$HOME/miniconda"
+  fi
   echo "export PATH='$HOME/miniconda/bin:$PATH'" >> ~/.environ
   source ~/.environ
   hash -r
@@ -45,5 +58,8 @@ if [[ -n "$PYTHON" ]] ; then
   conda info -a
   conda config --add channels conda-forge
   conda install -q matplotlib=2.1.2 pandasql ipython=5.4.1 jupyter_client ipykernel matplotlib bokeh=0.12.10
+  if [[ "${PY4J}" = "true" ]] ; then
+    conda install -q py4j
+  fi
   pip install -q grpcio ggplot bkzep==0.4.0
 fi
