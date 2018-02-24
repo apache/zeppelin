@@ -78,7 +78,7 @@ public class IPythonInterpreterTest {
   @Test
   public void testGrpcFrameSize() throws InterpreterException, IOException {
     Properties properties = new Properties();
-    properties.setProperty("zeppelin.ipython.grpc.framesize", "4");
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "4");
     startInterpreter(properties);
 
     // to make this test can run under both python2 and python3
@@ -99,7 +99,7 @@ public class IPythonInterpreterTest {
     close();
 
     // increase framesize to make it work
-    properties.setProperty("zeppelin.ipython.grpc.framesize", "40");
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "40");
     startInterpreter(properties);
     // to make this test can run under both python2 and python3
     result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
