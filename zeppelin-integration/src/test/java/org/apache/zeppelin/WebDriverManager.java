@@ -104,6 +104,14 @@ public class WebDriverManager {
     }
   }
 
+  public static String getUrl() {
+    if (System.getenv("url") != null) {
+      return System.getenv("url");
+    } else {
+      return "http://localhost:8080";
+    }
+  }
+
   public static WebDriver getWebDriver() {
     WebDriver driver = null;
 
@@ -127,12 +135,7 @@ public class WebDriverManager {
       }
     }
 
-    String url;
-    if (System.getenv("url") != null) {
-      url = System.getenv("url");
-    } else {
-      url = "http://localhost:8080";
-    }
+    String url = getUrl();
 
     long start = System.currentTimeMillis();
     boolean loaded = false;

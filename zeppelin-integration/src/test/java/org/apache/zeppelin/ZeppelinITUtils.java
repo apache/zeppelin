@@ -21,6 +21,9 @@ package org.apache.zeppelin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openqa.selenium.WebDriver;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 public class ZeppelinITUtils {
@@ -45,8 +48,26 @@ public class ZeppelinITUtils {
   public static void restartZeppelin() {
     CommandExecutor.executeCommandLocalHost("../bin/zeppelin-daemon.sh restart",
         false, ProcessData.Types_Of_Data.OUTPUT);
-    //wait for server to start.
-    sleep(5000, false);
+    LOG.info("Waiting for server to start for 30 seconds...");
+    long deadline = System.nanoTime() + 30000000000L;  // 30s
+    while (System.nanoTime() < deadline) {
+      try {
+        URL url = new URL(WebDriverManager.getUrl());
+        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        try {
+          connection.connect();
+          if (connection.getResponseCode() == 200) {
+            LOG.info("Server is ready.");
+            return;
+          }
+        } finally {
+          connection.disconnect();
+        }
+      } catch (Exception e) {
+        // ignore, most likely server is not ready
+      }
+    }
+    throw new RuntimeException("Zeppelin server did not start in 30s");
   }
 
   public static void turnOffImplicitWaits(WebDriver driver) {
