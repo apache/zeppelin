@@ -151,6 +151,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   private JavaSparkContext jsc;
   private boolean enableSupportedVersionCheck;
 
+  private SparkShims sparkShims;
+
   public OldSparkInterpreter(Properties property) {
     super(property);
     out = new InterpreterOutputStream(logger);
@@ -158,10 +160,10 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
   public OldSparkInterpreter(Properties property, SparkContext sc) {
     this(property);
-
     this.sc = sc;
     env = SparkEnv.get();
-    sparkListener = setupListeners(this.sc);
+    sparkShims = SparkShims.getInstance(sc.version());
+    sparkShims.setupSparkListener(sparkUrl);
   }
 
   public SparkContext getSparkContext() {
@@ -169,7 +171,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       if (sc == null) {
         sc = createSparkContext();
         env = SparkEnv.get();
-        sparkListener = setupListeners(sc);
       }
       return sc;
     }
@@ -188,157 +189,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     synchronized (sharedInterpreterLock) {
       return sc != null;
     }
-  }
-
-  static SparkListener setupListeners(SparkContext context) {
-    SparkListener pl = new SparkListener() {
-      @Override
-      public synchronized void onJobStart(SparkListenerJobStart jobStart) {
-        int jobId = jobStart.jobId();
-        String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
-        String uiEnabled = jobStart.properties().getProperty("spark.ui.enabled");
-        String jobUrl = getJobUrl(jobId);
-        String noteId = Utils.getNoteId(jobGroupId);
-        String paragraphId = Utils.getParagraphId(jobGroupId);
-        // Button visible if Spark UI property not set, set as invalid boolean or true
-        java.lang.Boolean showSparkUI =
-            uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
-        if (showSparkUI && jobUrl != null) {
-          RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
-          Map<String, String> infos = new java.util.HashMap<>();
-          infos.put("jobUrl", jobUrl);
-          infos.put("label", "SPARK JOB");
-          infos.put("tooltip", "View in Spark web UI");
-          if (eventClient != null) {
-            eventClient.onParaInfosReceived(noteId, paragraphId, infos);
-          }
-        }
-      }
-
-      private String getJobUrl(int jobId) {
-        String jobUrl = null;
-        if (sparkUrl != null) {
-          jobUrl = sparkUrl + "/jobs/job/?id=" + jobId;
-        }
-        return jobUrl;
-      }
-
-      @Override
-      public void onBlockUpdated(SparkListenerBlockUpdated blockUpdated) {
-
-      }
-
-      @Override
-      public void onExecutorRemoved(SparkListenerExecutorRemoved executorRemoved) {
-
-      }
-
-      @Override
-      public void onExecutorAdded(SparkListenerExecutorAdded executorAdded) {
-
-      }
-
-      @Override
-      public void onExecutorMetricsUpdate(
-          SparkListenerExecutorMetricsUpdate executorMetricsUpdate) {
-
-      }
-
-      @Override
-      public void onApplicationEnd(SparkListenerApplicationEnd applicationEnd) {
-
-      }
-
-      @Override
-      public void onApplicationStart(SparkListenerApplicationStart applicationStart) {
-
-      }
-
-      @Override
-      public void onUnpersistRDD(SparkListenerUnpersistRDD unpersistRDD) {
-
-      }
-
-      @Override
-      public void onBlockManagerAdded(SparkListenerBlockManagerAdded blockManagerAdded) {
-
-      }
-
-      @Override
-      public void onBlockManagerRemoved(SparkListenerBlockManagerRemoved blockManagerRemoved) {
-
-      }
-
-      @Override
-      public void onEnvironmentUpdate(SparkListenerEnvironmentUpdate environmentUpdate) {
-
-      }
-
-      @Override
-      public void onJobEnd(SparkListenerJobEnd jobEnd) {
-
-      }
-      
-      @Override
-      public void onStageCompleted(SparkListenerStageCompleted stageCompleted) {
-
-      }
-
-      @Override
-      public void onStageSubmitted(SparkListenerStageSubmitted stageSubmitted) {
-
-      }
-
-      @Override
-      public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
-
-      }
-
-      @Override
-      public void onTaskGettingResult(SparkListenerTaskGettingResult taskGettingResult) {
-
-      }
-
-      @Override
-      public void onTaskStart(SparkListenerTaskStart taskStart) {
-
-      }
-    };
-    try {
-      Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
-
-      Method[] methods = listenerBus.getClass().getMethods();
-      Method addListenerMethod = null;
-      for (Method m : methods) {
-        if (!m.getName().equals("addListener")) {
-          continue;
-        }
-
-        Class<?>[] parameterTypes = m.getParameterTypes();
-
-        if (parameterTypes.length != 1) {
-          continue;
-        }
-
-        if (!parameterTypes[0].isAssignableFrom(SparkListener.class)) {
-          continue;
-        }
-
-        addListenerMethod = m;
-        break;
-      }
-
-      if (addListenerMethod != null) {
-        addListenerMethod.invoke(listenerBus, pl);
-      } else {
-        return null;
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      logger.error(e.toString(), e);
-      return null;
-    }
-    return pl;
   }
 
   private boolean useHiveContext() {
@@ -1020,6 +870,10 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
     }
 
+    sparkUrl = getSparkUIUrl();
+    sparkShims = SparkShims.getInstance(sc.version());
+    sparkShims.setupSparkListener(sparkUrl);
+
     numReferenceOfSparkContext.incrementAndGet();
   }
 
@@ -1373,75 +1227,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     return JobProgressUtil.progress(sc, jobGroup);
   }
 
-  private int[] getProgressFromStage_1_0x(SparkListener sparkListener, Object stage)
-      throws IllegalAccessException, IllegalArgumentException,
-      InvocationTargetException, NoSuchMethodException, SecurityException {
-    int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
-    int completedTasks = 0;
-
-    int id = (int) stage.getClass().getMethod("id").invoke(stage);
-
-    Object completedTaskInfo = null;
-
-    completedTaskInfo = JavaConversions.mapAsJavaMap(
-        (HashMap<Object, Object>) sparkListener.getClass()
-            .getMethod("stageIdToTasksComplete").invoke(sparkListener)).get(id);
-
-    if (completedTaskInfo != null) {
-      completedTasks += (int) completedTaskInfo;
-    }
-    List<Object> parents = JavaConversions.seqAsJavaList((Seq<Object>) stage.getClass()
-        .getMethod("parents").invoke(stage));
-    if (parents != null) {
-      for (Object s : parents) {
-        int[] p = getProgressFromStage_1_0x(sparkListener, s);
-        numTasks += p[0];
-        completedTasks += p[1];
-      }
-    }
-
-    return new int[] {numTasks, completedTasks};
-  }
-
-  private int[] getProgressFromStage_1_1x(SparkListener sparkListener, Object stage)
-      throws IllegalAccessException, IllegalArgumentException,
-      InvocationTargetException, NoSuchMethodException, SecurityException {
-    int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
-    int completedTasks = 0;
-    int id = (int) stage.getClass().getMethod("id").invoke(stage);
-
-    try {
-      Method stageIdToData = sparkListener.getClass().getMethod("stageIdToData");
-      HashMap<Tuple2<Object, Object>, Object> stageIdData =
-          (HashMap<Tuple2<Object, Object>, Object>) stageIdToData.invoke(sparkListener);
-      Class<?> stageUIDataClass =
-          this.getClass().forName("org.apache.spark.ui.jobs.UIData$StageUIData");
-
-      Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
-      Set<Tuple2<Object, Object>> keys =
-          JavaConverters.setAsJavaSetConverter(stageIdData.keySet()).asJava();
-      for (Tuple2<Object, Object> k : keys) {
-        if (id == (int) k._1()) {
-          Object uiData = stageIdData.get(k).get();
-          completedTasks += (int) numCompletedTasks.invoke(uiData);
-        }
-      }
-    } catch (Exception e) {
-      logger.error("Error on getting progress information", e);
-    }
-
-    List<Object> parents = JavaConversions.seqAsJavaList((Seq<Object>) stage.getClass()
-        .getMethod("parents").invoke(stage));
-    if (parents != null) {
-      for (Object s : parents) {
-        int[] p = getProgressFromStage_1_1x(sparkListener, s);
-        numTasks += p[0];
-        completedTasks += p[1];
-      }
-    }
-    return new int[] {numTasks, completedTasks};
-  }
-
   private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r) {
     if (r instanceof scala.tools.nsc.interpreter.Results.Success$) {
       return Code.SUCCESS;
@@ -1477,10 +1262,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public FormType getFormType() {
     return FormType.NATIVE;
-  }
-
-  public SparkListener getJobProgressListener() {
-    return sparkListener;
   }
 
   @Override

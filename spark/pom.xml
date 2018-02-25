@@ -63,21 +63,26 @@
         <module>scala-2.10</module>
         <module>scala-2.11</module>
         <module>spark-dependencies</module>
+        <module>spark-shims</module>
+        <module>spark1-shims</module>
+        <module>spark2-shims</module>
     </modules>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.apache.zeppelin</groupId>
-            <artifactId>zeppelin-interpreter</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.apache.zeppelin</groupId>
-            <artifactId>zeppelin-display</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
         </dependency>
 
         <dependency>
@@ -92,28 +97,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-core</artifactId>
-            <version>${datanucleus.core.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-api-jdo</artifactId>
-            <version>${datanucleus.apijdo.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-rdbms</artifactId>
-            <version>${datanucleus.rdbms.version}</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
