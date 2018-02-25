@@ -100,7 +100,16 @@ export function initializeTableConfig(config, tableOptionSpecs) {
 
 export function parseTableOption(specs, persistedTableOption) {
   /** copy original params */
-  const parsed = JSON.parse(JSON.stringify(persistedTableOption));
+  let parsed;
+  try {
+    parsed = JSON.parse(JSON.stringify(persistedTableOption));
+  } catch (e) {
+    // if not able to parse fall back to default values coming from specs
+    parsed = {};
+    for (let spec of specs) {
+      parsed[spec['name']] = spec['defaultValue'];
+    }
+  }
 
   for (let i = 0; i < specs.length; i++) {
     const s = specs[i];
