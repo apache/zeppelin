@@ -62,17 +62,13 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
           properties);
-      synchronized (remoteInterpreterProcess) {
-        if (!remoteInterpreterProcess.isRunning()) {
-          remoteInterpreterProcess.start(userName);
-          remoteInterpreterProcess.getRemoteInterpreterEventPoller()
-              .setInterpreterProcess(remoteInterpreterProcess);
-          remoteInterpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(this);
-          remoteInterpreterProcess.getRemoteInterpreterEventPoller().start();
-          getInterpreterSetting().getRecoveryStorage()
-              .onInterpreterClientStart(remoteInterpreterProcess);
-        }
-      }
+      remoteInterpreterProcess.start(userName);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller()
+          .setInterpreterProcess(remoteInterpreterProcess);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(this);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller().start();
+      getInterpreterSetting().getRecoveryStorage()
+          .onInterpreterClientStart(remoteInterpreterProcess);
     }
     return remoteInterpreterProcess;
   }
