@@ -1245,16 +1245,11 @@ export function fillDrillDownRow(schema, obj, rows, key,
 }
 
 export function sortWithNumberSupport(arr) {
-  let isOnlyNumberArray = true
-  for (let i = 0; i < arr.length; i++) {
-    if (isNaN(arr[i])) {
-      isOnlyNumberArray = false
-      break
-    }
-  }
-  if (isOnlyNumberArray) {
-    return arr.sort(function(a, b) { return parseFloat(a, 10) - parseFloat(b, 10) })
-  } else {
+  if (arr.some(isNaN)) {
     return arr.sort()
+  } else {
+    return arr.sort(function(a, b) {
+      return parseFloat(a, 10) - parseFloat(b, 10)
+    })
   }
 }
