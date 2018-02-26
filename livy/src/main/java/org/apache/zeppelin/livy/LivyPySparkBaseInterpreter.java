@@ -32,7 +32,7 @@ public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
   @Override
   protected String extractAppId() throws LivyException {
     return extractStatementResult(
-        interpret("sc.applicationId", null, false, false).message()
+        interpret("sc.applicationId", null, false, false, false).message()
             .get(0).getData());
   }
 
@@ -40,7 +40,7 @@ public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
   protected String extractWebUIAddress() throws LivyException {
     return extractStatementResult(
         interpret(
-            "sc._jsc.sc().ui().get().appUIAddress()", null, false, false)
+            "sc._jsc.sc().ui().get().appUIAddress()", null, false, false, false)
             .message().get(0).getData());
   }
 
