@@ -403,13 +403,14 @@ public class InterpreterSettingManager {
         .setIntepreterSettingManager(this)
         .create();
 
-    LOGGER.info("Register InterpreterSettingTemplate & InterpreterSetting: {}",
+    LOGGER.info("Register InterpreterSettingTemplate & Create InterpreterSetting: {}",
         interpreterSettingTemplate.getName());
     interpreterSettingTemplates.put(interpreterSettingTemplate.getName(),
         interpreterSettingTemplate);
 
     InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
     initInterpreterSetting(interpreterSetting);
+    interpreterSettings.put(interpreterSetting.getName(), interpreterSetting);
   }
 
   @VisibleForTesting
