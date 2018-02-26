@@ -34,7 +34,7 @@
   <name>Zeppelin: Helium development interpreter</name>
 
   <properties>
-    <interpreter.name>helium-dev</interpreter.name>
+    <interpreter.name>dev</interpreter.name>
   </properties>
 
   <dependencies>
