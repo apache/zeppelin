@@ -15,32 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.livy;
 
+public class SessionDeadException extends LivyException {
 
-/**
- * General Exception for interpreters.
- *
- */
-public class InterpreterException extends Exception {
-
-  public InterpreterException() {
-  }
-
-  public InterpreterException(Throwable e) {
-    super(e);
-  }
-
-  public InterpreterException(String m) {
-    super(m);
-  }
-
-  public InterpreterException(String msg, Throwable t) {
-    super(msg, t);
-  }
-
-  public InterpreterException(String message, Throwable cause, boolean enableSuppression,
-                       boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
-  }
 }
