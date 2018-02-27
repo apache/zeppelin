@@ -60,8 +60,9 @@ function LoginCtrl($scope, $rootScope, $http, $httpParamSerializer, baseUrlSrv, 
   };
 
   // handle session logout message received from WebSocket
+  $rootScope.isLoggingOut = false;
   $rootScope.$on('session_logout', function(event, data) {
-    if ($rootScope.userName !== '') {
+    if (!$rootScope.isLoggingOut && $rootScope.userName !== '') {
       $rootScope.userName = '';
       $rootScope.ticket = undefined;
 

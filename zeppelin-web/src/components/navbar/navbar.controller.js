@@ -143,7 +143,9 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
         logoutURL = logoutURL.replace('//', '//false:false@');
       }
 
-      $http.post(logoutURL).error(function() {
+      $rootScope.isLoggingOut = true;
+      function onLogout() {
+        $rootScope.isLoggingOut = false;
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';
         $rootScope.ticket.screenUsername = '';
@@ -155,7 +157,8 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
         setTimeout(function() {
           window.location = baseUrlSrv.getBase();
         }, 1000);
-      });
+      }
+      $http.post(logoutURL).success(onLogout).error(onLogout);
     });
   }
 
