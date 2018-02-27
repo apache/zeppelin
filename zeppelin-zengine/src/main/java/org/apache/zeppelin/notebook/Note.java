@@ -314,6 +314,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
   }
 
+  void setCronSupported(ZeppelinConfiguration config) {
+    if (config.isZeppelinNotebookCronEnable()) {
+      getConfig().put("isZeppelinNotebookCronEnable", true);
+    } else {
+      getConfig().put("isZeppelinNotebookCronEnable", false);
+    }
+  }
+
   public void setIndex(SearchService index) {
     this.index = index;
   }

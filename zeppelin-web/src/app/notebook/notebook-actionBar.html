@@ -249,7 +249,7 @@ limitations under the License.
       </span>
 
       <span ng-hide="viewOnly">
-      <div class="labelBtn btn-group">
+      <div class="labelBtn btn-group" ng-if="note.config.isZeppelinNotebookCronEnable">
         <div class="btn btn-default btn-xs dropdown-toggle"
              type="button"
              data-toggle="dropdown"
