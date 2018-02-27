@@ -133,7 +133,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
     generateId();
-    setCronSupported(conf);
   }
 
   private void generateId() {
@@ -319,6 +318,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       if (config.getZeppelinNotebookCronFolders() == null) {
         getConfig().put("isZeppelinNotebookCronEnable", true);
       } else {
+        getConfig().put("isZeppelinNotebookCronEnable", false);
         for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
           folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
           if (getName().matches(folder)) {

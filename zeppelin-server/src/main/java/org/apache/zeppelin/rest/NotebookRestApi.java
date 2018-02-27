@@ -381,6 +381,7 @@ public class NotebookRestApi {
 
     note.setName(noteName);
     note.persist(subject);
+    note.setCronSupported(notebook.getConf());
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.OK, "", note.getId()).build();

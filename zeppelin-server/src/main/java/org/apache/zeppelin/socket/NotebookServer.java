@@ -1046,6 +1046,7 @@ public class NotebookServer extends WebSocketServlet
           noteName = "Note " + note.getId();
         }
         note.setName(noteName);
+        note.setCronSupported(notebook.getConf());
       }
 
       note.persist(subject);
