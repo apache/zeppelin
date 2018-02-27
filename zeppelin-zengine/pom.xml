@@ -695,39 +695,6 @@
         </dependency>
 
         <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-interpreter</artifactId>
-          <version>${project.version}</version>
-          <scope>test</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>com.google.protobuf</groupId>
-              <artifactId>protobuf-java</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.protobuf</groupId>
-              <artifactId>protobuf-java-util</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.errorprone</groupId>
-              <artifactId>error_prone_annotations</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>io.grpc</groupId>
-              <artifactId>grpc-context</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.api.grpc</groupId>
-              <artifactId>proto-google-common-protos</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-
-        <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-azure</artifactId>
           <version>${hadoop.version}</version>
