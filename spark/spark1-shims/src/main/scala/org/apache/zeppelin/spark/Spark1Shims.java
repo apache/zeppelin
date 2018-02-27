@@ -43,6 +43,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 
 import java.util.Map;
 
+/**
+ * Shims for Spark 1.x
+ */
 public class Spark1Shims extends SparkShims {
 
   public void setupSparkListener(final String sparkWebUrl) {
