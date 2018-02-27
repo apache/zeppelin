@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -114,18 +113,6 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
-  public void authenticationUser(String userName, String password) {
-    pollingWait(By.xpath(
-        "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
-    pollingWait(By.xpath("//*[@id='userName']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(userName);
-    pollingWait(By.xpath("//*[@id='password']"), MAX_BROWSER_TIMEOUT_SEC).sendKeys(password);
-    pollingWait(By.xpath("//*[@id='loginModalContent']//button[contains(.,'Login')]"),
-        MAX_BROWSER_TIMEOUT_SEC).click();
-    ZeppelinITUtils.sleep(1000, false);
-  }
-
   private void testShowNotebookListOnNavbar() throws Exception {
     try {
       pollingWait(By.xpath("//li[@class='dropdown notebook-list-dropdown']"),
@@ -140,33 +127,16 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     }
   }
 
-  public void logoutUser(String userName) throws URISyntaxException {
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]")).click();
-    ZeppelinITUtils.sleep(500, false);
-    driver.findElement(By.xpath("//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
-        userName + "')]//a[@ng-click='navbar.logout()']")).click();
-    ZeppelinITUtils.sleep(2000, false);
-    if (driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button"))
-        .isDisplayed()) {
-      driver.findElement(By.xpath("//*[@id='loginModal']//div[contains(@class, 'modal-header')]/button")).click();
-    }
-    driver.get(new URI(driver.getCurrentUrl()).resolve("/#/").toString());
-    ZeppelinITUtils.sleep(500, false);
-  }
-
   //  @Test
   public void testSimpleAuthentication() throws Exception {
     try {
-      AuthenticationIT authenticationIT = new AuthenticationIT();
-      authenticationIT.authenticationUser("admin", "password1");
+      authenticationUser("admin", "password1");
 
       collector.checkThat("Check is user logged in", true,
           CoreMatchers.equalTo(driver.findElement(By.partialLinkText("Create new note"))
               .isDisplayed()));
 
-      authenticationIT.logoutUser("admin");
+      logoutUser("admin");
     } catch (Exception e) {
       handleException("Exception in AuthenticationIT while testCreateNewButton ", e);
     }
@@ -175,8 +145,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   public void testAnyOfRoles() throws Exception {
     try {
-      AuthenticationIT authenticationIT = new AuthenticationIT();
-      authenticationIT.authenticationUser("admin", "password1");
+      authenticationUser("admin", "password1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -188,9 +157,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               MIN_IMPLICIT_WAIT).isDisplayed())
       );
 
-      authenticationIT.logoutUser("admin");
+      logoutUser("admin");
 
-      authenticationIT.authenticationUser("finance1", "finance1");
+      authenticationUser("finance1", "finance1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -202,9 +171,9 @@ public class AuthenticationIT extends AbstractZeppelinIT {
               MIN_IMPLICIT_WAIT).isDisplayed())
       );
       
-      authenticationIT.logoutUser("finance1");
+      logoutUser("finance1");
 
-      authenticationIT.authenticationUser("hr1", "hr1");
+      authenticationUser("hr1", "hr1");
 
       pollingWait(By.xpath("//div/button[contains(@class, 'nav-btn dropdown-toggle ng-scope')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
@@ -218,7 +187,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       } catch (TimeoutException e) {
         throw new Exception("Expected ngToast not found", e);
       }
-      authenticationIT.logoutUser("hr1");
+      logoutUser("hr1");
 
     } catch (Exception e) {
       handleException("Exception in AuthenticationIT while testAnyOfRoles ", e);
@@ -228,8 +197,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   @Test
   public void testGroupPermission() throws Exception {
     try {
-      AuthenticationIT authenticationIT = new AuthenticationIT();
-      authenticationIT.authenticationUser("finance1", "finance1");
+      authenticationUser("finance1", "finance1");
       createNewNote();
 
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
@@ -250,12 +218,12 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       pollingWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Permissions Saved ')]" +
               "//div[@class='modal-footer']//button[contains(.,'OK')]"),
           MAX_BROWSER_TIMEOUT_SEC).click();
-      authenticationIT.logoutUser("finance1");
+      logoutUser("finance1");
 
-      authenticationIT.authenticationUser("hr1", "hr1");
+      authenticationUser("hr1", "hr1");
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC);
+            MIN_IMPLICIT_WAIT);
         collector.checkThat("Check is user has permission to view this note link", false,
             CoreMatchers.equalTo(element.isDisplayed()));
       } catch (Exception e) {
@@ -272,12 +240,12 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       driver.findElement(
           By.xpath("//div[@class='modal-content'][contains(.,'Insufficient privileges')]" +
               "//div[@class='modal-footer']//button[2]")).click();
-      authenticationIT.logoutUser("hr1");
+      logoutUser("hr1");
 
-      authenticationIT.authenticationUser("finance2", "finance2");
+      authenticationUser("finance2", "finance2");
       try {
         WebElement element = pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC);
+            MIN_IMPLICIT_WAIT);
         collector.checkThat("Check is user has permission to view this note link", true,
             CoreMatchers.equalTo(element.isDisplayed()));
       } catch (Exception e) {
@@ -292,7 +260,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       collector.checkThat("Check is user has permission to view this note", 0,
           CoreMatchers.equalTo(privilegesModal.size()));
       deleteTestNotebook(driver);
-      authenticationIT.logoutUser("finance2");
+      logoutUser("finance2");
 
 
     } catch (Exception e) {

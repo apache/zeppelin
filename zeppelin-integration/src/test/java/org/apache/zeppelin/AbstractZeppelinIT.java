@@ -18,11 +18,24 @@
 package org.apache.zeppelin;
 
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import com.google.common.base.Function;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.*;
-import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -31,10 +44,6 @@ import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 abstract public class AbstractZeppelinIT {
   protected static WebDriver driver;
@@ -101,6 +110,67 @@ abstract public class AbstractZeppelinIT {
         return driver.findElement(locator);
       }
     });
+  }
+
+  protected void waitForBootstrapModalFade(final WebDriverWait wait) {
+    ZeppelinITUtils.turnOffImplicitWaits(driver);
+    try {
+      wait.until(ExpectedConditions.numberOfElementsToBe(
+          By.xpath("//div[contains(@class, 'modal-backdrop')]"), 0));
+    } finally {
+      ZeppelinITUtils.turnOnImplicitWaits(driver);
+    }
+  }
+
+  protected void waitForLoginWindowFade(final WebDriverWait wait) {
+    wait.until(ExpectedConditions.invisibilityOfElementLocated(
+        By.xpath("//*[@id='loginModal']")));
+    waitForBootstrapModalFade(wait);
+  }
+
+  public void authenticationUser(final String userName, final String password) {
+    final WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    LOG.info("Clicking login button...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//div[contains(@class, 'navbar-collapse')]//li//button[contains(.,'Login')]")))
+        .click();
+    // This might fail intermittently on Mac+Chrome.
+    // See https://stackoverflow.com/questions/39765008/selenium-test-hangs-on-css-transition-when-chrome-window-is-sent-to-background-o
+    LOG.info("Waiting for login dialog...");
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+        "//*[@id='loginModal']")));
+    LOG.info("Typing user name...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//*[@id='userName']")))
+        .sendKeys(userName);
+    LOG.info("Typing password...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//*[@id='password']")))
+        .sendKeys(password);
+    LOG.info("Logging in...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//*[@id='loginModalContent']//button[contains(.,'Login')]")))
+        .click();
+    waitForLoginWindowFade(wait);
+    LOG.info("Login successful!");
+  }
+
+  public void logoutUser(final String userName) throws URISyntaxException {
+    final WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    LOG.info("Opening dropdown menu...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+            userName + "')]")))
+        .click();
+    LOG.info("Logging out...");
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+        "//div[contains(@class, 'navbar-collapse')]//li[contains(.,'" +
+            userName + "')]//a[@ng-click='navbar.logout()']")))
+        .click();
+    final String mainPage = new URI(driver.getCurrentUrl()).resolve("/#/").toString();
+    LOG.info("Waiting for the main page (" + mainPage + ")...");
+    wait.until(ExpectedConditions.urlToBe(mainPage));
+    LOG.info("Logout successful!");
   }
 
   protected void createNewNote() {
