@@ -226,6 +226,10 @@ public class InterpreterContext {
     return client;
   }
 
+  public void setClient(RemoteEventClientWrapper client) {
+    this.client = client;
+  }
+
   public RemoteWorksController getRemoteWorksController() {
     return remoteWorksController;
   }
