@@ -33,7 +33,9 @@ There are few notebook storage systems available for a use out of the box:
   * all notes are saved in the notebook folder in hadoop compatible file system - `FileSystemNotebookRepo`
   * storage using Amazon S3 service - `S3NotebookRepo`
   * storage using Azure service - `AzureNotebookRepo`
+  * storage using Google Cloud Storage - `GCSNotebookRepo`
   * storage using MongoDB - `MongoNotebookRepo`
+  * storage using GitHub - `GitHubNotebookRepo`
 
 Multiple storage systems can be used at the same time by providing a comma-separated list of the class-names in the configuration.
 By default, only first two of them will be automatically kept in sync by Zeppelin.
@@ -263,6 +265,97 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
+## Notebook Storage in Google Cloud Storage<a name="GCS"></a>
+
+Using `GCSNotebookRepo` you can connect Zeppelin with Google Cloud Storage using [Application Default Credentials](https://cloud.google.com/docs/authentication/production).
+
+First, choose a GCS path under which to store notebooks.
+
+```
+<property>
+  <name>zeppelin.notebook.gcs.dir</name>
+  <value></value>
+  <description>
+    A GCS path in the form gs://bucketname/path/to/dir.
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+ </description>
+</property>
+```
+
+Then, initialize the `GCSNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>versioned notebook persistence layer implementation</description>
+</property>
+```
+
+and commenting out:
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+Or, if you want to simultaneously use your local git storage with GCS, use the following property instead:
+
+ ```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo,org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+### Google Cloud API Authentication
+
+Note: On Google App Engine, Google Cloud Shell, and Google Compute Engine, these
+steps are not necessary, as build-in credentials are used by default.
+
+For more information, see [Application Default Credentials](https://cloud.google.com/docs/authentication/production)
+
+#### Using gcloud auth application-default login
+
+See the [gcloud docs](https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login)
+
+As the user running the zeppelin daemon, run:
+
+```bash
+gcloud auth application-default login
+```
+
+You can also use `--scopes` to restrict access to specific Google APIs, such as
+Cloud Storage and BigQuery.
+
+#### Using service account key files
+
+Alternatively, to use a [service account](https://cloud.google.com/compute/docs/access/service-accounts)
+for authentication with GCS, you will need a JSON service account key file.
+
+1. Navigate to the [service accounts page](https://console.cloud.google.com/iam-admin/serviceaccounts/project)
+2. Click `CREATE SERVICE ACCOUNT`
+3. Select at least `Storage -> Storage Object Admin`. Note that this is
+   **different** than `Storage Admin`.
+4. If you are also using the BigQuery Interpreter, add the appropriate
+   permissions (e.g. `Bigquery -> Bigquery Data Viewer and BigQuery User`)
+5. Name your service account, and select "Furnish a new private key" to download
+   a `.json` file. Click "Create".
+6. Move the downloaded file to a location of your choice (e.g.
+   `/path/to/my/key.json`), and give it appropriate permissions. Ensure at
+   least the user running the zeppelin daemon can read it.
+
+Then, point `GOOGLE_APPLICATION_CREDENTIALS` at your new key file in **zeppelin-env.sh**. For example:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key.json
+```
+
+</br>
 ## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
@@ -361,3 +454,44 @@ export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT=true
 
 #### Import your local notes automatically
 By setting `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` as `true` (default `false`), you can import your local notes automatically when Zeppelin daemon starts up. This feature is for easy migration from local file system storage to MongoDB storage. A note with ID already existing in the collection will not be imported.
+
+## Notebook Storage in GitHub
+
+To enable GitHub tracking, uncomment the following properties in `zeppelin-site.xml`
+
+```sh
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value></value>
+  <description>remote Git repository URL</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value></value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.origin</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+```
+
+And set the `zeppelin.notebook.storage` propery to `org.apache.zeppelin.notebook.repo.GitHubNotebookRepo`
+
+```sh
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitHubNotebookRepo</value>
+</property>
+```
+
+The access token could be obtained by following the steps on this link https://github.com/settings/tokens.

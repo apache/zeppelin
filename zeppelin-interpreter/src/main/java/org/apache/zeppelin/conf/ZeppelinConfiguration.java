@@ -360,15 +360,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
   }
 
-  public String getUser() {
+  public String getGCSStorageDir() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR);
+  }
+
+  public String getS3User() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
 
-  public String getBucketName() {
+  public String getS3BucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
 
-  public String getEndpoint() {
+  public String getS3Endpoint() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_ENDPOINT);
   }
 
@@ -518,7 +522,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (StringUtils.isBlank(fsConfigDir)) {
       LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
           "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
-      return "file://" + getConfDir();
+      return getConfDir();
     }
     return fsConfigDir;
   }
@@ -559,6 +563,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getLifecycleManagerClass() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS);
+  }
+
+  public String getZeppelinNotebookGitURL() {
+    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL);
+  }
+
+  public String getZeppelinNotebookGitUsername() {
+    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME);
+  }
+
+  public String getZeppelinNotebookGitAccessToken() {
+    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN);
+  }
+
+  public String getZeppelinNotebookGitRemoteOrigin() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -681,6 +701,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
+    ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR("zeppelin.notebook.gcs.dir", ""),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
@@ -709,7 +730,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_CONFIG_FS_DIR("zeppelin.config.fs.dir", ""),
     ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
-        "org.apache.zeppelin.storage.FileSystemConfigStorage"),
+        "org.apache.zeppelin.storage.LocalConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
     ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
@@ -745,8 +766,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
         "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
 
-    ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", "");
+    ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
 
+    ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
+    ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
+    ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),
+    ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin");
 
     private String varName;
     @SuppressWarnings("rawtypes")

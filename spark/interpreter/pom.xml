@@ -53,15 +53,7 @@
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
 
-
-    <spark.archive>spark-${spark.version}</spark.archive>
-    <spark.src.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
-    </spark.src.download.url>
-    <spark.bin.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
-    </spark.bin.download.url>
-
+    
   </properties>
 
   <dependencies>
@@ -86,6 +78,18 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark1-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark2-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -485,6 +489,10 @@
             <relocation>
               <pattern>py4j.</pattern>
               <shadedPattern>org.apache.zeppelin.py4j.</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>com.facebook.fb303</pattern>
+              <shadedPattern>org.apache.zeppelin.com.facebook.fb303</shadedPattern>
             </relocation>
           </relocations>
         </configuration>

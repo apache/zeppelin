@@ -18,9 +18,13 @@
 
 package org.apache.zeppelin.storage;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.CredentialsInfoSaving;
@@ -75,4 +79,27 @@ public abstract class ConfigStorage {
   public abstract String loadCredentials() throws IOException;
 
   public abstract void saveCredentials(String credentials) throws IOException;
+
+  protected InterpreterInfoSaving buildInterpreterInfoSaving(String json) {
+    //TODO(zjffdu) This kind of post processing is ugly.
+    JsonParser jsonParser = new JsonParser();
+    JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
+    InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
+    for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
+      // Always use separate interpreter process
+      // While we decided to turn this feature on always (without providing
+      // enable/disable option on GUI).
+      // previously created setting should turn this feature on here.
+      interpreterSetting.getOption();
+      interpreterSetting.convertPermissionsFromUsersToOwners(
+          jsonObject.getAsJsonObject("interpreterSettings")
+              .getAsJsonObject(interpreterSetting.getId()));
+    }
+    return infoSaving;
+  }
+
+  @VisibleForTesting
+  public static void reset() {
+    instance = null;
+  }
 }

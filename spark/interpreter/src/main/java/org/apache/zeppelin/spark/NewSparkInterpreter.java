@@ -69,6 +69,7 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   private SparkVersion sparkVersion;
   private boolean enableSupportedVersionCheck;
   private String sparkUrl;
+  private SparkShims sparkShims;
 
   private static InterpreterHookRegistry hooks;
 
@@ -117,7 +118,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
       sparkUrl = this.innerInterpreter.sparkUrl();
-      setupListeners();
+      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims.setupSparkListener(sparkUrl);
 
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
@@ -125,7 +127,7 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
           Lists.newArrayList("@transient"));
     } catch (Exception e) {
-      LOGGER.error(ExceptionUtils.getStackTrace(e));
+      LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
     }
   }
@@ -211,67 +213,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public int getProgress(InterpreterContext context) {
     return innerInterpreter.getProgress(Utils.buildJobGroupId(context), context);
-  }
-
-  private void setupListeners() {
-    JobProgressListener pl = new JobProgressListener(sc.getConf()) {
-      @Override
-      public synchronized void onJobStart(SparkListenerJobStart jobStart) {
-        super.onJobStart(jobStart);
-        int jobId = jobStart.jobId();
-        String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
-        String uiEnabled = jobStart.properties().getProperty("spark.ui.enabled");
-        String jobUrl = getJobUrl(jobId);
-        String noteId = Utils.getNoteId(jobGroupId);
-        String paragraphId = Utils.getParagraphId(jobGroupId);
-        // Button visible if Spark UI property not set, set as invalid boolean or true
-        java.lang.Boolean showSparkUI =
-            uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
-        if (showSparkUI && jobUrl != null) {
-          RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
-          Map<String, String> infos = new java.util.HashMap<>();
-          infos.put("jobUrl", jobUrl);
-          infos.put("label", "SPARK JOB");
-          infos.put("tooltip", "View in Spark web UI");
-          if (eventClient != null) {
-            eventClient.onParaInfosReceived(noteId, paragraphId, infos);
-          }
-        }
-      }
-
-      private String getJobUrl(int jobId) {
-        String jobUrl = null;
-        if (sparkUrl != null) {
-          jobUrl = sparkUrl + "/jobs/job?id=" + jobId;
-        }
-        return jobUrl;
-      }
-    };
-    try {
-      Object listenerBus = sc.getClass().getMethod("listenerBus").invoke(sc);
-      Method[] methods = listenerBus.getClass().getMethods();
-      Method addListenerMethod = null;
-      for (Method m : methods) {
-        if (!m.getName().equals("addListener")) {
-          continue;
-        }
-        Class<?>[] parameterTypes = m.getParameterTypes();
-        if (parameterTypes.length != 1) {
-          continue;
-        }
-        if (!parameterTypes[0].isAssignableFrom(JobProgressListener.class)) {
-          continue;
-        }
-        addListenerMethod = m;
-        break;
-      }
-      if (addListenerMethod != null) {
-        addListenerMethod.invoke(listenerBus, pl);
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      LOGGER.error(e.toString(), e);
-    }
   }
 
   public SparkZeppelinContext getZeppelinContext() {

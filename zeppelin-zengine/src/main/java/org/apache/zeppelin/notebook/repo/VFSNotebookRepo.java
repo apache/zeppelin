@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +25,9 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;
@@ -40,16 +39,11 @@ import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 /**
 *
@@ -167,24 +161,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
     ins.close();
 
-    Note note = Note.fromJson(json);
-
-    for (Paragraph p : note.getParagraphs()) {
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
-        p.setStatus(Status.ABORT);
-      }
-
-      List<ApplicationState> appStates = p.getAllApplicationStates();
-      if (appStates != null) {
-        for (ApplicationState app : appStates) {
-          if (app.getStatus() != ApplicationState.Status.ERROR) {
-            app.setStatus(ApplicationState.Status.UNLOADED);
-          }
-        }
-      }
-    }
-
-    return note;
+    return Note.fromJson(json);
   }
 
   private NoteInfo getNoteInfo(FileObject noteDir) throws IOException {
@@ -262,26 +239,6 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    // no-op
-    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
-    return Revision.EMPTY;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     NotebookRepoSettingsInfo repoSetting = NotebookRepoSettingsInfo.newInstance();
     List<NotebookRepoSettingsInfo> settings = Lists.newArrayList();
@@ -319,11 +276,5 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
   }
 
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
-
 }
+

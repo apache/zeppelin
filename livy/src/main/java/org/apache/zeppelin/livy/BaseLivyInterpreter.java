@@ -93,6 +93,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private int sessionCreationTimeout;
   private int pullStatusInterval;
   protected boolean displayAppInfo;
+  private boolean restartDeadSession;
   protected LivyVersion livyVersion;
   private RestTemplate restTemplate;
   private Map<String, String> customHeaders = new HashMap<>();
@@ -110,6 +111,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     this.livyURL = property.getProperty("zeppelin.livy.url");
     this.displayAppInfo = Boolean.parseBoolean(
         property.getProperty("zeppelin.livy.displayAppInfo", "true"));
+    this.restartDeadSession = Boolean.parseBoolean(
+        property.getProperty("zeppelin.livy.restart_dead_session", "false"));
     this.sessionCreationTimeout = Integer.parseInt(
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
@@ -159,7 +162,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     } catch (LivyException e) {
       String msg = "Fail to create session, please check livy interpreter log and " +
           "livy server log";
-      throw new RuntimeException(msg, e);
+      throw new InterpreterException(msg, e);
     }
   }
 
@@ -246,7 +249,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
     try {
-      return interpret(st, null, context.getParagraphId(), this.displayAppInfo, true);
+      return interpret(st, null, context.getParagraphId(), this.displayAppInfo, true, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -359,18 +362,21 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   public InterpreterResult interpret(String code,
                                      String paragraphId,
                                      boolean displayAppInfo,
-                                     boolean appendSessionExpired) throws LivyException {
+                                     boolean appendSessionExpired,
+                                     boolean appendSessionDead) throws LivyException {
     return interpret(code, sharedInterpreter.isSupported() ? getSessionKind() : null,
-        paragraphId, displayAppInfo, appendSessionExpired);
+        paragraphId, displayAppInfo, appendSessionExpired, appendSessionDead);
   }
 
   public InterpreterResult interpret(String code,
                                      String codeType,
                                      String paragraphId,
                                      boolean displayAppInfo,
-                                     boolean appendSessionExpired) throws LivyException {
+                                     boolean appendSessionExpired,
+                                     boolean appendSessionDead) throws LivyException {
     StatementInfo stmtInfo = null;
     boolean sessionExpired = false;
+    boolean sessionDead = false;
     try {
       try {
         stmtInfo = executeStatement(new ExecuteRequest(code, codeType));
@@ -386,6 +392,21 @@ public abstract class BaseLivyInterpreter extends Interpreter {
           }
         }
         stmtInfo = executeStatement(new ExecuteRequest(code, codeType));
+      } catch (SessionDeadException e) {
+        sessionDead = true;
+        if (restartDeadSession) {
+          LOGGER.warn("Livy session {} is dead, new session will be created.", sessionInfo.id);
+          close();
+          try {
+            open();
+          } catch (InterpreterException ie) {
+            throw new LivyException("Fail to restart livy session", ie);
+          }
+          stmtInfo = executeStatement(new ExecuteRequest(code, codeType));
+        } else {
+          throw new LivyException("%html <font color=\"red\">Livy session is dead somehow, " +
+              "please check log to see why it is dead, and then restart livy interpreter</font>");
+        }
       }
 
       // pull the statement status
@@ -405,9 +426,9 @@ public abstract class BaseLivyInterpreter extends Interpreter {
           paragraphId2StmtProgressMap.put(paragraphId, (int) (stmtInfo.progress * 100));
         }
       }
-      if (appendSessionExpired) {
-        return appendSessionExpire(getResultFromStatementInfo(stmtInfo, displayAppInfo),
-            sessionExpired);
+      if (appendSessionExpired || appendSessionDead) {
+        return appendSessionExpireDead(getResultFromStatementInfo(stmtInfo, displayAppInfo),
+            sessionExpired, sessionDead);
       } else {
         return getResultFromStatementInfo(stmtInfo, displayAppInfo);
       }
@@ -451,21 +472,27 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
   }
 
-  private InterpreterResult appendSessionExpire(InterpreterResult result, boolean sessionExpired) {
+  private InterpreterResult appendSessionExpireDead(InterpreterResult result,
+                                                    boolean sessionExpired,
+                                                    boolean sessionDead) {
+    InterpreterResult result2 = new InterpreterResult(result.code());
     if (sessionExpired) {
-      InterpreterResult result2 = new InterpreterResult(result.code());
       result2.add(InterpreterResult.Type.HTML,
           "<font color=\"red\">Previous livy session is expired, new livy session is created. " +
               "Paragraphs that depend on this paragraph need to be re-executed!</font>");
-      for (InterpreterResultMessage message : result.message()) {
-        result2.add(message.getType(), message.getData());
-      }
-      return result2;
-    } else {
-      return result;
-    }
-  }
 
+    }
+    if (sessionDead) {
+      result2.add(InterpreterResult.Type.HTML,
+          "<font color=\"red\">Previous livy session is dead, new livy session is created. " +
+              "Paragraphs that depend on this paragraph need to be re-executed!</font>");
+    }
+
+    for (InterpreterResultMessage message : result.message()) {
+      result2.add(message.getType(), message.getData());
+    }
+    return result2;
+  }
 
   private InterpreterResult getResultFromStatementInfo(StatementInfo stmtInfo,
                                                        boolean displayAppInfo) {
@@ -684,8 +711,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         HttpServerErrorException errorException = (HttpServerErrorException) e;
         String errorResponse = errorException.getResponseBodyAsString();
         if (errorResponse.contains("Session is in state dead")) {
-          throw new LivyException("%html <font color=\"red\">Livy session is dead somehow, " +
-              "please check log to see why it is dead, and then restart livy interpreter</font>");
+          throw new SessionDeadException();
         }
         throw new LivyException(errorResponse, e);
       }

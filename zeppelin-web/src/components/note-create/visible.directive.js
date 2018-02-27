@@ -12,34 +12,34 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('modalvisible', modalvisible)
+angular.module('zeppelinWebApp').directive('modalvisible', modalvisible);
 
-function modalvisible () {
+function modalvisible() {
   return {
     restrict: 'A',
     scope: {
       preVisibleCallback: '&previsiblecallback',
       postVisibleCallback: '&postvisiblecallback',
-      targetinput: '@targetinput'
+      targetinput: '@targetinput',
     },
-    link: function (scope, element, attrs) {
+    link: function(scope, element, attrs) {
       // Add some listeners
-      let previsibleMethod = scope.preVisibleCallback
-      let postVisibleMethod = scope.postVisibleCallback
-      element.on('show.bs.modal', function (e) {
-        let relatedTarget = angular.element(e.relatedTarget)
-        let clone = relatedTarget.data('clone')
-        let sourceNoteName = relatedTarget.data('source-note-name')
-        let path = relatedTarget.data('path')
-        let cloneNote = clone ? true : false
-        previsibleMethod()(cloneNote, sourceNoteName, path)
-      })
-      element.on('shown.bs.modal', function (e) {
+      let previsibleMethod = scope.preVisibleCallback;
+      let postVisibleMethod = scope.postVisibleCallback;
+      element.on('show.bs.modal', function(e) {
+        let relatedTarget = angular.element(e.relatedTarget);
+        let clone = relatedTarget.data('clone');
+        let sourceNoteName = relatedTarget.data('source-note-name');
+        let path = relatedTarget.data('path');
+        let cloneNote = clone ? true : false;
+        previsibleMethod()(cloneNote, sourceNoteName, path);
+      });
+      element.on('shown.bs.modal', function(e) {
         if (scope.targetinput) {
-          angular.element(e.target).find('input#' + scope.targetinput).select()
+          angular.element(e.target).find('input#' + scope.targetinput).select();
         }
-        postVisibleMethod()
-      })
-    }
-  }
+        postVisibleMethod();
+      });
+    },
+  };
 }
