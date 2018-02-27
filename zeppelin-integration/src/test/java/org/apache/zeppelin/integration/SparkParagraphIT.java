@@ -50,6 +50,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
   @After
   public void tearDown() {
     deleteTestNotebook(driver);
+    handleBrowserLogs();
     driver.quit();
   }
 

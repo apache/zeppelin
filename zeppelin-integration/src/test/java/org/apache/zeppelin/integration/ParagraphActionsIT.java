@@ -50,6 +50,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
   @After
   public void tearDown() {
+    handleBrowserLogs();
     driver.quit();
   }
 

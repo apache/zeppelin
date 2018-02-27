@@ -62,6 +62,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
   @After
   public void tearDown() {
+    handleBrowserLogs();
     driver.quit();
   }
 

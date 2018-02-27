@@ -109,6 +109,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
     } catch (IOException e) {
       LOG.error("Error in AuthenticationIT tearDown::", e);
     }
+    handleBrowserLogs();
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
   }

@@ -100,6 +100,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
     } catch (IOException e) {
       LOG.error("Error in PersonalizeActionsIT tearDown::", e);
     }
+    handleBrowserLogs();
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
   }

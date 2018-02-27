@@ -122,6 +122,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     } catch (IOException e) {
       LOG.error("Error in InterpreterModeActionsIT tearDown::", e);
     }
+    handleBrowserLogs();
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
   }

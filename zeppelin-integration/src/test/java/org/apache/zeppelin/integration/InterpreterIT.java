@@ -44,6 +44,7 @@ public class InterpreterIT extends AbstractZeppelinIT {
 
   @After
   public void tearDown() {
+    handleBrowserLogs();
     driver.quit();
   }
 

@@ -135,4 +135,13 @@ abstract public class AbstractZeppelinIT {
     throw e;
   }
 
+  protected static void handleBrowserLogs() {
+    try {
+      for (LogEntry entry : driver.manage().logs().get(LogType.BROWSER)) {
+        LOG.info(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
+      }
+    } catch (WebDriverException e) {
+      // Log retrieval is not available for our browser, ignore.
+    }
+  }
 }
