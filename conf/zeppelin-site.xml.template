@@ -546,5 +546,10 @@
   <value>true</value>
   <description>Notebook enable cron scheduler feature</description>
 </property>
+<property>
+  <name>zeppelin.notebook.cron.folders</name>
+  <value></value>
+  <description>Notebook cron folders</description>
+</property>
 -->
 </configuration>

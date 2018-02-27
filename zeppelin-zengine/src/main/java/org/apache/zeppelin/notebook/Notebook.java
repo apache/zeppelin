@@ -921,7 +921,7 @@ public class Notebook implements NoteEventListener {
         return;
       }
 
-      if (!notebook.getConf().isZeppelinNotebookCronEnable()) {
+      if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
         logger.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
         return;
       }
@@ -968,7 +968,7 @@ public class Notebook implements NoteEventListener {
         return;
       }
 
-      if (!getConf().isZeppelinNotebookCronEnable()) {
+      if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
         logger.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
         return;
       }

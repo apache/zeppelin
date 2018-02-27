@@ -848,11 +848,9 @@ public class NotebookRestApi {
   public Response registerCronJob(@PathParam("noteId") String noteId, String message)
       throws IOException, IllegalArgumentException {
     LOG.info("Register cron job note={} request cron msg={}", noteId, message);
-    ZeppelinConfiguration conf = notebook.getConf();
-    if (conf.isZeppelinNotebookCronEnable()) {
+    Note note = notebook.getNote(noteId);
+    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
       CronRequest request = CronRequest.fromJson(message);
-
-      Note note = notebook.getNote(noteId);
       checkIfNoteIsNotNull(note);
       checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
 
@@ -885,9 +883,8 @@ public class NotebookRestApi {
   public Response removeCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
     LOG.info("Remove cron job note {}", noteId);
-    ZeppelinConfiguration conf = notebook.getConf();
-    if (conf.isZeppelinNotebookCronEnable()) {
-      Note note = notebook.getNote(noteId);
+    Note note = notebook.getNote(noteId);
+    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
       checkIfNoteIsNotNull(note);
       checkIfUserIsOwner(noteId,
           "Insufficient privileges you cannot remove this cron job from this note");
@@ -917,9 +914,8 @@ public class NotebookRestApi {
   public Response getCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
     LOG.info("Get cron job note {}", noteId);
-    ZeppelinConfiguration conf = notebook.getConf();
-    if (conf.isZeppelinNotebookCronEnable()) {
-      Note note = notebook.getNote(noteId);
+    Note note = notebook.getNote(noteId);
+    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
       checkIfNoteIsNotNull(note);
       checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
 
