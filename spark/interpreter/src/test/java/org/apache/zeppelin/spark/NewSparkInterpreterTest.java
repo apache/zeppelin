@@ -29,6 +29,8 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
@@ -42,12 +44,14 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 
 public class NewSparkInterpreterTest {
@@ -58,6 +62,8 @@ public class NewSparkInterpreterTest {
   private volatile String output = "";
   // catch the interpreter output in onUpdate
   private InterpreterResultMessageOutput messageOutput;
+
+  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -72,9 +78,12 @@ public class NewSparkInterpreterTest {
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
 
+    interpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("a: String = hello world\n", output);
+    // spark web url is sent
+    verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
     result = interpreter.interpret("print(a)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -124,6 +133,8 @@ public class NewSparkInterpreterTest {
     result = interpreter.interpret("sc.range(1, 10).sum", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(output.contains("45"));
+    // spark job url is sent
+    verify(mockRemoteEventClient).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
 
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
@@ -349,7 +360,7 @@ public class NewSparkInterpreterTest {
 
   private InterpreterContext getInterpreterContext() {
     output = "";
-    return new InterpreterContext(
+    InterpreterContext context = new InterpreterContext(
         "noteId",
         "paragraphId",
         "replName",
@@ -385,5 +396,7 @@ public class NewSparkInterpreterTest {
               }
             })
     );
+    context.setClient(mockRemoteEventClient);
+    return context;
   }
 }
