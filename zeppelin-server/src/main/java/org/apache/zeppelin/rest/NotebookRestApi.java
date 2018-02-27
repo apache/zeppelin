@@ -183,6 +183,13 @@ public class NotebookRestApi {
     }
   }
 
+  private void checkIfNoteSupportsCron(Note note) {
+    if (!note.isCronSupported(notebook.getConf())) {
+      LOG.error("Cron is not enabled from Zeppelin server");
+      throw new ForbiddenException("Cron is not enabled from Zeppelin server");
+    }
+  }
+
   private void checkIfParagraphIsNotNull(Paragraph paragraph) {
     if (paragraph == null) {
       throw new NotFoundException("paragraph not found");
@@ -849,26 +856,24 @@ public class NotebookRestApi {
   public Response registerCronJob(@PathParam("noteId") String noteId, String message)
       throws IOException, IllegalArgumentException {
     LOG.info("Register cron job note={} request cron msg={}", noteId, message);
+
+    CronRequest request = CronRequest.fromJson(message);
+
     Note note = notebook.getNote(noteId);
-    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
-      CronRequest request = CronRequest.fromJson(message);
-      checkIfNoteIsNotNull(note);
-      checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
+    checkIfNoteIsNotNull(note);
+    checkIfUserCanRun(noteId, "Insufficient privileges you cannot set a cron job for this note");
+    checkIfNoteSupportsCron(note);
 
-      if (!CronExpression.isValidExpression(request.getCronString())) {
-        return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
-      }
-
-      Map<String, Object> config = note.getConfig();
-      config.put("cron", request.getCronString());
-      note.setConfig(config);
-      notebook.refreshCron(note.getId());
-
-      return new JsonResponse<>(Status.OK).build();
-    } else {
-      LOG.error("Cron is not enabled from Zeppelin server");
-      throw new ForbiddenException("Cron is not enabled from Zeppelin server");
+    if (!CronExpression.isValidExpression(request.getCronString())) {
+      return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
     }
+
+    Map<String, Object> config = note.getConfig();
+    config.put("cron", request.getCronString());
+    note.setConfig(config);
+    notebook.refreshCron(note.getId());
+
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -884,22 +889,19 @@ public class NotebookRestApi {
   public Response removeCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
     LOG.info("Remove cron job note {}", noteId);
+    
     Note note = notebook.getNote(noteId);
-    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
-      checkIfNoteIsNotNull(note);
-      checkIfUserIsOwner(noteId,
-          "Insufficient privileges you cannot remove this cron job from this note");
+    checkIfNoteIsNotNull(note);
+    checkIfUserIsOwner(noteId,
+        "Insufficient privileges you cannot remove this cron job from this note");
+    checkIfNoteSupportsCron(note);
 
-      Map<String, Object> config = note.getConfig();
-      config.put("cron", null);
-      note.setConfig(config);
-      notebook.refreshCron(note.getId());
+    Map<String, Object> config = note.getConfig();
+    config.put("cron", null);
+    note.setConfig(config);
+    notebook.refreshCron(note.getId());
 
-      return new JsonResponse<>(Status.OK).build();
-    } else {
-      LOG.error("Cron is not enabled from Zeppelin server");
-      throw new ForbiddenException("Cron is not enabled from Zeppelin server");
-    }
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -915,17 +917,13 @@ public class NotebookRestApi {
   public Response getCronJob(@PathParam("noteId") String noteId)
       throws IOException, IllegalArgumentException {
     LOG.info("Get cron job note {}", noteId);
+
     Note note = notebook.getNote(noteId);
-    if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
-      checkIfNoteIsNotNull(note);
-      checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
+    checkIfNoteIsNotNull(note);
+    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
+    checkIfNoteSupportsCron(note);
 
-      return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
-    } else {
-      LOG.error("Cron is not enabled from Zeppelin server");
-      throw new ForbiddenException("Cron is not enabled from Zeppelin server");
-    }
-
+    return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
   }
 
   /**

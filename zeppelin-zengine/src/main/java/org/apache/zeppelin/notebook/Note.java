@@ -312,24 +312,25 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
   }
 
-  public void setCronSupported(ZeppelinConfiguration config) {
+  public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
       if (config.getZeppelinNotebookCronFolders() == null) {
-        getConfig().put("isZeppelinNotebookCronEnable", true);
+        return true;
       } else {
-        getConfig().put("isZeppelinNotebookCronEnable", false);
         for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
           folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
           if (getName().matches(folder)) {
-            getConfig().put("isZeppelinNotebookCronEnable", true);
-            break;
+            return true;
           }
         }
       }
-    } else {
-      getConfig().put("isZeppelinNotebookCronEnable", false);
     }
+    return false;
+  }
+
+  public void setCronSupported(ZeppelinConfiguration config) {
+    getConfig().put("isZeppelinNotebookCronEnable", isCronSupported(config));
   }
 
   public void setIndex(SearchService index) {
