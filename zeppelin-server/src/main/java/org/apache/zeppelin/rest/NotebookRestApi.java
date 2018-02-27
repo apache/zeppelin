@@ -867,6 +867,7 @@ public class NotebookRestApi {
 
       return new JsonResponse<>(Status.OK).build();
     } else {
+      LOG.error("Cron is not enabled from Zeppelin server");
       throw new ForbiddenException("Cron is not enabled from Zeppelin server");
     }
   }
@@ -898,6 +899,7 @@ public class NotebookRestApi {
 
       return new JsonResponse<>(Status.OK).build();
     } else {
+      LOG.error("Cron is not enabled from Zeppelin server");
       throw new ForbiddenException("Cron is not enabled from Zeppelin server");
     }
   }
@@ -923,6 +925,7 @@ public class NotebookRestApi {
 
       return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
     } else {
+      LOG.error("Cron is not enabled from Zeppelin server");
       throw new ForbiddenException("Cron is not enabled from Zeppelin server");
     }
 
