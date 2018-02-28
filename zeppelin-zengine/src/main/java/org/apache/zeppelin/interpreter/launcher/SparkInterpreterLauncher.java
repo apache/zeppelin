@@ -161,7 +161,8 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
 
     File sparkRPath = new File(sparkRBasePath, "sparkr.zip");
     if (sparkRPath.exists() && sparkRPath.isFile()) {
-      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives", sparkRPath.getAbsolutePath());
+      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives",
+          sparkRPath.getAbsolutePath() + "#sparkr");
     } else {
       LOGGER.warn("sparkr.zip is not found, SparkR may not work.");
     }
