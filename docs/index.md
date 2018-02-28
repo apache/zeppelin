@@ -71,6 +71,7 @@ limitations under the License.
   * [Execution Hooks](./usage/interpreter/execution_hooks.html) to specify additional code to be executed by an interpreter at pre and post-paragraph code execution
 * Other Features:
   * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
+  * [Notebook Snapshot](./usage/other_features/notebook_snapshot.html) to publish notebook as static report.
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
   * [Notebook actions](./usage/other_features/notebook_actions.html)
