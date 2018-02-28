@@ -162,6 +162,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('sequentialRunStatus', function(event, status) {
     $scope.isNoteRunSequential = status;
+    $scope.editor.setReadOnly(status);
   });
 
   const initializeDefault = function(config) {
@@ -1433,7 +1434,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.settings = newPara.settings;
     $scope.paragraph.runtimeInfos = newPara.runtimeInfos;
     if ($scope.editor) {
-      $scope.editor.setReadOnly($scope.isRunning(newPara));
+      let isReadOnly = $scope.isRunning(newPara) || $scope.isNoteRunSequential;
+      $scope.editor.setReadOnly(isReadOnly);
     }
 
     if (!$scope.asIframe) {
