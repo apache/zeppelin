@@ -28,6 +28,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
+import java.util.Set;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 
 /**
@@ -37,25 +46,26 @@ public class LocalConfigStorage extends ConfigStorage {
 
   private static Logger LOGGER = LoggerFactory.getLogger(LocalConfigStorage.class);
 
-  private File interpreterSettingPath;
-  private File authorizationPath;
-  private File credentialPath;
+  private Path interpreterSettingPath;
+  private Path authorizationPath;
+  private Path credentialPath;
 
   public LocalConfigStorage(ZeppelinConfiguration zConf) {
     super(zConf);
-    this.interpreterSettingPath = new File(zConf.getInterpreterSettingPath());
-    this.authorizationPath = new File(zConf.getNotebookAuthorizationPath());
-    this.credentialPath = new File(zConf.getCredentialsPath());
+    this.interpreterSettingPath = Paths.get(zConf.getInterpreterSettingPath());
+    this.authorizationPath = Paths.get(zConf.getNotebookAuthorizationPath());
+    this.credentialPath = Paths.get(zConf.getCredentialsPath());
   }
 
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
+    LOGGER.info("Save interpreter setting to file: " + interpreterSettingPath);
     writeToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
   @Override
   public InterpreterInfoSaving loadInterpreterSettings() throws IOException {
-    if (!interpreterSettingPath.exists()) {
+    if (!Files.exists(interpreterSettingPath)) {
       LOGGER.warn("Interpreter Setting file {} is not existed", interpreterSettingPath);
       return null;
     }
@@ -72,7 +82,7 @@ public class LocalConfigStorage extends ConfigStorage {
 
   @Override
   public NotebookAuthorizationInfoSaving loadNotebookAuthorization() throws IOException {
-    if (!authorizationPath.exists()) {
+    if (!Files.exists(authorizationPath)) {
       LOGGER.warn("NotebookAuthorization file {} is not existed", authorizationPath);
       return null;
     }
@@ -83,7 +93,7 @@ public class LocalConfigStorage extends ConfigStorage {
 
   @Override
   public String loadCredentials() throws IOException {
-    if (!credentialPath.exists()) {
+    if (!Files.exists(credentialPath)) {
       LOGGER.warn("Credential file {} is not existed", credentialPath);
       return null;
     }
@@ -97,12 +107,22 @@ public class LocalConfigStorage extends ConfigStorage {
     writeToFile(credentials, credentialPath);
   }
 
-  private String readFromFile(File file) throws IOException {
-    return IOUtils.toString(new FileInputStream(file));
+  private String readFromFile(Path path) throws IOException {
+    return IOUtils.toString(new FileInputStream(path.toFile()));
   }
 
-  private void writeToFile(String content, File file) throws IOException {
-    FileOutputStream out = new FileOutputStream(file);
+  private void writeToFile(String content, Path path) throws IOException {
+    if (!Files.exists(path)) {
+      Files.createFile(path);
+      try {
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        Files.setPosixFilePermissions(path, permissions);
+      } catch (UnsupportedOperationException e) {
+        // File system does not support Posix file permissions (likely windows) - continue anyway.
+        LOGGER.warn("unable to setPosixFilePermissions on '{}'.", path);
+      };
+    }
+    FileOutputStream out = new FileOutputStream(path.toFile());
     IOUtils.write(content, out);
     out.close();
   }
