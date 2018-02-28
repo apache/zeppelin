@@ -23,10 +23,6 @@ import org.apache.pig.PigServer;
 import org.apache.pig.backend.BackendException;
 import org.apache.pig.backend.hadoop.executionengine.HExecutionEngine;
 import org.apache.pig.backend.hadoop.executionengine.Launcher;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +31,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+
 /**
  *
  */
 public abstract class BasePigInterpreter extends Interpreter {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(BasePigInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BasePigInterpreter.class);
 
   protected ConcurrentHashMap<String, PigScriptListener> listenerMap = new ConcurrentHashMap<>();
 

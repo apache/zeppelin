@@ -55,12 +55,25 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(Properties properties)
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
+                                                                             Properties properties)
       throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(properties);
+      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+          properties);
+      remoteInterpreterProcess.start(userName);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller()
+          .setInterpreterProcess(remoteInterpreterProcess);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(this);
+      remoteInterpreterProcess.getRemoteInterpreterEventPoller().start();
+      getInterpreterSetting().getRecoveryStorage()
+          .onInterpreterClientStart(remoteInterpreterProcess);
     }
+    return remoteInterpreterProcess;
+  }
+
+  public RemoteInterpreterProcess getInterpreterProcess() {
     return remoteInterpreterProcess;
   }
 
@@ -94,6 +107,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       if (remoteInterpreterProcess != null) {
         LOGGER.info("Kill RemoteInterpreterProcess");
         remoteInterpreterProcess.stop();
+        try {
+          interpreterSetting.getRecoveryStorage().onInterpreterClientStop(remoteInterpreterProcess);
+        } catch (IOException e) {
+          LOGGER.error("Fail to store recovery data", e);
+        }
         remoteInterpreterProcess = null;
       }
     }

@@ -36,7 +36,7 @@ public class LivySparkInterpreter extends BaseLivyInterpreter {
   @Override
   protected String extractAppId() throws LivyException {
     return extractStatementResult(
-        interpret("sc.applicationId", null, false, false).message()
+        interpret("sc.applicationId", null, false, false, false).message()
             .get(0).getData());
   }
 
@@ -44,10 +44,11 @@ public class LivySparkInterpreter extends BaseLivyInterpreter {
   protected String extractWebUIAddress() throws LivyException {
     interpret(
         "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-        null, false, false);
+        null,
+        null, false, false, false);
     return extractStatementResult(
         interpret(
-            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
+            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false, false)
             .message().get(0).getData());
   }
 

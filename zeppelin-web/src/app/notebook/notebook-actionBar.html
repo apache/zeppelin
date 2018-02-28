@@ -16,14 +16,15 @@ limitations under the License.
   <h3>
     <div style="float: left; width: auto; max-width: 40%"
       ng-controller="ElasticInputCtrl as input">
-      <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
-           ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
-           ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2"
+      <input type="text" pu-elastic-input class="form-control2" placeholder="New name"
+             style="min-width: 0px; max-width: 85%; margin-left: 2em;"
+             ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
+             ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
+      <p class="form-control-static2 reverse-ellipsis ellipsis"
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
-         ng-show="!input.showEditor">{{noteName(note)}}</p>
+         ng-show="!input.showEditor"><span>{{noteName(note)}}</span></p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -99,7 +100,7 @@ limitations under the License.
       </button>
     </span>
 
-    <span class="labelBtn btn-group" role="group">
+    <span class="labelBtn btn-group" role="group" ng-if="note.config.isRevisionSupported">
       <div class="btn-group" role="group">
         <button type="button"
                 class="btn btn-default btn-xs dropdown-toggle"
@@ -254,7 +255,7 @@ limitations under the License.
              data-toggle="dropdown"
              ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
              tooltip-placement="bottom" uib-tooltip="Run scheduler"
-             ng-disabled="revisionView">
+             ng-disabled="revisionView || isTrash(note)">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
         <ul class="dropdown-menu" role="menu" style="width:300px">

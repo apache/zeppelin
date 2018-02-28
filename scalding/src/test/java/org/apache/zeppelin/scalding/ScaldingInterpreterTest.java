@@ -17,7 +17,14 @@
 
 package org.apache.zeppelin.scalding;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 import java.util.HashMap;
@@ -26,17 +33,12 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Tests for the Scalding interpreter for Zeppelin.
@@ -50,7 +52,8 @@ public class ScaldingInterpreterTest {
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
+            System.currentTimeMillis());
     System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
 
     tmpDir.mkdirs();
@@ -77,8 +80,9 @@ public class ScaldingInterpreterTest {
   }
 
   private void delete(File file) {
-    if (file.isFile()) file.delete();
-    else if (file.isDirectory()) {
+    if (file.isFile()) {
+      file.delete();
+    } else if (file.isDirectory()) {
       File[] files = file.listFiles();
       if (files != null && files.length > 0) {
         for (File f : files) {
@@ -91,12 +95,14 @@ public class ScaldingInterpreterTest {
 
   @Test
   public void testNextLineComments() {
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+            repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
   }
 
   @Test
   public void testNextLineCompanionObject() {
-    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
+    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter " +
+            "{\n def apply(x: Long) = new Counter()\n}";
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code, context).code());
   }
 
@@ -116,7 +122,8 @@ public class ScaldingInterpreterTest {
   public void testBasicScalding() {
     assertEquals(InterpreterResult.Code.SUCCESS,
         repl.interpret("case class Sale(state: String, name: String, sale: Int)\n" +
-          "val salesList = List(Sale(\"CA\", \"A\", 60), Sale(\"CA\", \"A\", 20), Sale(\"VA\", \"B\", 15))\n" +
+          "val salesList = List(Sale(\"CA\", \"A\", 60), Sale(\"CA\", \"A\", 20), " +
+                        "Sale(\"VA\", \"B\", 15))\n" +
           "val salesPipe = TypedPipe.from(salesList)\n" +
           "val results = salesPipe.map{x => (1, Set(x.state), x.sale)}.\n" +
           "    groupAll.sum.values.map{ case(count, set, sum) => (count, set.size, sum) }\n" +
@@ -131,7 +138,8 @@ public class ScaldingInterpreterTest {
 
   @Test
   public void testEndWithComment() {
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment",
+            context).code());
   }
 
   @Test

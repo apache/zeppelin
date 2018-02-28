@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,12 +27,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.security.SecureRandom;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -182,6 +181,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     // strip white space from the beginning
     this.text = newText;
     this.dateUpdated = new Date();
+    parseText();
+  }
+
+  public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
       Matcher matcher = REPL_PATTERN.matcher(this.text);
@@ -725,7 +728,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
    * @param settingId
    */
   public void clearRuntimeInfo(String settingId) {
-    if (settingId != null) {
+    if (settingId != null && runtimeInfos != null) {
       Set<String> keys = runtimeInfos.keySet();
       if (keys.size() > 0) {
         List<String> infosToRemove = new ArrayList<>();
@@ -822,6 +825,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return result1;
   }
 
+  @Override
   public String toJson() {
     return Note.getGson().toJson(this);
   }

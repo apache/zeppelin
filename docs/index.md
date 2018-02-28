@@ -59,6 +59,7 @@ limitations under the License.
   * [Text Display (`%text`)](./usage/display_system/basic.html#text)
   * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
   * [Table Display (`%table`)](./usage/display_system/basic.html#table)
+  * [Network Display (`%network`)](./usage/display_system/basic.html#network)
   * [Angular Display using Backend API (`%angular`)](./usage/display_system/angular_backend.html)
   * [Angular Display using Frontend API (`%angular`)](./usage/display_system/angular_frontend.html)
 * Interpreter  
@@ -103,6 +104,7 @@ limitations under the License.
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
+  * [Google Cloud Storage](./setup/storage/storage.html#notebook-storage-in-gcs)
   * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 

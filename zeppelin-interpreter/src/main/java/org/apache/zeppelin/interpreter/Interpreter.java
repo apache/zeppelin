@@ -18,6 +18,16 @@
 package org.apache.zeppelin.interpreter;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.reflect.FieldUtils;
+import org.apache.zeppelin.annotation.Experimental;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
@@ -26,17 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.reflect.FieldUtils;
-import org.apache.zeppelin.annotation.Experimental;
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Interface for interpreters.
@@ -371,7 +370,7 @@ public abstract class Interpreter {
   /**
    * Type of interpreter.
    */
-  public static enum FormType {
+  public enum FormType {
     NATIVE, SIMPLE, NONE
   }
 
@@ -458,7 +457,7 @@ public abstract class Interpreter {
   /**
    * Type of Scheduling.
    */
-  public static enum SchedulingMode {
+  public enum SchedulingMode {
     FIFO, PARALLEL
   }
 

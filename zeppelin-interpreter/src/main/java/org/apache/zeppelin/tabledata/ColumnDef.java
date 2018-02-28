@@ -25,7 +25,7 @@ public class ColumnDef implements Serializable {
   /**
    * Type
    */
-  public static enum TYPE {
+  public enum TYPE {
     STRING,
     LONG,
     INT

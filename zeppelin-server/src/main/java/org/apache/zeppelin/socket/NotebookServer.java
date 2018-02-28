@@ -50,7 +50,7 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
@@ -825,8 +825,8 @@ public class NotebookServer extends WebSocketServlet
     String user = fromMessage.principal;
 
     Note note = notebook.getNote(noteId);
-    if (note != null) {
 
+    if (note != null) {
       if (!hasParagraphReaderPermission(conn, notebook, noteId,
           userAndRoles, fromMessage.principal, "read")) {
         return;
@@ -1131,6 +1131,13 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Note note = notebook.getNote(noteId);
+
+    // drop cron
+    Map<String, Object> config = note.getConfig();
+    if (config.get("cron") != null) {
+      notebook.removeCron(note.getId());
+    }
+
     if (note != null && !note.isTrash()){
       fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
@@ -1155,6 +1162,14 @@ public class NotebookServer extends WebSocketServlet
         trashFolderId += Folder.TRASH_FOLDER_CONFLICT_INFIX + formatter.print(currentDate);
       }
 
+      List<Note> noteList = folder.getNotesRecursively();
+      for (Note note: noteList) {
+        Map<String, Object> config = note.getConfig();
+        if (config.get("cron") != null) {
+          notebook.removeCron(note.getId());
+        }
+      }
+
       fromMessage.put("name", trashFolderId);
       renameFolder(conn, userAndRoles, notebook, fromMessage, "move");
     }
@@ -1170,6 +1185,13 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Note note = notebook.getNote(noteId);
+
+    //restore cron
+    Map<String, Object> config = note.getConfig();
+    if (config.get("cron") != null) {
+      notebook.refreshCron(note.getId());
+    }
+
     if (note != null && note.isTrash()) {
       fromMessage.put("name", note.getName().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
       renameNote(conn, userAndRoles, notebook, fromMessage, "restore");
@@ -1188,6 +1210,15 @@ public class NotebookServer extends WebSocketServlet
     Folder folder = notebook.getFolder(folderId);
     if (folder != null && folder.isTrash()) {
       String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "").trim();
+
+      //restore cron for each paragraph
+      List<Note> noteList = folder.getNotesRecursively();
+      for (Note note : noteList) {
+        Map<String, Object> config = note.getConfig();
+        if (config.get("cron") != null) {
+          notebook.refreshCron(note.getId());
+        }
+      }
 
       // if the folder had conflict when it had moved to trash before
       Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");

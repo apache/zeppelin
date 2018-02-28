@@ -1,5 +1,9 @@
 package org.apache.zeppelin.notebook.repo;
 
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
+import static com.mongodb.client.model.Filters.type;
+
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -7,29 +11,24 @@ import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.type;
-import static com.mongodb.client.model.Filters.in;
-
 import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.model.UpdateOptions;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ApplicationState;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Backend for storing Notebook on MongoDB
@@ -161,24 +160,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     // document to JSON
     String json = doc.toJson();
     // JSON to note
-    Note note = Note.fromJson(json);
-
-    for (Paragraph p : note.getParagraphs()) {
-      if (p.getStatus() == Job.Status.PENDING || p.getStatus() == Job.Status.RUNNING) {
-        p.setStatus(Job.Status.ABORT);
-      }
-
-      List<ApplicationState> appStates = p.getAllApplicationStates();
-      if (appStates != null) {
-        for (ApplicationState app : appStates) {
-          if (app.getStatus() != ApplicationState.Status.ERROR) {
-            app.setStatus(ApplicationState.Status.UNLOADED);
-          }
-        }
-      }
-    }
-
-    return note;
+    return Note.fromJson(json);
   }
 
   /**
@@ -222,33 +204,6 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    // no-op
-    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
-    return Revision.EMPTY;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
-    return Collections.emptyList();
-  }
-
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
     return Collections.emptyList();
@@ -258,4 +213,5 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
   }
+
 }

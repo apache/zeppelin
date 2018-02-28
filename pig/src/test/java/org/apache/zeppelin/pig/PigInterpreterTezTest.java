@@ -16,16 +16,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -33,8 +30,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 
 public class PigInterpreterTezTest {
 
@@ -94,7 +93,8 @@ public class PigInterpreterTezTest {
     result = pigInterpreter.interpret(pigscript, context);
     assertEquals(Type.TEXT, result.message().get(0).getType());
     assertEquals(Code.ERROR, result.code());
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // syntax error
     pigscript = "a = load '" + tmpFile.getAbsolutePath() + "';"
@@ -143,7 +143,8 @@ public class PigInterpreterTezTest {
     assertEquals(Code.ERROR, result.code());
     // no job is launched, so no jobStats
     assertTrue(!result.message().get(0).getData().contains("Vertex Stats"));
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // execution error
     pigscript = "a = load 'invalid_path';"

@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.resource;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ResourcePool
@@ -35,6 +37,7 @@ public class LocalResourcePool implements ResourcePool {
 
   /**
    * Get unique id of this resource pool
+   *
    * @return
    */
   @Override
@@ -44,6 +47,7 @@ public class LocalResourcePool implements ResourcePool {
 
   /**
    * Get resource
+   *
    * @return null if resource not found
    */
   @Override
@@ -65,6 +69,7 @@ public class LocalResourcePool implements ResourcePool {
 
   /**
    * Put resource into the pull
+   *
    * @param
    * @param object object to put into the resource
    */

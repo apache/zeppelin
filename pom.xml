@@ -24,7 +24,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.apache.org</url>
@@ -52,10 +52,10 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>interpreter-parent</module>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
-    <module>spark-dependencies</module>
     <module>groovy</module>
     <module>spark</module>
     <module>markdown</module>
@@ -85,15 +85,15 @@
 
   <properties>
     <!-- language versions -->
+    <java.version>1.7</java.version>
     <scala.version>2.10.5</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scalatest.version>2.2.4</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
     <!-- frontend maven plugin related versions-->
-    <node.version>v6.9.1</node.version>
-    <yarn.version>v0.18.1</yarn.version>
-    <npm.version>4.2.0</npm.version>
+    <node.version>v8.9.3</node.version>
+    <npm.version>5.5.1</npm.version>
     <plugin.frontend.version>1.3</plugin.frontend.version>
 
     <!-- common library versions -->
@@ -329,8 +329,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${plugin.compiler.version}</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
         </configuration>
       </plugin>
 
@@ -385,9 +385,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
         <configuration>
+          <skip>true</skip>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
           <configLocation>_tools/checkstyle.xml</configLocation>
-          <enableRSS>false</enableRSS>
+          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
         </configuration>
         <executions>
           <execution>
@@ -743,7 +751,7 @@
     <profile>
       <id>scala-2.11</id>
       <properties>
-        <scala.version>2.11.7</scala.version>
+        <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>
     </profile>
@@ -763,6 +771,13 @@
       <id>geode</id>
       <modules>
         <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>integration</id>
+      <modules>
+        <module>zeppelin-integration</module>
       </modules>
     </profile>
 
@@ -1009,6 +1024,7 @@
               <exclude>**/src/fonts/source-code-pro*</exclude>
               <exclude>**/src/**/**.test.js</exclude>
               <exclude>**/e2e/**/**.spec.js</exclude>
+              <exclude>package-lock.json</exclude>
 
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>

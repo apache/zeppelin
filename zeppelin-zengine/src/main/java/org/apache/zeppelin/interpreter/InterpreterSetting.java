@@ -26,7 +26,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -38,24 +37,20 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
 import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -143,6 +138,9 @@ public class InterpreterSetting {
   ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+  private transient RecoveryStorage recoveryStorage;
+  ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Builder class for InterpreterSetting
@@ -242,6 +240,11 @@ public class InterpreterSetting {
       return this;
     }
 
+    public Builder setRecoveryStorage(RecoveryStorage recoveryStorage) {
+      interpreterSetting.recoveryStorage = recoveryStorage;
+      return this;
+    }
+
     public InterpreterSetting create() {
       // post processing
       interpreterSetting.postProcessing();
@@ -258,8 +261,16 @@ public class InterpreterSetting {
 
   void postProcessing() {
     this.status = Status.READY;
+    this.id = this.name;
     if (this.lifecycleManager == null) {
       this.lifecycleManager = new NullLifecycleManager(conf);
+    }
+    if (this.recoveryStorage == null) {
+      try {
+        this.recoveryStorage = new NullRecoveryStorage(conf, interpreterSettingManager);
+      } catch (IOException e) {
+        // ignore this exception as NullRecoveryStorage will do nothing.
+      }
     }
   }
 
@@ -270,7 +281,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o) {
     this();
-    this.id = generateId();
+    this.id = o.name;
     this.name = o.name;
     this.group = o.group;
     this.properties = convertInterpreterProperties(
@@ -285,9 +296,9 @@ public class InterpreterSetting {
 
   private void createLauncher() {
     if (group.equals("spark")) {
-      this.launcher = new SparkInterpreterLauncher(this.conf);
+      this.launcher = new SparkInterpreterLauncher(this.conf, this.recoveryStorage);
     } else {
-      this.launcher = new ShellScriptLauncher(this.conf);
+      this.launcher = new ShellScriptLauncher(this.conf, this.recoveryStorage);
     }
   }
 
@@ -342,6 +353,15 @@ public class InterpreterSetting {
   public InterpreterSetting setLifecycleManager(LifecycleManager lifecycleManager) {
     this.lifecycleManager = lifecycleManager;
     return this;
+  }
+
+  public InterpreterSetting setRecoveryStorage(RecoveryStorage recoveryStorage) {
+    this.recoveryStorage = recoveryStorage;
+    return this;
+  }
+
+  public RecoveryStorage getRecoveryStorage() {
+    return recoveryStorage;
   }
 
   public LifecycleManager getLifecycleManager() {
@@ -408,7 +428,12 @@ public class InterpreterSetting {
   }
 
   void removeInterpreterGroup(String groupId) {
-    this.interpreterGroups.remove(groupId);
+    try {
+      interpreterGroupWriteLock.lock();
+      this.interpreterGroups.remove(groupId);
+    } finally {
+      interpreterGroupWriteLock.unlock();
+    }
   }
 
   public ManagedInterpreterGroup getInterpreterGroup(String user, String noteId) {
@@ -425,7 +450,6 @@ public class InterpreterSetting {
     return interpreterGroups.get(groupId);
   }
 
-  @VisibleForTesting
   public ArrayList<ManagedInterpreterGroup> getAllInterpreterGroups() {
     try {
       interpreterGroupReadLock.lock();
@@ -668,16 +692,20 @@ public class InterpreterSetting {
     return interpreters;
   }
 
-  synchronized RemoteInterpreterProcess createInterpreterProcess(Properties properties)
+  synchronized RemoteInterpreterProcess createInterpreterProcess(String interpreterGroupId,
+                                                                 String userName,
+                                                                 Properties properties)
       throws IOException {
     if (launcher == null) {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(properties, option, interpreterRunner, id, group, name);
+        InterpreterLaunchContext(properties, option, interpreterRunner, userName,
+        interpreterGroupId, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
         new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
+    recoveryStorage.onInterpreterClientStart(process);
     return process;
   }
 
@@ -871,6 +899,13 @@ public class InterpreterSetting {
               // in case user forget to specify type in interpreter-setting.json
           );
           newProperties.put(key, property);
+        } else if (value instanceof String) {
+          InterpreterProperty newProperty = new InterpreterProperty(
+              key,
+              value,
+              "string");
+
+          newProperties.put(newProperty.getName(), newProperty);
         } else {
           throw new RuntimeException("Can not convert this type of property: " +
               value.getClass());

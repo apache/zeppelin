@@ -167,8 +167,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
                 assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
                 assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
             }
-            ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
         }
+        ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     }
 
     @Test
@@ -470,7 +470,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             p1.setText("%pyspark\n" +
                     "from pyspark.sql import SQLContext\n" +
                     "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
-                    ".load('"+ tmpFile.getAbsolutePath() +"').count())");
+                    ".load('" + tmpFile.getAbsolutePath() +"').count())");
             p1.setAuthenticationInfo(anonymous);
             note.run(p1.getId());
 
@@ -576,6 +576,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     @Test
     public void testConfInterpreter() throws IOException {
+        ZeppelinServer.notebook.getInterpreterSettingManager().close();
         Note note = ZeppelinServer.notebook.createNote(AuthenticationInfo.ANONYMOUS);
         Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
         Map config = p.getConfig();

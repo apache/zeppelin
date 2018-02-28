@@ -56,9 +56,7 @@ public class IPythonInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(IPythonInterpreterTest.class);
   private IPythonInterpreter interpreter;
 
-  @Before
-  public void setUp() throws InterpreterException {
-    Properties properties = new Properties();
+  public void startInterpreter(Properties properties) throws InterpreterException {
     interpreter = new IPythonInterpreter(properties);
     InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
     interpreter.setInterpreterGroup(mockInterpreterGroup);
@@ -66,14 +64,50 @@ public class IPythonInterpreterTest {
   }
 
   @After
-  public void close() {
+  public void close() throws InterpreterException {
     interpreter.close();
   }
 
 
   @Test
   public void testIPython() throws IOException, InterruptedException, InterpreterException {
+    startInterpreter(new Properties());
     testInterpreter(interpreter);
+  }
+
+  @Test
+  public void testGrpcFrameSize() throws InterpreterException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "4");
+    startInterpreter(properties);
+
+    // to make this test can run under both python2 and python3
+    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    InterpreterContext context = getInterpreterContext();
+    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 32 exceeds maximum: 4"));
+
+    // next call continue work
+    result = interpreter.interpret("print(1)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    close();
+
+    // increase framesize to make it work
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "40");
+    startInterpreter(properties);
+    // to make this test can run under both python2 and python3
+    result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException, InterpreterException {
@@ -81,15 +115,33 @@ public class IPythonInterpreterTest {
     InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    // single output without print
+
     InterpreterContext context = getInterpreterContext();
+    result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    Thread.sleep(100);
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    boolean isPython2 = interpreterResultMessages.get(0).getData().equals("2\n");
+
+    // single output without print
+    context = getInterpreterContext();
     result = interpreter.interpret("'hello world'", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("'hello world'", interpreterResultMessages.get(0).getData());
 
+    // unicode
+    context = getInterpreterContext();
+    result = interpreter.interpret("print(u'你好')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals("你好\n", interpreterResultMessages.get(0).getData());
+    
     // only the last statement is printed
     context = getInterpreterContext();
     result = interpreter.interpret("'hello world'\n'hello world2'", context);
@@ -195,10 +247,13 @@ public class IPythonInterpreterTest {
 
     context = getInterpreterContext();
     completions = interpreter.completion("sys.std", 7, context);
+    for (InterpreterCompletion completion : completions) {
+      System.out.println(completion.getValue());
+    }
     assertEquals(3, completions.size());
-    assertEquals("sys.stderr", completions.get(0).getValue());
-    assertEquals("sys.stdin", completions.get(1).getValue());
-    assertEquals("sys.stdout", completions.get(2).getValue());
+    assertEquals("stderr", completions.get(0).getValue());
+    assertEquals("stdin", completions.get(1).getValue());
+    assertEquals("stdout", completions.get(2).getValue());
 
     // there's no completion for 'a.' because it is not recognized by compiler for now.
     context = getInterpreterContext();
@@ -227,14 +282,14 @@ public class IPythonInterpreterTest {
     st = "a.co";
     completions = interpreter.completion(st, st.length(), context);
     assertEquals(1, completions.size());
-    assertEquals("a.count", completions.get(0).getValue());
+    assertEquals("count", completions.get(0).getValue());
 
     // cursor is in the middle of code
     context = getInterpreterContext();
     st = "a.co\b='hello";
     completions = interpreter.completion(st, 4, context);
     assertEquals(1, completions.size());
-    assertEquals("a.count", completions.get(0).getValue());
+    assertEquals("count", completions.get(0).getValue());
 
     // ipython help
     context = getInterpreterContext();
@@ -308,6 +363,7 @@ public class IPythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("from bokeh.io import output_notebook, show\n" +
         "from bokeh.plotting import figure\n" +
+        "import bkzep\n" +
         "output_notebook(notebook_type='zeppelin')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -329,10 +385,11 @@ public class IPythonInterpreterTest {
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.getInterpreterResultMessages();
-    assertEquals(1, interpreterResultMessages.size());
+    assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
     // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(0).getData().contains("docs_json"));
+    assertTrue(interpreterResultMessages.get(1).getData().contains("docs_json"));
 
     // ggplot
     context = getInterpreterContext();

@@ -44,6 +44,6 @@ if [[ -n "$PYTHON" ]] ; then
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib pandasql ipython=5.4.1 jupyter_client ipykernel matplotlib bokeh=0.12.6
-  pip install -q grpcio ggplot
+  conda install -q matplotlib pandasql ipython=5.4.1 jupyter_client ipykernel matplotlib bokeh=0.12.10
+  pip install -q grpcio ggplot bkzep==0.4.0
 fi

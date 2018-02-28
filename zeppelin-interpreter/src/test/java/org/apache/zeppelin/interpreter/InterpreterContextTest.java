@@ -17,9 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class InterpreterContextTest {
 
@@ -27,7 +28,8 @@ public class InterpreterContextTest {
   public void testThreadLocal() {
     assertNull(InterpreterContext.get());
 
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null, null));
+    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null,
+        null, null, null, null, null));
     assertNotNull(InterpreterContext.get());
 
     InterpreterContext.remove();

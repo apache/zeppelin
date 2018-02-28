@@ -362,6 +362,46 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
+  public void testScheduleAgainstRunningAndPendingParagraph() throws InterruptedException, IOException {
+    // create a note
+    Note note = notebook.createNote(anonymous);
+    interpreterSettingManager.setInterpreterBinding("user", note.getId(),
+            interpreterSettingManager.getInterpreterSettingIds());
+
+    // append running and pending paragraphs to the note
+    for (Status status: new Status[]{Status.RUNNING, Status.PENDING}) {
+      Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Map config = new HashMap<>();
+      p.setConfig(config);
+      p.setText("p");
+      p.setStatus(status);
+      assertNull(p.getDateFinished());
+    }
+
+    // set cron scheduler, once a second
+    Map config = note.getConfig();
+    config.put("enabled", true);
+    config.put("cron", "* * * * * ?");
+    note.setConfig(config);
+    notebook.refreshCron(note.getId());
+    Thread.sleep(2 * 1000);
+
+    // remove cron scheduler.
+    config.put("cron", null);
+    note.setConfig(config);
+    notebook.refreshCron(note.getId());
+    Thread.sleep(2 * 1000);
+
+    // check if the executions of the running and pending paragraphs were skipped
+    for (Paragraph p : note.paragraphs) {
+      assertNull(p.getDateFinished());
+    }
+
+    // remove the note
+    notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
   public void testSchedulePoolUsage() throws InterruptedException, IOException {
     final int timeout = 30;
     final String everySecondCron = "* * * * * ?";

@@ -23,15 +23,15 @@ import java.util.Collection;
  * Interface for scheduler
  */
 public interface Scheduler extends Runnable {
-  public String getName();
+  String getName();
 
-  public Collection<Job> getJobsWaiting();
+  Collection<Job> getJobsWaiting();
 
-  public Collection<Job> getJobsRunning();
+  Collection<Job> getJobsRunning();
 
-  public void submit(Job job);
+  void submit(Job job);
 
-  public Job removeFromWaitingQueue(String jobId);
+  Job removeFromWaitingQueue(String jobId);
 
-  public void stop();
+  void stop();
 }

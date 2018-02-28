@@ -11,24 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-angular.module('zeppelinWebApp').controller('clipboardCtrl', ClipboardController)
+angular.module('zeppelinWebApp').controller('clipboardCtrl', ClipboardController);
 
-function ClipboardController ($scope) {
-  'ngInject'
+function ClipboardController($scope) {
+  'ngInject';
 
-  $scope.complete = function (e) {
-    $scope.copied = true
-    $scope.tooltip = 'Copied!'
-    setTimeout(function () {
-      $scope.tooltip = 'Copy to clipboard'
-    }, 400)
-  }
-  $scope.$watch('input', function () {
-    $scope.copied = false
-    $scope.tooltip = 'Copy to clipboard'
-  })
-  $scope.clipError = function (e) {
-    console.log('Error: ' + e.name + ' - ' + e.message)
-    $scope.tooltip = 'Not supported browser'
-  }
+  $scope.complete = function(e) {
+    $scope.copied = true;
+    $scope.tooltip = 'Copied!';
+    setTimeout(function() {
+      $scope.tooltip = 'Copy to clipboard';
+    }, 400);
+  };
+  $scope.$watch('input', function() {
+    $scope.copied = false;
+    $scope.tooltip = 'Copy to clipboard';
+  });
+  $scope.clipError = function(e) {
+    console.log('Error: ' + e.name + ' - ' + e.message);
+    $scope.tooltip = 'Not supported browser';
+  };
 }
