@@ -103,6 +103,7 @@ public class IPySparkInterpreterTest {
     InterpreterResult result = iPySparkInterpreter.interpret("sc.version", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    String sparkVersion = context.out.getInterpreterResultMessages().get(0).getData();
     // spark url is sent
     verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
@@ -117,18 +118,17 @@ public class IPySparkInterpreterTest {
 
     // spark sql
     context = getInterpreterContext();
-    if (interpreterResultMessages.get(0).getData().startsWith("'1.") ||
-        interpreterResultMessages.get(0).getData().startsWith("u'1.")) {
+    if (!isSpark2(sparkVersion)) {
       result = iPySparkInterpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.getInterpreterResultMessages();
       assertEquals(
           "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+          "| _1| _2|\n" +
+          "+---+---+\n" +
+          "|  1|  a|\n" +
+          "|  2|  b|\n" +
+          "+---+---+\n\n", interpreterResultMessages.get(0).getData());
 
       context = getInterpreterContext();
       result = iPySparkInterpreter.interpret("z.show(df)", context);
@@ -144,11 +144,11 @@ public class IPySparkInterpreterTest {
       interpreterResultMessages = context.out.getInterpreterResultMessages();
       assertEquals(
           "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+          "| _1| _2|\n" +
+          "+---+---+\n" +
+          "|  1|  a|\n" +
+          "|  2|  b|\n" +
+          "+---+---+\n\n", interpreterResultMessages.get(0).getData());
 
       context = getInterpreterContext();
       result = iPySparkInterpreter.interpret("z.show(df)", context);
@@ -210,6 +210,10 @@ public class IPySparkInterpreterTest {
     interpreterResultMessages = context.out.getInterpreterResultMessages();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
+  }
+
+  private boolean isSpark2(String sparkVersion) {
+    return sparkVersion.startsWith("'2.") || sparkVersion.startsWith("u'2.");
   }
 
   private InterpreterContext getInterpreterContext() {

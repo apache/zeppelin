@@ -52,6 +52,7 @@ public class SparkInterpreterModeTest {
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").getContext();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    String sparkVersion = interpreterResult.message().get(0).getData();
     interpreterResult = sparkInterpreter.interpret("sc.range(1,10).sum()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertTrue(interpreterResult.msg.get(0).getData().contains("45"));
@@ -72,6 +73,17 @@ public class SparkInterpreterModeTest {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("count(1)\n2\n", interpreterResult.message().get(0).getData());
+
+    // test SparkRInterpreter
+    Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.r");
+    if (isSpark2(sparkVersion)) {
+      interpreterResult = sparkrInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
+    } else {
+      interpreterResult = sparkrInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
+    }
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    assertTrue(interpreterResult.message().get(0).getData().contains("eruptions waiting"));
   }
 
   @Test
@@ -135,6 +147,10 @@ public class SparkInterpreterModeTest {
     assertEquals(1, response.getApplicationList().size());
 
     interpreterSettingManager.close();
+  }
+
+  private boolean isSpark2(String sparkVersion) {
+    return sparkVersion.startsWith("2.");
   }
 
   private String getPythonExec() throws IOException, InterruptedException {
