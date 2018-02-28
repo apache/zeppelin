@@ -79,7 +79,7 @@ public class LivySharedInterpreter extends BaseLivyInterpreter {
     }
 
     try {
-      return interpret(st, codeType, context.getParagraphId(), this.displayAppInfo, true);
+      return interpret(st, codeType, context.getParagraphId(), this.displayAppInfo, true, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,

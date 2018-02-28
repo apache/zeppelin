@@ -74,21 +74,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
     }
     LOGGER.info("Load Interpreter Setting from file: " + interpreterSettingPath);
     String json = fs.readFile(interpreterSettingPath);
-    //TODO(zjffdu) This kind of post processing is ugly.
-    JsonParser jsonParser = new JsonParser();
-    JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
-    InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
-    for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
-      // Always use separate interpreter process
-      // While we decided to turn this feature on always (without providing
-      // enable/disable option on GUI).
-      // previously created setting should turn this feature on here.
-      interpreterSetting.getOption();
-      interpreterSetting.convertPermissionsFromUsersToOwners(
-          jsonObject.getAsJsonObject("interpreterSettings")
-              .getAsJsonObject(interpreterSetting.getId()));
-    }
-    return infoSaving;
+    return buildInterpreterInfoSaving(json);
   }
 
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
@@ -99,7 +85,7 @@ public class FileSystemConfigStorage extends ConfigStorage {
   @Override
   public NotebookAuthorizationInfoSaving loadNotebookAuthorization() throws IOException {
     if (!fs.exists(authorizationPath)) {
-      LOGGER.warn("Interpreter Setting file {} is not existed", authorizationPath);
+      LOGGER.warn("Notebook Authorization file {} is not existed", authorizationPath);
       return null;
     }
     LOGGER.info("Load notebook authorization from file: " + authorizationPath);
@@ -110,10 +96,10 @@ public class FileSystemConfigStorage extends ConfigStorage {
   @Override
   public String loadCredentials() throws IOException {
     if (!fs.exists(credentialPath)) {
-      LOGGER.warn("Credential file {} is not existed", authorizationPath);
+      LOGGER.warn("Credential file {} is not existed", credentialPath);
       return null;
     }
-    LOGGER.info("Load Credential from file: " + authorizationPath);
+    LOGGER.info("Load Credential from file: " + credentialPath);
     return this.fs.readFile(credentialPath);
   }
 

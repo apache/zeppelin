@@ -232,7 +232,7 @@ public class InterpreterResultMessageOutput extends OutputStream {
   }
 
   public boolean isAppendSupported() {
-    return type == InterpreterResult.Type.TEXT;
+    return type == InterpreterResult.Type.TEXT || type == InterpreterResult.Type.TABLE;
   }
 
   private void copyStream(InputStream in, OutputStream out) throws IOException {

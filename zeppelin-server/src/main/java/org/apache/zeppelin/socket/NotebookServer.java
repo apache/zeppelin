@@ -49,7 +49,7 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
@@ -824,8 +824,8 @@ public class NotebookServer extends WebSocketServlet
     String user = fromMessage.principal;
 
     Note note = notebook.getNote(noteId);
-    if (note != null) {
 
+    if (note != null) {
       if (!hasParagraphReaderPermission(conn, notebook, noteId,
           userAndRoles, fromMessage.principal, "read")) {
         return;

@@ -142,7 +142,7 @@ public class NotebookRepoSyncInitializationTest {
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     // check initialization of one default storage
     assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
+    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepoWithVersionControl);
   }
   
   @Test
@@ -154,6 +154,6 @@ public class NotebookRepoSyncInitializationTest {
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     // check initialization of one default storage instead of invalid one
     assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
+    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepo);
   }
 }

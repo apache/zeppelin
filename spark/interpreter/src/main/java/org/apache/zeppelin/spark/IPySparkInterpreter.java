@@ -19,9 +19,11 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
@@ -51,9 +53,10 @@ public class IPySparkInterpreter extends IPythonInterpreter {
         PySparkInterpreter.getPythonExec(getProperties()));
     sparkInterpreter = getSparkInterpreter();
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
-    // only set PYTHONPATH in local or yarn-client mode.
+    // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
-    if (!conf.get("spark.submit.deployMode").equals("cluster")) {
+    if (!conf.contains("spark.submit.deployMode") ||
+        !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
       setAddBulitinPy4j(false);
     }
@@ -89,6 +92,21 @@ public class IPySparkInterpreter extends IPythonInterpreter {
       lazy.open();
     }
     return spark;
+  }
+
+  @Override
+  public BaseZeppelinContext buildZeppelinContext() {
+    return sparkInterpreter.getZeppelinContext();
+  }
+
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    InterpreterContext.set(context);
+    sparkInterpreter.populateSparkWebUrl(context);
+    String jobGroupId = Utils.buildJobGroupId(context);
+    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
+    return super.interpret(setJobGroupStmt +"\n" + st, context);
   }
 
   @Override
