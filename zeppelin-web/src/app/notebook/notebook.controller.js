@@ -204,6 +204,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   // Move the note to trash and go back to the main page
   $scope.moveNoteToTrash = function(noteId) {
+    if ($scope.isSequentialRun()) {
+      return;
+    }
     noteActionService.moveNoteToTrash(noteId, true);
   };
 
