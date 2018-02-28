@@ -1306,12 +1306,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col);
   };
 
-  $scope.$on('sequentialRunStatus', function (event, status) {
+  $scope.$on('sequentialRunStatus', function(event, status) {
     if (!$scope.hasOwnProperty('info')) {
-      $scope.info = {}
+      $scope.info = {};
     }
-    $scope.info.isRunning = status
-  })
+    $scope.info.isRunning = status;
+  });
 
   $scope.$on('setConnectedStatus', function(event, param) {
     if (connectedOnce && param) {

@@ -157,11 +157,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.isSequentialRun = function() {
-    return $scope.isNoteRunSequential
+    return $scope.isNoteRunSequential;
   };
 
   $scope.$on('sequentialRunStatus', function(event, status) {
-    $scope.isNoteRunSequential = status
+    $scope.isNoteRunSequential = status;
   });
 
   const initializeDefault = function(config) {
