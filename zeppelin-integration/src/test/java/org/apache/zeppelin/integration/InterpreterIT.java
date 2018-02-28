@@ -27,7 +27,9 @@ import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,16 +53,22 @@ public class InterpreterIT extends AbstractZeppelinIT {
   @Test
   public void testShowDescriptionOnInterpreterCreate() throws Exception {
     try {
-      // navigate to interpreter page
-      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
-      settingButton.click();
-      WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
-      interpreterLink.click();
-
-      WebElement createButton = driver.findElement(By.xpath("//button[contains(., 'Create')]"));
-      createButton.click();
-
-      Select select = new Select(driver.findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
+      final WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+      LOG.info("Opening drop-down menu...");
+      wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+          "//button[@class='nav-btn dropdown-toggle ng-scope']")))
+          .click();
+      LOG.info("Opening interpreter menu...");
+      wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+          "//a[@href='#/interpreter']")))
+          .click();
+      LOG.info("Clicking create button...");
+      wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+          "//button[contains(., 'Create')]")))
+          .click();
+      LOG.info("Selecting spark interpreter...");
+      Select select = new Select(wait.until(ExpectedConditions.elementToBeClickable(By.xpath(
+          "//select[@ng-change='newInterpreterGroupChange()']"))));
       select.selectByVisibleText("spark");
 
       collector.checkThat("description of interpreter property is displayed",
