@@ -513,6 +513,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
 
+  public boolean isNotebookCronExecutingUserLoginUserOnly() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_EXECUTING_USER_LOGIN_USER_ONLY);
+  }
+
   public String getConfDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_CONF_DIR);
   }
@@ -722,6 +726,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
+    ZEPPELIN_NOTEBOOK_CRON_EXECUTING_USER_LOGIN_USER_ONLY(
+            "zeppelin.notebook.cronExecutingUser.loginUserOnly", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
         System.getProperty("os.name")
                 .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),

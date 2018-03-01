@@ -733,6 +733,17 @@ public class NotebookServer extends WebSocketServlet
             .toString())));
   }
 
+  private void cronExecutingUserUpdatePermissionError(NotebookSocket conn, String op, String user,
+                                                      String cronExecutingUser) throws IOException {
+    LOG.info("Cannot {} due to the cron executing user update permission error. user: {}, " +
+                    "submitted cron executing user: {}", op, user, cronExecutingUser);
+
+    conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
+            "Cron executing user cannot be set to users other than the login user.\n\n" +
+                    "user: " + user + ", submitted cron executing user: " +
+                    cronExecutingUser)));
+  }
+
   /**
    * @return false if user doesn't have reader permission for this paragraph
    */
@@ -807,6 +818,48 @@ public class NotebookServer extends WebSocketServlet
     }
 
     return true;
+  }
+
+  /**
+   *
+   * @param isLoginUserOnly
+   * @param curConf
+   * @param newConf
+   * @return true if the cron executing user update permission check is needed.
+   */
+  private boolean isCronExecutingUserUpdatePermissionCheckNeeded(boolean isLoginUserOnly,
+                                                                 Map<String, Object> curConf,
+                                                                 Map<String, Object> newConf) {
+    // Permission check is not needed if the cron executing user is not
+    // restricted to the login user.
+    if (!isLoginUserOnly) {
+      return false;
+    }
+
+    // Permission check is not needed if the cron executing user is not updated.
+    if (!isNoteConfigValueUpdated("cronExecutingUser", curConf, newConf)) {
+      return false;
+    }
+
+    // Permission check is not needed if the cron configuration is cleared.
+    if (StringUtils.isEmpty((String) newConf.get("cron"))
+            && StringUtils.isEmpty((String) newConf.get("cronExecutingUser"))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * @return false if user doesn't have cron executing user update permission
+   */
+  private boolean hasCronExecutingUserUpdatePermission(String user,
+                                                       String cronExecutingUser) {
+    if (cronExecutingUser == null) {
+      return true;
+    }
+
+    return cronExecutingUser.equals(user);
   }
 
   private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -887,7 +940,19 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      boolean cronUpdated = isCronUpdated(config, note.getConfig());
+      if (isCronExecutingUserUpdatePermissionCheckNeeded(
+              notebook.getConf().isNotebookCronExecutingUserLoginUserOnly(),
+              note.getConfig(),
+              config)) {
+        String cronExecutingUser = (String) config.get("cronExecutingUser");
+        if (!hasCronExecutingUserUpdatePermission(fromMessage.principal, cronExecutingUser)) {
+          cronExecutingUserUpdatePermissionError(conn, "update", fromMessage.principal,
+                  cronExecutingUser);
+          return;
+        }
+      }
+
+      boolean cronUpdated = isNoteConfigValueUpdated("cron", config, note.getConfig());
       note.setName(name);
       note.setConfig(config);
       if (cronUpdated) {
@@ -997,18 +1062,20 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private boolean isCronUpdated(Map<String, Object> configA, Map<String, Object> configB) {
-    boolean cronUpdated = false;
-    if (configA.get("cron") != null && configB.get("cron") != null && configA.get("cron")
-        .equals(configB.get("cron"))) {
-      cronUpdated = true;
-    } else if (configA.get("cron") == null && configB.get("cron") == null) {
-      cronUpdated = false;
-    } else if (configA.get("cron") != null || configB.get("cron") != null) {
-      cronUpdated = true;
+  private boolean isNoteConfigValueUpdated(String key,
+                                           Map<String, Object> configA,
+                                           Map<String, Object> configB) {
+    boolean updated = false;
+    if (configA.get(key) != null && configB.get(key) != null &&
+            configA.get(key).equals(configB.get(key))) {
+      updated = false;
+    } else if (configA.get(key) == null && configB.get(key) == null) {
+      updated = false;
+    } else if (configA.get(key) != null || configB.get(key) != null) {
+      updated = true;
     }
 
-    return cronUpdated;
+    return updated;
   }
 
   private void createNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,

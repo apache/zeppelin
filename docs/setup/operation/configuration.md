@@ -258,6 +258,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Make notebook public (set only <code>owners</code>) by default when created/imported. If set to <code>false</code> will add <code>user</code> to <code>readers</code> and <code>writers</code> as well, making it private and invisible to other users unless permissions are granted.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_EXECUTING_USER_LOGIN_USER_ONLY</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cronExecutingUser.loginUserOnly</h6></td>
+    <td>true</td>
+    <td>Restrict the cron executing user to the login user if this property is set to true. This restriction prevents users from impersonating other users via the cron scheduler intentionally or accidentally.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETERS</h6></td>
     <td><h6 class="properties">zeppelin.interpreters</h6></td>
   <description></description>

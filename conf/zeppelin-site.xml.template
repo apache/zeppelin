@@ -423,6 +423,12 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.cronExecutingUser.loginUserOnly</name>
+  <value>true</value>
+  <description>Restrict the cron executing user to the login user if this property is set to true. This restriction prevents users from impersonating other users via the cron scheduler intentionally or accidentally.</description>
+</property>
+
+<property>
   <name>zeppelin.websocket.max.text.message.size</name>
   <value>1024000</value>
   <description>Size in characters of the maximum text message to be received by websocket. Defaults to 1024000</description>

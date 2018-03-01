@@ -41,10 +41,14 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
@@ -410,6 +414,67 @@ public class NotebookServerTest extends AbstractTestRestApi {
               createdNote.getId()).getId(), defaultInterpreterId);
     }
     notebook.removeNote(createdNote.getId(), anonymous);
+  }
+
+  @Test
+  public void testIsCronExecutingUserUpdatePermissionCheckNeeded()
+          throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+     Method method = NotebookServer.class.getDeclaredMethod(
+             "isCronExecutingUserUpdatePermissionCheckNeeded",
+             boolean.class, Map.class, Map.class);
+    method.setAccessible(true);
+
+    final NotebookServer server = new NotebookServer();
+
+    assertFalse((boolean) method.invoke(server, false, null, null));
+    assertFalse((boolean) method.invoke(server, true, new HashMap() {
+      {
+        put("cronExecutingUser", "user1");
+      }
+    }, new HashMap() {
+      {
+        put("cronExecutingUser", "user1");
+      }
+    }));
+    assertFalse((boolean) method.invoke(server, true, new HashMap() {
+      {
+        put("cron", "0 0/1 * * * ?");
+        put("cronExecutingUser", "user1");
+      }
+    }, new HashMap() {}));
+    assertFalse((boolean) method.invoke(server, true, new HashMap() {
+      {
+        put("cron", "0 0/1 * * * ?");
+        put("cronExecutingUser", "user1");
+      }
+    }, new HashMap() {
+      {
+        put("cron", "");
+        put("cronExecutingUser", "");
+      }
+    }));
+    assertTrue((boolean) method.invoke(server, true, new HashMap() {
+      {
+        put("cron", "0 0/1 * * * ?");
+        put("cronExecutingUser", "user1");
+      }
+    }, new HashMap() {
+      {
+        put("cron", "0 0/1 * * * ?");
+        put("cronExecutingUser", "user2");
+      }
+    }));
+    assertFalse((boolean) method.invoke(server, true, new HashMap() {
+      {
+        put("cron", "0 0/1 * * * ?");
+        put("cronExecutingUser", "user1");
+      }
+    }, new HashMap() {
+      {
+        put("cron", "0 0/2 * * * ?");
+        put("cronExecutingUser", "user1");
+      }
+    }));
   }
 
   private NotebookSocket createWebSocket() {
