@@ -81,6 +81,7 @@
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
+    <module>sap</module>
   </modules>
 
   <properties>

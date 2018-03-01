@@ -800,7 +800,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                     name: v.name,
                     value: v.value,
                     meta: v.meta,
-                    caption: computeCaption(v.value, v.meta),
+                    caption: computeCaption(v.name, v.meta),
                     score: 300,
                   });
                 }
