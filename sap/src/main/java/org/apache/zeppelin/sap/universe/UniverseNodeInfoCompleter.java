@@ -35,16 +35,20 @@ public class UniverseNodeInfoCompleter implements Completer {
     Preconditions.checkNotNull(nodes);
     for (UniverseNodeInfo node : nodes) {
       String folder = node.getFolder();
-      String[] path = folder.split("\\\\");
-      UniverseInfoTreeNode universeInfoTreeNode = tree;
-      for (String s : path) {
-        if (!universeInfoTreeNode.contains(s)) {
-          universeInfoTreeNode = universeInfoTreeNode.putFolder(s);
-        } else {
-          universeInfoTreeNode = universeInfoTreeNode.getFolder(s);
+      if (StringUtils.isBlank(folder)) {
+        tree.putInfo(node);
+      } else {
+        String[] path = folder.split("\\\\");
+        UniverseInfoTreeNode universeInfoTreeNode = tree;
+        for (String s : path) {
+          if (!universeInfoTreeNode.contains(s)) {
+            universeInfoTreeNode = universeInfoTreeNode.putFolder(s);
+          } else {
+            universeInfoTreeNode = universeInfoTreeNode.getFolder(s);
+          }
         }
+        universeInfoTreeNode.putInfo(node);
       }
-      universeInfoTreeNode.putInfo(node);
     }
   }
 

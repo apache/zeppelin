@@ -308,9 +308,15 @@ public class UniverseClient {
             XPathFactory xPathfactory = XPathFactory.newInstance();
             XPath xpath = xPathfactory.newXPath();
             XPathExpression expr = xpath.compile("//outline/folder");
+            XPathExpression exprRootItems = xpath.compile("//outline/item");
             NodeList universeInfoNodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+            NodeList universeRootInfoNodes =
+                (NodeList) exprRootItems.evaluate(doc, XPathConstants.NODESET);
             if (universeInfoNodes != null) {
               parseUniverseInfo(universeInfoNodes, universeNodeInfoMap);
+            }
+            if (universeRootInfoNodes != null) {
+              parseUniverseInfo(universeRootInfoNodes, universeNodeInfoMap);
             }
           } catch (Exception e) {
             throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
@@ -708,9 +714,13 @@ public class UniverseClient {
                   }
                 }
                 folder = StringUtils.join(path, "\\");
-                key.append("[");
-                key.append(StringUtils.join(path, "].["));
-                key.append(String.format("].[%s]", nodeName));
+                if (path.isEmpty()) {
+                  key.append(String.format("[%s]", nodeName));
+                } else {
+                  key.append("[");
+                  key.append(StringUtils.join(path, "].["));
+                  key.append(String.format("].[%s]", nodeName));
+                }
               }
               nodes.put(key.toString(),
                   new UniverseNodeInfo(nodeId, nodeName, nodeType, folder, nodePath));

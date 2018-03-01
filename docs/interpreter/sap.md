@@ -90,7 +90,8 @@ At the "Interpreters" menu, you can edit SAP interpreter or create new one. Zepp
 <li> Choose dimensions and measures in `select` statement
 <li> Define conditions in `where` statement
 You can compare two dimensions/measures or use Filter (without value). 
-Dimesions/Measures can be compared with static values or may be `is null` or `is not null`.
+Dimesions/Measures can be compared with static values, may be `is null` or `is not null`, contains or not in list.
+Available the nested conditions (using braces "()"). "and" operator have more priority than "or". 
 
 
 If generated query contains promtps, then promtps will appear as dynamic form after paragraph submitting.
