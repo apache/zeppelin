@@ -89,10 +89,16 @@ For the further
 
 ### Run Zeppelin server in development mode
 
+#### Option 1 - Command Line
+
+1. Copy the `conf/zeppelin-site.xml.template` to `zeppelin-server/src/main/resources/zeppelin-site.xml` and change the configurations in this file if required
+2. Run the following command
 ```
 cd zeppelin-server
 HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args=""
 ```
+
+#### Option 2 - Daemon Script
 
 > **Note:** Make sure you first run ```mvn clean install -DskipTests``` on your zeppelin root directory, otherwise your server build will fail to find the required dependencies in the local repro.
 
@@ -103,6 +109,12 @@ bin/zeppelin-daemon start
 ```
 
 Server will be run on [http://localhost:8080](http://localhost:8080).
+
+#### Option 3 - IDE
+
+1. Copy the `conf/zeppelin-site.xml.template` to `zeppelin-server/src/main/resources/zeppelin-site.xml` and change the configurations in this file if required
+2. `ZeppelinServer.java` Main class
+
 
 ### Generating Thrift Code
 

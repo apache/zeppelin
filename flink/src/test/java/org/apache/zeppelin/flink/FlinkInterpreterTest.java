@@ -20,15 +20,16 @@ package org.apache.zeppelin.flink;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class FlinkInterpreterTest {
 
@@ -40,7 +41,8 @@ public class FlinkInterpreterTest {
     Properties p = new Properties();
     flink = new FlinkInterpreter(p);
     flink.open();
-    context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null,
+            null, null, null);
   }
 
   @AfterClass
@@ -50,17 +52,20 @@ public class FlinkInterpreterTest {
 
   @Test
   public void testNextLineInvocation() {
-    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret("\"123\"\n.toInt", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret("\"123\"\n.toInt", context)
+            .code());
   }
 
   @Test
   public void testNextLineComments() {
-    assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+            flink.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
   }
 
   @Test
   public void testNextLineCompanionObject() {
-    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
+    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter " +
+            "{\n def apply(x: Long) = new Counter()\n}";
     assertEquals(InterpreterResult.Code.SUCCESS, flink.interpret(code, context).code());
   }
 
@@ -81,7 +86,8 @@ public class FlinkInterpreterTest {
   @Test
   public void testWordCount() {
     flink.interpret("val text = benv.fromElements(\"To be or not to be\")", context);
-    flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }.map { (_, 1) }.groupBy(0).sum(1)", context);
+    flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }" +
+            ".map { (_, 1) }.groupBy(0).sum(1)", context);
     InterpreterResult result = flink.interpret("counts.print()", context);
     assertEquals(Code.SUCCESS, result.code());
 

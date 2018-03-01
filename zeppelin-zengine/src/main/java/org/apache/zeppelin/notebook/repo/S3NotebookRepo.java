@@ -90,8 +90,8 @@ public class S3NotebookRepo implements NotebookRepo {
 
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
-    bucketName = conf.getBucketName();
-    user = conf.getUser();
+    bucketName = conf.getS3BucketName();
+    user = conf.getS3User();
     useServerSideEncryption = conf.isS3ServerSideEncryption();
 
     // always use the default provider chain
@@ -123,7 +123,7 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     // set S3 endpoint to use
-    s3client.setEndpoint(conf.getEndpoint());
+    s3client.setEndpoint(conf.getS3Endpoint());
   }
 
   /**
@@ -205,19 +205,10 @@ public class S3NotebookRepo implements NotebookRepo {
       throw new IOException("Unable to retrieve object from S3: " + ace, ace);
     }
 
-    Note note;
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-      note = Note.fromJson(json);
+      return Note.fromJson(json);
     }
-
-    for (Paragraph p : note.getParagraphs()) {
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
-        p.setStatus(Status.ABORT);
-      }
-    }
-
-    return note;
   }
 
   private NoteInfo getNoteInfo(String key) throws IOException {
@@ -286,26 +277,6 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    // no-op
-    LOG.warn("Checkpoint feature isn't supported in {}", this.getClass().toString());
-    return Revision.EMPTY;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOG.warn("Get note revision feature isn't supported in {}", this.getClass().toString());
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOG.warn("Get Note revisions feature isn't supported in {}", this.getClass().toString());
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
     return Collections.emptyList();
@@ -316,10 +287,4 @@ public class S3NotebookRepo implements NotebookRepo {
     LOG.warn("Method not implemented");
   }
 
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
 }

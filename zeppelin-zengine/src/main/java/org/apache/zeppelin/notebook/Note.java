@@ -47,6 +47,8 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
@@ -299,6 +301,17 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setNotebookRepo(NotebookRepo repo) {
     this.repo = repo;
+  }
+
+  void setRevisionSupported(NotebookRepo repo) {
+    if (repo instanceof NotebookRepoSync) {
+      getConfig()
+          .put("isRevisionSupported", ((NotebookRepoSync) repo).isRevisionSupportedInDefaultRepo());
+    } else if (repo instanceof NotebookRepoWithVersionControl) {
+      getConfig().put("isRevisionSupported", true);
+    } else {
+      getConfig().put("isRevisionSupported", false);
+    }
   }
 
   public void setIndex(SearchService index) {
@@ -963,6 +976,19 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     for (Paragraph p : paragraphs) {
       p.clearRuntimeInfos();
       p.parseText();
+
+      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
+        p.setStatus(Status.ABORT);
+      }
+
+      List<ApplicationState> appStates = p.getAllApplicationStates();
+      if (appStates != null) {
+        for (ApplicationState app : appStates) {
+          if (app.getStatus() != ApplicationState.Status.ERROR) {
+            app.setStatus(ApplicationState.Status.UNLOADED);
+          }
+        }
+      }
     }
   }
 

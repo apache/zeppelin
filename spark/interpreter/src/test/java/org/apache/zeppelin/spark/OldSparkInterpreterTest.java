@@ -192,13 +192,7 @@ public class OldSparkInterpreterTest {
   public void testEndWithComment() throws InterpreterException {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }
-
-  @Test
-  public void testListener() {
-    SparkContext sc = repl.getSparkContext();
-    assertNotNull(OldSparkInterpreter.setupListeners(sc));
-  }
-
+  
   @Test
   public void testCreateDataFrame() throws InterpreterException {
     if (getSparkVersionNumber(repl) >= 13) {
@@ -362,7 +356,7 @@ public class OldSparkInterpreterTest {
     }
     String sparkUIUrl = repl.getSparkUIUrl();
     assertNotNull(jobUrl);
-    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job/?id="));
+    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
 
   }
 }

@@ -24,7 +24,7 @@ limitations under the License.
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
-         ng-show="!input.showEditor"><span>{{noteName(note)}}</span>></p>
+         ng-show="!input.showEditor"><span>{{noteName(note)}}</span></p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -100,7 +100,7 @@ limitations under the License.
       </button>
     </span>
 
-    <span class="labelBtn btn-group" role="group">
+    <span class="labelBtn btn-group" role="group" ng-if="note.config.isRevisionSupported">
       <div class="btn-group" role="group">
         <button type="button"
                 class="btn btn-default btn-xs dropdown-toggle"

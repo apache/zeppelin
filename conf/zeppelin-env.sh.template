@@ -30,16 +30,22 @@
 # export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
+
 # export ZEPPELIN_NOTEBOOK_S3_BUCKET        # Bucket where notebook saved
 # export ZEPPELIN_NOTEBOOK_S3_ENDPOINT      # Endpoint of the bucket
 # export ZEPPELIN_NOTEBOOK_S3_USER          # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID    # AWS KMS key ID
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION      # AWS KMS key region
 # export ZEPPELIN_NOTEBOOK_S3_SSE      # Server-side encryption enabled for notebooks
+
+# export ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR      # GCS "directory" (prefix) under which notebooks are saved. E.g. gs://example-bucket/path/to/dir
+# export GOOGLE_APPLICATION_CREDENTIALS         # Provide a service account key file for GCS and BigQuery API calls (overrides application default credentials)
+
 # export ZEPPELIN_NOTEBOOK_MONGO_URI				# MongoDB connection URI used to connect to a MongoDB database server. Default "mongodb://localhost"
 # export ZEPPELIN_NOTEBOOK_MONGO_DATABASE		# Database name to store notebook. Default "zeppelin"
 # export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION # Collection name to store notebook. Default "notes"
 # export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT	# If "true" import local notes under ZEPPELIN_NOTEBOOK_DIR on startup. Default "false"
+
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading

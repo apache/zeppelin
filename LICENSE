@@ -259,6 +259,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) Gson extra (https://github.com/DanySK/gson-extras)
     (Apache 2.0) Nimbus JOSE+JWT (https://bitbucket.org/connect2id/nimbus-jose-jwt/wiki/Home)
     (Apache 2.0) jarchivelib (https://github.com/thrau/jarchivelib)
+    (Apache 2.0) Google Cloud Client Library for Java (https://github.com/GoogleCloudPlatform/google-cloud-java)
 
 ========================================================================
 BSD 3-Clause licenses
@@ -273,6 +274,8 @@ The following components are provided under the BSD 3-Clause license.  See file 
    r/src/main/scala/scala/Console.scala
 
   (BSD 3 Clause) diff.js (https://github.com/kpdecker/jsdiff)
+
+  (BSD 3-Clause) Google Auth Library for Java (https://github.com/google/google-auth-library-java)
 
 ========================================================================
 BSD 2-Clause licenses

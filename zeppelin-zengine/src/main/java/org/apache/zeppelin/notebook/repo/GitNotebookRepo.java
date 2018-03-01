@@ -47,11 +47,12 @@ import com.google.common.collect.Lists;
  *
  * This impl intended to be simple and straightforward:
  *   - does not handle branches
- *   - only basic local git file repo, no remote Github push\pull yet
+ *   - only basic local git file repo, no remote Github push\pull. GitHub integration is
+ *   implemented in @see {@link org.apache.zeppelin.notebook.repo.GitHubNotebookRepo}
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo extends VFSNotebookRepo {
+class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
@@ -177,7 +178,7 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   //DI replacements for Tests
-  Git getGit() {
+  protected Git getGit() {
     return git;
   }
 
@@ -186,3 +187,4 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
 }
+

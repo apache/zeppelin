@@ -33,7 +33,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookRepo.Revision;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -70,9 +70,19 @@ public class GitNotebookRepoTest {
 
     String testNoteDir = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID);
     String testNoteDir2 = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID2);
-    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID)),
-        new File(testNoteDir));
-    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID2)),
+    FileUtils.copyDirectory(
+            new File(
+              GitHubNotebookRepoTest.class.getResource(
+                Joiner.on(File.separator).join("", TEST_NOTE_ID)
+              ).getFile()
+            ),
+            new File(testNoteDir));
+    FileUtils.copyDirectory(
+            new File(
+              GitHubNotebookRepoTest.class.getResource(
+                Joiner.on(File.separator).join("", TEST_NOTE_ID2)
+              ).getFile()
+            ),
         new File(testNoteDir2)
     );
 

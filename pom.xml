@@ -57,10 +57,7 @@
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>groovy</module>
-    <module>spark/scala-2.10</module>
-    <module>spark/scala-2.11</module>
-    <module>spark/interpreter</module>
-    <module>spark/spark-dependencies</module>
+    <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
@@ -743,6 +740,9 @@
   <profiles>
     <profile>
       <id>scala-2.10</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <scala.version>2.10.5</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
@@ -751,9 +751,6 @@
 
     <profile>
       <id>scala-2.11</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>

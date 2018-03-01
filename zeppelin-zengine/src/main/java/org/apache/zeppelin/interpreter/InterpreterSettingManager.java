@@ -266,6 +266,12 @@ public class InterpreterSettingManager {
           this.interpreterRepositories.add(repo);
         }
       }
+
+      // force interpreter dependencies loading once the
+      // repositories have been loaded.
+      for (InterpreterSetting setting : interpreterSettings.values()) {
+        setting.setDependencies(setting.getDependencies());
+      }
     }
   }
 
@@ -397,13 +403,14 @@ public class InterpreterSettingManager {
         .setIntepreterSettingManager(this)
         .create();
 
-    LOGGER.info("Register InterpreterSettingTemplate & InterpreterSetting: {}",
+    LOGGER.info("Register InterpreterSettingTemplate & Create InterpreterSetting: {}",
         interpreterSettingTemplate.getName());
     interpreterSettingTemplates.put(interpreterSettingTemplate.getName(),
         interpreterSettingTemplate);
 
     InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
     initInterpreterSetting(interpreterSetting);
+    interpreterSettings.put(interpreterSetting.getName(), interpreterSetting);
   }
 
   @VisibleForTesting
