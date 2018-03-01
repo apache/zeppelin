@@ -73,7 +73,7 @@ import com.google.common.collect.Maps;
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
+  public static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -238,6 +238,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public Interpreter getBindedInterpreter() {
+    return getBindedInterpreter(intpText);
+  }
+
+  public Interpreter getBindedInterpreter(String intpText) {
     return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
   }
 

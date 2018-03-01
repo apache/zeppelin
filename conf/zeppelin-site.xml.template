@@ -423,6 +423,18 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.cron.restrictEdit</name>
+  <value>false</value>
+  <description>Restrict editable interpreters of cron scheduled notebooks' paragraphs. The cron executing user still can edit all paragraphs of the notebook even if this property is set to true.</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.cron.editableInterpreters</name>
+  <value></value>
+  <description>Editable interpreters of cron scheduled notebooks' paragraphs. This property is in effect when zeppelin.notebook.cron.restrictEdit is set to true. This property value should be a fully qualified class name such as "org.apache.zeppelin.angular.AngularInterpreter". Comma separated value such as "org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.markdown.Markdown" is acceptable.</description>
+</property>
+
+<property>
   <name>zeppelin.websocket.max.text.message.size</name>
   <value>1024000</value>
   <description>Size in characters of the maximum text message to be received by websocket. Defaults to 1024000</description>

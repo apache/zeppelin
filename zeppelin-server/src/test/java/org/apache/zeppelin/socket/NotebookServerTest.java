@@ -18,6 +18,7 @@ package org.apache.zeppelin.socket;
 
 import com.google.gson.Gson;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -41,8 +42,11 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -418,5 +422,17 @@ public class NotebookServerTest extends AbstractTestRestApi {
     return sock;
   }
 
+  @Test
+  public void testHasCronParagraphUpdatePermission() throws IOException, NoSuchMethodException,
+          InvocationTargetException, IllegalAccessException {
+    Method method = NotebookServer.class.getDeclaredMethod("hasCronParagraphUpdatePermission",
+            boolean.class, boolean.class, String.class, String.class);
+    method.setAccessible(true);
+
+    assertTrue((boolean) method.invoke(notebookServer, false, false, "user1", "user2"));
+    assertTrue((boolean) method.invoke(notebookServer, true, true, "user1", "user2"));
+    assertTrue((boolean) method.invoke(notebookServer, true, false, "user1", "user1"));
+    assertFalse((boolean) method.invoke(notebookServer, true, false, "user1", "user2"));
+  }
 }
 

@@ -733,6 +733,18 @@ public class NotebookServer extends WebSocketServlet
             .toString())));
   }
 
+  void cronParagraphUpdatePermissionError(NotebookSocket conn, String cronExecutingUser,
+                                          String user, String interpreter) throws IOException {
+    LOG.info("Cannot update the cron scheduled notebook's paragraph " +
+            "[cron executing user: {}, user: {}, interpreter: {}]",
+            cronExecutingUser, user, interpreter);
+
+    conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
+            "Cron scheduled notebook's paragraphs cannot be updated by users other than " +
+                    "the cron executing user.\n\ncron executing user: " + cronExecutingUser +
+                    ", user: " + user)));
+  }
+
   /**
    * @return false if user doesn't have reader permission for this paragraph
    */
@@ -807,6 +819,67 @@ public class NotebookServer extends WebSocketServlet
     }
 
     return true;
+  }
+
+  /**
+   *
+   * @param notebook
+   * @param note
+   * @param paragraphId
+   * @param fromMessage
+   * @param conn
+   * @return true if user has update permission for the cron scheduled notebook's paragraph
+   */
+  private boolean hasCronParagraphUpdatePermission(Notebook notebook, Note note,
+                                                   String paragraphId, Message fromMessage,
+                                                   NotebookSocket conn) throws IOException {
+    ZeppelinConfiguration conf = notebook.getConf();
+    String cronExecutingUser = note.getCronExecutingUser();
+    String user = fromMessage.principal;
+    String interpreter = extractInterpreter(user, note, paragraphId, fromMessage);
+
+    if (hasCronParagraphUpdatePermission(conf.isNotebookCronRestrictEdit(),
+            conf.isNotebookCronEditableInterpreter(interpreter),
+            cronExecutingUser, user)) {
+      return true;
+    }
+
+    cronParagraphUpdatePermissionError(conn, cronExecutingUser, user, interpreter);
+    return false;
+  }
+
+  /**
+   *
+   * @param isNotebookCronRestrictEdit
+   * @param isNotebookCronEditableInterpreter
+   * @param cronExecutingUser
+   * @param user
+   * @return true if user has update permission for the cron scheduled notebook's paragraph
+   */
+  private boolean hasCronParagraphUpdatePermission(boolean isNotebookCronRestrictEdit,
+                                                   boolean isNotebookCronEditableInterpreter,
+                                                   String cronExecutingUser,
+                                                   String user) {
+    if (!isNotebookCronRestrictEdit) {
+      return true;
+    }
+
+    if (isNotebookCronEditableInterpreter) {
+      return true;
+    }
+
+    return cronExecutingUser.equals(user);
+  }
+
+  private String extractInterpreter(String user, Note note, String paragraphId,
+                                    Message fromMessage) {
+    Paragraph p = note.getParagraph(paragraphId);
+    if (note.isPersonalizedMode()) {
+      p = p.getUserParagraph(user);
+    }
+    Matcher matcher = Paragraph.REPL_PATTERN.matcher((String) fromMessage.get("paragraph"));
+    String intpText = matcher.matches() ? matcher.group(2) : "";
+    return p.getBindedInterpreter(intpText).getClassName();
   }
 
   private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -1247,6 +1320,12 @@ public class NotebookServer extends WebSocketServlet
     }
 
     final Note note = notebook.getNote(noteId);
+
+    if (note.isCronSet() &&
+            !hasCronParagraphUpdatePermission(notebook, note, paragraphId, fromMessage, conn)) {
+      return;
+    }
+
     Paragraph p = note.getParagraph(paragraphId);
 
     p.settings.setParams(params);
@@ -1793,9 +1872,17 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
+    final Note note = notebook.getNote(noteId);
+
+    if (isParagraphTextChanged(note, paragraphId, fromMessage)) {
+      if (note.isCronSet() &&
+              !hasCronParagraphUpdatePermission(notebook, note, paragraphId, fromMessage, conn)) {
+        return;
+      }
+    }
+
     // 1. clear paragraph only if personalized,
     // otherwise this will be handed in `onOutputClear`
-    final Note note = notebook.getNote(noteId);
     if (note.isPersonalizedMode()) {
       String user = fromMessage.principal;
       Paragraph p = note.clearPersonalizedParagraphOutput(paragraphId, user);
@@ -1812,6 +1899,19 @@ public class NotebookServer extends WebSocketServlet
         text, title, params, config);
 
     persistAndExecuteSingleParagraph(conn, note, p, false);
+  }
+
+  private boolean isParagraphTextChanged(Note note, String paragraphId, Message fromMessage) {
+    Paragraph p = note.getParagraph(paragraphId);
+    if (note.isPersonalizedMode()) {
+      p = p.getUserParagraph(fromMessage.principal);
+    }
+    String curText = p.getText();
+    String submittedText = (String) fromMessage.get("paragraph");
+    if (StringUtils.isEmpty(curText)) {
+      return StringUtils.isNotEmpty(submittedText);
+    }
+    return !curText.equals(submittedText);
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {

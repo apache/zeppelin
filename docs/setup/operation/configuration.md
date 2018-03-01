@@ -258,6 +258,18 @@ If both are defined, then the **environment variables** will take priority.
     <td>Make notebook public (set only <code>owners</code>) by default when created/imported. If set to <code>false</code> will add <code>user</code> to <code>readers</code> and <code>writers</code> as well, making it private and invisible to other users unless permissions are granted.</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_RESTRICT_EDIT</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.restrictEdit</h6></td>
+    <td>false</td>
+    <td>Restrict editable interpreters of cron scheduled notebooks' paragraphs. The cron executing user still can edit all paragraphs of the notebook even if this property is set to true.</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_CRON_EDITABLE_INTERPRETERS</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.cron.editableInterpreters</h6></td>
+    <td>true</td>
+    <td>Editable interpreters of cron scheduled notebooks' paragraphs. This property is in effect when zeppelin.notebook.cron.restrictEdit is set to true. This property value should be a fully qualified class name such as "org.apache.zeppelin.angular.AngularInterpreter". Comma separated value such as "org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.markdown.Markdown" is acceptable.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETERS</h6></td>
     <td><h6 class="properties">zeppelin.interpreters</h6></td>
   <description></description>
