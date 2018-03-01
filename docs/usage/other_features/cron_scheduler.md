@@ -51,9 +51,9 @@ When this checkbox is set to "on", the interpreters which are binded to the note
 
 > **Note**: A cron execution is skipped if one of the paragraphs is in a state of `RUNNING` or `PENDING` no matter whether it is executed automatically (i.e. by the cron scheduler) or manually by a user opening this notebook.
 
-### Disable cron
+### Enable cron
 
-Set property **zeppelin.notebook.cron.enable** to **false** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` to disable Cron feature completely.
+Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/conf/zeppelin-site.xml` to enable Cron feature.
 
 ### Run cron selectively on folders
 
