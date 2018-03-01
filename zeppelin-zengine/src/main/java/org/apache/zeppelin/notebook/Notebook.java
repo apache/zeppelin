@@ -21,29 +21,50 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Collection of Notes.
@@ -182,10 +203,12 @@ public class Notebook implements NoteEventListener {
       Note oldNote = Note.fromJson(sourceJson);
       convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
-      if (noteName != null)
+      if (noteName != null) {
         newNote.setName(noteName);
-      else
+      } else {
         newNote.setName(oldNote.getName());
+      }
+      newNote.setCronSupported(getConf());
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
         newNote.addCloneParagraph(p);
@@ -222,6 +245,7 @@ public class Notebook implements NoteEventListener {
     } else {
       newNote.setName("Note " + newNote.getId());
     }
+    newNote.setCronSupported(getConf());
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
     bindInterpretersToNote(subject.getUser(), newNote.getId(), boundInterpreterSettingsIds);
@@ -498,6 +522,7 @@ public class Notebook implements NoteEventListener {
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
     note.setRevisionSupported(notebookRepo);
+    note.setCronSupported(getConf());
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
@@ -899,6 +924,11 @@ public class Notebook implements NoteEventListener {
         return;
       }
 
+      if (!note.isCronSupported(notebook.getConf())) {
+        logger.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
+        return;
+      }
+
       note.runAll();
 
       boolean releaseResource = false;
@@ -938,6 +968,11 @@ public class Notebook implements NoteEventListener {
       }
       Map<String, Object> config = note.getConfig();
       if (config == null) {
+        return;
+      }
+
+      if (!note.isCronSupported(getConf())) {
+        logger.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
         return;
       }
 

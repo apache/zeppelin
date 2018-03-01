@@ -540,5 +540,16 @@
   <value>origin</value>
   <description>Git repository remote</description>
 </property>
+
+<property>
+  <name>zeppelin.notebook.cron.enable</name>
+  <value>false</value>
+  <description>Notebook enable cron scheduler feature</description>
+</property>
+<property>
+  <name>zeppelin.notebook.cron.folders</name>
+  <value></value>
+  <description>Notebook cron folders</description>
+</property>
 -->
 </configuration>
