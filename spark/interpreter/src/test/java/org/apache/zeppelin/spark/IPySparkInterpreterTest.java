@@ -103,7 +103,7 @@ public class IPySparkInterpreterTest {
     InterpreterResult result = iPySparkInterpreter.interpret("sc.version", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    String sparkVersion = context.out.getInterpreterResultMessages().get(0).getData();
+    String sparkVersion = context.out.toInterpreterResultMessage().get(0).getData();
     // spark url is sent
     verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
@@ -111,7 +111,7 @@ public class IPySparkInterpreterTest {
     result = iPySparkInterpreter.interpret("sc.range(1,10).sum()", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals("45", interpreterResultMessages.get(0).getData());
     // spark job url is sent
     verify(mockRemoteEventClient).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
@@ -121,7 +121,7 @@ public class IPySparkInterpreterTest {
     if (!isSpark2(sparkVersion)) {
       result = iPySparkInterpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "+---+---+\n" +
           "| _1| _2|\n" +
@@ -133,7 +133,7 @@ public class IPySparkInterpreterTest {
       context = getInterpreterContext();
       result = iPySparkInterpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "_1	_2\n" +
           "1	a\n" +
@@ -141,7 +141,7 @@ public class IPySparkInterpreterTest {
     } else {
       result = iPySparkInterpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "+---+---+\n" +
           "| _1| _2|\n" +
@@ -153,7 +153,7 @@ public class IPySparkInterpreterTest {
       context = getInterpreterContext();
       result = iPySparkInterpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      interpreterResultMessages = context.out.getInterpreterResultMessages();
+      interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "_1	_2\n" +
           "1	a\n" +
@@ -169,7 +169,7 @@ public class IPySparkInterpreterTest {
         assertEquals(InterpreterResult.Code.ERROR, result.code());
         List<InterpreterResultMessage> interpreterResultMessages = null;
         try {
-          interpreterResultMessages = context2.out.getInterpreterResultMessages();
+          interpreterResultMessages = context2.out.toInterpreterResultMessage();
           assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
         } catch (IOException e) {
           e.printStackTrace();
@@ -207,7 +207,7 @@ public class IPySparkInterpreterTest {
             "ssc.stop(stopSparkContext=False, stopGraceFully=True)", context);
     Thread.sleep(1000);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
   }
