@@ -106,7 +106,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
-    return super.interpret(setJobGroupStmt +"\n" + st, context);
+    return super.interpret(setJobGroupStmt + "\n" + st, context);
   }
 
   @Override

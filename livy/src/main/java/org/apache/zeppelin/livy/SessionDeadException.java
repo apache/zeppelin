@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.livy;
 
+/**
+ * Implementation for SessionDeadException
+ */
 public class SessionDeadException extends LivyException {
 
 }
