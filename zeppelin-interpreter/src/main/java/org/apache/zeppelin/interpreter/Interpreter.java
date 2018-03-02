@@ -23,6 +23,8 @@ import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -36,6 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Interface for interpreters.
@@ -76,6 +81,35 @@ public abstract class Interpreter {
       return interpret(precode, interpreterContext);
     }
     return null;
+  }
+
+  protected String interpolate(String cmd, ResourcePool resourcePool) {
+    Pattern zVariablePattern = Pattern.compile("([^{}]*)([{]+[^{}]*[}]+)(.*)", Pattern.DOTALL);
+    StringBuilder sb = new StringBuilder();
+    Matcher m;
+    String st = cmd;
+    while ((m = zVariablePattern.matcher(st)).matches()) {
+      sb.append(m.group(1));
+      String varPat = m.group(2);
+      if (varPat.matches("[{][^{}]+[}]")) {
+        // substitute {variable} only if 'variable' has a value ...
+        Resource resource = resourcePool.get(varPat.substring(1, varPat.length() - 1));
+        Object variableValue = resource == null ? null : resource.get();
+        if (variableValue != null)
+          sb.append(variableValue);
+        else
+          return cmd;
+      } else if (varPat.matches("[{]{2}[^{}]+[}]{2}")) {
+        // escape {{text}} ...
+        sb.append("{").append(varPat.substring(2, varPat.length() - 2)).append("}");
+      } else {
+        // mismatched {{ }} or more than 2 braces ...
+        return cmd;
+      }
+      st = m.group(3);
+    }
+    sb.append(st);
+    return sb.toString();
   }
 
   /**

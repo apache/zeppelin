@@ -365,6 +365,47 @@ myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
   </div>
 </div>
 
+### Object Interpolation
+Some interpreters can interpolate object values from `z` into the command string by using the 
+`{variable-name}` syntax. The value of any object previously `put` into `z` can be 
+interpolated into a command string by using such a pattern containing the object's name. 
+The following example shows one use of this facility:
+
+####In Scala cell:
+```
+z.put("minAge", 35)
+```
+
+####In later SQL cell:
+```
+%sql select * from members where age >= {minAge}
+```
+
+The interpolation of a `{var-name}` pattern is performed only when `z` contains an object with the specified name.
+But the pattern is left unchanged if the named object does not exist in `z`.
+Further, all `{var-name}` patterns within the command must must be translatable for any interpolation to occur -- 
+translation of only some of the patterns in a command line is never done.
+
+In some situations, it is necessary to use { and } characters in a command without invoking the 
+object interpolation mechanism. For these cases an escaping mechanism is available -- 
+doubled braces {{ and }} should be used. The following example shows the use of {{ and }} for passing a 
+regular expression containing just { and } into the command.
+
+```
+%sql select * from members where name rlike '[aeiou]{{3}}'
+```
+
+To summarize, patterns of the form `{var-name}` within commands will be interpolated only if a predefined 
+object of the specified name exists. Additionally, all such patterns within the command line should also 
+be translatable for any interpolation to occur. Patterns of the form `{{any-text}}` are translated into `{any-text}`. 
+These translations are performed only when all occurrences of `{`, `}`, `{{`, and `}}` in any command string confirm to one of the two 
+forms described above. A command containing `{` and/or `}` characters used in any other way 
+(than `{var-name}` and `{{any-text}}`) is used as-is without any changes. 
+No error is flagged in any case. This behavior is identical to the implementation of a similar feature in 
+Jupyter's shell invocation using the `!` magic command.
+
+At present only the SQL and Shell interpreters support object interpolation. 
+
 ### Form Creation
 
 `ZeppelinContext` provides functions for creating forms.

@@ -85,7 +85,8 @@ public class ShellInterpreter extends KerberosInterpreter {
 
 
   @Override
-  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
+    String cmd = interpolate(originalCmd, contextInterpreter.getResourcePool());
     LOGGER.debug("Run shell command '" + cmd + "'");
     OutputStream outStream = new ByteArrayOutputStream();
     
