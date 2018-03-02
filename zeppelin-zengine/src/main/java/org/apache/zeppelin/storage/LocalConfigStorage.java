@@ -50,6 +50,7 @@ public class LocalConfigStorage extends ConfigStorage {
 
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
+    LOGGER.info("Save Interpreter Setting to " + interpreterSettingPath.getAbsolutePath());
     writeToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
