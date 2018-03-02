@@ -192,13 +192,14 @@ public class InterpreterSettingManager {
   }
 
   /**
-   * Load interpreter setting from interpreter-setting.json
+   * Load interpreter setting from interpreter.json
    */
   private void loadFromFile() throws IOException {
     InterpreterInfoSaving infoSaving =
         configStorage.loadInterpreterSettings();
     if (infoSaving == null) {
-      // nothing to read
+      // it is fresh zeppelin instance if there's no interpreter.json, just create interpreter
+      // setting from interpreterSettingTemplates
       for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
@@ -403,14 +404,10 @@ public class InterpreterSettingManager {
         .setIntepreterSettingManager(this)
         .create();
 
-    LOGGER.info("Register InterpreterSettingTemplate & Create InterpreterSetting: {}",
+    LOGGER.info("Register InterpreterSettingTemplate: {}",
         interpreterSettingTemplate.getName());
     interpreterSettingTemplates.put(interpreterSettingTemplate.getName(),
         interpreterSettingTemplate);
-
-    InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
-    initInterpreterSetting(interpreterSetting);
-    interpreterSettings.put(interpreterSetting.getName(), interpreterSetting);
   }
 
   @VisibleForTesting
