@@ -120,16 +120,6 @@ public class InterpreterOutput extends OutputStream {
     };
   }
 
-  public List<InterpreterResultMessage> getInterpreterResultMessages() throws IOException {
-    synchronized (resultMessageOutputs) {
-      List<InterpreterResultMessage> resultMessages = new ArrayList<>();
-      for (InterpreterResultMessageOutput output : this.resultMessageOutputs) {
-        resultMessages.add(output.toInterpreterResultMessage());
-      }
-      return resultMessages;
-    }
-  }
-
   public InterpreterResultMessageOutput getCurrentOutput() {
     synchronized (resultMessageOutputs) {
       return currentOut;
