@@ -22,6 +22,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -32,6 +34,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxDriver.SystemProperty;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.firefox.GeckoDriverService;
@@ -87,12 +90,26 @@ public class WebDriverManager {
         profile.setPreference("network.proxy.type", 0);
 
         System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
-        System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, "false");
+        System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, tempPath + "geckodriver");
 
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.setBinary(ffox);
         firefoxOptions.setProfile(profile);
-        driver = new FirefoxDriver(firefoxOptions);
+        firefoxOptions.setLogLevel(FirefoxDriverLogLevel.INFO);
+
+        Map<String, String> environment = new HashMap<>();
+        if ("true".equals(System.getenv("TRAVIS"))) {
+          environment.put("DISPLAY", ":99");
+        }
+
+        GeckoDriverService gecko = new GeckoDriverService.Builder()
+            .usingPort(0)
+            .withEnvironment(environment)
+            .build();
+        gecko.start();
+
+        driver = new FirefoxDriver(gecko);
+
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
       }
@@ -112,6 +129,10 @@ public class WebDriverManager {
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while SafariDriver ", e);
       }
+    }
+
+    if (!ZeppelinITUtils.isRunning()) {
+      ZeppelinITUtils.restartZeppelin();
     }
 
     String url;

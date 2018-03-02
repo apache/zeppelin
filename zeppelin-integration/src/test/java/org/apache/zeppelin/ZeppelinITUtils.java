@@ -18,10 +18,12 @@
 package org.apache.zeppelin;
 
 
+import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openqa.selenium.WebDriver;
-import java.util.concurrent.TimeUnit;
 
 public class ZeppelinITUtils {
 
@@ -40,6 +42,38 @@ public class ZeppelinITUtils {
     if (logOutput) {
       LOG.info("Finished.");
     }
+  }
+
+  public static void performDoubleClick(WebDriver driver, WebElement element) {
+    //This will be fixed in FireFox-59 which is not yet released.
+    //https://bugzilla.mozilla.org/show_bug.cgi?id=1385476
+    //Actions action = new Actions(driver);
+    //action.doubleClick(element).perform();
+
+    ((JavascriptExecutor) driver).executeScript("return (function(target) {\n"
+        + "if (target.fireEvent) {\n"
+        + "target.fireEvent('ondblclick');\n"
+        + "} else {\n"
+        + "var evObj = new MouseEvent('dblclick', {\n"
+        + "bubbles: true,\n"
+        + "cancelable: true,\n"
+        + "view: window\n"
+        + "});\n"
+        + "target.dispatchEvent(evObj);\n"
+        + "}\n"
+        + "return true;\n"
+        + "})(arguments[0]);", element);
+  }
+
+  public static boolean isRunning() {
+    String statusString = (String) CommandExecutor
+        .executeCommandLocalHost("../bin/zeppelin-daemon.sh restart", false,
+            ProcessData.Types_Of_Data.OUTPUT);
+    // TODO(prabhjyotsingh) remove this block, this is only for testing
+    if (statusString.contains("not")) {
+      LOG.error("Zeppelin server was not running!!!");
+    }
+    return !statusString.contains("not");
   }
 
   public static void restartZeppelin() {
