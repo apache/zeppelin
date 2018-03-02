@@ -114,8 +114,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element
        */
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       // check expected text
       waitForText("BindingTest_2_", By.xpath(
@@ -135,8 +135,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element, again and see watcher works
        */
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
@@ -151,8 +151,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       /*
        * Click element, again and see watcher still works
        */
-      driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+      clickAndWait(By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
       // check expected text
       waitForText("BindingTest_4_", By.xpath(
           getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
@@ -304,8 +304,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       setTextOfParagraph(2, "%sh echo NEW_VALUE");
 
       // Click on 1 paragraph to trigger z.runParagraph() function
-      driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]")).click();
+      clickAndWait(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
       waitForParagraph(2, "FINISHED");
 
