@@ -524,7 +524,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
           "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
       return getConfDir();
     }
-    return fsConfigDir;
+    if (getString(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS)
+                .equals("org.apache.zeppelin.storage.LocalConfigStorage")) {
+      // only apply getRelativeDir when it is LocalConfigStorage
+      return getRelativeDir(fsConfigDir);
+    } else {
+      return fsConfigDir;
+    }
   }
 
   public List<String> getAllowedOrigins()
