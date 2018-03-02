@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,16 +117,6 @@ public class InterpreterOutput extends OutputStream {
         }
       }
     };
-  }
-
-  public List<InterpreterResultMessage> getInterpreterResultMessages() throws IOException {
-    synchronized (resultMessageOutputs) {
-      List<InterpreterResultMessage> resultMessages = new ArrayList<>();
-      for (InterpreterResultMessageOutput output : this.resultMessageOutputs) {
-        resultMessages.add(output.toInterpreterResultMessage());
-      }
-      return resultMessages;
-    }
   }
 
   public InterpreterResultMessageOutput getCurrentOutput() {
