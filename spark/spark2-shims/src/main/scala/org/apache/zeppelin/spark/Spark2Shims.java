@@ -22,6 +22,9 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 
+/**
+ * This will load the correct version of Spark2Shims.
+ */
 public class Spark2Shims extends SparkShims {
 
   public void setupSparkListener(final String sparkWebUrl) {

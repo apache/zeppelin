@@ -43,6 +43,9 @@ import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 
 import java.util.Map;
 
+/**
+ * This will load the correct version of Spark1Shims.
+ */
 public class Spark1Shims extends SparkShims {
 
   public void setupSparkListener(final String sparkWebUrl) {
