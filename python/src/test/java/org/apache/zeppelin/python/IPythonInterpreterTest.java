@@ -456,6 +456,11 @@ public class IPythonInterpreterTest {
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+
+    // clear output
+    context = getInterpreterContext();
+    result = interpreter.interpret("import time\nprint(\"Hello\")\ntime.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
+    assertEquals("%text world\n", context.out.getCurrentOutput().toString());
   }
 
   private static InterpreterContext getInterpreterContext() {

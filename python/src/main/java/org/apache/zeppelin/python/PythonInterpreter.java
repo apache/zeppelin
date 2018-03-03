@@ -388,6 +388,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     zeppelinContext.setGui(context.getGui());
     zeppelinContext.setNoteGui(context.getNoteGui());
+    zeppelinContext.setInterpreterContext(context);
 
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
