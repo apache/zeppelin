@@ -123,6 +123,12 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
   }
 
+  @Test
+  public void testOutputClear() throws InterpreterException {
+    InterpreterResult result = pythonInterpreter.interpret("print(\"Hello\")\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
+    assertEquals("%text world\n", out.getCurrentOutput().toString());
+  }
+
   @Override
   public void onUpdateAll(InterpreterOutput out) {
 
