@@ -150,6 +150,7 @@ limitations under the License.
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
   * [Python](./interpreter/python.html)
   * [R](./interpreter/r.html)
+  * [SAP](./interpreter/sap.html)
   * [Scalding](./interpreter/scalding.html)
   * [Scio](./interpreter/scio.html)
   * [Shell](./interpreter/Shell.html)
