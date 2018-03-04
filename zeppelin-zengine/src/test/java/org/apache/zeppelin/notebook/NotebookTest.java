@@ -86,6 +86,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void setUp() throws Exception {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "mock1,mock2");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
     super.setUp();
 
     schedulerFactory = SchedulerFactory.singleton();
@@ -226,7 +227,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       fail("Subject is non-emtpy anonymous, shouldn't fail");
     }
   }
-  
+
   @Test
   public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
@@ -434,13 +435,93 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notebook.refreshCron(note.getId());
   }
 
+  @Test
+  public void testScheduleDisabled() throws InterruptedException, IOException {
+
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
+    try {
+      final int timeout = 10;
+      final String everySecondCron = "* * * * * ?";
+      final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
+      final Note note = notebook.createNote(anonymous);
+
+      executeNewParagraphByCron(note, everySecondCron);
+      afterStatusChangedListener = new StatusChangedListener() {
+        @Override
+        public void onStatusChanged(Job job, Status before, Status after) {
+          if (after == Status.FINISHED) {
+            jobsToExecuteCount.countDown();
+          }
+        }
+      };
+
+      //This job should not run because "ZEPPELIN_NOTEBOOK_CRON_ENABLE" is set to false
+      assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
+
+      terminateScheduledNote(note);
+      afterStatusChangedListener = null;
+    } finally {
+      System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
+    }
+  }
+
+  @Test
+  public void testScheduleDisabledWithName() throws InterruptedException, IOException {
+
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName(), "System/*");
+    try {
+      final int timeout = 10;
+      final String everySecondCron = "* * * * * ?";
+      final CountDownLatch jobsToExecuteCount = new CountDownLatch(5);
+      final Note note = notebook.createNote(anonymous);
+
+      executeNewParagraphByCron(note, everySecondCron);
+      afterStatusChangedListener = new StatusChangedListener() {
+        @Override
+        public void onStatusChanged(Job job, Status before, Status after) {
+          if (after == Status.FINISHED) {
+            jobsToExecuteCount.countDown();
+          }
+        }
+      };
+
+      //This job should not run because it's name does not matches "ZEPPELIN_NOTEBOOK_CRON_FOLDERS"
+      assertFalse(jobsToExecuteCount.await(timeout, TimeUnit.SECONDS));
+
+      terminateScheduledNote(note);
+      afterStatusChangedListener = null;
+
+      final Note noteNameSystem = notebook.createNote(anonymous);
+      noteNameSystem.setName("System/test1");
+      final CountDownLatch jobsToExecuteCountNameSystem = new CountDownLatch(5);
+
+      executeNewParagraphByCron(noteNameSystem, everySecondCron);
+      afterStatusChangedListener = new StatusChangedListener() {
+        @Override
+        public void onStatusChanged(Job job, Status before, Status after) {
+          if (after == Status.FINISHED) {
+            jobsToExecuteCountNameSystem.countDown();
+          }
+        }
+      };
+
+      //This job should run because it's name contains "System/"
+      assertTrue(jobsToExecuteCountNameSystem.await(timeout, TimeUnit.SECONDS));
+
+      terminateScheduledNote(noteNameSystem);
+      afterStatusChangedListener = null;
+    } finally {
+      System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());
+    }
+  }
+
   private void terminateScheduledNote(Note note) {
     note.getConfig().remove("cron");
     notebook.refreshCron(note.getId());
     notebook.removeNote(note.getId(), anonymous);
   }
 
-  
+
   @Test
   public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
     // create a note and a paragraph
@@ -859,9 +940,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     // set admin roles for both user1 and user2
     notebookAuthorization.setRoles(user1, roles);
     notebookAuthorization.setRoles(user2, roles);
-    
+
     Note note = notebook.createNote(new AuthenticationInfo(user1));
-    
+
     // check that user1 is owner, reader, runner and writer
     assertEquals(notebookAuthorization.isOwner(note.getId(),
         Sets.newHashSet(user1)), true);
@@ -871,7 +952,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
         Sets.newHashSet(user2)), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         Sets.newHashSet(user1)), true);
-    
+
     // since user1 and user2 both have admin role, user2 will be reader and writer as well
     assertEquals(notebookAuthorization.isOwner(note.getId(),
         Sets.newHashSet(user2)), false);
@@ -881,14 +962,14 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
         Sets.newHashSet(user2)), true);
     assertEquals(notebookAuthorization.isWriter(note.getId(),
         Sets.newHashSet(user2)), true);
-    
+
     // check that user1 has note listed in his workbench
     Set<String> user1AndRoles = notebookAuthorization.getRoles(user1);
     user1AndRoles.add(user1);
     List<Note> user1Notes = notebook.getAllNotes(user1AndRoles);
     assertEquals(user1Notes.size(), 1);
     assertEquals(user1Notes.get(0).getId(), note.getId());
-    
+
     // check that user2 has note listed in his workbench because of admin role
     Set<String> user2AndRoles = notebookAuthorization.getRoles(user2);
     user2AndRoles.add(user2);
@@ -896,7 +977,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertEquals(user2Notes.size(), 1);
     assertEquals(user2Notes.get(0).getId(), note.getId());
   }
-  
+
   @Test
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
       IOException, InterpreterException {
@@ -1225,7 +1306,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
-    
+
     notebook.getNotebookAuthorization().setReaders(note.getId(), Sets.newHashSet("user1"));
     //note is public since writers empty
     notes1 = notebook.getAllNotes(user1);
@@ -1238,7 +1319,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
-    
+
     notebook.getNotebookAuthorization().setWriters(note.getId(), Sets.newHashSet("user1"));
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
@@ -1250,19 +1331,19 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testPublicPrivateNewNote() throws IOException, SchedulerException {
     HashSet<String> user1 = Sets.newHashSet("user1");
     HashSet<String> user2 = Sets.newHashSet("user2");
-    
+
     // case of public note
     assertTrue(conf.isNotebookPublic());
     assertTrue(notebookAuthorization.isPublic());
-    
+
     List<Note> notes1 = notebook.getAllNotes(user1);
     List<Note> notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 0);
     assertEquals(notes2.size(), 0);
-    
+
     // user1 creates note
     Note notePublic = notebook.createNote(new AuthenticationInfo("user1"));
-    
+
     // both users have note
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
@@ -1270,7 +1351,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertEquals(notes2.size(), 1);
     assertEquals(notes1.get(0).getId(), notePublic.getId());
     assertEquals(notes2.get(0).getId(), notePublic.getId());
-    
+
     // user1 is only owner
     assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
@@ -1283,13 +1364,13 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertFalse(conf2.isNotebookPublic());
     // notebook authorization reads from conf, so no need to re-initilize
     assertFalse(notebookAuthorization.isPublic());
-    
+
     // check that still 1 note per user
     notes1 = notebook.getAllNotes(user1);
     notes2 = notebook.getAllNotes(user2);
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
-    
+
     // create private note
     Note notePrivate = notebook.createNote(new AuthenticationInfo("user1"));
 
@@ -1299,18 +1380,18 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     assertEquals(notes1.size(), 2);
     assertEquals(notes2.size(), 1);
     assertEquals(true, notes1.contains(notePrivate));
-    
+
     // user1 have all rights
     assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getRunners(notePrivate.getId()).size(), 1);
     assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
-    
+
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     ZeppelinConfiguration.create();
   }
-  
+
   private void delete(File file){
     if(file.isFile()) file.delete();
     else if(file.isDirectory()){

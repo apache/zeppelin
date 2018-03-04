@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
@@ -99,5 +100,16 @@ public class ZeppelinConfigurationTest {
     ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
     Assert.assertEquals("/usr/lib/zeppelin", conf.getZeppelinHome());
     Assert.assertEquals("/usr/lib/zeppelin/conf", conf.getConfDir());
+  }
+
+  @Test
+  public void getConfigFSPath() throws ConfigurationException {
+    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), "/usr/lib/zeppelin");
+    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), "conf");
+    ZeppelinConfiguration conf = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+    assertEquals("/usr/lib/zeppelin/conf", conf.getConfigFSDir());
+
+    System.setProperty(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS.getVarName(), "org.apache.zeppelin.storage.FileSystemConfigStorage");
+    assertEquals("conf", conf.getConfigFSDir());
   }
 }

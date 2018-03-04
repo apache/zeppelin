@@ -406,16 +406,16 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    if (iPySparkInterpreter != null) {
+      return iPySparkInterpreter.interpret(st, context);
+    }
+
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    sparkInterpreter.populateSparkWebUrl(context);
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
-
-    if (iPySparkInterpreter != null) {
-      return iPySparkInterpreter.interpret(st, context);
-    }
+    sparkInterpreter.populateSparkWebUrl(context);
 
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
@@ -467,10 +467,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
     String jobGroup = Utils.buildJobGroupId(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+
     SparkZeppelinContext __zeppelin__ = sparkInterpreter.getZeppelinContext();
     __zeppelin__.setInterpreterContext(context);
     __zeppelin__.setGui(context.getGui());
     __zeppelin__.setNoteGui(context.getNoteGui());
+    InterpreterContext.set(context);
+
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup, jobDesc);
     statementOutput = null;
 
