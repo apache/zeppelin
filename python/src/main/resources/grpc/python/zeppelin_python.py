@@ -33,6 +33,9 @@ class PyZeppelinContext(object):
     self.javaList = gateway.jvm.java.util.ArrayList
     self.max_result = z.getMaxResult()
 
+  def getInterpreterContext(self):
+    return self.z.getInterpreterContext()
+
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
