@@ -59,12 +59,18 @@ public class SparkRInterpreter extends Interpreter {
     String sparkRLibPath;
 
     if (System.getenv("SPARK_HOME") != null) {
+      // local or yarn-client mode when SPARK_HOME is specified
       sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
-    } else {
+    } else if (System.getenv("ZEPPELIN_HOME") != null){
+      // embedded mode when SPARK_HOME is not specified
       sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R/lib";
       // workaround to make sparkr work without SPARK_HOME
       System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/spark");
+    } else {
+      // yarn-cluster mode
+      sparkRLibPath = "sparkr";
     }
+
     synchronized (SparkRBackend.backend()) {
       if (!SparkRBackend.isStarted()) {
         SparkRBackend.init();
