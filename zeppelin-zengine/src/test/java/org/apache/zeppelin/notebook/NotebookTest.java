@@ -44,6 +44,10 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Request;
+import org.junit.runner.Result;
+import org.mockito.internal.runners.JUnit44RunnerImpl;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1450,4 +1454,5 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   private interface StatusChangedListener {
     void onStatusChanged(Job job, Status before, Status after);
   }
+
 }
