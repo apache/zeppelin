@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -340,8 +341,10 @@ public class Helium {
   public HeliumPackageSuggestion suggestApp(Paragraph paragraph) {
     HeliumPackageSuggestion suggestion = new HeliumPackageSuggestion();
 
-    Interpreter intp = paragraph.getBindedInterpreter();
-    if (intp == null) {
+    Interpreter intp = null;
+    try {
+      intp = paragraph.getBindedInterpreter();
+    } catch (InterpreterNotFoundException e) {
       return suggestion;
     }
 

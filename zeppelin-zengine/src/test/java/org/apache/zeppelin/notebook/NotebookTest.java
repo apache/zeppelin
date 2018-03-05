@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
@@ -145,7 +146,12 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // then interpreter factory should be injected into all the paragraphs
     Note note = notebook.getAllNotes().get(0);
-    assertNull(note.getParagraphs().get(0).getBindedInterpreter());
+    try {
+      note.getParagraphs().get(0).getBindedInterpreter();
+      fail("Should throw InterpreterNotFoundException");
+    } catch (InterpreterNotFoundException e) {
+
+    }
   }
 
   @Test
@@ -523,7 +529,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
 
   @Test
-  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
+  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException, InterpreterNotFoundException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
@@ -573,7 +579,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testCronWithReleaseResourceClosesOnlySpecificInterpreters()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException, InterpreterNotFoundException {
     // create a cron scheduled note.
     Note cronNote = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), cronNote.getId(),
