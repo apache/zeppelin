@@ -50,14 +50,14 @@ public class InterpreterFactory {
     return null;
   }
 
-  public Interpreter getInterpreter(String user, String noteId, String replName) {
+  public Interpreter getInterpreter(String user, String noteId, String replName)
+      throws InterpreterNotFoundException {
     List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(noteId);
     InterpreterSetting setting;
     Interpreter interpreter;
 
     if (settings == null || settings.size() == 0) {
-      LOGGER.error("No interpreter is binded to this note: " + noteId);
-      return null;
+      throw new InterpreterNotFoundException("No interpreter is binded to this note: " + noteId);
     }
 
     if (StringUtils.isBlank(replName)) {
@@ -76,9 +76,10 @@ public class InterpreterFactory {
         if (null != interpreter) {
           return interpreter;
         }
-        throw new RuntimeException("No such interpreter: " + replName);
+        throw new InterpreterNotFoundException("No such interpreter: " + replName);
       }
-      throw new RuntimeException("Interpreter " + group + " is not binded to this note");
+      throw new InterpreterNotFoundException("Interpreter " + group +
+          " is not binded to this note");
     } else if (replNameSplit.length == 1){
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
@@ -97,11 +98,12 @@ public class InterpreterFactory {
       if (null != setting) {
         return setting.getDefaultInterpreter(user, noteId);
       } else {
-        throw new RuntimeException("Either no interpreter named " + replName + " or it is not " +
-            "binded to this note");
+        throw new InterpreterNotFoundException("Either no interpreter named " + replName +
+            " or it is not binded to this note");
       }
     }
-    //TODO(zjffdu) throw InterpreterException instead of return null
-    return null;
+
+    throw new InterpreterNotFoundException("No such interpreter " + replName + " for note "
+        + noteId);
   }
 }
