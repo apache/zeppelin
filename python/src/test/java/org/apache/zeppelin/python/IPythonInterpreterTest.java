@@ -88,7 +88,7 @@ public class IPythonInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     result = interpreter.interpret("print(11111111111111111111111111111)", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 32 exceeds maximum: 4"));
 
@@ -120,7 +120,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     Thread.sleep(100);
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.getInterpreterResultMessages();
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     boolean isPython2 = interpreterResultMessages.get(0).getData().equals("2\n");
 
@@ -129,7 +129,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("'hello world'", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("'hello world'", interpreterResultMessages.get(0).getData());
 
@@ -138,7 +138,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("print(u'你好')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("你好\n", interpreterResultMessages.get(0).getData());
     
@@ -147,7 +147,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("'hello world'\n'hello world2'", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("'hello world2'", interpreterResultMessages.get(0).getData());
 
@@ -156,7 +156,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("print('hello world')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("hello world\n", interpreterResultMessages.get(0).getData());
 
@@ -165,7 +165,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("print('hello world')\nprint('hello world2')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("hello world\nhello world2\n", interpreterResultMessages.get(0).getData());
 
@@ -174,7 +174,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("abc=1",context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(0, interpreterResultMessages.size());
 
     // if block
@@ -182,7 +182,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("if abc > 0:\n\tprint('True')\nelse:\n\tprint('False')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("True\n", interpreterResultMessages.get(0).getData());
 
@@ -191,7 +191,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("for i in range(3):\n\tprint(i)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("0\n1\n2\n", interpreterResultMessages.get(0).getData());
 
@@ -200,7 +200,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("print(unknown)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("name 'unknown' is not defined"));
 
@@ -209,7 +209,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("1/0", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("ZeroDivisionError"));
 
@@ -220,7 +220,7 @@ public class IPythonInterpreterTest {
         "greet('Jack')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("Hello Jack\n",interpreterResultMessages.get(0).getData());
 
@@ -229,7 +229,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("print('there is no Error: ok')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("there is no Error: ok\n", interpreterResultMessages.get(0).getData());
 
@@ -267,7 +267,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret(st, context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(0, interpreterResultMessages.size());
 
     // now we can get the completion for `a.`
@@ -296,7 +296,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("range?", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("range(stop)"));
 
     // timeit
@@ -304,7 +304,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("%timeit range(100)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("loops"));
 
     // cancel
@@ -327,7 +327,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("import time\ntime.sleep(10)", context2);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    interpreterResultMessages = context2.out.getInterpreterResultMessages();
+    interpreterResultMessages = context2.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
 
     // matplotlib
@@ -335,7 +335,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("%matplotlib inline\nimport matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
@@ -367,7 +367,7 @@ public class IPythonInterpreterTest {
         "output_notebook(notebook_type='zeppelin')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
     assertTrue(interpreterResultMessages.get(0).getData().contains("Loading BokehJS"));
@@ -384,7 +384,7 @@ public class IPythonInterpreterTest {
         "show(p)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
@@ -399,7 +399,7 @@ public class IPythonInterpreterTest {
         "    facet_wrap(\"clarity\")", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     hasImageOutput = false;
@@ -417,7 +417,7 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("z.input(name='text_1', defaultValue='value_1')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("'value_1'"));
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("text_1") instanceof TextBox);
@@ -453,9 +453,14 @@ public class IPythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.getInterpreterResultMessages();
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+
+    // clear output
+    context = getInterpreterContext();
+    result = interpreter.interpret("import time\nprint(\"Hello\")\ntime.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
+    assertEquals("%text world\n", context.out.getCurrentOutput().toString());
   }
 
   private static InterpreterContext getInterpreterContext() {
