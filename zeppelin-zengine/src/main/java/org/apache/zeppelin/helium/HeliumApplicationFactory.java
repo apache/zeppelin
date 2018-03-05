@@ -200,9 +200,11 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
               "Can't unload application status " + appsToUnload.getStatus());
         }
         appStatusChange(paragraph, appsToUnload.getId(), ApplicationState.Status.UNLOADING);
-        Interpreter intp = paragraph.getBindedInterpreter();
-        if (intp == null) {
-          throw new ApplicationException("No interpreter found");
+        Interpreter intp = null;
+        try {
+          intp = paragraph.getBindedInterpreter();
+        } catch (InterpreterException e) {
+          throw new ApplicationException("No interpreter found", e);
         }
 
         RemoteInterpreterProcess intpProcess =
@@ -280,9 +282,11 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
               "Can't run application status " + app.getStatus());
         }
 
-        Interpreter intp = paragraph.getBindedInterpreter();
-        if (intp == null) {
-          throw new ApplicationException("No interpreter found");
+        Interpreter intp = null;
+        try {
+          intp = paragraph.getBindedInterpreter();
+        } catch (InterpreterException e) {
+          throw new ApplicationException("No interpreter found", e);
         }
 
         RemoteInterpreterProcess intpProcess =
@@ -417,7 +421,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   @Override
   public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
     for (Paragraph p : note.getParagraphs()) {
-      Interpreter currentInterpreter = p.getBindedInterpreter();
+      Interpreter currentInterpreter = null;
+      try {
+        currentInterpreter = p.getBindedInterpreter();
+      } catch (InterpreterNotFoundException e) {
+        logger.warn("Not interpreter found", e);
+        return;
+      }
       List<InterpreterInfo> infos = setting.getInterpreterInfos();
       for (InterpreterInfo info : infos) {
         if (currentInterpreter != null &&

@@ -200,7 +200,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("shared");
 
@@ -220,7 +220,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("isolated");
 
@@ -241,7 +241,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("scoped");
 
@@ -266,7 +266,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testGetEditor() throws IOException {
+  public void testGetEditor() throws IOException, InterpreterNotFoundException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo");
     // get editor setting from interpreter-setting.json
