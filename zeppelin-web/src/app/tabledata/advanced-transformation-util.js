@@ -1246,7 +1246,7 @@ export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
     transformed: rows,
     sortedSelectors: sortWithNumberSupport(Object.keys(selectorNameWithIndex)),
     groupNames: sortWithNumberSupport(Array.from(groupNameSet)),
-  }
+  };
 }
 
 export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
@@ -1346,6 +1346,6 @@ export function sortWithNumberSupport(arr) {
   } else {
     return arr.sort(function(a, b) {
       return parseFloat(a, 10) - parseFloat(b, 10);
-    })
+    });
   }
 }
