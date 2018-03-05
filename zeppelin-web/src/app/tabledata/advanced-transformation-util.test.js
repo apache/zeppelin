@@ -1768,6 +1768,13 @@ describe('advanced-transformation-util', () => {
         expect(testArr).toEqual(sortedArray);
       });
 
+      it('sorting a string array', () => {
+        let strings = ['34', '77', '5', '65', '7', '23', '88', '-45'];
+        let sortedArray = ['-45', '5','7', '23', '34', '65' ,'77', '88'];
+        let testArr = Util.sortWithNumberSupport(strings);
+        expect(testArr).toEqual(sortedArray);
+      });
+
     });
 
   }); // end: describe('getTransformer')
