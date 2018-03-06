@@ -2442,7 +2442,12 @@ public class NotebookServer extends WebSocketServlet
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
     Interpreter interpreter =
-        notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+        null;
+    try {
+      interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+    } catch (InterpreterNotFoundException e) {
+      throw new IOException("Fail to get interpreter: " + replName, e);
+    }
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
     conn.send(serializeMessage(resp));
