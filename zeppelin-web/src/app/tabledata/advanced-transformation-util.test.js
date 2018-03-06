@@ -1739,7 +1739,6 @@ describe('advanced-transformation-util', () => {
     }); // end: describe('method: array:2-key')
 
     describe('sortWithNumberSupport() check', () => {
-
       it('sorting a positive numeric array', () => {
         let positive = [5, 4, 9, 8, 3, 1, 7, 2, 6];
         let sortedArray = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -1749,7 +1748,7 @@ describe('advanced-transformation-util', () => {
 
       it('sorting a negative numeric array', () => {
         let negative = [-5, -4, -9, -8, -3, -1, -7, -2, -6];
-        let sortedArray = [-9, -8, -7, -6, -5, -4, -3, -2 ,-1];
+        let sortedArray = [-9, -8, -7, -6, -5, -4, -3, -2, -1];
         let testArr = Util.sortWithNumberSupport(negative);
         expect(testArr).toEqual(sortedArray);
       });
@@ -1770,12 +1769,10 @@ describe('advanced-transformation-util', () => {
 
       it('sorting a string array', () => {
         let strings = ['34', '77', '5', '65', '7', '23', '88', '-45'];
-        let sortedArray = ['-45', '5','7', '23', '34', '65' ,'77', '88'];
+        let sortedArray = ['-45', '5', '7', '23', '34', '65', '77', '88'];
         let testArr = Util.sortWithNumberSupport(strings);
         expect(testArr).toEqual(sortedArray);
       });
-
     });
-
   }); // end: describe('getTransformer')
 });
