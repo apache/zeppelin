@@ -123,6 +123,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
       }
       Thread.sleep(100);
     }
+    // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
+    Thread.sleep(1000);
 
     // add angularObject
     interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);

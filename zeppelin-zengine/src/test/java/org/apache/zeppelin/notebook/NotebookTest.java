@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
@@ -43,6 +44,10 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Request;
+import org.junit.runner.Result;
+import org.mockito.internal.runners.JUnit44RunnerImpl;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,7 +150,12 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // then interpreter factory should be injected into all the paragraphs
     Note note = notebook.getAllNotes().get(0);
-    assertNull(note.getParagraphs().get(0).getBindedInterpreter());
+    try {
+      note.getParagraphs().get(0).getBindedInterpreter();
+      fail("Should throw InterpreterNotFoundException");
+    } catch (InterpreterNotFoundException e) {
+
+    }
   }
 
   @Test
@@ -523,7 +533,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
 
   @Test
-  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
+  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException, InterpreterNotFoundException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
@@ -573,7 +583,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
   @Test
   public void testCronWithReleaseResourceClosesOnlySpecificInterpreters()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException, InterpreterNotFoundException {
     // create a cron scheduled note.
     Note cronNote = notebook.createNote(anonymous);
     interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), cronNote.getId(),
@@ -1444,4 +1454,5 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   private interface StatusChangedListener {
     void onStatusChanged(Job job, Status before, Status after);
   }
+
 }

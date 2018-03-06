@@ -412,7 +412,8 @@ public class InterpreterSettingManager {
 
   @VisibleForTesting
   public InterpreterSetting getDefaultInterpreterSetting(String noteId) {
-    return getInterpreterSettings(noteId).get(0);
+    List<InterpreterSetting> allInterpreterSettings = getInterpreterSettings(noteId);
+    return allInterpreterSettings.size() > 0 ? allInterpreterSettings.get(0) : null;
   }
 
   public List<InterpreterSetting> getInterpreterSettings(String noteId) {
@@ -468,7 +469,7 @@ public class InterpreterSettingManager {
           group = replNameSplit[0];
         }
         // when replName is 'name' of interpreter
-        if (defaultSettingName.equals(intpSetting.getName())) {
+        if (intpSetting.getName().equals(defaultSettingName)) {
           editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
         }
         // when replName is 'alias name' of interpreter or 'group' of interpreter
