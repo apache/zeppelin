@@ -36,9 +36,12 @@ import java.util.Map;
  * R repl interaction
  */
 public class ZeppelinR implements ExecuteResultHandler {
-  Logger logger = LoggerFactory.getLogger(ZeppelinR.class);
+  private static Logger logger = LoggerFactory.getLogger(ZeppelinR.class);
+
+  private final SparkRInterpreter sparkRInterpreter;
   private final String rCmdPath;
   private final SparkVersion sparkVersion;
+  private final int timeout;
   private DefaultExecutor executor;
   private InterpreterOutputStream outputStream;
   private PipedOutputStream input;
@@ -108,11 +111,13 @@ public class ZeppelinR implements ExecuteResultHandler {
    * @param libPath sparkr library path
    */
   public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort,
-      SparkVersion sparkVersion) {
+      SparkVersion sparkVersion, int timeout, SparkRInterpreter sparkRInterpreter) {
     this.rCmdPath = rCmdPath;
     this.libPath = libPath;
     this.sparkVersion = sparkVersion;
     this.port = sparkRBackendPort;
+    this.timeout = timeout;
+    this.sparkRInterpreter = sparkRInterpreter;
     try {
       File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
       scriptPath = scriptFile.getAbsolutePath();
@@ -140,12 +145,13 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(Integer.toString(port));
     cmd.addArgument(libPath);
     cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
+    cmd.addArgument(Integer.toString(timeout));
     
     // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
     logger.debug(cmd.toString());
 
     executor = new DefaultExecutor();
-    outputStream = new InterpreterOutputStream(logger);
+    outputStream = new SparkRInterpreterOutputStream(logger, sparkRInterpreter);
 
     input = new PipedOutputStream();
     PipedInputStream in = new PipedInputStream(input);
@@ -390,5 +396,25 @@ public class ZeppelinR implements ExecuteResultHandler {
   public void onProcessFailed(ExecuteException e) {
     logger.error(e.getMessage(), e);
     rScriptRunning = false;
+  }
+
+
+  public static class SparkRInterpreterOutputStream extends InterpreterOutputStream {
+
+    private SparkRInterpreter sparkRInterpreter;
+
+    public SparkRInterpreterOutputStream(Logger logger, SparkRInterpreter sparkRInterpreter) {
+      super(logger);
+      this.sparkRInterpreter = sparkRInterpreter;
+    }
+
+    @Override
+    protected void processLine(String s, int i) {
+      super.processLine(s, i);
+      if (s.contains("Java SparkR backend might have failed") // spark 2.x
+          || s.contains("Execution halted")) { // spark 1.x
+        sparkRInterpreter.getRbackendDead().set(true);
+      }
+    }
   }
 }
