@@ -22,6 +22,7 @@ hashCode <- as.integer(args[1])
 port <- as.integer(args[2])
 libPath <- args[3]
 version <- as.integer(args[4])
+timeout <- as.integer(args[5])
 rm(args)
 
 print(paste("Port ", toString(port)))
@@ -31,7 +32,7 @@ print(paste("LibPath ", libPath))
 library(SparkR)
 
 
-SparkR:::connectBackend("localhost", port, 6000)
+SparkR:::connectBackend("localhost", port, timeout)
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)

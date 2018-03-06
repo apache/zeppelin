@@ -47,7 +47,7 @@ public class SparkRInterpreterTest {
   private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
   @Test
-  public void testSparkRInterpreter() throws IOException, InterruptedException, InterpreterException {
+  public void testSparkRInterpreter() throws InterpreterException, InterruptedException {
     Properties properties = new Properties();
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
@@ -55,6 +55,7 @@ public class SparkRInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.R.knitr", "true");
+    properties.setProperty("spark.r.backendConnectionTimeout", "10");
 
     sparkRInterpreter = new SparkRInterpreter(properties);
     sparkInterpreter = new SparkInterpreter(properties);
@@ -91,6 +92,12 @@ public class SparkRInterpreterTest {
       // spark job url is sent
       verify(mockRemoteEventClient, atLeastOnce()).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
     }
+
+    // sparkr backend would be timeout after 10 seconds
+    Thread.sleep(15 * 1000);
+    result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    assertTrue(result.message().get(0).getData().contains("sparkR backend is dead"));
   }
 
   private InterpreterContext getInterpreterContext() {
