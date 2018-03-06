@@ -25,7 +25,7 @@
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
-    "angular-ui-grid": "^4.0.4",
+    "angular-ui-grid": "^4.2.4",
     "angular-viewport-watch": "github:shahata/angular-viewport-watch",
     "ansi_up": "^2.0.2",
     "github-markdown-css": "2.6.0",

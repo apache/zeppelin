@@ -158,6 +158,11 @@ export default class TableVisualization extends Visualization {
 
     if (gridElem) {
       gridElem.css('height', this.targetEl.height() - 10);
+      const gridApiId = this.getGridApiId();
+      const scope = this.getScope();
+      if(scope[gridApiId]!==undefined) {
+        scope[gridApiId].core.handleWindowResize();
+      }
     }
   }
 
