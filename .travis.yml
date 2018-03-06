@@ -82,22 +82,17 @@ matrix:
 
     # Run ZeppelinSparkClusterTest & SparkIntegrationTest in one build would exceed the time limitation of travis, so running them separately
     
-    # Test spark interpreter with different spark versions under python2, only run ZeppelinSparkClusterTest
+    # Integration test of spark interpreter with different spark versions under python2, only run ZeppelinSparkClusterTest. Also run spark unit test of spark 2.2 in this build.
     - sudo: required
       jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="2" PROFILE="-Pspark-2.2" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,zeppelin-server,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest -DfailIfNoTests=false"
+      env: PYTHON="2" PROFILE="-Pspark-2.2" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,zeppelin-server,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test spark interpreter with different spark versions under python3, only run SparkIntegrationTest
+    # Integration test of spark interpreter with different spark versions under python3, only run SparkIntegrationTest. Also run spark unit test of spark 1.6 in this build.
     - sudo: required
       jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="3" PROFILE="-Pspark-2.2" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=SparkIntegrationTest -DfailIfNoTests=false"
-
-    # Test spark module for 2.2.0 with scala 2.11
-    - jdk: "oraclejdk8"
-      dist: trusty
-      env: PYTHON="2" SCALA_VER="2.11" SPARK_VER="2.2.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.2 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: PYTHON="3" PROFILE="-Pspark-1.6" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=SparkIntegrationTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test spark module for 2.1.0 with scala 2.11
     - jdk: "openjdk7"
@@ -109,11 +104,7 @@ matrix:
       dist: trusty
       env: PYTHON="2" SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test spark module for 1.6.3 with scala 2.10
-    - jdk: "openjdk7"
-      dist: trusty
-      env: PYTHON="3" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop2 -Phadoop-2.6 -Pscala-2.10" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
-
+    # Test python/pyspark with python 2, livy 0.5
     - sudo: required
       dist: trusty
       jdk: "openjdk7"
