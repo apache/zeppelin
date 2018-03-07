@@ -43,8 +43,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.originalText = '';
   $scope.editor = null;
   $scope.cursorPosition = null;
-  $scope.indexSave = 0;
-  $scope.indexLoad = 0;
   $scope.diffMatchPatch = new DiffMatchPatch();
 
   // transactional info for spell execution
@@ -715,8 +713,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
     if ($scope.cursorPosition && $scope.cursorPosition && $scope.cursorPosition) {
       editor.moveCursorToPosition($scope.cursorPosition);
-      console.log('Load: ' + $scope.indexLoad++ + ' | row: ' + $scope.cursorPosition.row +
-        ' | column: ' + $scope.cursorPosition.column);
       $scope.cursorPosition = null;
     }
   };
@@ -1522,8 +1518,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       let newPosition = $scope.editor.getCursorPosition();
       if (newPosition && newPosition.row && newPosition.column) {
         $scope.cursorPosition = $scope.editor.getCursorPosition();
-        console.log('Save: ' + $scope.indexSave++ + ' | row: ' + $scope.cursorPosition.row +
-          ' | column: ' + $scope.cursorPosition.column);
       } else {
         console.log('NOOOOOOO Save');
       }

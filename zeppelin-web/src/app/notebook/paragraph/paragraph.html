@@ -15,8 +15,6 @@ limitations under the License.
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
-  <span>Collaborative mode: {{collaborativeMode}}</span>
-
   <div ng-if="paragraph.config.title"
        id="{{paragraph.id}}_title"
        ng-controller="ElasticInputCtrl as input"
