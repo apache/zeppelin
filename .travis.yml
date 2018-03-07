@@ -44,7 +44,7 @@ matrix:
     # Test License compliance using RAT tool
     - jdk: "openjdk7"
       dist: trusty
-      env: SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
+      env: SCALA_VER="2.11" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
     # Run e2e tests (in zeppelin-web)
     # chrome dropped the support for precise (ubuntu 12.04), so need to use trusty
@@ -66,7 +66,7 @@ matrix:
     - sudo: required
       jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="3" SCALA_VER="2.11" SPARK_VER="2.2.0" HADOOP_VER="2.6" SPARKR="true" PROFILE="-Pspark-2.2 -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Pscalding -Phelium-dev -Pexamples -Pscala-2.11" BUILD_FLAG="package -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for 1.6.3
     - jdk: "oraclejdk8"
@@ -97,12 +97,12 @@ matrix:
     # Test spark module for 2.1.0 with scala 2.11
     - jdk: "openjdk7"
       dist: trusty
-      env: PYTHON="2" SCALA_VER="2.11" SPARK_VER="2.1.0" HADOOP_VER="2.6" PROFILE="-Pspark-2.1 -Phadoop2 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.1 -Phadoop2 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test spark module for 2.0.2 with scala 2.11
     - jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="2" SCALA_VER="2.11" SPARK_VER="2.0.2" HADOOP_VER="2.6" PROFILE="-Pspark-2.0 -Phadoop3 -Phadoop-2.6 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.0 -Phadoop3 -Pscala-2.11" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test python/pyspark with python 2, livy 0.5
     - sudo: required
