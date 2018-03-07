@@ -1341,11 +1341,15 @@ export function fillDrillDownRow(schema, obj, rows, key,
 }
 
 export function sortWithNumberSupport(arr) {
-  if (arr.some(isNaN)) {
-    return arr.sort();
-  } else {
+  let isNumeric = function(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  };
+
+  if (arr.every(isNumeric)) {
     return arr.sort(function(a, b) {
       return parseFloat(a, 10) - parseFloat(b, 10);
     });
+  } else {
+    return arr.sort();
   }
 }
