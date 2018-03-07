@@ -24,18 +24,27 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockInterpreter1 extends Interpreter {
 
+	private static AtomicInteger IdGenerator = new AtomicInteger();
+
+	private int object_id;
+	private String pid;
 	Map<String, Object> vars = new HashMap<>();
 
 	public MockInterpreter1(Properties property) {
 		super(property);
+		this.object_id = IdGenerator.getAndIncrement();
+		this.pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 	}
+
 	boolean open;
 
 
@@ -60,7 +69,7 @@ public class MockInterpreter1 extends Interpreter {
 
 		if ("getId".equals(st)) {
 			// get unique id of this interpreter instance
-			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.object_id + "-" + this.pid);
 		} else if (st.startsWith("sleep")) {
 			try {
 				Thread.sleep(Integer.parseInt(st.split(" ")[1]));
