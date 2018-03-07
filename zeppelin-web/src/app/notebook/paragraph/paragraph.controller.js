@@ -707,9 +707,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.dirtyText = dirtyText;
     if ($scope.dirtyText !== $scope.originalText) {
       if ($scope.collaborativeMode) {
-        $scope.sendPatch()
+        $scope.sendPatch();
       } else {
-        $scope.startSaveTimer()
+        $scope.startSaveTimer();
       }
     }
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
@@ -1209,7 +1209,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   const patchParagraph = function(paragraph, patch) {
     const id = paragraph.id;
     return websocketMsgSrv.patchParagraph(id, $route.current.pathParams.noteId, patch);
-  }
+  };
 
   /** Utility function */
   $scope.goToSingleParagraph = function() {
@@ -1530,7 +1530,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.$on('updateProgress', function (event, data) {
+  $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
     }

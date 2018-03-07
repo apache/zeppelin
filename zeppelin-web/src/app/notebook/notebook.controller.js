@@ -1250,11 +1250,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.saveCursorPosition(paragraph);
   });
 
-  $scope.$on('collaborativeModeStatus', function (event, data) {
+  $scope.$on('collaborativeModeStatus', function(event, data) {
     $scope.collaborativeMode = Boolean(data.status);
   });
 
-  $scope.$on('patchReceived', function (event, data) {
+  $scope.$on('patchReceived', function(event, data) {
     $scope.collaborativeMode = true;
   });
 
