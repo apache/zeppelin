@@ -61,7 +61,7 @@ class PyZeppelinContext(object):
     self._setup_matplotlib()
 
   def getInterpreterContext(self):
-    return self.z.getCurrentInterpreterContext()
+    return self.z.getInterpreterContext()
 
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)

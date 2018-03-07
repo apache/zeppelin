@@ -24,21 +24,27 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class SparkRInterpreterTest {
 
   private SparkRInterpreter sparkRInterpreter;
   private SparkInterpreter sparkInterpreter;
-
+  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
   @Test
   public void testSparkRInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -60,10 +66,13 @@ public class SparkRInterpreterTest {
     sparkInterpreter.setInterpreterGroup(interpreterGroup);
 
     sparkRInterpreter.open();
+    sparkInterpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
 
     InterpreterResult result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("2"));
+    // spark web url is sent
+    verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
     result = sparkRInterpreter.interpret("sparkR.version()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -72,16 +81,20 @@ public class SparkRInterpreterTest {
       result = sparkRInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
+      // spark job url is sent
+      verify(mockRemoteEventClient, atLeastOnce()).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
     } else {
       // spark 1.x
       result = sparkRInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
+      // spark job url is sent
+      verify(mockRemoteEventClient, atLeastOnce()).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
     }
   }
 
   private InterpreterContext getInterpreterContext() {
-    return new InterpreterContext(
+    InterpreterContext context = new InterpreterContext(
         "noteId",
         "paragraphId",
         "replName",
@@ -95,5 +108,7 @@ public class SparkRInterpreterTest {
         null,
         null,
         null);
+    context.setClient(mockRemoteEventClient);
+    return context;
   }
 }

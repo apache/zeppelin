@@ -20,6 +20,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
@@ -44,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implements JobListenerFactory {
@@ -229,8 +231,13 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
-    Interpreter intp = p1.getBindedInterpreter();
-    assertEquals(intp, null);
+    Interpreter intp = null;
+    try {
+      intp = p1.getBindedInterpreter();
+      fail("Should throw InterpreterNotFoundException");
+    } catch (InterpreterNotFoundException e) {
+
+    }
 
     // Unbind all interpreter from note
     // NullPointerException shouldn't occur here

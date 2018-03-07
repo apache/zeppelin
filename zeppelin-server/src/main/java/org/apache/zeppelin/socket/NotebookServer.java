@@ -890,7 +890,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
-      Message fromMessage) throws SchedulerException, IOException {
+      Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -908,6 +908,11 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     if (note != null) {
+      if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
+        if (config.get("cron") != null) {
+          config.remove("cron");
+        }
+      }
       boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
       note.setConfig(config);
@@ -971,6 +976,7 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setName(name);
+      note.setCronSupported(notebook.getConf());
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
@@ -1061,6 +1067,7 @@ public class NotebookServer extends WebSocketServlet
           noteName = "Note " + note.getId();
         }
         note.setName(noteName);
+        note.setCronSupported(notebook.getConf());
       }
 
       note.persist(subject);
@@ -1771,7 +1778,7 @@ public class NotebookServer extends WebSocketServlet
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
-      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+      if (p.isEnabled() && !persistAndExecuteSingleParagraph(conn, note, p, true)) {
         // stop execution when one paragraph fails.
         break;
       }
@@ -2490,7 +2497,12 @@ public class NotebookServer extends WebSocketServlet
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
     Interpreter interpreter =
-        notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+        null;
+    try {
+      interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+    } catch (InterpreterNotFoundException e) {
+      throw new IOException("Fail to get interpreter: " + replName, e);
+    }
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
     resp.put("collaborativeModeStatus", collaborativeModeList.get(noteId));

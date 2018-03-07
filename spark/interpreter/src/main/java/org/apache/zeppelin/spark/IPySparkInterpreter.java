@@ -23,6 +23,7 @@ import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
@@ -96,6 +97,16 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   @Override
   public BaseZeppelinContext buildZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
+  }
+
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    InterpreterContext.set(context);
+    sparkInterpreter.populateSparkWebUrl(context);
+    String jobGroupId = Utils.buildJobGroupId(context);
+    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
+    return super.interpret(setJobGroupStmt +"\n" + st, context);
   }
 
   @Override

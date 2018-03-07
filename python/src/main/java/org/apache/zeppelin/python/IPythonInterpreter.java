@@ -143,10 +143,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       int jvmGatewayPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       LOGGER.info("Launching IPython Kernel at port: " + ipythonPort);
       LOGGER.info("Launching JVM Gateway at port: " + jvmGatewayPort);
-      int framesize = Integer.parseInt(getProperty("zeppelin.ipython.grpc.framesize",
+      int message_size = Integer.parseInt(getProperty("zeppelin.ipython.grpc.message_size",
           32 * 1024 * 1024 + ""));
       ipythonClient = new IPythonClient(ManagedChannelBuilder.forAddress("127.0.0.1", ipythonPort)
-          .usePlaintext(true).maxInboundMessageSize(framesize));
+          .usePlaintext(true).maxInboundMessageSize(message_size));
       launchIPythonKernel(ipythonPort);
       setupJVMGateway(jvmGatewayPort);
     } catch (Exception e) {
