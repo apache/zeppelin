@@ -77,11 +77,11 @@
     <module>alluxio</module>
     <module>scio</module>
     <module>neo4j</module>
+    <module>sap</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-distribution</module>
-    <module>sap</module>
   </modules>
 
   <properties>
