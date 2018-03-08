@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -118,6 +120,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
     this.restTemplate = createRestTemplate();
+    this.restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     if (!StringUtils.isBlank(property.getProperty("zeppelin.livy.http.headers"))) {
       String[] headers = property.getProperty("zeppelin.livy.http.headers").split(";");
       for (String header : headers) {
