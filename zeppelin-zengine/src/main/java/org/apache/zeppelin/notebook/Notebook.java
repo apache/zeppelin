@@ -211,7 +211,7 @@ public class Notebook implements NoteEventListener {
       newNote.setCronSupported(getConf());
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
-        newNote.addCloneParagraph(p);
+        newNote.addCloneParagraph(p, subject);
       }
 
       notebookAuthorization.setNewNotePermissions(newNote.getId(), subject);
@@ -252,7 +252,7 @@ public class Notebook implements NoteEventListener {
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
-      newNote.addCloneParagraph(p);
+      newNote.addCloneParagraph(p, subject);
     }
 
     noteSearchService.addIndexDoc(newNote);
