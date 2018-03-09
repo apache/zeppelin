@@ -163,7 +163,7 @@
             <configuration>
               <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}"
-                  spawn="true">
+                  spawn="false">
                   <arg value="start"/>
                 </exec>
               </target>
