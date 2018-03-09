@@ -19,7 +19,7 @@
     "dev:watch": "grunt watch-webpack-dev",
     "dev": "npm-run-all --parallel dev:server lint:watch dev:watch",
     "test:watch": "karma start karma.conf.js --single-run=false",
-    "pree2e": "webdriver-manager update --gecko false --versions.chrome=2.30",
+    "pree2e": "webdriver-manager update --gecko false --versions.chrome=2.35",
     "e2e": "protractor protractor.conf.js",
     "pretest": "npm rebuild phantomjs-prebuilt",
     "test": "karma start karma.conf.js"
