@@ -1233,7 +1233,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, onParagraphCreate.get());
 
-    note1.addCloneParagraph(p1);
+    note1.addCloneParagraph(p1, AuthenticationInfo.ANONYMOUS);
     assertEquals(2, onParagraphCreate.get());
 
     note1.removeParagraph(anonymous.getUser(), p1.getId());
@@ -1400,6 +1400,27 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     ZeppelinConfiguration.create();
+  }
+  
+  @Test
+  public void testCloneImportCheck() throws IOException {
+    Note sourceNote = notebook.createNote(new AuthenticationInfo("user"));
+    sourceNote.setName("TestNote");
+    
+    assertEquals("TestNote",sourceNote.getName());
+
+    Paragraph sourceParagraph = sourceNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    assertEquals("anonymous", sourceParagraph.getUser());
+
+    Note destNote = notebook.createNote(new AuthenticationInfo("user"));
+    destNote.setName("ClonedNote");
+    assertEquals("ClonedNote",destNote.getName());
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph p : paragraphs) {
+    	  destNote.addCloneParagraph(p, AuthenticationInfo.ANONYMOUS);
+      assertEquals("anonymous", p.getUser());
+    }
   }
 
   private void delete(File file){
