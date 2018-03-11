@@ -1723,7 +1723,7 @@ public class NotebookServer extends WebSocketServlet
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
-      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+      if (p.isEnabled() && !persistAndExecuteSingleParagraph(conn, note, p, true)) {
         // stop execution when one paragraph fails.
         break;
       }

@@ -362,7 +362,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    *
    * @param srcParagraph source paragraph
    */
-  void addCloneParagraph(Paragraph srcParagraph) {
+  void addCloneParagraph(Paragraph srcParagraph, AuthenticationInfo subject) {
 
     // Keep paragraph original ID
     final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
@@ -371,11 +371,17 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     Map<String, Object> param = srcParagraph.settings.getParams();
     LinkedHashMap<String, Input> form = srcParagraph.settings.getForms();
 
+    logger.debug("srcParagraph user: " + srcParagraph.getUser());
+    
+    newParagraph.setAuthenticationInfo(subject);
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
+    
+    logger.debug("newParagraph user: " + newParagraph.getUser());
+
 
     try {
       Gson gson = new Gson();
