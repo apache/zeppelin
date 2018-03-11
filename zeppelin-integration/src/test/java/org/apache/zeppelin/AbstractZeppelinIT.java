@@ -18,6 +18,8 @@
 package org.apache.zeppelin;
 
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -171,6 +173,50 @@ abstract public class AbstractZeppelinIT {
     LOG.info("Waiting for the main page (" + mainPage + ")...");
     wait.until(ExpectedConditions.urlToBe(mainPage));
     LOG.info("Logout successful!");
+  }
+
+  protected void restartPythonInterpreter() {
+    clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
+    clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
+    clickAndWait(By.xpath("//div[@class='modal-dialog']" +
+        "[contains(.,'Do you want to restart python interpreter?')]" +
+        "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
+    By locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
+    LOG.info("Holding on until if interpreter restart dialog is disappeared");
+    boolean invisibilityStatus;
+    ZeppelinITUtils.turnOffImplicitWaits(driver);
+    try {
+      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    } finally {
+      ZeppelinITUtils.turnOnImplicitWaits(driver);
+    }
+    assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
+    locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
+    WebElement element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+        .until(ExpectedConditions.visibilityOfElementLocated(locator));
+    if (element.isDisplayed()) {
+      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
+    }
+  }
+
+  protected void restartThisInterpreter() {
+    clickAndWait(By.xpath("//div[contains(@id, 'python')]" +
+        "//button[contains(@ng-click, 'restartInterpreterSetting(setting.id)')]"));
+    clickAndWait(By.xpath("//div[@class='modal-dialog']" +
+        "[contains(.,'Do you want to restart this interpreter?')]" +
+        "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
+    By locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
+    LOG.info("Holding on until if interpreter restart dialog is disappeared");
+    boolean invisibilityStatus;
+    ZeppelinITUtils.turnOffImplicitWaits(driver);
+    try {
+      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
+          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    } finally {
+      ZeppelinITUtils.turnOnImplicitWaits(driver);
+    }
+    assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
   }
 
   protected void createNewNote() {

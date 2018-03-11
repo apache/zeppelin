@@ -41,9 +41,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -72,9 +69,36 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   static String interpreterOptionPath = "";
   static String originalInterpreterOption = "";
 
-  static String cmdPsPython = "ps aux | grep 'zeppelin_ipython' | grep -v 'grep' | wc -l";
-  static String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
-      " sed -E '/grep|local-repo/d' | wc -l";
+  private void checkProcessCount(final int python, final int interpreter) {
+    final String cmdPsPython = "ps aux | grep 'zeppelin_ipython' | grep -v 'grep' | wc -l";
+    final String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
+        " sed -E '/grep|local-repo/d' | wc -l";
+    final long deadline = System.nanoTime() + 10000000000L;
+    final String pythonExpected = Integer.toString(python);
+    final String interpreterExpected = Integer.toString(interpreter);
+    String pythonActual = "";
+    String interpreterActual = "";
+    while (System.nanoTime() < deadline) {
+      pythonActual = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      pythonActual = pythonActual.trim().replaceAll("\n", "");
+      interpreterActual = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
+          false, ProcessData.Types_Of_Data.OUTPUT);
+      interpreterActual = interpreterActual.trim().replaceAll("\n", "");
+      if (pythonActual.equals(pythonExpected) &&
+          interpreterActual.equals(interpreterExpected)) {
+        break;
+      }
+    }
+    collector.checkThat(
+        "The number of python process is",
+        pythonActual,
+        CoreMatchers.equalTo(pythonExpected));
+    collector.checkThat(
+        "The number of python interpreter process is",
+        interpreterActual,
+        CoreMatchers.equalTo(interpreterExpected));
+  }
 
   @BeforeClass
   public static void startUp() {
@@ -183,14 +207,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
 
       logoutUser("user1");
 
@@ -214,14 +231,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           driver.findElement(By.xpath(
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
       logoutUser("user2");
 
       //step 4: (user1) login, come back note user1 made, run second paragraph, check result, check process,
@@ -246,41 +256,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         collector.checkThat("Exception in InterpreterModeActionsIT while running Python Paragraph",
             "ERROR", CoreMatchers.equalTo("FINISHED"));
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
-
-      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart python interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not testGloballyAction");
-      boolean invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      checkProcessCount(1, 1);
+      restartPythonInterpreter();
+      checkProcessCount(0, 0);
       logoutUser("user1");
     } catch (Exception e) {
       handleException("Exception in InterpreterModeActionsIT while testGloballyAction ", e);
@@ -341,14 +319,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
       logoutUser("user1");
 
       //step 3: (user2) login, create a new note, run two paragraph with 'python', check result, check process, logout
@@ -373,15 +344,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("2"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      interpreterModeActionsIT.logoutUser("user2");
+      checkProcessCount(1, 1);
 
       //step 4: (user1) login, come back note user1 made, run second paragraph, check result,
       //                restart python interpreter in note, check process again, logout
@@ -409,33 +372,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart python interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
-      boolean invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      }
+      restartPythonInterpreter();
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
       logoutUser("user1");
 
       //step 5: (user2) login, come back note user2 made, restart python interpreter in note, check process, logout
@@ -449,33 +388,10 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
-      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart python interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
-      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      }
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      restartPythonInterpreter();
+      checkProcessCount(0, 0);
+
       logoutUser("user2");
 
       //step 6: (user1) login, come back note user1 made, run first paragraph,logout
@@ -517,14 +433,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         collector.checkThat("Exception in InterpreterModeActionsIT while running Python Paragraph",
             "ERROR", CoreMatchers.equalTo("FINISHED"));
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("2"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(2, 1);
       logoutUser("user2");
 
       //step 7: (admin) login, restart python interpreter in interpreter tab, check process, logout
@@ -539,27 +448,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
 
-      clickAndWait(By.xpath("//div[contains(@id, 'python')]" +
-          "//button[contains(@ng-click, 'restartInterpreterSetting(setting.id)')]"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart this interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserScopedAction");
-      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
+      restartThisInterpreter();
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      checkProcessCount(0, 0);
 
       logoutUser("admin");
 
@@ -617,14 +508,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      String resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
       logoutUser("user1");
 
       //step 3: (user2) login, create a new note, run two paragraph with 'python', check result, check process, logout
@@ -650,14 +534,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user2"));
 
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("2"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("2"));
+      checkProcessCount(2, 2);
       logoutUser("user2");
 
       //step 4: (user1) login, come back note user1 made, run second paragraph, check result,
@@ -686,34 +563,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
               getParagraphXPath(2) + "//div[contains(@class, 'text plainTextContent')]")).getText(),
           CoreMatchers.equalTo("user1"));
 
-      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart python interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
+      restartPythonInterpreter();
 
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
-      boolean invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      }
-
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("1"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("1"));
+      checkProcessCount(1, 1);
       logoutUser("user1");
 
       //step 5: (user2) login, come back note user2 made, restart python interpreter in note, check process, logout
@@ -727,34 +579,9 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
             MAX_BROWSER_TIMEOUT_SEC).click();
       }
-      clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      clickAndWait(By.xpath("//div[@data-ng-repeat='item in interpreterBindings' and contains(., 'python')]//a"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart python interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
 
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
-      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-      locator = By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        clickAndWait(By.xpath("//*[@id='actionbar']//span[contains(@uib-tooltip, 'Interpreter binding')]"));
-      }
-
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      restartPythonInterpreter();
+      checkProcessCount(0, 0);
       logoutUser("user2");
 
       //step 6: (user1) login, come back note user1 made, run first paragraph,logout
@@ -796,14 +623,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
         collector.checkThat("Exception in InterpreterModeActionsIT while running Python Paragraph",
             "ERROR", CoreMatchers.equalTo("FINISHED"));
       }
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("2"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("2"));
+      checkProcessCount(2, 2);
       logoutUser("user2");
 
       //step 7: (admin) login, restart python interpreter in interpreter tab, check process, logout
@@ -818,27 +638,8 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
           MAX_BROWSER_TIMEOUT_SEC).sendKeys("python");
       ZeppelinITUtils.sleep(500, false);
 
-      clickAndWait(By.xpath("//div[contains(@id, 'python')]" +
-          "//button[contains(@ng-click, 'restartInterpreterSetting(setting.id)')]"));
-      clickAndWait(By.xpath("//div[@class='modal-dialog']" +
-          "[contains(.,'Do you want to restart this interpreter?')]" +
-          "//div[@class='bootstrap-dialog-footer-buttons']//button[contains(., 'OK')]"));
-      locator = By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to restart python interpreter?')]");
-      LOG.info("Holding on until if interpreter restart dialog is disappeared or not in testPerUserIsolatedAction");
-      invisibilityStatus = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.invisibilityOfElementLocated(locator));
-      if (invisibilityStatus == false) {
-        assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
-      }
-
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsPython,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python process is", resultProcessNum, CoreMatchers.equalTo("0"));
-      resultProcessNum = (String) CommandExecutor.executeCommandLocalHost(cmdPsInterpreter,
-          false, ProcessData.Types_Of_Data.OUTPUT);
-      resultProcessNum = resultProcessNum.trim().replaceAll("\n", "");
-      collector.checkThat("The number of python interpreter process is", resultProcessNum, CoreMatchers.equalTo("0"));
+      restartThisInterpreter();
+      checkProcessCount(0, 0);
       logoutUser("admin");
     } catch (Exception e) {
       handleException("Exception in InterpreterModeActionsIT while testPerUserIsolatedAction ", e);
