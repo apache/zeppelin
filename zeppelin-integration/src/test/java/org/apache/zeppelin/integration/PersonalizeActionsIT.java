@@ -137,13 +137,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       // step 2 : (user1) make sure it is on personalized mode and 'Before' in result of paragraph
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
-      wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(noteId);
       collector.checkThat("The personalized mode enables",
           driver.findElement(By.xpath("//*[@id='actionbar']" +
               "//button[contains(@class, 'btn btn-default btn-xs ng-scope ng-hide')]")).getAttribute("uib-tooltip"),
@@ -157,11 +151,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       // step 3 : (admin) change paragraph contents to 'After' and check result of paragraph
       authenticationUser("admin", "password1");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(noteId);
       waitForParagraph(1, "FINISHED");
       personalizeActionsIT.setParagraphText("After");
       collector.checkThat("The output field paragraph contains",
@@ -171,11 +161,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       // step 4 : (user1) check whether result is 'Before' or not
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"), MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(noteId);
       collector.checkThat("The output field paragraph contains",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'markdown-body')]")).getText(),
           CoreMatchers.equalTo("Before"));
@@ -228,12 +214,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       // step 2 : (user1) make sure it is on personalized mode and active graph is 'Bar chart',
       // try to change active graph to 'Table' and then check result
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(noteId);
       collector.checkThat("The personalized mode enables",
           driver.findElement(By.xpath("//*[@id='actionbar']" +
               "//button[contains(@class, 'btn btn-default btn-xs ng-scope ng-hide')]")).getAttribute("uib-tooltip"),
@@ -294,12 +275,7 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
       // step 2 : (user1) make sure it is on personalized mode and  dynamic form value is 'Before',
       // try to change dynamic form value to 'After' and then check result
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
-      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(noteId);
       collector.checkThat("The personalized mode enables",
           driver.findElement(By.xpath("//*[@id='actionbar']" +
               "//button[contains(@class, 'btn btn-default btn-xs ng-scope ng-hide')]")).getAttribute("uib-tooltip"),

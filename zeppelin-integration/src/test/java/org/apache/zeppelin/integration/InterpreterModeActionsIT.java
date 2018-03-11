@@ -16,10 +16,14 @@
  */
 package org.apache.zeppelin.integration;
 
+import com.google.common.base.Function;
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.CommandExecutor;
 import org.apache.zeppelin.ProcessData;
-import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.apache.zeppelin.ZeppelinITUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -30,19 +34,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.commons.io.FileUtils;
-import java.io.File;
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
 
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
@@ -240,13 +239,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user1noteId);
       waitForParagraph(2, "FINISHED");
       runParagraph(2);
       try {
@@ -352,13 +345,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user1noteId);
       runParagraph(2);
       try {
         waitForParagraph(2, "FINISHED");
@@ -381,13 +368,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is '0'
       //System: Check if the number of python process is '0'
       authenticationUser("user2", "password3");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user2noteId);
 
       restartPythonInterpreter();
       checkProcessCount(0, 0);
@@ -399,13 +380,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python process is '2'
       //System: Check if the number of python interpreter process is '1'
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user1noteId);
       waitForParagraph(1, "FINISHED");
       runParagraph(1);
       try {
@@ -418,13 +393,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       logoutUser("user1");
 
       authenticationUser("user2", "password3");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user2noteId);
       runParagraph(1);
       try {
         waitForParagraph(1, "FINISHED");
@@ -543,13 +512,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is '1'
       //System: Check if the number of python process is '1'
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user1noteId);
       runParagraph(2);
       try {
         waitForParagraph(2, "FINISHED");
@@ -572,13 +535,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python interpreter process is '0'
       //System: Check if the number of python process is '0'
       authenticationUser("user2", "password3");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user2noteId);
 
       restartPythonInterpreter();
       checkProcessCount(0, 0);
@@ -589,13 +546,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       //System: Check if the number of python process is '2'
       //System: Check if the number of python interpreter process is '2'
       authenticationUser("user1", "password2");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user1noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user1noteId);
       waitForParagraph(1, "FINISHED");
       runParagraph(1);
       try {
@@ -608,13 +559,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       logoutUser("user1");
 
       authenticationUser("user2", "password3");
-      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]");
-      element = (new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC))
-          .until(ExpectedConditions.visibilityOfElementLocated(locator));
-      if (element.isDisplayed()) {
-        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + user2noteId + "')]"),
-            MAX_BROWSER_TIMEOUT_SEC).click();
-      }
+      goToNote(user2noteId);
       runParagraph(1);
       try {
         waitForParagraph(1, "FINISHED");

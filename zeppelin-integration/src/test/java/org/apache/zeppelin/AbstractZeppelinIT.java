@@ -219,6 +219,35 @@ abstract public class AbstractZeppelinIT {
     assertTrue("interpreter setting dialog visibility status", invisibilityStatus);
   }
 
+  protected static Object js(final WebDriver driver, final String script, final Object... args) {
+    return ((JavascriptExecutor)driver).executeScript(script, args);
+  }
+
+  protected void goToNote(final String noteId) {
+    final WebDriverWait wait = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    final By linkLocator = By.xpath(
+        "//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
+    wait.until(new Function<WebDriver, WebElement>() {
+      @Override
+      public WebElement apply(final WebDriver driver) {
+        ZeppelinITUtils.turnOffImplicitWaits(driver);
+        try {
+          final WebElement link = ExpectedConditions.elementToBeClickable(
+              linkLocator).apply(driver);
+          if (link == null) {
+            // Scroll down to trigger async page loading.
+            js(driver, "window.scrollBy(0, document.body.scrollHeight)");
+            // FIXME: deal with load without race conditions
+            ZeppelinITUtils.sleep(1000, false);
+          }
+          return link;
+        } finally {
+          ZeppelinITUtils.turnOnImplicitWaits(driver);
+        }
+      }
+    }).click();
+  }
+
   protected void createNewNote() {
     clickAndWait(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new" +
         " note')]"));
