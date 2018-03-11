@@ -22,6 +22,9 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -52,50 +55,60 @@ public class WebDriverManager {
 
   private static String GECKODRIVER_VERSION = "0.19.1";
 
+  private static WebDriver getFirefoxWebDriver() {
+    try {
+      FirefoxBinary ffox = new FirefoxBinary();
+      if ("true".equals(System.getenv("TRAVIS"))) {
+        ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
+        // run with DISPLAY 99
+      }
+      int firefoxVersion = WebDriverManager.getFirefoxVersion(ffox);
+      LOG.info("Firefox version " + firefoxVersion + " detected");
+      if (firefoxVersion >= 55) {
+        LOG.info("Not using Firefox, since it is not supported by Selenium");
+        LOG.info("See https://seleniumhq.wordpress.com/2017/08/09/firefox-55-and-selenium-ide/");
+        return null;
+      }
+
+      downLoadsDir = FileUtils.getTempDirectory().toString();
+
+      String tempPath = downLoadsDir + "/firefox/";
+
+      downloadGeekoDriver(firefoxVersion, tempPath);
+
+      FirefoxProfile profile = new FirefoxProfile();
+      profile.setPreference("browser.download.folderList", 2);
+      profile.setPreference("browser.download.dir", downLoadsDir);
+      profile.setPreference("browser.helperApps.alwaysAsk.force", false);
+      profile.setPreference("browser.download.manager.showWhenStarting", false);
+      profile.setPreference("browser.download.manager.showAlertOnComplete", false);
+      profile.setPreference("browser.download.manager.closeWhenDone", true);
+      profile.setPreference("app.update.auto", false);
+      profile.setPreference("app.update.enabled", false);
+      profile.setPreference("dom.max_script_run_time", 0);
+      profile.setPreference("dom.max_chrome_script_run_time", 0);
+      profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
+          "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
+      profile.setPreference("network.proxy.type", 0);
+
+      System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
+      System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, "false");
+
+      FirefoxOptions firefoxOptions = new FirefoxOptions();
+      firefoxOptions.setBinary(ffox);
+      firefoxOptions.setProfile(profile);
+      return new FirefoxDriver(firefoxOptions);
+    } catch (Exception e) {
+      LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
+      return null;
+    }
+  }
+
   public static WebDriver getWebDriver() {
     WebDriver driver = null;
 
     if (driver == null) {
-      try {
-        FirefoxBinary ffox = new FirefoxBinary();
-        if ("true".equals(System.getenv("TRAVIS"))) {
-          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
-          // run with DISPLAY 99
-        }
-        int firefoxVersion = WebDriverManager.getFirefoxVersion();
-        LOG.info("Firefox version " + firefoxVersion + " detected");
-
-        downLoadsDir = FileUtils.getTempDirectory().toString();
-
-        String tempPath = downLoadsDir + "/firefox/";
-
-        downloadGeekoDriver(firefoxVersion, tempPath);
-
-        FirefoxProfile profile = new FirefoxProfile();
-        profile.setPreference("browser.download.folderList", 2);
-        profile.setPreference("browser.download.dir", downLoadsDir);
-        profile.setPreference("browser.helperApps.alwaysAsk.force", false);
-        profile.setPreference("browser.download.manager.showWhenStarting", false);
-        profile.setPreference("browser.download.manager.showAlertOnComplete", false);
-        profile.setPreference("browser.download.manager.closeWhenDone", true);
-        profile.setPreference("app.update.auto", false);
-        profile.setPreference("app.update.enabled", false);
-        profile.setPreference("dom.max_script_run_time", 0);
-        profile.setPreference("dom.max_chrome_script_run_time", 0);
-        profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
-            "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
-        profile.setPreference("network.proxy.type", 0);
-
-        System.setProperty(GeckoDriverService.GECKO_DRIVER_EXE_PROPERTY, tempPath + "geckodriver");
-        System.setProperty(SystemProperty.DRIVER_USE_MARIONETTE, "false");
-
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
-        firefoxOptions.setBinary(ffox);
-        firefoxOptions.setProfile(profile);
-        driver = new FirefoxDriver(firefoxOptions);
-      } catch (Exception e) {
-        LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
-      }
+      driver = getFirefoxWebDriver();
     }
 
     if (driver == null) {
@@ -197,12 +210,9 @@ public class WebDriverManager {
     LOG.info("Download of Geeko version: " + firefoxVersion + ", successful");
   }
 
-  public static int getFirefoxVersion() {
+  public static int getFirefoxVersion(FirefoxBinary ffox) {
     try {
-      String firefoxVersionCmd = "firefox -v";
-      if (System.getProperty("os.name").startsWith("Mac OS")) {
-        firefoxVersionCmd = "/Applications/Firefox.app/Contents/MacOS/" + firefoxVersionCmd;
-      }
+      String firefoxVersionCmd = ffox.toJson().replace(" ", "\\ ") + " -v";
       String versionString = (String) CommandExecutor
           .executeCommandLocalHost(firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
       return Integer
