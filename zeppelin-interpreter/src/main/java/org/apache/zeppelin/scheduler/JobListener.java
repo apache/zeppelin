@@ -18,12 +18,10 @@
 package org.apache.zeppelin.scheduler;
 
 /**
- * TODO(moon) : add description.
+ * Listener for job execution.
  */
 public interface JobListener {
   void onProgressUpdate(Job job, int progress);
 
-  void beforeStatusChange(Job job, Job.Status before, Job.Status after);
-
-  void afterStatusChange(Job job, Job.Status before, Job.Status after);
+  void onStatusChange(Job job, Job.Status before, Job.Status after);
 }

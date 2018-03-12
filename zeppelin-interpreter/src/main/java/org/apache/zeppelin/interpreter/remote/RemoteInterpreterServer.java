@@ -513,11 +513,7 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    public void beforeStatusChange(Job job, Status before, Status after) {
-    }
-
-    @Override
-    public void afterStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job job, Status before, Status after) {
       synchronized (this) {
         notifyAll();
       }

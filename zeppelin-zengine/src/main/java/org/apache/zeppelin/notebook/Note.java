@@ -912,23 +912,13 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public void setInfo(Map<String, Object> info) {
     this.info = info;
   }
-
+  
   @Override
-  public void beforeStatusChange(Job job, Status before, Status after) {
+  public void onStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.beforeStatusChange(job, before, after);
-      }
-    }
-  }
-
-  @Override
-  public void afterStatusChange(Job job, Status before, Status after) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.afterStatusChange(job, before, after);
+        listener.onStatusChange(job, before, after);
       }
     }
 

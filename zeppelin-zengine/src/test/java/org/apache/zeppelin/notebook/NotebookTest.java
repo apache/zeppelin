@@ -1460,11 +1460,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       }
 
       @Override
-      public void beforeStatusChange(Job job, Status before, Status after) {
-      }
-
-      @Override
-      public void afterStatusChange(Job job, Status before, Status after) {
+      public void onStatusChange(Job job, Status before, Status after) {
         if (afterStatusChangedListener != null) {
           afterStatusChangedListener.onStatusChanged(job, before, after);
         }
