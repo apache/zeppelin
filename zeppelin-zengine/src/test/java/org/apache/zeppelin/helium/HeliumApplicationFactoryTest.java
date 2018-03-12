@@ -322,12 +322,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
       }
 
       @Override
-      public void beforeStatusChange(Job job, Job.Status before, Job.Status after) {
-
-      }
-
-      @Override
-      public void afterStatusChange(Job job, Job.Status before, Job.Status after) {
+      public void onStatusChange(Job job, Job.Status before, Job.Status after) {
 
       }
     };
