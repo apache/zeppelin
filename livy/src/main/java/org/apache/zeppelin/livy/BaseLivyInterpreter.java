@@ -120,7 +120,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
     this.restTemplate = createRestTemplate();
-    this.restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     if (!StringUtils.isBlank(property.getProperty("zeppelin.livy.http.headers"))) {
       String[] headers = property.getProperty("zeppelin.livy.http.headers").split(";");
       for (String header : headers) {
@@ -656,18 +655,24 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
 
+    
+    RestTemplate restTemplate = null;
     if (isSpnegoEnabled) {
       if (httpClient == null) {
-        return new KerberosRestTemplate(keytabLocation, principal);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal);
       } else {
-        return new KerberosRestTemplate(keytabLocation, principal, httpClient);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal, httpClient);
       }
     }
     if (httpClient == null) {
-      return new RestTemplate();
+      restTemplate = new RestTemplate();
     } else {
-      return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
+      restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
+    if (null != restTemplate) {
+      restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    }
+    return restTemplate;
   }
 
   private String callRestAPI(String targetURL, String method) throws LivyException {
