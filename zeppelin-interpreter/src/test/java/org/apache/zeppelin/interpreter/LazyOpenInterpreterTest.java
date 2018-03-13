@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -51,8 +51,8 @@ public class LazyOpenInterpreterTest {
   @Test
   public void testPropertyWithReplacedContextFields() throws InterpreterException {
     Properties p = new Properties();
-    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, #{replName}, #{noteId}, #{user}," +
-            " #{authenticationInfo}");
+    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}," +
+        " #{replName}, #{noteId}, #{user}, #{authenticationInfo}");
     String noteId = "testNoteId";
     String paragraphTitle = "testParagraphTitle";
     String paragraphText = "testParagraphText";
@@ -86,8 +86,8 @@ public class LazyOpenInterpreterTest {
     InterpreterContext.remove();
 
     assertEquals(
-            String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , %s, %s, #{authenticationInfo}", noteId,
-                    noteId, user),
+            String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, ," +
+                    " %s, %s, #{authenticationInfo}", noteId, noteId, user),
             actual
     );
   }

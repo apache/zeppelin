@@ -19,7 +19,6 @@ package org.apache.zeppelin.interpreter;
 
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -28,9 +27,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
