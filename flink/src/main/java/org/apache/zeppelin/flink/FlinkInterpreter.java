@@ -383,7 +383,7 @@ public class FlinkInterpreter extends Interpreter {
       localFlinkCluster = new LocalFlinkMiniCluster(flinkConf,
               HighAvailabilityServicesUtils.createHighAvailabilityServices(flinkConf,
               org.apache.flink.runtime.concurrent.Executors.directExecutor(),
-              HighAvailabilityServicesUtils.AddressResolution.NO_ADDRESS_RESOLUTION),false);
+              HighAvailabilityServicesUtils.AddressResolution.NO_ADDRESS_RESOLUTION), false);
       localFlinkCluster.start(true);
     } catch (Exception e){
       throw new RuntimeException("Could not start Flink mini cluster.", e);
