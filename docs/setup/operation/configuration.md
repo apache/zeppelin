@@ -27,7 +27,7 @@ limitations under the License.
 There are two locations you can configure Apache Zeppelin.
 
 * **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
-* **Java properties** can ba defined in `conf/zeppelin-site.xml`.
+* **Java properties** can be defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
 > Mouse hover on each property and click <i class="fa fa-link fa-flip-horizontal"></i> then you can get a link for that.
@@ -329,6 +329,30 @@ If both are defined, then the **environment variables** will take priority.
     <td>false</td>
     <td>Enable directory listings on server.</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.url</h6></td>
+    <td></td>
+    <td>GitHub's repository URL. It could be either the HTTP URL or the SSH URL. For example git@github.com:apache/zeppelin.git</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.username</h6></td>
+    <td>token</td>
+    <td>GitHub username. By default it is `token` to use GitHub's API</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.access-token</h6></td>
+    <td>token</td>
+    <td>GitHub access token to use GitHub's API. If username/password combination is used and not GitHub API, then this value is the password</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.origin</h6></td>
+    <td>token</td>
+    <td>GitHub remote name. Default is `origin`</td>
+  </tr>
 </table>
 
 
@@ -431,7 +455,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 
 ### Storing user credentials
 
-In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
+In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
 
 Please notice that passwords will be stored in *plain text* by default. To encrypt the passwords, use the ZEPPELIN_CREDENTIALS_ENCRYPT_KEY config variable. This will encrypt passwords using the AES-128 algorithm.
 
@@ -473,5 +497,9 @@ update your configuration with the obfuscated password :
 </property>
 ```
 
+### Create GitHub Access Token
+
+When using GitHub to track notebooks, one can use GitHub's API for authentication. To create an access token, please use the following link https://github.com/settings/tokens.
+The value of the access token generated is set in the `zeppelin.notebook.git.remote.access-token` property.
 
 **Note:** After updating these configurations, Zeppelin server needs to be restarted.

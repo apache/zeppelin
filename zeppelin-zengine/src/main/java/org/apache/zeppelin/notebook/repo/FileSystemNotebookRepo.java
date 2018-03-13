@@ -8,6 +8,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -37,139 +38,51 @@ import java.util.Map;
 public class FileSystemNotebookRepo implements NotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemNotebookRepo.class);
 
-  private Configuration hadoopConf;
-  private ZeppelinConfiguration zConf;
-  private boolean isSecurityEnabled = false;
-  private FileSystem fs;
+  private FileSystemStorage fs;
   private Path notebookDir;
 
   public FileSystemNotebookRepo(ZeppelinConfiguration zConf) throws IOException {
-    this.zConf = zConf;
-    this.hadoopConf = new Configuration();
-
-    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
-    if (isSecurityEnabled) {
-      String keytab = zConf.getString(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
-      String principal = zConf.getString(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
-      if (StringUtils.isBlank(keytab) || StringUtils.isBlank(principal)) {
-        throw new IOException("keytab and principal can not be empty, keytab: " + keytab
-            + ", principal: " + principal);
-      }
-      UserGroupInformation.loginUserFromKeytab(principal, keytab);
-    }
-
-    try {
-      this.fs = FileSystem.get(new URI(zConf.getNotebookDir()), new Configuration());
-      LOGGER.info("Creating FileSystem: " + this.fs.getClass().getCanonicalName());
-      this.notebookDir = fs.makeQualified(new Path(zConf.getNotebookDir()));
-      LOGGER.info("Using folder {} to store notebook", notebookDir);
-    } catch (URISyntaxException e) {
-      throw new IOException(e);
-    }
-    if (!fs.exists(notebookDir)) {
-      fs.mkdirs(notebookDir);
-      LOGGER.info("Create notebook dir {} in hdfs", notebookDir.toString());
-    }
-    if (fs.isFile(notebookDir)) {
-      throw new IOException("notebookDir {} is file instead of directory, please remove it or " +
-          "specify another directory");
-    }
+    this.fs = new FileSystemStorage(zConf, zConf.getNotebookDir());
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
+        " for Zeppelin Notebook.");
+    this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
+    LOGGER.info("Using folder {} to store notebook", notebookDir);
+    this.fs.tryMkDir(notebookDir);
   }
 
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    return callHdfsOperation(new HdfsOperation<List<NoteInfo>>() {
-      @Override
-      public List<NoteInfo> call() throws IOException {
-        List<NoteInfo> noteInfos = new ArrayList<>();
-        for (FileStatus status : fs.globStatus(new Path(notebookDir, "*/note.json"))) {
-          NoteInfo noteInfo = new NoteInfo(status.getPath().getParent().getName(), "", null);
-          noteInfos.add(noteInfo);
-        }
-        return noteInfos;
-      }
-    });
+    List<Path> notePaths = fs.list(new Path(notebookDir, "*/note.json"));
+    List<NoteInfo> noteInfos = new ArrayList<>();
+    for (Path path : notePaths) {
+      NoteInfo noteInfo = new NoteInfo(path.getParent().getName(), "", null);
+      noteInfos.add(noteInfo);
+    }
+    return noteInfos;
   }
 
   @Override
   public Note get(final String noteId, AuthenticationInfo subject) throws IOException {
-    return callHdfsOperation(new HdfsOperation<Note>() {
-      @Override
-      public Note call() throws IOException {
-        Path notePath = new Path(notebookDir.toString() + "/" + noteId + "/note.json");
-        LOGGER.debug("Read note from file: " + notePath);
-        ByteArrayOutputStream noteBytes = new ByteArrayOutputStream();
-        IOUtils.copyBytes(fs.open(notePath), noteBytes, hadoopConf);
-        return Note.fromJson(new String(noteBytes.toString(
-            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING))));
-      }
-    });
+    String content = this.fs.readFile(
+        new Path(notebookDir.toString() + "/" + noteId + "/note.json"));
+    return Note.fromJson(content);
   }
 
   @Override
   public void save(final Note note, AuthenticationInfo subject) throws IOException {
-    callHdfsOperation(new HdfsOperation<Void>() {
-      @Override
-      public Void call() throws IOException {
-        Path notePath = new Path(notebookDir.toString() + "/" + note.getId() + "/note.json");
-        Path tmpNotePath = new Path(notebookDir.toString() + "/" + note.getId() + "/.note.json");
-        LOGGER.debug("Saving note to file: " + notePath);
-        if (fs.exists(tmpNotePath)) {
-          fs.delete(tmpNotePath, true);
-        }
-        InputStream in = new ByteArrayInputStream(note.toJson().getBytes(
-            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
-        IOUtils.copyBytes(in, fs.create(tmpNotePath), hadoopConf);
-        fs.delete(notePath, true);
-        fs.rename(tmpNotePath, notePath);
-        return null;
-      }
-    });
+    this.fs.writeFile(note.toJson(),
+        new Path(notebookDir.toString() + "/" + note.getId() + "/note.json"),
+        true);
   }
 
   @Override
   public void remove(final String noteId, AuthenticationInfo subject) throws IOException {
-    callHdfsOperation(new HdfsOperation<Void>() {
-      @Override
-      public Void call() throws IOException {
-        Path noteFolder = new Path(notebookDir.toString() + "/" + noteId);
-        fs.delete(noteFolder, true);
-        return null;
-      }
-    });
+    this.fs.delete(new Path(notebookDir.toString() + "/" + noteId));
   }
 
   @Override
   public void close() {
     LOGGER.warn("close is not implemented for HdfsNotebookRepo");
-  }
-
-  @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    LOGGER.warn("checkpoint is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
-    LOGGER.warn("get revId is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    LOGGER.warn("revisionHistory is not implemented for HdfsNotebookRepo");
-    return null;
-  }
-
-  @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException {
-    LOGGER.warn("setNoteRevision is not implemented for HdfsNotebookRepo");
-    return null;
   }
 
   @Override
@@ -183,25 +96,4 @@ public class FileSystemNotebookRepo implements NotebookRepo {
     LOGGER.warn("updateSettings is not implemented for HdfsNotebookRepo");
   }
 
-  private interface HdfsOperation<T> {
-    T call() throws IOException;
-  }
-
-  public synchronized <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
-    if (isSecurityEnabled) {
-      UserGroupInformation.getLoginUser().reloginFromKeytab();
-      try {
-        return UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<T>() {
-          @Override
-          public T run() throws Exception {
-            return func.call();
-          }
-        });
-      } catch (InterruptedException e) {
-        throw new IOException(e);
-      }
-    } else {
-      return func.call();
-    }
-  }
 }

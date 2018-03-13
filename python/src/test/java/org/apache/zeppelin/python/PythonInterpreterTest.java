@@ -93,7 +93,7 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
   }
 
   @After
-  public void afterTest() throws IOException {
+  public void afterTest() throws IOException, InterpreterException {
     pythonInterpreter.close();
   }
 
@@ -121,6 +121,12 @@ public class PythonInterpreterTest implements InterpreterOutputListener {
     assertEquals(InterpreterResult.Code.ERROR, pythonInterpreter.interpret(pyValidCode, context).code());
     assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyRestoreCode, context).code());
     assertEquals(InterpreterResult.Code.SUCCESS, pythonInterpreter.interpret(pyValidCode, context).code());
+  }
+
+  @Test
+  public void testOutputClear() throws InterpreterException {
+    InterpreterResult result = pythonInterpreter.interpret("print(\"Hello\")\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
+    assertEquals("%text world\n", out.getCurrentOutput().toString());
   }
 
   @Override

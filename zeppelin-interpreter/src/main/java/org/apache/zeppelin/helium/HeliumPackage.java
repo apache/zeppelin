@@ -19,7 +19,6 @@ package org.apache.zeppelin.helium;
 import com.google.gson.Gson;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.dep.Repository;
 
 import java.util.Map;
 
@@ -35,8 +34,9 @@ public class HeliumPackage implements JsonSerializable {
   private String description;    // description
   private String artifact;       // artifact name e.g) groupId:artifactId:versionId
   private String className;      // entry point
-  private String [][] resources; // resource classnames that requires
-                                 // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  // resource classnames that requires [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  private String [][] resources;
+
   private String license;
   private String icon;
   private String published;

@@ -93,6 +93,8 @@ public class RemoteInterpreterTest {
     assertTrue(interpreter2 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
 
+    assertEquals(remoteInterpreter1.getScheduler(), remoteInterpreter2.getScheduler());
+
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
         "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
         null, null, new ArrayList<InterpreterContextRunner>(), null);
@@ -135,6 +137,8 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     assertTrue(interpreter2 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
+
+    assertNotEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
         "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
@@ -181,6 +185,8 @@ public class RemoteInterpreterTest {
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
     assertTrue(interpreter2 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter2 = (RemoteInterpreter) interpreter2;
+
+    assertNotEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
 
     InterpreterContext context1 = new InterpreterContext("noteId", "paragraphId", "repl",
         "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),

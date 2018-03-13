@@ -22,14 +22,14 @@
   <parent>
     <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>../interpreter-parent</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-python</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Python interpreter</name>
 
   <properties>
@@ -43,6 +43,7 @@
     <pypi.repo.url>https://pypi.python.org/packages</pypi.repo.url>
     <python.py4j.repo.folder>/64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3</python.py4j.repo.folder>
     <grpc.version>1.4.0</grpc.version>
+    <plugin.shade.version>2.4.1</plugin.shade.version>
   </properties>
 
   <dependencies>
@@ -90,13 +91,7 @@
       <artifactId>grpc-stub</artifactId>
       <version>${grpc.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-    </dependency>
-
+    
     <!-- test libraries -->
     <dependency>
       <groupId>junit</groupId>
@@ -200,6 +195,38 @@
             <exclude>${python.test.exclude}</exclude>
           </excludes>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${plugin.shade.version}</version>
+        <configuration>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>reference.conf</resource>
+            </transformer>
+          </transformers>
+          <relocations>
+            <relocation>
+              <pattern>com.google.common</pattern>
+              <shadedPattern>org.apache.zeppelin.com.google.common</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>py4j</pattern>
+              <shadedPattern>org.apache.zeppelin.py4j</shadedPattern>
+            </relocation>
+          </relocations>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>

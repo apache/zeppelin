@@ -1,5 +1,5 @@
 {
-  "extends": ["eslint:recommended", "google", "standard"],
+  "extends": ["eslint:recommended", "google"],
   "env": {
     "browser": true,
     "jasmine": true,
@@ -31,26 +31,11 @@
     "process": false
   },
   "rules": {
-    "array-bracket-spacing": 0,
-    "space-before-function-paren": 0,
-    "no-unneeded-ternary": 0,
-    "comma-dangle": 0,
-    "object-curly-spacing": 0,
-    "standard/object-curly-even-spacing": 0,
-    "arrow-parens": 0,
-    "require-jsdoc": 0,
-    "valid-jsdoc": 0,
-    "no-invalid-this": 0,
-    "no-console": 0,
-    "guard-for-in": 0,
-    "no-mixed-operators": 1,
-    "no-useless-escape": 1,
     "no-bitwise": 2,
     "camelcase": 2,
     "curly": 2,
     "eqeqeq": 2,
     "wrap-iife": [2, "any"],
-    "no-use-before-define": 0,
     "new-cap": 2,
     "no-caller": 2,
     "quotes": [2, "single"],
@@ -59,6 +44,11 @@
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
     "strict": [2, "global"],
     "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}],
-	"linebreak-style": 0
+    "require-jsdoc": "off",
+    "no-console": ["off"],
+    "valid-jsdoc": "off",
+    "semi": [2, "always"],
+    "no-invalid-this": 1,
+    "indent": ["error", 2, { "SwitchCase": 1 }]
   }
 }

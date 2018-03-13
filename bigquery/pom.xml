@@ -23,14 +23,14 @@
   <parent>
     <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>../interpreter-parent</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-bigquery</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: BigQuery interpreter</name>
 
   <properties>
@@ -131,6 +131,13 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
         </configuration>
       </plugin>
     </plugins>

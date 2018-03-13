@@ -19,8 +19,20 @@ package org.apache.zeppelin.interpreter.launcher;
 
 /**
  * Interface to InterpreterClient which is created by InterpreterLauncher. This is the component
- * that is used to for the communication fromzeppelin-server process to zeppelin interpreter process
+ * that is used to for the communication from zeppelin-server process to zeppelin interpreter
+ * process.
  */
 public interface InterpreterClient {
 
+  String getInterpreterSettingName();
+
+  void start(String userName);
+
+  void stop();
+
+  String getHost();
+
+  int getPort();
+
+  boolean isRunning();
 }

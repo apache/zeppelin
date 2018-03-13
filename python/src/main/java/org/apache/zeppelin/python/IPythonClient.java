@@ -20,6 +20,7 @@ package org.apache.zeppelin.python;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.proto.CancelRequest;
 import org.apache.zeppelin.python.proto.CancelResponse;
@@ -131,11 +132,18 @@ public class IPythonClient {
       @Override
       public void onError(Throwable throwable) {
         try {
+          interpreterOutput.getInterpreterOutput().write(ExceptionUtils.getStackTrace(throwable));
           interpreterOutput.getInterpreterOutput().flush();
         } catch (IOException e) {
           LOGGER.error("Unexpected IOException", e);
         }
         LOGGER.error("Fail to call IPython grpc", throwable);
+        finalResponseBuilder.setStatus(ExecuteStatus.ERROR);
+
+        completedFlag.set(true);
+        synchronized (completedFlag) {
+          completedFlag.notify();
+        }
       }
 
       @Override

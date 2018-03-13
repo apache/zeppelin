@@ -17,4 +17,4 @@ export const HeliumType = {
   SPELL: 'SPELL',
   INTERPRETER: 'INTERPRETER',
   APPLICATION: 'APPLICATION',
-}
+};

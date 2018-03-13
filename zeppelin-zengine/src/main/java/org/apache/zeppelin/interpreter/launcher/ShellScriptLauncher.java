@@ -21,60 +21,78 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
- *
  */
 public class ShellScriptLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellScriptLauncher.class);
 
-  public ShellScriptLauncher(ZeppelinConfiguration zConf) {
-    super(zConf);
+  public ShellScriptLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+    super(zConf, recoveryStorage);
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) {
+  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
     this.properties = context.getProperties();
     InterpreterOption option = context.getOption();
     InterpreterRunner runner = context.getRunner();
     String groupName = context.getInterpreterSettingGroup();
     String name = context.getInterpreterSettingName();
-
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(
+          context.getInterpreterSettingName(),
           connectTimeout,
           option.getHost(),
           option.getPort());
     } else {
+      // try to recover it first
+      if (zConf.isRecoveryEnabled()) {
+        InterpreterClient recoveredClient =
+            recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
+        if (recoveredClient != null) {
+          if (recoveredClient.isRunning()) {
+            LOGGER.info("Recover interpreter process: " + recoveredClient.getHost() + ":" +
+                recoveredClient.getPort());
+            return recoveredClient;
+          } else {
+            LOGGER.warn("Cannot recover interpreter process: " + recoveredClient.getHost() + ":"
+                + recoveredClient.getPort() + ", as it is already terminated.");
+          }
+        }
+      }
+
       // create new remote process
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          zConf.getCallbackPortRange(),  zConf.getInterpreterPortRange(),
+          zConf.getCallbackPortRange(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
-          buildEnvFromProperties(), connectTimeout, name);
+          buildEnvFromProperties(context), connectTimeout, name, option.isUserImpersonate());
     }
   }
 
-  protected Map<String, String> buildEnvFromProperties() {
+  protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
     Map<String, String> env = new HashMap<>();
-    for (Object key : properties.keySet()) {
+    for (Object key : context.getProperties().keySet()) {
       if (RemoteInterpreterUtils.isEnvString((String) key)) {
-        env.put((String) key, properties.getProperty((String) key));
+        env.put((String) key, context.getProperties().getProperty((String) key));
       }
     }
     return env;

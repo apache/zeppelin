@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.ConfInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
@@ -101,16 +102,7 @@ public class RemoteInterpreter extends Interpreter {
       return this.interpreterProcess;
     }
     ManagedInterpreterGroup intpGroup = getInterpreterGroup();
-    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess();
-    synchronized (interpreterProcess) {
-      if (!interpreterProcess.isRunning()) {
-        interpreterProcess.start(this.getUserName(), false);
-        interpreterProcess.getRemoteInterpreterEventPoller()
-            .setInterpreterProcess(interpreterProcess);
-        interpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(intpGroup);
-        interpreterProcess.getRemoteInterpreterEventPoller().start();
-      }
-    }
+    this.interpreterProcess = intpGroup.getOrCreateInterpreterProcess(getUserName(), properties);
     return interpreterProcess;
   }
 
@@ -130,7 +122,9 @@ public class RemoteInterpreter extends Interpreter {
         for (Interpreter interpreter : getInterpreterGroup()
                                         .getOrCreateSession(this.getUserName(), sessionId)) {
           try {
-            ((RemoteInterpreter) interpreter).internal_create();
+            if (!(interpreter instanceof ConfInterpreter)) {
+              ((RemoteInterpreter) interpreter).internal_create();
+            }
           } catch (IOException e) {
             throw new InterpreterException(e);
           }
@@ -346,8 +340,7 @@ public class RemoteInterpreter extends Interpreter {
                                                 final InterpreterContext interpreterContext)
       throws InterpreterException {
     if (!isOpened) {
-      LOGGER.warn("completion is called when RemoterInterpreter is not opened for " + className);
-      return new ArrayList<>();
+      open();
     }
     RemoteInterpreterProcess interpreterProcess = null;
     try {
@@ -387,15 +380,16 @@ public class RemoteInterpreter extends Interpreter {
         });
   }
 
-  //TODO(zjffdu) Share the Scheduler in the same session or in the same InterpreterGroup ?
+
   @Override
   public Scheduler getScheduler() {
     int maxConcurrency = Integer.parseInt(
         getProperty("zeppelin.interpreter.max.poolsize",
             ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue() + ""));
-
+    // one session own one Scheduler, so that when one session is closed, all the jobs/paragraphs
+    // running under the scheduler of this session will be aborted.
     Scheduler s = new RemoteScheduler(
-        RemoteInterpreter.class.getName() + "-" + sessionId,
+        RemoteInterpreter.class.getName() + "-" + getInterpreterGroup().getId() + "-" + sessionId,
         SchedulerFactory.singleton().getExecutor(),
         sessionId,
         this,

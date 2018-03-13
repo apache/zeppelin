@@ -96,10 +96,10 @@ import java.util.concurrent.ConcurrentMap;
  * Entry point for Interpreter process.
  * Accepting thrift connections from ZeppelinServer.
  */
-public class RemoteInterpreterServer
-  extends Thread
-  implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
-  Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
+public class RemoteInterpreterServer extends Thread
+    implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
+
+  private static Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
@@ -171,6 +171,7 @@ public class RemoteInterpreterServer
     if (null != callbackHost && !isTest) {
       new Thread(new Runnable() {
         boolean interrupted = false;
+
         @Override
         public void run() {
           while (!interrupted && !server.isServing()) {
@@ -254,6 +255,9 @@ public class RemoteInterpreterServer
 
   public static void main(String[] args)
       throws TTransportException, InterruptedException, IOException {
+    Class klass = RemoteInterpreterServer.class;
+    URL location = klass.getResource('/' + klass.getName().replace('.', '/') + ".class");
+    logger.info("URL:" + location);
     String callbackHost = null;
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
     String portRange = ":";
@@ -300,7 +304,7 @@ public class RemoteInterpreterServer
       setSystemProperty(p);
 
       Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[] {Properties.class});
+          replClass.getConstructor(new Class[]{Properties.class});
       Interpreter repl = constructor.newInstance(p);
       repl.setClassloaderUrls(new URL[]{});
       logger.info("Instantiate interpreter {}", className);
@@ -417,7 +421,8 @@ public class RemoteInterpreterServer
 
   @Override
   public RemoteInterpreterResult interpret(String noteId, String className, String st,
-      RemoteInterpreterContext interpreterContext) throws TException {
+                                           RemoteInterpreterContext interpreterContext)
+      throws TException {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);
     }
@@ -527,7 +532,7 @@ public class RemoteInterpreterServer
     private Map<String, Object> infos;
     private Object results;
 
-    public InterpretJob(
+    InterpretJob(
         String jobId,
         String jobName,
         JobListener listener,
@@ -599,6 +604,7 @@ public class RemoteInterpreterServer
 
     @Override
     protected Object jobRun() throws Throwable {
+      ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
 
@@ -649,6 +655,7 @@ public class RemoteInterpreterServer
         }
         return new InterpreterResult(result.code(), resultMessages);
       } finally {
+        Thread.currentThread().setContextClassLoader(currentThreadContextClassloader);
         InterpreterContext.remove();
       }
     }
@@ -718,7 +725,10 @@ public class RemoteInterpreterServer
 
   @Override
   public List<InterpreterCompletion> completion(String sessionId,
-      String className, String buf, int cursor, RemoteInterpreterContext remoteInterpreterContext)
+                                                String className,
+                                                String buf,
+                                                int cursor,
+                                                RemoteInterpreterContext remoteInterpreterContext)
       throws TException {
     Interpreter intp = getInterpreter(sessionId, className);
     try {
@@ -735,7 +745,7 @@ public class RemoteInterpreterServer
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-            new TypeToken<List<RemoteInterpreterContextRunner>>() {
+        new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
 
     for (InterpreterContextRunner r : runners) {
@@ -750,7 +760,8 @@ public class RemoteInterpreterServer
         ric.getParagraphText(),
         AuthenticationInfo.fromJson(ric.getAuthenticationInfo()),
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
-            new TypeToken<Map<String, Object>>() {}.getType()),
+            new TypeToken<Map<String, Object>>() {
+            }.getType()),
         GUI.fromJson(ric.getGui()),
         GUI.fromJson(ric.getNoteGui()),
         interpreterGroup.getAngularObjectRegistry(),
@@ -800,7 +811,7 @@ public class RemoteInterpreterServer
     Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
     private transient RemoteInterpreterServer server;
 
-    public ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
+    ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
       super(noteId, paragraphId);
       this.server = server;
     }
@@ -811,13 +822,14 @@ public class RemoteInterpreterServer
     }
   }
 
-  static class ZeppelinRemoteWorksController implements RemoteWorksController{
+  static class ZeppelinRemoteWorksController implements RemoteWorksController {
     Logger logger = LoggerFactory.getLogger(ZeppelinRemoteWorksController.class);
 
     private final long DEFAULT_TIMEOUT_VALUE = 300000;
     private final Map<String, Object> remoteWorksResponsePool;
     private RemoteInterpreterServer server;
-    public ZeppelinRemoteWorksController(
+
+    ZeppelinRemoteWorksController(
         RemoteInterpreterServer server, Map<String, Object> remoteWorksResponsePool) {
       this.remoteWorksResponsePool = remoteWorksResponsePool;
       this.server = server;
@@ -884,7 +896,7 @@ public class RemoteInterpreterServer
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,
-      Map<String, Object> config, GUI gui, GUI noteGui) {
+                                          Map<String, Object> config, GUI gui, GUI noteGui) {
 
     List<RemoteInterpreterResultMessage> msg = new LinkedList<>();
     for (InterpreterResultMessage m : result.message()) {
@@ -932,7 +944,6 @@ public class RemoteInterpreterServer
   }
 
 
-
   @Override
   public void onAdd(String interpreterGroupId, AngularObject object) {
     eventClient.angularObjectAdd(object);
@@ -951,6 +962,7 @@ public class RemoteInterpreterServer
 
   /**
    * Poll event from RemoteInterpreterEventPoller
+   *
    * @return
    * @throws TException
    */
@@ -961,8 +973,9 @@ public class RemoteInterpreterServer
 
   /**
    * called when object is updated in client (web) side.
+   *
    * @param name
-   * @param noteId noteId where the update issues
+   * @param noteId      noteId where the update issues
    * @param paragraphId paragraphId where the update issues
    * @param object
    * @throws TException
@@ -1000,8 +1013,8 @@ public class RemoteInterpreterServer
     if (value == null) {
       try {
         value = gson.fromJson(object,
-          new TypeToken<Map<String, Object>>() {
-          }.getType());
+            new TypeToken<Map<String, Object>>() {
+            }.getType());
       } catch (Exception e) {
         // it's not a generic json object, too. okay, proceed to threat as a string type
         logger.debug(e.getMessage(), e);
@@ -1052,7 +1065,7 @@ public class RemoteInterpreterServer
 
   @Override
   public void angularObjectRemove(String name, String noteId, String paragraphId) throws
-          TException {
+      TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, paragraphId, false);
   }
@@ -1064,8 +1077,9 @@ public class RemoteInterpreterServer
 
   /**
    * Get payload of resource from remote
+   *
    * @param resourceId json serialized ResourceId
-   * @param object java serialized of the object
+   * @param object     java serialized of the object
    * @throws TException
    */
   @Override
@@ -1160,8 +1174,9 @@ public class RemoteInterpreterServer
 
   /**
    * Get payload of resource from remote
+   *
    * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
-   * @param object java serialized of the object
+   * @param object                           java serialized of the object
    * @throws TException
    */
   @Override
@@ -1186,8 +1201,9 @@ public class RemoteInterpreterServer
   public void angularRegistryPush(String registryAsString) throws TException {
     try {
       Map<String, Map<String, AngularObject>> deserializedRegistry = gson
-              .fromJson(registryAsString,
-                      new TypeToken<Map<String, Map<String, AngularObject>>>() { }.getType());
+          .fromJson(registryAsString,
+              new TypeToken<Map<String, Map<String, AngularObject>>>() {
+              }.getType());
       interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
     } catch (Exception e) {
       logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
@@ -1195,8 +1211,8 @@ public class RemoteInterpreterServer
   }
 
   protected InterpreterOutput createAppOutput(final String noteId,
-                                            final String paragraphId,
-                                            final String appId) {
+                                              final String paragraphId,
+                                              final String appId) {
     return new InterpreterOutput(new InterpreterOutputListener() {
       @Override
       public void onUpdateAll(InterpreterOutput out) {
@@ -1324,7 +1340,7 @@ public class RemoteInterpreterServer
     public final String noteId;
     public final String paragraphId;
 
-    public RunningApplication(HeliumPackage pkg,
+    RunningApplication(HeliumPackage pkg,
                               Application app,
                               String noteId,
                               String paragraphId) {
@@ -1333,5 +1349,7 @@ public class RemoteInterpreterServer
       this.noteId = noteId;
       this.paragraphId = paragraphId;
     }
-  };
+  }
+
+  ;
 }

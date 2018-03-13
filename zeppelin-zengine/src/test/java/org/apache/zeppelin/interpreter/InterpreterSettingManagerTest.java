@@ -72,6 +72,12 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(2, repositories.size());
     assertEquals("central", repositories.get(0).getId());
 
+    // verify interpreter binding
+    List<String> interpreterSettingIds = interpreterSettingManager.getInterpreterBinding("2C6793KRV");
+    assertEquals(2, interpreterSettingIds.size());
+    assertEquals("test", interpreterSettingIds.get(0));
+    assertEquals("test2", interpreterSettingIds.get(1));
+
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
@@ -200,7 +206,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("shared");
 
@@ -220,7 +226,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("isolated");
 
@@ -241,7 +247,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("scoped");
 
@@ -266,7 +272,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testGetEditor() throws IOException {
+  public void testGetEditor() throws IOException, InterpreterNotFoundException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo");
     // get editor setting from interpreter-setting.json

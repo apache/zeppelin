@@ -17,9 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.Properties;
-
 import org.junit.Test;
+
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 

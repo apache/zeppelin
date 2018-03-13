@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -27,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -54,10 +56,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-
 public abstract class AbstractTestRestApi {
 
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
@@ -65,30 +63,70 @@ public abstract class AbstractTestRestApi {
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
   protected static final boolean wasRunning = checkIfServerIsRunning();
-  static boolean pySpark = false;
-  static boolean sparkR = false;
   static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
   private static String zeppelinShiro =
       "[users]\n" +
-      "admin = password1, admin\n" +
-      "user1 = password2, role1, role2\n" +
-      "user2 = password3, role3\n" +
-      "user3 = password4, role2\n" +
-      "[main]\n" +
-      "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
-      "securityManager.sessionManager = $sessionManager\n" +
-      "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
-      "shiro.loginUrl = /api/login\n" +
-      "[roles]\n" +
-      "role1 = *\n" +
-      "role2 = *\n" +
-      "role3 = *\n" +
-      "admin = *\n" +
-      "[urls]\n" +
-      "/api/version = anon\n" +
-      "/** = authc";
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "user2 = password3, role3\n" +
+          "user3 = password4, role2\n" +
+          "[main]\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "role1 = *\n" +
+          "role2 = *\n" +
+          "role3 = *\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
+
+  private static String zeppelinShiroKnox =
+      "[users]\n" +
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "[main]\n" +
+          "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n" +
+          "knoxJwtRealm.providerUrl = https://domain.example.com/\n" +
+          "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n" +
+          "knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout\n" +
+          "knoxJwtRealm.redirectParam = originalUrl\n" +
+          "knoxJwtRealm.cookieName = hadoop-jwt\n" +
+          "knoxJwtRealm.publicKeyPath = knox-sso.pem\n" +
+          "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
+
+  private static File knoxSsoPem = null;
+  private static String KNOX_SSO_PEM =
+      "-----BEGIN CERTIFICATE-----\n"
+          + "MIIChjCCAe+gAwIBAgIJALYrdDEXKwcqMA0GCSqGSIb3DQEBBQUAMIGEMQswCQYD\n"
+          + "VQQGEwJVUzENMAsGA1UECBMEVGVzdDENMAsGA1UEBxMEVGVzdDEPMA0GA1UEChMG\n"
+          + "SGFkb29wMQ0wCwYDVQQLEwRUZXN0MTcwNQYDVQQDEy5jdHItZTEzNS0xNTEyMDY5\n"
+          + "MDMyOTc1LTU0NDctMDEtMDAwMDAyLmh3eC5zaXRlMB4XDTE3MTIwNDA5NTIwMFoX\n"
+          + "DTE4MTIwNDA5NTIwMFowgYQxCzAJBgNVBAYTAlVTMQ0wCwYDVQQIEwRUZXN0MQ0w\n"
+          + "CwYDVQQHEwRUZXN0MQ8wDQYDVQQKEwZIYWRvb3AxDTALBgNVBAsTBFRlc3QxNzA1\n"
+          + "BgNVBAMTLmN0ci1lMTM1LTE1MTIwNjkwMzI5NzUtNTQ0Ny0wMS0wMDAwMDIuaHd4\n"
+          + "LnNpdGUwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAILFoXdz3yCy2INncYM2\n"
+          + "y72fYrONoQIxeeIzeJIibXLTuowSju90Q6aThSyUsQ6NEia2flnlKiCgINTNAodh\n"
+          + "UPUVGyGT+NMrqJzzpXAll2UUa6gIUPnXYEzYNkMIpbQOAo5BAg7YamaidbPPiT3W\n"
+          + "wAD1rWo3AMUY+nZJrAi4dEH5AgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAB0R07/lo\n"
+          + "4hD+WeDEeyLTnsbFnPNXxBT1APMUmmuCjcky/19ZB8OphqTKIITONdOK/XHdjZHG\n"
+          + "JDOfhBkVknL42lSi45ahUAPS2PZOlQL08MbS8xajP1faterm+aHcdwJVK9dK76RB\n"
+          + "/bA8TFNPblPxavIOcd+R+RfFmT1YKfYIhco=\n"
+          + "-----END CERTIFICATE-----";
 
   protected static File zeppelinHome;
   protected static File confDir;
@@ -119,7 +157,7 @@ public abstract class AbstractTestRestApi {
     @Override
     public void run() {
       try {
-        ZeppelinServer.main(new String[] {""});
+        ZeppelinServer.main(new String[]{""});
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
         throw new RuntimeException(e);
@@ -127,7 +165,7 @@ public abstract class AbstractTestRestApi {
     }
   };
 
-  private static void start(boolean withAuth, String testClassName) throws Exception {
+  private static void start(boolean withAuth, String testClassName, boolean withKnox) throws Exception {
     if (!wasRunning) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -150,13 +188,24 @@ public abstract class AbstractTestRestApi {
         isRunningWithAuth = true;
         // Set Anonymous session to false.
         System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
-        
+
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
         if (!shiroIni.exists()) {
           shiroIni.createNewFile();
         }
-        FileUtils.writeStringToFile(shiroIni, zeppelinShiro);
+        if (withKnox) {
+          FileUtils.writeStringToFile(shiroIni,
+              zeppelinShiroKnox.replaceAll("knox-sso.pem", confDir + "/knox-sso.pem"));
+          knoxSsoPem = new File(confDir, "knox-sso.pem");
+          if (!knoxSsoPem.exists()) {
+            knoxSsoPem.createNewFile();
+          }
+          FileUtils.writeStringToFile(knoxSsoPem, KNOX_SSO_PEM);
+        } else {
+          FileUtils.writeStringToFile(shiroIni, zeppelinShiro);
+        }
+
       }
 
       // exclude org.apache.zeppelin.rinterpreter.* for scala 2.11 test
@@ -195,72 +244,20 @@ public abstract class AbstractTestRestApi {
         throw new RuntimeException("Can not start Zeppelin server");
       }
       LOG.info("Test Zeppelin stared.");
-
-
-      // assume first one is spark
-      InterpreterSetting sparkIntpSetting = null;
-      for(InterpreterSetting intpSetting :
-          ZeppelinServer.notebook.getInterpreterSettingManager().get()) {
-        if (intpSetting.getName().equals("spark")) {
-          sparkIntpSetting = intpSetting;
-        }
-      }
-
-      Map<String, InterpreterProperty> sparkProperties =
-          (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
-      // ci environment runs spark cluster for testing
-      // so configure zeppelin use spark cluster
-      if ("true".equals(System.getenv("CI"))) {
-        // set spark master and other properties
-        sparkProperties.put("master",
-            new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("spark.cores.max",
-            new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("zeppelin.spark.useHiveContext",
-            new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
-        // set spark home for pyspark
-        sparkProperties.put("spark.home",
-            new InterpreterProperty("spark.home", getSparkHome(), InterpreterPropertyType.TEXTAREA.getValue()));
-        sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
-
-        sparkIntpSetting.setProperties(sparkProperties);
-        pySpark = true;
-        sparkR = true;
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
-      } else {
-        String sparkHome = getSparkHome();
-        if (sparkHome != null) {
-          if (System.getenv("SPARK_MASTER") != null) {
-            sparkProperties.put("master",
-                new InterpreterProperty("master", System.getenv("SPARK_MASTER"), InterpreterPropertyType.TEXTAREA.getValue()));
-          } else {
-            sparkProperties.put("master",
-                new InterpreterProperty("master", "local[2]", InterpreterPropertyType.TEXTAREA.getValue()));
-          }
-          sparkProperties.put("spark.cores.max",
-              new InterpreterProperty("spark.cores.max", "2", InterpreterPropertyType.TEXTAREA.getValue()));
-          // set spark home for pyspark
-          sparkProperties.put("spark.home",
-              new InterpreterProperty("spark.home", sparkHome, InterpreterPropertyType.TEXTAREA.getValue()));
-          sparkProperties.put("zeppelin.spark.useHiveContext",
-              new InterpreterProperty("zeppelin.spark.useHiveContext", false, InterpreterPropertyType.CHECKBOX.getValue()));
-          sparkProperties.put("zeppelin.pyspark.useIPython",  new InterpreterProperty("zeppelin.pyspark.useIPython", "false", InterpreterPropertyType.TEXTAREA.getValue()));
-
-          pySpark = true;
-          sparkR = true;
-        }
-
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
-      }
     }
+  }
+
+
+  protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
+    start(true, testClassName, true);
   }
   
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
-    start(true, testClassName);
+    start(true, testClassName, false);
   }
   
   protected static void startUp(String testClassName) throws Exception {
-    start(false, testClassName);
+    start(false, testClassName, false);
   }
 
   private static String getHostname() {
@@ -272,54 +269,18 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-  private static String getSparkHome() {
-    String sparkHome = System.getenv("SPARK_HOME");
-    if (sparkHome != null) {
-      return sparkHome;
-    }
-    sparkHome = getSparkHomeRecursively(new File(System.getProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName())));
-    System.out.println("SPARK HOME detected " + sparkHome);
-    return sparkHome;
-  }
-
-  boolean isPyspark() {
-    return pySpark;
-  }
-
-  boolean isSparkR() {
-    return sparkR;
-  }
-
-  private static String getSparkHomeRecursively(File dir) {
-    if (dir == null) return null;
-    File files []  = dir.listFiles();
-    if (files == null) return null;
-
-    File homeDetected = null;
-    for (File f : files) {
-      if (isActiveSparkHome(f)) {
-        homeDetected = f;
-        break;
-      }
-    }
-
-    if (homeDetected != null) {
-      return homeDetected.getAbsolutePath();
-    } else {
-      return getSparkHomeRecursively(dir.getParentFile());
-    }
-  }
-
-  private static boolean isActiveSparkHome(File dir) {
-    return dir.getName().matches("spark-[0-9\\.]+[A-Za-z-]*-bin-hadoop[0-9\\.]+");
-  }
-
   protected static void shutDown() throws Exception {
-    if (!wasRunning) {
+    shutDown(true);
+  }
+
+  protected static void shutDown(final boolean deleteConfDir) throws Exception {
+    if (!wasRunning && ZeppelinServer.notebook != null) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
-      for (InterpreterSetting setting : settingList) {
-        ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+        for (InterpreterSetting setting : settingList) {
+          ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+        }
       }
       if (shiroIni != null) {
         FileUtils.deleteQuietly(shiroIni);
@@ -350,7 +311,12 @@ public abstract class AbstractTestRestApi {
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      FileUtils.deleteDirectory(confDir);
+      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+        // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
+        // id will change after zeppelin restart, then we can not recover interpreter process
+        // properly
+        FileUtils.deleteDirectory(confDir);
+      }
     }
   }
 
@@ -376,12 +342,19 @@ public abstract class AbstractTestRestApi {
   }
   
   protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
+    return httpGet(path, user, pwd, StringUtils.EMPTY);
+  }
+
+  protected static GetMethod httpGet(String path, String user, String pwd, String cookies) throws IOException {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     GetMethod getMethod = new GetMethod(url + path);
     getMethod.addRequestHeader("Origin", url);
     if (userAndPasswordAreNotBlank(user, pwd)) {
       getMethod.setRequestHeader("Cookie", "JSESSIONID="+ getCookie(user, pwd));
+    }
+    if (!StringUtils.isBlank(cookies)) {
+      getMethod.setRequestHeader("Cookie", getMethod.getResponseHeader("Cookie") + ";" + cookies);
     }
     httpClient.executeMethod(getMethod);
     LOG.info("{} - {}", getMethod.getStatusCode(), getMethod.getStatusText());
