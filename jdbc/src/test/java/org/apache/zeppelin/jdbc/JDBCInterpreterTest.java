@@ -526,13 +526,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSessionPrecode() throws SQLException, IOException {
+  public void testStatementPrecode() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set @v='session'");
+    properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set @v='statement'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -542,11 +542,11 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@V\nsession\n", interpreterResult.message().get(0).getData());
+    assertEquals("@V\nstatement\n", interpreterResult.message().get(0).getData());
   }
 
   @Test
-  public void testIncorrectSessionPrecode() throws SQLException, IOException {
+  public void testIncorrectStatementPrecode() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
@@ -565,13 +565,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testSessionPrecodeWithAnotherPrefix() throws SQLException, IOException {
+  public void testStatementPrecodeWithAnotherPrefix() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("anotherPrefix.driver", "org.h2.Driver");
     properties.setProperty("anotherPrefix.url", getJdbcConnection());
     properties.setProperty("anotherPrefix.user", "");
     properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"), "set @v='sessionAnotherPrefix'");
+    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"), "set @v='statementAnotherPrefix'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -581,7 +581,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@V\nsessionAnotherPrefix\n", interpreterResult.message().get(0).getData());
+    assertEquals("@V\nstatementAnotherPrefix\n", interpreterResult.message().get(0).getData());
   }
 
   @Test
