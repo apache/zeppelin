@@ -4,17 +4,17 @@
     "name": "flink",
     "className": "org.apache.zeppelin.flink.FlinkInterpreter",
     "properties": {
-      "host": {
-        "envName": "host",
+      "jobmanager.rpc.address": {
+        "envName": "jobmanager.rpc.address",
         "propertyName": null,
-        "defaultValue": "local",
-        "description": "host name of running JobManager. 'local' runs flink in local mode."
+        "defaultValue": "localhost",
+        "description": "host name of running JobManager"
       },
-      "port": {
-        "envName": "port",
+      "jobmanager.rpc.port": {
+        "envName": "jobmanager.rpc.port",
         "propertyName": null,
         "defaultValue": "6123",
-        "description": "port of running JobManager."
+        "description": "port of running JobManager"
       }
     },
     "editor": {
