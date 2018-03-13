@@ -74,7 +74,8 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     this.context = context;
     try {
       return interpreterEvent.interpret(st, context);

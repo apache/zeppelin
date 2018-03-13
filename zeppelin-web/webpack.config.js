@@ -120,6 +120,7 @@ module.exports = function makeWebpackConfig () {
    * Reference: http://webpack.github.io/docs/configuration.html#devtool
    * Type of sourcemap to use per build type
    */
+  config.devtool = 'eval-source-map';
   if (isTest) {
     config.devtool = 'inline-source-map';
   } else if (isProd) {
@@ -127,7 +128,6 @@ module.exports = function makeWebpackConfig () {
   } else {
     config.devtool = 'eval-source-map';
   }
-  config.devtool = 'source-map';
 
   /**
    * Loaders
@@ -195,7 +195,7 @@ module.exports = function makeWebpackConfig () {
           }
         }
       ]})
-    }]
+    }],
   };
 
   /**
@@ -236,10 +236,22 @@ module.exports = function makeWebpackConfig () {
           HELIUM_BUNDLE_DEV: process.env.HELIUM_BUNDLE_DEV,
           SERVER_PORT: serverPort,
           WEB_PORT: webPort,
+          PROD: isProd,
           BUILD_CI: (isCI) ? JSON.stringify(true) : JSON.stringify(false)
         }
       })
     )
+  }
+  
+  if (isTest) {
+    config.module.postLoaders = [
+      {
+        // COVERAGE
+        test: /\.js$/,
+        exclude: /(node_modules|bower_components|\.test\.js)/,
+        loader: 'istanbul-instrumenter'
+      }
+    ]
   }
 
   // Add build specific plugins

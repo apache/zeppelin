@@ -30,6 +30,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
@@ -62,7 +63,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     gson = new Gson();
     notebook = ZeppelinServer.notebook;
     notebookServer = ZeppelinServer.notebookWsServer;
@@ -95,7 +96,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
+  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException, InterruptedException {
     // create a notebook
     Note note1 = notebook.createNote(anonymous);
 
@@ -104,7 +105,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
-        interpreterGroup = setting.getInterpreterGroup("anonymous", "sharedProcess");
+        interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
         break;
       }
     }
@@ -114,6 +115,16 @@ public class NotebookServerTest extends AbstractTestRestApi {
     p1.setText("%md start remote interpreter process");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
+
+    // wait for paragraph finished
+    while(true) {
+      if (p1.getStatus() == Job.Status.FINISHED) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
+    Thread.sleep(1000);
 
     // add angularObject
     interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
@@ -129,19 +140,19 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebookServer.onOpen(sock2);
     verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
     // open the same notebook from sockets
-    notebookServer.onMessage(sock1, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
-    notebookServer.onMessage(sock2, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
+    notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+    notebookServer.onMessage(sock2, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
 
     reset(sock1);
     reset(sock2);
 
     // update object from sock1
-    notebookServer.onMessage(sock1, gson.toJson(
+    notebookServer.onMessage(sock1,
         new Message(OP.ANGULAR_OBJECT_UPDATED)
         .put("noteId", note1.getId())
         .put("name", "object1")
         .put("value", "value1")
-        .put("interpreterGroupId", interpreterGroup.getId())));
+        .put("interpreterGroupId", interpreterGroup.getId()).toJson());
 
 
     // expect object is broadcasted except for where the update is created
@@ -155,7 +166,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public void testImportNotebook() throws IOException {
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
-        "paragraphs import\",\"config\":{},\"settings\":{}}]," +
+        "paragraphs import\"," + "\"progressUpdateIntervalMs\":500," +
+        "\"config\":{},\"settings\":{}}]," +
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
         "{}}}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
@@ -198,7 +210,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
@@ -246,7 +258,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
@@ -292,7 +304,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
@@ -337,7 +349,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
-    when(paragraph.getCurrentRepl().getInterpreterGroup()).thenReturn(mdGroup);
+    when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
     final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
@@ -379,10 +391,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
       defaultInterpreterId = settings.get(1).getId();
     }
     // create note from sock1
-    notebookServer.onMessage(sock1, gson.toJson(
+    notebookServer.onMessage(sock1,
         new Message(OP.NEW_NOTE)
         .put("name", noteName)
-        .put("defaultInterpreterId", defaultInterpreterId)));
+        .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
     // expect the events are broadcasted properly
     verify(sock1, times(2)).send(anyString());

@@ -402,7 +402,7 @@ public class HeliumBundleFactory {
 
     String[] moduleNameVersion = getNpmModuleNameAndVersion(pkg);
     if (moduleNameVersion == null) {
-      logger.error("Can't get module name and version of package " + pkg.getName());
+      logger.warn("Can't get module name and version of package " + pkg.getName());
       return null;
     }
 
@@ -589,8 +589,7 @@ public class HeliumBundleFactory {
           }
         }
       }
-      Gson gson = new Gson();
-      return gson.fromJson(sb.toString(), WebpackResult.class);
+      return WebpackResult.fromJson(sb.toString());
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
       return new WebpackResult();
@@ -609,11 +608,9 @@ public class HeliumBundleFactory {
       if (!packageJson.isFile()) {
         return null;
       }
-      Gson gson = new Gson();
       try {
-        NpmPackage npmPackage = gson.fromJson(
-            FileUtils.readFileToString(packageJson),
-            NpmPackage.class);
+        NpmPackage npmPackage = NpmPackage.fromJson(
+            FileUtils.readFileToString(packageJson));
 
         String[] nameVersion = new String[2];
         nameVersion[0] = npmPackage.name;

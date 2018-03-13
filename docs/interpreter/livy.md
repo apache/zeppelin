@@ -43,7 +43,7 @@ We added some common configurations for spark, and you can set any configuration
 You can find all Spark configurations in [here](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 And instead of starting property with `spark.` it should be replaced with `livy.spark.`.
 Example: `spark.driver.memory` to `livy.spark.driver.memory`
-  
+
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -72,7 +72,7 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
   </tr>
   <tr>
     <td>zeppelin.livy.displayAppInfo</td>
-    <td>false</td>
+    <td>true</td>
     <td>Whether to display app info</td>
   </tr>
   <tr>
@@ -144,13 +144,18 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>zeppelin.livy.ssl.trustStorePassword</td>
     <td></td>
     <td>password for trustStore file. Used when livy ssl is enabled</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td>zeppelin.livy.http.headers</td>
+    <td>key_1: value_1; key_2: value_2</td>
+    <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>
+  </tr>
 </table>
 
 **We remove livy.spark.master in zeppelin-0.7. Because we sugguest user to use livy 0.3 in zeppelin-0.7. And livy 0.3 don't allow to specify livy.spark.master, it enfornce yarn-cluster mode.**
 
 ## Adding External libraries
-You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version. 
+You can load dynamic library to livy interpreter by set `livy.spark.jars.packages` property to comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. The format for the coordinates should be groupId:artifactId:version.
 
 Example
 
@@ -166,7 +171,7 @@ Example
       <td>Adding extra libraries to livy interpreter</td>
     </tr>
   </table>
-  
+
 ## How to use
 Basically, you can use
 
@@ -197,16 +202,23 @@ hello("livy")
 ```
 
 ## Impersonation
-When Zeppelin server is running with authentication enabled, then this interpreter utilizes Livy’s user impersonation feature i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}"). This is particularly useful when multi users are sharing a Notebook server.
-
+When Zeppelin server is running with authentication enabled,
+then this interpreter utilizes Livy’s user impersonation feature
+i.e. sends extra parameter for creating and running a session ("proxyUser": "${loggedInUser}").
+This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
-You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html). You can use both the `text input` and `select form` parameterization features.
+You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only avalible for livy sql interpreter.
+```
+%livy.sql
+select * from products where ${product_id=1}
+```
 
-```
-%livy.pyspark
-print "${group_by=product_id,product_id|product_name|customer_id|store_id}"
-```
+And creating dynamic formst programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
+
+## Shared SparkContext
+Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.
+That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`, `$livy.sparkr`.
 
 ## FAQ
 
@@ -226,4 +238,4 @@ The session would have timed out, you may need to restart the interpreter.
 Edit `conf/spark-blacklist.conf` file in livy server and comment out `#spark.master` line.
 
 If you choose to work on livy in `apps/spark/java` directory in [https://github.com/cloudera/hue](https://github.com/cloudera/hue),
-copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master`. 
+copy `spark-user-configurable-options.template` to `spark-user-configurable-options.conf` file in livy server and comment out `#spark.master`.

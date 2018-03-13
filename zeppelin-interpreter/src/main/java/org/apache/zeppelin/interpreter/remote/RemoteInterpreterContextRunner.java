@@ -18,7 +18,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  *
@@ -33,6 +32,6 @@ public class RemoteInterpreterContextRunner extends InterpreterContextRunner {
   public void run() {
     // this class should be used only for gson deserialize abstract class
     // code should not reach here
-    throw new InterpreterException("Assert");
+    throw new RuntimeException("Assert");
   }
 }

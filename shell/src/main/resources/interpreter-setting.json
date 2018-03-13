@@ -8,25 +8,36 @@
         "envName": "SHELL_COMMAND_TIMEOUT",
         "propertyName": "shell.command.timeout.millisecs",
         "defaultValue": "60000",
-        "description": "Shell command time out in millisecs. Default = 60000"
+        "description": "Shell command time out in millisecs. Default = 60000",
+        "type": "number"
+      },
+      "shell.working.directory.user.home": {
+        "envName": "SHELL_WORKING_DIRECTORY_USER_HOME",
+        "propertyName": "shell.working.directory.user.home",
+        "defaultValue": false,
+        "description": "If this set to true, the shell's working directory will be set to user home",
+        "type": "checkbox"
       },
       "zeppelin.shell.auth.type": {
         "envName": null,
         "propertyName": "zeppelin.shell.auth.type",
         "defaultValue": "",
-        "description": "If auth type is needed, Example: KERBEROS"
+        "description": "If auth type is needed, Example: KERBEROS",
+        "type": "string"
       },
       "zeppelin.shell.keytab.location": {
         "envName": null,
         "propertyName": "zeppelin.shell.keytab.location",
         "defaultValue": "",
-        "description": "Kerberos keytab location"
+        "description": "Kerberos keytab location",
+        "type": "string"
       },
       "zeppelin.shell.principal": {
         "envName": null,
         "propertyName": "zeppelin.shell.principal",
         "defaultValue": "",
-        "description": "Kerberos principal"
+        "description": "Kerberos principal",
+        "type": "string"
       }
     },
     "editor": {

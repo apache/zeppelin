@@ -1,0 +1,334 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="modal fade" id="shortcutModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="shortcut-modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="shortcut-modal-title" id="myModalLabel">Keyboard shortcuts</h4>
+      </div>
+      <div class="table-scroll">
+        <table class="table table-shortcut">
+          <tr>
+            <th style="width:70%">Note Keyboard Shortcuts</th>
+            <th></th>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Run paragraph</div>
+           </td>
+           <td>
+              <div class="keys">
+                <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">Enter</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Run all above/below paragraphs</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">Enter</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Cancel</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">C</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move cursor Up</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">P</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move cursor Down</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">N</kbd>
+              </div>
+            </td>
+          </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Remove paragraph</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">D</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Insert new paragraph above</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">A</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Insert new paragraph below</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">B</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Insert copy of paragraph below</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">C</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Move paragraph Up</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">K</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Move paragraph Down</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">J</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Enable/Disable run paragraph</div>
+          </td>
+          <td>
+            <div class="keys">
+              <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt' }}</kbd> + <kbd class="kbd-default">R</kbd>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="col-md-8">Toggle output</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">O</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Toggle editor</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">E</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Toggle line number</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">M</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Toggle title</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">T</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Clear output</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">L</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Link this paragraph</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">W</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Reduce paragraph width</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">-</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Increase paragraph width</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Shift</kbd> + <kbd class="kbd-default">+</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="sub-title">
+            <th style="width:70%">Editor Keyboard Shortcuts</th>
+            <th></th>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Auto-completion</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">.</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Cut the line</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">K</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Paste the line</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">Y</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Search inside the code</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">S</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move cursor to the beginning</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">A</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Move cursor at the end</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">E</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="col-md-8">Find in code</div>
+            </td>
+            <td>
+              <div class="keys">
+                <kbd class="kbd-default">Ctrl</kbd> + <kbd class="kbd-default">{{ isMac ? 'Option' : 'Alt'}}</kbd> + <kbd class="kbd-default">F</kbd>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

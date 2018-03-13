@@ -16,7 +16,13 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
+import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
+import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
+import org.apache.zeppelin.jupyter.zformat.TypeData;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,9 +34,34 @@ public class Stream extends Output {
   private String name;
 
   @SerializedName("text")
-  private List<String> text;
+  private Object text;
 
   public List<String> getText() {
-    return text;
+    List<String> textList = new ArrayList<>();
+    if (text instanceof String) {
+      textList.add((String) text);
+    } else {
+      textList = (List<String>) text;
+    }
+    return textList;
+  }
+
+  public boolean isError() {
+    if (name == null) {
+      return true;
+    }
+    return name.equals("stderr");
+  }
+
+  @Override
+  public ZeppelinOutputType getTypeOfZeppelin() {
+    return ZeppelinOutputType.TEXT;
+  }
+
+  @Override
+  public TypeData toZeppelinResult() {
+    List<String> text = verifyEndOfLine(getText());
+    String result = Joiner.on("").join(text);
+    return new TypeData(getTypeOfZeppelin().toString(), result);
   }
 }

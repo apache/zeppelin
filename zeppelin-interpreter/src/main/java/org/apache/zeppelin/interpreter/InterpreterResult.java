@@ -17,23 +17,27 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.IOException;
-import java.io.Serializable;
-
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Interpreter result template.
  */
-public class InterpreterResult implements Serializable {
+public class InterpreterResult implements Serializable, JsonSerializable {
   transient Logger logger = LoggerFactory.getLogger(InterpreterResult.class);
+  private static final Gson gson = new Gson();
+
   /**
    *  Type of result after code execution.
    */
-  public static enum Code {
+  public enum Code {
     SUCCESS,
     INCOMPLETE,
     ERROR,
@@ -43,7 +47,7 @@ public class InterpreterResult implements Serializable {
   /**
    * Type of Data.
    */
-  public static enum Type {
+  public enum Type {
     TEXT,
     HTML,
     ANGULAR,
@@ -107,6 +111,14 @@ public class InterpreterResult implements Serializable {
 
   public List<InterpreterResultMessage> message() {
     return msg;
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static InterpreterResult fromJson(String json) {
+    return gson.fromJson(json, InterpreterResult.class);
   }
 
   public String toString() {

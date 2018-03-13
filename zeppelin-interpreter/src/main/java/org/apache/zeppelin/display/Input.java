@@ -18,11 +18,20 @@
 package org.apache.zeppelin.display;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.display.ui.*;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,13 +46,13 @@ public class Input<T> implements Serializable {
   // in future.
   public static final RuntimeTypeAdapterFactory TypeAdapterFactory =
       RuntimeTypeAdapterFactory.of(Input.class, "type")
-        .registerSubtype(TextBox.class, "TextBox")
-        .registerSubtype(Select.class, "Select")
-        .registerSubtype(CheckBox.class, "CheckBox")
-        .registerSubtype(OldInput.OldTextBox.class, "input")
-        .registerSubtype(OldInput.OldSelect.class, "select")
-        .registerSubtype(OldInput.OldCheckBox.class, "checkbox")
-        .registerSubtype(OldInput.class, null);
+          .registerSubtype(TextBox.class, "TextBox")
+          .registerSubtype(Select.class, "Select")
+          .registerSubtype(CheckBox.class, "CheckBox")
+          .registerSubtype(OldInput.OldTextBox.class, "input")
+          .registerSubtype(OldInput.OldSelect.class, "select")
+          .registerSubtype(OldInput.OldCheckBox.class, "checkbox")
+          .registerSubtype(OldInput.class, null);
 
   protected String name;
   protected String displayName;
@@ -86,6 +95,50 @@ public class Input<T> implements Serializable {
     return argument;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Input<?> input = (Input<?>) o;
+
+    if (hidden != input.hidden) {
+      return false;
+    }
+    if (name != null ? !name.equals(input.name) : input.name != null) {
+      return false;
+    }
+    if (displayName != null ? !displayName.equals(input.displayName) : input.displayName != null) {
+      return false;
+    }
+    if (defaultValue instanceof Object[]) {
+      if (defaultValue != null ?
+          !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
+          : input.defaultValue != null) {
+        return false;
+      }
+    } else if (defaultValue != null ?
+        !defaultValue.equals(input.defaultValue) : input.defaultValue != null) {
+      return false;
+    }
+    return argument != null ? argument.equals(input.argument) : input.argument == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name != null ? name.hashCode() : 0;
+    result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+    result = 31 * result + (defaultValue != null ? defaultValue.hashCode() : 0);
+    result = 31 * result + (hidden ? 1 : 0);
+    result = 31 * result + (argument != null ? argument.hashCode() : 0);
+    return result;
+  }
+
   public static TextBox textbox(String name, String defaultValue) {
     return new TextBox(name, defaultValue);
   }
@@ -110,6 +163,8 @@ public class Input<T> implements Serializable {
   //                                                checkbox form with " or " as delimiter: will be
   //                                                expanded to "US or JP"
   private static final Pattern VAR_PTN = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
+  private static final Pattern VAR_NOTE_PTN =
+      Pattern.compile("([_])?[$]{2}[{]([^=}]*([=][^}]*)?)[}]");
 
   private static String[] getNameAndDisplayName(String str) {
     Pattern p = Pattern.compile("([^(]*)\\s*[(]([^)]*)[)]");
@@ -236,15 +291,21 @@ public class Input<T> implements Serializable {
     return input;
   }
 
-  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script) {
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script,
+                                                                    boolean noteForm) {
     LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
       return forms;
     }
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input form = getInputForm(match);
       forms.put(form.name, form);
     }
@@ -255,11 +316,18 @@ public class Input<T> implements Serializable {
 
   private static final String DEFAULT_DELIMITER = ",";
 
-  public static String getSimpleQuery(Map<String, Object> params, String script) {
+  public static String getSimpleQuery(Map<String, Object> params, String script, boolean noteForm) {
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input input = getInputForm(match);
       Object value;
       if (params.containsKey(input.name)) {
@@ -276,7 +344,7 @@ public class Input<T> implements Serializable {
           delimiter = DEFAULT_DELIMITER;
         }
         Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
-                : Arrays.asList((Object[]) value);
+            : Arrays.asList((Object[]) value);
         List<Object> validChecked = new LinkedList<>();
         for (Object o : checked) {  // filter out obsolete checked values
           for (ParamOption option : optionInput.getOptions()) {
@@ -292,7 +360,7 @@ public class Input<T> implements Serializable {
         expanded = value.toString();
       }
       replaced = match.replaceFirst(expanded);
-      match = VAR_PTN.matcher(replaced);
+      match = pattern.matcher(replaced);
     }
 
     return replaced;
@@ -316,22 +384,22 @@ public class Input<T> implements Serializable {
   }
 
   public static String[] split(String str, char split) {
-    return split(str, new String[] {String.valueOf(split)}, false);
+    return split(str, new String[]{String.valueOf(split)}, false);
   }
 
   public static String[] split(String str, String[] splitters, boolean includeSplitter) {
     String escapeSeq = "\"',;${}";
     char escapeChar = '\\';
 
-    String[] blockStart = new String[] {"\"", "'", "${", "N_(", "N_<"};
-    String[] blockEnd = new String[] {"\"", "'", "}", "N_)", "N_>"};
+    String[] blockStart = new String[]{"\"", "'", "${", "N_(", "N_<"};
+    String[] blockEnd = new String[]{"\"", "'", "}", "N_)", "N_>"};
 
     return split(str, escapeSeq, escapeChar, blockStart, blockEnd, splitters, includeSplitter);
 
   }
 
   public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
-      String[] blockEnd, String[] splitters, boolean includeSplitter) {
+                               String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
     List<String> splits = new ArrayList<>();
 
@@ -442,7 +510,7 @@ public class Input<T> implements Serializable {
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
           if (curString.substring(lastEscapeOffset + 1)
-                       .endsWith(getBlockStr(blockStart[b])) == true) {
+              .endsWith(getBlockStr(blockStart[b])) == true) {
             blockStack.add(0, b); // block is started
             blockStartPos = i;
             break;
@@ -453,7 +521,7 @@ public class Input<T> implements Serializable {
     if (curString.length() > 0) {
       splits.add(curString.toString().trim());
     }
-    return splits.toArray(new String[] {});
+    return splits.toArray(new String[]{});
 
   }
 

@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.helium;
 
+import com.google.gson.Gson;
 import org.apache.zeppelin.annotation.Experimental;
+import org.apache.zeppelin.common.JsonSerializable;
 
 import java.util.Map;
 
@@ -24,14 +26,17 @@ import java.util.Map;
  * Helium package definition
  */
 @Experimental
-public class HeliumPackage {
+public class HeliumPackage implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   private HeliumType type;
   private String name;           // user friendly name of this application
   private String description;    // description
   private String artifact;       // artifact name e.g) groupId:artifactId:versionId
   private String className;      // entry point
-  private String [][] resources; // resource classnames that requires
-                                 // [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  // resource classnames that requires [[ .. and .. and .. ] or [ .. and .. and ..] ..]
+  private String [][] resources;
+
   private String license;
   private String icon;
   private String published;
@@ -129,4 +134,12 @@ public class HeliumPackage {
   }
 
   public Map<String, Object> getConfig() { return config; }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static HeliumPackage fromJson(String json) {
+    return gson.fromJson(json, HeliumPackage.class);
+  }
 }

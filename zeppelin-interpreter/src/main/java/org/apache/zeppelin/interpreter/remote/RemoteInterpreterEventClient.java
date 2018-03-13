@@ -25,7 +25,11 @@ import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.ZeppelinServerResourceParagraphRunner;
-import org.apache.zeppelin.resource.*;
+import org.apache.zeppelin.resource.RemoteResource;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourceId;
+import org.apache.zeppelin.resource.ResourcePoolConnector;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +89,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    */
   public void angularObjectAdd(AngularObject object) {
     sendEvent(new RemoteInterpreterEvent(
-        RemoteInterpreterEventType.ANGULAR_OBJECT_ADD, gson.toJson(object)));
+        RemoteInterpreterEventType.ANGULAR_OBJECT_ADD, object.toJson()));
   }
 
   /**
@@ -93,7 +97,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    */
   public void angularObjectUpdate(AngularObject object) {
     sendEvent(new RemoteInterpreterEvent(
-        RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE, gson.toJson(object)));
+        RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE, object.toJson()));
   }
 
   /**
@@ -146,10 +150,9 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
       }
 
       // send request
-      Gson gson = new Gson();
       sendEvent(new RemoteInterpreterEvent(
           RemoteInterpreterEventType.RESOURCE_GET,
-          gson.toJson(resourceId)));
+          resourceId.toJson()));
 
       // wait for response
       while (!getResourceResponse.containsKey(resourceId)) {
@@ -198,11 +201,9 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         }
       }
       // send request
-      Gson gson = new Gson();
-
       sendEvent(new RemoteInterpreterEvent(
           RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
-          gson.toJson(invokeMethod)));
+          invokeMethod.toJson()));
       // wait for response
       while (!getInvokeResponse.containsKey(invokeMethod)) {
         try {
@@ -252,11 +253,9 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         }
       }
       // send request
-      Gson gson = new Gson();
-
       sendEvent(new RemoteInterpreterEvent(
           RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
-          gson.toJson(invokeMethod)));
+          invokeMethod.toJson()));
       // wait for response
       while (!getInvokeResponse.containsKey(invokeMethod)) {
         try {
@@ -279,7 +278,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
     ResourceSet resourceSet = new ResourceSet();
 
     for (String res : resources) {
-      RemoteResource resource = gson.fromJson(res, RemoteResource.class);
+      RemoteResource resource = RemoteResource.fromJson(res);
       resource.setResourcePoolConnector(this);
       resourceSet.add(resource);
     }
@@ -296,7 +295,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
    * @param object java serialized of the object
    */
   public void putResponseGetResource(String resourceId, ByteBuffer object) {
-    ResourceId rid = gson.fromJson(resourceId, ResourceId.class);
+    ResourceId rid = ResourceId.fromJson(resourceId);
 
     logger.debug("Response resource {} from RemoteInterpreter", rid.getName());
 
@@ -361,6 +360,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         try {
           eventQueue.wait(1000);
         } catch (InterruptedException e) {
+          // ignore exception
         }
       }
 

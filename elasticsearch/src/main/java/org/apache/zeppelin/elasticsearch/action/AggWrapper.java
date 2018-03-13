@@ -21,8 +21,9 @@ package org.apache.zeppelin.elasticsearch.action;
  * Contains the result of an aggregation.
  */
 public class AggWrapper {
-
-  /** Type of an aggregation (to know if there are buckets or not) */
+  /**
+   * Type of an aggregation (to know if there are buckets or not).
+   */
   public enum AggregationType { SIMPLE, MULTI_BUCKETS };
 
   private final AggregationType type;

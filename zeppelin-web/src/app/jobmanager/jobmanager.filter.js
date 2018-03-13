@@ -12,44 +12,45 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter)
+export function JobManagerFilter() {
+  function filterContext(jobs, filterConfig) {
+    let interpreter = filterConfig.interpreterFilterValue;
+    let noteName = filterConfig.noteNameFilterValue;
+    let isSortByAsc = filterConfig.isSortByAsc;
+    let filteredJobs = jobs;
 
-function jobManagerFilter () {
-  function filterContext (jobItems, filterConfig) {
-    let filterValueInterpreter = filterConfig.filterValueInterpreter
-    let filterValueNotebookName = filterConfig.filterValueNotebookName
-    let isSortByAsc = filterConfig.isSortByAsc
-    let filterItems = jobItems
-
-    if (filterValueInterpreter === undefined) {
-      filterItems = filterItems.filter((jobItem) => {
-        return jobItem.interpreter === undefined
-      })
-    } else if (filterValueInterpreter !== '*') {
-      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter})
+    if (typeof interpreter === 'undefined') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        return typeof jobItem.interpreter === 'undefined';
+      });
+    } else if (interpreter !== '*') {
+      filteredJobs = filteredJobs.filter((j) => j.interpreter === interpreter);
     }
 
-    if (filterValueNotebookName !== '') {
-      filterItems = filterItems.filter((jobItem) => {
-        let lowerFilterValue = filterValueNotebookName.toLocaleLowerCase()
-        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase()
-        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'))
-      })
+    // filter by note name
+    if (noteName !== '') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        let lowerFilterValue = noteName.toLocaleLowerCase();
+        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
+        return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
+      });
     }
 
-    filterItems = filterItems.sort((jobItem) => {
-      return jobItem.noteName.toLowerCase()
-    })
+    // sort by name
+    filteredJobs = filteredJobs.sort((jobItem) => {
+      return jobItem.noteName.toLowerCase();
+    });
 
-    filterItems = filterItems.sort((x, y) => {
+    // sort by timestamp
+    filteredJobs = filteredJobs.sort((x, y) => {
       if (isSortByAsc) {
-        return x.unixTimeLastRun - y.unixTimeLastRun
+        return x.unixTimeLastRun - y.unixTimeLastRun;
       } else {
-        return y.unixTimeLastRun - x.unixTimeLastRun
+        return y.unixTimeLastRun - x.unixTimeLastRun;
       }
-    })
+    });
 
-    return filterItems
+    return filteredJobs;
   }
-  return filterContext
+  return filterContext;
 }

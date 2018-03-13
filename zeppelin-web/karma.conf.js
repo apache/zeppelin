@@ -59,6 +59,7 @@ module.exports = function(config) {
       'bower_components/ace-builds/src-noconflict/mode-python.js',
       'bower_components/ace-builds/src-noconflict/mode-sql.js',
       'bower_components/ace-builds/src-noconflict/mode-markdown.js',
+      'bower_components/ace-builds/src-noconflict/mode-pig.js',
       'bower_components/ace-builds/src-noconflict/mode-sh.js',
       'bower_components/ace-builds/src-noconflict/mode-r.js',
       'bower_components/ace-builds/src-noconflict/keybinding-emacs.js',
@@ -85,12 +86,13 @@ module.exports = function(config) {
       'bower_components/MathJax/MathJax.js',
       'bower_components/clipboard/dist/clipboard.js',
       'bower_components/ngclipboard/dist/ngclipboard.js',
+      'bower_components/jsdiff/diff.js',
+      'bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
 
       'src/index.js',
-      // 'test/spec/**/*.js',
-      {pattern: 'src/**/*.test.js', watched: false},
+      { pattern: 'src/**/*.test.js', watched: false },
     ],
 
     // list of files / patterns to exclude
@@ -109,11 +111,9 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: [
-      'PhantomJS'
-    ],
+    browsers: [ 'PhantomJS' ],
 
-    reporters: ['coverage','progress'],
+    reporters: ['spec', 'coverage'],
 
     webpack: webpackConfig,
     webpackMiddleware: {
@@ -121,24 +121,16 @@ module.exports = function(config) {
     },
 
     preprocessors: {
-      'src/*/{*.js,!(test)/**/*.js}': 'coverage',
-      'src/**/*.js': ['webpack', 'sourcemap',],
+      'src/**/*.js': ['webpack', 'sourcemap'],
     },
 
     coverageReporter: {
-      type: 'html',
-      dir: './reports/zeppelin-web-coverage',
-      subdir: '.'
+      dir: 'reports/coverage',
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' },
+      ]
     },
-
-    // Which plugins to enable
-    plugins: [
-      'karma-phantomjs-launcher',
-      'karma-jasmine',
-      'karma-coverage',
-      'karma-webpack',
-      'karma-sourcemap-loader',
-    ],
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit

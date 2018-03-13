@@ -19,7 +19,7 @@
 
 usage() {
   echo "usage) $0 [OLD version] [NEW version]"
-  echo "   ex. $0 0.8.0-SNAPSHOT 0.8.0"
+  echo "   ex. $0 0.9.0-SNAPSHOT 0.9.0"
   exit 1
 }
 

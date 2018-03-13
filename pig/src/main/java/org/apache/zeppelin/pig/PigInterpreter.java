@@ -18,27 +18,30 @@
 package org.apache.zeppelin.pig;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.impl.logicalLayer.FrontendException;
-import org.apache.pig.tools.pigstats.*;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.pig.tools.pigscript.parser.ParseException;
+import org.apache.pig.tools.pigstats.PigStats;
+import org.apache.pig.tools.pigstats.ScriptState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 /**
  * Pig interpreter for Zeppelin.
  */
 public class PigInterpreter extends BasePigInterpreter {
-  private static Logger LOGGER = LoggerFactory.getLogger(PigInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PigInterpreter.class);
 
   private PigServer pigServer;
   private boolean includeJobStats = false;
@@ -59,7 +62,7 @@ public class PigInterpreter extends BasePigInterpreter {
     }
     try {
       pigServer = new PigServer(execType);
-      for (Map.Entry entry : getProperty().entrySet()) {
+      for (Map.Entry entry : getProperties().entrySet()) {
         if (!entry.getKey().toString().startsWith("zeppelin.")) {
           pigServer.getPigContext().getProperties().setProperty(entry.getKey().toString(),
               entry.getValue().toString());
@@ -98,6 +101,10 @@ public class PigInterpreter extends BasePigInterpreter {
       listenerMap.put(contextInterpreter.getParagraphId(), scriptListener);
       pigServer.registerScript(tmpFile.getAbsolutePath());
     } catch (IOException e) {
+      // 1. catch FrontendException, FrontendException happens in the query compilation phase.
+      // 2. catch ParseException for syntax error
+      // 3. PigStats, This is execution error
+      // 4. Other errors.
       if (e instanceof FrontendException) {
         FrontendException fe = (FrontendException) e;
         if (!fe.getMessage().contains("Backend error :")) {
@@ -107,9 +114,12 @@ public class PigInterpreter extends BasePigInterpreter {
           return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
         }
       }
+      if (e.getCause() instanceof ParseException) {
+        return new InterpreterResult(Code.ERROR, e.getCause().getMessage());
+      }
       PigStats stats = PigStats.get();
       if (stats != null) {
-        String errorMsg = PigUtils.extactJobStats(stats);
+        String errorMsg = stats.getDisplayString();
         if (errorMsg != null) {
           LOGGER.error("Fail to run pig script, " + errorMsg);
           return new InterpreterResult(Code.ERROR, errorMsg);
@@ -127,7 +137,7 @@ public class PigInterpreter extends BasePigInterpreter {
     StringBuilder outputBuilder = new StringBuilder();
     PigStats stats = PigStats.get();
     if (stats != null && includeJobStats) {
-      String jobStats = PigUtils.extactJobStats(stats);
+      String jobStats = stats.getDisplayString();
       if (jobStats != null) {
         outputBuilder.append(jobStats);
       }

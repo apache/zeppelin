@@ -56,7 +56,8 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     File pythonScript = new File(getPythonInterpreter().getScriptPath());
     InterpreterOutput out = context.out;
 
@@ -105,7 +106,7 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
 
-  public void setPythonCommand(String cmd) {
+  public void setPythonCommand(String cmd) throws InterpreterException {
     PythonInterpreter python = getPythonInterpreter();
     python.setPythonCommand(cmd);
   }
@@ -140,21 +141,27 @@ public class PythonDockerInterpreter extends Interpreter {
    */
   @Override
   public Scheduler getScheduler() {
-    PythonInterpreter pythonInterpreter = getPythonInterpreter();
-    if (pythonInterpreter != null) {
-      return pythonInterpreter.getScheduler();
-    } else {
+    PythonInterpreter pythonInterpreter = null;
+    try {
+      pythonInterpreter = getPythonInterpreter();
+      if (pythonInterpreter != null) {
+        return pythonInterpreter.getScheduler();
+      } else {
+        return null;
+      }
+    } catch (InterpreterException e) {
+      e.printStackTrace();
       return null;
     }
   }
 
-  private void restartPythonProcess() {
+  private void restartPythonProcess() throws InterpreterException {
     PythonInterpreter python = getPythonInterpreter();
     python.close();
     python.open();
   }
 
-  protected PythonInterpreter getPythonInterpreter() {
+  protected PythonInterpreter getPythonInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
@@ -173,7 +180,7 @@ public class PythonDockerInterpreter extends Interpreter {
     return python;
   }
 
-  public boolean pull(InterpreterOutput out, String image) {
+  public boolean pull(InterpreterOutput out, String image) throws InterpreterException {
     int exit = 0;
     try {
       exit = runCommand(out, "docker", "pull", image);

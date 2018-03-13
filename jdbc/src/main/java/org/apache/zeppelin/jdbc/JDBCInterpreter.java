@@ -38,18 +38,19 @@ import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.KerberosInterpreter;
 import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.jdbc.security.JDBCSecurityImpl;
@@ -59,8 +60,6 @@ import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Throwables;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
@@ -89,7 +88,7 @@ import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMeth
  * }
  * </p>
  */
-public class JDBCInterpreter extends Interpreter {
+public class JDBCInterpreter extends KerberosInterpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
@@ -150,13 +149,30 @@ public class JDBCInterpreter extends Interpreter {
     maxLineResults = MAX_LINE_DEFAULT;
   }
 
+  @Override
+  protected boolean runKerberosLogin() {
+    try {
+      if (UserGroupInformation.isLoginKeytabBased()) {
+        UserGroupInformation.getLoginUser().reloginFromKeytab();
+        return true;
+      } else if (UserGroupInformation.isLoginTicketBased()) {
+        UserGroupInformation.getLoginUser().reloginFromTicketCache();
+        return true;
+      }
+    } catch (Exception e) {
+      logger.error("Unable to run kinit for zeppelin", e);
+    }
+    return false;
+  }
+
   public HashMap<String, Properties> getPropertiesMap() {
     return basePropretiesMap;
   }
 
   @Override
   public void open() {
-    for (String propertyKey : property.stringPropertyNames()) {
+    super.open();
+    for (String propertyKey : properties.stringPropertyNames()) {
       logger.debug("propertyKey: {}", propertyKey);
       String[] keyValue = propertyKey.split("\\.", 2);
       if (2 == keyValue.length) {
@@ -169,7 +185,7 @@ public class JDBCInterpreter extends Interpreter {
           prefixProperties = new Properties();
           basePropretiesMap.put(keyValue[0].trim(), prefixProperties);
         }
-        prefixProperties.put(keyValue[1].trim(), property.getProperty(propertyKey));
+        prefixProperties.put(keyValue[1].trim(), getProperty(propertyKey));
       }
     }
 
@@ -192,6 +208,18 @@ public class JDBCInterpreter extends Interpreter {
 
     setMaxLineResults();
   }
+
+
+  protected boolean isKerboseEnabled() {
+    if (!isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
+      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(properties);
+      if (authType.equals(KERBEROS)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   private void setMaxLineResults() {
     if (basePropretiesMap.containsKey(COMMON_KEY) &&
@@ -251,17 +279,24 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private void initConnectionPoolMap() {
-    for (JDBCUserConfigurations configurations : jdbcUserConfigurationsMap.values()) {
+    for (String key : jdbcUserConfigurationsMap.keySet()) {
       try {
+        closeDBPool(key, DEFAULT_KEY);
+      } catch (SQLException e) {
+        logger.error("Error while closing database pool.", e);
+      }
+      try {
+        JDBCUserConfigurations configurations = jdbcUserConfigurationsMap.get(key);
         configurations.initConnectionPoolMap();
-      } catch (Exception e) {
-        logger.error("Error while closing initConnectionPoolMap...", e);
+      } catch (SQLException e) {
+        logger.error("Error while closing initConnectionPoolMap.", e);
       }
     }
   }
 
   @Override
   public void close() {
+    super.close();
     try {
       initStatementMap();
       initConnectionPoolMap();
@@ -321,7 +356,7 @@ public class JDBCInterpreter extends Interpreter {
   }
 
   private void setUserProperty(String propertyKey, InterpreterContext interpreterContext)
-      throws SQLException, IOException {
+      throws SQLException, IOException, InterpreterException {
 
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
@@ -389,18 +424,19 @@ public class JDBCInterpreter extends Interpreter {
     final Properties properties = jdbcUserConfigurations.getPropertyMap(propertyKey);
     final String url = properties.getProperty(URL_KEY);
 
-    if (isEmpty(property.getProperty("zeppelin.jdbc.auth.type"))) {
+    if (isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       connection = getConnectionFromPool(url, user, propertyKey, properties);
     } else {
-      UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(property);
+      UserGroupInformation.AuthenticationMethod authType =
+          JDBCSecurityImpl.getAuthtype(getProperties());
 
       final String connectionUrl = appendProxyUserToURL(url, user, propertyKey);
 
-      JDBCSecurityImpl.createSecureConfiguration(property, authType);
+      JDBCSecurityImpl.createSecureConfiguration(getProperties(), authType);
       switch (authType) {
         case KERBEROS:
           if (user == null || "false".equalsIgnoreCase(
-              property.getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
+              getProperty("zeppelin.jdbc.auth.kerberos.proxy.enable"))) {
             connection = getConnectionFromPool(connectionUrl, user, propertyKey, properties);
           } else {
             if (basePropretiesMap.get(propertyKey).containsKey("proxy.user.property")) {
@@ -462,7 +498,7 @@ public class JDBCInterpreter extends Interpreter {
     return connectionUrl.toString();
   }
 
-  private String getPassword(Properties properties) throws IOException {
+  private String getPassword(Properties properties) throws IOException, InterpreterException {
     if (isNotEmpty(properties.getProperty(PASSWORD_KEY))) {
       return properties.getProperty(PASSWORD_KEY);
     } else if (isNotEmpty(properties.getProperty(JDBC_JCEKS_FILE))
@@ -490,7 +526,7 @@ public class JDBCInterpreter extends Interpreter {
     return null;
   }
 
-  private String getResults(ResultSet resultSet, boolean isTableType)
+  private String getResults(ResultSet resultSet, boolean isTableType, MutableBoolean isComplete)
       throws SQLException {
     ResultSetMetaData md = resultSet.getMetaData();
     StringBuilder msg;
@@ -509,7 +545,11 @@ public class JDBCInterpreter extends Interpreter {
     msg.append(NEWLINE);
 
     int displayRowCount = 0;
-    while (displayRowCount < getMaxResult() && resultSet.next()) {
+    while (resultSet.next()) {
+      if (displayRowCount >= getMaxResult()) {
+        isComplete.setValue(false);
+        break;
+      }
       for (int i = 1; i < md.getColumnCount() + 1; i++) {
         Object resultObject;
         String resultValue;
@@ -625,7 +665,7 @@ public class JDBCInterpreter extends Interpreter {
 
   private InterpreterResult executeSql(String propertyKey, String sql,
       InterpreterContext interpreterContext) {
-    Connection connection;
+    Connection connection = null;
     Statement statement;
     ResultSet resultSet = null;
     String paragraphId = interpreterContext.getParagraphId();
@@ -640,11 +680,21 @@ public class JDBCInterpreter extends Interpreter {
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
     try {
       connection = getConnection(propertyKey, interpreterContext);
-      if (connection == null) {
-        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    } catch (Exception e) {
+      String errorMsg = ExceptionUtils.getStackTrace(e);
+      try {
+        closeDBPool(user, propertyKey);
+      } catch (SQLException e1) {
+        logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
       }
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    }
+    if (connection == null) {
+      return new InterpreterResult(Code.ERROR, "Prefix not found.");
+    }
 
-
+    try {
       List<String> sqlArray;
       if (splitQuery) {
         sqlArray = splitSqlQueries(sql);
@@ -655,6 +705,11 @@ public class JDBCInterpreter extends Interpreter {
       for (int i = 0; i < sqlArray.size(); i++) {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
+
+        // fetch n+1 rows in order to indicate there's more rows available (for large selects)
+        statement.setFetchSize(getMaxResult());
+        statement.setMaxRows(getMaxResult() + 1);
+
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
         }
@@ -680,10 +735,11 @@ public class JDBCInterpreter extends Interpreter {
               interpreterResult.add(InterpreterResult.Type.TEXT,
                   "Query executed successfully.");
             } else {
+              MutableBoolean isComplete = new MutableBoolean(true);
               String results = getResults(resultSet,
-                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE));
+                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE), isComplete);
               interpreterResult.add(results);
-              if (resultSet.next()) {
+              if (!isComplete.booleanValue()) {
                 interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
                     String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
               }
@@ -708,6 +764,12 @@ public class JDBCInterpreter extends Interpreter {
           }
         }
       }
+    } catch (Throwable e) {
+      logger.error("Cannot run " + sql, e);
+      String errorMsg = ExceptionUtils.getStackTrace(e);
+      interpreterResult.add(errorMsg);
+      return new InterpreterResult(Code.ERROR, interpreterResult.message());
+    } finally {
       //In case user ran an insert/update/upsert statement
       if (connection != null) {
         try {
@@ -718,50 +780,8 @@ public class JDBCInterpreter extends Interpreter {
         } catch (SQLException e) { /*ignored*/ }
       }
       getJDBCConfiguration(user).removeStatement(paragraphId);
-    } catch (Throwable e) {
-      if (e.getCause() instanceof TTransportException &&
-          Throwables.getStackTraceAsString(e).contains("GSS") &&
-          getJDBCConfiguration(user).isConnectionInDBDriverPoolSuccessful(propertyKey)) {
-        return reLoginFromKeytab(propertyKey, sql, interpreterContext, interpreterResult);
-      } else {
-        logger.error("Cannot run " + sql, e);
-        String errorMsg = Throwables.getStackTraceAsString(e);
-        try {
-          closeDBPool(user, propertyKey);
-        } catch (SQLException e1) {
-          logger.error("Cannot close DBPool for user, propertyKey: " + user + propertyKey, e1);
-        }
-        interpreterResult.add(errorMsg);
-        return new InterpreterResult(Code.ERROR, interpreterResult.message());
-      }
     }
     return interpreterResult;
-  }
-
-  private InterpreterResult reLoginFromKeytab(String propertyKey, String sql,
-     InterpreterContext interpreterContext, InterpreterResult interpreterResult) {
-    String user = interpreterContext.getAuthenticationInfo().getUser();
-    try {
-      closeDBPool(user, propertyKey);
-    } catch (SQLException e) {
-      logger.error("Error, could not close DB pool in reLoginFromKeytab ", e);
-    }
-    UserGroupInformation.AuthenticationMethod authType =
-        JDBCSecurityImpl.getAuthtype(property);
-    if (authType.equals(KERBEROS)) {
-      try {
-        if (UserGroupInformation.isLoginKeytabBased()) {
-          UserGroupInformation.getLoginUser().reloginFromKeytab();
-        } else if (UserGroupInformation.isLoginTicketBased()) {
-          UserGroupInformation.getLoginUser().reloginFromTicketCache();
-        }
-      } catch (IOException e) {
-        logger.error("Cannot reloginFromKeytab " + sql, e);
-        interpreterResult.add(e.getMessage());
-        return new InterpreterResult(Code.ERROR, interpreterResult.message());
-      }
-    }
-    return executeSql(propertyKey, sql, interpreterContext);
   }
 
   /**
@@ -838,7 +858,7 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+      InterpreterContext interpreterContext) throws InterpreterException {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     String propertyKey = getPropertyKey(buf);
     String sqlCompleterKey =

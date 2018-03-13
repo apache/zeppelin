@@ -16,14 +16,15 @@
 # limitations under the License.
 #
 
+
 bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
 
 function usage() {
-    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
+    echo "usage) $0 -p <port> -r <intp_port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
-while getopts "hp:d:l:v:u:g:" o; do
+while getopts "hc:p:r:d:l:v:u:g:" o; do
     case ${o} in
         h)
             usage
@@ -32,8 +33,14 @@ while getopts "hp:d:l:v:u:g:" o; do
         d)
             INTERPRETER_DIR=${OPTARG}
             ;;
+        c)
+            CALLBACK_HOST=${OPTARG} # This will be used callback host
+            ;;
         p)
-            PORT=${OPTARG}
+            PORT=${OPTARG} # This will be used for callback port
+            ;;
+        r)
+            INTP_PORT=${OPTARG} # This will be used for interpreter process port
             ;;
         l)
             LOCAL_INTERPRETER_REPO=${OPTARG}
@@ -44,14 +51,9 @@ while getopts "hp:d:l:v:u:g:" o; do
             ;;
         u)
             ZEPPELIN_IMPERSONATE_USER="${OPTARG}"
-            if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
-              ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
-            else
-              ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
-            fi
             ;;
         g)
-            INTERPRETER_GROUP_NAME=${OPTARG}
+            INTERPRETER_SETTING_NAME=${OPTARG}
             ;;
         esac
 done
@@ -88,14 +90,21 @@ ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
-ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-"
-if [[ ! -z "$INTERPRETER_GROUP_NAME" ]]; then
-    ZEPPELIN_LOGFILE+="${INTERPRETER_GROUP_NAME}-"
+ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_SETTING_NAME}-"
+
+if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
+    if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
+        ZEPPELIN_IMPERSONATE_RUN_CMD=`echo "ssh ${ZEPPELIN_IMPERSONATE_USER}@localhost" `
+    fi
+else
+    ZEPPELIN_IMPERSONATE_RUN_CMD=$(eval "echo ${ZEPPELIN_IMPERSONATE_CMD} ")
 fi
+
+
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
 fi
-ZEPPELIN_LOGFILE+="${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
+ZEPPELIN_LOGFILE+="${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
@@ -105,9 +114,14 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+
+  # run kinit
+  if [[ -n "${ZEPPELIN_SERVER_KERBEROS_KEYTAB}" ]] && [[ -n "${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}" ]]; then
+    kinit -kt ${ZEPPELIN_SERVER_KERBEROS_KEYTAB} ${ZEPPELIN_SERVER_KERBEROS_PRINCIPAL}
+  fi
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
-    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
+    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/spark-interpreter*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
     ZEPPELIN_INTP_CLASSPATH+=":${SPARK_APP_JAR}"
 
@@ -140,7 +154,13 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
     fi
     unset PYSPARKPATH
+    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
+  fi
 
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+  else
     # autodetect HADOOP_CONF_HOME by heuristic
     if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
       if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
@@ -149,13 +169,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
         export HADOOP_CONF_DIR="/etc/hadoop/conf"
       fi
     fi
-
-    if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-      ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
-    fi
-
-    export SPARK_CLASSPATH+=":${ZEPPELIN_INTP_CLASSPATH}"
   fi
+
 elif [[ "${INTERPRETER_ID}" == "hbase" ]]; then
   if [[ -n "${HBASE_CONF_DIR}" ]]; then
     ZEPPELIN_INTP_CLASSPATH+=":${HBASE_CONF_DIR}"
@@ -190,7 +205,7 @@ fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" && "${INTERPRETER_ID}" != "spark" ]]; then
     suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
        INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
@@ -201,22 +216,19 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    if [[ -n "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" != "false" ]];  then
-       INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} --proxy-user ${ZEPPELIN_IMPERSONATE_USER} ${SPARK_APP_JAR} ${PORT}`
-    else
-       INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT}`
-    fi
+    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} ${INTP_PORT}`
 else
-    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} `
+    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_PORT}`
 fi
+
 
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
     INTERPRETER_RUN_COMMAND+="'"
 fi
 
 eval $INTERPRETER_RUN_COMMAND &
-
 pid=$!
+
 if [[ -z "${pid}" ]]; then
   exit 1;
 else

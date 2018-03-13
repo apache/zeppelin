@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.Instance;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
@@ -48,7 +48,7 @@ import com.google.gson.reflect.TypeToken;
 /**
  * ZeppelinHub repo class.
  */
-public class ZeppelinHubRepo implements NotebookRepo {
+public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRepo.class);
   private static final String DEFAULT_SERVER = "https://www.zeppelinhub.com";
   static final String ZEPPELIN_CONF_PROP_NAME_SERVER = "zeppelinhub.api.address";
@@ -186,7 +186,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, noteId);
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.fromJson(response);
     if (note == null) {
       return EMPTY_NOTE;
     }
@@ -199,7 +199,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     if (note == null || !isSubjectValid(subject)) {
       throw new IOException("Zeppelinhub failed to save note");
     }
-    String jsonNote = GSON.toJson(note);
+    String jsonNote = note.toJson();
     String token = getUserToken(subject.getUser());
     LOG.info("ZeppelinHub REST API saving note {} ", note.getId());
     restApiClient.put(token, jsonNote);
@@ -245,7 +245,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, endpoint);
 
-    Note note = GSON.fromJson(response, Note.class);
+    Note note = Note.fromJson(response);
     if (note == null) {
       return EMPTY_NOTE;
     }

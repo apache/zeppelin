@@ -122,7 +122,11 @@ JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
 export JAVA_OPTS
 
 JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
-JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
+if [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then
+    JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
+else
+    JAVA_INTP_OPTS+=" -Dlog4j.configuration=log4j_yarn_cluster.properties"
+fi
 export JAVA_INTP_OPTS
 
 

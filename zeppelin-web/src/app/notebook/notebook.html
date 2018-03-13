@@ -14,6 +14,14 @@ limitations under the License.
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div id="actionbar" ng-include src="'app/notebook/notebook-actionBar.html'"></div>
 <div id="content" class="notebookContent">
+  <!-- revisions comparator-->
+  <div ng-if="showRevisionsComparator" class="revisions-comparator">
+    <div>
+      <h4>Revisions comparator</h4>
+    </div>
+    <hr />
+    <revisions-comparator note-revisions="noteRevisions"></revisions-comparator>
+  </div>
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
     <div>
@@ -81,13 +89,19 @@ limitations under the License.
           <select id="selectOwners" multiple="multiple">
             <option is-select2="false" ng-repeat="owner in permissions.owners" selected="selected">{{owner}}</option>
           </select>
-          Owners can change permissions,read and write the note.
+          Owners can change permissions,read, run and write the note.
         </p>
         <p><span class="writers">Writers </span>
           <select id="selectWriters" multiple="multiple">
             <option is-select2="false" ng-repeat="writers in permissions.writers" selected="selected">{{writers}}</option>
           </select>
-            Writers can read and write the note.
+            Writers can read, run and write the note.
+        </p>
+        <p><span class="runners">Runners </span>
+          <select id="selectRunners" multiple="multiple">
+            <option is-select2="false" ng-repeat="runners in permissions.runners" selected="selected">{{runners}}</option>
+          </select>
+            Runners can read and run the note.
         </p>
         <p><span class="readers">Readers </span>
           <select id="selectReaders" multiple="multiple">
@@ -105,6 +119,23 @@ limitations under the License.
   </div>
 
   <div class="note-jump"></div>
+  <div id="noteForms" ng-if="isShowNoteForms()" class="paragraph-space box">
+    <div>
+      <h4>Note forms</h4>
+    </div>
+    <hr />
+    <div>
+      <dynamic-forms
+        id="note.id"
+        hide="hideForms"
+        disable="disableForms"
+        actiononchange="actionOnFormSelectionChange"
+        forms="note.noteForms"
+        params="note.noteParams"
+        action="saveNoteForms"
+        removeaction="removeNoteForms"></dynamic-forms>
+    </div>
+  </div>
 
   <!-- Include the paragraphs according to the note, pass the note to init function -->
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
@@ -112,10 +143,16 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-init="init(currentParagraph, note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-       style="margin: 0; padding: 0;"
+       style="margin: 0; padding: 0;">
+
+       <!-- see ZEPPELIN-2806
        viewport-watch>
-    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+       -->
+    <div class="new-paragraph"
+         ng-click="insertNew('above')"
+         ng-hide="viewOnly || asIframe || revisionView"
+         ng-class="{'first-paragraph': $first}">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
@@ -124,8 +161,8 @@ limitations under the License.
          ng-hide="currentParagraph.config.tableHide && viewOnly"
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
-    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43;</h4>
+    <div class="new-paragraph last-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
+      <h4 class="plus-sign">&#43; Add Paragraph</h4>
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

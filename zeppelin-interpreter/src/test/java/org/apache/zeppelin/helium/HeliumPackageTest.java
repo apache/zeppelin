@@ -17,16 +17,13 @@
 
 package org.apache.zeppelin.helium;
 
-import com.google.gson.Gson;
 import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HeliumPackageTest {
-
-  private Gson gson = new Gson();
 
   @Test
   public void parseSpellPackageInfo() {
@@ -43,7 +40,7 @@ public class HeliumPackageTest {
         "  }\n" +
         "}";
 
-    HeliumPackage p = gson.fromJson(examplePackage, HeliumPackage.class);
+    HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     assertEquals(p.getSpellInfo().getMagic(), "%echo");
     assertEquals(p.getSpellInfo().getUsage(), "%echo <TEXT>");
   }
@@ -70,11 +67,11 @@ public class HeliumPackageTest {
         "  }\n" +
         "}";
 
-    HeliumPackage p = gson.fromJson(examplePackage, HeliumPackage.class);
+    HeliumPackage p = HeliumPackage.fromJson(examplePackage);
     Map<String, Object> config = p.getConfig();
     Map<String, Object> accessToken = (Map<String, Object>) config.get("access-token");
 
-    assertEquals((String) accessToken.get("type"),"string");
+    assertEquals((String) accessToken.get("type"), "string");
     assertEquals((String) accessToken.get("description"),
         "access token for Google Translation API");
     assertEquals((String) accessToken.get("defaultValue"),
