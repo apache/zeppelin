@@ -379,6 +379,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             setting.option.remote = true;
           }
           setting.option.owners = angular.element('#' + setting.name + 'Owners').val();
+          for (let i = 0; i < setting.option.owners.length; i++) {
+            setting.option.owners[i] = setting.option.owners[i].trim();
+          }
 
           let request = {
             option: angular.copy(setting.option),
