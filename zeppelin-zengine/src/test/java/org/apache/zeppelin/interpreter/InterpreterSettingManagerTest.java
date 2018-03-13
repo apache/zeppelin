@@ -72,6 +72,12 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(2, repositories.size());
     assertEquals("central", repositories.get(0).getId());
 
+    // verify interpreter binding
+    List<String> interpreterSettingIds = interpreterSettingManager.getInterpreterBinding("2C6793KRV");
+    assertEquals(2, interpreterSettingIds.size());
+    assertEquals("test", interpreterSettingIds.get(0));
+    assertEquals("test2", interpreterSettingIds.get(1));
+
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
