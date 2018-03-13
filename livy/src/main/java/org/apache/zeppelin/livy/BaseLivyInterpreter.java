@@ -19,6 +19,7 @@ package org.apache.zeppelin.livy;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -68,6 +69,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.kerberos.client.KerberosRestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -653,18 +655,24 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     }
 
 
+    
+    RestTemplate restTemplate = null;
     if (isSpnegoEnabled) {
       if (httpClient == null) {
-        return new KerberosRestTemplate(keytabLocation, principal);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal);
       } else {
-        return new KerberosRestTemplate(keytabLocation, principal, httpClient);
+        restTemplate = new KerberosRestTemplate(keytabLocation, principal, httpClient);
       }
     }
     if (httpClient == null) {
-      return new RestTemplate();
+      restTemplate = new RestTemplate();
     } else {
-      return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
+      restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
+    if (null != restTemplate) {
+      restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    }
+    return restTemplate;
   }
 
   private String callRestAPI(String targetURL, String method) throws LivyException {
