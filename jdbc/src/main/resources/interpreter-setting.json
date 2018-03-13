@@ -46,9 +46,9 @@
         "defaultValue": "",
         "description": "SQL which executes while opening connection"
       },
-      "default.sessionPrecode": {
+      "default.statementPrecode": {
         "envName": null,
-        "propertyName": "default.sessionPrecode",
+        "propertyName": "default.statementPrecode",
         "defaultValue": "",
         "description": "Runs before each run of the paragraph, in the same connection"
       },

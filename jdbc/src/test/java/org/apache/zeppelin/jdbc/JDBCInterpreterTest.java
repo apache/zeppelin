@@ -17,13 +17,13 @@ package org.apache.zeppelin.jdbc;
 import static java.lang.String.format;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_SESSION_PRECODE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_STATEMENT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.SESSION_PRECODE_KEY_TEMPLATE;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -531,7 +531,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(DEFAULT_SESSION_PRECODE, "set @v='session'");
+    properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set @v='session'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -551,7 +551,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
-    properties.setProperty(DEFAULT_SESSION_PRECODE, "set incorrect");
+    properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set incorrect");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
@@ -570,7 +570,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("anotherPrefix.url", getJdbcConnection());
     properties.setProperty("anotherPrefix.user", "");
     properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(SESSION_PRECODE_KEY_TEMPLATE, "anotherPrefix"), "set @v='sessionAnotherPrefix'");
+    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"), "set @v='sessionAnotherPrefix'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
