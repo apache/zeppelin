@@ -208,6 +208,19 @@ public class InterpreterSettingManager {
       return;
     }
 
+    // update interpreter binding first as we change interpreter setting id in ZEPPELIN-3208.
+    Map<String, List<String>> newBindingMap = new HashMap<>();
+    for (Map.Entry<String, List<String>> entry : infoSaving.interpreterBindings.entrySet()) {
+      String noteId = entry.getKey();
+      List<String> oldSettingIdList = entry.getValue();
+      List<String> newSettingIdList = new ArrayList<>();
+      for (String oldId : oldSettingIdList) {
+        newSettingIdList.add(infoSaving.interpreterSettings.get(oldId).getName());
+      }
+      newBindingMap.put(noteId, newSettingIdList);
+    }
+    interpreterBindings.putAll(newBindingMap);
+
     //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
     for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
       savedInterpreterSetting.setProperties(InterpreterSetting.convertInterpreterProperties(
@@ -258,8 +271,6 @@ public class InterpreterSettingManager {
           savedInterpreterSetting.getName());
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
     }
-
-    interpreterBindings.putAll(infoSaving.interpreterBindings);
 
     if (infoSaving.interpreterRepositories != null) {
       for (RemoteRepository repo : infoSaving.interpreterRepositories) {
