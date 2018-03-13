@@ -379,6 +379,15 @@ public class LivyInterpreterIT {
     } catch (Exception e) {
       e.printStackTrace();
     }
+        //test special characters
+    try {
+      String utf8Str = "açñiñíûÑoç";
+      InterpreterResult result = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertTrue(result.message().get(0).getData().contains(utf8Str));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
