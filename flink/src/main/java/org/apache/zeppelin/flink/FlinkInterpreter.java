@@ -31,6 +31,7 @@ import org.apache.flink.api.common.JobID;
 import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.akka.AkkaUtils;
+import org.apache.flink.runtime.highavailability.HighAvailabilityServicesUtils;
 import org.apache.flink.runtime.instance.ActorGateway;
 import org.apache.flink.runtime.messages.JobManagerMessages;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
@@ -378,9 +379,11 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   private void startFlinkMiniCluster() {
-    localFlinkCluster = new LocalFlinkMiniCluster(flinkConf, false);
-
     try {
+      localFlinkCluster = new LocalFlinkMiniCluster(flinkConf,
+              HighAvailabilityServicesUtils.createHighAvailabilityServices(flinkConf,
+              org.apache.flink.runtime.concurrent.Executors.directExecutor(),
+              HighAvailabilityServicesUtils.AddressResolution.NO_ADDRESS_RESOLUTION),false);
       localFlinkCluster.start(true);
     } catch (Exception e){
       throw new RuntimeException("Could not start Flink mini cluster.", e);
