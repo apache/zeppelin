@@ -372,9 +372,9 @@ public class LivyInterpreterIT {
 
     // test utf-8 Encoding
     String utf8Str = "你你你你你你好";
-    InterpreterResult result = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().get(0).getData().contains(utf8Str));
+    InterpreterResult reslt = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, reslt.code());
+    assertTrue(reslt.message().get(0).getData().contains(utf8Str));
 
     //test special characters
     String charStr = "açñiñíûÑoç";
