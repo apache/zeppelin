@@ -301,7 +301,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.repo = repo;
   }
 
-  void setRevisionSupported(NotebookRepo repo) {
+  public void setRevisionSupported() {
     if (repo instanceof NotebookRepoSync) {
       getConfig()
           .put("isRevisionSupported", ((NotebookRepoSync) repo).isRevisionSupportedInDefaultRepo());

@@ -209,6 +209,7 @@ public class Notebook implements NoteEventListener {
         newNote.setName(oldNote.getName());
       }
       newNote.setCronSupported(getConf());
+      newNote.setRevisionSupported();
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
         newNote.addCloneParagraph(p, subject);
@@ -246,6 +247,7 @@ public class Notebook implements NoteEventListener {
       newNote.setName("Note " + newNote.getId());
     }
     newNote.setCronSupported(getConf());
+    newNote.setRevisionSupported();
     // Copy the interpreter bindings
     List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
     bindInterpretersToNote(subject.getUser(), newNote.getId(), boundInterpreterSettingsIds);
@@ -521,7 +523,7 @@ public class Notebook implements NoteEventListener {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
-    note.setRevisionSupported(notebookRepo);
+    note.setRevisionSupported();
     note.setCronSupported(getConf());
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
