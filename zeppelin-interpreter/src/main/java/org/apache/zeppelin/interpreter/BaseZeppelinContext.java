@@ -772,7 +772,7 @@ public abstract class BaseZeppelinContext {
    */
   @Experimental
   public void registerHook(String event, String cmd) {
-    String className = interpreterContext.getClassName();
+    String className = interpreterContext.getInterpreterClassName();
     registerHook(event, cmd, className);
   }
 
@@ -794,7 +794,7 @@ public abstract class BaseZeppelinContext {
    */
   @Experimental
   public String getHook(String event) {
-    String className = interpreterContext.getClassName();
+    String className = interpreterContext.getInterpreterClassName();
     return getHook(event, className);
   }
 
@@ -816,7 +816,7 @@ public abstract class BaseZeppelinContext {
    */
   @Experimental
   public void unregisterHook(String event) {
-    String className = interpreterContext.getClassName();
+    String className = interpreterContext.getInterpreterClassName();
     unregisterHook(event, className);
   }
 
