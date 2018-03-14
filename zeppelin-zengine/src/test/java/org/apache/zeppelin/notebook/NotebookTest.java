@@ -31,6 +31,8 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo;
+import org.apache.zeppelin.notebook.repo.GitHubNotebookRepo;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
@@ -108,6 +110,31 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @After
   public void tearDown() throws Exception {
     super.tearDown();
+  }
+
+  @Test
+  public void testRevisionSupported() throws IOException, SchedulerException {
+    NotebookRepo notebookRepo;
+    Notebook notebook;
+
+    notebookRepo = new VFSNotebookRepo(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
+        interpreterSettingManager, this, null,
+        notebookAuthorization, credentials);
+    assertFalse("Revision is not supported in VFSNotebookRepo", notebook.isRevisionSupported());
+
+    notebookRepo = new GitHubNotebookRepo(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
+        interpreterSettingManager, this, null,
+        notebookAuthorization, credentials);
+    assertTrue("Revision is supported in GitHubNotebookRepo", notebook.isRevisionSupported());
+
+    notebookRepo = new FileSystemNotebookRepo(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
+        interpreterSettingManager, this, null,
+        notebookAuthorization, credentials);
+    assertFalse("Revision is not supported in FileSystemNotebookRepo",
+        notebook.isRevisionSupported());
   }
 
   @Test
