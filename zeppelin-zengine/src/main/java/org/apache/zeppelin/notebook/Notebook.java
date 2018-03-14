@@ -521,7 +521,6 @@ public class Notebook implements NoteEventListener {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
-    note.setRevisionSupported(notebookRepo);
     note.setCronSupported(getConf());
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
@@ -1058,6 +1057,16 @@ public class Notebook implements NoteEventListener {
   private void fireUnbindInterpreter(Note note, InterpreterSetting setting) {
     for (NotebookEventListener listener : notebookEventListeners) {
       listener.onUnbindInterpreter(note, setting);
+    }
+  }
+
+  public Boolean isRevisionSupported() {
+    if (notebookRepo instanceof NotebookRepoSync) {
+      return ((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo();
+    } else if (notebookRepo instanceof NotebookRepoWithVersionControl) {
+      return true;
+    } else {
+      return false;
     }
   }
 
