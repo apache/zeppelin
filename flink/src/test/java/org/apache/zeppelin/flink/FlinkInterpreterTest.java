@@ -38,6 +38,8 @@ public class FlinkInterpreterTest {
   @BeforeClass
   public static void setUp() {
     Properties p = new Properties();
+    p.setProperty("jobmanager.rpc.address", "localhost");
+    p.setProperty("jobmanager.rpc.port", "6123");
     flink = new FlinkInterpreter(p);
     flink.open();
     context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null);
