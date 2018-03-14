@@ -371,14 +371,16 @@ public class LivyInterpreterIT {
     }
 
     // test utf-8 Encoding
-    try {
-      String utf8Str = "你你你你你你好";
-      InterpreterResult result = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(result.message().get(0).getData().contains(utf8Str));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    String utf8Str = "你你你你你你好";
+    InterpreterResult reslt = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, reslt.code());
+    assertTrue(reslt.message().get(0).getData().contains(utf8Str));
+
+    //test special characters
+    String charStr = "açñiñíûÑoç";
+    InterpreterResult res = pysparkInterpreter.interpret("print(\"" + charStr + "\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, res.code());
+    assertTrue(res.message().get(0).getData().contains(charStr));
 
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
