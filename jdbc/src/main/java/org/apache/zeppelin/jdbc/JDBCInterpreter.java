@@ -14,6 +14,27 @@
  */
 package org.apache.zeppelin.jdbc;
 
+import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
+
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDriver;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.alias.CredentialProvider;
+import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -33,19 +54,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.mutable.MutableBoolean;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -58,13 +66,6 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
-import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
 /**
  * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
@@ -89,7 +90,6 @@ import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMeth
  * </p>
  */
 public class JDBCInterpreter extends KerberosInterpreter {
-
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
   static final String INTERPRETER_NAME = "jdbc";
@@ -128,9 +128,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   static final String EMPTY_COLUMN_VALUE = "";
 
-  private final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
-  private final String CONCURRENT_EXECUTION_COUNT = "zeppelin.jdbc.concurrent.max_connection";
-  private final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
+  private static final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
+  private static final String CONCURRENT_EXECUTION_COUNT =
+          "zeppelin.jdbc.concurrent.max_connection";
+  private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
@@ -206,7 +207,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     setMaxLineResults();
   }
 
-
   protected boolean isKerboseEnabled() {
     if (!isEmpty(getProperty("zeppelin.jdbc.auth.type"))) {
       UserGroupInformation.AuthenticationMethod authType = JDBCSecurityImpl.getAuthtype(properties);
@@ -216,7 +216,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
     return false;
   }
-
 
   private void setMaxLineResults() {
     if (basePropretiesMap.containsKey(COMMON_KEY) &&
@@ -334,8 +333,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   public JDBCUserConfigurations getJDBCConfiguration(String user) {
-    JDBCUserConfigurations jdbcUserConfigurations =
-      jdbcUserConfigurationsMap.get(user);
+    JDBCUserConfigurations jdbcUserConfigurations = jdbcUserConfigurationsMap.get(user);
 
     if (jdbcUserConfigurations == null) {
       jdbcUserConfigurations = new JDBCUserConfigurations();
@@ -357,8 +355,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     String user = interpreterContext.getAuthenticationInfo().getUser();
 
-    JDBCUserConfigurations jdbcUserConfigurations =
-      getJDBCConfiguration(user);
+    JDBCUserConfigurations jdbcUserConfigurations = getJDBCConfiguration(user);
     if (basePropretiesMap.get(propertyKey).containsKey(USER_KEY) &&
         !basePropretiesMap.get(propertyKey).getProperty(USER_KEY).isEmpty()) {
       String password = getPassword(basePropretiesMap.get(propertyKey));
@@ -373,7 +370,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     jdbcUserConfigurations.cleanUserProperty(propertyKey);
 
     UsernamePassword usernamePassword = getUsernamePassword(interpreterContext,
-      getEntityName(interpreterContext.getReplName()));
+            getEntityName(interpreterContext.getReplName()));
     if (usernamePassword != null) {
       jdbcUserConfigurations.setUserProperty(propertyKey, usernamePassword);
     } else {
@@ -384,10 +381,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private void createConnectionPool(String url, String user, String propertyKey,
       Properties properties) throws SQLException, ClassNotFoundException {
     ConnectionFactory connectionFactory =
-      new DriverManagerConnectionFactory(url, properties);
+            new DriverManagerConnectionFactory(url, properties);
 
     PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
-      connectionFactory, null);
+            connectionFactory, null);
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
 
     poolableConnectionFactory.setPool(connectionPool);
@@ -803,7 +800,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     logger.info("Cancel current query statement.");
     String paragraphId = context.getParagraphId();
     JDBCUserConfigurations jdbcUserConfigurations =
-      getJDBCConfiguration(context.getAuthenticationInfo().getUser());
+            getJDBCConfiguration(context.getAuthenticationInfo().getUser());
     try {
       jdbcUserConfigurations.cancelStatement(paragraphId);
     } catch (SQLException e) {

@@ -15,14 +15,14 @@
 package org.apache.zeppelin.jdbc;
 
 import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.zeppelin.user.UsernamePassword;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.zeppelin.user.UsernamePassword;
 
 /**
  * UserConfigurations for JDBC impersonation.
@@ -106,5 +106,4 @@ public class JDBCUserConfigurations {
     }
     return false;
   }
-
 }
