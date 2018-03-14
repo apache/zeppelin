@@ -676,8 +676,9 @@ public class InterpreterSetting {
   List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId) {
     List<Interpreter> interpreters = new ArrayList<>();
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
+    Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
-      Interpreter interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+      Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
           info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
@@ -687,7 +688,7 @@ public class InterpreterSetting {
       LOGGER.info("Interpreter {} created for user: {}, sessionId: {}",
           interpreter.getClassName(), user, sessionId);
     }
-    interpreters.add(new ConfInterpreter(getJavaProperties(), interpreterGroupId, this));
+    interpreters.add(new ConfInterpreter(intpProperties, interpreterGroupId, this));
     return interpreters;
   }
 
