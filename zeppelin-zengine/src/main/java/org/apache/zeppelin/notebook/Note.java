@@ -301,17 +301,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.repo = repo;
   }
 
-  void setRevisionSupported(NotebookRepo repo) {
-    if (repo instanceof NotebookRepoSync) {
-      getConfig()
-          .put("isRevisionSupported", ((NotebookRepoSync) repo).isRevisionSupportedInDefaultRepo());
-    } else if (repo instanceof NotebookRepoWithVersionControl) {
-      getConfig().put("isRevisionSupported", true);
-    } else {
-      getConfig().put("isRevisionSupported", false);
-    }
-  }
-
   public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();

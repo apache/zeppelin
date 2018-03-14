@@ -1908,7 +1908,7 @@ public class NotebookServer extends WebSocketServlet
                     .getVarName());
           }
         });
-
+    configurations.put("isRevisionSupported", String.valueOf(notebook.isRevisionSupported()));
     conn.send(serializeMessage(
         new Message(OP.CONFIGURATIONS_INFO).put("configurations", configurations)));
   }
