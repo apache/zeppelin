@@ -582,7 +582,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("anotherPrefix.url", getJdbcConnection());
     properties.setProperty("anotherPrefix.user", "");
     properties.setProperty("anotherPrefix.password", "");
-    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"), "set @v='statementAnotherPrefix'");
+    properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"),
+            "set @v='statementAnotherPrefix'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
