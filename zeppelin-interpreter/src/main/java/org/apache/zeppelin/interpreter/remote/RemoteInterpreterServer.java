@@ -199,7 +199,6 @@ public class RemoteInterpreterServer extends Thread
         }
       }).start();
     }
-    logger.info("Starting remote interpreter server on port {}", port);
     server.serve();
   }
 
@@ -420,21 +419,21 @@ public class RemoteInterpreterServer extends Thread
 
 
   @Override
-  public RemoteInterpreterResult interpret(String noteId, String className, String st,
+  public RemoteInterpreterResult interpret(String sessionId, String className, String st,
                                            RemoteInterpreterContext interpreterContext)
       throws TException {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);
     }
-    Interpreter intp = getInterpreter(noteId, className);
+    Interpreter intp = getInterpreter(sessionId, className);
     InterpreterContext context = convert(interpreterContext);
-    context.setClassName(intp.getClassName());
+    context.setInterpreterClassName(intp.getClassName());
 
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
     InterpretJob job = new InterpretJob(
         interpreterContext.getParagraphId(),
-        "remoteInterpretJob_" + System.currentTimeMillis(),
+        "RemoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
         JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
@@ -638,8 +637,7 @@ public class RemoteInterpreterServer extends Thread
         // put result into resource pool
         if (resultMessages.size() > 0) {
           int lastMessageIndex = resultMessages.size() - 1;
-          if (resultMessages.get(lastMessageIndex).getType() ==
-              InterpreterResult.Type.TABLE) {
+          if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
             context.getResourcePool().put(
                 context.getNoteId(),
                 context.getParagraphId(),
@@ -667,10 +665,11 @@ public class RemoteInterpreterServer extends Thread
 
 
   @Override
-  public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext)
-      throws TException {
+  public void cancel(String sessionId,
+                     String className,
+                     RemoteInterpreterContext interpreterContext) throws TException {
     logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
-    Interpreter intp = getInterpreter(noteId, className);
+    Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
     Job job = intp.getScheduler().removeFromWaitingQueue(jobId);
 
@@ -742,8 +741,10 @@ public class RemoteInterpreterServer extends Thread
         new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
 
-    for (InterpreterContextRunner r : runners) {
-      contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+    if (runners != null) {
+      for (InterpreterContextRunner r : runners) {
+        contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+      }
     }
 
     return new InterpreterContext(
@@ -790,7 +791,7 @@ public class RemoteInterpreterServer extends Thread
         String output;
         try {
           output = new String(out.toByteArray());
-          logger.debug("Output Update: {}", output);
+          logger.debug("Output Update for index {}: {}", index, output);
           eventClient.onInterpreterOutputUpdate(
               noteId, paragraphId, index, out.getType(), output);
         } catch (IOException e) {
@@ -919,7 +920,7 @@ public class RemoteInterpreterServer extends Thread
       if (interpreters == null) {
         return Status.UNKNOWN.name();
       }
-
+      //TODO(zjffdu) ineffient for loop interpreter and its jobs
       for (Interpreter intp : interpreters) {
         for (Job job : intp.getScheduler().getJobsRunning()) {
           if (jobId.equals(job.getId())) {
