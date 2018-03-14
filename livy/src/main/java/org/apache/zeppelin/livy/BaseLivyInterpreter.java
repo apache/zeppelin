@@ -668,7 +668,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     } else {
       restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
-    restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    restTemplate.getMessageConverters().add(0,
+        new StringHttpMessageConverter(Charset.forName("UTF-8")));
     return restTemplate;
   }
 

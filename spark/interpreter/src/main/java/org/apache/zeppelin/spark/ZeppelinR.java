@@ -399,6 +399,9 @@ public class ZeppelinR implements ExecuteResultHandler {
   }
 
 
+  /**
+   * InterpreterOutptStream for SparkInterpreter, used for checking R process status
+   */
   public static class SparkRInterpreterOutputStream extends InterpreterOutputStream {
 
     private SparkRInterpreter sparkRInterpreter;
