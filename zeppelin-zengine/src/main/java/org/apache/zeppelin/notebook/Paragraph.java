@@ -367,14 +367,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return true;
       }
     } catch (InterpreterNotFoundException e) {
-      String intpExceptionMsg =
-          getJobName() + "'s Interpreter " + getIntpText() + " not found";
-      RuntimeException intpException = new RuntimeException(intpExceptionMsg);
       InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
-      setReturn(intpResult, intpException);
+          new InterpreterResult(InterpreterResult.Code.ERROR);
+      setReturn(intpResult, e);
       setStatus(Job.Status.ERROR);
-      throw intpException;
+      throw new RuntimeException(e);
     }
   }
 
