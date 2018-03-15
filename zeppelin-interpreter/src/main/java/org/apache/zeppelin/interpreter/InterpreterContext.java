@@ -83,9 +83,18 @@ public class InterpreterContext {
       return this;
     }
 
-    public InterpreterContext getContext() {
+    public Builder setEventClient(RemoteEventClientWrapper client) {
+      context.client = client;
+      return this;
+    }
+
+    public InterpreterContext build() {
       return context;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   private InterpreterContext() {
