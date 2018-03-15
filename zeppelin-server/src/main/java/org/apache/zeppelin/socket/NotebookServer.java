@@ -1088,7 +1088,7 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    List<Note> notes = notebook.getNotesUnderFolder(folderId);
+    List<Note> notes = notebook.getNotesUnderFolder(folderId, userAndRoles);
     for (Note note : notes) {
       String noteId = note.getId();
 
