@@ -371,14 +371,16 @@ public class LivyInterpreterIT {
     }
 
     // test utf-8 Encoding
-    try {
-      String utf8Str = "你你你你你你好";
-      InterpreterResult result = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
-      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-      assertTrue(result.message().get(0).getData().contains(utf8Str));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    String utf8Str = "你你你你你你好";
+    InterpreterResult reslt = pysparkInterpreter.interpret("print(\"" + utf8Str + "\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, reslt.code());
+    assertTrue(reslt.message().get(0).getData().contains(utf8Str));
+
+    //test special characters
+    String charStr = "açñiñíûÑoç";
+    InterpreterResult res = pysparkInterpreter.interpret("print(\"" + charStr + "\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, res.code());
+    assertTrue(res.message().get(0).getData().contains(charStr));
 
     try {
       InterpreterResult result = pysparkInterpreter.interpret("sc.version", context);
@@ -748,6 +750,26 @@ public class LivyInterpreterIT {
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
       }
+
+      // test plotting of python
+      result = pysparkInterpreter.interpret(
+          "import matplotlib.pyplot as plt\n" +
+          "plt.switch_backend('agg')\n" +
+          "data=[1,2,3,4]\n" +
+          "plt.figure()\n" +
+          "plt.plot(data)\n" +
+          "%matplot plt", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());
+
+      // test plotting of R
+      result = sparkRInterpreter.interpret(
+          "hist(mtcars$mpg)", context);
+      assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+      assertEquals(1, result.message().size());
+      assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());
+
     } finally {
       sparkInterpreter.close();
       sqlInterpreter.close();

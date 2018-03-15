@@ -301,17 +301,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.repo = repo;
   }
 
-  void setRevisionSupported(NotebookRepo repo) {
-    if (repo instanceof NotebookRepoSync) {
-      getConfig()
-          .put("isRevisionSupported", ((NotebookRepoSync) repo).isRevisionSupportedInDefaultRepo());
-    } else if (repo instanceof NotebookRepoWithVersionControl) {
-      getConfig().put("isRevisionSupported", true);
-    } else {
-      getConfig().put("isRevisionSupported", false);
-    }
-  }
-
   public Boolean isCronSupported(ZeppelinConfiguration config) {
     if (config.isZeppelinNotebookCronEnable()) {
       config.getZeppelinNotebookCronFolders();
@@ -912,23 +901,13 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public void setInfo(Map<String, Object> info) {
     this.info = info;
   }
-
+  
   @Override
-  public void beforeStatusChange(Job job, Status before, Status after) {
+  public void onStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.beforeStatusChange(job, before, after);
-      }
-    }
-  }
-
-  @Override
-  public void afterStatusChange(Job job, Status before, Status after) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.afterStatusChange(job, before, after);
+        listener.onStatusChange(job, before, after);
       }
     }
 

@@ -27,6 +27,7 @@ import org.apache.spark.SparkRBackend;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -36,6 +37,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * R and SparkR interpreter with visualization support.
@@ -46,6 +49,7 @@ public class SparkRInterpreter extends Interpreter {
   private static String renderOptions;
   private SparkInterpreter sparkInterpreter;
   private ZeppelinR zeppelinR;
+  private AtomicBoolean rbackendDead = new AtomicBoolean(false);
   private SparkContext sc;
   private JavaSparkContext jsc;
 
@@ -79,10 +83,11 @@ public class SparkRInterpreter extends Interpreter {
     }
 
     int port = SparkRBackend.port();
-
     this.sparkInterpreter = getSparkInterpreter();
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
+    int timeout = this.sc.getConf().getInt("spark.r.backendConnectionTimeout", 6000);
+
     SparkVersion sparkVersion = new SparkVersion(sc.version());
     ZeppelinRContext.setSparkContext(sc);
     ZeppelinRContext.setJavaSparkContext(jsc);
@@ -92,7 +97,7 @@ public class SparkRInterpreter extends Interpreter {
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
 
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port, sparkVersion);
+    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port, sparkVersion, timeout, this);
     try {
       zeppelinR.open();
     } catch (IOException e) {
@@ -159,6 +164,10 @@ public class SparkRInterpreter extends Interpreter {
 
     try {
       // render output with knitr
+      if (rbackendDead.get()) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR,
+            "sparkR backend is dead, please try to increase spark.r.backendConnectionTimeout");
+      }
       if (useKnitr()) {
         zeppelinR.setInterpreterOutput(null);
         zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
@@ -252,5 +261,9 @@ public class SparkRInterpreter extends Interpreter {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  public AtomicBoolean getRbackendDead() {
+    return rbackendDead;
   }
 }
