@@ -651,6 +651,11 @@ public class Notebook implements NoteEventListener {
     return folders.getFolder(folderId).getNotesRecursively();
   }
 
+  public List<Note> getNotesUnderFolder(String folderId,
+      Set<String> userAndRoles) {
+    return folders.getFolder(folderId).getNotesRecursively(userAndRoles, notebookAuthorization);
+  }
+
   public List<Note> getAllNotes() {
     synchronized (notes) {
       List<Note> noteList = new ArrayList<>(notes.values());
