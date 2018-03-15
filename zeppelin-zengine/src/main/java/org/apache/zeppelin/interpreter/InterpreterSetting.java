@@ -925,6 +925,3 @@ public class InterpreterSetting {
     }
   }
 }
-
-
-
