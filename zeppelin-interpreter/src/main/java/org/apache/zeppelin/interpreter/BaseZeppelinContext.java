@@ -28,6 +28,8 @@ import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import java.util.Map;
  */
 public abstract class BaseZeppelinContext {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseZeppelinContext.class);
 
   protected InterpreterContext interpreterContext;
   protected int maxResult;
@@ -336,6 +339,7 @@ public abstract class BaseZeppelinContext {
       if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
         continue;
       }
+      LOGGER.debug("Run Paragraph: " + r.getParagraphId() + " of Note: " + r.getNoteId());
       r.run();
     }
   }
