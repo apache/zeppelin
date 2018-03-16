@@ -259,7 +259,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
+      try {
+        registerHook(HookType.POST_EXEC_DEV.getName(), "__zeppelin__._displayhook()");
+      } catch (InvalidHookException e) {
+        throw new InterpreterException(e);
+      }
     }
     // Add matplotlib display hook
     try {
