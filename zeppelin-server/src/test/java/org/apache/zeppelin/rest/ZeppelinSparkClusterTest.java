@@ -379,7 +379,36 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void pySparkDepLoaderTest() throws IOException, InterpreterException {
+  public void testZeppelinContextHook() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+
+    // register global hook & note1 hook
+    Paragraph p1 = note.addNewParagraph(anonymous);
+    p1.setText("%python from __future__ import print_function\n" +
+        "z.registerHook('pre_exec', 'print(1)')\n" +
+        "z.registerHook('post_exec', 'print(2)')\n" +
+        "z.registerNoteHook('pre_exec', 'print(3)', '" + note.getId() + "')\n" +
+        "z.registerNoteHook('post_exec', 'print(4)', '" + note.getId() + "')\n");
+
+    Paragraph p2 = note.addNewParagraph(anonymous);
+    p2.setText("%python print(5)");
+
+    note.run(p1.getId(), true);
+    note.run(p2.getId(), true);
+
+    assertEquals(Status.FINISHED, p1.getStatus());
+    assertEquals(Status.FINISHED, p2.getStatus());
+    assertEquals("1\n3\n5\n4\n2\n", p2.getResult().message().get(0).getData());
+
+    Note note2 = ZeppelinServer.notebook.createNote(anonymous);
+    Paragraph p3 = note2.addNewParagraph(anonymous);
+    p3.setText("%python print(6)");
+    note2.run(p3.getId(), true);
+    assertEquals("1\n6\n2\n", p3.getResult().message().get(0).getData());
+  }
+
+  @Test
+  public void pySparkDepLoaderTest() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
 
     // restart spark interpreter to make dep loader work

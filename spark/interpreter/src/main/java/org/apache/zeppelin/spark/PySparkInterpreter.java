@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InvalidHookException;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -152,7 +153,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
+      try {
+        registerHook(HookType.POST_EXEC_DEV.getName(), "__zeppelin__._displayhook()");
+      } catch (InvalidHookException e) {
+        throw new InterpreterException(e);
+      }
     }
     DepInterpreter depInterpreter = getDepInterpreter();
 

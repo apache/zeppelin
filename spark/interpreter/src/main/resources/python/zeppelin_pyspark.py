@@ -133,6 +133,18 @@ class PyZeppelinContext(dict):
     else:
       self.z.unregisterHook(event, replName)
 
+  def registerNoteHook(self, event, cmd, noteId, replName=None):
+    if replName is None:
+      self.z.registerNoteHook(event, cmd, noteId)
+    else:
+      self.z.registerNoteHook(event, cmd, noteId, replName)
+
+  def unregisterNoteHook(self, event, noteId, replName=None):
+    if replName is None:
+      self.z.unregisterNoteHook(event, noteId)
+    else:
+      self.z.unregisterNoteHook(event, noteId, replName)
+
   def getHook(self, event, replName=None):
     if replName is None:
       return self.z.getHook(event)
