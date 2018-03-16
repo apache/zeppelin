@@ -88,6 +88,16 @@ public class InterpreterContext {
       return this;
     }
 
+    public Builder setInterpreterClassName(String intpClassName) {
+      context.interpreterClassName = intpClassName;
+      return this;
+    }
+
+    public Builder setReplName(String replName) {
+      context.replName = replName;
+      return this;
+    }
+
     public InterpreterContext build() {
       return context;
     }
