@@ -534,7 +534,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testExcludingComments() throws SQLException, IOException {
+  public void testSplitSqlQueryWithComments() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
