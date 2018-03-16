@@ -414,6 +414,38 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebook.removeNote(createdNote.getId(), anonymous);
   }
 
+  @Test
+  public void testMoveToTrash() {
+    NotebookSocket sock1 = createWebSocket();
+    notebookServer.onOpen(sock1);
+
+    notebookServer.onMessage(sock1,new Message(OP.NEW_NOTE).put("name", "test/note1").toJson());
+    Note note1 = findNoteFromName("test/note1");
+    assertNotNull(note1);
+    assertFalse(note1.isTrash());
+    String origId = note1.getId();
+
+    notebookServer.onMessage(sock1,
+                             new Message(OP.MOVE_NOTE_TO_TRASH).put("id", note1.getId()).toJson());
+    assertTrue(note1.isTrash());
+
+    notebookServer.onMessage(sock1,
+                             new Message(OP.RESTORE_FOLDER).put("id", note1.getFolderId()).toJson());
+    Note noteRestored = notebook.getNote(origId);
+    assertFalse(noteRestored.isTrash());
+    notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  private Note findNoteFromName(String name) {
+    List<Note> notes = notebook.getAllNotes();
+    for (Note note : notes) {
+      if (note.getName().equals(name)) {
+        return note;
+      }
+    }
+    return null;
+  }
+
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
     when(sock.getRequest()).thenReturn(mockRequest);

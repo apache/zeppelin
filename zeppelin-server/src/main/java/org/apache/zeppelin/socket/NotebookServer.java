@@ -1123,7 +1123,8 @@ public class NotebookServer extends WebSocketServlet
     }
 
     if (note != null && !note.isTrash()){
-      fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
+      fromMessage.put("name", Folder.getTrashFolderPath(fromMessage.principal) +
+                              "/" + note.getName());
       renameNote(conn, userAndRoles, notebook, fromMessage, "move");
       notebook.moveNoteToTrash(note.getId());
     }
@@ -1138,8 +1139,8 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Folder folder = notebook.getFolder(folderId);
-    if (folder != null && !folder.isTrash()) {
-      String trashFolderId = Folder.TRASH_FOLDER_ID + "/" + folderId;
+    if (folder != null && !folder.isUnderTrash()) {
+      String trashFolderId = Folder.getTrashFolderPath(fromMessage.principal) + "/" + folderId;
       if (notebook.hasFolder(trashFolderId)){
         DateTime currentDate = new DateTime();
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
@@ -1177,7 +1178,9 @@ public class NotebookServer extends WebSocketServlet
     }
 
     if (note != null && note.isTrash()) {
-      fromMessage.put("name", note.getName().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
+      fromMessage.put("name", note.getName()
+                                  .replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) +
+                                                "/", ""));
       renameNote(conn, userAndRoles, notebook, fromMessage, "restore");
     }
   }
@@ -1192,8 +1195,19 @@ public class NotebookServer extends WebSocketServlet
     }
 
     Folder folder = notebook.getFolder(folderId);
-    if (folder != null && folder.isTrash()) {
-      String restoreName = folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "").trim();
+
+    if (folder == null) {
+      return;
+    }
+
+    if (folder.isTrashFolder(fromMessage.principal)) {
+      restoreAll(conn, userAndRoles, notebook, fromMessage);
+      return;
+    }
+    if (folder.isUnderTrash()) {
+      String restoreName = folder.getId()
+                                 .replaceFirst(Folder.getTrashFolderPath(fromMessage.principal) +
+                                               "/", "").trim();
 
       //restore cron for each paragraph
       List<Note> noteList = folder.getNotesRecursively();
@@ -1217,10 +1231,10 @@ public class NotebookServer extends WebSocketServlet
   private void restoreAll(NotebookSocket conn, HashSet<String> userAndRoles,
                              Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
-    Folder trashFolder = notebook.getFolder(Folder.TRASH_FOLDER_ID);
+    Folder trashFolder = notebook.getFolder(Folder.getTrashFolderPath(fromMessage.principal));
     if (trashFolder != null) {
       fromMessage.data = new HashMap<>();
-      fromMessage.put("id", Folder.TRASH_FOLDER_ID);
+      fromMessage.put("id", Folder.getTrashFolderPath(fromMessage.principal));
       fromMessage.put("name", Folder.ROOT_FOLDER_ID);
       renameFolder(conn, userAndRoles, notebook, fromMessage, "restore trash");
     }
@@ -1230,7 +1244,7 @@ public class NotebookServer extends WebSocketServlet
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     fromMessage.data = new HashMap<>();
-    fromMessage.put("id", Folder.TRASH_FOLDER_ID);
+    fromMessage.put("id", Folder.getTrashFolderPath(fromMessage.principal));
     removeFolder(conn, userAndRoles, notebook, fromMessage);
   }
 
