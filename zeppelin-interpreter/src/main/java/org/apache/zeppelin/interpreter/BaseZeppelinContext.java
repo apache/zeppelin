@@ -202,9 +202,6 @@ public abstract class BaseZeppelinContext {
     this.noteGui = noteGui;
   }
 
-  private void restartInterpreter() {
-  }
-
   public InterpreterContext getInterpreterContext() {
     return interpreterContext;
   }
@@ -743,15 +740,10 @@ public abstract class BaseZeppelinContext {
    * Get the interpreter class name from name entered in paragraph
    * @param replName if replName is a valid className, return that instead.
    */
-  public String getClassNameFromReplName(String replName) {
-    for (String name : getInterpreterClassMap().keySet()) {
-      if (replName.equals(name)) {
-        return replName;
-      }
-    }
-
-    if (replName.contains("spark.")) {
-      replName = replName.replace("spark.", "");
+  private String getClassNameFromReplName(String replName) {
+    String[] splits = replName.split(".");
+    if (splits.length > 1) {
+      replName = splits[splits.length - 1];
     }
     return getInterpreterClassMap().get(replName);
   }
@@ -763,10 +755,9 @@ public abstract class BaseZeppelinContext {
    * @param replName Name of the interpreter
    */
   @Experimental
-  public void registerHook(String event, String cmd, String replName) {
-    String noteId = interpreterContext.getNoteId();
+  public void registerHook(String event, String cmd, String replName) throws InvalidHookException {
     String className = getClassNameFromReplName(replName);
-    hooks.register(noteId, className, event, cmd);
+    hooks.register(null, className, event, cmd);
   }
 
   /**
@@ -775,43 +766,42 @@ public abstract class BaseZeppelinContext {
    * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
-  public void registerHook(String event, String cmd) {
-    String className = interpreterContext.getInterpreterClassName();
-    registerHook(event, cmd, className);
+  public void registerHook(String event, String cmd) throws InvalidHookException {
+    String replClassName = interpreterContext.getInterpreterClassName();
+    hooks.register(null, replClassName, event, cmd);
   }
 
   /**
-   * Get the hook code
-   * @param event The type of event to hook to (pre_exec, post_exec)
-   * @param replName Name of the interpreter
+   *
+   * @param event
+   * @param cmd
+   * @param noteId
+   * @throws InvalidHookException
    */
   @Experimental
-  public String getHook(String event, String replName) {
-    String noteId = interpreterContext.getNoteId();
+  public void registerNoteHook(String event, String cmd, String noteId)
+      throws InvalidHookException {
+    String replClassName = interpreterContext.getInterpreterClassName();
+    hooks.register(noteId, replClassName, event, cmd);
+  }
+
+  @Experimental
+  public void registerNoteHook(String event, String cmd, String noteId, String replName)
+      throws InvalidHookException {
     String className = getClassNameFromReplName(replName);
-    return hooks.get(noteId, className, event);
+    hooks.register(noteId, className, event, cmd);
   }
 
   /**
-   * getHook() wrapper for current repl
-   * @param event The type of event to hook to (pre_exec, post_exec)
-   */
-  @Experimental
-  public String getHook(String event) {
-    String className = interpreterContext.getInterpreterClassName();
-    return getHook(event, className);
-  }
-
-  /**
-   * Unbind code from given hook event
+   * Unbind code from given hook event and given repl
+   *
    * @param event The type of event to hook to (pre_exec, post_exec)
    * @param replName Name of the interpreter
    */
   @Experimental
   public void unregisterHook(String event, String replName) {
-    String noteId = interpreterContext.getNoteId();
     String className = getClassNameFromReplName(replName);
-    hooks.unregister(noteId, className, event);
+    hooks.unregister(null, className, event);
   }
 
   /**
@@ -820,9 +810,34 @@ public abstract class BaseZeppelinContext {
    */
   @Experimental
   public void unregisterHook(String event) {
-    String className = interpreterContext.getInterpreterClassName();
-    unregisterHook(event, className);
+    unregisterHook(event, interpreterContext.getReplName());
   }
+
+  /**
+   * Unbind code from given hook event and given note
+   *
+   * @param noteId  The id of note
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   */
+  @Experimental
+  public void unregisterNoteHook(String noteId, String event) {
+    String className = interpreterContext.getInterpreterClassName();
+    hooks.unregister(noteId, className, event);
+  }
+
+
+  /**
+   * Unbind code from given hook event, given note and given repl
+   * @param noteId  The id of note
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param replName Name of the interpreter
+   */
+  @Experimental
+  public void unregisterNoteHook(String noteId, String event, String replName) {
+    String className = getClassNameFromReplName(replName);
+    hooks.unregister(noteId, className, event);
+  }
+
 
   /**
    * Add object into resource pool

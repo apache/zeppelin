@@ -240,7 +240,7 @@ public abstract class Interpreter {
    * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
-  public void registerHook(String noteId, String event, String cmd) {
+  public void registerHook(String noteId, String event, String cmd) throws InvalidHookException {
     InterpreterHookRegistry hooks = interpreterGroup.getInterpreterHookRegistry();
     String className = getClassName();
     hooks.register(noteId, className, event, cmd);
@@ -253,7 +253,7 @@ public abstract class Interpreter {
    * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
-  public void registerHook(String event, String cmd) {
+  public void registerHook(String event, String cmd) throws InvalidHookException {
     registerHook(null, event, cmd);
   }
 

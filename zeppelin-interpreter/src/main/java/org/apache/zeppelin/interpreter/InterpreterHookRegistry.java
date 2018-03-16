@@ -18,41 +18,29 @@
 package org.apache.zeppelin.interpreter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * The InterpreterinterpreterHookRegistry specifies code to be conditionally executed by an
+ * The InterpreterHookRegistry specifies code to be conditionally executed by an
  * interpreter. The constants defined in this class denote currently
  * supported events. Each instance is bound to a single InterpreterGroup.
  * Scope is determined on a per-note basis (except when null for global scope).
  */
 public class InterpreterHookRegistry {
-  public static final String GLOBAL_KEY = "_GLOBAL_";
-  private String interpreterId;
+  static final String GLOBAL_KEY = "_GLOBAL_";
+
+  // Scope (noteId/global scope) -> (ClassName -> (EventType -> Hook Code))
   private Map<String, Map<String, Map<String, String>>> registry = new HashMap<>();
 
-  /**
-   * hookRegistry constructor.
-   *
-   * @param interpreterId The Id of the InterpreterGroup instance to bind to
-   */
-  public InterpreterHookRegistry(final String interpreterId) {
-    this.interpreterId = interpreterId;
-  }
-  
-  /**
-   * Get the interpreterGroup id this instance is bound to
-   */
-  public String getInterpreterId() {
-    return interpreterId;
-  }
-  
+
   /**
    * Adds a note to the registry
    *
    * @param noteId The Id of the Note instance to add
    */
-  public void addNote(String noteId) {
+  private void addNote(String noteId) {
     synchronized (registry) {
       if (registry.get(noteId) == null) {
         registry.put(noteId, new HashMap<String, Map<String, String>>());
@@ -66,7 +54,7 @@ public class InterpreterHookRegistry {
    * @param noteId The note id
    * @param className The name of the interpreter repl to map the hooks to
    */
-  public void addRepl(String noteId, String className) {
+  private void addRepl(String noteId, String className) {
     synchronized (registry) {
       addNote(noteId);
       if (registry.get(noteId).get(className) == null) {
@@ -84,19 +72,15 @@ public class InterpreterHookRegistry {
    * @param cmd Code to be executed by the interpreter
    */
   public void register(String noteId, String className,
-                       String event, String cmd) throws IllegalArgumentException {
+                       String event, String cmd) throws InvalidHookException {
     synchronized (registry) {
+      if (!HookType.ValidEvents.contains(event)) {
+        throw new InvalidHookException("event " + event + " is not valid hook event");
+      }
       if (noteId == null) {
         noteId = GLOBAL_KEY;
       }
       addRepl(noteId, className);
-      if (!event.equals(HookType.POST_EXEC) && !event.equals(HookType.PRE_EXEC) &&
-          !event.equals(HookType.POST_EXEC_DEV) && !event.equals(HookType.PRE_EXEC_DEV)) {
-        throw new IllegalArgumentException("Must be " + HookType.POST_EXEC + ", " +
-                                                        HookType.POST_EXEC_DEV + ", " +
-                                                        HookType.PRE_EXEC + " or " +
-                                                        HookType.PRE_EXEC_DEV);
-      }
       registry.get(noteId).get(className).put(event, cmd);
     }
   }
@@ -138,18 +122,36 @@ public class InterpreterHookRegistry {
   /**
   * Container for hook event type constants
   */
-  public static final class HookType {
+  public enum HookType {
+
     // Execute the hook code PRIOR to main paragraph code execution
-    public static final String PRE_EXEC = "pre_exec";
+    PRE_EXEC("pre_exec"),
     
     // Execute the hook code AFTER main paragraph code execution
-    public static final String POST_EXEC = "post_exec";
+    POST_EXEC("post_exec"),
     
     // Same as above but reserved for interpreter developers, in order to allow
     // notebook users to use the above without overwriting registry settings
     // that are initialized directly in subclasses of Interpreter.
-    public static final String PRE_EXEC_DEV = "pre_exec_dev";
-    public static final String POST_EXEC_DEV = "post_exec_dev";
+    PRE_EXEC_DEV("pre_exec_dev"),
+    POST_EXEC_DEV("post_exec_dev");
+
+    private String name;
+
+    HookType(String name) {
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public static Set<String> ValidEvents = new HashSet();
+    static {
+      for (HookType type : values()) {
+        ValidEvents.add(type.getName());
+      }
+    }
   }
    
 }
