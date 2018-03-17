@@ -264,7 +264,7 @@ public class InterpreterSettingManager {
         for (Map.Entry<String, List<String>> entry : interpreterBindings.entrySet()) {
           List<String> ids = entry.getValue();
           Iterator<String> iter = ids.iterator();
-          while(iter.hasNext()) {
+          while (iter.hasNext()) {
             if (iter.next().equals(savedInterpreterSetting.getId())) {
               iter.remove();
             }
