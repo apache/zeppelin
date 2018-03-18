@@ -434,6 +434,7 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<!--
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.class</name>
   <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
@@ -452,6 +453,7 @@
   <value>3600000</value>
   <description>Milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
 </property>
+-->
 
 <!--
 <property>

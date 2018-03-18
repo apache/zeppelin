@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -84,6 +85,30 @@ public class SparkRInterpreterTest {
       assertTrue(result.message().get(0).getData().contains("eruptions waiting"));
       // spark job url is sent
       verify(mockRemoteEventClient, atLeastOnce()).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
+
+      // cancel
+      final InterpreterContext context = getInterpreterContext();
+      Thread thread = new Thread() {
+        @Override
+        public void run() {
+          try {
+            InterpreterResult result = sparkRInterpreter.interpret("ldf <- dapplyCollect(\n" +
+                "         df,\n" +
+                "         function(x) {\n" +
+                "           Sys.sleep(3)\n" +
+                "           x <- cbind(x, \"waiting_secs\" = x$waiting * 60)\n" +
+                "         })\n" +
+                "head(ldf, 3)", context);
+            assertTrue(result.message().get(0).getData().contains("cancelled"));
+          } catch (InterpreterException e) {
+            fail("Should not throw InterpreterException");
+          }
+        }
+      };
+      thread.setName("Cancel-Thread");
+      thread.start();
+      Thread.sleep(1000);
+      sparkRInterpreter.cancel(context);
     } else {
       // spark 1.x
       result = sparkRInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", getInterpreterContext());
@@ -93,6 +118,20 @@ public class SparkRInterpreterTest {
       verify(mockRemoteEventClient, atLeastOnce()).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
     }
 
+    // plotting
+    result = sparkRInterpreter.interpret("hist(mtcars$mpg)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, result.message().size());
+    assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+    assertTrue(result.message().get(0).getData().contains("<img src="));
+
+    result = sparkRInterpreter.interpret("library(ggplot2)\n" +
+        "ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, result.message().size());
+    assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
+    assertTrue(result.message().get(0).getData().contains("<img src="));
+
     // sparkr backend would be timeout after 10 seconds
     Thread.sleep(15 * 1000);
     result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
@@ -101,21 +140,11 @@ public class SparkRInterpreterTest {
   }
 
   private InterpreterContext getInterpreterContext() {
-    InterpreterContext context = new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        "replName",
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry("spark", null),
-        null,
-        null,
-        null);
-    context.setClient(mockRemoteEventClient);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("note_1")
+        .setParagraphId("paragraph_1")
+        .setEventClient(mockRemoteEventClient)
+        .build();
     return context;
   }
 }

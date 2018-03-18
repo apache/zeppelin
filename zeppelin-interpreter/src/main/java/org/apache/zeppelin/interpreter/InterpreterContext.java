@@ -83,9 +83,28 @@ public class InterpreterContext {
       return this;
     }
 
-    public InterpreterContext getContext() {
+    public Builder setEventClient(RemoteEventClientWrapper client) {
+      context.client = client;
+      return this;
+    }
+
+    public Builder setInterpreterClassName(String intpClassName) {
+      context.interpreterClassName = intpClassName;
+      return this;
+    }
+
+    public Builder setReplName(String replName) {
+      context.replName = replName;
+      return this;
+    }
+
+    public InterpreterContext build() {
       return context;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   private InterpreterContext() {
