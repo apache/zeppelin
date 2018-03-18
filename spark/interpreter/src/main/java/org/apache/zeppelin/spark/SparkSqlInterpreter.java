@@ -115,7 +115,9 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      rdd = sqlMethod.invoke(sqlc, interpolate(st, context.getResourcePool()));
+      String effectiveString = Boolean.parseBoolean(getProperty("zeppelin.interpreter.interpolation")) ?
+              interpolate(st, context.getResourcePool()) : st;
+      rdd = sqlMethod.invoke(sqlc, effectiveString);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);

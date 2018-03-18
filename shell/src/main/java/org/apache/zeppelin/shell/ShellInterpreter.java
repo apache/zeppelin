@@ -86,7 +86,8 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
-    String cmd = interpolate(originalCmd, contextInterpreter.getResourcePool());
+    String cmd = Boolean.parseBoolean(getProperty("zeppelin.interpreter.interpolation")) ?
+            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
     LOGGER.debug("Run shell command '" + cmd + "'");
     OutputStream outStream = new ByteArrayOutputStream();
     

@@ -38,6 +38,13 @@
         "defaultValue": "",
         "description": "Kerberos principal",
         "type": "string"
+      },
+      "zeppelin.interpreter.interpolation": {
+        "envName": "ZEPPELIN_INTERPRETER_INTERPOLATION",
+        "propertyName": "zeppelin.interpreter.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into command string",
+        "type": "checkbox"
       }
     },
     "editor": {

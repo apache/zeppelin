@@ -223,6 +223,13 @@
         "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F, fig.retina = 2",
         "description": "",
         "type": "textarea"
+      },
+      "zeppelin.interpreter.interpolation": {
+        "envName": "ZEPPELIN_INTERPRETER_INTERPOLATION",
+        "propertyName": "zeppelin.interpreter.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into command string",
+        "type": "checkbox"
       }
     },
     "editor": {

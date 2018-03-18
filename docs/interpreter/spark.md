@@ -404,6 +404,10 @@ forms described above. A command containing `{` and/or `}` characters used in an
 No error is flagged in any case. This behavior is identical to the implementation of a similar feature in 
 Jupyter's shell invocation using the `!` magic command.
 
+This feature is disabled by default, and must be explicitly turned on by setting either the environment variable 
+`ZEPPELIN_INTERPRETER_INTERPOLATION` or the Java property `zeppelin.interpreter.interpolation` to `true`. 
+As usual, if both are defined, the environment variable's setting has priority.
+
 At present only the SQL and Shell interpreters support object interpolation. 
 
 ### Form Creation

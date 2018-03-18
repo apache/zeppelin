@@ -270,6 +270,12 @@ If both are defined, then the **environment variables** will take priority.
     </td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_INTERPRETER_INTERPOLATION</h6></td>
+    <td><h6 class="properties">zeppelin.interpreter.interpolation</h6></td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into command string</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_DIR</h6></td>
     <td><h6 class="properties">zeppelin.interpreter.dir</h6></td>
     <td>interpreter</td>

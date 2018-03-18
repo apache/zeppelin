@@ -780,6 +780,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
         "zeppelin.interpreter.lifecyclemanager.timeout.threshold", 3600000L),
+    ZEPPELIN_INTERPRETER_INTERPOLATION("zeppelin.interpreter.interpolation", false),
 
     ZEPPELIN_OWNER_ROLE("zeppelin.notebook.default.owner.username", ""),
 
