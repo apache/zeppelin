@@ -82,3 +82,8 @@ export LAUNCH_KERBEROS_REFRESH_INTERVAL=4h
 # Change kinit number retries (default value is 5), which means if the kinit command fails for 5 retries consecutively it will close the interpreter. 
 export KINIT_FAIL_THRESHOLD=10
 ```
+
+## Object Interpolation
+The shell interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+Details of this feature can be found in the Spark interpreter documentation under 
+[Object Interpolation](spark.html#object-interpolation)

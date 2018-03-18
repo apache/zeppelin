@@ -366,9 +366,9 @@ myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
 </div>
 
 ### Object Interpolation
-Some interpreters can interpolate object values from `z` into the command string by using the 
+Some interpreters can interpolate object values from `z` into the paragraph text by using the 
 `{variable-name}` syntax. The value of any object previously `put` into `z` can be 
-interpolated into a command string by using such a pattern containing the object's name. 
+interpolated into a paragraph text by using such a pattern containing the object's name. 
 The following example shows one use of this facility:
 
 ####In Scala cell:
@@ -383,23 +383,23 @@ z.put("minAge", 35)
 
 The interpolation of a `{var-name}` pattern is performed only when `z` contains an object with the specified name.
 But the pattern is left unchanged if the named object does not exist in `z`.
-Further, all `{var-name}` patterns within the command must must be translatable for any interpolation to occur -- 
-translation of only some of the patterns in a command line is never done.
+Further, all `{var-name}` patterns within the paragraph text must must be translatable for any interpolation to occur -- 
+translation of only some of the patterns in a paragraph text is never done.
 
-In some situations, it is necessary to use { and } characters in a command without invoking the 
+In some situations, it is necessary to use { and } characters in a paragraph text without invoking the 
 object interpolation mechanism. For these cases an escaping mechanism is available -- 
 doubled braces {{ and }} should be used. The following example shows the use of {{ and }} for passing a 
-regular expression containing just { and } into the command.
+regular expression containing just { and } into the paragraph text.
 
 ```
 %sql select * from members where name rlike '[aeiou]{{3}}'
 ```
 
-To summarize, patterns of the form `{var-name}` within commands will be interpolated only if a predefined 
-object of the specified name exists. Additionally, all such patterns within the command line should also 
+To summarize, patterns of the form `{var-name}` within the paragraph text will be interpolated only if a predefined 
+object of the specified name exists. Additionally, all such patterns within the paragraph text should also 
 be translatable for any interpolation to occur. Patterns of the form `{{any-text}}` are translated into `{any-text}`. 
-These translations are performed only when all occurrences of `{`, `}`, `{{`, and `}}` in any command string confirm to one of the two 
-forms described above. A command containing `{` and/or `}` characters used in any other way 
+These translations are performed only when all occurrences of `{`, `}`, `{{`, and `}}` in the paragraph text conform 
+to one of the two forms described above. Paragraph text containing `{` and/or `}` characters used in any other way 
 (than `{var-name}` and `{{any-text}}`) is used as-is without any changes. 
 No error is flagged in any case. This behavior is identical to the implementation of a similar feature in 
 Jupyter's shell invocation using the `!` magic command.
@@ -408,7 +408,7 @@ This feature is disabled by default, and must be explicitly turned on by setting
 `ZEPPELIN_INTERPRETER_INTERPOLATION` or the Java property `zeppelin.interpreter.interpolation` to `true`. 
 As usual, if both are defined, the environment variable's setting has priority.
 
-At present only the SQL and Shell interpreters support object interpolation. 
+At present only the SparkSQL and Shell interpreters support object interpolation. 
 
 ### Form Creation
 
