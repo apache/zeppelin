@@ -199,6 +199,12 @@
                 <spark.version>2.3.0</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.6</py4j.version>
+                <spark.src.download.url>
+                    http://www-us.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+                </spark.src.download.url>
+                <spark.bin.download.url>
+                    http://www-us.apache.org/dist/spark/${spark.archive}/${spark.archive}-bin-without-hadoop.tgz
+                </spark.bin.download.url>
             </properties>
         </profile>
 
