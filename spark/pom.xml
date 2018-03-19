@@ -60,7 +60,6 @@
     <modules>
         <module>interpreter</module>
         <module>spark-scala-parent</module>
-        <module>scala-2.10</module>
         <module>scala-2.11</module>
         <module>spark-dependencies</module>
         <module>spark-shims</module>
@@ -217,6 +216,9 @@
                 <spark.version>2.2.0</spark.version>
                 <py4j.version>0.10.4</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
         <profile>
@@ -225,6 +227,9 @@
                 <spark.version>2.1.0</spark.version>
                 <py4j.version>0.10.4</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
         <profile>
@@ -233,6 +238,9 @@
                 <spark.version>2.0.2</spark.version>
                 <py4j.version>0.10.3</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
         <profile>
@@ -241,6 +249,9 @@
                 <spark.version>1.6.3</spark.version>
                 <py4j.version>0.9</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
         <profile>
@@ -249,6 +260,9 @@
                 <spark.version>1.5.2</spark.version>
                 <py4j.version>0.8.2.1</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
         <profile>
@@ -257,6 +271,9 @@
                 <spark.version>1.4.1</spark.version>
                 <py4j.version>0.8.2.1</py4j.version>
             </properties>
+            <modules>
+                <module>scala-2.10</module>
+            </modules>
         </profile>
 
     </profiles>
