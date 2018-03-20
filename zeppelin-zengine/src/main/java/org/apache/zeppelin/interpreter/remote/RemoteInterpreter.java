@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
@@ -86,6 +87,11 @@ public class RemoteInterpreter extends Interpreter {
 
   public boolean isOpened() {
     return isOpened;
+  }
+
+  @VisibleForTesting
+  public void setOpened(boolean opened) {
+    isOpened = opened;
   }
 
   @Override
