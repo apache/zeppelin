@@ -189,13 +189,16 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
         "select '\n', ';';" +
         "select replace('A\\;B', '\\', 'text');" +
         "select '\\', ';';" +
-        "select '''', ';'";
+        "select '''', ';';" +
+        "select /*+ scan */ * from test_table;" +
+        "--singleLineComment\nselect * from test_table";
+
 
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
     List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
-    assertEquals(8, multipleSqlArray.size());
+    assertEquals(10, multipleSqlArray.size());
     assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
     assertEquals("select * from test_table", multipleSqlArray.get(1));
     assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray.get(2));
@@ -204,6 +207,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("select replace('A\\;B', '\\', 'text')", multipleSqlArray.get(5));
     assertEquals("select '\\', ';'", multipleSqlArray.get(6));
     assertEquals("select '''', ';'", multipleSqlArray.get(7));
+    assertEquals("select /*+ scan */ * from test_table", multipleSqlArray.get(8));
+    assertEquals("--singleLineComment\nselect * from test_table", multipleSqlArray.get(9));
   }
 
   @Test
@@ -534,7 +539,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testExcludingComments() throws SQLException, IOException {
+  public void testSplitSqlQueryWithComments() throws SQLException, IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
     properties.setProperty("common.max_retry", "3");
