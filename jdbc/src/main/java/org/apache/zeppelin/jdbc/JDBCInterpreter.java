@@ -588,18 +588,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
 
-      if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
-          || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
+      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
         singleLineComment = false;
-        multiLineComment = false;
-        if (item == sql.length() - 1 && query.length() > 0) {
-          queries.add(StringUtils.trim(query.toString()));
-        }
-        continue;
       }
 
-      if (singleLineComment || multiLineComment) {
-        continue;
+      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
+        multiLineComment = false;
       }
 
       if (character == '\'') {
@@ -622,16 +616,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
           && sql.length() > item + 1) {
         if (character == '-' && sql.charAt(item + 1) == '-') {
           singleLineComment = true;
-          continue;
-        }
-
-        if (character == '/' && sql.charAt(item + 1) == '*') {
+        } else if (character == '/' && sql.charAt(item + 1) == '*') {
           multiLineComment = true;
-          continue;
         }
       }
 
-      if (character == ';' && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
+          && !singleLineComment) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
