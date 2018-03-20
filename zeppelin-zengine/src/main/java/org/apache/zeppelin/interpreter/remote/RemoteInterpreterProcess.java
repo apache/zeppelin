@@ -19,8 +19,6 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
@@ -33,7 +31,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
 
   private GenericObjectPool<Client> clientPool;
-  private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
@@ -41,14 +38,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
       int connectTimeout) {
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     this.connectTimeout = connectTimeout;
-  }
-
-  public RemoteInterpreterEventPoller getRemoteInterpreterEventPoller() {
-    return remoteInterpreterEventPoller;
-  }
-
-  public void setRemoteInterpreterEventPoller(RemoteInterpreterEventPoller eventPoller) {
-    this.remoteInterpreterEventPoller = eventPoller;
   }
 
   public int getConnectTimeout() {
@@ -120,10 +109,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
         releaseClient(client, broken);
       }
     }
-  }
-
-  public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
-    return interpreterContextRunnerPool;
   }
 
   public <T> T callRemoteFunction(RemoteFunction<T> func) {

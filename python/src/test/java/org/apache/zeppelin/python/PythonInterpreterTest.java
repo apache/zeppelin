@@ -36,6 +36,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+
 public class PythonInterpreterTest extends BasePythonInterpreterTest {
 
   @Override
@@ -78,7 +79,7 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
   private class infinityPythonJob implements Runnable {
     @Override
     public void run() {
-      String code = "import time\nwhile True:\n  time.sleep(1)" ;
+      String code = "import time\nwhile True:\n  time.sleep(1)";
       InterpreterResult ret = null;
       try {
         ret = interpreter.interpret(code, getInterpreterContext());

@@ -584,6 +584,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return null;
   }
 
+  public Paragraph getParagraph(int index) {
+    return paragraphs.get(index);
+  }
+
   public Paragraph getLastParagraph() {
     synchronized (paragraphs) {
       return paragraphs.get(paragraphs.size() - 1);

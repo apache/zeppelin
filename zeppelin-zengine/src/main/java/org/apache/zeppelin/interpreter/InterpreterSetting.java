@@ -42,7 +42,6 @@ import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.slf4j.Logger;
@@ -134,13 +133,9 @@ public class InterpreterSetting {
   // launcher in future when we have other launcher implementation. e.g. third party launcher
   // service like livy
   private transient InterpreterLauncher launcher;
-
   private transient LifecycleManager lifecycleManager;
-  ///////////////////////////////////////////////////////////////////////////////////////////
-
-
-
   private transient RecoveryStorage recoveryStorage;
+  private transient RemoteInterpreterEventServer interpreterEventServer;
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -216,6 +211,11 @@ public class InterpreterSetting {
     public Builder setIntepreterSettingManager(
         InterpreterSettingManager interpreterSettingManager) {
       interpreterSetting.interpreterSettingManager = interpreterSettingManager;
+      return this;
+    }
+
+    public Builder setRemoteInterpreterEventServer(RemoteInterpreterEventServer interpreterEventServer) {
+      interpreterSetting.interpreterEventServer = interpreterEventServer;
       return this;
     }
 
@@ -358,6 +358,12 @@ public class InterpreterSetting {
 
   public InterpreterSetting setRecoveryStorage(RecoveryStorage recoveryStorage) {
     this.recoveryStorage = recoveryStorage;
+    return this;
+  }
+
+  public InterpreterSetting setInterpreterEventServer(
+      RemoteInterpreterEventServer interpreterEventServer) {
+    this.interpreterEventServer = interpreterEventServer;
     return this;
   }
 
@@ -713,10 +719,8 @@ public class InterpreterSetting {
     }
     InterpreterLaunchContext launchContext = new
         InterpreterLaunchContext(properties, option, interpreterRunner, userName,
-        interpreterGroupId, id, group, name);
+        interpreterGroupId, id, group, name, interpreterEventServer.getPort(), interpreterEventServer.getHost());
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
-    process.setRemoteInterpreterEventPoller(
-        new RemoteInterpreterEventPoller(remoteInterpreterProcessListener, appEventListener));
     recoveryStorage.onInterpreterClientStart(process);
     return process;
   }

@@ -39,7 +39,7 @@ public class ZeppelinDevServer extends
   private DevInterpreter interpreter = null;
   private InterpreterOutput out;
   public ZeppelinDevServer(int port) throws TException, IOException {
-    super(null, port, ":");
+    super(null, port, null, ":");
   }
 
   @Override
@@ -68,7 +68,7 @@ public class ZeppelinDevServer extends
   protected InterpreterOutput createInterpreterOutput(
       final String noteId, final String paragraphId) {
     if (out == null) {
-      final RemoteInterpreterEventClient eventClient = getEventClient();
+      final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
         out = new InterpreterOutput(new InterpreterOutputListener() {
           @Override

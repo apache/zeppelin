@@ -22,40 +22,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.quartz.SchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -66,7 +33,6 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -88,7 +54,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
-import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -99,8 +64,42 @@ import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/** Zeppelin websocket service. */
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Zeppelin websocket service.
+ */
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
         JobListenerFactory,
@@ -140,6 +139,8 @@ public class NotebookServer extends WebSocketServlet
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
+
+  private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
   /**
    * This is a special endpoint in the notebook websoket, Every connection in this Queue
@@ -2183,70 +2184,60 @@ public class NotebookServer extends WebSocketServlet
     broadcast(noteId, msg);
   }
 
+
   @Override
-  public void onGetParagraphRunners(String noteId, String paragraphId,
-      RemoteWorksEventListener callback) {
-    Notebook notebookIns = notebook();
-    List<InterpreterContextRunner> runner = new LinkedList<>();
-
-    if (notebookIns == null) {
-      LOG.info("intepreter request notebook instance is null");
-      callback.onFinished(notebookIns);
+  public void runParagraphs(String noteId,
+                            List<Integer> paragraphIndices,
+                            List<String> paragraphIds,
+                            String curParagraphId) throws IOException {
+    Notebook notebook = notebook();
+    final Note note = notebook.getNote(noteId);
+    final List<String> toBeRunParagraphIds = new ArrayList<>();
+    if (note == null) {
+      throw new IOException("Not existed noteId: " + noteId);
     }
-
-    try {
-      Note note = notebookIns.getNote(noteId);
-      if (note != null) {
-        if (paragraphId != null) {
-          Paragraph paragraph = note.getParagraph(paragraphId);
-          if (paragraph != null) {
-            runner.add(paragraph.getInterpreterContextRunner());
-          }
-        } else {
-          for (Paragraph p : note.getParagraphs()) {
-            runner.add(p.getInterpreterContextRunner());
-          }
+    if (!paragraphIds.isEmpty() && !paragraphIndices.isEmpty()) {
+      throw new IOException("Can not specify paragraphIds and paragraphIndices together");
+    }
+    if (paragraphIds != null && !paragraphIds.isEmpty()) {
+      for (String paragraphId : paragraphIds) {
+        if (note.getParagraph(paragraphId) == null) {
+          throw new IOException("Not existed paragraphId: " + paragraphId);
+        }
+        if (!paragraphId.equals(curParagraphId)) {
+          toBeRunParagraphIds.add(paragraphId);
         }
       }
-      callback.onFinished(runner);
-    } catch (NullPointerException e) {
-      LOG.warn(e.getMessage());
-      callback.onError();
     }
+    if (paragraphIndices != null && !paragraphIndices.isEmpty()) {
+      for (int paragraphIndex : paragraphIndices) {
+        if (note.getParagraph(paragraphIndex) == null) {
+          throw new IOException("Not existed paragraphIndex: " + paragraphIndex);
+        }
+        if (!note.getParagraph(paragraphIndex).getId().equals(curParagraphId)) {
+          toBeRunParagraphIds.add(note.getParagraph(paragraphIndex).getId());
+        }
+      }
+    }
+    // run the whole note except the current paragraph
+    if (paragraphIds.isEmpty() && paragraphIndices.isEmpty()) {
+      for (Paragraph paragraph : note.getParagraphs()) {
+        if (!paragraph.getId().equals(curParagraphId)) {
+          toBeRunParagraphIds.add(paragraph.getId());
+        }
+      }
+    }
+    Runnable runThread = new Runnable() {
+      @Override
+      public void run() {
+        for (String paragraphId : toBeRunParagraphIds) {
+          note.run(paragraphId, true);
+        }
+      }
+    };
+    executorService.submit(runThread);
   }
 
-  @Override
-  public void onRemoteRunParagraph(String noteId, String paragraphId) throws Exception {
-    Notebook notebookIns = notebook();
-    try {
-      if (notebookIns == null) {
-        throw new Exception("onRemoteRunParagraph notebook instance is null");
-      }
-      Note noteIns = notebookIns.getNote(noteId);
-      if (noteIns == null) {
-        throw new Exception(String.format("Can't found note id %s", noteId));
-      }
-
-      Paragraph paragraph = noteIns.getParagraph(paragraphId);
-      if (paragraph == null) {
-        throw new Exception(String.format("Can't found paragraph %s %s", noteId, paragraphId));
-      }
-
-      Set<String> userAndRoles = Sets.newHashSet();
-      userAndRoles.add(SecurityUtils.getPrincipal());
-      userAndRoles.addAll(SecurityUtils.getRoles());
-      if (!notebookIns.getNotebookAuthorization().hasRunAuthorization(userAndRoles, noteId)) {
-        throw new ForbiddenException(String.format("can't execute note %s", noteId));
-      }
-
-      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-      paragraph.setAuthenticationInfo(subject);
-
-      noteIns.run(paragraphId);
-    } catch (Exception e) {
-      throw e;
-    }
-  }
 
   /**
    * Notebook Information Change event.

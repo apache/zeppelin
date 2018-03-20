@@ -28,7 +28,6 @@ struct RemoteInterpreterContext {
   7: string config,   // json serialized config
   8: string gui,      // json serialized gui
   9: string noteGui,      // json serialized note gui
-  10: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResultMessage {
@@ -90,55 +89,40 @@ struct InterpreterCompletion {
   3: string meta
 }
 
-struct CallbackInfo {
-  1: string host,
-  2: i32 port
-}
+
 
 service RemoteInterpreterService {
 
-  void createInterpreter(1: string intpGroupId, 2: string sessionKey, 3: string className, 4: map<string, string> properties, 5: string userName);
-  void open(1: string sessionKey, 2: string className);
-  void close(1: string sessionKey, 2: string className);
-  RemoteInterpreterResult interpret(1: string sessionKey, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
-  void cancel(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  i32 getProgress(1: string sessionKey, 2: string className, 3: RemoteInterpreterContext interpreterContext);
-  string getFormType(1: string sessionKey, 2: string className);
-  list<InterpreterCompletion> completion(1: string sessionKey, 2: string className, 3: string buf, 4: i32 cursor, 5: RemoteInterpreterContext interpreterContext);
+  void createInterpreter(1: string intpGroupId, 2: string sessionId, 3: string className, 4: map<string, string> properties, 5: string userName);
+  void open(1: string sessionId, 2: string className);
+  void close(1: string sessionId, 2: string className);
+  RemoteInterpreterResult interpret(1: string sessionId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
+  void cancel(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  i32 getProgress(1: string sessionId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  string getFormType(1: string sessionId, 2: string className);
+  list<InterpreterCompletion> completion(1: string sessionId, 2: string className, 3: string buf, 4: i32 cursor, 5: RemoteInterpreterContext interpreterContext);
   void shutdown();
 
-  string getStatus(1: string sessionKey, 2:string jobId);
+  string getStatus(1: string sessionId, 2:string jobId);
 
-  RemoteInterpreterEvent getEvent();
-
-  // as a response, ZeppelinServer send list of resources to Interpreter process
-  void resourcePoolResponseGetAll(1: list<string> resources);
-  // as a response, ZeppelinServer send serialized value of resource
-  void resourceResponseGet(1: string resourceId, 2: binary object);
-  // as a response, ZeppelinServer send return object
-  void resourceResponseInvokeMethod(1: string invokeMessage, 2: binary object);
-  // get all resources in the interpreter process
   list<string> resourcePoolGetAll();
   // get value of resource
-  binary resourceGet(1: string sessionKey, 2: string paragraphId, 3: string resourceName);
+  binary resourceGet(1: string sessionId, 2: string paragraphId, 3: string resourceName);
   // remove resource
-  bool resourceRemove(1: string sessionKey, 2: string paragraphId, 3:string resourceName);
+  bool resourceRemove(1: string sessionId, 2: string paragraphId, 3:string resourceName);
   // invoke method on resource
-  binary resourceInvokeMethod(1: string sessionKey, 2: string paragraphId, 3:string resourceName, 4:string invokeMessage);
+  binary resourceInvokeMethod(1: string sessionId, 2: string paragraphId, 3:string resourceName, 4:string invokeMessage);
 
-  void angularObjectUpdate(1: string name, 2: string sessionKey, 3: string paragraphId, 4: string
-  object);
-  void angularObjectAdd(1: string name, 2: string sessionKey, 3: string paragraphId, 4: string object);
-  void angularObjectRemove(1: string name, 2: string sessionKey, 3: string paragraphId);
+  void angularObjectUpdate(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object);
+  void angularObjectAdd(1: string name, 2: string sessionId, 3: string paragraphId, 4: string object);
+  void angularObjectRemove(1: string name, 2: string sessionId, 3: string paragraphId);
   void angularRegistryPush(1: string registry);
 
-  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionKey, 4: string paragraphId);
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string sessionId, 4: string paragraphId);
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
   void onReceivedZeppelinResource(1: string object);
 }
 
-service RemoteInterpreterCallbackService {
-  void callback(1: CallbackInfo callbackInfo);
-}
+

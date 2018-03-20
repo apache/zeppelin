@@ -15,15 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
+
+package org.apache.zeppelin.helium;
+
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * zeppelin job for Remote works controller by interpreter
- *
+ * ZeppelinContext for DevInterpreter
  */
-public interface RemoteWorksController {
-  List<InterpreterContextRunner> getRemoteContextRunner(String noteId);
-  List<InterpreterContextRunner> getRemoteContextRunner(String noteId, String paragraphId);
+public class DevZeppelinContext extends BaseZeppelinContext {
+  public DevZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
+    super(hooks, maxResult);
+  }
+
+  @Override
+  public Map<String, String> getInterpreterClassMap() {
+    return null;
+  }
+
+  @Override
+  public List<Class> getSupportedClasses() {
+    return null;
+  }
+
+  @Override
+  protected String showData(Object obj) {
+    return null;
+  }
 }

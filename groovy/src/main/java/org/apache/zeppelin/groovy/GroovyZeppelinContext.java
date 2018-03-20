@@ -15,23 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.remote;
+package org.apache.zeppelin.groovy;
 
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- *
+ * ZeppelinContext for Groovy
  */
-public class RemoteInterpreterContextRunner extends InterpreterContextRunner {
+public class GroovyZeppelinContext extends BaseZeppelinContext {
 
-  public RemoteInterpreterContextRunner(String noteId, String paragraphId) {
-    super(noteId, paragraphId);
+  public GroovyZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
+    super(hooks, maxResult);
   }
 
   @Override
-  public void run() {
-    // this class should be used only for gson deserialize abstract class
-    // code should not reach here
-    throw new RuntimeException("Assert");
+  public Map<String, String> getInterpreterClassMap() {
+    return null;
+  }
+
+  @Override
+  public List<Class> getSupportedClasses() {
+    return null;
+  }
+
+  @Override
+  protected String showData(Object obj) {
+    return null;
   }
 }

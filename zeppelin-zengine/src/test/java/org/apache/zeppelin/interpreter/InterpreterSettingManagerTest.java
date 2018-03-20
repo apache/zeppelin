@@ -51,7 +51,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
     assertTrue(interpreterSetting.getLifecycleManager() instanceof NullLifecycleManager);
-    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(8, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
     //   * zeppelin.interpreter.output.limit
     //   * zeppelin.interpreter.localRepo
@@ -86,7 +86,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(3, interpreterSetting.getInterpreterInfos().size());
+    assertEquals(8, interpreterSetting.getInterpreterInfos().size());
     assertEquals(6, interpreterSetting.getJavaProperties().size());
     assertEquals("value_1", interpreterSetting.getJavaProperties().getProperty("property_1"));
     assertEquals("new_value_2", interpreterSetting.getJavaProperties().getProperty("property_2"));
