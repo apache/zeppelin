@@ -82,6 +82,8 @@ public class FlinkInterpreter extends Interpreter {
     out = new ByteArrayOutputStream();
     flinkConf = new org.apache.flink.configuration.Configuration();
     Properties intpProperty = getProperty();
+
+    prepareIntpPropertyByOldNames(intpProperty);
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       String val = toString(intpProperty.get(key));
@@ -135,24 +137,54 @@ public class FlinkInterpreter extends Interpreter {
 
   }
 
-  private boolean localMode() {
+  private void prepareIntpPropertyByOldNames(Properties intpProperty) {
+    if (!intpProperty.contains("jobmanager.rpc.address")) {
+      if (intpProperty.contains("host")) {
+        intpProperty.setProperty("jobmanager.rpc.address", intpProperty.getProperty("host"));
+      }
+    }
+    if (!intpProperty.contains("jobmanager.rpc.port")) {
+      if (intpProperty.contains("port")) {
+        intpProperty.setProperty("jobmanager.rpc.port", intpProperty.getProperty("port"));
+      }
+    }
+  }
+
+  private String getHostOrRpcAddress() {
     String host = getProperty("host");
-    return host == null || host.trim().length() == 0 || host.trim().equals("local");
+    if (host == null) {
+      host = getProperty("jobmanager.rpc.address");
+    }
+    return host;
+  }
+
+  private boolean localMode() {
+    String host = getHostOrRpcAddress();
+    return host == null || host.trim().length() == 0 || host.trim().equals("local")
+            || host.trim().equals("localhost");
   }
 
   private String getHost() {
     if (localMode()) {
       return "localhost";
     } else {
-      return getProperty("host");
+      return getHostOrRpcAddress();
     }
+  }
+
+  private String getPortOrRpcPort() {
+    String port = getProperty("port");
+    if (port == null) {
+      port = getProperty("jobmanager.rpc.port");
+    }
+    return port;
   }
 
   private int getPort() {
     if (localMode()) {
       return localFlinkCluster.getLeaderRPCPort();
     } else {
-      return Integer.parseInt(getProperty("port"));
+      return Integer.parseInt(getPortOrRpcPort());
     }
   }
 
