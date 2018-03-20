@@ -709,6 +709,42 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.aceLoaded = function(_editor) {
     let langTools = ace.require('ace/ext/language_tools');
     let Range = ace.require('ace/range').Range;
+    let filteredList = ace.require('ace/autocomplete').FilteredList;
+
+    // ref: https://github.com/ajaxorg/ace/blob/5021d0193d9f2bba5a978d0b1d7a4f73d18ce713/lib/ace/autocomplete.js#L454
+    filteredList.prototype.setFilter = function(str) {
+      let matches;
+      if (str.length > this.filterText && str.lastIndexOf(this.filterText, 0) === 0) {
+        matches = this.filtered;
+      } else {
+        matches = this.all;
+      }
+
+      this.filterText = str;
+      matches = this.filterCompletions(matches, this.filterText);
+      matches = matches.sort(function(a, b) {
+        return b.exactMatch - a.exactMatch || b.score - a.score;
+      });
+      let prev = null;
+
+      // Meta empty means item is supplied from backend
+      let isMetaEmpty = false;
+      if (matches[0] !== undefined && matches[0]['meta'] === '') {
+        isMetaEmpty = true;
+      }
+      matches = matches.filter(function(item) {
+        if (isMetaEmpty && item.meta !== '') {
+          return false;
+        }
+        let caption = item.snippet || item.caption || item.value;
+        if (caption === prev) {
+          return false;
+        }
+        prev = caption;
+        return true;
+      });
+      this.filtered = matches;
+    };
 
     _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
