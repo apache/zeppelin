@@ -618,7 +618,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         }
       }
 
-      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment) {
+      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
+          && !singleLineComment) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
