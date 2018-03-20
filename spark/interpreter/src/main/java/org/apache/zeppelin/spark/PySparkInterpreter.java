@@ -126,30 +126,17 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             iPySparkInterpreter.checkIPythonPrerequisite(getPythonExec(getProperties())))) {
       try {
         iPySparkInterpreter.open();
-        if (InterpreterContext.get() != null) {
-          // don't print it when it is in testing, just for easy output check in test.
-          InterpreterContext.get().out.write(("IPython is available, " +
-              "use IPython for PySparkInterpreter\n")
-              .getBytes());
-        }
-        LOGGER.info("Use IPySparkInterpreter to replace PySparkInterpreter");
+        LOGGER.info("IPython is available, Use IPySparkInterpreter to replace PySparkInterpreter");
         return;
       } catch (Exception e) {
+        iPySparkInterpreter = null;
         LOGGER.warn("Fail to open IPySparkInterpreter", e);
       }
     }
-    iPySparkInterpreter = null;
-    if (getProperty("zeppelin.pyspark.useIPython", "true").equals("true")) {
-      // don't print it when it is in testing, just for easy output check in test.
-      try {
-        InterpreterContext.get().out.write(("IPython is not available, " +
-            "use the native PySparkInterpreter\n")
-            .getBytes());
-      } catch (IOException e) {
-        LOGGER.warn("Fail to write InterpreterOutput", e);
-      }
-    }
 
+    // reset iPySparkInterpreter to null as it is not available
+    iPySparkInterpreter = null;
+    LOGGER.info("IPython is not available, use the native PySparkInterpreter\n");
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
