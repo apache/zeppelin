@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -59,19 +58,14 @@ public class InterpreterTest {
     String paragraphText = "testParagraphText";
     String paragraphId = "testParagraphId";
     String user = "username";
-    InterpreterContext.set(new InterpreterContext(noteId,
-        paragraphId,
-        null,
-        paragraphTitle,
-        paragraphText,
-        new AuthenticationInfo("testUser", null, "testTicket"),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null));
+    InterpreterContext.set(
+        InterpreterContext.builder()
+            .setNoteId(noteId)
+            .setParagraphId(paragraphId)
+            .setParagraphText(paragraphText)
+            .setParagraphTitle(paragraphTitle)
+            .build());
+
     Properties p = new Properties();
     p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, " +
         "#{replName}, #{noteId}, #{user}," +

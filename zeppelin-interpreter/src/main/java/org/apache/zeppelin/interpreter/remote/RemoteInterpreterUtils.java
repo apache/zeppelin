@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet4Address;
@@ -29,20 +35,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 
 /**
  *
@@ -130,14 +122,14 @@ public class RemoteInterpreterUtils {
       // end point is not accessible
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
-                "(might be initializing): " + cne.getMessage());
+            "(might be initializing): " + cne.getMessage());
       }
       return false;
     } catch (IOException ioe) {
       // end point is not accessible
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
-                "(might be initializing): " + ioe.getMessage());
+            "(might be initializing): " + ioe.getMessage());
       }
       return false;
     }
@@ -160,16 +152,4 @@ public class RemoteInterpreterUtils {
     return key.matches("^[A-Z_0-9]*");
   }
 
-  public static void registerInterpreter(String callbackHost, int callbackPort,
-      final CallbackInfo callbackInfo) throws TException {
-    LOGGER.info("callbackHost: {}, callbackPort: {}, callbackInfo: {}", callbackHost, callbackPort,
-        callbackInfo);
-    try (TTransport transport = new TSocket(callbackHost, callbackPort)) {
-      transport.open();
-      TProtocol protocol = new TBinaryProtocol(transport);
-      RemoteInterpreterCallbackService.Client client = new RemoteInterpreterCallbackService.Client(
-          protocol);
-      client.callback(callbackInfo);
-    }
-  }
 }

@@ -18,22 +18,19 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -55,6 +52,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OldSparkInterpreterTest {
@@ -66,8 +64,6 @@ public class OldSparkInterpreterTest {
   static InterpreterGroup intpGroup;
   static InterpreterContext context;
   static Logger LOGGER = LoggerFactory.getLogger(OldSparkInterpreterTest.class);
-  static Map<String, Map<String, String>> paraIdToInfosMap =
-      new HashMap<>();
 
   /**
    * Get spark version number as a numerical value.
@@ -98,41 +94,22 @@ public class OldSparkInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
+    context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setParagraphTitle("title")
+        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+        .setResourcePool(new LocalResourcePool("id"))
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+        .build();
+    InterpreterContext.set(context);
+
     intpGroup.put("note", new LinkedList<Interpreter>());
     repl = new SparkInterpreter(getSparkTestProperties(tmpDir));
     repl.setInterpreterGroup(intpGroup);
     intpGroup.get("note").add(repl);
     repl.open();
-
-    final RemoteEventClientWrapper remoteEventClientWrapper = new RemoteEventClientWrapper() {
-
-      @Override
-      public void onParaInfosReceived(String noteId, String paragraphId,
-          Map<String, String> infos) {
-        if (infos != null) {
-          paraIdToInfosMap.put(paragraphId, infos);
-        }
-      }
-
-      @Override
-      public void onMetaInfosReceived(Map<String, String> infos) {
-      }
-    };
-    context = new InterpreterContext("note", "id", null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(null)) {
-
-        @Override
-        public RemoteEventClientWrapper getClient() {
-          return remoteEventClientWrapper;
-        }
-    };
     // The first para interpretdr will set the Eventclient wrapper
     //SparkInterpreter.interpret(String, InterpreterContext) ->
     //SparkInterpreter.populateSparkWebUrl(InterpreterContext) ->
@@ -336,27 +313,4 @@ public class OldSparkInterpreterTest {
     assertTrue(completions.size() > 0);
   }
 
-  @Test
-  public void testParagraphUrls() throws InterpreterException {
-    String paraId = "test_para_job_url";
-    InterpreterContext intpCtx = new InterpreterContext("note", paraId, null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(null));
-    repl.interpret("sc.parallelize(1 to 10).map(x => {x}).collect", intpCtx);
-    Map<String, String> paraInfos = paraIdToInfosMap.get(intpCtx.getParagraphId());
-    String jobUrl = null;
-    if (paraInfos != null) {
-      jobUrl = paraInfos.get("jobUrl");
-    }
-    String sparkUIUrl = repl.getSparkUIUrl();
-    assertNotNull(jobUrl);
-    assertTrue(jobUrl.startsWith(sparkUIUrl + "/jobs/job?id="));
-
-  }
 }

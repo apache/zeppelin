@@ -562,9 +562,21 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
-            getNoteGui(), registry, resourcePool, runners, output);
+        InterpreterContext.builder()
+            .setNoteId(note.getId())
+            .setParagraphId(getId())
+            .setReplName(intpText)
+            .setParagraphTitle(title)
+            .setParagraphText(text)
+            .setAuthenticationInfo(authenticationInfo)
+            .setConfig(config)
+            .setGUI(settings)
+            .setNoteGUI(getNoteGui())
+            .setAngularObjectRegistry(registry)
+            .setResourcePool(resourcePool)
+            .setInterpreterOut(output)
+            .build();
+
     return interpreterContext;
   }
 
@@ -592,9 +604,20 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
-            getNoteGui(), registry, resourcePool, runners, output);
+        InterpreterContext.builder()
+            .setNoteId(note.getId())
+            .setParagraphId(getId())
+            .setReplName(intpText)
+            .setParagraphTitle(title)
+            .setParagraphText(text)
+            .setAuthenticationInfo(authenticationInfo)
+            .setConfig(config)
+            .setGUI(settings)
+            .setNoteGUI(getNoteGui())
+            .setAngularObjectRegistry(registry)
+            .setResourcePool(resourcePool)
+            .setInterpreterOut(output)
+            .build();
     return interpreterContext;
   }
 

@@ -21,9 +21,11 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -37,7 +39,6 @@ import static org.mockito.Mockito.mock;
 
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
-
 
   protected Properties initIntpProperties() {
     Properties properties = new Properties();

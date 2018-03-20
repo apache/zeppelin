@@ -17,18 +17,12 @@
 
 package org.apache.zeppelin.interpreter;
 
-import com.sun.net.httpserver.Authenticator;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ConfInterpreterTest extends AbstractInterpreterTest {
@@ -39,9 +33,11 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.conf") instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.conf");
 
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
+
     InterpreterResult result = confInterpreter.interpret("property_1\tnew_value\nnew_property\tdummy_value", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
 
@@ -68,9 +64,10 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.conf") instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.conf");
 
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
     InterpreterResult result = confInterpreter.interpret("", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
 
@@ -88,9 +85,11 @@ public class ConfInterpreterTest extends AbstractInterpreterTest {
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.conf") instanceof ConfInterpreter);
     ConfInterpreter confInterpreter = (ConfInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.conf");
 
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
+
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test");
     InterpreterResult result = remoteInterpreter.interpret("hello world", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);

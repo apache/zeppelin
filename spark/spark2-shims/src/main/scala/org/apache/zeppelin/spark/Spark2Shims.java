@@ -21,15 +21,18 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 
 public class Spark2Shims extends SparkShims {
 
-  public void setupSparkListener(final String master, final String sparkWebUrl) {
+  public void setupSparkListener(final String master,
+                                 final String sparkWebUrl,
+                                 final InterpreterContext context) {
     SparkContext sc = SparkContext.getOrCreate();
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties());
+        buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
       }
     });
   }

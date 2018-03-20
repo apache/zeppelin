@@ -17,23 +17,9 @@
 
 package org.apache.zeppelin.livy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.livy.test.framework.Cluster;
 import org.apache.livy.test.framework.Cluster$;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -44,6 +30,19 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class LivyInterpreterIT {
   private static final Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
@@ -98,8 +97,12 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
     sparkInterpreter.open();
 
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties);
@@ -127,8 +130,13 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
+    ;
 
     InterpreterResult result = sparkInterpreter.interpret("sc.parallelize(1 to 10).sum()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -226,8 +234,12 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
 
     InterpreterResult result = null;
     // test DataFrame api
@@ -312,8 +324,8 @@ public class LivyInterpreterIT {
     if (!isSpark2) {
       result = sparkInterpreter.interpret(
           "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20)))"
-                  + ".toDF(\"col_1\", \"col_2\")\n"
-                  + "df.collect()", context);
+              + ".toDF(\"col_1\", \"col_2\")\n"
+              + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData()
@@ -321,8 +333,8 @@ public class LivyInterpreterIT {
     } else {
       result = sparkInterpreter.interpret(
           "val df=spark.createDataFrame(Seq((\"12characters12characters\",20)))"
-                  + ".toDF(\"col_1\", \"col_2\")\n"
-                  + "df.collect()", context);
+              + ".toDF(\"col_1\", \"col_2\")\n"
+              + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData()
@@ -331,7 +343,7 @@ public class LivyInterpreterIT {
     sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
     // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
     result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'",
-            context);
+        context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals("col_1\tcol_2\n12characters12cha...\t20", result.message().get(0).getData());
@@ -349,8 +361,12 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId",
-            "livy.pyspark", "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
     pysparkInterpreter.open();
 
     // test traceback msg
@@ -359,7 +375,7 @@ public class LivyInterpreterIT {
       // for livy version >=0.3 , input some erroneous spark code, check the shown result is more
       // than one line
       InterpreterResult result = pysparkInterpreter.interpret(
-              "sc.parallelize(wrongSyntax(1, 2)).count()", context);
+          "sc.parallelize(wrongSyntax(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().get(0).getData().split("\n").length > 1);
       assertTrue(result.message().get(0).getData().contains("Traceback"));
@@ -465,7 +481,7 @@ public class LivyInterpreterIT {
 
   @Test
   public void testSparkInterpreterWithDisplayAppInfo_StringWithoutTruncation()
-          throws InterpreterException {
+      throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -482,8 +498,12 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.spark",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
     sparkInterpreter.open();
 
     LivySparkSQLInterpreter sqlInterpreter = new LivySparkSQLInterpreter(properties2);
@@ -515,8 +535,8 @@ public class LivyInterpreterIT {
       if (!isSpark2) {
         result = sparkInterpreter.interpret(
             "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20)))"
-                    + ".toDF(\"col_1\", \"col_2\")\n"
-                    + "df.collect()", context);
+                + ".toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(2, result.message().size());
         assertTrue(result.message().get(0).getData()
@@ -524,8 +544,8 @@ public class LivyInterpreterIT {
       } else {
         result = sparkInterpreter.interpret(
             "val df=spark.createDataFrame(Seq((\"12characters12characters\",20)))"
-                    + ".toDF(\"col_1\", \"col_2\")\n"
-                    + "df.collect()", context);
+                + ".toDF(\"col_1\", \"col_2\")\n"
+                + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(2, result.message().size());
         assertTrue(result.message().get(0).getData()
@@ -534,7 +554,7 @@ public class LivyInterpreterIT {
       sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
       // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
       result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'",
-              context);
+          context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
       assertEquals("col_1\tcol_2\n12characters12characters\t20", result.message().get(0).getData());
@@ -562,8 +582,12 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId",
-            "livy.sparkr", "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setAuthenticationInfo(authInfo)
+        .setInterpreterOut(output)
+        .build();
     sparkRInterpreter.open();
 
     try {
@@ -638,8 +662,12 @@ public class LivyInterpreterIT {
       AuthenticationInfo authInfo = new AuthenticationInfo("user1");
       MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
       InterpreterOutput output = new InterpreterOutput(outputListener);
-      InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
-          "title", "text", authInfo, null, null, null, null, null, null, output);
+      InterpreterContext context = InterpreterContext.builder()
+          .setNoteId("noteId")
+          .setParagraphId("paragraphId")
+          .setAuthenticationInfo(authInfo)
+          .setInterpreterOut(output)
+          .build();
 
       String p1 = IOUtils.toString(getClass().getResourceAsStream("/livy_tutorial_1.scala"));
       InterpreterResult result = sparkInterpreter.interpret(p1, context);
@@ -696,15 +724,19 @@ public class LivyInterpreterIT {
       AuthenticationInfo authInfo = new AuthenticationInfo("user1");
       MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
       InterpreterOutput output = new InterpreterOutput(outputListener);
-      InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sql",
-          "title", "text", authInfo, null, null, null, null, null, null, output);
+      InterpreterContext context = InterpreterContext.builder()
+          .setNoteId("noteId")
+          .setParagraphId("paragraphId")
+          .setAuthenticationInfo(authInfo)
+          .setInterpreterOut(output)
+          .build();
       // detect spark version
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
 
       boolean isSpark2 = isSpark2((BaseLivyInterpreter) sparkInterpreter.getInnerInterpreter(),
-              context);
+          context);
 
       if (!isSpark2) {
         result = sparkInterpreter.interpret(
@@ -718,7 +750,7 @@ public class LivyInterpreterIT {
 
         // access table from pyspark
         result = pysparkInterpreter.interpret("sqlContext.sql(\"select * from df\").show()",
-                context);
+            context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData()
@@ -730,7 +762,7 @@ public class LivyInterpreterIT {
 
         // access table from sparkr
         result = sparkRInterpreter.interpret("head(sql(sqlContext, \"select * from df\"))",
-                context);
+            context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));
@@ -765,11 +797,11 @@ public class LivyInterpreterIT {
       // test plotting of python
       result = pysparkInterpreter.interpret(
           "import matplotlib.pyplot as plt\n" +
-          "plt.switch_backend('agg')\n" +
-          "data=[1,2,3,4]\n" +
-          "plt.figure()\n" +
-          "plt.plot(data)\n" +
-          "%matplot plt", context);
+              "plt.switch_backend('agg')\n" +
+              "data=[1,2,3,4]\n" +
+              "plt.figure()\n" +
+              "plt.plot(data)\n" +
+              "%matplot plt", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());

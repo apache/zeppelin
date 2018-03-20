@@ -49,7 +49,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -74,7 +74,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -100,7 +100,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -125,7 +125,7 @@ public class SparkInterpreterLauncherTest {
     properties.setProperty("spark.jars", "jar_1");
 
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -153,7 +153,7 @@ public class SparkInterpreterLauncherTest {
 
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;

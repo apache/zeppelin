@@ -16,14 +16,13 @@
  */
 package org.apache.zeppelin.ignite;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +30,8 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for Apache Ignite interpreter ({@link IgniteInterpreter}).
@@ -40,9 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 public class IgniteInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
-  private static final InterpreterContext INTP_CONTEXT =
-      new InterpreterContext(null, null, null, null, null, null, null, null, null, null,
-              null, null, null);
+  private static final InterpreterContext INTP_CONTEXT = InterpreterContext.builder().build();
 
   private IgniteInterpreter intp;
   private Ignite ignite;
