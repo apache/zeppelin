@@ -233,7 +233,7 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false,
-      "completionSupport": true
+      "completionSupport": false
     }
   }
 ]
