@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -494,7 +495,7 @@ public class InterpreterSetting {
       StringMap<String> map = (StringMap) properties;
       Properties newProperties = new Properties();
       for (String key : map.keySet()) {
-        newProperties.put(key, map.get(key));
+        newProperties.put(StringUtils.trim(key), StringUtils.trim(map.get(key)));
       }
       this.properties = newProperties;
     } else {
