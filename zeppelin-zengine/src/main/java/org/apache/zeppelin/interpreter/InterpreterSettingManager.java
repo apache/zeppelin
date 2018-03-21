@@ -192,13 +192,14 @@ public class InterpreterSettingManager {
   }
 
   /**
-   * Load interpreter setting from interpreter-setting.json
+   * Load interpreter setting from interpreter.json
    */
   private void loadFromFile() throws IOException {
     InterpreterInfoSaving infoSaving =
         configStorage.loadInterpreterSettings();
     if (infoSaving == null) {
-      // nothing to read
+      // it is fresh zeppelin instance if there's no interpreter.json, just create interpreter
+      // setting from interpreterSettingTemplates
       for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
@@ -206,6 +207,21 @@ public class InterpreterSettingManager {
       }
       return;
     }
+
+    // update interpreter binding first as we change interpreter setting id in ZEPPELIN-3208.
+    Map<String, List<String>> newBindingMap = new HashMap<>();
+    for (Map.Entry<String, List<String>> entry : infoSaving.interpreterBindings.entrySet()) {
+      String noteId = entry.getKey();
+      List<String> oldSettingIdList = entry.getValue();
+      List<String> newSettingIdList = new ArrayList<>();
+      for (String oldId : oldSettingIdList) {
+        if (infoSaving.interpreterSettings.containsKey(oldId)) {
+          newSettingIdList.add(infoSaving.interpreterSettings.get(oldId).getName());
+        };
+      }
+      newBindingMap.put(noteId, newSettingIdList);
+    }
+    interpreterBindings.putAll(newBindingMap);
 
     //TODO(zjffdu) still ugly (should move all to InterpreterInfoSaving)
     for (InterpreterSetting savedInterpreterSetting : infoSaving.interpreterSettings.values()) {
@@ -242,7 +258,19 @@ public class InterpreterSettingManager {
             interpreterSettingTemplate.getInterpreterRunner());
       } else {
         LOGGER.warn("No InterpreterSetting Template found for InterpreterSetting: "
-            + savedInterpreterSetting.getGroup());
+            + savedInterpreterSetting.getGroup() + ", but it is found in interpreter.json, "
+            + "it would be skipped.");
+        // also delete its binding
+        for (Map.Entry<String, List<String>> entry : interpreterBindings.entrySet()) {
+          List<String> ids = entry.getValue();
+          Iterator<String> iter = ids.iterator();
+          while(iter.hasNext()) {
+            if (iter.next().equals(savedInterpreterSetting.getId())) {
+              iter.remove();
+            }
+          }
+        }
+        continue;
       }
 
       // Overwrite the default InterpreterSetting we registered from InterpreterSetting Templates
@@ -257,8 +285,6 @@ public class InterpreterSettingManager {
           savedInterpreterSetting.getName());
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
     }
-
-    interpreterBindings.putAll(infoSaving.interpreterBindings);
 
     if (infoSaving.interpreterRepositories != null) {
       for (RemoteRepository repo : infoSaving.interpreterRepositories) {
@@ -403,19 +429,16 @@ public class InterpreterSettingManager {
         .setIntepreterSettingManager(this)
         .create();
 
-    LOGGER.info("Register InterpreterSettingTemplate & Create InterpreterSetting: {}",
+    LOGGER.info("Register InterpreterSettingTemplate: {}",
         interpreterSettingTemplate.getName());
     interpreterSettingTemplates.put(interpreterSettingTemplate.getName(),
         interpreterSettingTemplate);
-
-    InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
-    initInterpreterSetting(interpreterSetting);
-    interpreterSettings.put(interpreterSetting.getName(), interpreterSetting);
   }
 
   @VisibleForTesting
   public InterpreterSetting getDefaultInterpreterSetting(String noteId) {
-    return getInterpreterSettings(noteId).get(0);
+    List<InterpreterSetting> allInterpreterSettings = getInterpreterSettings(noteId);
+    return allInterpreterSettings.size() > 0 ? allInterpreterSettings.get(0) : null;
   }
 
   public List<InterpreterSetting> getInterpreterSettings(String noteId) {
@@ -471,7 +494,7 @@ public class InterpreterSettingManager {
           group = replNameSplit[0];
         }
         // when replName is 'name' of interpreter
-        if (defaultSettingName.equals(intpSetting.getName())) {
+        if (intpSetting.getName().equals(defaultSettingName)) {
           editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
         }
         // when replName is 'alias name' of interpreter or 'group' of interpreter

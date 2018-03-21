@@ -524,7 +524,13 @@ public class ZeppelinConfiguration extends XMLConfiguration {
           "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
       return getConfDir();
     }
-    return fsConfigDir;
+    if (getString(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS)
+                .equals("org.apache.zeppelin.storage.LocalConfigStorage")) {
+      // only apply getRelativeDir when it is LocalConfigStorage
+      return getRelativeDir(fsConfigDir);
+    } else {
+      return fsConfigDir;
+    }
   }
 
   public List<String> getAllowedOrigins()
@@ -579,6 +585,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getZeppelinNotebookGitRemoteOrigin() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN);
+  }
+
+  public Boolean isZeppelinNotebookCronEnable() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE);
+  }
+
+  public String getZeppelinNotebookCronFolders() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -678,7 +692,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.beam.BeamInterpreter,"
         + "org.apache.zeppelin.scio.ScioInterpreter,"
         + "org.apache.zeppelin.groovy.GroovyInterpreter,"
-        + "org.apache.zeppelin.neo4j.Neo4jCypherInterpreter"
+        + "org.apache.zeppelin.neo4j.Neo4jCypherInterpreter,"
+        + "org.apache.zeppelin.sap.UniverseInterpreter"
         ),
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
@@ -760,7 +775,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_PORTRANGE("zeppelin.interpreter.portRange", ":"),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
-        "org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager"),
+        "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
         "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD(
@@ -771,7 +786,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),
-    ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin");
+    ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin"),
+    ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
+    ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null);
 
     private String varName;
     @SuppressWarnings("rawtypes")

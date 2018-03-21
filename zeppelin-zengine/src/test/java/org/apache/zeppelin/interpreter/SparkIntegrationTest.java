@@ -8,20 +8,46 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SparkInterpreterModeTest {
+@RunWith(value = Parameterized.class)
+public class SparkIntegrationTest {
+  private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
   private static MiniZeppelin zeppelin;
   private static InterpreterFactory interpreterFactory;
   private static InterpreterSettingManager interpreterSettingManager;
+
+  private String sparkVersion;
+  private String sparkHome;
+
+  public SparkIntegrationTest(String sparkVersion) {
+    LOGGER.info("Testing SparkVersion: " + sparkVersion);
+    this.sparkVersion = sparkVersion;
+    this.sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
+  }
+
+  @Parameterized.Parameters
+  public static List<Object[]> data() {
+    return Arrays.asList(new Object[][]{
+        {"2.2.1"},
+        {"2.1.2"},
+        {"2.0.2"},
+        {"1.6.3"}
+    });
+  }
 
   @BeforeClass
   public static void setUp() throws IOException {
@@ -49,9 +75,11 @@ public class SparkInterpreterModeTest {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark");
 
-    InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").getContext();
+    InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    String detectedSparkVersion = interpreterResult.message().get(0).getData();
+    assertTrue(detectedSparkVersion +" doesn't contain " + this.sparkVersion, detectedSparkVersion.contains(this.sparkVersion));
     interpreterResult = sparkInterpreter.interpret("sc.range(1,10).sum()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertTrue(interpreterResult.msg.get(0).getData().contains("45"));
@@ -68,17 +96,28 @@ public class SparkInterpreterModeTest {
 
     // test SparkSQLInterpreter
     Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql");
-    interpreterResult = sqlInterpreter.interpret("select count(1) from test", context);
+    interpreterResult = sqlInterpreter.interpret("select count(1) as c from test", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("count(1)\n2\n", interpreterResult.message().get(0).getData());
+    assertEquals("c\n2\n", interpreterResult.message().get(0).getData());
+
+    // test SparkRInterpreter
+    Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.r");
+    if (isSpark2()) {
+      interpreterResult = sparkrInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
+    } else {
+      interpreterResult = sparkrInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
+    }
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    assertTrue(interpreterResult.message().get(0).getData().contains("eruptions waiting"));
   }
 
   @Test
   public void testLocalMode() throws IOException, YarnException, InterpreterException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "local[*]");
-    sparkInterpreterSetting.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
+    sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
@@ -98,7 +137,7 @@ public class SparkInterpreterModeTest {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
-    sparkInterpreterSetting.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
+    sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
@@ -120,7 +159,7 @@ public class SparkInterpreterModeTest {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
-    sparkInterpreterSetting.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
+    sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
@@ -135,6 +174,10 @@ public class SparkInterpreterModeTest {
     assertEquals(1, response.getApplicationList().size());
 
     interpreterSettingManager.close();
+  }
+
+  private boolean isSpark2() {
+    return this.sparkVersion.startsWith("2.");
   }
 
   private String getPythonExec() throws IOException, InterruptedException {

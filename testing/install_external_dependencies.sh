@@ -30,6 +30,7 @@ if [[ "${SPARKR}" = "true" ]] ; then
     R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   fi
 fi
 
@@ -44,6 +45,6 @@ if [[ -n "$PYTHON" ]] ; then
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib pandasql ipython=5.4.1 jupyter_client ipykernel matplotlib bokeh=0.12.10
+  conda install -q matplotlib=2.1.2 pandasql ipython=5.4.1 jupyter_client ipykernel matplotlib bokeh=0.12.10
   pip install -q grpcio ggplot bkzep==0.4.0
 fi
