@@ -42,7 +42,8 @@
     },
     "editor": {
       "language": "sh",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]
