@@ -508,7 +508,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       BootstrapDialog.alert({
         closable: true,
         title: 'Add interpreter',
-        message: 'Name ' + $scope.newInterpreterSetting.name + ' already exists',
+        message: 'Name ' + _.escape($scope.newInterpreterSetting.name) + ' already exists',
       });
       return;
     }
@@ -747,7 +747,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showErrorMessage = function(setting) {
     BootstrapDialog.show({
       title: 'Error downloading dependencies',
-      message: setting.errorReason,
+      message: _.escape(setting.errorReason),
     });
   };
 
@@ -775,7 +775,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
           window.open(res.data.body.url, '_blank');
         } else {
           BootstrapDialog.alert({
-            message: res.data.body.message,
+            message: _.escape(res.data.body.message),
           });
         }
       }).catch(function(res) {
