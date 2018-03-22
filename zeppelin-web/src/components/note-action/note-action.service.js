@@ -139,7 +139,7 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
             type: BootstrapDialog.TYPE_WARNING,
             closable: true,
             title: 'WARNING! The folder will be MERGED',
-            message: 'The folder will be merged into <strong>' + newFolderId + '</strong>. Are you sure?',
+            message: 'The folder will be merged into <strong>' + _.escape(newFolderId) + '</strong>. Are you sure?',
             callback: function(result) {
               if (result) {
                 websocketMsgSrv.renameFolder(folderId, newFolderId);

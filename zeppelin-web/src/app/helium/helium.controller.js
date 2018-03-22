@@ -150,7 +150,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
               console.log('Failed to save order');
               BootstrapDialog.show({
                 title: 'Error on saving order ',
-                message: data.message,
+                message: _.escape(data.message),
               });
             });
           return false;
@@ -244,8 +244,8 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
               confirm.close();
               console.log('Failed to enable package %o %o. %o', name, artifact, data);
               BootstrapDialog.show({
-                title: 'Error on enabling ' + name,
-                message: data.message,
+                title: 'Error on enabling ' + _.escape(name),
+                message: _.escape(data.message),
               });
             });
             return false;
@@ -261,7 +261,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '<div style="font-weight: 300;">Do you want to disable Helium Package?</div>',
-      message: artifact,
+      message: _.escape(artifact),
       callback: function(result) {
         if (result) {
           confirm.$modalFooter.find('button').addClass('disabled');
@@ -276,8 +276,8 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
             confirm.close();
             console.log('Failed to disable package %o. %o', name, data);
             BootstrapDialog.show({
-              title: 'Error on disabling ' + name,
-              message: data.message,
+              title: 'Error on disabling ' + _.escape(name),
+              message: _.escape(data.message),
             });
           });
           return false;
