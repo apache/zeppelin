@@ -233,7 +233,7 @@ public class Notebook implements NoteEventListener {
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
   public Note cloneNote(String sourceNoteId, String newNoteName, AuthenticationInfo subject)
-      throws IOException, CloneNotSupportedException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
 
     Note sourceNote = getNote(sourceNoteId);
     if (sourceNote == null) {

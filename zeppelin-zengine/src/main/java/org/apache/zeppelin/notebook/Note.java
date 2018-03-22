@@ -167,6 +167,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return id;
   }
 
+  @VisibleForTesting
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public String getName() {
     if (isNameEmpty()) {
       name = getId();

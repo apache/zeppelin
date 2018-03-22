@@ -38,18 +38,13 @@
     <!--library versions-->
     <hadoop.version>2.7.3</hadoop.version>
     <commons.lang3.version>3.4</commons.lang3.version>
-    <commons.vfs2.version>2.0</commons.vfs2.version>
-    <gcs.storage.version>1.14.0</gcs.storage.version>
-    <aws.sdk.s3.version>1.10.62</aws.sdk.s3.version>
-    <adl.sdk.version>2.1.4</adl.sdk.version>
     <jackrabbit.webdav.version>1.5.2</jackrabbit.webdav.version>
     <quartz.scheduler.version>2.2.1</quartz.scheduler.version>
     <lucene.version>5.3.1</lucene.version>
     <org.reflections.version>0.9.8</org.reflections.version>
     <xml.apis.version>1.4.01</xml.apis.version>
-    <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <frontend.maven.plugin.version>1.3</frontend.maven.plugin.version>
-
+    <aws.sdk.s3.version>1.10.62</aws.sdk.s3.version>
     <!--test library versions-->
     <google.truth.version>0.27</google.truth.version>
     <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
@@ -83,15 +78,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-vfs2</artifactId>
-      <version>${commons.vfs2.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
     </dependency>
 
     <dependency>
@@ -114,86 +102,6 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpasyncclient</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-storage</artifactId>
-      <version>${gcs.storage.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.protobuf</groupId>
-          <artifactId>protobuf-java</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.api</groupId>
-          <artifactId>api-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.http-client</groupId>
-          <artifactId>google-http-client-jackson2</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.http-client</groupId>
-          <artifactId>google-http-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.jackson</groupId>
-          <artifactId>jackson-core-asl</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.api</groupId>
-      <artifactId>api-common</artifactId>
-      <version>1.2.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.http-client</groupId>
-      <artifactId>google-http-client-jackson2</artifactId>
-      <version>1.23.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>${aws.sdk.s3.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>joda-time</groupId>
-          <artifactId>joda-time</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -250,6 +158,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>${aws.sdk.s3.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
       <version>${org.reflections.version}</version>
@@ -263,12 +177,6 @@
           <artifactId>xml-apis</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
-      <version>${eclipse.jgit.version}</version>
     </dependency>
 
     <dependency>
@@ -301,23 +209,6 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-nio</artifactId>
-      <version>${google.testing.nio.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -364,12 +255,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.5</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-java-driver</artifactId>
-      <version>3.4.1</version>
     </dependency>
 
   </dependencies>
@@ -745,73 +630,6 @@
             </exclusion>
           </exclusions>
         </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-azure</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.apache.commons</groupId>
-              <artifactId>commons-lang3</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.jcraf</groupId>
-              <artifactId>jsch</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.apache.commons</groupId>
-              <artifactId>commons-compress</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>com.microsoft.azure</groupId>
-          <artifactId>azure-data-lake-store-sdk</artifactId>
-          <version>${adl.sdk.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-aws</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.amazonaws</groupId>
-              <artifactId>aws-java-sdk</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-annotations</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-databind</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>joda-time</groupId>
-              <artifactId>joda-time</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        
       </dependencies>
     </profile>
 
@@ -836,104 +654,6 @@
           <artifactId>hadoop-client-minicluster</artifactId>
           <version>${hadoop.version}</version>
           <scope>test</scope>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-azure</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.jcraft</groupId>
-              <artifactId>jsch</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.apache.commons</groupId>
-              <artifactId>commons-compress</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.codehaus.jackson</groupId>
-              <artifactId>jackson-mapper-asl</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.nimbusds</groupId>
-              <artifactId>nimbus-jose-jwt</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.eclipse.jetty</groupId>
-              <artifactId>jetty-server</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.eclipse.jetty</groupId>
-              <artifactId>jetty-servlet</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.codehaus.jackson</groupId>
-              <artifactId>jackson-core-asl</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-databind</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>org.eclipse.jetty</groupId>
-              <artifactId>jetty-util</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.sun.jersey</groupId>
-              <artifactId>jersey-core</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-azure-datalake</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-aws</artifactId>
-          <version>${hadoop.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>com.amazonaws</groupId>
-              <artifactId>aws-java-sdk</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-annotations</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-core</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-databind</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>joda-time</groupId>
-              <artifactId>joda-time</artifactId>
-            </exclusion>
-          </exclusions>
         </dependency>
       </dependencies>
     </profile>

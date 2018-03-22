@@ -24,6 +24,7 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,16 +48,20 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
-  private final boolean oneWaySync;
+  private boolean oneWaySync;
 
   /**
    * @param conf
    */
   @SuppressWarnings("static-access")
-  public NotebookRepoSync(ZeppelinConfiguration conf) {
+  public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
+    init(conf);
+  }
+
+  public void init(ZeppelinConfiguration conf) throws IOException {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
-    String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
+    String allStorageClassNames = conf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
       LOG.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}", defaultStorage);
@@ -68,23 +73,18 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
-      Class<?> notebookStorageClass;
-      try {
-        notebookStorageClass = getClass().forName(storageClassNames[i].trim());
-        Constructor<?> constructor = notebookStorageClass.getConstructor(
-            ZeppelinConfiguration.class);
-        repos.add((NotebookRepo) constructor.newInstance(conf));
-        LOG.info("Instantiate NotebookRepo: " + storageClassNames[i]);
-      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
-          InstantiationException | IllegalAccessException | IllegalArgumentException |
-          InvocationTargetException e) {
-        LOG.warn("Failed to initialize {} notebook storage class", storageClassNames[i], e);
+      NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
+      if (notebookRepo != null) {
+        notebookRepo.init(conf);
+        repos.add(notebookRepo);
       }
     }
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
       LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
-      initializeDefaultStorage(conf);
+      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(defaultStorage);
+      defaultNotebookRepo.init(conf);
+      repos.add(defaultNotebookRepo);
     }
     // sync for anonymous mode on start
     if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
@@ -93,21 +93,6 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       } catch (IOException e) {
         LOG.error("Couldn't sync on start ", e);
       }
-    }
-  }
-
-  @SuppressWarnings("static-access")
-  private void initializeDefaultStorage(ZeppelinConfiguration conf) {
-    Class<?> notebookStorageClass;
-    try {
-      notebookStorageClass = getClass().forName(defaultStorage);
-      Constructor<?> constructor = notebookStorageClass.getConstructor(
-                ZeppelinConfiguration.class);
-      repos.add((NotebookRepo) constructor.newInstance(conf));
-    } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
-        InstantiationException | IllegalAccessException | IllegalArgumentException |
-        InvocationTargetException e) {
-      LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
   }
 
