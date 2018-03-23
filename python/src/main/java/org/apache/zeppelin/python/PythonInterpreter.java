@@ -65,6 +65,7 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
+  public static final String ZEPPELIN_CONTEXT = "python/zeppelin_context.py";
   public static final String ZEPPELIN_PY4JPATH = "interpreter/python/py4j-0.9.2/src";
   public static final String ZEPPELIN_PYTHON_LIBS = "interpreter/lib/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
@@ -125,7 +126,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     copyFile(out, ZEPPELIN_PYTHON);
-    logger.info("File {} created", scriptPath);
+    // copy zeppelin_context.py as well
+    File zOut = new File(out.getParent() + "/zeppelin_context.py");
+    copyFile(zOut, ZEPPELIN_CONTEXT);
+
+    logger.info("File {} , {} created", scriptPath, zOut.getAbsolutePath());
   }
 
   public String getScriptPath() {
@@ -181,7 +186,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     cmd.addArgument(getLocalIp(), false);
 
     executor = new DefaultExecutor();
-    outputStream = new InterpreterOutputStream(logger);
+    outputStream = new InterpreterOutputStream(LOG);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
