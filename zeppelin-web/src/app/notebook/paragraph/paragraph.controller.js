@@ -755,6 +755,12 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         completionListLength = data;
       });
 
+      $scope.$on('callCompletion', function(event, data) {
+        if($scope.paragraphFocused) {
+          websocketMsgSrv.completion($scope.paragraph.id, data.buf, data.pos);
+        }
+      });
+
       let remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
           let langTools = ace.require('ace/ext/language_tools');
@@ -779,7 +785,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           let buf = session.getValue();
 
-          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+          $rootScope.$broadcast('callCompletion', {buf: buf, pos: pos});
 
           $scope.$on('completionList', function(event, data) {
             let computeCaption = function(value, meta) {
