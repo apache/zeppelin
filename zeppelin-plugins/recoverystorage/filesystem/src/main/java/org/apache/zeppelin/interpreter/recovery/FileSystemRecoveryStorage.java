@@ -27,7 +27,7 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
-import org.apache.zeppelin.notebook.FileSystemStorage;
+import org.apache.zeppelin.storage.FileSystemStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +52,9 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   private FileSystemStorage fs;
   private Path recoveryDir;
 
-  public FileSystemRecoveryStorage(ZeppelinConfiguration zConf,
-                                   InterpreterSettingManager interpreterSettingManager)
-      throws IOException {
-    super(zConf);
+  @Override
+  public void init(ZeppelinConfiguration zConf) throws IOException {
+    super.init(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
     this.fs = new FileSystemStorage(zConf, zConf.getRecoveryDir());

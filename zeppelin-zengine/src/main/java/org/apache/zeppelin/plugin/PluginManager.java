@@ -18,7 +18,11 @@
 package org.apache.zeppelin.plugin;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.storage.ConfigStorage;
+import org.apache.zeppelin.storage.LocalConfigStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +62,7 @@ public class PluginManager {
       try {
         NotebookRepo notebookRepo = (NotebookRepo)
             (Class.forName(notebookRepoClassName).newInstance());
+        notebookRepo.init(zConf);
         return notebookRepo;
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         LOGGER.warn("Fail to instantiate notebookrepo:" + notebookRepoClassName, e);
@@ -65,8 +70,13 @@ public class PluginManager {
       }
     }
 
-    String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
-    File pluginFolder = new File(pluginsDir + "/NotebookRepo/" + simpleClassName);
+    return loadPlugin(NotebookRepo.class, "NotebookRepo", notebookRepoClassName);
+  }
+
+  private <T extends Plugin> T loadPlugin(Class<T> clazz, String pluginType, String pluginClassName)
+      throws IOException {
+    String simpleClassName = pluginClassName.substring(pluginClassName.lastIndexOf(".") + 1);
+    File pluginFolder = new File(pluginsDir + "/" + pluginType + "/" + simpleClassName);
     if (!pluginFolder.exists() || pluginFolder.isFile()) {
       LOGGER.warn("pluginFolder " + pluginFolder.getAbsolutePath() +
           " doesn't exist or is not a directory");
@@ -75,21 +85,43 @@ public class PluginManager {
     List<URL> urls = new ArrayList<>();
     for (File file : pluginFolder.listFiles()) {
       LOGGER.debug("Add file " + file.getAbsolutePath() + " to classpath of plugin "
-          + notebookRepoClassName);
+          + pluginClassName);
       urls.add(file.toURI().toURL());
     }
     if (urls.isEmpty()) {
-      LOGGER.warn("Can not load plugin " + notebookRepoClassName +
+      LOGGER.warn("Can not load plugin " + pluginClassName +
           ", because the plugin folder " + pluginFolder + " is empty.");
       return null;
     }
     URLClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[0]));
-    Iterator<NotebookRepo> iter = ServiceLoader.load(NotebookRepo.class, classLoader).iterator();
-    NotebookRepo notebookRepo = iter.next();
-    if (notebookRepo == null) {
-      LOGGER.warn("Unable to load NotebookRepo Plugin: " + notebookRepoClassName);
+    Iterator<T> iter = ServiceLoader.load(clazz, classLoader).iterator();
+    T plugin = iter.next();
+    if (plugin == null) {
+      LOGGER.warn("Unable to load Plugin: " + pluginClassName);
     }
-    return notebookRepo;
+    plugin.init(zConf);
+    return plugin;
   }
 
+  public ConfigStorage loadConfigStorage(String configStorageClassName) throws IOException {
+    if (configStorageClassName.equals(LocalConfigStorage.class.getName())) {
+      ConfigStorage configStorage = new LocalConfigStorage();
+      configStorage.init(zConf);
+      return configStorage;
+    }
+    return loadPlugin(ConfigStorage.class, "ConfigStorage", configStorageClassName);
+  }
+
+  public RecoveryStorage loadRecoveryStorage(String recoveryStorageClassName) throws IOException {
+    if (recoveryStorageClassName.equals(NullRecoveryStorage.class.getName())) {
+      NullRecoveryStorage recoveryStorage = new NullRecoveryStorage();
+      recoveryStorage.init(zConf);
+      return recoveryStorage;
+    }
+    return loadPlugin(RecoveryStorage.class, "RecoveryStorage", recoveryStorageClassName);
+  }
+
+  public static void main(String[] args) {
+    System.out.println(LocalConfigStorage.class.getName());
+  }
 }

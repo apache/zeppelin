@@ -19,6 +19,9 @@ package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
+import org.apache.zeppelin.plugin.Plugin;
+import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.storage.ConfigStorage;
 
 import java.io.IOException;
 import java.util.Map;
@@ -28,13 +31,26 @@ import java.util.Map;
  * Interface for storing interpreter process recovery metadata.
  *
  */
-public abstract class RecoveryStorage {
+public abstract class RecoveryStorage implements Plugin {
+
+  private static RecoveryStorage instance;
 
   protected ZeppelinConfiguration zConf;
   protected Map<String, InterpreterClient> restoredClients;
 
-  public RecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
-    this.zConf = zConf;
+
+  public static synchronized RecoveryStorage getInstance(ZeppelinConfiguration zConf)
+      throws IOException {
+    if (instance == null) {
+      instance = createRecoveryStorage(zConf);
+    }
+    return instance;
+  }
+
+  private static RecoveryStorage createRecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
+    String recoveryStorageClass =
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS);
+    return PluginManager.get().loadRecoveryStorage(recoveryStorageClass);
   }
 
   /**
@@ -66,7 +82,7 @@ public abstract class RecoveryStorage {
    *
    * @throws IOException
    */
-  public void init() throws IOException {
+  public void init(ZeppelinConfiguration zConf) throws IOException {
     this.restoredClients = restore();
   }
 

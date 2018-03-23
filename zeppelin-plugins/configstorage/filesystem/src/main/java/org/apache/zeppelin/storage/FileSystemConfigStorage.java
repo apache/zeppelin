@@ -18,16 +18,10 @@
 
 package org.apache.zeppelin.storage;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
-import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +41,8 @@ public class FileSystemConfigStorage extends ConfigStorage {
   private Path authorizationPath;
   private Path credentialPath;
 
-  public FileSystemConfigStorage(ZeppelinConfiguration zConf) throws IOException {
-    super(zConf);
+  @Override
+  public void init(ZeppelinConfiguration zConf) throws IOException {
     this.fs = new FileSystemStorage(zConf, zConf.getConfigFSDir());
     LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
         " for Zeppelin Config");

@@ -46,6 +46,10 @@
         <module>notebookrepo/mongodb</module>
         <module>notebookrepo/zeppelin-hub</module>
         <module>notebookrepo/filesystem</module>
+
+        <module>configstorage/filesystem</module>
+
+        <module>recoverystorage/filesystem</module>
     </modules>
 
     <dependencies>

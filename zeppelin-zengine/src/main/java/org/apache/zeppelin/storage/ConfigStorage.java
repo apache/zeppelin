@@ -26,6 +26,8 @@ import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
+import org.apache.zeppelin.plugin.Plugin;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
@@ -41,7 +43,7 @@ import java.io.IOException;
  * 4. credentials.json
  *
  */
-public abstract class ConfigStorage {
+public abstract class ConfigStorage implements Plugin {
 
   private static ConfigStorage instance;
 
@@ -58,13 +60,7 @@ public abstract class ConfigStorage {
   private static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     String configStorageClass =
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS);
-    return ReflectionUtils.createClazzInstance(configStorageClass,
-        new Class[] {ZeppelinConfiguration.class}, new Object[] {zConf});
-  }
-
-
-  public ConfigStorage(ZeppelinConfiguration zConf) {
-    this.zConf = zConf;
+    return PluginManager.get().loadConfigStorage(configStorageClass);
   }
 
   public abstract void save(InterpreterInfoSaving settingInfos) throws IOException;

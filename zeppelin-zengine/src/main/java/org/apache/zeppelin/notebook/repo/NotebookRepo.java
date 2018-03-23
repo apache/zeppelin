@@ -26,14 +26,13 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.plugin.Plugin;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Notebook repository (persistence layer) abstraction
  */
-public interface NotebookRepo {
-
-  void init(ZeppelinConfiguration zConf) throws IOException;
+public interface NotebookRepo extends Plugin {
 
   /**
    * Lists notebook information about all notebooks in storage.

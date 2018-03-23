@@ -41,8 +41,8 @@ public class LocalConfigStorage extends ConfigStorage {
   private File authorizationPath;
   private File credentialPath;
 
-  public LocalConfigStorage(ZeppelinConfiguration zConf) {
-    super(zConf);
+  @Override
+  public void init(ZeppelinConfiguration zConf) {
     this.interpreterSettingPath = new File(zConf.getInterpreterSettingPath());
     this.authorizationPath = new File(zConf.getNotebookAuthorizationPath());
     this.credentialPath = new File(zConf.getCredentialsPath());

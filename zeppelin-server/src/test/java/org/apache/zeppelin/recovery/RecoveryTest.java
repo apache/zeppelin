@@ -24,7 +24,6 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.StopInterpreter;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -50,7 +49,7 @@ public class RecoveryTest extends AbstractTestRestApi {
   @BeforeClass
   public static void init() throws Exception {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
-        FileSystemRecoveryStorage.class.getName());
+        "org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage");
     recoveryDir = Files.createTempDir();
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(), recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());

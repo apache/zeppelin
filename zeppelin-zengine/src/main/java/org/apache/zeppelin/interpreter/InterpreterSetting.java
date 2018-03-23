@@ -267,7 +267,7 @@ public class InterpreterSetting {
     }
     if (this.recoveryStorage == null) {
       try {
-        this.recoveryStorage = new NullRecoveryStorage(conf, interpreterSettingManager);
+        this.recoveryStorage = RecoveryStorage.getInstance(conf);
       } catch (IOException e) {
         // ignore this exception as NullRecoveryStorage will do nothing.
       }
