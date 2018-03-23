@@ -41,155 +41,6 @@ class Logger(object):
     pass
 
 
-class PyZeppelinContext(dict):
-  def __init__(self, zc):
-    self.z = zc
-    self._displayhook = lambda *args: None
-
-  def show(self, obj):
-    from pyspark.sql import DataFrame
-    if isinstance(obj, DataFrame):
-      print(self.z.showData(obj._jdf))
-    else:
-      print(str(obj))
-
-  # By implementing special methods it makes operating on it more Pythonic
-  def __setitem__(self, key, item):
-    self.z.put(key, item)
-
-  def __getitem__(self, key):
-    return self.z.get(key)
-
-  def __delitem__(self, key):
-    self.z.remove(key)
-
-  def __contains__(self, item):
-    return self.z.containsKey(item)
-
-  def add(self, key, value):
-    self.__setitem__(key, value)
-
-  def put(self, key, value):
-    self.__setitem__(key, value)
-
-  def get(self, key):
-    return self.__getitem__(key)
-
-  def getInterpreterContext(self):
-    return self.z.getInterpreterContext()
-
-  def input(self, name, defaultValue=""):
-    return self.z.input(name, defaultValue)
-
-  def textbox(self, name, defaultValue=""):
-    return self.z.textbox(name, defaultValue)
-
-  def noteTextbox(self, name, defaultValue=""):
-    return self.z.noteTextbox(name, defaultValue)
-
-  def select(self, name, options, defaultValue=""):
-    # auto_convert to ArrayList doesn't match the method signature on JVM side
-    return self.z.select(name, defaultValue, self.getParamOptions(options))
-
-  def noteSelect(self, name, options, defaultValue=""):
-    return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
-
-  def checkbox(self, name, options, defaultChecked=None):
-    optionsIterable = self.getParamOptions(options)
-    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
-    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionsIterable))
-    result = []
-    for checkedItem in checkedItems:
-      result.append(checkedItem)
-    return result;
-
-  def noteCheckbox(self, name, options, defaultChecked=None):
-    optionsIterable = self.getParamOptions(options)
-    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
-    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.noteCheckbox(name, defaultCheckedIterables, optionsIterable))
-    result = []
-    for checkedItem in checkedItems:
-      result.append(checkedItem)
-    return result;
-
-  def getParamOptions(self, options):
-    tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
-    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
-
-  def getDefaultChecked(self, defaultChecked):
-    if defaultChecked is None:
-      defaultChecked = []
-    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
-
-  def registerHook(self, event, cmd, replName=None):
-    if replName is None:
-      self.z.registerHook(event, cmd)
-    else:
-      self.z.registerHook(event, cmd, replName)
-
-  def unregisterHook(self, event, replName=None):
-    if replName is None:
-      self.z.unregisterHook(event)
-    else:
-      self.z.unregisterHook(event, replName)
-
-  def registerNoteHook(self, event, cmd, noteId, replName=None):
-    if replName is None:
-      self.z.registerNoteHook(event, cmd, noteId)
-    else:
-      self.z.registerNoteHook(event, cmd, noteId, replName)
-
-  def unregisterNoteHook(self, event, noteId, replName=None):
-    if replName is None:
-      self.z.unregisterNoteHook(event, noteId)
-    else:
-      self.z.unregisterNoteHook(event, noteId, replName)
-
-  def getHook(self, event, replName=None):
-    if replName is None:
-      return self.z.getHook(event)
-    return self.z.getHook(event, replName)
-
-  def _setup_matplotlib(self):
-    # If we don't have matplotlib installed don't bother continuing
-    try:
-      import matplotlib
-    except ImportError:
-      return
-    
-    # Make sure custom backends are available in the PYTHONPATH
-    rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
-    mpl_path = os.path.join(rootdir, 'interpreter', 'lib', 'python')
-    if mpl_path not in sys.path:
-      sys.path.append(mpl_path)
-    
-    # Finally check if backend exists, and if so configure as appropriate
-    try:
-      matplotlib.use('module://backend_zinline')
-      import backend_zinline
-      
-      # Everything looks good so make config assuming that we are using
-      # an inline backend
-      self._displayhook = backend_zinline.displayhook
-      self.configure_mpl(width=600, height=400, dpi=72, fontsize=10,
-                         interactive=True, format='png', context=self.z)
-    except ImportError:
-      # Fall back to Agg if no custom backend installed
-      matplotlib.use('Agg')
-      warnings.warn("Unable to load inline matplotlib backend, "
-                    "falling back to Agg")
-
-  def configure_mpl(self, **kwargs):
-    import mpl_config
-    mpl_config.configure(**kwargs)
-
-  def __tupleToScalaTuple2(self, tuple):
-    if (len(tuple) == 2):
-      return gateway.jvm.scala.Tuple2(tuple[0], tuple[1])
-    else:
-      raise IndexError("options must be a list of tuple of 2")
-
-
 class SparkVersion(object):
   SPARK_1_4_0 = 10400
   SPARK_1_3_0 = 10300
@@ -322,7 +173,24 @@ completion = __zeppelin_completion__ = PySparkCompletion(intp)
 _zcUserQueryNameSpace["completion"] = completion
 _zcUserQueryNameSpace["__zeppelin_completion__"] = __zeppelin_completion__
 
-z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
+
+from zeppelin_context import PyZeppelinContext
+
+#TODO(zjffdu) merge it with IPySparkZeppelinContext
+class PySparkZeppelinContext(PyZeppelinContext):
+
+  def __init__(self, z, gateway):
+    super(PySparkZeppelinContext, self).__init__(z, gateway)
+
+  def show(self, obj):
+    from pyspark.sql import DataFrame
+    if isinstance(obj, DataFrame):
+      print(self.z.showData(obj._jdf))
+    else:
+      super(PySparkZeppelinContext, self).show(obj)
+
+z = __zeppelin__ = PySparkZeppelinContext(intp.getZeppelinContext(), gateway)
+
 __zeppelin__._setup_matplotlib()
 _zcUserQueryNameSpace["z"] = z
 _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__

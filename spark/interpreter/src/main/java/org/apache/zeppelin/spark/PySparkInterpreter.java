@@ -114,6 +114,16 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       throw new InterpreterException(e);
     }
 
+    try {
+      FileOutputStream outStream = new FileOutputStream(out.getParent() + "/zeppelin_context.py");
+      IOUtils.copy(
+          classLoader.getResourceAsStream("python/zeppelin_context.py"),
+          outStream);
+      outStream.close();
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
+
     LOGGER.info("File {} created", scriptPath);
   }
 
