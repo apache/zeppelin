@@ -61,7 +61,7 @@ class PyZeppelinContext(object):
     self._setup_matplotlib()
 
   def getInterpreterContext(self):
-    return self.z.getCurrentInterpreterContext()
+    return self.z.getInterpreterContext()
 
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
@@ -83,6 +83,30 @@ class PyZeppelinContext(object):
 
   def noteCheckbox(self, name, options, defaultChecked=[]):
     return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+
+  def registerHook(self, event, cmd, replName=None):
+    if replName is None:
+      self.z.registerHook(event, cmd)
+    else:
+      self.z.registerHook(event, cmd, replName)
+
+  def unregisterHook(self, event, replName=None):
+    if replName is None:
+      self.z.unregisterHook(event)
+    else:
+      self.z.unregisterHook(event, replName)
+
+  def registerNoteHook(self, event, cmd, noteId, replName=None):
+    if replName is None:
+      self.z.registerNoteHook(event, cmd, noteId)
+    else:
+      self.z.registerNoteHook(event, cmd, noteId, replName)
+
+  def unregisterNoteHook(self, event, noteId, replName=None):
+    if replName is None:
+      self.z.unregisterNoteHook(event, noteId)
+    else:
+      self.z.unregisterNoteHook(event, noteId, replName)
 
   def getParamOptions(self, options):
     javaOptions = gateway.new_array(self.paramOption, len(options))

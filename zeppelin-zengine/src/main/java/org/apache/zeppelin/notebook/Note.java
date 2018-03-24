@@ -19,6 +19,10 @@ package org.apache.zeppelin.notebook;
 
 import static java.lang.String.format;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +34,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.completer.CompletionType;
@@ -47,9 +50,9 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -58,11 +61,6 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * Binded interpreters for a note
@@ -167,6 +165,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public String getId() {
     return id;
+  }
+
+  @VisibleForTesting
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -303,15 +306,25 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.repo = repo;
   }
 
-  void setRevisionSupported(NotebookRepo repo) {
-    if (repo instanceof NotebookRepoSync) {
-      getConfig()
-          .put("isRevisionSupported", ((NotebookRepoSync) repo).isRevisionSupportedInDefaultRepo());
-    } else if (repo instanceof NotebookRepoWithVersionControl) {
-      getConfig().put("isRevisionSupported", true);
-    } else {
-      getConfig().put("isRevisionSupported", false);
+  public Boolean isCronSupported(ZeppelinConfiguration config) {
+    if (config.isZeppelinNotebookCronEnable()) {
+      config.getZeppelinNotebookCronFolders();
+      if (config.getZeppelinNotebookCronFolders() == null) {
+        return true;
+      } else {
+        for (String folder : config.getZeppelinNotebookCronFolders().split(",")) {
+          folder = folder.replaceAll("\\*", "\\.*").replaceAll("\\?", "\\.");
+          if (getName().matches(folder)) {
+            return true;
+          }
+        }
+      }
     }
+    return false;
+  }
+
+  public void setCronSupported(ZeppelinConfiguration config) {
+    getConfig().put("isZeppelinNotebookCronEnable", isCronSupported(config));
   }
 
   public void setIndex(SearchService index) {
@@ -343,7 +356,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    *
    * @param srcParagraph source paragraph
    */
-  void addCloneParagraph(Paragraph srcParagraph) {
+  void addCloneParagraph(Paragraph srcParagraph, AuthenticationInfo subject) {
 
     // Keep paragraph original ID
     final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
@@ -352,11 +365,17 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     Map<String, Object> param = srcParagraph.settings.getParams();
     LinkedHashMap<String, Input> form = srcParagraph.settings.getForms();
 
+    logger.debug("srcParagraph user: " + srcParagraph.getUser());
+    
+    newParagraph.setAuthenticationInfo(subject);
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
+    
+    logger.debug("newParagraph user: " + newParagraph.getUser());
+
 
     try {
       Gson gson = new Gson();
@@ -887,23 +906,13 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   public void setInfo(Map<String, Object> info) {
     this.info = info;
   }
-
+  
   @Override
-  public void beforeStatusChange(Job job, Status before, Status after) {
+  public void onStatusChange(Job job, Status before, Status after) {
     if (jobListenerFactory != null) {
       ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
       if (listener != null) {
-        listener.beforeStatusChange(job, before, after);
-      }
-    }
-  }
-
-  @Override
-  public void afterStatusChange(Job job, Status before, Status after) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.afterStatusChange(job, before, after);
+        listener.onStatusChange(job, before, after);
       }
     }
 

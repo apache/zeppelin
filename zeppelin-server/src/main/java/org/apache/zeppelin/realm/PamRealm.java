@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class PamRealm extends AuthorizingRealm {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRealm.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PamRealm.class);
 
   private String service;
 

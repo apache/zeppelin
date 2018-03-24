@@ -43,6 +43,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -237,7 +238,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return enabled == null || enabled.booleanValue();
   }
 
-  public Interpreter getBindedInterpreter() {
+  public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
     return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
   }
 
@@ -253,8 +254,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
-    this.interpreter = getBindedInterpreter();
-
+    try {
+      this.interpreter = getBindedInterpreter();
+    } catch (InterpreterNotFoundException e) {
+      return null;
+    }
     setText(buffer);
 
     cursor = calculateCursorPosition(buffer, cursor);
@@ -342,35 +346,32 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     clearRuntimeInfo(null);
-    this.interpreter = getBindedInterpreter();
-
-    if (interpreter == null) {
-      String intpExceptionMsg =
-          getJobName() + "'s Interpreter " + getIntpText() + " not found";
-      RuntimeException intpException = new RuntimeException(intpExceptionMsg);
-      InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
-      setReturn(intpResult, intpException);
-      setStatus(Job.Status.ERROR);
-      throw intpException;
-    }
-    setStatus(Status.READY);
-    if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
-      setAuthenticationInfo(getAuthenticationInfo());
-      interpreter.getScheduler().submit(this);
-    }
-
-    if (blocking) {
-      while (!getStatus().isCompleted()) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+    try {
+      this.interpreter = getBindedInterpreter();
+      setStatus(Status.READY);
+      if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
+        setAuthenticationInfo(getAuthenticationInfo());
+        interpreter.getScheduler().submit(this);
       }
-      return getStatus() == Status.FINISHED;
-    } else {
-      return true;
+
+      if (blocking) {
+        while (!getStatus().isCompleted()) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return getStatus() == Status.FINISHED;
+      } else {
+        return true;
+      }
+    } catch (InterpreterNotFoundException e) {
+      InterpreterResult intpResult =
+          new InterpreterResult(InterpreterResult.Code.ERROR);
+      setReturn(intpResult, e);
+      setStatus(Job.Status.ERROR);
+      throw new RuntimeException(e);
     }
   }
 
@@ -702,7 +703,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public boolean isValidInterpreter(String replName) {
-    return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+    try {
+      return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+    } catch (InterpreterNotFoundException e) {
+      return false;
+    }
   }
 
   public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,

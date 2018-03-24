@@ -88,23 +88,23 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     LOG.debug("{} successfully login via ZeppelinHub", user.login);
     return new SimpleAuthenticationInfo(user.login, token.getPassword(), name);
   }
-  
+
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     // TODO(xxx): future work will be done here.
     return null;
   }
-  
+
   protected void onInit() {
     super.onInit();
   }
-  
+
   /**
    * Setter of ZeppelinHub URL, this will be called by Shiro based on zeppelinhubUrl property
    * in shiro.ini file.</p>
-   * It will also perform a check of ZeppelinHub url {@link #isZeppelinHubUrlValid}, 
+   * It will also perform a check of ZeppelinHub url {@link #isZeppelinHubUrlValid},
    * if the url is not valid, the default zeppelinhub url will be used.
-   * 
+   *
    * @param url
    */
   public void setZeppelinhubUrl(String url) {
@@ -118,9 +118,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Send to ZeppelinHub a login request based on the request body which is a JSON that contains 2 
+   * Send to ZeppelinHub a login request based on the request body which is a JSON that contains 2
    * fields "login" and "password".
-   * 
+   *
    * @param requestBody JSON string of ZeppelinHub payload.
    * @return Account object with login, name (if set in ZeppelinHub), and mail.
    * @throws AuthenticationException if fail to login.
@@ -141,12 +141,12 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       responseBody = put.getResponseBodyAsString();
       userSession = put.getResponseHeader(USER_SESSION_HEADER).getValue();
       put.releaseConnection();
-      
+
     } catch (IOException e) {
       LOG.error("Cannot login user", e);
       throw new AuthenticationException(e.getMessage());
     }
-    
+
     User account = null;
     try {
       account = User.fromJson(responseBody);
@@ -156,7 +156,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     }
 
     onLoginSuccess(account.login, userSession);
-    
+
     return account;
   }
 
@@ -182,7 +182,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
    * Perform a Simple URL check by using <code>URI(url).toURL()</code>.
    * If the url is not valid, the try-catch condition will catch the exceptions and return false,
    * otherwise true will be returned.
-   * 
+   *
    * @param url
    * @return
    */
@@ -215,7 +215,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       return gson.fromJson(json, User.class);
     }
   }
-  
+
   public void onLoginSuccess(String username, String session) {
     UserSessionContainer.instance.setSession(username, session);
 
@@ -227,7 +227,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
 
     ZeppelinhubUtils.userLoginRoutine(username);
   }
-  
+
   @Override
   public void onLogout(PrincipalCollection principals) {
     ZeppelinhubUtils.userLogoutRoutine((String) principals.getPrimaryPrincipal());

@@ -31,10 +31,14 @@ import static org.junit.Assert.fail;
 public class InterpreterFactoryTest extends AbstractInterpreterTest {
 
   @Test
-  public void testGetFactory() throws IOException {
+  public void testGetFactory() throws IOException, InterpreterException {
     // no default interpreter because there's no interpreter setting binded to this note
-    assertNull(interpreterFactory.getInterpreter("user1", "note1", ""));
+    try {
+      interpreterFactory.getInterpreter("user1", "note1", "");
+      fail("Should throw InterpreterNotFoundException");
+    } catch (InterpreterNotFoundException e) {
 
+    }
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "") instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "");
@@ -61,7 +65,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     try {
       interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl");
       fail("should fail due to no such interpreter");
-    } catch (RuntimeException e) {
+    } catch (InterpreterNotFoundException e) {
       assertEquals("No such interpreter: test.unknown_repl", e.getMessage());
     }
   }
@@ -72,7 +76,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     try {
       interpreterFactory.getInterpreter("user1", "note1", "unknown_repl");
       fail("should fail due to no such interpreter");
-    } catch (RuntimeException e) {
+    } catch (InterpreterNotFoundException e) {
       assertEquals("Either no interpreter named unknown_repl or it is not binded to this note", e.getMessage());
     }
   }

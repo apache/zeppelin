@@ -35,7 +35,7 @@ private[scio] object DisplayHelpers {
   private[scio] val tab = "\t"
   private[scio] val newline = "\n"
   private[scio] val table = "%table"
-  private[scio] val endTable = "%text"
+  private[scio] val endTable = "\n%text"
   private[scio] val rowLimitReachedMsg =
     s"$newline<font color=red>Results are limited to " + maxResults + s" rows.</font>$newline"
   private[scio] val bQSchemaIncomplete =

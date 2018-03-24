@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.*;
@@ -869,7 +868,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void updateNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
-      Message fromMessage) throws SchedulerException, IOException {
+      Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -887,6 +886,11 @@ public class NotebookServer extends WebSocketServlet
 
     Note note = notebook.getNote(noteId);
     if (note != null) {
+      if (!(Boolean) note.getConfig().get("isZeppelinNotebookCronEnable")) {
+        if (config.get("cron") != null) {
+          config.remove("cron");
+        }
+      }
       boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
       note.setConfig(config);
@@ -950,6 +954,7 @@ public class NotebookServer extends WebSocketServlet
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setName(name);
+      note.setCronSupported(notebook.getConf());
 
       AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
       note.persist(subject);
@@ -1040,12 +1045,13 @@ public class NotebookServer extends WebSocketServlet
           noteName = "Note " + note.getId();
         }
         note.setName(noteName);
+        note.setCronSupported(notebook.getConf());
       }
 
       note.persist(subject);
       addConnectionToNote(note.getId(), (NotebookSocket) conn);
       conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
-    } catch (FileSystemException e) {
+    } catch (IOException e) {
       LOG.error("Exception from createNote", e);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
@@ -1081,7 +1087,7 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    List<Note> notes = notebook.getNotesUnderFolder(folderId);
+    List<Note> notes = notebook.getNotesUnderFolder(folderId, userAndRoles);
     for (Note note : notes) {
       String noteId = note.getId();
 
@@ -1716,7 +1722,7 @@ public class NotebookServer extends WebSocketServlet
       Paragraph p = setParagraphUsingMessage(note, fromMessage,
           paragraphId, text, title, params, config);
 
-      if (!persistAndExecuteSingleParagraph(conn, note, p, true)) {
+      if (p.isEnabled() && !persistAndExecuteSingleParagraph(conn, note, p, true)) {
         // stop execution when one paragraph fails.
         break;
       }
@@ -1833,7 +1839,7 @@ public class NotebookServer extends WebSocketServlet
     try {
       note.persist(p.getAuthenticationInfo());
       return true;
-    } catch (FileSystemException ex) {
+    } catch (IOException ex) {
       LOG.error("Exception from run", ex);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
@@ -1901,7 +1907,7 @@ public class NotebookServer extends WebSocketServlet
                     .getVarName());
           }
         });
-
+    configurations.put("isRevisionSupported", String.valueOf(notebook.isRevisionSupported()));
     conn.send(serializeMessage(
         new Message(OP.CONFIGURATIONS_INFO).put("configurations", configurations)));
   }
@@ -2272,11 +2278,7 @@ public class NotebookServer extends WebSocketServlet
     }
 
     @Override
-    public void beforeStatusChange(Job job, Status before, Status after) {
-    }
-
-    @Override
-    public void afterStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
         if (job.getException() != null) {
           LOG.error("Error", job.getException());
@@ -2435,7 +2437,12 @@ public class NotebookServer extends WebSocketServlet
     Message resp = new Message(OP.EDITOR_SETTING);
     resp.put("paragraphId", paragraphId);
     Interpreter interpreter =
-        notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+        null;
+    try {
+      interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+    } catch (InterpreterNotFoundException e) {
+      throw new IOException("Fail to get interpreter: " + replName, e);
+    }
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
     conn.send(serializeMessage(resp));

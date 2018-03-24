@@ -33,6 +33,9 @@ class PyZeppelinContext(object):
     self.javaList = gateway.jvm.java.util.ArrayList
     self.max_result = z.getMaxResult()
 
+  def getInterpreterContext(self):
+    return self.z.getInterpreterContext()
+
   def input(self, name, defaultValue=""):
     return self.z.input(name, defaultValue)
 
@@ -110,6 +113,29 @@ class PyZeppelinContext(object):
     #)
     body_buf.close(); header_buf.close()
 
+  def registerHook(self, event, cmd, replName=None):
+    if replName is None:
+      self.z.registerHook(event, cmd)
+    else:
+      self.z.registerHook(event, cmd, replName)
+
+  def unregisterHook(self, event, replName=None):
+    if replName is None:
+      self.z.unregisterHook(event)
+    else:
+      self.z.unregisterHook(event, replName)
+
+  def registerNoteHook(self, event, cmd, noteId, replName=None):
+    if replName is None:
+      self.z.registerNoteHook(event, cmd, noteId)
+    else:
+      self.z.registerNoteHook(event, cmd, noteId, replName)
+
+  def unregisterNoteHook(self, event, noteId, replName=None):
+    if replName is None:
+      self.z.unregisterNoteHook(event, noteId)
+    else:
+      self.z.unregisterNoteHook(event, noteId, replName)
 
 # start JVM gateway
 client = GatewayClient(address='127.0.0.1', port=${JVM_GATEWAY_PORT})
