@@ -281,12 +281,6 @@
 </property>
 
 <property>
-  <name>zeppelin.interpreter.interpolation</name>
-  <value>false</value>
-  <description>Enable ZeppelinContext variable interpolation into command string (FALSE by default)</description>
-</property>
-
-<property>
   <name>zeppelin.interpreter.localRepo</name>
   <value>local-repo</value>
   <description>Local repository for interpreter's additional dependency loading</description>

@@ -146,6 +146,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Do not change - developer only setting, not for production use</td>
   </tr>
   <tr>
+    <td>zeppelin.spark.sql.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
+  </tr>
+  <tr>
   <td>zeppelin.spark.uiWebUrl</td>
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
@@ -404,9 +409,10 @@ to one of the two forms described above. Paragraph text containing `{` and/or `}
 No error is flagged in any case. This behavior is identical to the implementation of a similar feature in 
 Jupyter's shell invocation using the `!` magic command.
 
-This feature is disabled by default, and must be explicitly turned on by setting either the environment variable 
-`ZEPPELIN_INTERPRETER_INTERPOLATION` or the Java property `zeppelin.interpreter.interpolation` to `true`. 
-As usual, if both are defined, the environment variable's setting has priority.
+This feature is disabled by default, and must be explicitly turned on for each interpreter by setting the value of 
+an interpreter-specific property to `true`. Consult the configuration section of each interpreter's documentation 
+to find out if object interpolation is implemented, and the name of the parameter that must be set to `true` to 
+enable the feature.
 
 At present only the SparkSQL and Shell interpreters support object interpolation. 
 

@@ -35,7 +35,7 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
 <table class="table-configuration">
   <tr>
     <th>Name</th>
-    <th>Value</th>
+    <th>Default</th>
     <th>Description</th>
   </tr>
   <tr>
@@ -62,6 +62,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td>zeppelin.shell.keytab.location</td>
     <td></td>
     <td>The path to the keytab file</td>
+  </tr>
+  <tr>
+    <td>zeppelin.shell.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
   </tr>
 </table>
 
