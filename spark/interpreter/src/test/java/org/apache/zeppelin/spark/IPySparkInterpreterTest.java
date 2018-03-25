@@ -64,7 +64,7 @@ public class IPySparkInterpreterTest {
     p.setProperty("spark.submit.deployMode", "client");
     p.setProperty("spark.app.name", "Zeppelin Test");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
-    p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.maxResult", "3");
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());

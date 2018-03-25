@@ -71,7 +71,9 @@ public class IPythonInterpreterTest {
 
   @Test
   public void testIPython() throws IOException, InterruptedException, InterpreterException {
-    startInterpreter(new Properties());
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.python.maxResult", "3");
+    startInterpreter(properties);
     testInterpreter(interpreter);
   }
 
@@ -454,8 +456,28 @@ public class IPythonInterpreterTest {
     result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3,4], 'name':['a','b','c', 'd']})\nz.show(df)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(2, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
+    assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+    assertEquals("<font color=red>Results are limited by 3.</font>\n", interpreterResultMessages.get(1).getData());
+
+    // z.show(matplotlib)
+    context = getInterpreterContext();
+    result = interpreter.interpret("import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)\nz.show(plt)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(2, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+    assertEquals(InterpreterResult.Type.IMG, interpreterResultMessages.get(1).getType());
 
     // clear output
     context = getInterpreterContext();
