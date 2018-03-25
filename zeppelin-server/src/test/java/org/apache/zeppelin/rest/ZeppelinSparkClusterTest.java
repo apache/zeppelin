@@ -18,7 +18,9 @@ package org.apache.zeppelin.rest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -367,15 +369,22 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Paragraph p3 = note.addNewParagraph(anonymous);
     p3.setText("%spark.pyspark print(z.get(\"var_1\"))");
 
+    // resources across interpreter processes (via DistributedResourcePool)
+    Paragraph p4 = note.addNewParagraph(anonymous);
+    p4.setText("%python print(z.get('var_1'))");
+
     note.run(p1.getId(), true);
     note.run(p2.getId(), true);
     note.run(p3.getId(), true);
+    note.run(p4.getId(), true);
 
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals(Status.FINISHED, p2.getStatus());
     assertEquals("hello world\n", p2.getResult().message().get(0).getData());
     assertEquals(Status.FINISHED, p3.getStatus());
     assertEquals("hello world\n", p3.getResult().message().get(0).getData());
+    assertEquals(Status.FINISHED, p4.getStatus());
+    assertEquals("hello world\n", p4.getResult().message().get(0).getData());
   }
 
   @Test
@@ -502,8 +511,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         "[('1', 'check_1'), ('2', 'check_2')], defaultChecked=['2'])\n" +
         "print(items[0])";
     p.setText(code);
-    note.run(p.getId());
-    waitForFinish(p);
+    note.run(p.getId(), true);
 
     assertEquals(Status.FINISHED, p.getStatus());
     Iterator<String> formIter = p.settings.getForms().keySet().iterator();
@@ -517,6 +525,51 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("default_name", result[0]);
     assertEquals("1", result[1]);
     assertEquals("2", result[2]);
+  }
+
+  @Test
+  public void testAngularObjects() throws IOException, InterpreterNotFoundException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Paragraph p1 = note.addNewParagraph(anonymous);
+
+    // add local angular object
+    p1.setText("%spark z.angularBind(\"name\", \"world\")");
+    note.run(p1.getId(), true);
+    assertEquals(Status.FINISHED, p1.getStatus());
+    List<AngularObject> angularObjects =
+        p1.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    assertEquals(1, angularObjects.size());
+    assertEquals("name", angularObjects.get(0).getName());
+    assertEquals("world", angularObjects.get(0).get());
+
+    // remove local angular object
+    Paragraph p2 = note.addNewParagraph(anonymous);
+    p2.setText("%spark z.angularUnbind(\"name\")");
+    note.run(p2.getId(), true);
+    assertEquals(Status.FINISHED, p2.getStatus());
+    angularObjects =
+        p1.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    assertEquals(0, angularObjects.size());
+
+    // add global angular object
+    Paragraph p3 = note.addNewParagraph(anonymous);
+    p3.setText("%spark z.angularBindGlobal(\"name2\", \"world2\")");
+    note.run(p3.getId(), true);
+    assertEquals(Status.FINISHED, p3.getStatus());
+    List<AngularObject> globalAngularObjects =
+        p3.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(null, null);
+    assertEquals(1, globalAngularObjects.size());
+    assertEquals("name2", globalAngularObjects.get(0).getName());
+    assertEquals("world2", globalAngularObjects.get(0).get());
+
+    // remove global angular object
+    Paragraph p4 = note.addNewParagraph(anonymous);
+    p4.setText("%spark z.angularUnbindGlobal(\"name2\")");
+    note.run(p4.getId(), true);
+    assertEquals(Status.FINISHED, p4.getStatus());
+    globalAngularObjects =
+        p4.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    assertEquals(0, globalAngularObjects.size());
   }
 
   @Test
