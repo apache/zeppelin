@@ -206,8 +206,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
       if (value instanceof Collection) {
         try {
           value = jsonMapper.writer().writeValueAsString(value);
-        } catch (Exception ignored) {
-          logger.info(ignored.getMessage());
+        } catch (Exception e) {
+          logger.debug("ignored exception: " + e.getMessage());
         }
       }
     }
