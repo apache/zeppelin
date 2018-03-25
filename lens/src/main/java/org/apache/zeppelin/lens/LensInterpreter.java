@@ -18,27 +18,11 @@
 
 package org.apache.zeppelin.lens;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.io.ByteArrayOutputStream;
-
+import org.apache.lens.cli.commands.BaseLensCommand;
 import org.apache.lens.client.LensClient;
 import org.apache.lens.client.LensClientConfig;
 import org.apache.lens.client.LensClientSingletonWrapper;
-import org.apache.lens.cli.commands.BaseLensCommand;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.shell.Bootstrap;
@@ -47,13 +31,28 @@ import org.springframework.shell.core.JLineShell;
 import org.springframework.shell.core.JLineShellComponent;
 import org.springframework.shell.support.logging.HandlerUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Lens interpreter for Zeppelin.
  */
 public class LensInterpreter extends Interpreter {
-
-  static final Logger s_logger = LoggerFactory.getLogger(LensInterpreter.class);
+  static final Logger LOGGER = LoggerFactory.getLogger(LensInterpreter.class);
   static final String LENS_CLIENT_DBNAME = "lens.client.dbname";
   static final String LENS_SERVER_URL = "lens.server.base.url";
   static final String LENS_SESSION_CLUSTER_USER = "lens.session.cluster.user";
@@ -74,49 +73,45 @@ public class LensInterpreter extends Interpreter {
     }
   };
 
-  private static Pattern s_queryExecutePattern = Pattern.compile(".*query\\s+execute\\s+(.*)");
-  private static Map<String, ExecutionDetail> s_paraToQH = 
-    new ConcurrentHashMap<> (); //tracks paragraphId -> Lens QueryHandle
-  private static Map<LensClient, Boolean> s_clientMap =
-    new ConcurrentHashMap<>();
+  private static Pattern queryExecutePattern = Pattern.compile(".*query\\s+execute\\s+(.*)");
+  // tracks paragraphId -> Lens QueryHandle
+  private static Map<String, ExecutionDetail> paraToQH = new ConcurrentHashMap<> ();
+  private static Map<LensClient, Boolean> clientMap = new ConcurrentHashMap<>();
 
-  private int m_maxResults;
-  private int m_maxThreads;
-  private JLineShell m_shell;
-  private LensClientConfig m_lensConf;
-  private Bootstrap m_bs;
-  private LensClient m_lensClient;
-  
-
-
+  private int maxResults;
+  private int maxThreads;
+  private JLineShell jLineShell;
+  private LensClientConfig lensClientConfig;
+  private Bootstrap bootstrap;
+  private LensClient lensClient;
 
   public LensInterpreter(Properties property) {
     super(property);
     try {
-      m_lensConf = new LensClientConfig();
-      m_lensConf.set(LENS_SERVER_URL, property.get(LENS_SERVER_URL).toString());
-      m_lensConf.set(LENS_CLIENT_DBNAME, property.get(LENS_CLIENT_DBNAME).toString());
-      m_lensConf.set(LENS_SESSION_CLUSTER_USER, property.get(LENS_SESSION_CLUSTER_USER).toString());
-      m_lensConf.set(LENS_PERSIST_RESULTSET, property.get(LENS_PERSIST_RESULTSET).toString());
+      lensClientConfig = new LensClientConfig();
+      lensClientConfig.set(LENS_SERVER_URL, property.get(LENS_SERVER_URL).toString());
+      lensClientConfig.set(LENS_CLIENT_DBNAME, property.get(LENS_CLIENT_DBNAME).toString());
+      lensClientConfig.set(LENS_SESSION_CLUSTER_USER, property.get(LENS_SESSION_CLUSTER_USER)
+              .toString());
+      lensClientConfig.set(LENS_PERSIST_RESULTSET, property.get(LENS_PERSIST_RESULTSET).toString());
       try {
-        m_maxResults = Integer.parseInt(property.get(ZEPPELIN_MAX_ROWS).toString());
-      } catch (NumberFormatException|NullPointerException e) {
-        m_maxResults = 1000;
-        s_logger.error("unable to parse " + ZEPPELIN_MAX_ROWS + " :" 
-          + property.get(ZEPPELIN_MAX_ROWS), e);
+        maxResults = Integer.parseInt(property.get(ZEPPELIN_MAX_ROWS).toString());
+      } catch (NumberFormatException | NullPointerException e) {
+        maxResults = 1000;
+        LOGGER.error("unable to parse " + ZEPPELIN_MAX_ROWS + " :"
+                + property.get(ZEPPELIN_MAX_ROWS), e);
       }
       try {
-        m_maxThreads = Integer.parseInt(property.get(ZEPPELIN_LENS_CONCURRENT_SESSIONS).toString());
-      } catch (NumberFormatException|NullPointerException e) {
-        m_maxThreads = 10;
-        s_logger.error("unable to parse " + ZEPPELIN_LENS_CONCURRENT_SESSIONS + " :" 
+        maxThreads = Integer.parseInt(property.get(ZEPPELIN_LENS_CONCURRENT_SESSIONS).toString());
+      } catch (NumberFormatException | NullPointerException e) {
+        maxThreads = 10;
+        LOGGER.error("unable to parse " + ZEPPELIN_LENS_CONCURRENT_SESSIONS + " :"
             + property.get(ZEPPELIN_LENS_CONCURRENT_SESSIONS), e);
       }
-      s_logger.info("LensInterpreter created");
-    }
-    catch (Exception e) {
-      s_logger.error(e.toString(), e);
-      s_logger.error("unable to create lens interpreter", e);
+      LOGGER.info("LensInterpreter created");
+    } catch (Exception e) {
+      LOGGER.error(e.toString(), e);
+      LOGGER.error("unable to create lens interpreter", e);
     }
   }
 
@@ -134,30 +129,30 @@ public class LensInterpreter extends Interpreter {
 
   protected void init() {
     try {
-      m_bs = createBootstrap();
-      m_shell = getJLineShell(m_bs);
+      bootstrap = createBootstrap();
+      jLineShell = getJLineShell(bootstrap);
     } catch (Exception ex) {
-      s_logger.error("could not initialize commandLine", ex);
+      LOGGER.error("could not initialize commandLine", ex);
     }
   }
 
   @Override
   public void open() {
-    s_logger.info("LensInterpreter opening");
-    m_lensClient = new LensClient(m_lensConf);
-    LensClientSingletonWrapper.instance().setClient(m_lensClient);
+    LOGGER.info("LensInterpreter opening");
+    lensClient = new LensClient(lensClientConfig);
+    LensClientSingletonWrapper.instance().setClient(lensClient);
     init();
-    s_logger.info("LensInterpreter opened");
+    LOGGER.info("LensInterpreter opened");
   }
   
   @Override
   public void close() {
     closeConnections();
-    s_logger.info("LensInterpreter closed");
+    LOGGER.info("LensInterpreter closed");
   }
 
   private static void closeConnections() {
-    for (LensClient cl : s_clientMap.keySet()) {
+    for (LensClient cl : clientMap.keySet()) {
       if (cl.isConnectionOpen()) {
         closeLensClient(cl);
       }
@@ -168,14 +163,14 @@ public class LensInterpreter extends Interpreter {
     try {
       lensClient.closeConnection();
     } catch (Exception e) {
-      s_logger.error("unable to close lensClient", e);
+      LOGGER.error("unable to close lensClient", e);
     }
   }
 
   private LensClient createAndSetLensClient(Bootstrap bs) {
-    LensClient lensClient = null;
+    LensClient lensClient;
     try {
-      lensClient = new LensClient(m_lensConf);
+      lensClient = new LensClient(lensClientConfig);
       
       for (String beanName : bs.getApplicationContext().getBeanDefinitionNames()) {
         if (bs.getApplicationContext().getBean(beanName) instanceof BaseLensCommand) {
@@ -184,13 +179,13 @@ public class LensInterpreter extends Interpreter {
         }
       }
     } catch (Exception e) {
-      s_logger.error("unable to create lens client", e);
+      LOGGER.error("unable to create lens client", e);
       throw e;
     }
     return lensClient;
   }
 
-  private InterpreterResult HandleHelp(JLineShell shell, String st) {
+  private InterpreterResult handleHelp(JLineShell shell, String st) {
     java.util.logging.StreamHandler sh = null;
     java.util.logging.Logger springLogger = null;
     java.util.logging.Formatter formatter = new java.util.logging.Formatter() {
@@ -205,10 +200,9 @@ public class LensInterpreter extends Interpreter {
       springLogger.addHandler(sh);
       shell.executeCommand(st);
     } catch (Exception e) {
-      s_logger.error(e.getMessage(), e);
+      LOGGER.error(e.getMessage(), e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
-    }
-    finally {
+    } finally {
       sh.flush();
       springLogger.removeHandler(sh);
       sh.close();
@@ -217,7 +211,7 @@ public class LensInterpreter extends Interpreter {
   }
   
   private String modifyQueryStatement(String st) {
-    Matcher matcher = s_queryExecutePattern.matcher(st.toLowerCase());
+    Matcher matcher = queryExecutePattern.matcher(st.toLowerCase());
     if (!matcher.find()) {
       return st;
     }
@@ -228,7 +222,7 @@ public class LensInterpreter extends Interpreter {
     sb.append(matcher.group(1));
     if (!st.toLowerCase().matches(".*limit\\s+\\d+.*")) {
       sb.append(" limit ");
-      sb.append(m_maxResults);
+      sb.append(maxResults);
     }
     return sb.toString();
   }
@@ -239,25 +233,25 @@ public class LensInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "no command submitted");
     }
     String st = input.replaceAll("\\n", " ");
-    s_logger.info("LensInterpreter command: " + st);
+    LOGGER.info("LensInterpreter command: " + st);
     
     Bootstrap bs = createBootstrap();
     JLineShell  shell = getJLineShell(bs);
-    CommandResult res = null;
+    CommandResult res;
     LensClient lensClient = null;
     String qh = null;
     
     if (st.trim().startsWith("help")) {
-      return HandleHelp(shell, st);
+      return handleHelp(shell, st);
     }
     
     try {
       lensClient = createAndSetLensClient(bs);
-      s_clientMap.put(lensClient, true);
+      clientMap.put(lensClient, true);
       
       String lensCommand = modifyQueryStatement(st);
       
-      s_logger.info("executing command : " + lensCommand);
+      LOGGER.info("executing command : " + lensCommand);
       res = shell.executeCommand(lensCommand);
       
       if (!lensCommand.equals(st) && res != null 
@@ -265,28 +259,26 @@ public class LensInterpreter extends Interpreter {
           && res.getResult().toString().trim().matches("[a-z0-9-]+")) {
         // setup query progress tracking
         qh = res.getResult().toString();
-        s_paraToQH.put(context.getParagraphId(), 
-          new ExecutionDetail(qh, lensClient, shell));
+        paraToQH.put(context.getParagraphId(), new ExecutionDetail(qh, lensClient, shell));
         String getResultsCmd = "query results --async false " + qh;
-        s_logger.info("executing query results command : " + context.getParagraphId() 
-          + " : " + getResultsCmd);
+        LOGGER.info("executing query results command : " + context.getParagraphId() + " : "
+                + getResultsCmd);
         res = shell.executeCommand(getResultsCmd); 
-        s_paraToQH.remove(context.getParagraphId());
+        paraToQH.remove(context.getParagraphId());
       }
     } catch (Exception ex) {
-      s_logger.error("error in interpret", ex);
+      LOGGER.error("error in interpret", ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
-    } 
-    finally {
+    } finally {
       if (shell != null) {
         closeShell(shell);
       }
       if (lensClient != null) {
         closeLensClient(lensClient);
-        s_clientMap.remove(lensClient);
+        clientMap.remove(lensClient);
       }
       if (qh != null) {
-        s_paraToQH.remove(context.getParagraphId());
+        paraToQH.remove(context.getParagraphId());
       }
     }
     return new InterpreterResult(Code.SUCCESS, formatResult(st, res));
@@ -320,8 +312,8 @@ public class LensInterpreter extends Interpreter {
         break;
       }
     }
-    if (s_queryExecutePattern.matcher(st.toLowerCase()).find() &&
-      result.getResult().toString().contains(" rows process in (")) {
+    if (queryExecutePattern.matcher(st.toLowerCase()).find() &&
+            result.getResult().toString().contains(" rows process in (")) {
       sb.append("%table ");
     }
     if (sb.length() > 0) {
@@ -333,38 +325,37 @@ public class LensInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    if (!s_paraToQH.containsKey(context.getParagraphId())) {
-      s_logger.error("ignoring cancel from " + context.getParagraphId());
+    if (!paraToQH.containsKey(context.getParagraphId())) {
+      LOGGER.error("ignoring cancel from " + context.getParagraphId());
       return;
     }
-    String qh = s_paraToQH.get(context.getParagraphId()).getQueryHandle();
-    s_logger.info("preparing to cancel : (" + context.getParagraphId() + ") :" + qh);
+    String qh = paraToQH.get(context.getParagraphId()).getQueryHandle();
+    LOGGER.info("preparing to cancel : (" + context.getParagraphId() + ") :" + qh);
     Bootstrap bs = createBootstrap();
     JLineShell shell = getJLineShell(bs);
     LensClient lensClient = null;
     try {
       lensClient = createAndSetLensClient(bs);
-      s_clientMap.put(lensClient, true);
-      s_logger.info("invoke query kill (" + context.getParagraphId() + ") " + qh);
+      clientMap.put(lensClient, true);
+      LOGGER.info("invoke query kill (" + context.getParagraphId() + ") " + qh);
       CommandResult res = shell.executeCommand("query kill " + qh);
-      s_logger.info("query kill returned (" + context.getParagraphId() + ") " + qh 
-        + " with: " + res.getResult());
+      LOGGER.info("query kill returned (" + context.getParagraphId() + ") " + qh + " with: "
+              + res.getResult());
     } catch (Exception e) {
-      s_logger.error("unable to kill query ("
-        + context.getParagraphId() + ") " + qh, e);
+      LOGGER.error("unable to kill query (" + context.getParagraphId() + ") " + qh, e);
     } finally {
       try {
         if (lensClient != null) {
           closeLensClient(lensClient);
-          s_clientMap.remove(lensClient);
+          clientMap.remove(lensClient);
         }
-        closeLensClient(s_paraToQH.get(context.getParagraphId()).getLensClient());
-        closeShell(s_paraToQH.get(context.getParagraphId()).getShell());
+        closeLensClient(paraToQH.get(context.getParagraphId()).getLensClient());
+        closeShell(paraToQH.get(context.getParagraphId()).getShell());
       } catch (Exception e) {
         // ignore
-        s_logger.info("Exception in LensInterpreter while cancel finally, ignore", e);
+        LOGGER.info("Exception in LensInterpreter while cancel finally, ignore", e);
       }
-      s_paraToQH.remove(context.getParagraphId());
+      paraToQH.remove(context.getParagraphId());
       closeShell(shell);
     }
   }
@@ -376,40 +367,39 @@ public class LensInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
-    if (s_paraToQH.containsKey(context.getParagraphId())) {
-      s_logger.info("number of items for which progress can be reported :" + s_paraToQH.size());
-      s_logger.info("number of open lensclient :" + s_clientMap.size());
+    if (paraToQH.containsKey(context.getParagraphId())) {
+      LOGGER.info("number of items for which progress can be reported :" + paraToQH.size());
+      LOGGER.info("number of open lensclient :" + clientMap.size());
       Bootstrap bs = createBootstrap();
       JLineShell shell = getJLineShell(bs);
       LensClient lensClient = null;
-      String qh = s_paraToQH.get(context.getParagraphId()).getQueryHandle();
+      String qh = paraToQH.get(context.getParagraphId()).getQueryHandle();
       try {
-        s_logger.info("fetch query status for : (" + context.getParagraphId() + ") :" + qh);
+        LOGGER.info("fetch query status for : (" + context.getParagraphId() + ") :" + qh);
         lensClient = createAndSetLensClient(bs);
-        s_clientMap.put(lensClient, true);
+        clientMap.put(lensClient, true);
         CommandResult res = shell.executeCommand("query status " + qh);
-        s_logger.info(context.getParagraphId() + " --> " + res.getResult().toString());
+        LOGGER.info(context.getParagraphId() + " --> " + res.getResult().toString());
         //change to debug
         Pattern pattern = Pattern.compile(".*(Progress : (\\d\\.\\d)).*");
         Matcher matcher = pattern.matcher(res.getResult().toString().replaceAll("\\n", " "));
         if (matcher.find(2)) {
           Double d = Double.parseDouble(matcher.group(2)) * 100;
           if (d.intValue() == 100) {
-            s_paraToQH.remove(context.getParagraphId());
+            paraToQH.remove(context.getParagraphId());
           }
           return d.intValue();
         } else {
           return 1;
         }
-      }
-      catch (Exception e) {
-        s_logger.error("unable to get progress for (" + context.getParagraphId() + ") :" + qh, e);
-        s_paraToQH.remove(context.getParagraphId());
+      } catch (Exception e) {
+        LOGGER.error("unable to get progress for (" + context.getParagraphId() + ") :" + qh, e);
+        paraToQH.remove(context.getParagraphId());
         return 0;
       } finally {
         if (lensClient != null) {
           closeLensClient(lensClient);
-          s_clientMap.remove(lensClient);
+          clientMap.remove(lensClient);
         }
         if (shell != null) {
           closeShell(shell);
@@ -428,11 +418,12 @@ public class LensInterpreter extends Interpreter {
   public boolean concurrentRequests() {
     return Boolean.parseBoolean(getProperty(ZEPPELIN_LENS_RUN_CONCURRENT_SESSION));
   }
+
   @Override
   public Scheduler getScheduler() {
     if (concurrentRequests()) {
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
-          LensInterpreter.class.getName() + this.hashCode(), m_maxThreads);
+          LensInterpreter.class.getName() + this.hashCode(), maxThreads);
     } else {
       return super.getScheduler();
     }

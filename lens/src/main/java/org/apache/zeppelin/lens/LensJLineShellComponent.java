@@ -15,8 +15,6 @@
  */
 package org.apache.zeppelin.lens;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,18 +26,24 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.shell.CommandLine;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.Converter;
+import org.springframework.shell.core.ExecutionStrategy;
+import org.springframework.shell.core.JLineShell;
+import org.springframework.shell.core.Parser;
+import org.springframework.shell.core.SimpleParser;
 import org.springframework.shell.plugin.BannerProvider;
 import org.springframework.shell.plugin.HistoryFileNameProvider;
 import org.springframework.shell.plugin.PluginUtils;
 import org.springframework.shell.plugin.PromptProvider;
-import org.springframework.shell.core.*;
+
+import java.util.Map;
 
 /**
- * workaround for https://github.com/spring-projects/spring-shell/issues/73
+ * workaround for https://github.com/spring-projects/spring-shell/issues/73.
  */
-public class LensJLineShellComponent extends JLineShell 
-  implements SmartLifecycle, ApplicationContextAware, InitializingBean {
-
+public class LensJLineShellComponent extends JLineShell implements SmartLifecycle,
+        ApplicationContextAware, InitializingBean {
   @Autowired
   private CommandLine commandLine;
   
@@ -86,7 +90,6 @@ public class LensJLineShellComponent extends JLineShell
     running = true;
   }
 
-
   public void stop() {
     if (running) {
       closeShell();
@@ -101,15 +104,14 @@ public class LensJLineShellComponent extends JLineShell
   @SuppressWarnings("rawtypes")
   public void afterPropertiesSet() {
 
-    Map<String, CommandMarker> commands = 
-      BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext,
-        CommandMarker.class);
+    Map<String, CommandMarker> commands = BeanFactoryUtils.beansOfTypeIncludingAncestors(
+            applicationContext, CommandMarker.class);
     for (CommandMarker command : commands.values()) {
       getSimpleParser().add(command);
     }
 
-    Map<String, Converter> converters = BeanFactoryUtils
-      .beansOfTypeIncludingAncestors(applicationContext, Converter.class);
+    Map<String, Converter> converters = BeanFactoryUtils.beansOfTypeIncludingAncestors(
+            applicationContext, Converter.class);
     for (Converter<?> converter : converters.values()) {
       getSimpleParser().add(converter);
     }
@@ -121,8 +123,7 @@ public class LensJLineShellComponent extends JLineShell
   }
 
   /**
-   * wait the shell command to complete by typing "quit" or "exit" 
-   * 
+   * Wait the shell command to complete by typing "quit" or "exit".
    */
   public void waitForComplete() {
     try {
@@ -162,14 +163,14 @@ public class LensJLineShellComponent extends JLineShell
   }
 
   /**
-   * get history file name from provider. The provider has highest order 
-   * <link>org.springframework.core.Ordered.getOder</link> will win. 
+   * get history file name from provider. The provider has highest order
+   * {@link org.springframework.core.Ordered#getOrder()} will win.
    * 
    * @return history file name 
    */
   protected String getHistoryFileName() {
-    HistoryFileNameProvider historyFileNameProvider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, HistoryFileNameProvider.class);
+    HistoryFileNameProvider historyFileNameProvider = PluginUtils.getHighestPriorityProvider(
+            this.applicationContext, HistoryFileNameProvider.class);
     String providerHistoryFileName = historyFileNameProvider.getHistoryFileName();
     if (providerHistoryFileName != null) {
       return providerHistoryFileName;
@@ -179,14 +180,14 @@ public class LensJLineShellComponent extends JLineShell
   }
 
   /**
-   * get prompt text from provider. The provider has highest order 
-   * <link>org.springframework.core.Ordered.getOder</link> will win. 
+   * get prompt text from provider. The provider has highest order
+   * {@link org.springframework.core.Ordered#getOrder()} will win.
    * 
    * @return prompt text
    */
   protected String getPromptText() {
-    PromptProvider promptProvider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, PromptProvider.class);
+    PromptProvider promptProvider = PluginUtils.getHighestPriorityProvider(this.applicationContext,
+            PromptProvider.class);
     String providerPromptText = promptProvider.getPrompt();
     if (providerPromptText != null) {
       return providerPromptText;
@@ -197,7 +198,8 @@ public class LensJLineShellComponent extends JLineShell
 
   /**
    * Get Banner and Welcome Message from provider. The provider has highest order 
-   * <link>org.springframework.core.Ordered.getOder</link> will win. 
+   * {@link org.springframework.core.Ordered#getOrder()} will win.
+   *
    * @return BannerText[0]: Banner
    *         BannerText[1]: Welcome Message
    *         BannerText[2]: Version
@@ -205,8 +207,8 @@ public class LensJLineShellComponent extends JLineShell
    */
   private String[] getBannerText() {
     String[] bannerText = new String[4];
-    BannerProvider provider = PluginUtils
-      .getHighestPriorityProvider(this.applicationContext, BannerProvider.class);
+    BannerProvider provider = PluginUtils.getHighestPriorityProvider(this.applicationContext,
+            BannerProvider.class);
     bannerText[0] = provider.getBanner();
     bannerText[1] = provider.getWelcomeMessage();
     bannerText[2] = provider.getVersion();
@@ -221,7 +223,6 @@ public class LensJLineShellComponent extends JLineShell
     }
   }
 
-
   /**
    * get the welcome message at start.
    * 
@@ -230,7 +231,6 @@ public class LensJLineShellComponent extends JLineShell
   public String getWelcomeMessage() {
     return this.welcomeMessage;
   }
-
 
   /**
    * @param printBanner the printBanner to set
