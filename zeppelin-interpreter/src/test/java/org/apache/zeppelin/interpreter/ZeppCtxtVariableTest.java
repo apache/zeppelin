@@ -116,9 +116,37 @@ public class ZeppCtxtVariableTest {
   }
 
   @Test
-  public void multiLineSubstitution() {
+  public void multiLineSubstitutionSuccessful1() {
     String result = interpreter.interpolate("{{PI}}\n{PI}\n{{PI}}\n{PI}", resourcePool);
-    assertTrue("Substitution at the ends", "{PI}\n3.1415\n{PI}\n3.1415".equals(result));
+    assertTrue("multiLineSubstitutionSuccessful1", "{PI}\n3.1415\n{PI}\n3.1415".equals(result));
+  }
+
+
+  @Test
+  public void multiLineSubstitutionSuccessful2() {
+    String result = interpreter.interpolate("prefix {PI} {{PI\n}} suffix", resourcePool);
+    assertTrue("multiLineSubstitutionSuccessful2", "prefix 3.1415 {PI\n} suffix".equals(result));
+  }
+
+
+  @Test
+  public void multiLineSubstitutionSuccessful3() {
+    String result = interpreter.interpolate("prefix {{\nPI}} {PI} suffix", resourcePool);
+    assertTrue("multiLineSubstitutionSuccessful3", "prefix {\nPI} 3.1415 suffix".equals(result));
+  }
+
+
+  @Test
+  public void multiLineSubstitutionFailure2() {
+    String result = interpreter.interpolate("prefix {PI\n} suffix", resourcePool);
+    assertTrue("multiLineSubstitutionFailure2", "prefix {PI\n} suffix".equals(result));
+  }
+
+
+  @Test
+  public void multiLineSubstitutionFailure3() {
+    String result = interpreter.interpolate("prefix {\nPI} suffix", resourcePool);
+    assertTrue("multiLineSubstitutionFailure3", "prefix {\nPI} suffix".equals(result));
   }
 
   @Test

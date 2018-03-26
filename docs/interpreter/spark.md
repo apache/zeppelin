@@ -409,10 +409,13 @@ to one of the two forms described above. Paragraph text containing `{` and/or `}
 No error is flagged in any case. This behavior is identical to the implementation of a similar feature in 
 Jupyter's shell invocation using the `!` magic command.
 
-This feature is disabled by default, and must be explicitly turned on for each interpreter by setting the value of 
-an interpreter-specific property to `true`. Consult the configuration section of each interpreter's documentation 
+This feature is disabled by default, and must be explicitly turned on for each interpreter independently 
+by setting the value of an interpreter-specific property to `true`. 
+Consult the _Configuration_ section of each interpreter's documentation 
 to find out if object interpolation is implemented, and the name of the parameter that must be set to `true` to 
-enable the feature.
+enable the feature. The name of the parameter used to enable this feature it is different for each interpreter. 
+For example, the SparkSQL and Shell interpreters use the parameter names `zeppelin.spark.sql.interpolation` and 
+`zeppelin.shell.interpolation` respectively.
 
 At present only the SparkSQL and Shell interpreters support object interpolation. 
 
