@@ -110,7 +110,7 @@
       },
       "zeppelin.spark.sql.interpolation": {
         "envName": null,
-        "propertyName": null,
+        "propertyName": "zeppelin.spark.sql.interpolation",
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"

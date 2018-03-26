@@ -41,7 +41,7 @@
       },
       "zeppelin.shell.interpolation": {
         "envName": null,
-        "propertyName": null,
+        "propertyName": "zeppelin.shell.interpolation",
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"
