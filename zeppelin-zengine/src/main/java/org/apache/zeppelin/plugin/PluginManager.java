@@ -60,8 +60,7 @@ public class PluginManager {
             (Class.forName(notebookRepoClassName).newInstance());
         return notebookRepo;
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn("Fail to instantiate notebookrepo:" + notebookRepoClassName, e);
-        return null;
+        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
       }
     }
 

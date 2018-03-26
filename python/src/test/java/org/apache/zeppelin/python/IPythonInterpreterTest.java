@@ -78,7 +78,7 @@ public class IPythonInterpreterTest {
   @Test
   public void testGrpcFrameSize() throws InterpreterException, IOException {
     Properties properties = new Properties();
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "4");
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "200");
     startInterpreter(properties);
 
     // to make this test can run under both python2 and python3
@@ -86,11 +86,11 @@ public class IPythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
-    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    result = interpreter.interpret("print('1'*300)", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 32 exceeds maximum: 4"));
+    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 304 exceeds maximum: 200"));
 
     // next call continue work
     result = interpreter.interpret("print(1)", context);
@@ -99,14 +99,14 @@ public class IPythonInterpreterTest {
     close();
 
     // increase framesize to make it work
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "40");
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "500");
     startInterpreter(properties);
     // to make this test can run under both python2 and python3
     result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
-    result = interpreter.interpret("print(11111111111111111111111111111)", context);
+    result = interpreter.interpret("print('1'*300)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
