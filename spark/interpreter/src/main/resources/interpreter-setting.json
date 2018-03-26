@@ -108,6 +108,13 @@
         "description": "Show full exception stacktrace for SQL queries if set to true.",
         "type": "checkbox"
       },
+      "zeppelin.spark.sql.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
