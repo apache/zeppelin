@@ -34,8 +34,6 @@ public class CredentialInjectorTest {
     "val jdbcUrl = \"jdbc:mysql://localhost/emp?user={user.mysql}&password={password.mysql}\"";
   private static final String CORRECT_REPLACED =
     "val jdbcUrl = \"jdbc:mysql://localhost/emp?user=username&password=pwd\"";
-  private static final String NOT_REPLACED =
-    "val jdbcUrl = \"jdbc:mysql://localhost/emp?user=undef&password=undef\"";
 
   private static final String ANSWER =
     "jdbcUrl: String = jdbc:mysql://localhost/employees?user=username&password=pwd";
@@ -70,7 +68,7 @@ public class CredentialInjectorTest {
     UserCredentials userCredentials = mock(UserCredentials.class);
     CredentialInjector testee = new CredentialInjector(userCredentials);
     String actual = testee.replaceCredentials(TEMPLATE);
-    assertEquals(NOT_REPLACED, actual);
+    assertEquals(TEMPLATE, actual);
 
     InterpreterResult ret = new InterpreterResult(Code.SUCCESS, ANSWER);
     InterpreterResult hiddenResult = testee.hidePasswords(ret);
