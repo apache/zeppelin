@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Provide reading comparing capability of livy version
+ * Provide reading comparing capability of livy version.
  */
 public class LivyVersion {
   private static final Logger logger = LoggerFactory.getLogger(LivyVersion.class);

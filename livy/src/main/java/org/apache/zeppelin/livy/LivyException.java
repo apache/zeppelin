@@ -20,7 +20,7 @@ package org.apache.zeppelin.livy;
 import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
- * Livy api related exception
+ * Livy api related exception.
  */
 public class LivyException extends InterpreterException {
   public LivyException() {

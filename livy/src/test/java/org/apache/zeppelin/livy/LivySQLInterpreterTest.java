@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.livy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Properties;
-import static org.junit.Assert.*;
 
 /**
- * Unit test for LivySQLInterpreter
+ * Unit test for LivySQLInterpreter.
  */
 public class LivySQLInterpreterTest {
 
@@ -126,7 +127,8 @@ public class LivySQLInterpreterTest {
     assertEquals("1", rows.get(1));
 
 
-    //  sql output with 3 rows, 3 columns, showing "only showing top 3 rows" with a line break in the data
+    //  sql output with 3 rows, 3 columns, showing "only showing top 3 rows" with a line break in
+    //  the data
     //    +---+---+---+
     //    |  a|  b|  c|
     //    +---+---+---+
