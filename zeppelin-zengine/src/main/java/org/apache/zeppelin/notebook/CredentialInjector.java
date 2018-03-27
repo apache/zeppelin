@@ -53,9 +53,11 @@ class CredentialInjector {
     while (matcher.find()) {
       String key = matcher.group(1);
       UsernamePassword usernamePassword = creds.getUsernamePassword(key);
-      String value = usernamePassword == null ? "undef" : usernamePassword.getUsername();
-      replaced = matcher.replaceFirst(value);
-      matcher = userpattern.matcher(replaced);
+      if (usernamePassword != null) {
+        String value = usernamePassword.getUsername();
+        replaced = matcher.replaceFirst(value);
+        matcher = userpattern.matcher(replaced);
+      }
     }
     matcher = passwordpattern.matcher(replaced);
     while (matcher.find()) {
@@ -63,10 +65,10 @@ class CredentialInjector {
       UsernamePassword usernamePassword = creds.getUsernamePassword(key);
       if (usernamePassword != null) {
         passwords.add(usernamePassword.getPassword());
+        String value = usernamePassword.getPassword();
+        replaced = matcher.replaceFirst(value);
+        matcher = passwordpattern.matcher(replaced);
       }
-      String value = usernamePassword == null ? "undef" : usernamePassword.getPassword();
-      replaced = matcher.replaceFirst(value);
-      matcher = passwordpattern.matcher(replaced);
     }
     return replaced;
   }
