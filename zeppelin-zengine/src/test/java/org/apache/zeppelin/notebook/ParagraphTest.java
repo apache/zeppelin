@@ -338,7 +338,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
     spyParagraph.setAuthenticationInfo(user1);
     
-    spyParagraph.setText("val x = \"usr=$[user.ent]&pass=$[password.ent]\"");
+    spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
     spyParagraph.jobRun();
     
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));

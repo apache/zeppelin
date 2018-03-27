@@ -29,8 +29,8 @@ import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
 
 /**
- * Class for replacing $[user.&gt;credentialkey&lt;] and
- * $[password.&gt;credentialkey&lt;] tags with the matching credentials from
+ * Class for replacing {user.&gt;credentialkey&lt;} and
+ * {password.&gt;credentialkey&lt;} tags with the matching credentials from
  * zeppelin
  */
 class CredentialInjector {
@@ -47,8 +47,8 @@ class CredentialInjector {
       return null;
     }
     String replaced = code;
-    Pattern userpattern = Pattern.compile("\\$\\[user\\.([^\\]]+)\\]");
-    Pattern passwordpattern = Pattern.compile("\\$\\[password\\.([^\\]]+)\\]");
+    Pattern userpattern = Pattern.compile("\\{user\\.([^\\}]+)\\}");
+    Pattern passwordpattern = Pattern.compile("\\{password\\.([^\\}]+)\\}");
     Matcher matcher = userpattern.matcher(replaced);
     while (matcher.find()) {
       String key = matcher.group(1);
