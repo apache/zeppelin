@@ -17,21 +17,21 @@
 
 package org.apache.zeppelin.markdown;
 
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class Markdown4jParserTest {
-
   Markdown md;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Properties props = new Properties();
     props.put(Markdown.MARKDOWN_PARSER_TYPE, Markdown.PARSER_TYPE_MARKDOWN4J);
     md = new Markdown(props);
@@ -39,7 +39,7 @@ public class Markdown4jParserTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     md.close();
   }
 
