@@ -90,8 +90,7 @@ public class PythonUtils {
         pythonPath.add(py4j[0].getAbsolutePath());
       }
     }
-
-    if (pythonPathEnv.length() > 0) {
+    if (pythonPathEnv != null) {
       pythonPath.addAll(Arrays.asList(pythonPathEnv.split(":")));
     }
     // add ${ZEPPELIN_HOME}/interpreter/lib/python for all the cases
