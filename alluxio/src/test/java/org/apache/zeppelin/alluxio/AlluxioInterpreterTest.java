@@ -21,6 +21,7 @@ package org.apache.zeppelin.alluxio;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -53,6 +54,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
+@Ignore("https://alluxio.atlassian.net/browse/ALLUXIO-3142")
 public class AlluxioInterpreterTest {
   private AlluxioInterpreter alluxioInterpreter;
   private static final int SIZE_BYTES = Constants.MB * 10;
@@ -107,6 +109,7 @@ public class AlluxioInterpreterTest {
   @Before
   public final void before() throws Exception {
     mLocalAlluxioCluster = new LocalAlluxioCluster();
+    mLocalAlluxioCluster.initConfiguration();
     mLocalAlluxioCluster.start();
     fs = mLocalAlluxioCluster.getClient();
 

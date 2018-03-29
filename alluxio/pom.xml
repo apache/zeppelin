@@ -33,7 +33,7 @@
     <name>Zeppelin: Alluxio interpreter</name>
 
     <properties>
-        <alluxio.version>1.7.0</alluxio.version>
+        <alluxio.version>1.7.1</alluxio.version>
         <interpreter.name>alluxio</interpreter.name>
     </properties>
 
