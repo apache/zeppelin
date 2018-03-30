@@ -43,6 +43,7 @@
         <plugin.name>NotebookRepo/GCSNotebookRepo</plugin.name>
     </properties>
 
+
     <dependencies>
         <dependency>
             <groupId>com.google.cloud</groupId>
@@ -138,4 +139,13 @@
             </exclusions>
         </dependency>
     </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>
