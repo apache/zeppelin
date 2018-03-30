@@ -133,7 +133,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private void setupConfForPySpark() {
-    String sparkHome = getProperty("SPARK_HOME");
+    String sparkHome = new DefaultInterpreterProperty("SPARK_HOME", "spark.home", "../../")
+        .getValue().toString();
     File pysparkFolder = null;
     if (sparkHome == null) {
       LOGGER.debug("SPARK_HOME is null. Using embedded mode instead");
@@ -148,7 +149,9 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     }
 
     if (!pysparkFolder.isDirectory()) {
-      throw new RuntimeException("wrong pyspark script directory: " + pysparkFolder.toString());
+      String msg = "wrong pyspark script directory: " + pysparkFolder.toString();
+      LOGGER.error(msg);
+      throw new RuntimeException(msg);
     }
 
     ArrayList<String> pysparkPackages = new ArrayList<>();
