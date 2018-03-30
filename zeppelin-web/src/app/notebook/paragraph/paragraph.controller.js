@@ -1019,7 +1019,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     let prev = null;
 
     matches = matches.filter(function(item) {
-      if (item.meta !== '') {
+      if (!_.isEmpty(item.meta)) {
         if (completionListLength !== 0) {
           return false;
         }
