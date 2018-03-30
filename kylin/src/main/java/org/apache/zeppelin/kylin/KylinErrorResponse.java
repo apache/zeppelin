@@ -34,7 +34,7 @@ class KylinErrorResponse implements JsonSerializable {
   private Object data;
   private String msg;
 
-  public KylinErrorResponse(String stacktrace, String exception, String url,
+  KylinErrorResponse(String stacktrace, String exception, String url,
       String code, Object data, String msg) {
     this.stacktrace = stacktrace;
     this.exception = exception;
@@ -59,5 +59,4 @@ class KylinErrorResponse implements JsonSerializable {
       return null;
     }
   }
-
 }

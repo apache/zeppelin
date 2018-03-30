@@ -17,6 +17,7 @@
 
 import os, sys
 import warnings
+import base64
 
 from io import BytesIO
 
@@ -34,7 +35,7 @@ class PyZeppelinContext(object):
         self.gateway = gateway
         self.paramOption = gateway.jvm.org.apache.zeppelin.display.ui.OptionInput.ParamOption
         self.javaList = gateway.jvm.java.util.ArrayList
-        self.max_result = 1000
+        self.max_result = z.getMaxResult()
         self._displayhook = lambda *args: None
         self._setup_matplotlib()
 
@@ -129,13 +130,13 @@ class PyZeppelinContext(object):
             # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
             # and so a dependency on pandas
             self.show_dataframe(p, **kwargs)
-        elif hasattr(p, '__call__'):
-            p() #error reporting
-
+        else:
+            print(str(p))
+            
     def show_dataframe(self, df, show_index=False, **kwargs):
         """Pretty prints DF using Table Display System
         """
-        limit = len(df) > self.max_result
+        exceed_limit = len(df) > self.max_result
         header_buf = StringIO("")
         if show_index:
             idx_name = str(df.index.name) if df.index.name is not None else ""
@@ -147,7 +148,7 @@ class PyZeppelinContext(object):
         header_buf.write("\n")
 
         body_buf = StringIO("")
-        rows = df.head(self.max_result).values if limit else df.values
+        rows = df.head(self.max_result).values if exceed_limit else df.values
         index = df.index.values
         for idx, row in zip(index, rows):
             if show_index:
@@ -158,13 +159,12 @@ class PyZeppelinContext(object):
                 body_buf.write("\t")
                 body_buf.write(str(cell))
             body_buf.write("\n")
-        body_buf.seek(0); header_buf.seek(0)
-        #TODO(bzz): fix it, so it shows red notice, as in Spark
-        print("%table " + header_buf.read() + body_buf.read()) # +
-        #      ("\n<font color=red>Results are limited by {}.</font>" \
-        #          .format(self.max_result) if limit else "")
-        #)
+        body_buf.seek(0)
+        header_buf.seek(0)
+        print("%table " + header_buf.read() + body_buf.read())
         body_buf.close(); header_buf.close()
+        if exceed_limit:
+            print("%html <font color=red>Results are limited by {}.</font>".format(self.max_result))
 
     def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
                         **kwargs):
@@ -176,7 +176,7 @@ class PyZeppelinContext(object):
             img_str = b"data:image/png;base64,"
             img_str += base64.b64encode(img.getvalue().strip())
             img_tag = "<img src={img} style='width={width};height:{height}'>"
-            # Decoding is necessary for Python 3 compability
+            # Decoding is necessary for Python 3 compatibility
             img_str = img_str.decode("ascii")
             img_str = img_tag.format(img=img_str, width=width, height=height)
         elif fmt == "svg":
