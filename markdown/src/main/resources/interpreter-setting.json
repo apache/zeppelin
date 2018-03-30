@@ -14,7 +14,8 @@
     },
     "editor": {
       "language": "markdown",
-      "editOnDblClick": true
+      "editOnDblClick": true,
+      "completionSupport": false
     }
   }
 ]

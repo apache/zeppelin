@@ -27,7 +27,8 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   },
   {
@@ -51,7 +52,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -63,7 +65,8 @@
     "editor":{
       "language": "sql",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": false
     }
   },
   {
@@ -74,7 +77,8 @@
     },
     "editor": {
       "language": "sh",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   },
   {
@@ -85,7 +89,8 @@
     },
     "editor":{
       "language": "sh",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]
