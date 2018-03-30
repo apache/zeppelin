@@ -36,7 +36,8 @@
     },
     "editor": {
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   }
 ]
