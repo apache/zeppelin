@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
 /**
- * UpdateParagraphRequest
+ * UpdateParagraphRequest.
  */
 public class UpdateParagraphRequest {
   String title;
   String text;
 
   public UpdateParagraphRequest() {
-
   }
 
   public String getTitle() {
@@ -35,6 +33,4 @@ public class UpdateParagraphRequest {
   public String getText() {
     return text;
   }
-
-
 }

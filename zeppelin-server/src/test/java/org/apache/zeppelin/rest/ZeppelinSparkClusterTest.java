@@ -16,20 +16,10 @@
  */
 package org.apache.zeppelin.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.SparkDownloadUtils;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,15 +35,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.SparkDownloadUtils;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * Test against spark cluster.
  */
 @RunWith(value = Parameterized.class)
 public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
-  private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
 
   private String sparkVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
@@ -95,16 +96,20 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         new InterpreterProperty("spark.cores.max", "2"));
     sparkProperties.put("zeppelin.spark.useHiveContext",
         new InterpreterProperty("zeppelin.spark.useHiveContext", "false"));
-    sparkProperties.put("zeppelin.pyspark.useIPython", new InterpreterProperty("zeppelin.pyspark.useIPython", "false"));
-    sparkProperties.put("zeppelin.spark.useNew", new InterpreterProperty("zeppelin.spark.useNew", "true"));
-    sparkProperties.put("zeppelin.spark.test", new InterpreterProperty("zeppelin.spark.test", "true"));
+    sparkProperties.put("zeppelin.pyspark.useIPython",
+            new InterpreterProperty("zeppelin.pyspark.useIPython", "false"));
+    sparkProperties.put("zeppelin.spark.useNew",
+            new InterpreterProperty("zeppelin.spark.useNew", "true"));
+    sparkProperties.put("zeppelin.spark.test",
+            new InterpreterProperty("zeppelin.spark.test", "true"));
 
     ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
   }
 
   @BeforeClass
   public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(), "helium");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+            "helium");
     AbstractTestRestApi.startUp(ZeppelinSparkClusterTest.class.getSimpleName());
   }
 
@@ -145,7 +150,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals(Status.ERROR, p.getStatus());
     assertTrue(p.getResult().message().get(0).getData().contains("error: "));
   }
-
 
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
@@ -238,7 +242,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       waitForFinish(p);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
-      // TODO (zjffdu), one more \n is appended, need to investigate why.
+      // TODO(zjffdu), one more \n is appended, need to investigate why.
       assertEquals("age\tid\n20\t1\n", p.getResult().message().get(0).getData());
 
       // test udf
@@ -252,7 +256,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // test exception
       p = note.addNewParagraph(anonymous);
-      /**
+      /*
        %pyspark
        a=1
 
@@ -536,8 +540,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p1.setText("%spark z.angularBind(\"name\", \"world\")");
     note.run(p1.getId(), true);
     assertEquals(Status.FINISHED, p1.getStatus());
-    List<AngularObject> angularObjects =
-        p1.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    List<AngularObject> angularObjects = p1.getBindedInterpreter().getInterpreterGroup()
+            .getAngularObjectRegistry().getAll(note.getId(), null);
     assertEquals(1, angularObjects.size());
     assertEquals("name", angularObjects.get(0).getName());
     assertEquals("world", angularObjects.get(0).get());
@@ -547,8 +551,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p2.setText("%spark z.angularUnbind(\"name\")");
     note.run(p2.getId(), true);
     assertEquals(Status.FINISHED, p2.getStatus());
-    angularObjects =
-        p1.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    angularObjects = p1.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry()
+            .getAll(note.getId(), null);
     assertEquals(0, angularObjects.size());
 
     // add global angular object
@@ -556,8 +560,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p3.setText("%spark z.angularBindGlobal(\"name2\", \"world2\")");
     note.run(p3.getId(), true);
     assertEquals(Status.FINISHED, p3.getStatus());
-    List<AngularObject> globalAngularObjects =
-        p3.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(null, null);
+    List<AngularObject> globalAngularObjects = p3.getBindedInterpreter().getInterpreterGroup()
+            .getAngularObjectRegistry().getAll(null, null);
     assertEquals(1, globalAngularObjects.size());
     assertEquals("name2", globalAngularObjects.get(0).getName());
     assertEquals("world2", globalAngularObjects.get(0).get());
@@ -567,8 +571,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p4.setText("%spark z.angularUnbindGlobal(\"name2\")");
     note.run(p4.getId(), true);
     assertEquals(Status.FINISHED, p4.getStatus());
-    globalAngularObjects =
-        p4.getBindedInterpreter().getInterpreterGroup().getAngularObjectRegistry().getAll(note.getId(), null);
+    globalAngularObjects = p4.getBindedInterpreter().getInterpreterGroup()
+            .getAngularObjectRegistry().getAll(note.getId(), null);
     assertEquals(0, globalAngularObjects.size());
   }
 
