@@ -86,7 +86,7 @@ matrix:
     - sudo: required
       jdk: "oraclejdk8"
       dist: trusty
-      env: BUILD_PLUGINS="true" PYTHON="2" PROFILE="-Pspark-2.2" SPARK_VER="2.2.1" HADOOP_VER="2.6" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,zeppelin-server,spark/interpreter" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="2" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,zeppelin-server,spark/interpreter" TEST_PROJECTS="-Dtest=ZeppelinSparkClusterTest -DfailIfNoTests=false"
 
     # Integration test of spark interpreter with different spark versions under python3, only run SparkIntegrationTest. Also run spark unit test of spark 1.6 in this build.
     - sudo: required
