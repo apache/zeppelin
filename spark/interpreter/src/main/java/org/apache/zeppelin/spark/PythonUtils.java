@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class PythonUtils {
     List<String> pythonPath = new ArrayList<String>();
     String sparkHome = System.getenv("SPARK_HOME");
     String zeppelinHome = System.getenv("ZEPPELIN_HOME");
+    String pythonPathEnv = System.getenv("PYTHONPATH");
     if (zeppelinHome == null) {
       zeppelinHome = new File("..").getAbsolutePath();
     }
@@ -88,7 +90,9 @@ public class PythonUtils {
         pythonPath.add(py4j[0].getAbsolutePath());
       }
     }
-
+    if (pythonPathEnv != null) {
+      pythonPath.addAll(Arrays.asList(pythonPathEnv.split(":")));
+    }
     // add ${ZEPPELIN_HOME}/interpreter/lib/python for all the cases
     pythonPath.add(zeppelinHome + "/interpreter/lib/python");
     return StringUtils.join(pythonPath, ":");

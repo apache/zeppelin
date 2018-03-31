@@ -216,11 +216,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // yarn-cluster will setup PYTHONPATH automatically.
     SparkConf conf = getSparkConf();
     if (!conf.get("spark.submit.deployMode", "client").equals("cluster")) {
-      if (!env.containsKey("PYTHONPATH")) {
-        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
-      } else {
-        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
-      }
+      env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
     }
 
     // get additional class paths when using SPARK_SUBMIT and not using YARN-CLIENT
