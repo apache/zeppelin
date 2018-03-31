@@ -152,7 +152,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
           password = new String(credEntry.getCredential());
         }
       } catch (Exception e) {
-        log.debug("ignored exception: " + e.getMessage());
+        log.debug("", e);
       }
     }
     return password;
