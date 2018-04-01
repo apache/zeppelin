@@ -31,9 +31,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -54,7 +56,15 @@ import org.apache.zeppelin.user.AuthenticationInfo;
  */
 @RunWith(value = Parameterized.class)
 public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
+
+  //This is for only run setupSparkInterpreter one time for each spark version, otherwise
+  //each test method will run setupSparkInterpreter which will cost a long time and may cause travis
+  //ci timeout.
+  //TODO(zjffdu) remove this after we upgrade it to junit 4.13 (ZEPPELIN-3341)
+  private static Set<String> verifiedSparkVersions = new HashSet<>();
+  
 
   private String sparkVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
@@ -63,8 +73,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
     String sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
-    setupSparkInterpreter(sparkHome);
-    verifySparkVersionNumber();
+    if (!verifiedSparkVersions.contains(sparkVersion)) {
+      verifiedSparkVersions.add(sparkVersion);
+      setupSparkInterpreter(sparkHome);
+      verifySparkVersionNumber();
+    }
   }
 
   @Parameterized.Parameters

@@ -17,288 +17,64 @@
 
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.display.ui.CheckBox;
-import org.apache.zeppelin.display.ui.Select;
-import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 
 
-public class IPythonInterpreterTest {
+public class IPythonInterpreterTest extends BasePythonInterpreterTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(IPythonInterpreterTest.class);
-  private IPythonInterpreter interpreter;
 
-  public void startInterpreter(Properties properties) throws InterpreterException {
-    interpreter = new IPythonInterpreter(properties);
-    InterpreterGroup mockInterpreterGroup = mock(InterpreterGroup.class);
-    interpreter.setInterpreterGroup(mockInterpreterGroup);
+  protected Properties initIntpProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.python.maxResult", "3");
+    properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    return properties;
+  }
+
+  protected void startInterpreter(Properties properties) throws InterpreterException {
+    interpreter = new LazyOpenInterpreter(new IPythonInterpreter(properties));
+    intpGroup = new InterpreterGroup();
+    intpGroup.put("session_1", new ArrayList<Interpreter>());
+    intpGroup.get("session_1").add(interpreter);
+    interpreter.setInterpreterGroup(intpGroup);
+
     interpreter.open();
   }
 
-  @After
-  public void close() throws InterpreterException {
-    interpreter.close();
+  @Override
+  public void setUp() throws InterpreterException {
+    Properties properties = initIntpProperties();
+    startInterpreter(properties);
   }
 
-
-  @Test
-  public void testIPython() throws IOException, InterruptedException, InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("zeppelin.python.maxResult", "3");
-    startInterpreter(properties);
-    testInterpreter(interpreter);
+  @Override
+  public void tearDown() throws InterpreterException {
+    intpGroup.close();
   }
 
   @Test
-  public void testGrpcFrameSize() throws InterpreterException, IOException {
-    Properties properties = new Properties();
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "200");
-    startInterpreter(properties);
-
-    // to make this test can run under both python2 and python3
-    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    InterpreterContext context = getInterpreterContext();
-    result = interpreter.interpret("print('1'*300)", context);
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 304 exceeds maximum: 200"));
-
-    // next call continue work
-    result = interpreter.interpret("print(1)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    close();
-
-    // increase framesize to make it work
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "500");
-    startInterpreter(properties);
-    // to make this test can run under both python2 and python3
-    result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    context = getInterpreterContext();
-    result = interpreter.interpret("print('1'*300)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
-  public static void testInterpreter(final Interpreter interpreter) throws IOException, InterruptedException, InterpreterException {
-    // to make this test can run under both python2 and python3
-    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-
-    InterpreterContext context = getInterpreterContext();
-    result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    Thread.sleep(100);
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    boolean isPython2 = interpreterResultMessages.get(0).getData().equals("2\n");
-
-    // single output without print
-    context = getInterpreterContext();
-    result = interpreter.interpret("'hello world'", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("'hello world'", interpreterResultMessages.get(0).getData());
-
-    // unicode
-    context = getInterpreterContext();
-    result = interpreter.interpret("print(u'你好')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("你好\n", interpreterResultMessages.get(0).getData());
-    
-    // only the last statement is printed
-    context = getInterpreterContext();
-    result = interpreter.interpret("'hello world'\n'hello world2'", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("'hello world2'", interpreterResultMessages.get(0).getData());
-
-    // single output
-    context = getInterpreterContext();
-    result = interpreter.interpret("print('hello world')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("hello world\n", interpreterResultMessages.get(0).getData());
-
-    // multiple output
-    context = getInterpreterContext();
-    result = interpreter.interpret("print('hello world')\nprint('hello world2')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("hello world\nhello world2\n", interpreterResultMessages.get(0).getData());
-
-    // assignment
-    context = getInterpreterContext();
-    result = interpreter.interpret("abc=1",context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(0, interpreterResultMessages.size());
-
-    // if block
-    context = getInterpreterContext();
-    result = interpreter.interpret("if abc > 0:\n\tprint('True')\nelse:\n\tprint('False')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("True\n", interpreterResultMessages.get(0).getData());
-
-    // for loop
-    context = getInterpreterContext();
-    result = interpreter.interpret("for i in range(3):\n\tprint(i)", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("0\n1\n2\n", interpreterResultMessages.get(0).getData());
-
-    // syntax error
-    context = getInterpreterContext();
-    result = interpreter.interpret("print(unknown)", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("name 'unknown' is not defined"));
-
-    // raise runtime exception
-    context = getInterpreterContext();
-    result = interpreter.interpret("1/0", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.ERROR, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("ZeroDivisionError"));
-
-    // ZEPPELIN-1133
-    context = getInterpreterContext();
-    result = interpreter.interpret("def greet(name):\n" +
-        "    print('Hello', name)\n" +
-        "greet('Jack')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("Hello Jack\n",interpreterResultMessages.get(0).getData());
-
-    // ZEPPELIN-1114
-    context = getInterpreterContext();
-    result = interpreter.interpret("print('there is no Error: ok')", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(1, interpreterResultMessages.size());
-    assertEquals("there is no Error: ok\n", interpreterResultMessages.get(0).getData());
-
-    // completion
-    context = getInterpreterContext();
-    List<InterpreterCompletion> completions = interpreter.completion("ab", 2, context);
-    assertEquals(2, completions.size());
-    assertEquals("abc", completions.get(0).getValue());
-    assertEquals("abs", completions.get(1).getValue());
-
-    context = getInterpreterContext();
-    interpreter.interpret("import sys", context);
-    completions = interpreter.completion("sys.", 4, context);
-    assertFalse(completions.isEmpty());
-
-    context = getInterpreterContext();
-    completions = interpreter.completion("sys.std", 7, context);
-    for (InterpreterCompletion completion : completions) {
-      System.out.println(completion.getValue());
-    }
-    assertEquals(3, completions.size());
-    assertEquals("stderr", completions.get(0).getValue());
-    assertEquals("stdin", completions.get(1).getValue());
-    assertEquals("stdout", completions.get(2).getValue());
-
-    // there's no completion for 'a.' because it is not recognized by compiler for now.
-    context = getInterpreterContext();
-    String st = "a='hello'\na.";
-    completions = interpreter.completion(st, st.length(), context);
-    assertEquals(0, completions.size());
-
-    // define `a` first
-    context = getInterpreterContext();
-    st = "a='hello'";
-    result = interpreter.interpret(st, context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(0, interpreterResultMessages.size());
-
-    // now we can get the completion for `a.`
-    context = getInterpreterContext();
-    st = "a.";
-    completions = interpreter.completion(st, st.length(), context);
-    // it is different for python2 and python3 and may even different for different minor version
-    // so only verify it is larger than 20
-    assertTrue(completions.size() > 20);
-
-    context = getInterpreterContext();
-    st = "a.co";
-    completions = interpreter.completion(st, st.length(), context);
-    assertEquals(1, completions.size());
-    assertEquals("count", completions.get(0).getValue());
-
-    // cursor is in the middle of code
-    context = getInterpreterContext();
-    st = "a.co\b='hello";
-    completions = interpreter.completion(st, 4, context);
-    assertEquals(1, completions.size());
-    assertEquals("count", completions.get(0).getValue());
-
+  public void testIPythonAdvancedFeatures() throws InterpreterException, InterruptedException, IOException {
     // ipython help
-    context = getInterpreterContext();
-    result = interpreter.interpret("range?", context);
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("range?", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("range(stop)"));
 
     // timeit
@@ -331,13 +107,16 @@ public class IPythonInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     interpreterResultMessages = context2.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
+  }
 
+  @Test
+  public void testIPythonPlotting() throws InterpreterException, InterruptedException, IOException {
     // matplotlib
-    context = getInterpreterContext();
-    result = interpreter.interpret("%matplotlib inline\nimport matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("%matplotlib inline\nimport matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
@@ -411,94 +190,44 @@ public class IPythonInterpreterTest {
       }
     }
     assertTrue("No Image Output", hasImageOutput);
+  }
 
-    // ZeppelinContext
+  @Test
+  public void testGrpcFrameSize() throws InterpreterException, IOException {
+    tearDown();
 
-    // TextBox
-    context = getInterpreterContext();
-    result = interpreter.interpret("z.input(name='text_1', defaultValue='value_1')", context);
-    Thread.sleep(100);
+    Properties properties = initIntpProperties();
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "3000");
+
+    startInterpreter(properties);
+
+    // to make this test can run under both python2 and python3
+    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertTrue(interpreterResultMessages.get(0).getData().contains("'value_1'"));
-    assertEquals(1, context.getGui().getForms().size());
-    assertTrue(context.getGui().getForms().get("text_1") instanceof TextBox);
-    TextBox textbox = (TextBox) context.getGui().getForms().get("text_1");
-    assertEquals("text_1", textbox.getName());
-    assertEquals("value_1", textbox.getDefaultValue());
 
-    // Select
-    context = getInterpreterContext();
-    result = interpreter.interpret("z.select(name='select_1', options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(1, context.getGui().getForms().size());
-    assertTrue(context.getGui().getForms().get("select_1") instanceof Select);
-    Select select = (Select) context.getGui().getForms().get("select_1");
-    assertEquals("select_1", select.getName());
-    assertEquals(2, select.getOptions().length);
-    assertEquals("name_1", select.getOptions()[0].getDisplayName());
-    assertEquals("value_1", select.getOptions()[0].getValue());
-
-    // CheckBox
-    context = getInterpreterContext();
-    result = interpreter.interpret("z.checkbox(name='checkbox_1', options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(1, context.getGui().getForms().size());
-    assertTrue(context.getGui().getForms().get("checkbox_1") instanceof CheckBox);
-    CheckBox checkbox = (CheckBox) context.getGui().getForms().get("checkbox_1");
-    assertEquals("checkbox_1", checkbox.getName());
-    assertEquals(2, checkbox.getOptions().length);
-    assertEquals("name_1", checkbox.getOptions()[0].getDisplayName());
-    assertEquals("value_1", checkbox.getOptions()[0].getValue());
-
-    // Pandas DataFrame
-    context = getInterpreterContext();
-    result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    InterpreterContext context = getInterpreterContext();
+    result = interpreter.interpret("print('1'*3000)", context);
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
-    assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum: 3000"));
 
-    context = getInterpreterContext();
-    result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3,4], 'name':['a','b','c', 'd']})\nz.show(df)", context);
+    // next call continue work
+    result = interpreter.interpret("print(1)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(2, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
-    assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    assertEquals("<font color=red>Results are limited by 3.</font>\n", interpreterResultMessages.get(1).getData());
 
-    // z.show(matplotlib)
-    context = getInterpreterContext();
-    result = interpreter.interpret("import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)\nz.show(plt)", context);
+    tearDown();
+
+    // increase framesize to make it work
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "5000");
+    startInterpreter(properties);
+    // to make this test can run under both python2 and python3
+    result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(2, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
-    assertEquals(InterpreterResult.Type.IMG, interpreterResultMessages.get(1).getType());
 
-    // clear output
     context = getInterpreterContext();
-    result = interpreter.interpret("import time\nprint(\"Hello\")\ntime.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
-    assertEquals("%text world\n", context.out.getCurrentOutput().toString());
+    result = interpreter.interpret("print('1'*3000)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
-  private static InterpreterContext getInterpreterContext() {
-    return new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        "replName",
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        null,
-        null,
-        null,
-        new InterpreterOutput(null));
-  }
 }

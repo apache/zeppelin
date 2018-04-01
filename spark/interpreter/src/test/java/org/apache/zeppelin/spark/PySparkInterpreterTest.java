@@ -17,154 +17,73 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
+import com.google.common.io.Files;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runners.MethodSorters;
+import org.apache.zeppelin.python.PythonInterpreterTest;
+import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PySparkInterpreterTest {
+public class PySparkInterpreterTest extends PythonInterpreterTest {
 
-  @ClassRule
-  public static TemporaryFolder tmpDir = new TemporaryFolder();
-
-  static SparkInterpreter sparkInterpreter;
-  static PySparkInterpreter pySparkInterpreter;
-  static InterpreterGroup intpGroup;
-  static InterpreterContext context;
   private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
-  private static Properties getPySparkTestProperties() throws IOException {
-    Properties p = new Properties();
-    p.setProperty("spark.master", "local");
-    p.setProperty("spark.app.name", "Zeppelin Test");
-    p.setProperty("zeppelin.spark.useHiveContext", "true");
-    p.setProperty("zeppelin.spark.maxResult", "1000");
-    p.setProperty("zeppelin.spark.importImplicit", "true");
-    p.setProperty("zeppelin.pyspark.python", "python");
-    p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
-    p.setProperty("zeppelin.pyspark.useIPython", "false");
-    p.setProperty("zeppelin.spark.test", "true");
-    return p;
-  }
+  @Override
+  public void setUp() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "Zeppelin Test");
+    properties.setProperty("zeppelin.spark.useHiveContext", "false");
+    properties.setProperty("zeppelin.spark.maxResult", "3");
+    properties.setProperty("zeppelin.spark.importImplicit", "true");
+    properties.setProperty("zeppelin.pyspark.python", "python");
+    properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+    properties.setProperty("zeppelin.pyspark.useIPython", "false");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
-  /**
-   * Get spark version number as a numerical value.
-   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
-   */
-  public static int getSparkVersionNumber() {
-    if (sparkInterpreter == null) {
-      return 0;
-    }
-
-    String[] split = sparkInterpreter.getSparkContext().version().split("\\.");
-    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
-    return version;
-  }
-
-  @BeforeClass
-  public static void setUp() throws Exception {
+    InterpreterContext.set(getInterpreterContext(mockRemoteEventClient));
+    // create interpreter group
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    context = new InterpreterContext("note", "id", null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        new InterpreterOutput(null));
-    InterpreterContext.set(context);
-
-    sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
+    LazyOpenInterpreter sparkInterpreter =
+        new LazyOpenInterpreter(new SparkInterpreter(properties));
     intpGroup.get("note").add(sparkInterpreter);
     sparkInterpreter.setInterpreterGroup(intpGroup);
-    sparkInterpreter.open();
 
-    pySparkInterpreter = new PySparkInterpreter(getPySparkTestProperties());
-    intpGroup.get("note").add(pySparkInterpreter);
-    pySparkInterpreter.setInterpreterGroup(intpGroup);
-    pySparkInterpreter.open();
+    LazyOpenInterpreter iPySparkInterpreter =
+        new LazyOpenInterpreter(new IPySparkInterpreter(properties));
+    intpGroup.get("note").add(iPySparkInterpreter);
+    iPySparkInterpreter.setInterpreterGroup(intpGroup);
+
+    interpreter = new LazyOpenInterpreter(new PySparkInterpreter(properties));
+    intpGroup.get("note").add(interpreter);
+    interpreter.setInterpreterGroup(intpGroup);
+
+    interpreter.open();
   }
 
-  @AfterClass
-  public static void tearDown() throws InterpreterException {
-    pySparkInterpreter.close();
-    sparkInterpreter.close();
-  }
-
-  @Test
-  public void testBasicIntp() throws InterpreterException, InterruptedException, IOException {
-    IPySparkInterpreterTest.testPySpark(pySparkInterpreter, mockRemoteEventClient);
-  }
-
-  @Test
-  public void testRedefinitionZeppelinContext() throws InterpreterException {
-    if (getSparkVersionNumber() > 11) {
-      String redefinitionCode = "z = 1\n";
-      String restoreCode = "z = __zeppelin__\n";
-      String validCode = "z.input(\"test\")\n";
-
-      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
-      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(redefinitionCode, context).code());
-      assertEquals(InterpreterResult.Code.ERROR, pySparkInterpreter.interpret(validCode, context).code());
-      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(restoreCode, context).code());
-      assertEquals(InterpreterResult.Code.SUCCESS, pySparkInterpreter.interpret(validCode, context).code());
-    }
-  }
-
-  private class infinityPythonJob implements Runnable {
-    @Override
-    public void run() {
-      String code = "import time\nwhile True:\n  time.sleep(1)" ;
-      InterpreterResult ret = null;
-      try {
-        ret = pySparkInterpreter.interpret(code, context);
-      } catch (InterpreterException e) {
-        e.printStackTrace();
-      }
-      assertNotNull(ret);
-      Pattern expectedMessage = Pattern.compile("KeyboardInterrupt");
-      Matcher m = expectedMessage.matcher(ret.message().toString());
-      assertTrue(m.find());
-    }
+  @Override
+  public void tearDown() throws InterpreterException {
+    intpGroup.close();
+    intpGroup = null;
+    interpreter = null;
   }
 
   @Test
-  public void testCancelIntp() throws InterruptedException, InterpreterException {
-    if (getSparkVersionNumber() > 11) {
-      assertEquals(InterpreterResult.Code.SUCCESS,
-        pySparkInterpreter.interpret("a = 1\n", context).code());
-
-      Thread t = new Thread(new infinityPythonJob());
-      t.start();
-      Thread.sleep(5000);
-      pySparkInterpreter.cancel(context);
-      assertTrue(t.isAlive());
-      t.join(2000);
-      assertFalse(t.isAlive());
-    }
+  public void testPySpark() throws InterruptedException, InterpreterException, IOException {
+    IPySparkInterpreterTest.testPySpark(interpreter, mockRemoteEventClient);
   }
+
 }

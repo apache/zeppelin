@@ -26,6 +26,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -47,8 +49,8 @@ public class SparkRInterpreterTest {
   private SparkInterpreter sparkInterpreter;
   private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
-  @Test
-  public void testSparkRInterpreter() throws InterpreterException, InterruptedException {
+  @Before
+  public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
@@ -69,6 +71,16 @@ public class SparkRInterpreterTest {
 
     sparkRInterpreter.open();
     sparkInterpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
+  }
+
+  @After
+  public void tearDown() throws InterpreterException {
+    sparkInterpreter.close();
+  }
+
+  @Test
+  public void testSparkRInterpreter() throws InterpreterException, InterruptedException {
+
 
     InterpreterResult result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

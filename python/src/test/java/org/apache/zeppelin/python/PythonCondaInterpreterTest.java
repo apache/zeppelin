@@ -39,7 +39,9 @@ public class PythonCondaInterpreterTest {
   @Before
   public void setUp() throws InterpreterException {
     conda = spy(new PythonCondaInterpreter(new Properties()));
+    when(conda.getClassName()).thenReturn(PythonCondaInterpreter.class.getName());
     python = mock(PythonInterpreter.class);
+    when(python.getClassName()).thenReturn(PythonInterpreter.class.getName());
 
     InterpreterGroup group = new InterpreterGroup();
     group.put("note", Arrays.asList(python, conda));
@@ -79,7 +81,7 @@ public class PythonCondaInterpreterTest {
     conda.interpret("activate " + envname, context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("/path1/bin/python");
+    verify(python).setPythonExec("/path1/bin/python");
     assertTrue(envname.equals(conda.getCurrentCondaEnvName()));
   }
 
@@ -89,7 +91,7 @@ public class PythonCondaInterpreterTest {
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("python");
+    verify(python).setPythonExec("python");
     assertTrue(conda.getCurrentCondaEnvName().isEmpty());
   }
 

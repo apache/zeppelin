@@ -56,7 +56,7 @@ import java.util.Properties;
  */
 public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NewSparkInterpreter.class);
 
   private BaseSparkScalaInterpreter innerInterpreter;
   private Map<String, String> innerInterpreterClassMap = new HashMap<>();
@@ -177,7 +177,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public void close() {
     LOGGER.info("Close SparkInterpreter");
-    innerInterpreter.close();
+    if (innerInterpreter != null) {
+      innerInterpreter.close();
+      innerInterpreter = null;
+    }
   }
 
   @Override

@@ -27,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
+import org.apache.zeppelin.python.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +50,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    setProperty("zeppelin.python",
-        PySparkInterpreter.getPythonExec(getProperties()));
+    PySparkInterpreter pySparkInterpreter = getPySparkInterpreter();
+    setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getSparkInterpreter();
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
@@ -94,6 +95,16 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return spark;
   }
 
+  private PySparkInterpreter getPySparkInterpreter() throws InterpreterException {
+    PySparkInterpreter pySpark = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class.getName());
+    while (p instanceof WrappedInterpreter) {
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    pySpark = (PySparkInterpreter) p;
+    return pySpark;
+  }
+
   @Override
   public BaseZeppelinContext buildZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
@@ -117,6 +128,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void close() throws InterpreterException {
+    LOGGER.info("Close IPySparkInterpreter");
     super.close();
     if (sparkInterpreter != null) {
       sparkInterpreter.close();

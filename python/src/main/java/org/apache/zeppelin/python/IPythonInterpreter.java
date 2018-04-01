@@ -243,16 +243,21 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private void launchIPythonKernel(int ipythonPort)
       throws IOException, URISyntaxException {
     // copy the python scripts to a temp directory, then launch ipython kernel in that folder
-    File tmpPythonScriptFolder = Files.createTempDirectory("zeppelin_ipython").toFile();
+    File pythonWorkDir = Files.createTempDirectory("zeppelin_ipython").toFile();
     String[] ipythonScripts = {"ipython_server.py", "ipython_pb2.py", "ipython_pb2_grpc.py"};
     for (String ipythonScript : ipythonScripts) {
       URL url = getClass().getClassLoader().getResource("grpc/python"
           + "/" + ipythonScript);
-      FileUtils.copyURLToFile(url, new File(tmpPythonScriptFolder, ipythonScript));
+      FileUtils.copyURLToFile(url, new File(pythonWorkDir, ipythonScript));
     }
 
+    //TODO(zjffdu) don't do hard code on py4j here
+    File py4jDestFile = new File(pythonWorkDir, "py4j-src-0.9.2.zip");
+    FileUtils.copyURLToFile(getClass().getClassLoader().getResource(
+        "python/py4j-src-0.9.2.zip"), py4jDestFile);
+
     CommandLine cmd = CommandLine.parse(pythonExecutable);
-    cmd.addArgument(tmpPythonScriptFolder.getAbsolutePath() + "/ipython_server.py");
+    cmd.addArgument(pythonWorkDir.getAbsolutePath() + "/ipython_server.py");
     cmd.addArgument(ipythonPort + "");
     DefaultExecutor executor = new DefaultExecutor();
     ProcessLogOutputStream processOutput = new ProcessLogOutputStream(LOGGER);
@@ -261,20 +266,12 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     executor.setWatchdog(watchDog);
 
     if (useBuiltinPy4j) {
-      String py4jLibPath = null;
-      if (System.getenv("ZEPPELIN_HOME") != null) {
-        py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator
-            + PythonInterpreter.ZEPPELIN_PY4JPATH;
-      } else {
-        Path workingPath = Paths.get("..").toAbsolutePath();
-        py4jLibPath = workingPath + File.separator + PythonInterpreter.ZEPPELIN_PY4JPATH;
-      }
       if (additionalPythonPath != null) {
         // put the py4j at the end, because additionalPythonPath may already contain py4j.
         // e.g. PySparkInterpreter
-        additionalPythonPath = additionalPythonPath + ":" + py4jLibPath;
+        additionalPythonPath = additionalPythonPath + ":" + py4jDestFile.getAbsolutePath();
       } else {
-        additionalPythonPath = py4jLibPath;
+        additionalPythonPath = py4jDestFile.getAbsolutePath();
       }
     }
 
@@ -326,7 +323,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void close() throws InterpreterException {
     if (watchDog != null) {
-      LOGGER.debug("Kill IPython Process");
+      LOGGER.info("Kill IPython Process");
       ipythonClient.stop(StopRequest.newBuilder().build());
       watchDog.destroyProcess();
       gatewayServer.shutdown();
