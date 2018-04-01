@@ -15,24 +15,12 @@
 # limitations under the License.
 #
 
-import os, sys, getopt, traceback, json, re
+import os, sys, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-from py4j.protocol import Py4JJavaError, Py4JNetworkError
-import warnings
+from py4j.protocol import Py4JJavaError
+
 import ast
-import traceback
-import warnings
-import signal
-import base64
-
-from io import BytesIO
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-# for back compatibility
 
 class Logger(object):
   def __init__(self):
@@ -47,46 +35,79 @@ class Logger(object):
   def flush(self):
     pass
 
-def handler_stop_signals(sig, frame):
-  sys.exit("Got signal : " + str(sig))
 
+class PythonCompletion:
+  def __init__(self, interpreter, userNameSpace):
+    self.interpreter = interpreter
+    self.userNameSpace = userNameSpace
 
-signal.signal(signal.SIGINT, handler_stop_signals)
+  def getObjectCompletion(self, text_value):
+    completions = [completion for completion in list(self.userNameSpace.keys()) if completion.startswith(text_value)]
+    builtinCompletions = [completion for completion in dir(__builtins__) if completion.startswith(text_value)]
+    return completions + builtinCompletions
 
-host = "127.0.0.1"
-if len(sys.argv) >= 3:
-  host = sys.argv[2]
+  def getMethodCompletion(self, objName, methodName):
+    execResult = locals()
+    try:
+      exec("{} = dir({})".format("objectDefList", objName), _zcUserQueryNameSpace, execResult)
+    except:
+      self.interpreter.logPythonOutput("Fail to run dir on " + objName)
+      self.interpreter.logPythonOutput(traceback.format_exc())
+      return None
+    else:
+      objectDefList = execResult['objectDefList']
+      return [completion for completion in execResult['objectDefList'] if completion.startswith(methodName)]
 
-_zcUserQueryNameSpace = {}
-client = GatewayClient(address=host, port=int(sys.argv[1]))
+  def getCompletion(self, text_value):
+    if text_value == None:
+      return None
 
-gateway = JavaGateway(client)
+    dotPos = text_value.find(".")
+    if dotPos == -1:
+      objName = text_value
+      completionList = self.getObjectCompletion(objName)
+    else:
+      objName = text_value[:dotPos]
+      methodName = text_value[dotPos + 1:]
+      completionList = self.getMethodCompletion(objName, methodName)
 
+    if completionList is None or len(completionList) <= 0:
+      self.interpreter.setStatementsFinished("", False)
+    else:
+      result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
+      self.interpreter.setStatementsFinished(result, False)
+
+host = sys.argv[1]
+port = int(sys.argv[2])
+
+client = GatewayClient(address=host, port=port)
+gateway = JavaGateway(client, auto_convert = True)
 intp = gateway.entry_point
-intp.onPythonScriptInitialized(os.getpid())
-
-java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-
-from zeppelin_context import PyZeppelinContext
-
-z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)
-__zeppelin__._setup_matplotlib()
-
-_zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
-_zcUserQueryNameSpace["z"] = z
-
+# redirect stdout/stderr to java side so that PythonInterpreter can capture the python execution result
 output = Logger()
 sys.stdout = output
-#sys.stderr = output
+sys.stderr = output
+
+_zcUserQueryNameSpace = {}
+
+completion = PythonCompletion(intp, _zcUserQueryNameSpace)
+_zcUserQueryNameSpace["__zeppelin_completion__"] = completion
+_zcUserQueryNameSpace["gateway"] = gateway
+
+from zeppelin_context import PyZeppelinContext
+if intp.getZeppelinContext():
+  z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)
+  __zeppelin__._setup_matplotlib()
+  _zcUserQueryNameSpace["z"] = z
+  _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
+
+intp.onPythonScriptInitialized(os.getpid())
 
 while True :
   req = intp.getStatements()
-  if req == None:
-    break
-
   try:
     stmts = req.statements().split("\n")
-    final_code = []
+    isForCompletion = req.isForCompletion()
 
     # Get post-execute hooks
     try:
@@ -98,35 +119,23 @@ while True :
       user_hook = __zeppelin__.getHook('post_exec')
     except:
       user_hook = None
-      
+
     nhooks = 0
-    for hook in (global_hook, user_hook):
-      if hook:
-        nhooks += 1
+    if not isForCompletion:
+      for hook in (global_hook, user_hook):
+        if hook:
+          nhooks += 1
 
-    for s in stmts:
-      if s == None:
-        continue
-
-      # skip comment
-      s_stripped = s.strip()
-      if len(s_stripped) == 0 or s_stripped.startswith("#"):
-        continue
-
-      final_code.append(s)
-
-    if final_code:
+    if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
-      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
-
+      code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
 
       to_run_exec, to_run_single = (code.body[:-(nhooks + 1)],
                                     [code.body[-(nhooks + 1)]])
-
       try:
         for node in to_run_exec:
           mod = ast.Module([node])
@@ -142,19 +151,37 @@ while True :
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
-      except:
-        raise Exception(traceback.format_exc())
 
-    intp.setStatementsFinished("", False)
+        if not isForCompletion:
+          # only call it when it is not for code completion. code completion will call it in
+          # PythonCompletion.getCompletion
+          intp.setStatementsFinished("", False)
+      except Py4JJavaError:
+        # raise it to outside try except
+        raise
+      except:
+        if not isForCompletion:
+          # extract which line incur error from error message. e.g.
+          # Traceback (most recent call last):
+          # File "<stdin>", line 1, in <module>
+          # ZeroDivisionError: integer division or modulo by zero
+          exception = traceback.format_exc()
+          m = re.search("File \"<stdin>\", line (\d+).*", exception)
+          if m:
+            line_no = int(m.group(1))
+            intp.setStatementsFinished(
+              "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
+          else:
+            intp.setStatementsFinished(exception, True)
+    else:
+      intp.setStatementsFinished("", False)
+
   except Py4JJavaError:
     excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
     innerErrorStart = excInnerError.find("Py4JJavaError:")
     if innerErrorStart > -1:
-       excInnerError = excInnerError[innerErrorStart:]
+      excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
-  except Py4JNetworkError:
-    # lost connection from gateway server. exit
-    sys.exit(1)
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 

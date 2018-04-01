@@ -127,7 +127,7 @@ public class OldSparkInterpreterTest {
         new LocalResourcePool("id"),
         new LinkedList<InterpreterContextRunner>(),
         new InterpreterOutput(null)) {
-        
+
         @Override
         public RemoteEventClientWrapper getClient() {
           return remoteEventClientWrapper;
@@ -192,7 +192,7 @@ public class OldSparkInterpreterTest {
   public void testEndWithComment() throws InterpreterException {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }
-  
+
   @Test
   public void testCreateDataFrame() throws InterpreterException {
     if (getSparkVersionNumber(repl) >= 13) {

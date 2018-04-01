@@ -520,7 +520,8 @@ public class InterpreterSetting {
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
       if (entry.getValue().getValue() != null) {
-        jProperties.setProperty(entry.getKey().trim(), entry.getValue().getValue().toString().trim());
+        jProperties.setProperty(entry.getKey().trim(),
+            entry.getValue().getValue().toString().trim());
       }
     }
 
