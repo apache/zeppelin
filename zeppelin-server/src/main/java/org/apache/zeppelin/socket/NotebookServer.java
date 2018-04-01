@@ -1392,7 +1392,13 @@ public class NotebookServer extends WebSocketServlet
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
-    List<InterpreterCompletion> candidates = note.completion(paragraphId, buffer, cursor);
+    List<InterpreterCompletion> candidates;
+    try {
+      candidates = note.completion(paragraphId, buffer, cursor);
+    } catch (RuntimeException e) {
+      LOG.info("Fail to get completion", e);
+      candidates = new ArrayList<>();
+    }
     resp.put("completions", candidates);
     conn.send(serializeMessage(resp));
   }
