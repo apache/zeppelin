@@ -740,7 +740,7 @@ z.put("country_code", "KR")
 ####In later JDBC cell:
 ```
 %jdbc_interpreter_name select * from patents_list where 
-    priority_country = '{country_code}' and filing_date rlike '201[678]'
+    priority_country = '{country_code}' and filing_date like '2015-__-__'
 ```
 
 Object interpolation is disabled by default, and can be enabled for all instances of the JDBC interpreter by 
