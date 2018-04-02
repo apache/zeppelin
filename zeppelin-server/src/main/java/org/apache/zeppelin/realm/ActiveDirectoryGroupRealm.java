@@ -152,7 +152,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
           password = new String(credEntry.getCredential());
         }
       } catch (Exception e) {
-        log.debug("", e);
+        log.debug("ignored error from getting credential entry from keystore", e);
       }
     }
     return password;
