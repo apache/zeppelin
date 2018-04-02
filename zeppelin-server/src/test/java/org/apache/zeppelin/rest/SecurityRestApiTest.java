@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.CoreMatchers;
@@ -29,8 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class SecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -86,4 +85,3 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
     notUser.releaseConnection();
   }
 }
-

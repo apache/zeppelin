@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.apache.zeppelin.user.UserCredentials;
 
 public class CredentialsRestApiTest extends AbstractTestRestApi {
   protected static final Logger LOG = LoggerFactory.getLogger(CredentialsRestApiTest.class);
@@ -53,10 +54,14 @@ public class CredentialsRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testInvalidRequest() throws IOException {
-    String jsonInvalidRequestEntityNull = "{\"entity\" : null, \"username\" : \"test\", \"password\" : \"testpass\"}";
-    String jsonInvalidRequestNameNull = "{\"entity\" : \"test\", \"username\" : null, \"password\" : \"testpass\"}";
-    String jsonInvalidRequestPasswordNull = "{\"entity\" : \"test\", \"username\" : \"test\", \"password\" : null}";
-    String jsonInvalidRequestAllNull = "{\"entity\" : null, \"username\" : null, \"password\" : null}";
+    String jsonInvalidRequestEntityNull = "{\"entity\" : null, \"username\" : \"test\", " +
+            "\"password\" : \"testpass\"}";
+    String jsonInvalidRequestNameNull = "{\"entity\" : \"test\", \"username\" : null, " +
+            "\"password\" : \"testpass\"}";
+    String jsonInvalidRequestPasswordNull = "{\"entity\" : \"test\", \"username\" : \"test\", " +
+            "\"password\" : null}";
+    String jsonInvalidRequestAllNull = "{\"entity\" : null, \"username\" : null, " +
+            "\"password\" : null}";
 
     PutMethod entityNullPut = httpPut("/credential", jsonInvalidRequestEntityNull);
     entityNullPut.addRequestHeader("Origin", "http://localhost");
@@ -85,7 +90,8 @@ public class CredentialsRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(getMethod.getResponseBodyAsString(),
             new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    Map<String, UserCredentials> credentialMap = (Map<String, UserCredentials>)body.get("userCredentials");
+    Map<String, UserCredentials> credentialMap =
+            (Map<String, UserCredentials>) body.get("userCredentials");
     getMethod.releaseConnection();
     return credentialMap;
   }
@@ -111,7 +117,8 @@ public class CredentialsRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testCredentialsAPIs() throws IOException {
-    String requestData1 = "{\"entity\" : \"entityname\", \"username\" : \"myuser\", \"password\" : \"mypass\"}";
+    String requestData1 = "{\"entity\" : \"entityname\", \"username\" : \"myuser\", \"password\" " +
+            ": \"mypass\"}";
     String entity = "entityname";
     Map<String, UserCredentials> credentialMap;
 

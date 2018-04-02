@@ -17,7 +17,6 @@
 package org.apache.zeppelin.rest.exception;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -26,7 +25,6 @@ import org.apache.zeppelin.utils.ExceptionUtils;
 
 /**
  * UnauthorizedException handler for WebApplicationException.
- * 
  */
 public class ForbiddenException extends WebApplicationException {
   private static final long serialVersionUID = 4394749068760407567L;
@@ -47,5 +45,4 @@ public class ForbiddenException extends WebApplicationException {
   public ForbiddenException(String message) {
     super(forbiddenJson(message));
   }
-
 }

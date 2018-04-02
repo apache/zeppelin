@@ -21,7 +21,7 @@ import org.jvnet.libpam.UnixUser;
 import java.security.Principal;
 
 /**
- * A {@code java.security.Principal} implememtation for use with Shiro {@code PamRealm}
+ * A {@code java.security.Principal} implememtation for use with Shiro {@code PamRealm}.
  */
 public class UserPrincipal implements Principal {
   private final UnixUser userName;
