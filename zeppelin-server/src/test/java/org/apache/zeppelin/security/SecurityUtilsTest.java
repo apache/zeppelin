@@ -16,28 +16,31 @@
  */
 package org.apache.zeppelin.security;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import sun.security.acl.PrincipalImpl;
 
+import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.net.InetAddress;
+
+import sun.security.acl.PrincipalImpl;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.utils.SecurityUtils;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(org.apache.shiro.SecurityUtils.class)
 public class SecurityUtilsTest {
-
   @Mock
   org.apache.shiro.subject.Subject subject;
 
@@ -47,7 +50,8 @@ public class SecurityUtilsTest {
   }
 
   @Test
-  public void isInvalidFromConfig() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void isInvalidFromConfig()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertFalse(SecurityUtils.isValidOrigin("http://otherinvalidhost.com",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
@@ -65,41 +69,46 @@ public class SecurityUtilsTest {
   }
 
   @Test
-  public void isValidFromConfig() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void isValidFromConfig()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertTrue(SecurityUtils.isValidOrigin("http://otherhost.com",
            new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
-  public void isValidFromStar() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void isValidFromStar()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertTrue(SecurityUtils.isValidOrigin("http://anyhost.com",
            new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
   }
 
   @Test
-  public void nullOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void nullOrigin()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertFalse(SecurityUtils.isValidOrigin(null,
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
-  public void nullOriginWithStar() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void nullOriginWithStar()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertTrue(SecurityUtils.isValidOrigin(null,
         new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
   }
 
   @Test
-  public void emptyOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void emptyOrigin()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertFalse(SecurityUtils.isValidOrigin("",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
-  public void notAURIOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+  public void notAURIOrigin()
+          throws URISyntaxException, UnknownHostException, ConfigurationException {
     assertFalse(SecurityUtils.isValidOrigin("test123",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
-
 
   @Test
   public void canGetPrincipalName()  {

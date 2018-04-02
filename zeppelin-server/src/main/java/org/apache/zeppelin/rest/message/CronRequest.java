@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
-import java.util.Map;
-
 import com.google.gson.Gson;
+
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
- *  CronRequest rest api request message
- *
+ *  CronRequest rest api request message.
  */
 public class CronRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
@@ -33,7 +29,6 @@ public class CronRequest implements JsonSerializable {
   String cron;
 
   public CronRequest (){
-
   }
 
   public String getCronString() {

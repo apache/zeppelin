@@ -14,15 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
-
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
@@ -30,15 +47,6 @@ import org.apache.zeppelin.realm.LdapRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-import java.util.*;
 
 /**
  * Zeppelin security rest api endpoint.
@@ -73,10 +81,11 @@ public class SecurityRestApi {
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
-    if ("anonymous".equals(principal))
+    if ("anonymous".equals(principal)) {
       ticket = "anonymous";
-    else
+    } else {
       ticket = TicketContainer.instance.getTicket(principal);
+    }
 
     Map<String, String> data = new HashMap<>();
     data.put("principal", principal);
@@ -89,7 +98,8 @@ public class SecurityRestApi {
   }
 
   /**
-   * Get userlist
+   * Get userlist.
+   *
    * Returns list of all user from available realms
    *
    * @return 200 response
@@ -97,7 +107,6 @@ public class SecurityRestApi {
   @GET
   @Path("userlist/{searchText}")
   public Response getUserList(@PathParam("searchText") final String searchText) {
-
     List<String> usersList = new ArrayList<>();
     List<String> rolesList = new ArrayList<>();
     try {
@@ -165,8 +174,6 @@ public class SecurityRestApi {
     returnListMap.put("users", autoSuggestUserList);
     returnListMap.put("roles", autoSuggestRoleList);
 
-
     return new JsonResponse<>(Response.Status.OK, "", returnListMap).build();
   }
-
 }

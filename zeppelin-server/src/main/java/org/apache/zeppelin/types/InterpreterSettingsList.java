@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.types;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 import org.apache.zeppelin.interpreter.InterpreterInfo;
 
 /**
- * InterpreterSetting information for binding
+ * InterpreterSetting information for binding.
  */
 public class InterpreterSettingsList {
   private String id;
