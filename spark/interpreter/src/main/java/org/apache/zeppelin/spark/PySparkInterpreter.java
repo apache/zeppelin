@@ -204,12 +204,17 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     // only set PYTHONPATH in local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
-    SparkConf conf = getSparkConf();
+    SparkConf conf = null;
+    try {
+      conf = getSparkConf();
+    } catch (InterpreterException e) {
+      throw new IOException(e);
+    }
     if (!conf.get("spark.submit.deployMode", "client").equals("cluster")) {
       if (!env.containsKey("PYTHONPATH")) {
         env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
       } else {
-        env.put("PYTHONPATH", PythonUtils.sparkPythonPath());
+        env.put("PYTHONPATH", PythonUtils.sparkPythonPath() + ":" + env.get("PYTHONPATH"));
       }
     }
 
@@ -217,20 +222,17 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     // also, add all packages to PYTHONPATH since there might be transitive dependencies
     if (SparkInterpreter.useSparkSubmit() &&
         !getSparkInterpreter().isYarnMode()) {
-
-      String sparkSubmitJars = getSparkConf().get("spark.jars").replace(",", ":");
-
-      if (!"".equals(sparkSubmitJars)) {
-        env.put("PYTHONPATH", env.get("PYTHONPATH") + sparkSubmitJars);
+      String sparkSubmitJars = conf.get("spark.jars").replace(",", ":");
+      if (!StringUtils.isEmpty(sparkSubmitJars)) {
+        env.put("PYTHONPATH", env.get("PYTHONPATH") + ":" + sparkSubmitJars);
       }
     }
 
-    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
-
     // set PYSPARK_PYTHON
-    if (getSparkConf().contains("spark.pyspark.python")) {
-      env.put("PYSPARK_PYTHON", getSparkConf().get("spark.pyspark.python"));
+    if (conf.contains("spark.pyspark.python")) {
+      env.put("PYSPARK_PYTHON", conf.get("spark.pyspark.python"));
     }
+    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
     return env;
   }
 
