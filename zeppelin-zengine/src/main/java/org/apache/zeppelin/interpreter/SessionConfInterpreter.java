@@ -27,6 +27,9 @@ import java.io.StringReader;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * ConfInterpreter for session level
+ */
 public class SessionConfInterpreter extends ConfInterpreter {
 
   private static Logger LOGGER = LoggerFactory.getLogger(SessionConfInterpreter.class);
