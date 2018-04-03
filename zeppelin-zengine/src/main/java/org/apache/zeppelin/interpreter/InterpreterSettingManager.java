@@ -21,9 +21,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -82,6 +87,8 @@ import java.util.Map;
  */
 public class InterpreterSettingManager {
 
+  private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors
+      .newScheduledThreadPool(1);
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
@@ -172,6 +179,31 @@ public class InterpreterSettingManager {
     this.configStorage = configStorage;
 
     init();
+
+    EXECUTOR_SERVICE.scheduleWithFixedDelay(
+        new Runnable() {
+          @Override
+          public void run() {
+            refreshInterpreterTemplates();
+          }
+        }, conf.getInterpreterDirRefreshInterval(), conf.getInterpreterDirRefreshInterval(),
+        TimeUnit.SECONDS);
+  }
+
+  protected void refreshInterpreterTemplates() {
+    Set<String> installedInterpreters = Sets.newHashSet(interpreterSettingTemplates.keySet());
+
+    try {
+      LOGGER.info("Refreshing interpreter list");
+      loadInterpreterSettingFromDefaultDir(false);
+      Set<String> newlyAddedInterpreters = Sets.newHashSet(interpreterSettingTemplates.keySet());
+      newlyAddedInterpreters.removeAll(installedInterpreters);
+      if(!newlyAddedInterpreters.isEmpty()) {
+        saveToFile();
+      }
+    } catch (IOException e) {
+      LOGGER.error("Error while saving interpreter settings.");
+    }
   }
 
 
@@ -309,6 +341,12 @@ public class InterpreterSettingManager {
 
   private void init() throws IOException {
 
+    loadInterpreterSettingFromDefaultDir(true);
+    loadFromFile();
+    saveToFile();
+  }
+
+  private void loadInterpreterSettingFromDefaultDir(boolean override) throws IOException {
     // 1. detect interpreter setting via interpreter-setting.json in each interpreter folder
     // 2. detect interpreter setting in interpreter.json that is saved before
     String interpreterJson = conf.getInterpreterJson();
@@ -329,8 +367,9 @@ public class InterpreterSettingManager {
          * 2. Register it from interpreter-setting.json in classpath
          *    {ZEPPELIN_HOME}/interpreter/{interpreter_name}
          */
-        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson)) {
-          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson)) {
+        if (!registerInterpreterFromPath(interpreterDirString, interpreterJson, override)) {
+          if (!registerInterpreterFromResource(cl, interpreterDirString, interpreterJson,
+              override)) {
             LOGGER.warn("No interpreter-setting.json found in " + interpreterDirString);
           }
         }
@@ -338,9 +377,6 @@ public class InterpreterSettingManager {
     } else {
       LOGGER.warn("InterpreterDir {} doesn't exist", interpreterDirPath);
     }
-
-    loadFromFile();
-    saveToFile();
   }
 
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
@@ -352,7 +388,7 @@ public class InterpreterSettingManager {
   }
 
   private boolean registerInterpreterFromResource(ClassLoader cl, String interpreterDir,
-                                                  String interpreterJson) throws IOException {
+      String interpreterJson, boolean override) throws IOException {
     URL[] urls = recursiveBuildLibList(new File(interpreterDir));
     ClassLoader tempClassLoader = new URLClassLoader(urls, null);
 
@@ -364,19 +400,19 @@ public class InterpreterSettingManager {
     LOGGER.debug("Reading interpreter-setting.json from {} as Resource", url);
     List<RegisteredInterpreter> registeredInterpreterList =
         getInterpreterListFromJson(url.openStream());
-    registerInterpreterSetting(registeredInterpreterList, interpreterDir);
+    registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
     return true;
   }
 
-  private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson)
-      throws IOException {
+  private boolean registerInterpreterFromPath(String interpreterDir, String interpreterJson,
+      boolean override) throws IOException {
 
     Path interpreterJsonPath = Paths.get(interpreterDir, interpreterJson);
     if (Files.exists(interpreterJsonPath)) {
       LOGGER.debug("Reading interpreter-setting.json from file {}", interpreterJsonPath);
       List<RegisteredInterpreter> registeredInterpreterList =
           getInterpreterListFromJson(new FileInputStream(interpreterJsonPath.toFile()));
-      registerInterpreterSetting(registeredInterpreterList, interpreterDir);
+      registerInterpreterSetting(registeredInterpreterList, interpreterDir, override);
       return true;
     }
     return false;
@@ -389,7 +425,7 @@ public class InterpreterSettingManager {
   }
 
   private void registerInterpreterSetting(List<RegisteredInterpreter> registeredInterpreters,
-                                          String interpreterDir) throws IOException {
+      String interpreterDir, boolean override) {
 
     Map<String, DefaultInterpreterProperty> properties = new HashMap<>();
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
@@ -425,10 +461,11 @@ public class InterpreterSettingManager {
         .setIntepreterSettingManager(this)
         .create();
 
-    LOGGER.info("Register InterpreterSettingTemplate: {}",
-        interpreterSettingTemplate.getName());
-    interpreterSettingTemplates.put(interpreterSettingTemplate.getName(),
-        interpreterSettingTemplate);
+    String key = interpreterSettingTemplate.getName();
+    if(override || !interpreterSettingTemplates.containsKey(key)) {
+      LOGGER.info("Register InterpreterSettingTemplate: {}", key);
+      interpreterSettingTemplates.put(key, interpreterSettingTemplate);
+    }
   }
 
   @VisibleForTesting
@@ -695,13 +732,6 @@ public class InterpreterSettingManager {
     return setting;
   }
 
-  @VisibleForTesting
-  public void addInterpreterSetting(InterpreterSetting interpreterSetting) {
-    interpreterSettingTemplates.put(interpreterSetting.getName(), interpreterSetting);
-    initInterpreterSetting(interpreterSetting);
-    interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
-  }
-
   /**
    * map interpreter ids into noteId
    *
@@ -959,6 +989,12 @@ public class InterpreterSettingManager {
       } catch (InterruptedException e) {
         LOGGER.error("Can't close interpreterGroup", e);
       }
+    }
+
+    try {
+      EXECUTOR_SERVICE.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      EXECUTOR_SERVICE.shutdownNow();
     }
   }
 

@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.Set;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -359,5 +360,14 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSettingManager.restart(interpreterSetting.getId(), "note1", "user1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+  }
+
+  @Test
+  public void testAddInterpreterDynamically() throws Exception{
+    Set<String> keys = interpreterSettingManager.getInterpreterSettingTemplates().keySet();
+    assertFalse(keys.contains("dynamic"));
+    copyNewInterpreter("added-dynamically-interpreter");
+    Thread.sleep(conf.getInterpreterDirRefreshInterval() * 1000 * 3);
+    assertTrue(keys.contains("dynamic"));
   }
 }

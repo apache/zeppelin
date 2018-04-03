@@ -1,5 +1,6 @@
 package org.apache.zeppelin.interpreter;
 
+import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -56,6 +57,7 @@ public abstract class AbstractInterpreterTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(), interpreterDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "test,mock1,mock2,mock_resource_pool");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR_REFRESH_INTERVAL.getVarName(), "1");
 
     conf = new ZeppelinConfiguration();
     interpreterSettingManager = new InterpreterSettingManager(conf,
@@ -73,5 +75,9 @@ public abstract class AbstractInterpreterTest {
 
   protected Note createNote() {
     return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
+  }
+
+  protected void copyNewInterpreter(String stringPath) throws IOException {
+    FileUtils.copyDirectory(new File("src/test/resources/" + stringPath), interpreterDir);
   }
 }
