@@ -46,10 +46,19 @@ public class JDBCSecurityImpl {
         conf.set("hadoop.security.authentication", KERBEROS.toString());
         UserGroupInformation.setConfiguration(conf);
         try {
-          UserGroupInformation.loginUserFromKeytab(
-              properties.getProperty("zeppelin.jdbc.principal"),
-              properties.getProperty("zeppelin.jdbc.keytab.location")
-          );
+          // Check TGT before calling login
+          // Ref: https://github.com/apache/hadoop/blob/release-3.0.1-RC1/hadoop-common-project/
+          // hadoop-common/src/main/java/org/apache/hadoop/security/UserGroupInformation.java#L1232
+          if (!UserGroupInformation.isSecurityEnabled()
+              || UserGroupInformation.getCurrentUser().getAuthenticationMethod() != KERBEROS
+              || !UserGroupInformation.isLoginKeytabBased()) {
+            UserGroupInformation.loginUserFromKeytab(
+                properties.getProperty("zeppelin.jdbc.principal"),
+                properties.getProperty("zeppelin.jdbc.keytab.location"));
+          } else {
+            LOGGER.info("The user has already logged in using Keytab and principal, " +
+              "no action required");
+          }
         } catch (IOException e) {
           LOGGER.error("Failed to get either keytab location or principal name in the " +
               "interpreter", e);
