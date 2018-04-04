@@ -495,7 +495,7 @@ public class InterpreterSetting {
       StringMap<String> map = (StringMap) properties;
       Properties newProperties = new Properties();
       for (String key : map.keySet()) {
-        newProperties.put(StringUtils.trim(key), StringUtils.trim(map.get(key)));
+        newProperties.put(key, map.get(key));
       }
       this.properties = newProperties;
     } else {
@@ -520,7 +520,7 @@ public class InterpreterSetting {
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
       if (entry.getValue().getValue() != null) {
-        jProperties.setProperty(entry.getKey(), entry.getValue().getValue().toString());
+        jProperties.setProperty(entry.getKey().trim(), entry.getValue().getValue().toString().trim());
       }
     }
 
