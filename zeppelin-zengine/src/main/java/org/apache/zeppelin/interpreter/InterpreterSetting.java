@@ -492,10 +492,14 @@ public class InterpreterSetting {
 
   public void setProperties(Object object) {
     if (object instanceof StringMap) {
-      StringMap<String> map = (StringMap) properties;
+      StringMap<Object> map = (StringMap) properties;
       Properties newProperties = new Properties();
       for (String key : map.keySet()) {
-        newProperties.put(StringUtils.trim(key), StringUtils.trim(map.get(key)));
+        Object value = map.get(key);
+        if (value instanceof String) {
+          value = StringUtils.trim((String) value);
+        }
+        newProperties.put(StringUtils.trim(key), value);
       }
       this.properties = newProperties;
     } else {
