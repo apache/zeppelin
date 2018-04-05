@@ -55,7 +55,7 @@ public class SecurityUtils {
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
   private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
-
+  
   public static void setIsEnabled(boolean value) {
     isEnabled = value;
   }
@@ -149,9 +149,7 @@ public class SecurityUtils {
               new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
               ((LdapRealm) realm).getContextFactory()
             );
-            if (auth != null) {
-              roles = new HashSet<>(auth.getRoles());
-            }
+            roles = new HashSet<>(auth.getRoles());
           } catch (NamingException e) {
             log.error("Can't fetch roles", e);
           }
