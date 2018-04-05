@@ -190,7 +190,7 @@ public class InterpreterSettingManager {
         TimeUnit.SECONDS);
   }
 
-  protected void refreshInterpreterTemplates() {
+  public void refreshInterpreterTemplates() {
     Set<String> installedInterpreters = Sets.newHashSet(interpreterSettingTemplates.keySet());
 
     try {

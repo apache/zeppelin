@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +45,12 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.InterpreterService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
 
@@ -56,18 +60,32 @@ import org.apache.zeppelin.utils.SecurityUtils;
 @Path("/interpreter")
 @Produces("application/json")
 public class InterpreterRestApi {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private InterpreterSettingManager interpreterSettingManager;
-  private NotebookServer notebookServer;
+  private final InterpreterService interpreterService;
+  private final InterpreterSettingManager interpreterSettingManager;
+  private final NotebookServer notebookServer;
+  private final Gson gson;
 
   public InterpreterRestApi() {
+    //TODO(jl): Is this constructor needed?
+    this(null, null, null);
   }
 
-  public InterpreterRestApi(InterpreterSettingManager interpreterSettingManager,
-          NotebookServer notebookWsServer) {
+  public InterpreterRestApi(InterpreterService interpreterService,
+      InterpreterSettingManager interpreterSettingManager, NotebookServer notebookWsServer) {
+    this(interpreterService, interpreterSettingManager, notebookWsServer,
+        new GsonBuilder().create());
+  }
+
+  public InterpreterRestApi(InterpreterService interpreterService,
+          InterpreterSettingManager interpreterSettingManager, NotebookServer notebookWsServer,
+          Gson gson) {
+    this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
+    this.gson = gson;
   }
 
   /**
@@ -288,4 +306,25 @@ public class InterpreterRestApi {
   public Response listInterpreterPropertyTypes() {
     return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
+
+  /**
+   * Install interpreter
+   */
+  @POST
+  @Path("install")
+  @ZeppelinApi
+  public Response installInterpreter(String message) {
+    logger.info("Install interpreter: {}", message);
+    InterpreterInstallationRequest request = gson
+        .fromJson(message, InterpreterInstallationRequest.class);
+
+    try {
+      interpreterService.installInterpreter(request);
+    } catch (Throwable t) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, t.getMessage()).build();
+    }
+
+    return new JsonResponse<>(Status.OK).build();
+  }
+
 }

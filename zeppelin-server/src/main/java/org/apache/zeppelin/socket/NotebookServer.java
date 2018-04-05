@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.socket;
 
+import com.google.common.collect.Lists;
 import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -485,6 +486,28 @@ public class NotebookServer extends WebSocketServlet
         if (id.equals(interpreterGroupId)) {
           broadcast(note.getId(), m);
         }
+      }
+    }
+  }
+
+  public void broadcast(Message m) {
+    List<NotebookSocket> sockets = Lists.newArrayList();
+    synchronized (noteSocketMap) {
+      //TODO(jl): Time to go JDK8!!!
+      for (List<NotebookSocket> notebookSocketList : noteSocketMap.values()) {
+        for (NotebookSocket notebookSocket : notebookSocketList) {
+          if (sockets.contains(notebookSocket)) {
+            sockets.add(notebookSocket);
+          }
+        }
+      }
+    }
+
+    for (NotebookSocket ns : sockets) {
+      try {
+        ns.send(serializeMessage(m));
+      } catch (IOException e) {
+        LOG.error("Send error: " + m, e);
       }
     }
   }
