@@ -55,7 +55,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
   public static InterpreterInfoSaving loadFromFile(Path file) throws IOException {
     LOGGER.info("Load interpreter setting from file: " + file);
-    InterpreterInfoSaving infoSaving = null;
+    InterpreterInfoSaving infoSaving;
     try (BufferedReader json = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
       JsonParser jsonParser = new JsonParser();
       JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
@@ -63,9 +63,12 @@ public class InterpreterInfoSaving implements JsonSerializable {
 
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
-          interpreterSetting.convertPermissionsFromUsersToOwners(
+          interpreterSetting.getOption().convertToOwners(
               jsonObject.getAsJsonObject("interpreterSettings")
                   .getAsJsonObject(interpreterSetting.getId()));
+          interpreterSetting.getOption().convertToReaders(
+                  jsonObject.getAsJsonObject("interpreterSettings")
+                          .getAsJsonObject(interpreterSetting.getId()));
         }
       }
     }

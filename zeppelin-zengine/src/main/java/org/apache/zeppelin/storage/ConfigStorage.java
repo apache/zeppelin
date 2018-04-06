@@ -90,8 +90,7 @@ public abstract class ConfigStorage {
       // While we decided to turn this feature on always (without providing
       // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
-      interpreterSetting.getOption();
-      interpreterSetting.convertPermissionsFromUsersToOwners(
+      interpreterSetting.getOption().convertToOwners(
           jsonObject.getAsJsonObject("interpreterSettings")
               .getAsJsonObject(interpreterSetting.getId()));
     }

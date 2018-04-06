@@ -152,3 +152,20 @@ In such cases, interpreter process recovery is necessary. Starting from 0.8.0, u
 `org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage` or other implementations if available in future, by default it is `org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage`
  which means recovery is not enabled. Enable recover means shutting down Zeppelin would not terminating interpreter process,
 and when Zeppelin is restarted, it would try to reconnect to the existing running interpreter processes. If you want to kill all the interpreter processes after terminating Zeppelin even when recovery is enabled, you can run `bin/stop-interpreter.sh` 
+
+## Interpreter permissions
+
+Zeppelin's interpreter settings contain 2 levels of permissions:
+* Owners - Can run/read/edit/restart an interpreter setting
+* Readers - Cannot edit an interpreter setting
+
+These settings can be set directly on `interpreter.json` or in the Interpreter Settings page, `Set permissions` option.
+
+## Interpreter properties
+
+Zeppelin's interpreter properties allow the setting of the following attributes:
+* Name - Name of the property
+* Value - Value of the property
+* Type - Value type of the property (number, string, url, ...)
+* Readonly - Flag indicating if property is editable or not in UI
+* Description - Description of the property

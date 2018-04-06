@@ -17,11 +17,15 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.util.Set;
+import java.util.HashSet;
 
 /**
- *
+ * Interpreter options object
  */
 public class InterpreterOption {
   public static final transient String SHARED = "shared";
@@ -30,23 +34,35 @@ public class InterpreterOption {
 
   // always set it as true, keep this field just for backward compatibility
   boolean remote = true;
-  String host = null;
-  int port = -1;
+  private String host = null;
+  private int port = -1;
 
   String perNote;
   String perUser;
 
   boolean isExistingProcess;
-  boolean setPermission;
-  List<String> owners;
-  boolean isUserImpersonate;
+  private boolean setPermission;
+  private Set<String> owners;
+  private Set<String> readers;
+  private boolean isUserImpersonate;
+  private boolean disallowCustomInterpreter;
+
+  public InterpreterOption() { }
+
+  public InterpreterOption(String perUser, String perNote) {
+    if (perUser == null) {
+      throw new NullPointerException("perUser can not be null.");
+    }
+    if (perNote == null) {
+      throw new NullPointerException("perNote can not be null.");
+    }
+
+    this.perUser = perUser;
+    this.perNote = perNote;
+  }
 
   public boolean isExistingProcess() {
     return isExistingProcess;
-  }
-
-  public void setExistingProcess(boolean isExistingProcess) {
-    this.isExistingProcess = isExistingProcess;
   }
 
   public void setPort(int port) {
@@ -61,12 +77,12 @@ public class InterpreterOption {
     return setPermission;
   }
 
-  public void setUserPermission(boolean setPermission) {
-    this.setPermission = setPermission;
+  public Set<String> getOwners() {
+    return owners;
   }
 
-  public List<String> getOwners() {
-    return owners;
+  public Set<String> getReaders() {
+    return readers;
   }
 
   public boolean isUserImpersonate() {
@@ -77,19 +93,12 @@ public class InterpreterOption {
     isUserImpersonate = userImpersonate;
   }
 
-  public InterpreterOption() {
+  public boolean getDisallowCustomInterpreter() {
+    return disallowCustomInterpreter;
   }
 
-  public InterpreterOption(String perUser, String perNote) {
-    if (perUser == null) {
-      throw new NullPointerException("perUser can not be null.");
-    }
-    if (perNote == null) {
-      throw new NullPointerException("perNote can not be null.");
-    }
-
-    this.perUser = perUser;
-    this.perNote = perNote;
+  public void setDisallowCustomInterpreter(boolean customInterpreter) {
+    disallowCustomInterpreter = customInterpreter;
   }
 
   public static InterpreterOption fromInterpreterOption(InterpreterOption other) {
@@ -102,8 +111,9 @@ public class InterpreterOption {
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
     option.owners = (null == other.owners) ?
-        new ArrayList<String>() : new ArrayList<>(other.owners);
-
+        new HashSet<String>() : new HashSet<>(other.owners);
+    option.readers = (null == other.readers) ?
+            new HashSet<String>() : new HashSet<>(other.readers);
     return option;
   }
 
@@ -114,7 +124,6 @@ public class InterpreterOption {
   public int getPort() {
     return port;
   }
-
 
   public boolean perUserShared() {
     return SHARED.equals(perUser);
@@ -154,5 +163,39 @@ public class InterpreterOption {
 
   public void setPerUser(String perUser) {
     this.perUser = perUser;
+  }
+
+  public void convertToOwners(JsonObject jsonObject) {
+    if (jsonObject != null) {
+      JsonObject option = jsonObject.getAsJsonObject("option");
+      if (option != null) {
+        JsonArray users = option.getAsJsonArray("users");
+        if (users != null) {
+          if (this.getOwners() == null) {
+            this.owners = new HashSet<>();
+          }
+          for (JsonElement user : users) {
+            this.getOwners().add(user.getAsString());
+          }
+        }
+      }
+    }
+  }
+
+  public void convertToReaders(JsonObject jsonObject) {
+    if (jsonObject != null) {
+      JsonObject option = jsonObject.getAsJsonObject("option");
+      if (option != null) {
+        JsonArray users = option.getAsJsonArray("users");
+        if (users != null) {
+          if (this.getReaders() == null) {
+            this.readers = new HashSet<>();
+          }
+          for (JsonElement user : users) {
+            this.getReaders().add(user.getAsString());
+          }
+        }
+      }
+    }
   }
 }

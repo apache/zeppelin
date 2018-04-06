@@ -24,11 +24,6 @@ limitations under the License.
             <i class="fa fa-database" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
             Repository
           </button>
-          <button class="btn btn-default btn-sm"
-                  ng-click="showAddNewSetting = !showAddNewSetting">
-            <i class="fa fa-plus"></i>
-            Create
-          </button>
         </div>
       </div>
     </div>
@@ -37,7 +32,6 @@ limitations under the License.
         Manage interpreters settings. You can create / edit / remove settings. Note can bind / unbind these interpreter settings.
       </div>
     </div>
-
     <div class="row">
       <div class="col-md-4">
         <div class="input-group" style="margin-top: 10px">
@@ -51,6 +45,16 @@ limitations under the License.
             </button>
           </span>
         </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <br/>
+        <button class="btn btn-default btn-sm"
+                ng-click="showAddNewSetting = !showAddNewSetting">
+          <i class="fa fa-plus"></i>
+          Create custom interpreter
+        </button>
       </div>
     </div>
   </div>
@@ -90,7 +94,6 @@ limitations under the License.
      ng-repeat="setting in interpreterSettings | orderBy: 'name' | filter: {name:searchInterpreter}" >
   <div id="{{setting.name | lowercase}}">
     <div class="row interpreter">
-
       <div class="col-md-12">
         <h3 class="interpreter-title">{{setting.name}}
           <small>
@@ -129,8 +132,7 @@ limitations under the License.
                   ng-show="setting.group == 'spark'">
             <span class="fa fa-external-link"></span> spark ui</button>
           <button class="btn btn-default btn-xs"
-                  ng-click="valueform.$show();
-                  copyOriginInterpreterSettingProperties(setting.id)">
+                  ng-click="shouldEdit(valueform, setting.id)">
             <span class="fa fa-pencil"></span> edit</button>
           <button class="btn btn-default btn-xs"
                   ng-click="restartInterpreterSetting(setting.id)">
@@ -358,8 +360,22 @@ limitations under the License.
         <div class="checkbox remove-margin-top-bottom">
           <span class="input-group" style="line-height:30px;">
             <label>
-              <input type="checkbox" style="width:20px !important" id="idShowPermission" ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission" ng-disabled="!valueform.$visible"/>
-               Set permission
+              <input type="checkbox" style="width:20px" id="disallowCustomInterpreter" ng-model="setting.option.disallowCustomInterpreter" ng-disabled="!valueform.$visible"/>
+              Disallow custom interpreter
+            </label>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <div class="checkbox remove-margin-top-bottom">
+          <span class="input-group" style="line-height:30px;">
+            <label>
+              <input type="checkbox" style="width:20px !important" id="idShowPermission"
+                     ng-click="togglePermissions(setting.name)" ng-model="setting.option.setPermission"
+                     ng-disabled="!valueform.$visible"/>
+               Set permissions
             </label>
           </span>
         </div>
@@ -370,16 +386,27 @@ limitations under the License.
         <!-- permissions -->
         <div ng-show="setting.option.setPermission" class="permissionsForm">
           <div>
-            <p>
-              Enter comma separated users and groups in the fields. <br />
-              Empty field (*) implies anyone can run this interpreter.
+            <p>Enter comma separated users/roles in the fields.<br />
+              Empty field implies no restrictions.
             </p>
             <div>
-
-            <span class="owners">Owners </span>
-            <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
-              <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
-            </select>
+              <span class="owners" tooltip-append-to-body="true" tooltip-placement="top-left"
+                    uib-tooltip="Owners can run/read/edit/restart an interpreter setting">
+                Owners:
+              </span>
+              <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+                <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
+              </select>
+            </div>
+            <br/>
+            <div>
+              <span class="readers" tooltip-append-to-body="true" tooltip-placement="top-left"
+                    uib-tooltip="Readers can only run/read/restart an interpreter setting">
+                Readers:
+              </span>
+              <select id="{{setting.name}}Readers" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+                <option ng-repeat="reader in setting.option.readers" selected="selected">{{reader}}</option>
+              </select>
             </div>
           </div>
         </div>
@@ -395,40 +422,61 @@ limitations under the License.
         <table class="table table-striped">
           <thead>
             <tr>
-              <th style="width:40%">name</th>
-              <th style="width:40%">value</th>
-              <th style="width:20%" ng-if="valueform.$visible">action</th>
+              <th style="width:30%">name</th>
+              <th style="width:30%">value</th>
+              <th style="text-align: center;" ng-if="valueform.$visible">read-only</th>
+              <th style="width:20%">description</th>
+              <th style="width:10%" ng-if="valueform.$visible">action</th>
             </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
             <td style="vertical-align: middle;">{{key}}</td>
             <td style="vertical-align: middle;">
               <span ng-if="setting.properties[key].type === 'textarea'"
-                    editable-textarea="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-textarea="setting.properties[key].value"
+                    e-form="valueform" e-msd-elastic>
                  {{setting.properties[key].value | breakFilter}}
               </span>
               <span ng-if="setting.properties[key].type === 'string'"
-                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-text="setting.properties[key].value"
+                    e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value}}
               </span>
               <span ng-if="setting.properties[key].type === 'number'"
-                    editable-text="setting.properties[key].value" e-widget-number e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-text="setting.properties[key].value"
+                    e-widget-number e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value}}
               </span>
               <span ng-if="setting.properties[key].type === 'url'"
-                    editable-text="setting.properties[key].value" e-form="valueform" e-msd-elastic>
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-text="setting.properties[key].value"
+                    e-form="valueform" e-msd-elastic>
                 <a ng-href="{{setting.properties[key].value}}">{{setting.properties[key].value}}</a>
               </span>
               <span ng-if="setting.properties[key].type === 'password'"
-                    editable-password="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value ? '***' : ''}}
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-password="setting.properties[key].value"
+                    e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value ? '***' : ''}}
               </span>
               <span ng-if="setting.properties[key].type === 'checkbox'"
-                    editable-checkbox="setting.properties[key].value" e-form="valueform" e-msd-elastic>
-                {{setting.properties[key].value}}
+                    e-ng-readonly="setting.properties[key].readonly"
+                    editable-checkbox="setting.properties[key].value"
+                    e-form="valueform" e-msd-elastic>
+                 {{setting.properties[key].value}}
               </span>
             </td>
             <td style="vertical-align: middle;" ng-if="valueform.$visible">
+              <input type="checkbox" msd-elastic ng-disabled="true"
+                     ng-model="setting.properties[key].readonly" />
+            </td>
+            <td style="vertical-align: middle;">{{setting.properties[key].description}}
+            </td>
+            <td style="vertical-align: middle;" ng-if="valueform.$visible
+              && !setting.properties[key].readonly">
               <button class="btn btn-default btn-sm fa fa-remove"
                    ng-click="removeInterpreterProperty(key, setting.id)">
               </button>
@@ -439,7 +487,6 @@ limitations under the License.
               <input ng-model="setting.propertyKey"
                      pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
-
             <td style="vertical-align: middle;" ng-switch on="setting.propertyType">
               <textarea ng-switch-default msd-elastic ng-model="setting.propertyValue"></textarea>
               <input ng-switch-when="string" type="text" msd-elastic ng-model="setting.propertyValue"/>
@@ -447,6 +494,13 @@ limitations under the License.
               <input ng-switch-when="url" type="text" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="password" type="password" msd-elastic ng-model="setting.propertyValue" />
               <input ng-switch-when="checkbox" type="checkbox" msd-elastic ng-model="setting.propertyValue" />
+            </td>
+            <td style="vertical-align: middle;">
+              <input type="checkbox" msd-elastic ng-model="setting.propertyReadonly" />
+            </td>
+            <td style="vertical-align: middle;">
+              <input ng-model="setting.propertyDesc"
+                     pu-elastic-input pu-elastic-input-minwidth="180px" />
             </td>
             <td style="vertical-align: middle;">
               <select ng-model="setting.propertyType" ng-init="setting.propertyType=interpreterPropertyTypes[0]"
