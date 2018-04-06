@@ -96,4 +96,14 @@ public class BigQueryInterpreterTest {
 
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
   }
+
+  @Test
+  public void testInterpreterOutputData() {
+    InterpreterResult ret = bqInterpreter.interpret("SELECT 1 AS col1, 2 AS col2", context);
+
+    String[] lines = ret.message().get(0).getData().split("\\n");
+    assertEquals(2, lines.length);
+    assertEquals("col1\tcol2", lines[0]);
+    assertEquals("1\t2", lines[1]);
+  }
 }
