@@ -771,7 +771,7 @@ export function getKGACube(rows, keyColumns, groupColumns, aggrColumns) {
     cube = {[mergedGroupColumnName]: cube};
     keyNames = [mergedGroupColumnName];
   } else {
-    keyNames = Object.keys(cube).sort(); /** keys should be sorted */
+    keyNames = sortWithNumberSupport(Object.keys(cube)); /** keys should be sorted */
   }
 
   return {
@@ -883,7 +883,7 @@ export function getKAGCube(rows, keyColumns, groupColumns, aggrColumns) {
     cube = {[mergedGroupColumnName]: cube};
     keyNames = [mergedGroupColumnName];
   } else {
-    keyNames = Object.keys(cube).sort(); /** keys should be sorted */
+    keyNames = sortWithNumberSupport(Object.keys(cube)); /** keys should be sorted */
   }
 
   return {
@@ -1015,8 +1015,8 @@ export function getKKGACube(rows, key1Columns, key2Columns, groupColumns, aggrCo
     } /** end loop for aggrColumns */
   }
 
-  let key1Names = Object.keys(key1NameSet).sort(); /** keys should be sorted */
-  let key2Names = Object.keys(key2NameSet).sort(); /** keys should be sorted */
+  let key1Names = sortWithNumberSupport(Object.keys(key1NameSet)); /** keys should be sorted */
+  let key2Names = sortWithNumberSupport(Object.keys(key2NameSet)); /** keys should be sorted */
 
   return {
     cube: cube,
@@ -1072,7 +1072,7 @@ export function getNameWithIndex(names) {
 
 export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
                                          key1Names, key2Names, groupNameSet, selectorNameWithIndex) {
-  const sortedSelectors = Object.keys(selectorNameWithIndex).sort();
+  const sortedSelectors = sortWithNumberSupport(Object.keys(selectorNameWithIndex));
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors);
 
   const selectorRows = new Array(sortedSelectors.length);
@@ -1087,7 +1087,7 @@ export function getArrayRowsFromKKGACube(cube, schema, aggregatorColumns,
     key1NameWithIndex: key1NameWithIndex,
     key2NameWithIndex: key2NameWithIndex,
     transformed: selectorRows,
-    groupNames: Array.from(groupNameSet).sort(),
+    groupNames: sortWithNumberSupport(Array.from(groupNameSet)),
     sortedSelectors: sortedSelectors,
   };
 }
@@ -1167,7 +1167,7 @@ export function fillSelectorRows(schema, cube, selectorRows,
 export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
                                         keyColumnName, keyNames, groupNameSet,
                                         selectorNameWithIndex) {
-  const sortedSelectors = Object.keys(selectorNameWithIndex).sort();
+  const sortedSelectors = sortWithNumberSupport(Object.keys(selectorNameWithIndex));
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors);
 
   const keyArrowRows = new Array(sortedSelectors.length);
@@ -1184,7 +1184,7 @@ export function getArrayRowsFromKGACube(cube, schema, aggregatorColumns,
 
   return {
     transformed: keyArrowRows,
-    groupNames: Array.from(groupNameSet).sort(),
+    groupNames: sortWithNumberSupport(Array.from(groupNameSet)),
     sortedSelectors: sortedSelectors,
   };
 }
@@ -1244,8 +1244,8 @@ export function getObjectRowsFromKGACube(cube, schema, aggregatorColumns,
 
   return {
     transformed: rows,
-    sortedSelectors: Object.keys(selectorNameWithIndex).sort(),
-    groupNames: Array.from(groupNameSet).sort(),
+    sortedSelectors: sortWithNumberSupport(Object.keys(selectorNameWithIndex)),
+    groupNames: sortWithNumberSupport(Array.from(groupNameSet)),
   };
 }
 
@@ -1289,12 +1289,12 @@ export function getObjectRow(schema, aggrColumns, obj, groupNameSet) {
 
 export function getDrilldownRowsFromKAGCube(cube, schema, aggregatorColumns,
                                             keyColumnName, keyNames, groupNameSet, selectorNameWithIndex) {
-  const sortedSelectors = Object.keys(selectorNameWithIndex).sort();
+  const sortedSelectors = sortWithNumberSupport(Object.keys(selectorNameWithIndex));
   const sortedSelectorNameWithIndex = getNameWithIndex(sortedSelectors);
 
   const rows = new Array(sortedSelectors.length);
 
-  const groupNames = Array.from(groupNameSet).sort();
+  const groupNames = sortWithNumberSupport(Array.from(groupNameSet));
 
   keyNames.map((key) => {
     const obj = cube[key];
@@ -1337,5 +1337,19 @@ export function fillDrillDownRow(schema, obj, rows, key,
     }
 
     rows[selectorIndex] = row;
+  }
+}
+
+export function sortWithNumberSupport(arr) {
+  let isNumeric = function(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  };
+
+  if (arr.every(isNumeric)) {
+    return arr.sort(function(a, b) {
+      return parseFloat(a) - parseFloat(b);
+    });
+  } else {
+    return arr.sort();
   }
 }
