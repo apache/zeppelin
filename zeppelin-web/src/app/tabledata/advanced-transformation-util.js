@@ -1347,7 +1347,7 @@ export function sortWithNumberSupport(arr) {
 
   if (arr.every(isNumeric)) {
     return arr.sort(function(a, b) {
-      return parseFloat(a, 10) - parseFloat(b, 10);
+      return parseFloat(a) - parseFloat(b);
     });
   } else {
     return arr.sort();
