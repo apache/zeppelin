@@ -429,6 +429,10 @@
           <version>${hadoop.version}</version>
           <exclusions>
             <exclusion>
+              <groupId>com.nimbusds</groupId>
+              <artifactId>nimbus-jose-jwt</artifactId>
+            </exclusion>
+            <exclusion>
               <groupId>com.sun.jersey</groupId>
               <artifactId>jersey-core</artifactId>
             </exclusion>
@@ -761,6 +765,10 @@
               <artifactId>aws-java-sdk</artifactId>
             </exclusion>
             <exclusion>
+              <groupId>com.amazonaws</groupId>
+              <artifactId>aws-java-sdk-s3</artifactId>
+            </exclusion>
+            <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>
               <artifactId>jackson-annotations</artifactId>
             </exclusion>
@@ -883,6 +891,10 @@
             <exclusion>
               <groupId>com.amazonaws</groupId>
               <artifactId>aws-java-sdk</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.amazonaws</groupId>
+              <artifactId>aws-java-sdk-s3</artifactId>
             </exclusion>
             <exclusion>
               <groupId>com.fasterxml.jackson.core</groupId>
