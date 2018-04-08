@@ -22,6 +22,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.GenericJson;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Joiner;
 import com.google.api.services.bigquery.Bigquery;
 import com.google.api.services.bigquery.Bigquery.Jobs.GetQueryResults;
 import com.google.api.services.bigquery.BigqueryRequest;
@@ -144,19 +145,20 @@ public class BigQueryInterpreter extends Interpreter {
 
   //Function that generates and returns the schema and the rows as string
   public static String printRows(final GetQueryResultsResponse response) {
-    StringBuilder msg = null;
-    msg = new StringBuilder();
+    StringBuilder msg = new StringBuilder();
     try {
+      List<String> schemNames = new ArrayList<String>();
       for (TableFieldSchema schem: response.getSchema().getFields()) {
-        msg.append(schem.getName());
-        msg.append(TAB);
-      }      
+        schemNames.add(schem.getName());
+      }
+      msg.append(Joiner.on(TAB).join(schemNames));
       msg.append(NEWLINE);
       for (TableRow row : response.getRows()) {
+        List<String> fieldValues = new ArrayList<String>();
         for (TableCell field : row.getF()) {
-          msg.append(field.getV().toString());
-          msg.append(TAB);
+          fieldValues.add(field.getV().toString());
         }
+        msg.append(Joiner.on(TAB).join(fieldValues));
         msg.append(NEWLINE);
       }
       return msg.toString();
