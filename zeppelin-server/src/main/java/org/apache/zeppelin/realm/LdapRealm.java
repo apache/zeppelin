@@ -16,7 +16,6 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-
 package org.apache.zeppelin.realm;
 
 import org.apache.shiro.SecurityUtils;
@@ -53,6 +52,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -66,7 +66,6 @@ import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.PagedResultsControl;
-
 
 /**
  * Implementation of {@link org.apache.shiro.realm.ldap.JndiLdapRealm} that also
@@ -127,7 +126,6 @@ import javax.naming.ldap.PagedResultsControl;
  * 
  */
 public class LdapRealm extends JndiLdapRealm {
-
   private static final SearchControls SUBTREE_SCOPE = new SearchControls();
   private static final SearchControls ONELEVEL_SCOPE = new SearchControls();
   private static final SearchControls OBJECT_SCOPE = new SearchControls();
@@ -142,12 +140,11 @@ public class LdapRealm extends JndiLdapRealm {
   private static final String MATCHING_RULE_IN_CHAIN_FORMAT = 
       "(&(objectClass=%s)(%s:1.2.840.113556.1.4.1941:=%s))";
 
-  private static Pattern TEMPLATE_PATTERN = Pattern.compile("\\{(\\d+?)\\}");
-  private static String DEFAULT_PRINCIPAL_REGEX = "(.*)";
+  private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{(\\d+?)\\}");
+  private static final String DEFAULT_PRINCIPAL_REGEX = "(.*)";
   private static final String MEMBER_SUBSTITUTION_TOKEN = "{0}";
   private static final String HASHING_ALGORITHM = "SHA-1";
   private static final Logger log = LoggerFactory.getLogger(LdapRealm.class);
-
 
   static {
     SUBTREE_SCOPE.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -169,7 +166,6 @@ public class LdapRealm extends JndiLdapRealm {
   private String groupSearchScope = "subtree";
   private boolean groupSearchEnableMatchingRuleInChain;
 
-
   private String groupSearchBase;
 
   private String groupObjectClass = "groupOfNames";
@@ -182,10 +178,9 @@ public class LdapRealm extends JndiLdapRealm {
   private String memberAttributeValuePrefix = "uid=";
   private String memberAttributeValueSuffix = "";
 
-  private final Map<String, String> rolesByGroup = new LinkedHashMap<String, String>();
-  private final List<String> allowedRolesForAuthentication = new ArrayList<String>();
-  private final Map<String, List<String>> permissionsByRole = 
-      new LinkedHashMap<String, List<String>>();
+  private final Map<String, String> rolesByGroup = new LinkedHashMap<>();
+  private final List<String> allowedRolesForAuthentication = new ArrayList<>();
+  private final Map<String, List<String>> permissionsByRole = new LinkedHashMap<>();
 
   private boolean authorizationEnabled;
 
@@ -200,7 +195,6 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   @Override
-
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
       throws org.apache.shiro.authc.AuthenticationException {
     try {
@@ -223,8 +217,7 @@ public class LdapRealm extends JndiLdapRealm {
    */
   @Override
   protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
-                                                          LdapContextFactory ldapContextFactory)
-      throws NamingException {
+          LdapContextFactory ldapContextFactory) throws NamingException {
     AuthenticationInfo info = super.queryForAuthenticationInfo(token, ldapContextFactory);
     // Credentials were verified. Verify that the principal has all allowedRulesForAuthentication
     if (!hasAllowedAuthenticationRules(info.getPrincipals(), ldapContextFactory)) {
@@ -248,7 +241,7 @@ public class LdapRealm extends JndiLdapRealm {
   */
   @Override
   public AuthorizationInfo queryForAuthorizationInfo(final PrincipalCollection principals,
-      final LdapContextFactory ldapContextFactory) throws NamingException {
+          final LdapContextFactory ldapContextFactory) throws NamingException {
     if (!isAuthorizationEnabled()) {
       return null;
     }
@@ -263,8 +256,7 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private boolean hasAllowedAuthenticationRules(PrincipalCollection principals,
-                                                final LdapContextFactory ldapContextFactory)
-      throws NamingException {
+          final LdapContextFactory ldapContextFactory) throws NamingException {
     boolean allowed = allowedRolesForAuthentication.isEmpty();
     if (!allowed) {
       Set<String> roles = getRoles(principals, ldapContextFactory);
@@ -279,9 +271,8 @@ public class LdapRealm extends JndiLdapRealm {
     return allowed;
   }
 
-  private Set<String> getRoles(PrincipalCollection principals, 
-        final LdapContextFactory ldapContextFactory)
-      throws NamingException {
+  private Set<String> getRoles(PrincipalCollection principals,
+          final LdapContextFactory ldapContextFactory) throws NamingException {
     final String username = (String) getAvailablePrincipal(principals);
 
     LdapContext systemLdapCtx = null;
@@ -297,9 +288,9 @@ public class LdapRealm extends JndiLdapRealm {
     }
   }
 
-  protected Set<String> rolesFor(PrincipalCollection principals,
-        String userNameIn, final LdapContext ldapCtx,
-      final LdapContextFactory ldapContextFactory, Session session) throws NamingException {
+  protected Set<String> rolesFor(PrincipalCollection principals, String userNameIn,
+          final LdapContext ldapCtx, final LdapContextFactory ldapContextFactory, Session session)
+          throws NamingException {
     final Set<String> roleNames = new HashSet<>();
     final Set<String> groupNames = new HashSet<>();
     final String userName;
@@ -418,9 +409,8 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private void addRoleIfMember(final String userDn, final SearchResult group,
-        final Set<String> roleNames, final Set<String> groupNames, 
-        final LdapContextFactory ldapContextFactory) throws NamingException {
-
+          final Set<String> roleNames, final Set<String> groupNames,
+          final LdapContextFactory ldapContextFactory) throws NamingException {
     NamingEnumeration<? extends Attribute> attributeEnum = null;
     NamingEnumeration<?> ne = null;
     try {
@@ -498,7 +488,7 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   private Set<String> permsFor(Set<String> roleNames) {
-    Set<String> perms = new LinkedHashSet<String>(); // preserve order
+    Set<String> perms = new LinkedHashSet<>(); // preserve order
     for (String role : roleNames) {
       List<String> permsForRole = permissionsByRole.get(role);
       if (log.isDebugEnabled()) {
@@ -670,10 +660,8 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   boolean isUserMemberOfDynamicGroup(LdapName userLdapDn, String memberUrl,
-        final LdapContextFactory ldapContextFactory) throws NamingException {
-
+          final LdapContextFactory ldapContextFactory) throws NamingException {
     // ldap://host:port/dn?attributes?scope?filter?extensions
-
     if (memberUrl == null) {
       return false;
     }
@@ -863,7 +851,7 @@ public class LdapRealm extends JndiLdapRealm {
   */
   @Override
   protected String getUserDn(final String principal) throws IllegalArgumentException, 
-        IllegalStateException {
+          IllegalStateException {
     String userDn;
     String matchedPrincipal = matchPrincipal(principal);
     String userSearchBase = getUserSearchBase();
@@ -936,8 +924,8 @@ public class LdapRealm extends JndiLdapRealm {
 
   @Override
   protected AuthenticationInfo createAuthenticationInfo(AuthenticationToken token, 
-        Object ldapPrincipal,
-        Object ldapCredentials, LdapContext ldapContext) throws NamingException {
+          Object ldapPrincipal, Object ldapCredentials, LdapContext ldapContext)
+          throws NamingException {
     HashRequest.Builder builder = new HashRequest.Builder();
     Hash credentialsHash = hashService
           .computeHash(builder.setSource(token.getCredentials())

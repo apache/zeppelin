@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -31,11 +32,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterTest {
@@ -47,6 +52,7 @@ public class PySparkInterpreterTest {
   static PySparkInterpreter pySparkInterpreter;
   static InterpreterGroup intpGroup;
   static InterpreterContext context;
+  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
   private static Properties getPySparkTestProperties() throws IOException {
     Properties p = new Properties();
@@ -101,8 +107,6 @@ public class PySparkInterpreterTest {
     intpGroup.get("note").add(pySparkInterpreter);
     pySparkInterpreter.setInterpreterGroup(intpGroup);
     pySparkInterpreter.open();
-
-
   }
 
   @AfterClass
@@ -112,35 +116,8 @@ public class PySparkInterpreterTest {
   }
 
   @Test
-  public void testBasicIntp() throws InterpreterException {
-    if (getSparkVersionNumber() > 11) {
-      assertEquals(InterpreterResult.Code.SUCCESS,
-        pySparkInterpreter.interpret("a = 1\n", context).code());
-    }
-
-    InterpreterResult result = pySparkInterpreter.interpret(
-        "from pyspark.streaming import StreamingContext\n" +
-            "import time\n" +
-            "ssc = StreamingContext(sc, 1)\n" +
-            "rddQueue = []\n" +
-            "for i in range(5):\n" +
-            "    rddQueue += [ssc.sparkContext.parallelize([j for j in range(1, 1001)], 10)]\n" +
-            "inputStream = ssc.queueStream(rddQueue)\n" +
-            "mappedStream = inputStream.map(lambda x: (x % 10, 1))\n" +
-            "reducedStream = mappedStream.reduceByKey(lambda a, b: a + b)\n" +
-            "reducedStream.pprint()\n" +
-            "ssc.start()\n" +
-            "time.sleep(6)\n" +
-            "ssc.stop(stopSparkContext=False, stopGraceFully=True)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
-  @Test
-  public void testCompletion() throws InterpreterException {
-    if (getSparkVersionNumber() > 11) {
-      List<InterpreterCompletion> completions = pySparkInterpreter.completion("sc.", "sc.".length(), null);
-      assertTrue(completions.size() > 0);
-    }
+  public void testBasicIntp() throws InterpreterException, InterruptedException, IOException {
+    IPySparkInterpreterTest.testPySpark(pySparkInterpreter, mockRemoteEventClient);
   }
 
   @Test

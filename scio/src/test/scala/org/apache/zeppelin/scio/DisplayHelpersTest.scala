@@ -48,7 +48,8 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
   // -----------------------------------------------------------------------------------------------
 
   private val anyValHeader = s"$table value"
-  private val endTable = DisplayHelpers.endTable
+  private val endTableFooter = DisplayHelpers.endTable.split("\\n").last
+  private val endTableSeq = Seq("", endTableFooter)
 
   "DisplayHelpers" should "support Integer SCollection via AnyVal" in {
     import org.apache.zeppelin.scio.DisplaySCollectionImplicits.ZeppelinSCollection
@@ -60,10 +61,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1",
                                            "2",
-                                           "3",
-                                           endTable)
+                                           "3") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Long SCollection via AnyVal" in {
@@ -76,10 +76,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1",
                                            "2",
-                                           "3",
-                                           endTable)
+                                           "3") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Double SCollection via AnyVal" in {
@@ -92,10 +91,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1.0",
                                            "2.0",
-                                           "3.0",
-                                           endTable)
+                                           "3.0") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Float SCollection via AnyVal" in {
@@ -108,10 +106,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1.0",
                                            "2.0",
-                                           "3.0",
-                                           endTable)
+                                           "3.0") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Short SCollection via AnyVal" in {
@@ -124,10 +121,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1",
                                            "2",
-                                           "3",
-                                           endTable)
+                                           "3") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Byte SCollection via AnyVal" in {
@@ -140,10 +136,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "1",
                                            "2",
-                                           "3",
-                                           endTable)
+                                           "3") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Boolean SCollection via AnyVal" in {
@@ -156,10 +151,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "true",
                                            "false",
-                                           "true",
-                                           endTable)
+                                           "true") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support Char SCollection via AnyVal" in {
@@ -172,10 +166,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(anyValHeader,
                                            "a",
                                            "b",
-                                           "c",
-                                           endTable)
+                                           "c") ++ endTableSeq
     o.head should be(anyValHeader)
-    o.last should be(endTable)
+    o.last should be(endTableFooter)
   }
 
   it should "support SCollection of AnyVal over row limit" in {
@@ -216,10 +209,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     o should contain theSameElementsAs Seq(stringHeader,
                                            "a",
                                            "b",
-                                           "c",
-                                           endTable)
+                                           "c") ++ endTableSeq
     o.head should be (stringHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support empty SCollection of String" in {
@@ -259,10 +251,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     }
     o should contain theSameElementsAs Seq(kvHeader,
                                            s"3${tab}4",
-                                           s"1${tab}2",
-                                           endTable)
+                                           s"1${tab}2") ++ endTableSeq
     o.head should be (kvHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support KV (str keys) SCollection" in {
@@ -274,10 +265,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     }
     o should contain theSameElementsAs Seq(kvHeader,
                                            s"foo${tab}2",
-                                           s"bar${tab}4",
-                                           endTable)
+                                           s"bar${tab}4") ++ endTableSeq
     o.head should be (kvHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support KV (str values) SCollection" in {
@@ -289,10 +279,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
     }
     o should contain theSameElementsAs Seq(kvHeader,
                                            s"2${tab}foo",
-                                           s"4${tab}bar",
-                                           endTable)
+                                           s"4${tab}bar") ++ endTableSeq
     o.head should be (kvHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support empty KV SCollection" in {
@@ -331,9 +320,9 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
       }
     }
     o should contain theSameElementsAs
-      (Seq(tupleHeader, endTable) ++ Seq.fill(3)(s"1${tab}2${tab}3"))
+      (Seq(tupleHeader) ++ Seq.fill(3)(s"1${tab}2${tab}3") ++ endTableSeq)
     o.head should be(tupleHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support SCollection of Tuple of 22" in {
@@ -345,10 +334,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
           in.closeAndDisplay()
       }
     }
-    o should contain theSameElementsAs (Seq(tupleHeader, endTable) ++
-      Seq.fill(3)((1 to 21).map(i => s"$i$tab").mkString + "22"))
+    o should contain theSameElementsAs (Seq(tupleHeader) ++
+      Seq.fill(3)((1 to 21).map(i => s"$i$tab").mkString + "22") ++ endTableSeq)
     o.head should be(tupleHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support SCollection of Case Class of 22" in {
@@ -360,10 +349,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
         in.closeAndDisplay()
       }
     }
-    o should contain theSameElementsAs (Seq(tupleHeader, endTable) ++
-      Seq.fill(3)((1 to 21).map(i => s"$i$tab").mkString + "22"))
+    o should contain theSameElementsAs (Seq(tupleHeader) ++
+      Seq.fill(3)((1 to 21).map(i => s"$i$tab").mkString + "22") ++ endTableSeq)
     o.head should be(tupleHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support SCollection of Case Class" in {
@@ -373,10 +362,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
         in.closeAndDisplay()
       }
     }
-    o should contain theSameElementsAs (Seq(testCaseClassHeader, endTable) ++
-      Seq.fill(3)(s"1${tab}foo${tab}2.0"))
+    o should contain theSameElementsAs (Seq(testCaseClassHeader) ++
+      Seq.fill(3)(s"1${tab}foo${tab}2.0") ++ endTableSeq)
     o.head should be(testCaseClassHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support empty SCollection of Product" in {
@@ -453,10 +442,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
         in.closeAndDisplay()
       }
     }
-    o should contain theSameElementsAs (Seq(avroGenericRecordHeader, endTable) ++
-      Seq.fill(3)(s"1${tab}1.0${tab}user1${tab}checking"))
+    o should contain theSameElementsAs (Seq(avroGenericRecordHeader) ++
+      Seq.fill(3)(s"1${tab}1.0${tab}user1${tab}checking") ++ endTableSeq)
     o.head should be(avroGenericRecordHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support SCollection of SpecificRecord Avro" in {
@@ -467,10 +456,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
         in.closeAndDisplay()
       }
     }
-    o should contain theSameElementsAs (Seq(avroAccountHeader, endTable) ++
-      Seq.fill(3)(s"2${tab}checking${tab}user2${tab}2.0"))
+    o should contain theSameElementsAs (Seq(avroAccountHeader) ++
+      Seq.fill(3)(s"2${tab}checking${tab}user2${tab}2.0") ++ endTableSeq)
     o.head should be(avroAccountHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "support empty SCollection of SpecificRecord Avro" in {
@@ -541,10 +530,10 @@ class DisplayHelpersTest extends FlatSpec with Matchers {
         in.closeAndDisplay(bQSchema)
       }
     }
-    o should contain theSameElementsAs (Seq(bQHeader, endTable) ++
-      Seq.fill(3)(s"3${tab}3.0${tab}checking${tab}user3"))
+    o should contain theSameElementsAs (Seq(bQHeader) ++
+      Seq.fill(3)(s"3${tab}3.0${tab}checking${tab}user3") ++ endTableSeq)
     o.head should be(bQHeader)
-    o.last should be (endTable)
+    o.last should be (endTableFooter)
   }
 
   it should "print error on empty BQ schema" in {

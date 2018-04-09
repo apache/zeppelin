@@ -41,143 +41,6 @@ class Logger(object):
     pass
 
 
-class PyZeppelinContext(dict):
-  def __init__(self, zc):
-    self.z = zc
-    self._displayhook = lambda *args: None
-
-  def show(self, obj):
-    from pyspark.sql import DataFrame
-    if isinstance(obj, DataFrame):
-      print(self.z.showData(obj._jdf))
-    else:
-      print(str(obj))
-
-  # By implementing special methods it makes operating on it more Pythonic
-  def __setitem__(self, key, item):
-    self.z.put(key, item)
-
-  def __getitem__(self, key):
-    return self.z.get(key)
-
-  def __delitem__(self, key):
-    self.z.remove(key)
-
-  def __contains__(self, item):
-    return self.z.containsKey(item)
-
-  def add(self, key, value):
-    self.__setitem__(key, value)
-
-  def put(self, key, value):
-    self.__setitem__(key, value)
-
-  def get(self, key):
-    return self.__getitem__(key)
-
-  def getInterpreterContext(self):
-    return self.z.getInterpreterContext()
-
-  def input(self, name, defaultValue=""):
-    return self.z.input(name, defaultValue)
-
-  def textbox(self, name, defaultValue=""):
-    return self.z.textbox(name, defaultValue)
-
-  def noteTextbox(self, name, defaultValue=""):
-    return self.z.noteTextbox(name, defaultValue)
-
-  def select(self, name, options, defaultValue=""):
-    # auto_convert to ArrayList doesn't match the method signature on JVM side
-    return self.z.select(name, defaultValue, self.getParamOptions(options))
-
-  def noteSelect(self, name, options, defaultValue=""):
-    return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
-
-  def checkbox(self, name, options, defaultChecked=None):
-    optionsIterable = self.getParamOptions(options)
-    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
-    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.checkbox(name, defaultCheckedIterables, optionsIterable))
-    result = []
-    for checkedItem in checkedItems:
-      result.append(checkedItem)
-    return result;
-
-  def noteCheckbox(self, name, options, defaultChecked=None):
-    optionsIterable = self.getParamOptions(options)
-    defaultCheckedIterables = self.getDefaultChecked(defaultChecked)
-    checkedItems = gateway.jvm.scala.collection.JavaConversions.seqAsJavaList(self.z.noteCheckbox(name, defaultCheckedIterables, optionsIterable))
-    result = []
-    for checkedItem in checkedItems:
-      result.append(checkedItem)
-    return result;
-
-  def getParamOptions(self, options):
-    tuples = list(map(lambda items: self.__tupleToScalaTuple2(items), options))
-    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
-
-  def getDefaultChecked(self, defaultChecked):
-    if defaultChecked is None:
-      defaultChecked = []
-    return gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
-
-  def registerHook(self, event, cmd, replName=None):
-    if replName is None:
-      self.z.registerHook(event, cmd)
-    else:
-      self.z.registerHook(event, cmd, replName)
-
-  def unregisterHook(self, event, replName=None):
-    if replName is None:
-      self.z.unregisterHook(event)
-    else:
-      self.z.unregisterHook(event, replName)
-
-  def getHook(self, event, replName=None):
-    if replName is None:
-      return self.z.getHook(event)
-    return self.z.getHook(event, replName)
-
-  def _setup_matplotlib(self):
-    # If we don't have matplotlib installed don't bother continuing
-    try:
-      import matplotlib
-    except ImportError:
-      return
-    
-    # Make sure custom backends are available in the PYTHONPATH
-    rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
-    mpl_path = os.path.join(rootdir, 'interpreter', 'lib', 'python')
-    if mpl_path not in sys.path:
-      sys.path.append(mpl_path)
-    
-    # Finally check if backend exists, and if so configure as appropriate
-    try:
-      matplotlib.use('module://backend_zinline')
-      import backend_zinline
-      
-      # Everything looks good so make config assuming that we are using
-      # an inline backend
-      self._displayhook = backend_zinline.displayhook
-      self.configure_mpl(width=600, height=400, dpi=72, fontsize=10,
-                         interactive=True, format='png', context=self.z)
-    except ImportError:
-      # Fall back to Agg if no custom backend installed
-      matplotlib.use('Agg')
-      warnings.warn("Unable to load inline matplotlib backend, "
-                    "falling back to Agg")
-
-  def configure_mpl(self, **kwargs):
-    import mpl_config
-    mpl_config.configure(**kwargs)
-
-  def __tupleToScalaTuple2(self, tuple):
-    if (len(tuple) == 2):
-      return gateway.jvm.scala.Tuple2(tuple[0], tuple[1])
-    else:
-      raise IndexError("options must be a list of tuple of 2")
-
-
 class SparkVersion(object):
   SPARK_1_4_0 = 10400
   SPARK_1_3_0 = 10300
@@ -199,46 +62,33 @@ class PySparkCompletion:
   def __init__(self, interpreterObject):
     self.interpreterObject = interpreterObject
 
-  def getGlobalCompletion(self):
-    objectDefList = []
-    try:
-      for completionItem in list(globals().keys()):
-        objectDefList.append(completionItem)
-    except:
-      return None
-    else:
-      return objectDefList
+  def getGlobalCompletion(self, text_value):
+    completions = [completion for completion in list(globals().keys()) if completion.startswith(text_value)]
+    return completions
 
-  def getMethodCompletion(self, text_value):
+  def getMethodCompletion(self, objName, methodName):
     execResult = locals()
-    if text_value == None:
-      return None
-    completion_target = text_value
     try:
-      if len(completion_target) <= 0:
-        return None
-      if text_value[-1] == ".":
-        completion_target = text_value[:-1]
-      exec("{} = dir({})".format("objectDefList", completion_target), globals(), execResult)
+      exec("{} = dir({})".format("objectDefList", objName), globals(), execResult)
     except:
       return None
     else:
-      return list(execResult['objectDefList'])
-
+      objectDefList = execResult['objectDefList']
+      return [completion for completion in execResult['objectDefList'] if completion.startswith(methodName)]
 
   def getCompletion(self, text_value):
-    completionList = set()
+    if text_value == None:
+      return None
 
-    globalCompletionList = self.getGlobalCompletion()
-    if globalCompletionList != None:
-      for completionItem in list(globalCompletionList):
-        completionList.add(completionItem)
+    dotPos = text_value.find(".")
+    if dotPos == -1:
+      objName = text_value
+      completionList = self.getGlobalCompletion(objName)
+    else:
+      objName = text_value[:dotPos]
+      methodName = text_value[dotPos + 1:]
+      completionList = self.getMethodCompletion(objName, methodName)
 
-    if text_value != None:
-      objectCompletionList = self.getMethodCompletion(text_value)
-      if objectCompletionList != None:
-        for completionItem in list(objectCompletionList):
-          completionList.add(completionItem)
     if len(completionList) <= 0:
       self.interpreterObject.setStatementsFinished("", False)
     else:
@@ -267,7 +117,6 @@ intp = gateway.entry_point
 output = Logger()
 sys.stdout = output
 sys.stderr = output
-intp.onPythonScriptInitialized(os.getpid())
 
 jsc = intp.getJavaSparkContext()
 
@@ -310,10 +159,29 @@ completion = __zeppelin_completion__ = PySparkCompletion(intp)
 _zcUserQueryNameSpace["completion"] = completion
 _zcUserQueryNameSpace["__zeppelin_completion__"] = __zeppelin_completion__
 
-z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
+
+from zeppelin_context import PyZeppelinContext
+
+#TODO(zjffdu) merge it with IPySparkZeppelinContext
+class PySparkZeppelinContext(PyZeppelinContext):
+
+  def __init__(self, z, gateway):
+    super(PySparkZeppelinContext, self).__init__(z, gateway)
+
+  def show(self, obj):
+    from pyspark.sql import DataFrame
+    if isinstance(obj, DataFrame):
+      print(self.z.showData(obj._jdf))
+    else:
+      super(PySparkZeppelinContext, self).show(obj)
+
+z = __zeppelin__ = PySparkZeppelinContext(intp.getZeppelinContext(), gateway)
+
 __zeppelin__._setup_matplotlib()
 _zcUserQueryNameSpace["z"] = z
 _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
+
+intp.onPythonScriptInitialized(os.getpid())
 
 while True :
   req = intp.getStatements()
@@ -321,7 +189,8 @@ while True :
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
     jobDesc = req.jobDescription()
-    
+    isForCompletion = req.isForCompletion()
+
     # Get post-execute hooks
     try:
       global_hook = intp.getHook('post_exec_dev')
@@ -334,9 +203,10 @@ while True :
       user_hook = None
       
     nhooks = 0
-    for hook in (global_hook, user_hook):
-      if hook:
-        nhooks += 1
+    if not isForCompletion:
+      for hook in (global_hook, user_hook):
+        if hook:
+          nhooks += 1
 
     if stmts:
       # use exec mode to compile the statements except the last statement,
@@ -346,9 +216,9 @@ while True :
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
+
       to_run_exec, to_run_single = (code.body[:-(nhooks + 1)],
                                     [code.body[-(nhooks + 1)]])
-
       try:
         for node in to_run_exec:
           mod = ast.Module([node])
@@ -365,19 +235,23 @@ while True :
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
 
-        intp.setStatementsFinished("", False)
+        if not isForCompletion:
+          # only call it when it is not for code completion. code completion will call it in
+          # PySparkCompletion.getCompletion
+          intp.setStatementsFinished("", False)
       except Py4JJavaError:
         # raise it to outside try except
         raise
       except:
-        exception = traceback.format_exc()
-        m = re.search("File \"<stdin>\", line (\d+).*", exception)
-        if m:
-          line_no = int(m.group(1))
-          intp.setStatementsFinished(
-            "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
-        else:
-          intp.setStatementsFinished(exception, True)
+        if not isForCompletion:
+          exception = traceback.format_exc()
+          m = re.search("File \"<stdin>\", line (\d+).*", exception)
+          if m:
+            line_no = int(m.group(1))
+            intp.setStatementsFinished(
+              "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
+          else:
+            intp.setStatementsFinished(exception, True)
     else:
       intp.setStatementsFinished("", False)
 

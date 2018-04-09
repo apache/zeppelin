@@ -94,7 +94,7 @@ class JobController {
     BootstrapDialog.alert({
       closable: true,
       title: title,
-      message: errorMessage,
+      message: _.escape(errorMessage),
     });
   }
 

@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.repository.RemoteRepository;
+
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +37,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -47,12 +49,9 @@ import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.RemoteRepository;
 
 /**
- * Interpreter Rest API
+ * Interpreter Rest API.
  */
 @Path("/interpreter")
 @Produces("application/json")
@@ -66,13 +65,13 @@ public class InterpreterRestApi {
   }
 
   public InterpreterRestApi(InterpreterSettingManager interpreterSettingManager,
-      NotebookServer notebookWsServer) {
+          NotebookServer notebookWsServer) {
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
   }
 
   /**
-   * List all interpreter settings
+   * List all interpreter settings.
    */
   @GET
   @Path("setting")
@@ -82,7 +81,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get a setting
+   * Get a setting.
    */
   @GET
   @Path("setting/{settingId}")
@@ -103,7 +102,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new interpreter setting
+   * Add new interpreter setting.
    *
    * @param message NewInterpreterSettingRequest
    */
@@ -159,7 +158,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Remove interpreter setting
+   * Remove interpreter setting.
    */
   @DELETE
   @Path("setting/{settingId}")
@@ -171,7 +170,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Restart interpreter setting
+   * Restart interpreter setting.
    */
   @PUT
   @Path("setting/restart/{settingId}")
@@ -203,7 +202,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * List all available interpreters by group
+   * List all available interpreters by group.
    */
   @GET
   @ZeppelinApi
@@ -213,7 +212,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * List of dependency resolving repositories
+   * List of dependency resolving repositories.
    */
   @GET
   @Path("repository")
@@ -224,7 +223,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new repository
+   * Add new repository.
    *
    * @param message Repository
    */
@@ -246,7 +245,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * get metadata values
+   * Get metadata values.
    */
   @GET
   @Path("metadata/{settingId}")
@@ -262,7 +261,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Delete repository
+   * Delete repository.
    *
    * @param repoId ID of repository
    */
@@ -282,12 +281,11 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get available types for property
+   * Get available types for property.
    */
   @GET
   @Path("property/types")
   public Response listInterpreterPropertyTypes() {
     return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
-
 }

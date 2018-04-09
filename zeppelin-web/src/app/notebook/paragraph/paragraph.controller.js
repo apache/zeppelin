@@ -34,6 +34,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   'ngInject';
 
   let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
+  let completionListLength = undefined;
   $rootScope.keys = Object.keys;
   $scope.parentNote = null;
   $scope.paragraph = {};
@@ -750,6 +751,16 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
+      $scope.$on('completionListLength', function(event, data) {
+        completionListLength = data;
+      });
+
+      $scope.$on('callCompletion', function(event, data) {
+        if($scope.paragraphFocused) {
+          websocketMsgSrv.completion($scope.paragraph.id, data.buf, data.pos);
+        }
+      });
+
       let remoteCompleter = {
         getCompletions: function(editor, session, pos, prefix, callback) {
           let langTools = ace.require('ace/ext/language_tools');
@@ -774,7 +785,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           let buf = session.getValue();
 
-          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+          $rootScope.$broadcast('callCompletion', {buf: buf, pos: pos});
 
           $scope.$on('completionList', function(event, data) {
             let computeCaption = function(value, meta) {
@@ -805,6 +816,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                   });
                 }
               }
+              $rootScope.$broadcast('completionListLength', completions.length);
               callback(null, completions);
             }
           });
@@ -963,8 +975,76 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
+  // ref: https://github.com/ajaxorg/ace/blob/5021d0193d9f2bba5a978d0b1d7a4f73d18ce713/lib/ace/autocomplete.js#L454
+  const completionSupportWithoutBackend = function(str) {
+    let matches;
+    if (str.length > this.filterText && str.lastIndexOf(
+        this.filterText, 0) === 0) {
+      matches = this.filtered;
+    } else {
+      matches = this.all;
+    }
+
+    this.filterText = str;
+    matches = this.filterCompletions(matches, this.filterText);
+    matches = matches.sort(function(a, b) {
+      return b.exactMatch - a.exactMatch || b.score - a.score;
+    });
+    let prev = null;
+
+    matches = matches.filter(function(item) {
+      let caption = item.snippet || item.caption || item.value;
+      if (caption === prev) {
+        return false;
+      }
+      prev = caption;
+      return true;
+    });
+    this.filtered = matches;
+  };
+
+  const completionSupportWithBackend = function(str) {
+    let matches;
+    if (str.length > this.filterText && str.lastIndexOf(
+        this.filterText, 0) === 0) {
+      matches = this.filtered;
+    } else {
+      matches = this.all;
+    }
+    this.filterText = str;
+    matches = this.filterCompletions(matches, this.filterText);
+    matches = matches.sort(function(a, b) {
+      return b.exactMatch - a.exactMatch || b.score - a.score;
+    });
+    let prev = null;
+
+    matches = matches.filter(function(item) {
+      if (!_.isEmpty(item.meta)) {
+        if (completionListLength !== 0) {
+          return false;
+        }
+      }
+      let caption = item.snippet || item.caption || item.value;
+      if (caption === prev) {
+        return false;
+      }
+      prev = caption;
+      return true;
+    });
+    this.filtered = matches;
+    completionListLength = undefined;
+  };
+
   const handleFocus = function(focused, isDigestPass) {
     $scope.paragraphFocused = focused;
+    if (focused) {
+      let filteredList = ace.require('ace/autocomplete').FilteredList;
+      if ($scope.paragraph.config.editorSetting.completionSupport) {
+        filteredList.prototype.setFilter = completionSupportWithBackend;
+      } else {
+        filteredList.prototype.setFilter = completionSupportWithoutBackend;
+      }
+    }
 
     if ($scope.editor) {
       $scope.editor.setHighlightActiveLine(focused);

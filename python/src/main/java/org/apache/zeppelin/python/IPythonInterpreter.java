@@ -210,6 +210,22 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       throw new IOException("Fail to setup JVMGateway\n" + response.getOutput());
     }
 
+    input =
+        getClass().getClassLoader().getResourceAsStream("python/zeppelin_context.py");
+    lines = IOUtils.readLines(input);
+    response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
+        .setCode(StringUtils.join(lines, System.lineSeparator())).build());
+    if (response.getStatus() == ExecuteStatus.ERROR) {
+      throw new IOException("Fail to import ZeppelinContext\n" + response.getOutput());
+    }
+
+    response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
+        .setCode("z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)")
+        .build());
+    if (response.getStatus() == ExecuteStatus.ERROR) {
+      throw new IOException("Fail to setup ZeppelinContext\n" + response.getOutput());
+    }
+
     if (additionalPythonInitFile != null) {
       input = getClass().getClassLoader().getResourceAsStream(additionalPythonInitFile);
       lines = IOUtils.readLines(input);

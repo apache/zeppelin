@@ -165,12 +165,12 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void registerHook(String noteId, String event, String cmd) {
+  public void registerHook(String noteId, String event, String cmd) throws InvalidHookException {
     intp.registerHook(noteId, event, cmd);
   }
 
   @Override
-  public void registerHook(String event, String cmd) {
+  public void registerHook(String event, String cmd) throws InvalidHookException {
     intp.registerHook(event, cmd);
   }
 

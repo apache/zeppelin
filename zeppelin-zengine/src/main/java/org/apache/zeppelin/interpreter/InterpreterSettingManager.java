@@ -34,8 +34,6 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
-import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
-import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
@@ -45,10 +43,8 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
-import org.apache.zeppelin.storage.FileSystemConfigStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.Authentication;
@@ -215,7 +211,9 @@ public class InterpreterSettingManager {
       List<String> oldSettingIdList = entry.getValue();
       List<String> newSettingIdList = new ArrayList<>();
       for (String oldId : oldSettingIdList) {
-        newSettingIdList.add(infoSaving.interpreterSettings.get(oldId).getName());
+        if (infoSaving.interpreterSettings.containsKey(oldId)) {
+          newSettingIdList.add(infoSaving.interpreterSettings.get(oldId).getName());
+        };
       }
       newBindingMap.put(noteId, newSettingIdList);
     }
@@ -256,7 +254,19 @@ public class InterpreterSettingManager {
             interpreterSettingTemplate.getInterpreterRunner());
       } else {
         LOGGER.warn("No InterpreterSetting Template found for InterpreterSetting: "
-            + savedInterpreterSetting.getGroup());
+            + savedInterpreterSetting.getGroup() + ", but it is found in interpreter.json, "
+            + "it would be skipped.");
+        // also delete its binding
+        for (Map.Entry<String, List<String>> entry : interpreterBindings.entrySet()) {
+          List<String> ids = entry.getValue();
+          Iterator<String> iter = ids.iterator();
+          while(iter.hasNext()) {
+            if (iter.next().equals(savedInterpreterSetting.getId())) {
+              iter.remove();
+            }
+          }
+        }
+        continue;
       }
 
       // Overwrite the default InterpreterSetting we registered from InterpreterSetting Templates

@@ -14,18 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openqa.selenium.WebDriver;
-import java.util.concurrent.TimeUnit;
 
 public class ZeppelinITUtils {
-
-  public final static Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
 
   public static void sleep(long millis, boolean logOutput) {
     if (logOutput) {

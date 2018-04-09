@@ -152,12 +152,9 @@ public abstract class Job {
     }
     Status before = this.status;
     Status after = status;
-    if (listener != null) {
-      listener.beforeStatusChange(this, before, after);
-    }
     this.status = status;
-    if (listener != null) {
-      listener.afterStatusChange(this, before, after);
+    if (listener != null && before != after) {
+      listener.onStatusChange(this, before, after);
     }
   }
 

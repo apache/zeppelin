@@ -65,6 +65,7 @@ import py4j.GatewayServer;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
+  public static final String ZEPPELIN_CONTEXT = "python/zeppelin_context.py";
   public static final String ZEPPELIN_PY4JPATH = "interpreter/python/py4j-0.9.2/src";
   public static final String ZEPPELIN_PYTHON_LIBS = "interpreter/lib/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
@@ -125,7 +126,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     copyFile(out, ZEPPELIN_PYTHON);
-    logger.info("File {} created", scriptPath);
+    // copy zeppelin_context.py as well
+    File zOut = new File(out.getParent() + "/zeppelin_context.py");
+    copyFile(zOut, ZEPPELIN_CONTEXT);
+
+    logger.info("File {} , {} created", scriptPath, zOut.getAbsolutePath());
   }
 
   public String getScriptPath() {
@@ -181,7 +186,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     cmd.addArgument(getLocalIp(), false);
 
     executor = new DefaultExecutor();
-    outputStream = new InterpreterOutputStream(logger);
+    outputStream = new InterpreterOutputStream(LOG);
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -232,34 +237,25 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
         StringUtils.isEmpty(iPythonInterpreter.checkIPythonPrerequisite(getPythonBindPath()))) {
       try {
         iPythonInterpreter.open();
-        if (InterpreterContext.get() != null) {
-          InterpreterContext.get().out.write(("IPython is available, " +
-              "use IPython for PythonInterpreter\n")
-              .getBytes());
-        }
-        LOG.info("Use IPythonInterpreter to replace PythonInterpreter");
+        LOG.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
         return;
       } catch (Exception e) {
         iPythonInterpreter = null;
+        LOG.warn("Fail to open IPythonInterpreter", e);
       }
     }
-    // reset iPythonInterpreter to null
+
+    // reset iPythonInterpreter to null as it is not available
     iPythonInterpreter = null;
-
-    try {
-      if (InterpreterContext.get() != null) {
-        InterpreterContext.get().out.write(("IPython is not available, " +
-            "use the native PythonInterpreter\n")
-            .getBytes());
-      }
-    } catch (IOException e) {
-      LOG.warn("Fail to write InterpreterOutput", e.getMessage());
-    }
-
+    LOG.info("IPython is not available, use the native PythonInterpreter");
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
+      try {
+        registerHook(HookType.POST_EXEC_DEV.getName(), "__zeppelin__._displayhook()");
+      } catch (InvalidHookException e) {
+        throw new InterpreterException(e);
+      }
     }
     // Add matplotlib display hook
     try {
