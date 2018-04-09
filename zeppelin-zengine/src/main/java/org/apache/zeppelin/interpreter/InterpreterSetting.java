@@ -794,7 +794,7 @@ public class InterpreterSetting {
         if (!intp.getProperties().equals(properties) &&
             interpreterGroup.getRemoteInterpreterProcess() != null &&
             interpreterGroup.getRemoteInterpreterProcess().isRunning()) {
-          throw new IOException("Can not change interpreter properties when interpreter process " +
+          throw new RuntimeException("Can not change interpreter properties when interpreter process " +
               "has already been launched");
         }
         intp.setProperties(properties);
