@@ -311,7 +311,7 @@ Returns value of `search_path` which is set in the *default.precode*.
 
 
 ```sql
-%jdbc(mysql)
+%mysql
 select @v
 ```
 Returns value of `v` which is set in the *mysql.precode*.
