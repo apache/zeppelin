@@ -786,7 +786,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
+    String cmd = Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation")) ?
+            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
     logger.debug("Run SQL command '{}'", cmd);
     String propertyKey = getPropertyKey(cmd);
 

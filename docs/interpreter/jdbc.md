@@ -197,6 +197,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>default.jceks.credentialKey</td>
     <td>jceks credential key</td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.interpolation</td>
+    <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
@@ -245,7 +249,7 @@ You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) insid
 %jdbc_interpreter_name
 SELECT name, country, performer
 FROM demo.performers
-WHERE name='{{"{{performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia"}}}}'
+WHERE name='${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}'
 ```
 ### Usage *precode*
 You can set *precode* for each data source. Code runs once while opening the connection.
@@ -728,6 +732,28 @@ Before Adding one of the below dependencies, check the Phoenix version first.
 </table>
 
 [Maven Repository: org.apache.tajo:tajo-jdbc](https://mvnrepository.com/artifact/org.apache.tajo/tajo-jdbc)
+
+## Object Interpolation
+The JDBC interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+The following example shows one use of this facility:
+
+####In Scala cell:
+```
+z.put("country_code", "KR")
+    // ...
+```
+
+####In later JDBC cell:
+```sql
+%jdbc_interpreter_name
+    select * from patents_list where 
+    priority_country = '{country_code}' and filing_date like '2015-%'
+```
+
+Object interpolation is disabled by default, and can be enabled for all instances of the JDBC interpreter by 
+setting the value of the property `zeppelin.jdbc.interpolation` to `true` (see _More Properties_ above). 
+More details of this feature can be found in the Spark interpreter documentation under 
+[Object Interpolation](spark.html#object-interpolation)
 
 ## Bug reporting
 If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.
