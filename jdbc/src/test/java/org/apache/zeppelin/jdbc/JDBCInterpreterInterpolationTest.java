@@ -26,11 +26,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Properties;
 
 import static java.lang.String.format;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * JDBC interpreter Z-variable interpolation unit tests.
