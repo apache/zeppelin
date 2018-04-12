@@ -96,7 +96,7 @@
     <!-- frontend maven plugin related versions-->
     <node.version>v8.9.3</node.version>
     <npm.version>5.5.1</npm.version>
-    <plugin.frontend.version>1.3</plugin.frontend.version>
+    <plugin.frontend.version>1.4</plugin.frontend.version>
 
     <!-- common library versions -->
     <slf4j.version>1.7.10</slf4j.version>
