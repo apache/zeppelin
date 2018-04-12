@@ -12,6 +12,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jline.internal.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -156,6 +158,11 @@ public class FileSystemStorage {
   public synchronized <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
     if (isSecurityEnabled) {
       try {
+    	    if (isSecurityEnabled) {
+    	      if (UserGroupInformation.isLoginKeytabBased()) {
+            UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
+    	      } 
+    	    }
         return UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<T>() {
           @Override
           public T run() throws Exception {
