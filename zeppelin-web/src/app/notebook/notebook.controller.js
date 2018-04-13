@@ -447,16 +447,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       if (!$scope.note.config.cronExecutingUser) {
         $scope.note.config.cronExecutingUser = $rootScope.ticket.principal;
       }
+      if (!$scope.note.config.cronExecutingRoles) {
+        $scope.note.config.cronExecutingRoles = $rootScope.ticket.roles;
+      }
     } else {
       $scope.note.config.cronExecutingUser = '';
+      $scope.note.config.cronExecutingRoles = '';
     }
     $scope.note.config.cron = cronExpr;
-    $scope.setConfig();
-  };
-
-  /** Set the username of the user to be used to execute all notes in notebook **/
-  $scope.setCronExecutingUser = function(cronExecutingUser) {
-    $scope.note.config.cronExecutingUser = cronExecutingUser;
     $scope.setConfig();
   };
 

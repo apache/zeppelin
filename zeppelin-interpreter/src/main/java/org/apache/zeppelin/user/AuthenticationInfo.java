@@ -76,6 +76,10 @@ public class AuthenticationInfo implements JsonSerializable {
     this.roles = roles;
   }
 
+  public void setRoles(String roles) {
+    this.roles = gson.fromJson(roles, ArrayList.class);
+  }
+
   public List<String> getUsersAndRoles() {
     List<String> usersAndRoles = new ArrayList<>();
     if (roles != null) {
