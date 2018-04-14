@@ -58,7 +58,7 @@ public class JDBCSecurityImpl {
                 properties.getProperty("zeppelin.jdbc.keytab.location"));
           } else {
             LOGGER.info("The user has already logged in using Keytab and principal, " +
-              "no action required");
+                "no action required");
           }
         } catch (IOException e) {
           LOGGER.error("Failed to get either keytab location or principal name in the " +
