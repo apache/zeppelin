@@ -32,6 +32,7 @@ import java.util.Properties;
  * Created for org.apache.zeppelin.jdbc.security on 09/07/16.
  */
 public class JDBCSecurityImpl {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JDBCSecurityImpl.class);
 
   /***
@@ -57,7 +58,7 @@ public class JDBCSecurityImpl {
                 properties.getProperty("zeppelin.jdbc.keytab.location"));
           } else {
             LOGGER.info("The user has already logged in using Keytab and principal, " +
-              "no action required");
+                "no action required");
           }
         } catch (IOException e) {
           LOGGER.error("Failed to get either keytab location or principal name in the " +
