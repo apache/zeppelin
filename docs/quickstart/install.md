@@ -70,6 +70,7 @@ If you are on Windows:
 ```
 bin\zeppelin.cmd
 ```
+> **Note :** In case of Windows user, you need to download Apache Spark and set %SPARK_HOME% into zeppelin-env.cmd. We strongly recommend you to use Docker for testing Apache Zeppelin  
 
 After Zeppelin has started successfully, go to [http://localhost:8080](http://localhost:8080) with your web browser.
 

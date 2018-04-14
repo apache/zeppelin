@@ -68,6 +68,9 @@ public class IPySparkInterpreterTest {
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+    if (null != System.getenv("SPARK_HOME")) {
+      p.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
+    }
 
     intpGroup = new InterpreterGroup();
     intpGroup.put("session_1", new LinkedList<Interpreter>());

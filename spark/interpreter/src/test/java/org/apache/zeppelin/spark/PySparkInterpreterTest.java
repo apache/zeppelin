@@ -65,6 +65,9 @@ public class PySparkInterpreterTest {
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     p.setProperty("zeppelin.pyspark.useIPython", "false");
     p.setProperty("zeppelin.spark.test", "true");
+    if (null != System.getenv("SPARK_HOME")) {
+      p.setProperty("SPARK_HOME", System.getenv("SPARK_HOME"));
+    }
     return p;
   }
 

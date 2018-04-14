@@ -66,7 +66,7 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
         echo "${SPARK_VERSION} being downloaded from archives"
         STARTTIME=`date +%s`
         #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
-        download_with_retry "http://d3kbcqa49mib13.cloudfront.net/${SPARK_ARCHIVE}.tgz"
+        download_with_retry "$(curl -fsSL https://www.apache.org/dyn/closer.lua/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz | grep -o '<strong>[^<]*</strong>' | sed 's/<[^>]*>//g' | head -1)"
         ENDTIME=`date +%s`
         DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
