@@ -68,7 +68,6 @@ import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
-import org.apache.zeppelin.scheduler.JobProgressPoller;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -443,7 +442,6 @@ public class RemoteInterpreterServer extends Thread
         interpreterContext.getParagraphId(),
         "RemoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
-        JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
         st,
         context);
@@ -486,31 +484,30 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
-  public static class InterpretJob extends Job {
+  public static class InterpretJob extends Job<InterpreterResult> {
+
 
     private Interpreter interpreter;
     private String script;
     private InterpreterContext context;
     private Map<String, Object> infos;
-    private Object results;
+    private InterpreterResult results;
 
     public InterpretJob(
         String jobId,
         String jobName,
         JobListener listener,
-        long progressUpdateIntervalMsec,
         Interpreter interpreter,
         String script,
         InterpreterContext context) {
-      super(jobId, jobName, listener, progressUpdateIntervalMsec);
+      super(jobId, jobName, listener);
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
     }
 
     @Override
-    public Object getReturn() {
+    public InterpreterResult getReturn() {
       return results;
     }
 
@@ -566,8 +563,7 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    // TODO(jl): need to redesign this class
-    public Object jobRun() throws Throwable {
+    public InterpreterResult jobRun() throws Throwable {
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
@@ -634,8 +630,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    public void setResult(Object results) {
-      this.results = results;
+    public void setResult(InterpreterResult result) {
+      this.results = result;
     }
   }
 
