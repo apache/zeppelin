@@ -48,6 +48,11 @@ limitations under the License.
     <td>100000</td>
     <td>Max result set size</td>
   </tr>
+  <tr>
+    <td>zeppelin.bigquery.sql_dialect</td>
+    <td></td>
+    <td>Bigquery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.</td>
+  </tr>
 </table>
 
 
