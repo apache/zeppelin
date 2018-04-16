@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,15 +138,26 @@ public class FIFOScheduler implements Scheduler {
               listener.jobStarted(scheduler, runningJob);
             }
             runningJob.run();
+            Object jobResult = runningJob.getReturn();
             if (runningJob.isAborted()) {
               runningJob.setStatus(Status.ABORT);
+              LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
+                  runningJob.getErrorMessage());
+            } else if (runningJob.getException() != null) {
+              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
+                  runningJob.getReturn());
+              runningJob.setStatus(Status.ERROR);
+            } else if (jobResult != null && jobResult instanceof InterpreterResult
+                && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
+              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
+                  runningJob.getReturn());
+              runningJob.setStatus(Status.ERROR);
             } else {
-              if (runningJob.getException() != null) {
-                runningJob.setStatus(Status.ERROR);
-              } else {
-                runningJob.setStatus(Status.FINISHED);
-              }
+              LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
+                  runningJob.getReturn());
+              runningJob.setStatus(Status.FINISHED);
             }
+
             if (listener != null) {
               listener.jobFinished(scheduler, runningJob);
             }
