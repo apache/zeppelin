@@ -94,7 +94,7 @@ public class SecurityUtils {
       principal = extractPrincipal(subject);
       if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
         log.debug("Converting principal name " + principal
-          + " to lower case:" + principal.toLowerCase());
+            + " to lower case:" + principal.toLowerCase());
         principal = principal.toLowerCase();
       }
     } else {
