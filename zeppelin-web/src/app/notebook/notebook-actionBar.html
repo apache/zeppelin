@@ -30,22 +30,23 @@ limitations under the License.
       <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="runAllParagraphs(note.id)"
+              ng-click="runParagraphs(note.id)"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" uib-tooltip="Run all paragraphs"
+              tooltip-placement="bottom"
+              uib-tooltip="{{isSelectionMode() ? 'Run selected paragraph' : 'Run all paragraphs'}}"
               ng-disabled="revisionView">
         <i class="icon-control-play"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="toggleAllEditor()"
+              ng-click="toggleParagraphsEditor()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Show/hide the code"
               ng-disabled="revisionView">
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="toggleAllTable()"
+              ng-click="toggleParagraphsTable()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Show/hide the output"
               ng-disabled="revisionView">
@@ -53,22 +54,56 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
-              ng-click="clearAllParagraphOutput(note.id)"
+              ng-if="isSelectionMode()"
+              ng-click="toggleToRunParagraphs()"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" uib-tooltip="Enable/Disable for running"
+              ng-disabled="revisionView">
+        <i ng-class="isAnableRun ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="clearParagraphsOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
               tooltip-placement="bottom" uib-tooltip="Clear output"
               ng-disabled="revisionView">
         <i class="fa fa-eraser"></i>
       </button>
-
+      <button type="button"
+               class="btn btn-default btn-xs"
+               ng-if="isSelectionMode()"
+               ng-click="moveToTop()"
+               tooltip-placement="bottom" uib-tooltip="Move to top">
+         <i class="fa fa-arrow-up"></i>
+      </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-if="isSelectionMode()"
+              ng-click="moveToBottom()"
+              tooltip-placement="bottom" uib-tooltip="Move to bottom">
+         <i class="fa fa-arrow-down"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-if="!isSelectionMode()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Clone this note" data-source-note-name="{{note.name}}"
-              data-toggle="modal" data-target="#noteCreateModal" data-clone="true"
+              data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
               ng-disabled="revisionView">
         <i class="fa fa-copy"></i>
       </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-if="isSelectionMode()"
+              data-source-note-name="{{note.name}}"
+              data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
+              data-only-selected-paragraphs="true"
+              data-selected-paragraphs="{{getSelectedParagraphs()}}"
+              tooltip-placement="bottom" uib-tooltip="Clone this note use selected paragraphs">
+        <i class="fa fa-copy"></i>
+      </button>
+
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
@@ -98,6 +133,23 @@ limitations under the License.
               ng-disabled="revisionView">
         <i class="fa fa-users"></i>
       </button>
+
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-if="isSelectionMode()"
+              ng-click="removeSelectedParagraph(note.id)"
+              tooltip-placement="bottom" uib-tooltip="Delete selected paragraph">
+        <i class="fa fa-recycle"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-if="isSelectionMode()"
+              ng-click="clearSelection()"
+              tooltip-placement="bottom" uib-tooltip="Reset selections"
+              ng-disabled="revisionView">
+      <i class="fa fa-times-circle-o "></i>
+    </button>
     </span>
 
     <span class="labelBtn btn-group" role="group" ng-if="isRevisionSupported()" >

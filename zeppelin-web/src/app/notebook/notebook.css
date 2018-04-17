@@ -469,3 +469,7 @@
     position: relative;
     top: -16px;
 }
+
+.tooltip-inner {
+  max-width: 450px;
+}

@@ -32,10 +32,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
+  $scope.isAnableRun = true;
   $scope.viewOnly = false;
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
   $scope.looknfeelOption = ['default', 'simple', 'report'];
+  $scope.selectedParagraphsIds = new Set();
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -555,6 +557,15 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     removePara(paragraphId);
   });
 
+  $scope.$on('selectedParagraphsRemoved', function(event, paragraphsIds) {
+    if ($scope.paragraphUrl || $scope.revisionView === true) {
+      return;
+    }
+    paragraphsIds.forEach(function(paragraphId) {
+      removePara(paragraphId);
+    });
+  });
+
   $scope.$on('moveParagraph', function(event, paragraphId, newIdx) {
     if ($scope.revisionView === true) {
       return;
@@ -562,6 +573,18 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     let removedPara = removePara(paragraphId);
     if (removedPara && removedPara.length === 1) {
       addPara(removedPara[0], newIdx);
+    }
+  });
+
+  $scope.$on('severalParagraphsMoved', function(event, paragraphsIds, newIdx) {
+    if ($scope.revisionView === true) {
+      return;
+    }
+    for (let i = 0; i < paragraphsIds.length; i++) {
+      let removedPara = removePara(paragraphsIds[i]);
+      if (removedPara && removedPara.length === 1) {
+        addPara(removedPara[0], newIdx[i]);
+      }
     }
   });
 
@@ -1208,6 +1231,213 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       return true;
     }
+  };
+
+  $scope.toggleSelection = function(paragraph) {
+    let paragraphs = $scope.selectedParagraphsIds;
+    if (paragraphs.has(paragraph.id)) {
+      paragraphs.delete(paragraph.id);
+    } else {
+      paragraphs.add(paragraph.id);
+    }
+  };
+
+  $scope.clearSelection = function() {
+    if ($scope.selectedParagraphsIds !== null) {
+      $scope.selectedParagraphsIds.clear();
+    }
+  };
+
+  $scope.isSelectionMode = function() {
+    if ($scope.selectedParagraphsIds === null || $scope.selectedParagraphsIds.size === 0) {
+      return false;
+    }
+    return true;
+  };
+
+  $scope.getSelectedParagraphs = function() {
+    if ($scope.note === null) {
+      return;
+    }
+    let allParagraphs = $scope.note.paragraphs;
+    let selectedParagraphsIds = $scope.selectedParagraphsIds;
+    let paragraphs = [];
+    for (let i = 0; i < allParagraphs.length; i++) {
+      if (selectedParagraphsIds.has(allParagraphs[i].id)) {
+        paragraphs.push(allParagraphs[i]);
+      }
+    }
+    return paragraphs;
+  };
+
+  $scope.moveToTop = function() {
+    let selectParagraphId = $scope.selectedParagraphsIds;
+    let allParagraphs = $scope.note.paragraphs;
+    let id = [];
+    let newIndex = [];
+    let counter = 0;
+    if (allParagraphs.length < 2 || selectParagraphId === null) {
+      return;
+    }
+    if (allParagraphs.length <= selectParagraphId.size) {
+      return;
+    }
+
+    for (let i = 0; i < allParagraphs.length; i++) {
+      if (selectParagraphId.has(allParagraphs[i].id)) {
+        id.push(allParagraphs[i].id);
+        newIndex.push(counter++);
+      }
+    }
+
+    let selectedParagraphs = $scope.getSelectedParagraphs();
+    for (let i = 0; i < selectedParagraphs.length; i++) {
+      angular
+        .element('#' + selectedParagraphs[i].id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(selectedParagraphs[i]);
+    }
+    websocketMsgSrv.moveSeveralParagraphs(id, newIndex);
+  };
+
+  $scope.moveToBottom = function() {
+    let selectParagraphId = $scope.selectedParagraphsIds;
+    let allParagraphs = $scope.note.paragraphs;
+    let id = [];
+    let newIndex = [];
+    let counter = allParagraphs.length - 1;
+    if (allParagraphs.length < 2 || selectParagraphId === null) {
+      return;
+    }
+    if (allParagraphs.length <= selectParagraphId.size) {
+      return;
+    }
+
+    for (let i = allParagraphs.length - 1; i >= 0; i--) {
+      if (selectParagraphId.has(allParagraphs[i].id)) {
+        id.push(allParagraphs[i].id);
+        newIndex.push(counter--);
+      }
+    }
+    let selectedParagraphs = $scope.getSelectedParagraphs();
+    for (let i = 0; i < selectedParagraphs.length; i++) {
+      angular
+        .element('#' + selectedParagraphs[i].id + '_paragraphColumn_main')
+        .scope()
+        .saveParagraph(selectedParagraphs[i]);
+    }
+    websocketMsgSrv.moveSeveralParagraphs(id, newIndex);
+  };
+
+  $scope.toggleToRunParagraphs = function() {
+    let paragraphsIds = $scope.selectedParagraphsIds;
+    let broadcastMessage;
+    if ($scope.isAnableRun) {
+      broadcastMessage = 'disableForRunById';
+    } else {
+      broadcastMessage = 'enableForRunById';
+    }
+    paragraphsIds.forEach((id) => {
+      $rootScope.$broadcast(broadcastMessage, id);
+    });
+
+    $scope.isAnableRun = !$scope.isAnableRun;
+  };
+
+  $scope.toggleParagraphsTable = function() {
+    if (!$scope.isSelectionMode()) {
+      $scope.toggleAllTable();
+    } else {
+      let paragraphsIds = $scope.selectedParagraphsIds;
+      let broadcastMessage;
+      if ($scope.tableToggled) {
+        broadcastMessage = 'openTableById';
+      } else {
+        broadcastMessage = 'closeTableById';
+      }
+      paragraphsIds.forEach((id) => {
+        $rootScope.$broadcast(broadcastMessage, id);
+      });
+
+      $scope.tableToggled = !$scope.tableToggled;
+    }
+  };
+
+  $scope.toggleParagraphsEditor = function() {
+    if (!$scope.isSelectionMode()) {
+      $scope.toggleAllEditor();
+    } else {
+      let paragraphsIds = $scope.selectedParagraphsIds;
+      let broadcastMessage;
+      if ($scope.editorToggled) {
+        broadcastMessage = 'openEditorById';
+      } else {
+        broadcastMessage = 'closeEditorById';
+      }
+      paragraphsIds.forEach((id) => {
+        $rootScope.$broadcast(broadcastMessage, id);
+      });
+      $scope.editorToggled = !$scope.editorToggled;
+    }
+  };
+
+  $scope.runParagraphs = function(noteId) {
+    if (!$scope.isSelectionMode()) {
+      $scope.runAllParagraphs(noteId);
+    } else {
+      let message = 'Run ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.runAllParagraphs, false);
+    }
+  };
+
+  $scope.removeSelectedParagraph = function(noteId) {
+    if ($scope.selectedParagraphsIds.size < $scope.note.paragraphs.length) {
+      let message = 'Delete ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.removeSelectedParagraph, true);
+    } else {
+      BootstrapDialog.alert({
+        closable: true,
+        message: 'All the paragraphs can\'t be deleted.',
+      });
+    }
+  };
+
+  $scope.clearParagraphsOutput = function(noteId) {
+    if (!$scope.isSelectionMode()) {
+      $scope.clearAllParagraphOutput(noteId);
+    } else {
+      let message = 'Clear output ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+      $scope.showConfirmDialog(noteId, message, websocketMsgSrv.clearSelectedParagraphsOutput, false);
+    }
+  };
+
+  $scope.showConfirmDialog = function(noteId, dialogMessage, action, isCleanAfter) {
+    if ($scope.selectedParagraphsIds.length === 0) {
+      return false;
+    }
+
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: dialogMessage,
+      callback: function(result) {
+        if (result) {
+          const paragraphs = $scope.getSelectedParagraphs().map((p) => {
+            return {
+              id: p.id,
+              title: p.title,
+              paragraph: p.text,
+              config: p.config,
+              params: p.settings.params,
+            };
+          });
+          action(noteId, paragraphs);
+          if (isCleanAfter) {
+            $scope.clearSelection();
+          }
+        }
+      },
+    });
   };
 
   /*
