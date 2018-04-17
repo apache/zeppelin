@@ -491,23 +491,13 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void broadcast(Message m) {
-    List<NotebookSocket> sockets = Lists.newArrayList();
-    synchronized (noteSocketMap) {
-      //TODO(jl): Time to go JDK8!!!
-      for (List<NotebookSocket> notebookSocketList : noteSocketMap.values()) {
-        for (NotebookSocket notebookSocket : notebookSocketList) {
-          if (sockets.contains(notebookSocket)) {
-            sockets.add(notebookSocket);
-          }
+    synchronized (connectedSockets) {
+      for (NotebookSocket ns : connectedSockets) {
+        try {
+          ns.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("Send error: " + m, e);
         }
-      }
-    }
-
-    for (NotebookSocket ns : sockets) {
-      try {
-        ns.send(serializeMessage(m));
-      } catch (IOException e) {
-        LOG.error("Send error: " + m, e);
       }
     }
   }

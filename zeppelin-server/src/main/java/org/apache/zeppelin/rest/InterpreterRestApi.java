@@ -327,5 +327,4 @@ public class InterpreterRestApi {
 
     return new JsonResponse<>(Status.OK).build();
   }
-
 }

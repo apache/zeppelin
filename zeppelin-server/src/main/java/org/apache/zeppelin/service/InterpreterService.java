@@ -104,12 +104,18 @@ public class InterpreterService {
     });
   }
 
-  void downloadInterpreter(InterpreterInstallationRequest request,
-      DependencyResolver dependencyResolver, Path interpreterDir) {
-    Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+  void downloadInterpreter(
+      InterpreterInstallationRequest request,
+      DependencyResolver dependencyResolver,
+      Path interpreterDir) {
+    Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
     Map<String, Object> result = Maps.newHashMap();
     try {
       logger.info("Start to download a dependency: {}", request.getName());
+      result.put("result", "Starting");
+      result.put("message", "Starting to download " + request.getName() + " interpreter");
+      m.data = result;
+      notebookWsServer.broadcast(m);
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
       logger.info("Finish downloading a dependency: {}", request.getName());
@@ -120,14 +126,17 @@ public class InterpreterService {
       try {
         FileUtils.deleteDirectory(interpreterDir.toFile());
       } catch (IOException e1) {
-        logger.error("Error while removing directory. You should handle it manually: {}",
-            interpreterDir.toString(), e1);
+        logger.error(
+            "Error while removing directory. You should handle it manually: {}",
+            interpreterDir.toString(),
+            e1);
       }
       result.put("result", "Failed");
-      result.put("message", "Please try it again");
+      result.put(
+          "message", "Error while downloading " + request.getName() + " as " + e.getMessage());
     }
 
-    m.data = result;
+    m.op = OP.INTERPRETER_INSTALL_RESULT;
     notebookWsServer.broadcast(m);
   }
 }
