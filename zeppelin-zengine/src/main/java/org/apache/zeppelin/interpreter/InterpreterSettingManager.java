@@ -26,9 +26,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,8 +84,6 @@ import java.util.Map;
  */
 public class InterpreterSettingManager {
 
-  private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors
-      .newScheduledThreadPool(1);
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
       "language", (Object) "text",
@@ -146,48 +141,43 @@ public class InterpreterSettingManager {
   }
 
   public InterpreterSettingManager(ZeppelinConfiguration conf,
-                                   InterpreterOption defaultOption,
-                                   AngularObjectRegistryListener angularObjectRegistryListener,
-                                   RemoteInterpreterProcessListener
-                                         remoteInterpreterProcessListener,
-                                   ApplicationEventListener appEventListener,
-                                   ConfigStorage configStorage) throws IOException {
+      InterpreterOption defaultOption,
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      ApplicationEventListener appEventListener,
+      ConfigStorage configStorage)
+      throws IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.interpreterDirPath = Paths.get(conf.getInterpreterDir());
     LOGGER.debug("InterpreterRootPath: {}", interpreterDirPath);
-    this.dependencyResolver = new DependencyResolver(
-        conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
+    this.dependencyResolver =
+        new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
     this.interpreterRepositories = dependencyResolver.getRepos();
-    this.interpreterGroupOrderList = Arrays.asList(conf.getString(
-        ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER).split(","));
+    this.interpreterGroupOrderList =
+        Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER).split(","));
     this.gson = new GsonBuilder().setPrettyPrinting().create();
 
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     this.appEventListener = appEventListener;
-    this.recoveryStorage = ReflectionUtils.createClazzInstance(conf.getRecoveryStorageClass(),
-        new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
-        new Object[] {conf, this});
+    this.recoveryStorage =
+        ReflectionUtils.createClazzInstance(
+            conf.getRecoveryStorageClass(),
+            new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+            new Object[] {conf, this});
     this.recoveryStorage.init();
     LOGGER.info("Using RecoveryStorage: " + this.recoveryStorage.getClass().getName());
-    this.lifecycleManager = ReflectionUtils.createClazzInstance(conf.getLifecycleManagerClass(),
-        new Class[] {ZeppelinConfiguration.class},
-        new Object[] {conf});
+    this.lifecycleManager =
+        ReflectionUtils.createClazzInstance(
+            conf.getLifecycleManagerClass(),
+            new Class[] {ZeppelinConfiguration.class},
+            new Object[] {conf});
     LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     this.configStorage = configStorage;
 
     init();
-
-    EXECUTOR_SERVICE.scheduleWithFixedDelay(
-        new Runnable() {
-          @Override
-          public void run() {
-            refreshInterpreterTemplates();
-          }
-        }, conf.getInterpreterDirRefreshInterval(), conf.getInterpreterDirRefreshInterval(),
-        TimeUnit.SECONDS);
   }
 
   public void refreshInterpreterTemplates() {
@@ -989,12 +979,6 @@ public class InterpreterSettingManager {
       } catch (InterruptedException e) {
         LOGGER.error("Can't close interpreterGroup", e);
       }
-    }
-
-    try {
-      EXECUTOR_SERVICE.awaitTermination(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      EXECUTOR_SERVICE.shutdownNow();
     }
   }
 
