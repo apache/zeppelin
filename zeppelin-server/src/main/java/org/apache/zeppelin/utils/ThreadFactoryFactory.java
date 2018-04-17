@@ -37,7 +37,7 @@ public class ThreadFactoryFactory {
 
     @Override
     public Thread newThread(Runnable r) {
-      return new Thread(prefix + "-" + threadNum.getAndIncrement());
+      return new Thread(r, prefix + "-" + threadNum.getAndIncrement());
     }
   }
 }

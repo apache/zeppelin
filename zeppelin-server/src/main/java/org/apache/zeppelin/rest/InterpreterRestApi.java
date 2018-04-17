@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -299,7 +300,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get available types for property.
+   * Get available types for property
    */
   @GET
   @Path("property/types")
@@ -313,7 +314,7 @@ public class InterpreterRestApi {
   @POST
   @Path("install")
   @ZeppelinApi
-  public Response installInterpreter(String message) {
+  public Response installInterpreter(@NotNull String message) {
     logger.info("Install interpreter: {}", message);
     InterpreterInstallationRequest request = gson
         .fromJson(message, InterpreterInstallationRequest.class);

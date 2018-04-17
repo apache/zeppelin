@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,7 +48,7 @@ import org.sonatype.aether.RepositoryException;
 public class InterpreterService {
 
   private static final Logger logger = LoggerFactory.getLogger(InterpreterService.class);
-  private static final ExecutorService executorService = Executors.newCachedThreadPool(
+  private static final ExecutorService executorService = Executors.newSingleThreadExecutor(
       ThreadFactoryFactory.getThreadFactory(InterpreterService.class.getSimpleName()));
 
   private final ZeppelinConfiguration conf;
@@ -60,7 +61,6 @@ public class InterpreterService {
     this.notebookWsServer = notebookWsServer;
     this.interpreterSettingManager = interpreterSettingManager;
   }
-
 
   public void installInterpreter(final InterpreterInstallationRequest request) throws Exception {
     Preconditions.checkNotNull(request);
@@ -96,29 +96,38 @@ public class InterpreterService {
     }
 
     // It might take time to finish it
-    executorService.submit(new Runnable() {
+    executorService.execute(new Runnable() {
       @Override
       public void run() {
-        try {
-          logger.info("Start to download a dependency: {}", request.getName());
-          dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
-          interpreterSettingManager.refreshInterpreterTemplates();
-          logger.info("Finish downloading a dependency: {}", request.getName());
-        } catch (RepositoryException | IOException e) {
-          logger.error("Error while downloading dependencies", e);
-          try {
-            FileUtils.deleteDirectory(interpreterDir.toFile());
-          } catch (IOException e1) {
-            logger.error("Error while removing directory. You should handle it manually: {}",
-                interpreterDir.toString(), e1);
-          }
-          Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
-          Map<String, Object> result = Maps.newHashMap();
-          result.put("result", "Failed");
-          result.put("message", "Please try it again");
-          notebookWsServer.broadcast(m);
-        }
+        downloadInterpreter(request, dependencyResolver, interpreterDir);
       }
     });
+  }
+
+  void downloadInterpreter(InterpreterInstallationRequest request,
+      DependencyResolver dependencyResolver, Path interpreterDir) {
+    Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+    Map<String, Object> result = Maps.newHashMap();
+    try {
+      logger.info("Start to download a dependency: {}", request.getName());
+      dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
+      interpreterSettingManager.refreshInterpreterTemplates();
+      logger.info("Finish downloading a dependency: {}", request.getName());
+      result.put("result", "Success");
+      result.put("message", request.getName() + " downloaded");
+    } catch (RepositoryException | IOException e) {
+      logger.error("Error while downloading dependencies", e);
+      try {
+        FileUtils.deleteDirectory(interpreterDir.toFile());
+      } catch (IOException e1) {
+        logger.error("Error while removing directory. You should handle it manually: {}",
+            interpreterDir.toString(), e1);
+      }
+      result.put("result", "Failed");
+      result.put("message", "Please try it again");
+    }
+
+    m.data = result;
+    notebookWsServer.broadcast(m);
   }
 }
