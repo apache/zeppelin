@@ -17,13 +17,21 @@
 
 package org.apache.zeppelin.rest.message;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class InterpreterInstallationRequest {
+  private static final Gson gson = new GsonBuilder().create();
   private String name;
   private String artifact;
 
-  public InterpreterInstallationRequest(String name, String artifact) {
+  private InterpreterInstallationRequest(String name, String artifact) {
     this.name = name;
     this.artifact = artifact;
+  }
+
+  public static InterpreterInstallationRequest fromJson(String message) {
+    return gson.fromJson(message, InterpreterInstallationRequest.class);
   }
 
   public String getName() {

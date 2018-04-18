@@ -316,8 +316,7 @@ public class InterpreterRestApi {
   @ZeppelinApi
   public Response installInterpreter(@NotNull String message) {
     logger.info("Install interpreter: {}", message);
-    InterpreterInstallationRequest request = gson
-        .fromJson(message, InterpreterInstallationRequest.class);
+    InterpreterInstallationRequest request = InterpreterInstallationRequest.fromJson(message);
 
     try {
       interpreterService.installInterpreter(request);
