@@ -196,8 +196,6 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   $scope.enable = function(name, artifact, type, groupId, description) {
     let license = getLicense(name, artifact);
     let mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
-    let zeppelinVersion = $rootScope.zeppelinVersion;
-    let url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
 
     let confirm = '';
     if (type === HeliumType.INTERPRETER) {
@@ -213,7 +211,8 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
           `<div style="color:gray">${mavenArtifactInfoToHTML}</div>`,
         callback: function(result) {
           if (result) {
-            heliumService.installInterpreter({'name': name, 'artifact': mavenArtifactInfoToHTML}).success(function(data, status) {
+            heliumService.installInterpreter({'name': name, 'artifact': mavenArtifactInfoToHTML})
+            .success(function(data, status) {
               confirm.close();
             }).error(function(data, status) {
               confirm.close();
@@ -225,7 +224,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
             });
             return false;
           }
-        }
+        },
       });
     } else {
       confirm = BootstrapDialog.confirm({

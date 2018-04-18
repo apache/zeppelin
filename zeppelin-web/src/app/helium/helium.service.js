@@ -107,8 +107,8 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
   };
 
   this.installInterpreter = function(installRequest) {
-    return $http.post(baseUrlSrv.getRestApiBase() + "/interpreter/install", installRequest);
-  }
+    return $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/install', installRequest);
+  };
 
   this.saveConfig = function(pkg, defaultPackageConfig, closeConfigPanelCallback) {
     // in case of local package, it will include `/`

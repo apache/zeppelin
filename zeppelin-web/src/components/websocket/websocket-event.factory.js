@@ -178,9 +178,9 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
     } else if (op === 'INTERPRETER_INSTALL_STARTED') {
-      ngToast.info(data.message)
+      ngToast.info(data.message);
     } else if (op === 'INTERPRETER_INSTALL_RESULT') {
-      ngToast.info(data.message)
+      ngToast.info(data.message);
     } else {
       console.error(`unknown websocket op: ${op}`);
     }
