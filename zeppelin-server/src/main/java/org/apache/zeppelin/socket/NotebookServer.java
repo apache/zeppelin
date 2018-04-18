@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-import com.google.common.collect.Lists;
 import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
