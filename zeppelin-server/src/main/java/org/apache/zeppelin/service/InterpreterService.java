@@ -36,7 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -54,17 +54,20 @@ public class InterpreterService {
               .build());
 
   private final ZeppelinConfiguration conf;
-  private final NotebookServer notebookWsServer;
   private final InterpreterSettingManager interpreterSettingManager;
 
-  public InterpreterService(ZeppelinConfiguration conf, NotebookServer notebookWsServer,
+  public InterpreterService(
+      ZeppelinConfiguration conf,
       InterpreterSettingManager interpreterSettingManager) {
     this.conf = conf;
-    this.notebookWsServer = notebookWsServer;
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
-  public void installInterpreter(final InterpreterInstallationRequest request) throws Exception {
+  public void installInterpreter(
+      final InterpreterInstallationRequest request,
+      final MessageCallback startedMessage,
+      final MessageCallback finishedMessage)
+      throws Exception {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(request.getName());
     Preconditions.checkNotNull(request.getArtifact());
@@ -81,7 +84,7 @@ public class InterpreterService {
       try {
         dependencyResolver.setProxy(new URL(proxyUrl), proxyUser, proxyPassword);
       } catch (MalformedURLException e) {
-        //TODO(jl): Not sure if it's good to raise an exception
+        // TODO(jl): Not sure if it's good to raise an exception
         throw new Exception("Url is not valid format", e);
       }
     }
@@ -98,18 +101,22 @@ public class InterpreterService {
     }
 
     // It might take time to finish it
-    executorService.execute(new Runnable() {
-      @Override
-      public void run() {
-        downloadInterpreter(request, dependencyResolver, interpreterDir);
-      }
-    });
+    executorService.execute(
+        new Runnable() {
+          @Override
+          public void run() {
+            downloadInterpreter(
+                request, dependencyResolver, interpreterDir, startedMessage, finishedMessage);
+          }
+        });
   }
 
   void downloadInterpreter(
       InterpreterInstallationRequest request,
       DependencyResolver dependencyResolver,
-      Path interpreterDir) {
+      Path interpreterDir,
+      MessageCallback startedMessage,
+      MessageCallback finishedMessage) {
     Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
     Map<String, Object> result = Maps.newHashMap();
     try {
@@ -117,7 +124,7 @@ public class InterpreterService {
       result.put("result", "Starting");
       result.put("message", "Starting to download " + request.getName() + " interpreter");
       m.data = result;
-      notebookWsServer.broadcast(m);
+      startedMessage.broadcastMessage(m);
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
       logger.info("Finish downloading a dependency: {}", request.getName());
@@ -139,6 +146,6 @@ public class InterpreterService {
     }
 
     m.op = OP.INTERPRETER_INSTALL_RESULT;
-    notebookWsServer.broadcast(m);
+    finishedMessage.broadcastMessage(m);
   }
 }

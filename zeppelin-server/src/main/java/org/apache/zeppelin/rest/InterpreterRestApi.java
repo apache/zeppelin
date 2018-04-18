@@ -18,6 +18,8 @@ package org.apache.zeppelin.rest;
 
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.socket.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -308,9 +310,7 @@ public class InterpreterRestApi {
     return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
 
-  /**
-   * Install interpreter
-   */
+  /** Install interpreter */
   @POST
   @Path("install")
   @ZeppelinApi
@@ -319,7 +319,20 @@ public class InterpreterRestApi {
     InterpreterInstallationRequest request = InterpreterInstallationRequest.fromJson(message);
 
     try {
-      interpreterService.installInterpreter(request);
+      interpreterService.installInterpreter(
+          request,
+          new MessageCallback() {
+            @Override
+            public void broadcastMessage(Message message) {
+              notebookServer.broadcast(message);
+            }
+          },
+          new MessageCallback() {
+            @Override
+            public void broadcastMessage(Message message) {
+              notebookServer.broadcast(message);
+            }
+          });
     } catch (Throwable t) {
       return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, t.getMessage()).build();
     }

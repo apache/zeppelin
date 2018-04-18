@@ -166,8 +166,7 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
-    this.interpreterService = new InterpreterService(conf, notebookWsServer,
-        interpreterSettingManager);
+    this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
   }
 
   public static void main(String[] args) throws InterruptedException {
