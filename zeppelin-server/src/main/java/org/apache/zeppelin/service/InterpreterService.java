@@ -17,8 +17,8 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,7 +37,6 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.ThreadFactoryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -48,8 +47,11 @@ import org.sonatype.aether.RepositoryException;
 public class InterpreterService {
 
   private static final Logger logger = LoggerFactory.getLogger(InterpreterService.class);
-  private static final ExecutorService executorService = Executors.newSingleThreadExecutor(
-      ThreadFactoryFactory.getThreadFactory(InterpreterService.class.getSimpleName()));
+  private static final ExecutorService executorService =
+      Executors.newSingleThreadExecutor(
+          new ThreadFactoryBuilder()
+              .setNameFormat(InterpreterService.class.getSimpleName() + "-")
+              .build());
 
   private final ZeppelinConfiguration conf;
   private final NotebookServer notebookWsServer;
