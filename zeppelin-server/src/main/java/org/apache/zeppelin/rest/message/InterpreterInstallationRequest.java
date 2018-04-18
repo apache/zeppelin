@@ -25,7 +25,7 @@ public class InterpreterInstallationRequest {
   private String name;
   private String artifact;
 
-  private InterpreterInstallationRequest(String name, String artifact) {
+  public InterpreterInstallationRequest(String name, String artifact) {
     this.name = name;
     this.artifact = artifact;
   }

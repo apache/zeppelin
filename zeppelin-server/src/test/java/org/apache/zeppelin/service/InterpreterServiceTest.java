@@ -68,8 +68,7 @@ public class InterpreterServiceTest {
     when(mockZeppelinConfiguration.getZeppelinProxyPassword()).thenReturn(null);
 
     interpreterService =
-        new InterpreterService(
-            mockZeppelinConfiguration, mockNotebookServer, mockInterpreterSettingManager);
+        new InterpreterService(mockZeppelinConfiguration, mockInterpreterSettingManager);
   }
 
   @After
@@ -83,7 +82,8 @@ public class InterpreterServiceTest {
   public void invalidProxyUrl() throws Exception {
     when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn("invalidProxyPath");
 
-    interpreterService.installInterpreter(new InterpreterInstallationRequest("name", "artifact"));
+    interpreterService.installInterpreter(
+        new InterpreterInstallationRequest("name", "artifact"), null, null);
   }
 
   @Test(expected = Exception.class)
@@ -95,7 +95,7 @@ public class InterpreterServiceTest {
         Files.createDirectory(Paths.get(interpreterDir.toString(), alreadyExistName));
 
     interpreterService.installInterpreter(
-        new InterpreterInstallationRequest(alreadyExistName, "artifact"));
+        new InterpreterInstallationRequest(alreadyExistName, "artifact"), null, null);
   }
 
   @Test
@@ -113,7 +113,9 @@ public class InterpreterServiceTest {
     interpreterService.downloadInterpreter(
         new InterpreterInstallationRequest(interpreterName, artifactName),
         dependencyResolver,
-        specificInterpreterPath);
+        specificInterpreterPath,
+        null,
+        null);
 
     Message message = messageArgumentCaptor.getValue();
     assertNotNull(message.data);

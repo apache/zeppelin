@@ -124,7 +124,9 @@ public class InterpreterService {
       result.put("result", "Starting");
       result.put("message", "Starting to download " + request.getName() + " interpreter");
       m.data = result;
-      startedMessage.broadcastMessage(m);
+      if (null != startedMessage) {
+        startedMessage.broadcastMessage(m);
+      }
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
       logger.info("Finish downloading a dependency: {}", request.getName());
@@ -146,6 +148,8 @@ public class InterpreterService {
     }
 
     m.op = OP.INTERPRETER_INSTALL_RESULT;
-    finishedMessage.broadcastMessage(m);
+    if (null != finishedMessage) {
+      finishedMessage.broadcastMessage(m);
+    }
   }
 }
