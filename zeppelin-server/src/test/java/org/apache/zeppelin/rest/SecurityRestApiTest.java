@@ -85,5 +85,17 @@ public class SecurityRestApiTest extends AbstractTestRestApi {
 
     notUser.releaseConnection();
   }
+
+  @Test
+  public void testRolesEscaped() throws IOException {
+    GetMethod get = httpGet("/security/ticket", "admin", "password1");
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>(){}.getType());
+    String roles = (String) ((Map) resp.get("body")).get("roles");
+    collector.checkThat("Paramater roles", roles,
+            CoreMatchers.equalTo("[\"admin\"]"));
+    get.releaseConnection();
+  }
+
 }
 

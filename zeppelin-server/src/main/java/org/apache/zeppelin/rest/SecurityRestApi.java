@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
-
+import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
@@ -47,6 +47,7 @@ import java.util.*;
 @Produces("application/json")
 public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
+  private static final Gson gson = new Gson();
 
   /**
    * Required by Swagger.
@@ -80,7 +81,7 @@ public class SecurityRestApi {
 
     Map<String, String> data = new HashMap<>();
     data.put("principal", principal);
-    data.put("roles", roles.toString());
+    data.put("roles", gson.toJson(roles));
     data.put("ticket", ticket);
 
     response = new JsonResponse(Response.Status.OK, "", data);
