@@ -260,6 +260,12 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-core</artifactId>
         <version>${shiro.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -770,6 +776,10 @@
         <repository>
           <id>cloudera</id>
           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+        <repository>
+          <id>hortonworks</id>
+          <url>http://repo.hortonworks.com/content/groups/public/</url>
         </repository>
       </repositories>
     </profile>
