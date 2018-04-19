@@ -325,7 +325,7 @@ public class InterpreterRestApi {
             @Override
             public void broadcastMessage(Message message) {
               notebookServer.broadcast(message);
-              InterpreterServiceTest  }
+            }
           },
           new MessageCallback() {
             @Override
