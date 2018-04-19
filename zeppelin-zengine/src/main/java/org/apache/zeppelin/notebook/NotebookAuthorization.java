@@ -35,7 +35,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -210,7 +209,7 @@ public class NotebookAuthorization {
   * If case conversion is enforced, then change entity names to lower case
   */
   private Set<String> checkCaseAndConvert(Set<String> entities) {
-    if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
+    if (conf.isUsernameForceLowerCase()) {
       Set<String> set2 = new HashSet<String>();
       for (String name : entities) {
         set2.add(name.toLowerCase());

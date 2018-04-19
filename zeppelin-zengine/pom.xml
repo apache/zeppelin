@@ -56,11 +56,6 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-server</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
