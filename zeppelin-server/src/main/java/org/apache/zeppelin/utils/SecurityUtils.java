@@ -44,6 +44,7 @@ import javax.naming.NamingException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.realm.LdapRealm;
+import org.apache.zeppelin.server.ZeppelinServer;
 
 /**
  * Tools for securing Zeppelin.
@@ -91,6 +92,11 @@ public class SecurityUtils {
     String principal;
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
+      if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
+        log.debug("Converting principal name " + principal
+            + " to lower case:" + principal.toLowerCase());
+        principal = principal.toLowerCase();
+      }
     } else {
       principal = ANONYMOUS;
     }
