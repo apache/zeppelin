@@ -186,10 +186,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']"))
           .sendKeys(Keys.ENTER);
-      ZeppelinITUtils.sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      ZeppelinITUtils.sleep(100, true);
+      ZeppelinITUtils.sleep(100, false);
 
       LOG.info("testCreateNotebook Test executed");
     } catch (Exception e) {
@@ -315,7 +315,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       //delete created notebook for cleanup.
       deleteTestNotebook(driver);
-      ZeppelinITUtils.sleep(1000, true);
+      ZeppelinITUtils.sleep(1000, false);
 
       LOG.info("testAngularRunParagraph Test executed");
     }  catch (Exception e) {
