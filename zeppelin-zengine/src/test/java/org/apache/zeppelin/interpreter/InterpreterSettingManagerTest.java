@@ -361,13 +361,4 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
   }
-
-  @Test
-  public void testAddInterpreterDynamically() throws Exception{
-    Set<String> keys = interpreterSettingManager.getInterpreterSettingTemplates().keySet();
-    assertFalse(keys.contains("dynamic"));
-    copyNewInterpreter("added-dynamically-interpreter");
-    Thread.sleep(conf.getInterpreterDirRefreshInterval() * 1000 * 3);
-    assertTrue(keys.contains("dynamic"));
-  }
 }

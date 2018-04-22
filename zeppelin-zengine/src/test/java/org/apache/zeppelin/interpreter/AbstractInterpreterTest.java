@@ -76,8 +76,4 @@ public abstract class AbstractInterpreterTest {
   protected Note createNote() {
     return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
   }
-
-  protected void copyNewInterpreter(String stringPath) throws IOException {
-    FileUtils.copyDirectory(new File("src/test/resources/" + stringPath), interpreterDir);
-  }
 }
