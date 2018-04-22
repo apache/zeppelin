@@ -103,6 +103,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient Object delayedPersistLock = new Object();
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
@@ -856,7 +857,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
-    synchronized (this) {
+    synchronized (delayedPersistLock) {
       if (delayedPersist != null) {
         return;
       }
@@ -876,11 +877,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private void stopDelayedPersistTimer() {
-    synchronized (this) {
+    synchronized (delayedPersistLock) {
       if (delayedPersist == null) {
         return;
       }
-
       delayedPersist.cancel(false);
     }
   }
