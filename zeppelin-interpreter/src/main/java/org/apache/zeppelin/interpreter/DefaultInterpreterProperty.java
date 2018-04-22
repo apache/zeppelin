@@ -18,7 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Property for registered interpreter
+ * Registered interpreter property object (interpreter-setting.json)
  */
 public class DefaultInterpreterProperty {
   private String envName;
@@ -26,32 +26,36 @@ public class DefaultInterpreterProperty {
   private Object defaultValue;
   private String description;
   private String type;
+  private Boolean readonly;
 
   public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
-                                String description, String type) {
+                                String description, String type, Boolean readonly) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
     this.description = description;
     this.type = type;
+    this.readonly = readonly;
   }
 
   public DefaultInterpreterProperty(Object defaultValue, String description, String type) {
-    this(null, null, defaultValue, description, type);
+    this(null, null, defaultValue, description, type, false);
   }
 
   public DefaultInterpreterProperty(Object defaultValue, String description) {
-    this(null, null, defaultValue, description, InterpreterPropertyType.TEXTAREA.getValue());
+    this(null, null, defaultValue, description,
+            InterpreterPropertyType.TEXTAREA.getValue(), false);
   }
 
   public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue) {
-    this(envName, propertyName, defaultValue, null, InterpreterPropertyType.TEXTAREA.getValue());
+    this(envName, propertyName, defaultValue, null,
+            InterpreterPropertyType.TEXTAREA.getValue(), false);
   }
 
   public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue,
       String description) {
     this(envName, propertyName, defaultValue, description,
-        InterpreterPropertyType.TEXTAREA.getValue());
+        InterpreterPropertyType.TEXTAREA.getValue(), false);
   }
 
   public String getEnvName() {
@@ -94,6 +98,14 @@ public class DefaultInterpreterProperty {
     this.type = type;
   }
 
+  public Boolean getReadonly() {
+    return readonly;
+  }
+
+  public void setReadonly(Boolean readonly) {
+    this.readonly = readonly;
+  }
+
   public int hashCode() {
     return this.toString().hashCode();
   }
@@ -122,7 +134,8 @@ public class DefaultInterpreterProperty {
 
   @Override
   public String toString() {
-    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "type=%s}", envName, propertyName, defaultValue, description, type);
+    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, " +
+            "description=%20s, type=%s, readonly=%s}",
+            envName, propertyName, defaultValue, description, type, readonly);
   }
 }

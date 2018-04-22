@@ -58,10 +58,10 @@ import org.apache.zeppelin.server.ZeppelinServer;
 public abstract class AbstractTestRestApi {
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
-  static final String REST_API_URL = "/api";
-  static final String URL = getUrlToTest();
-  protected static final boolean WAS_RUNNING = checkIfServerIsRunning();
-  static boolean isRunningWithAuth = false;
+  private static final String REST_API_URL = "/api";
+  private static final String URL = getUrlToTest();
+  private static final boolean WAS_RUNNING = checkIfServerIsRunning();
+  private static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
   private static String zeppelinShiro =
@@ -126,8 +126,8 @@ public abstract class AbstractTestRestApi {
           + "/bA8TFNPblPxavIOcd+R+RfFmT1YKfYIhco=\n"
           + "-----END CERTIFICATE-----";
 
-  protected static File zeppelinHome;
-  protected static File confDir;
+  private static File zeppelinHome;
+  private static File confDir;
 
   private String getUrl(String path) {
     String url;
@@ -152,7 +152,7 @@ public abstract class AbstractTestRestApi {
     return url;
   }
 
-  static ExecutorService executor;
+  private static ExecutorService executor;
   protected static final Runnable SERVER = new Runnable() {
     @Override
     public void run() {

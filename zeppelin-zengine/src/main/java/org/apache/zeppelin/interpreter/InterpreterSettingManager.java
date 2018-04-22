@@ -62,16 +62,7 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -123,8 +114,6 @@ public class InterpreterSettingManager {
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
 
-
-
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
@@ -170,10 +159,26 @@ public class InterpreterSettingManager {
     LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     this.configStorage = configStorage;
-
     init();
   }
 
+  public Map<String, Set<String>> getAllOwners() {
+    Map<String, Set<String>> authInfo = new HashMap<>();
+    for (InterpreterSetting interpreterSetting : get()) {
+      authInfo.put(interpreterSetting.getId(),
+              interpreterSetting.getOption().getOwners());
+    }
+    return authInfo;
+  }
+
+  public Map<String, Set<String>> getAllReaders() {
+    Map<String, Set<String>> authInfo = new HashMap<>();
+    for (InterpreterSetting interpreterSetting : get()) {
+      authInfo.put(interpreterSetting.getId(),
+              interpreterSetting.getOption().getReaders());
+    }
+    return authInfo;
+  }
 
   private void initInterpreterSetting(InterpreterSetting interpreterSetting) {
     interpreterSetting.setConf(conf)
@@ -297,7 +302,7 @@ public class InterpreterSettingManager {
     }
   }
 
-  public void saveToFile() throws IOException {
+  private void saveToFile() throws IOException {
     synchronized (interpreterSettings) {
       InterpreterInfoSaving info = new InterpreterInfoSaving();
       info.interpreterBindings = interpreterBindings;

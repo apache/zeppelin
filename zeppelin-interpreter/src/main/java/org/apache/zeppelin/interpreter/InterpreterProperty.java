@@ -18,17 +18,22 @@
 package org.apache.zeppelin.interpreter;
 
 /**
- * Property for instance of interpreter
+ * Interpreter property object (interpreter.json)
  */
 public class InterpreterProperty {
   private String name;
   private Object value;
   private String type;
+  private Boolean readonly;
+  private String description;
 
-  public InterpreterProperty(String name, Object value, String type) {
+  public InterpreterProperty(String name, Object value, String type,
+                             Boolean readonly, String description) {
     this.name = name;
     this.value = value;
     this.type = type;
+    this.readonly = readonly;
+    this.description = description;
   }
 
   public InterpreterProperty(String name, Object value) {
@@ -61,8 +66,25 @@ public class InterpreterProperty {
     this.type = type;
   }
 
+  public Boolean getReadonly() {
+    return readonly;
+  }
+
+  public void setReadonly(Boolean readonly) {
+    this.readonly = readonly;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
   @Override
   public String toString() {
-    return String.format("{name=%s, value=%s, type=%s}", name, value, type);
+    return String.format("{name=%s, value=%s, type=%s, readonly=%s}",
+            name, value, type, readonly);
   }
 }

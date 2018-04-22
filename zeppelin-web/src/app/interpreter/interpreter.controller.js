@@ -95,6 +95,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
   $scope.togglePermissions = function(intpName) {
     angular.element('#' + intpName + 'Owners').select2(getSelectJson());
+    angular.element('#' + intpName + 'Readers').select2(getSelectJson());
     if ($scope.showInterpreterAuth) {
       $scope.closePermissions();
     } else {
@@ -105,6 +106,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.$on('ngRenderFinished', function(event, data) {
     for (let setting = 0; setting < $scope.interpreterSettings.length; setting++) {
       angular.element('#' + $scope.interpreterSettings[setting].name + 'Owners').select2(getSelectJson());
+      angular.element('#' + $scope.interpreterSettings[setting].name + 'Readers').select2(getSelectJson());
     }
   });
 
@@ -154,9 +156,16 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
-  let getAvailableInterpreters = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').then(function(res) {
-      $scope.availableInterpreters = res.data.body;
+  let getCustomInterpreters = function() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting').then(function(res) {
+      let customInterpreters = {};
+      for (let i = 0; i < res.data.body.length; i++) {
+        let intSetting = res.data.body[i];
+        if (!intSetting.option.disallowCustomInterpreter) {
+          customInterpreters[i] = intSetting;
+        }
+      }
+      $scope.availableInterpreters = customInterpreters;
     }).catch(function(res) {
       console.log('Error %o %o', res.status, res.data ? res.data.message : '');
     });
@@ -172,7 +181,13 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   };
 
   let emptyNewProperty = function(object) {
-    angular.extend(object, {propertyValue: '', propertyKey: '', propertyType: $scope.interpreterPropertyTypes[0]});
+    angular.extend(object, {
+      propertyKey: '',
+      propertyValue: '',
+      propertyReadonly: false,
+      propertyType: $scope.interpreterPropertyTypes[0],
+      propertyDesc: '',
+    });
   };
 
   let emptyNewDependency = function(object) {
@@ -181,11 +196,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
 
   let removeTMPSettings = function(index) {
     interpreterSettingsTmp.splice(index, 1);
-  };
-
-  $scope.copyOriginInterpreterSettingProperties = function(settingId) {
-    let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
-    interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
   $scope.setPerNoteOption = function(settingId, sessionOption) {
@@ -370,6 +380,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
           if (setting.option.isUserImpersonate === undefined) {
             setting.option.isUserImpersonate = false;
           }
+          if (setting.option.disallowCustomInterpreter === undefined) {
+            setting.option.disallowCustomInterpreter = false;
+          }
           if (!($scope.getInterpreterRunningOption(settingId) === 'Per User' &&
             $scope.getPerUserOption(settingId) === 'isolated')) {
             setting.option.isUserImpersonate = false;
@@ -382,6 +395,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
           for (let i = 0; i < setting.option.owners.length; i++) {
             setting.option.owners[i] = setting.option.owners[i].trim();
           }
+          setting.option.readers = angular.element('#' + setting.name + 'Readers').val();
 
           let request = {
             option: angular.copy(setting.option),
@@ -454,6 +468,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
             value: intpInfo[key].defaultValue,
             description: intpInfo[key].description,
             type: intpInfo[key].type,
+            readonly: intpInfo[key].readonly,
           };
         }
       }
@@ -524,6 +539,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       newSetting.option.setPermission = false;
     }
     newSetting.option.owners = angular.element('#newInterpreterOwners').val();
+    newSetting.option.readers = angular.element('#newInterpreterReaders').val();
 
     let request = angular.copy($scope.newInterpreterSetting);
 
@@ -535,6 +551,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         newProperties[p] = {
           value: newSetting.properties[p].value,
           type: newSetting.properties[p].type,
+          readonly: newSetting.properties[p].readonly,
+          description: newSetting.properties[p].description,
           name: p,
         };
       }
@@ -610,7 +628,9 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       }
       $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
         value: $scope.newInterpreterSetting.propertyValue,
+        readonly: $scope.newInterpreterSetting.propertyReadonly,
         type: $scope.newInterpreterSetting.propertyType,
+        description: $scope.newInterpreterSetting.propertyDesc,
       };
       emptyNewProperty($scope.newInterpreterSetting);
     } else {
@@ -621,10 +641,22 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       if (!setting.propertyKey || setting.propertyKey === '') {
         return;
       }
-
-      setting.properties[setting.propertyKey] =
-        {value: setting.propertyValue, type: setting.propertyType};
-
+      for (let prop in setting.properties) {
+        if (setting.properties[prop].name === setting.propertyKey) {
+          BootstrapDialog.alert({
+            closable: true,
+            title: 'Add property',
+            message: 'Key ' + setting.propertyKey + ' already exists',
+          });
+          return;
+        }
+      }
+      setting.properties[setting.propertyKey] = {
+        value: setting.propertyValue,
+        readonly: setting.propertyReadonly,
+        type: setting.propertyType,
+        description: setting.propertyDesc,
+      };
       emptyNewProperty(setting);
     }
   };
@@ -744,6 +776,24 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   };
 
+  $scope.shouldEdit = function(form, settingId) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
+      .then(function(res) {
+        if (res.data.body === undefined || res.data.body.canWrite) {
+          let index = _.findIndex($scope.interpreterSettings, {'id': settingId});
+          interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
+          form.$show();
+        } else {
+          BootstrapDialog.alert({
+            message: 'No permissions to edit interpreter settings',
+          });
+          form.$cancel();
+        }
+      }).catch(function(res) {
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
+      });
+  };
+
   $scope.showErrorMessage = function(setting) {
     BootstrapDialog.show({
       title: 'Error downloading dependencies',
@@ -758,14 +808,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $scope.resetNewRepositorySetting();
 
     getInterpreterSettings();
-    getAvailableInterpreters();
+    getCustomInterpreters();
     getRepositories();
   };
 
   $scope.showSparkUI = function(settingId) {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
       .then(function(res) {
-        if (res.data.body === undefined) {
+        if (res.data.body.url === undefined) {
           BootstrapDialog.alert({
             message: 'No spark application running',
           });

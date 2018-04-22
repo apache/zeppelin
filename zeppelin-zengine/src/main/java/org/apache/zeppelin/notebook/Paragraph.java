@@ -325,7 +325,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return null;
   }
 
-  private boolean hasPermission(List<String> userAndRoles, List<String> intpUsersAndRoles) {
+  private boolean hasPermission(List<String> userAndRoles, Set<String> intpUsersAndRoles) {
     if (1 > intpUsersAndRoles.size()) {
       return true;
     }
