@@ -226,19 +226,15 @@ public class BigQueryInterpreter extends Interpreter {
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
-    String sqlDialect = getProperty(SQL_DIALECT, "");
-    Boolean useLegacySql;
-    switch (sqlDialect) {
-      case "standardSQL":
-        useLegacySql = false;
-        break;
-      case "legacySQL":
-        useLegacySql = true;
-        break;
-      default:
-        // Enable query prefix like '#standardSQL' if specified
-        useLegacySql = null;
+    String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
+    // Query prefix like '#standardSQL' can be used in case of null
+    Boolean useLegacySql = null;
+    if (sqlDialect.contains("standard")) {
+      useLegacySql = false;
+    } else if (sqlDialect.contains("legacy")) {
+      useLegacySql = true;
     }
+
     Iterator<GetQueryResultsResponse> pages;
     try {
       pages = run(sql, projId, wTime, maxRows, useLegacySql);

@@ -51,7 +51,7 @@ limitations under the License.
   <tr>
     <td>zeppelin.bigquery.sql_dialect</td>
     <td></td>
-    <td>Bigquery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.</td>
+    <td>Bigquery SQL dialect (standardSQL or legacySQL). If empty, [query prefix](https://cloud.google.com/bigquery/docs/reference/standard-sql/enabling-standard-sql#sql-prefix) like '#standardSQL' can be used.</td>
   </tr>
 </table>
 
