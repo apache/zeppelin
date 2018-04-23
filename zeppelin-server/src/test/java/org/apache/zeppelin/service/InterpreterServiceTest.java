@@ -18,8 +18,10 @@
 package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -30,26 +32,23 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.socket.ServiceCallback;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InterpreterServiceTest {
-  @Mock ZeppelinConfiguration mockZeppelinConfiguration;
-  @Mock NotebookServer mockNotebookServer;
-  @Mock InterpreterSettingManager mockInterpreterSettingManager;
+  @Mock private ZeppelinConfiguration mockZeppelinConfiguration;
+  @Mock private InterpreterSettingManager mockInterpreterSettingManager;
 
-  Path temporaryDir;
-  Path interpreterDir;
-  Path localRepoDir;
+  private Path temporaryDir;
+  private Path interpreterDir;
+  private Path localRepoDir;
 
   InterpreterService interpreterService;
 
@@ -109,25 +108,35 @@ public class InterpreterServiceTest {
 
   @Test
   public void downloadInterpreter() throws IOException {
-    String interpreterName = "test-interpreter";
+    final String interpreterName = "test-interpreter";
     String artifactName = "junit:junit:4.11";
     Path specificInterpreterPath =
         Files.createDirectory(Paths.get(interpreterDir.toString(), interpreterName));
     DependencyResolver dependencyResolver = new DependencyResolver(localRepoDir.toString());
 
     doNothing().when(mockInterpreterSettingManager).refreshInterpreterTemplates();
-    ArgumentCaptor<Message> messageArgumentCaptor = ArgumentCaptor.forClass(Message.class);
-    doNothing().when(mockNotebookServer).broadcast(messageArgumentCaptor.capture());
 
     interpreterService.downloadInterpreter(
         new InterpreterInstallationRequest(interpreterName, artifactName),
         dependencyResolver,
         specificInterpreterPath,
-        null);
+        new ServiceCallback() {
+          @Override
+          public void onStart(String message) {
+            assertEquals("Starting to download " + interpreterName + " interpreter", message);
+          }
 
-    Message message = messageArgumentCaptor.getValue();
-    assertNotNull(message.data);
-    assertEquals("Success", message.data.get("result"));
-    assertEquals(interpreterName + " downloaded", message.data.get("message"));
+          @Override
+          public void onSuccess(String message) {
+            assertEquals(interpreterName + " downloaded", message);
+          }
+
+          @Override
+          public void onFailure(String message) {
+            fail();
+          }
+        });
+
+    verify(mockInterpreterSettingManager, times(1)).refreshInterpreterTemplates();
   }
 }

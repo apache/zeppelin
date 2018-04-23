@@ -62,7 +62,7 @@ public class InterpreterService {
   }
 
   public void installInterpreter(
-      final InterpreterInstallationRequest request, final ServiceCallback messageCallback)
+      final InterpreterInstallationRequest request, final ServiceCallback serviceCallback)
       throws Exception {
     Preconditions.checkNotNull(request);
     String interpreterName = request.getName();
@@ -115,7 +115,7 @@ public class InterpreterService {
         new Runnable() {
           @Override
           public void run() {
-            downloadInterpreter(request, dependencyResolver, interpreterDir, messageCallback);
+            downloadInterpreter(request, dependencyResolver, interpreterDir, serviceCallback);
           }
         });
   }
@@ -124,10 +124,12 @@ public class InterpreterService {
       InterpreterInstallationRequest request,
       DependencyResolver dependencyResolver,
       Path interpreterDir,
-      ServiceCallback messageCallback) {
+      ServiceCallback serviceCallback) {
     try {
       logger.info("Start to download a dependency: {}", request.getName());
-      messageCallback.onStart("Starting to download " + request.getName() + " interpreter");
+      if (null != serviceCallback) {
+        serviceCallback.onStart("Starting to download " + request.getName() + " interpreter");
+      }
 
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
@@ -135,7 +137,9 @@ public class InterpreterService {
           "Finish downloading a dependency {} into {}",
           request.getName(),
           interpreterDir.toString());
-      messageCallback.onSuccess(request.getName() + " downloaded");
+      if (null != serviceCallback) {
+        serviceCallback.onSuccess(request.getName() + " downloaded");
+      }
     } catch (RepositoryException | IOException e) {
       logger.error("Error while downloading dependencies", e);
       try {
@@ -146,8 +150,10 @@ public class InterpreterService {
             interpreterDir.toString(),
             e1);
       }
-      messageCallback.onFailure(
-          "Error while downloading " + request.getName() + " as " + e.getMessage());
+      if (null != serviceCallback) {
+        serviceCallback.onFailure(
+            "Error while downloading " + request.getName() + " as " + e.getMessage());
+      }
     }
   }
 }
