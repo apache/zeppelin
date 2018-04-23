@@ -83,19 +83,28 @@ public class InterpreterServiceTest {
     when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn("invalidProxyPath");
 
     interpreterService.installInterpreter(
-        new InterpreterInstallationRequest("name", "artifact"), null, null);
+        new InterpreterInstallationRequest("name", "artifact"), null);
   }
 
   @Test(expected = Exception.class)
   public void interpreterAlreadyExist() throws Exception {
-    when(mockZeppelinConfiguration.getZeppelinProxyUrl()).thenReturn(null);
-
     String alreadyExistName = "aen";
     Path specificInterpreterDir =
         Files.createDirectory(Paths.get(interpreterDir.toString(), alreadyExistName));
 
     interpreterService.installInterpreter(
-        new InterpreterInstallationRequest(alreadyExistName, "artifact"), null, null);
+        new InterpreterInstallationRequest(alreadyExistName, "artifact"), null);
+  }
+
+  @Test(expected = Exception.class)
+  public void interpreterAlreadyExistWithDifferentName() throws Exception {
+    String interpreterName = "in";
+    Files.createDirectory(Paths.get(interpreterDir.toString(), interpreterName));
+
+    String anotherButSameInterpreterName = "zeppelin-" + interpreterName;
+
+    interpreterService.installInterpreter(
+        new InterpreterInstallationRequest(anotherButSameInterpreterName, "artifact"), null);
   }
 
   @Test
@@ -114,7 +123,6 @@ public class InterpreterServiceTest {
         new InterpreterInstallationRequest(interpreterName, artifactName),
         dependencyResolver,
         specificInterpreterPath,
-        null,
         null);
 
     Message message = messageArgumentCaptor.getValue();

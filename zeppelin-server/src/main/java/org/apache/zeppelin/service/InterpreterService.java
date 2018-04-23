@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.service;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,6 +25,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jline.internal.Preconditions;
@@ -42,6 +44,7 @@ import org.sonatype.aether.RepositoryException;
  */
 public class InterpreterService {
 
+  private static final String ZEPPELIN_ARTIFACT_PREFIX = "zeppelin-";
   private static final Logger logger = LoggerFactory.getLogger(InterpreterService.class);
   private static final ExecutorService executorService =
       Executors.newSingleThreadExecutor(
@@ -62,7 +65,8 @@ public class InterpreterService {
       final InterpreterInstallationRequest request, final MessageCallback messageCallback)
       throws Exception {
     Preconditions.checkNotNull(request);
-    Preconditions.checkNotNull(request.getName());
+    String interpreterName = request.getName();
+    Preconditions.checkNotNull(interpreterName);
     Preconditions.checkNotNull(request.getArtifact());
 
     String interpreterBaseDir = conf.getInterpreterDir();
@@ -82,10 +86,23 @@ public class InterpreterService {
       }
     }
 
-    final Path interpreterDir = Paths.get(interpreterBaseDir, request.getName());
-    if (Files.exists(interpreterDir)) {
-      throw new Exception("Interpreter " + request.getName() + " already exists");
+    // TODO(jl): Make a rule between an interpreter name and an installation directory
+    List<String> possibleInterpreterDirectories = Lists.newArrayList();
+    possibleInterpreterDirectories.add(interpreterName);
+    if (interpreterName.startsWith(ZEPPELIN_ARTIFACT_PREFIX)) {
+      possibleInterpreterDirectories.add(interpreterName.replace(ZEPPELIN_ARTIFACT_PREFIX, ""));
+    } else {
+      possibleInterpreterDirectories.add(ZEPPELIN_ARTIFACT_PREFIX + interpreterName);
     }
+
+    for (String pn : possibleInterpreterDirectories) {
+      Path testInterpreterDir = Paths.get(interpreterBaseDir, pn);
+      if (Files.exists(testInterpreterDir)) {
+        throw new Exception("Interpreter " + interpreterName + " already exists with " + pn);
+      }
+    }
+
+    final Path interpreterDir = Paths.get(interpreterBaseDir, interpreterName);
 
     try {
       Files.createDirectories(interpreterDir);
