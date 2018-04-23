@@ -100,7 +100,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
-                     uib-tooltip="Separate Interpreter instance for each note"
+                     uib-tooltip="Separate Interpreter instance for each user"
                      ng-click="setPerUserOption(setting.id, 'scoped')">
                     scoped per user
                   </a>
@@ -117,7 +117,7 @@ limitations under the License.
                 <li>
                   <a style="cursor:pointer"
                      ng-if="getInterpreterRunningOption(setting.id) === 'Per User'"
-                     uib-tooltip="Separate Interpreter process for each note"
+                     uib-tooltip="Separate Interpreter process for each user"
                      ng-click="setPerUserOption(setting.id, 'isolated')">
                     isolated per user
                   </a>
