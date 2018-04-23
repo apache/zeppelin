@@ -34,7 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.socket.MessageCallback;
+import org.apache.zeppelin.socket.ServiceCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -62,7 +62,7 @@ public class InterpreterService {
   }
 
   public void installInterpreter(
-      final InterpreterInstallationRequest request, final MessageCallback messageCallback)
+      final InterpreterInstallationRequest request, final ServiceCallback messageCallback)
       throws Exception {
     Preconditions.checkNotNull(request);
     String interpreterName = request.getName();
@@ -124,7 +124,7 @@ public class InterpreterService {
       InterpreterInstallationRequest request,
       DependencyResolver dependencyResolver,
       Path interpreterDir,
-      MessageCallback messageCallback) {
+      ServiceCallback messageCallback) {
     try {
       logger.info("Start to download a dependency: {}", request.getName());
       messageCallback.onStart("Starting to download " + request.getName() + " interpreter");

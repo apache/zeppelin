@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
-import org.apache.zeppelin.socket.MessageCallback;
+import org.apache.zeppelin.socket.ServiceCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
@@ -310,7 +310,7 @@ public class InterpreterRestApi {
     try {
       interpreterService.installInterpreter(
           request,
-          new MessageCallback() {
+          new ServiceCallback() {
             @Override
             public void onStart(String message) {
               Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);

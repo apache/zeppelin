@@ -18,7 +18,7 @@
 package org.apache.zeppelin.socket;
 
 /** This will be used by some services to pass messages to frontend via WebSocket */
-public interface MessageCallback {
+public interface ServiceCallback {
   void onStart(String message);
 
   void onSuccess(String message);
