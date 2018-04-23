@@ -15,7 +15,6 @@ import java.io.File;
 
 import static org.mockito.Mockito.mock;
 
-
 /**
  * This class will load configuration files under
  *   src/test/resources/interpreter

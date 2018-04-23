@@ -489,6 +489,18 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  public void broadcast(Message m) {
+    synchronized (connectedSockets) {
+      for (NotebookSocket ns : connectedSockets) {
+        try {
+          ns.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("Send error: " + m, e);
+        }
+      }
+    }
+  }
+
   private void broadcast(String noteId, Message m) {
     List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {

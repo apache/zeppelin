@@ -69,6 +69,7 @@ import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.service.InterpreterService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.Credentials;
@@ -93,6 +94,7 @@ public class ZeppelinServer extends Application {
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
+  private InterpreterService interpreterService;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -156,7 +158,7 @@ public class ZeppelinServer extends Application {
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
-    
+
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
     // to update fire websocket event on application event.
@@ -164,6 +166,7 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+    this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
   }
 
   public static void main(String[] args) throws InterruptedException {
@@ -395,8 +398,8 @@ public class ZeppelinServer extends Application {
     HeliumRestApi heliumApi = new HeliumRestApi(helium, notebook);
     singletons.add(heliumApi);
 
-    InterpreterRestApi interpreterApi = new InterpreterRestApi(interpreterSettingManager,
-        notebookWsServer);
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(interpreterService,
+        interpreterSettingManager, notebookWsServer);
     singletons.add(interpreterApi);
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);

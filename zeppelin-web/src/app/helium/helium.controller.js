@@ -196,23 +196,35 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
   $scope.enable = function(name, artifact, type, groupId, description) {
     let license = getLicense(name, artifact);
     let mavenArtifactInfoToHTML = groupId + ':' + artifact.split('@')[0] + ':' + artifact.split('@')[1];
-    let zeppelinVersion = $rootScope.zeppelinVersion;
-    let url = 'https://zeppelin.apache.org/docs/' + zeppelinVersion + '/manual/interpreterinstallation.html';
 
     let confirm = '';
     if (type === HeliumType.INTERPRETER) {
-      confirm = BootstrapDialog.show({
-        title: '',
-        message: '<p>Below command will download maven artifact ' +
-        '<code style="font-size: 11.5px; background-color: #f5f5f5; color: #0a0a0a">' +
-        mavenArtifactInfoToHTML + '</code>' +
-        ' and all of its transitive dependencies into interpreter/interpreter-name directory.<p>' +
-        '<div class="highlight"><pre><code class="text language-text" data-lang="text" style="font-size: 11.5px">' +
-        './bin/install-interpreter.sh --name "interpreter-name" --artifact ' +
-        mavenArtifactInfoToHTML + ' </code></pre>' +
-        '<p>After restart Zeppelin, create interpreter setting and bind it with your note. ' +
-        'For more detailed information, see <a target="_blank" href=' +
-        url + '>Interpreter Installation.</a></p>',
+      confirm = BootstrapDialog.confirm({
+        closable: false,
+        closeByBackdrop: false,
+        closeByKeyboard: false,
+        title: '<div style="font-weight: 300;">Do you want to download an interpreter?</div>',
+        message: '<div style="font-size: 14px; margin-top: 5px;">Name</div>' +
+          `<div style="color:gray">${name}</div>` +
+          '<hr style="margin-top: 10px; margin-bottom: 10px;" />' +
+          '<div style="font-size: 14px; margin-bottom: 2px;">Artifact</div>' +
+          `<div style="color:gray">${mavenArtifactInfoToHTML}</div>`,
+        callback: function(result) {
+          if (result) {
+            heliumService.installInterpreter({'name': name, 'artifact': mavenArtifactInfoToHTML})
+            .success(function(data, status) {
+              confirm.close();
+            }).error(function(data, status) {
+              confirm.close();
+              console.log('Failed to install an interpreter %o %o', name, artifact);
+              BootstrapDialog.show({
+                title: 'Error while starting to install ' + name + ' interpreter',
+                message: _.escape(data.message),
+              });
+            });
+            return false;
+          }
+        },
       });
     } else {
       confirm = BootstrapDialog.confirm({
