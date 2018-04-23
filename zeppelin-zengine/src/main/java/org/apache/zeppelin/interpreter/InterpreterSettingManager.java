@@ -104,7 +104,6 @@ public class InterpreterSettingManager {
    */
   private final Map<String, InterpreterSetting> interpreterSettings =
       Maps.newConcurrentMap();
-  private final ReentrantReadWriteLock interpreterSettingsLock = new ReentrantReadWriteLock();
 
   /**
    * noteId --> list of InterpreterSettingId
@@ -124,8 +123,6 @@ public class InterpreterSettingManager {
   private LifecycleManager lifecycleManager;
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
-
-
 
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
@@ -201,9 +198,7 @@ public class InterpreterSettingManager {
       for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
         InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
         initInterpreterSetting(interpreterSetting);
-        interpreterSettingsLock.writeLock().lock();
         interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
-        interpreterSettingsLock.writeLock().unlock();
       }
       return;
     }
@@ -215,11 +210,9 @@ public class InterpreterSettingManager {
       List<String> oldSettingIdList = entry.getValue();
       List<String> newSettingIdList = new ArrayList<>();
       for (String oldId : oldSettingIdList) {
-        interpreterSettingsLock.readLock().lock();
         if (infoSaving.interpreterSettings.containsKey(oldId)) {
           newSettingIdList.add(infoSaving.interpreterSettings.get(oldId).getName());
         }
-        interpreterSettingsLock.readLock().unlock();
       }
       newBindingMap.put(noteId, newSettingIdList);
     }
@@ -277,19 +270,15 @@ public class InterpreterSettingManager {
 
       // Overwrite the default InterpreterSetting we registered from InterpreterSetting Templates
       // remove it first
-      interpreterSettingsLock.writeLock().lock();
       for (InterpreterSetting setting : interpreterSettings.values()) {
         if (setting.getName().equals(savedInterpreterSetting.getName())) {
           interpreterSettings.remove(setting.getId());
         }
       }
-      interpreterSettingsLock.writeLock().unlock();
       savedInterpreterSetting.postProcessing();
       LOGGER.info("Create Interpreter Setting {} from interpreter.json",
           savedInterpreterSetting.getName());
-      interpreterSettingsLock.writeLock().lock();
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
-      interpreterSettingsLock.writeLock().unlock();
     }
 
     if (infoSaving.interpreterRepositories != null) {
@@ -301,11 +290,9 @@ public class InterpreterSettingManager {
 
       // force interpreter dependencies loading once the
       // repositories have been loaded.
-      interpreterSettingsLock.readLock().lock();
       for (InterpreterSetting setting : interpreterSettings.values()) {
         setting.setDependencies(setting.getDependencies());
       }
-      interpreterSettingsLock.readLock().unlock();
     }
   }
 
@@ -449,7 +436,6 @@ public class InterpreterSettingManager {
 
   public List<InterpreterSetting> getInterpreterSettings(String noteId) {
     List<InterpreterSetting> settings = new ArrayList<>();
-    interpreterSettingsLock.readLock().lock();
       List<String> interpreterSettingIds = interpreterBindings.get(noteId);
       if (interpreterSettingIds != null) {
         for (String settingId : interpreterSettingIds) {
@@ -461,13 +447,11 @@ public class InterpreterSettingManager {
           }
         }
       }
-    interpreterSettingsLock.readLock().unlock();
     return settings;
   }
 
   public InterpreterSetting getInterpreterSettingByName(String name) {
     try {
-      interpreterSettingsLock.readLock().lock();
       for (InterpreterSetting setting : interpreterSettings.values()) {
         if (setting.getName().equals(name)) {
           return setting;
@@ -475,7 +459,6 @@ public class InterpreterSettingManager {
       }
       throw new RuntimeException("No such interpreter setting: " + name);
     } finally {
-      interpreterSettingsLock.readLock().unlock();
     }
   }
 
@@ -724,7 +707,6 @@ public class InterpreterSettingManager {
       throws IOException {
     List<String> unBindedSettingIdList = new LinkedList<>();
 
-    interpreterSettingsLock.readLock().lock();
     List<String> oldSettingIdList = interpreterBindings.get(noteId);
     if (oldSettingIdList != null) {
       for (String oldSettingId : oldSettingIdList) {
@@ -745,7 +727,6 @@ public class InterpreterSettingManager {
         interpreterSetting.closeInterpreters(user, noteId);
       }
     }
-    interpreterSettingsLock.readLock().unlock();
   }
 
   public List<String> getInterpreterBinding(String noteId) {
@@ -812,9 +793,7 @@ public class InterpreterSettingManager {
       Map<String, InterpreterProperty> properties,
       List<Dependency> dependencies)
       throws InterpreterException, IOException {
-    interpreterSettingsLock.readLock().lock();
     InterpreterSetting intpSetting = interpreterSettings.get(id);
-    interpreterSettingsLock.readLock().unlock();
     if (intpSetting != null) {
       try {
         intpSetting.close();
@@ -836,9 +815,7 @@ public class InterpreterSettingManager {
   public void restart(String settingId, String noteId, String user) throws InterpreterException {
     InterpreterSetting intpSetting = interpreterSettings.get(settingId);
     Preconditions.checkNotNull(intpSetting);
-    interpreterSettingsLock.readLock().lock();
     intpSetting = interpreterSettings.get(settingId);
-    interpreterSettingsLock.readLock().unlock();
     // Check if dependency in specified path is changed
     // If it did, overwrite old dependency jar with new one
     if (intpSetting != null) {
@@ -856,12 +833,7 @@ public class InterpreterSettingManager {
   }
 
   public InterpreterSetting get(String id) {
-    try {
-      interpreterSettingsLock.readLock().lock();
-      return interpreterSettings.get(id);
-    } finally {
-      interpreterSettingsLock.readLock().unlock();
-    }
+    return interpreterSettings.get(id);
   }
 
   @VisibleForTesting
@@ -880,23 +852,20 @@ public class InterpreterSettingManager {
     // 3. remove this interpreter setting from note binding
     // 4. clean local repo directory
     LOGGER.info("Remove interpreter setting: " + id);
-    synchronized (interpreterSettings) {
-      if (interpreterSettings.containsKey(id)) {
-
-        InterpreterSetting intp = interpreterSettings.get(id);
-        intp.close();
-        interpreterSettings.remove(id);
-        for (List<String> settings : interpreterBindings.values()) {
-          Iterator<String> it = settings.iterator();
-          while (it.hasNext()) {
-            String settingId = it.next();
-            if (settingId.equals(id)) {
-              it.remove();
-            }
+    if (interpreterSettings.containsKey(id)) {
+      InterpreterSetting intp = interpreterSettings.get(id);
+      intp.close();
+      interpreterSettings.remove(id);
+      for (List<String> settings : interpreterBindings.values()) {
+        Iterator<String> it = settings.iterator();
+        while (it.hasNext()) {
+          String settingId = it.next();
+          if (settingId.equals(id)) {
+            it.remove();
           }
         }
-        saveToFile();
       }
+      saveToFile();
     }
 
     File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
@@ -907,9 +876,7 @@ public class InterpreterSettingManager {
    * Get interpreter settings
    */
   public List<InterpreterSetting> get() {
-    interpreterSettingsLock.readLock().lock();
     List<InterpreterSetting> orderedSettings = new ArrayList<>(interpreterSettings.values());
-    interpreterSettingsLock.readLock().unlock();
     Collections.sort(orderedSettings, new Comparator<InterpreterSetting>() {
       @Override
       public int compare(InterpreterSetting o1, InterpreterSetting o2) {
@@ -954,9 +921,7 @@ public class InterpreterSettingManager {
 
   public void close() {
     List<Thread> closeThreads = new LinkedList<>();
-    interpreterSettingsLock.readLock().lock();
     Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
-    interpreterSettingsLock.readLock().unlock();
     for (final InterpreterSetting intpSetting : intpSettings) {
       Thread t =
           new Thread() {
