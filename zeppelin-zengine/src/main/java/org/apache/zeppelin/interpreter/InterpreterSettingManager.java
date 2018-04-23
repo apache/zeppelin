@@ -24,7 +24,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -65,7 +64,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -921,8 +919,7 @@ public class InterpreterSettingManager {
 
   public void close() {
     List<Thread> closeThreads = new LinkedList<>();
-    Collection<InterpreterSetting> intpSettings = interpreterSettings.values();
-    for (final InterpreterSetting intpSetting : intpSettings) {
+    for (final InterpreterSetting intpSetting : interpreterSettings.values()) {
       Thread t =
           new Thread() {
             public void run() {
