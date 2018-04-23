@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,7 +24,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jline.internal.Preconditions;
@@ -55,8 +53,7 @@ public class InterpreterService {
   private final InterpreterSettingManager interpreterSettingManager;
 
   public InterpreterService(
-      ZeppelinConfiguration conf,
-      InterpreterSettingManager interpreterSettingManager) {
+      ZeppelinConfiguration conf, InterpreterSettingManager interpreterSettingManager) {
     this.conf = conf;
     this.interpreterSettingManager = interpreterSettingManager;
   }
@@ -111,12 +108,9 @@ public class InterpreterService {
       DependencyResolver dependencyResolver,
       Path interpreterDir,
       MessageCallback messageCallback) {
-    Map<String, Object> result = Maps.newHashMap();
     try {
       logger.info("Start to download a dependency: {}", request.getName());
-      result.put("result", "Starting");
-      result.put("message", "Starting to download " + request.getName() + " interpreter");
-      messageCallback.onStart(result);
+      messageCallback.onStart("Starting to download " + request.getName() + " interpreter");
 
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
@@ -124,8 +118,7 @@ public class InterpreterService {
           "Finish downloading a dependency {} into {}",
           request.getName(),
           interpreterDir.toString());
-      result.put("result", "Success");
-      result.put("message", request.getName() + " downloaded");
+      messageCallback.onSuccess(request.getName() + " downloaded");
     } catch (RepositoryException | IOException e) {
       logger.error("Error while downloading dependencies", e);
       try {
@@ -136,11 +129,8 @@ public class InterpreterService {
             interpreterDir.toString(),
             e1);
       }
-      result.put("result", "Failed");
-      result.put(
-          "message", "Error while downloading " + request.getName() + " as " + e.getMessage());
+      messageCallback.onFailure(
+          "Error while downloading " + request.getName() + " as " + e.getMessage());
     }
-
-    messageCallback.onSuccess(result);
   }
 }

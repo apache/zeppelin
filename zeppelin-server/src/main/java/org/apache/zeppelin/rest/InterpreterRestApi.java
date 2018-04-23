@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.common.collect.Maps;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -311,22 +312,31 @@ public class InterpreterRestApi {
           request,
           new MessageCallback() {
             @Override
-            public void onStart(Map<String, Object> data) {
+            public void onStart(String message) {
               Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Starting");
+              data.put("message", message);
               m.data = data;
               notebookServer.broadcast(m);
             }
 
             @Override
-            public void onSuccess(Map<String, Object> data) {
+            public void onSuccess(String message) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Succeed");
+              data.put("message", message);
               m.data = data;
               notebookServer.broadcast(m);
             }
 
             @Override
-            public void onFailure(Map<String, Object> data) {
+            public void onFailure(String message) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Failed");
+              data.put("message", message);
               m.data = data;
               notebookServer.broadcast(m);
             }
