@@ -428,10 +428,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
-  public int getInterpreterDirRefreshInterval() {
-    return getInt(ConfVars.ZEPPELIN_INTERPRETER_DIR_REFRESH_INTERVAL);
-  }
-
   public String getInterpreterJson() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_JSON);
   }
@@ -721,7 +717,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         ),
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
-    ZEPPELIN_INTERPRETER_DIR_REFRESH_INTERVAL("zeppelin.interpreter.dir.refresh.interval", 10 * 60),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
         "http://repo1.maven.org/maven2/"),
