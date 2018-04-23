@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.rest;
 
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.socket.MessageCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -69,26 +69,14 @@ public class InterpreterRestApi {
   private final InterpreterService interpreterService;
   private final InterpreterSettingManager interpreterSettingManager;
   private final NotebookServer notebookServer;
-  private final Gson gson;
 
-  public InterpreterRestApi() {
-    //TODO(jl): Is this constructor needed?
-    this(null, null, null);
-  }
-
-  public InterpreterRestApi(InterpreterService interpreterService,
-      InterpreterSettingManager interpreterSettingManager, NotebookServer notebookWsServer) {
-    this(interpreterService, interpreterSettingManager, notebookWsServer,
-        new GsonBuilder().create());
-  }
-
-  public InterpreterRestApi(InterpreterService interpreterService,
-          InterpreterSettingManager interpreterSettingManager, NotebookServer notebookWsServer,
-          Gson gson) {
+  public InterpreterRestApi(
+      InterpreterService interpreterService,
+      InterpreterSettingManager interpreterSettingManager,
+      NotebookServer notebookWsServer) {
     this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
-    this.gson = gson;
   }
 
   /**
@@ -323,14 +311,24 @@ public class InterpreterRestApi {
           request,
           new MessageCallback() {
             @Override
-            public void broadcastMessage(Message message) {
-              notebookServer.broadcast(message);
+            public void onStart(Map<String, Object> data) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
+              m.data = data;
+              notebookServer.broadcast(m);
             }
-          },
-          new MessageCallback() {
+
             @Override
-            public void broadcastMessage(Message message) {
-              notebookServer.broadcast(message);
+            public void onSuccess(Map<String, Object> data) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+
+            @Override
+            public void onFailure(Map<String, Object> data) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              m.data = data;
+              notebookServer.broadcast(m);
             }
           });
     } catch (Throwable t) {

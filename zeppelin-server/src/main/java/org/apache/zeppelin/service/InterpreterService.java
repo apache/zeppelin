@@ -33,8 +33,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.notebook.socket.Message;
-import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.socket.MessageCallback;
 import org.slf4j.Logger;
@@ -64,9 +62,7 @@ public class InterpreterService {
   }
 
   public void installInterpreter(
-      final InterpreterInstallationRequest request,
-      final MessageCallback startedMessage,
-      final MessageCallback finishedMessage)
+      final InterpreterInstallationRequest request, final MessageCallback messageCallback)
       throws Exception {
     Preconditions.checkNotNull(request);
     Preconditions.checkNotNull(request.getName());
@@ -105,8 +101,7 @@ public class InterpreterService {
         new Runnable() {
           @Override
           public void run() {
-            downloadInterpreter(
-                request, dependencyResolver, interpreterDir, startedMessage, finishedMessage);
+            downloadInterpreter(request, dependencyResolver, interpreterDir, messageCallback);
           }
         });
   }
@@ -115,21 +110,20 @@ public class InterpreterService {
       InterpreterInstallationRequest request,
       DependencyResolver dependencyResolver,
       Path interpreterDir,
-      MessageCallback startedMessage,
-      MessageCallback finishedMessage) {
-    Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
+      MessageCallback messageCallback) {
     Map<String, Object> result = Maps.newHashMap();
     try {
       logger.info("Start to download a dependency: {}", request.getName());
       result.put("result", "Starting");
       result.put("message", "Starting to download " + request.getName() + " interpreter");
-      m.data = result;
-      if (null != startedMessage) {
-        startedMessage.broadcastMessage(m);
-      }
+      messageCallback.onStart(result);
+
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
       interpreterSettingManager.refreshInterpreterTemplates();
-      logger.info("Finish downloading a dependency: {}", request.getName());
+      logger.info(
+          "Finish downloading a dependency {} into {}",
+          request.getName(),
+          interpreterDir.toString());
       result.put("result", "Success");
       result.put("message", request.getName() + " downloaded");
     } catch (RepositoryException | IOException e) {
@@ -147,9 +141,6 @@ public class InterpreterService {
           "message", "Error while downloading " + request.getName() + " as " + e.getMessage());
     }
 
-    m.op = OP.INTERPRETER_INSTALL_RESULT;
-    if (null != finishedMessage) {
-      finishedMessage.broadcastMessage(m);
-    }
+    messageCallback.onSuccess(result);
   }
 }

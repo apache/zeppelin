@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.socket;
 
-import org.apache.zeppelin.notebook.socket.Message;
+import java.util.Map;
 
 /** This will be used by some services to pass messages to frontend via WebSocket */
 public interface MessageCallback {
-  void broadcastMessage(Message message);
+  void onStart(Map<String, Object> data);
+  void onSuccess(Map<String, Object> data);
+  void onFailure(Map<String, Object> data);
 }
