@@ -30,6 +30,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -128,7 +129,17 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   protected boolean validateToken(String token) {
     try {
       SignedJWT signed = SignedJWT.parse(token);
-      return validateSignature(signed);
+      boolean sigValid = validateSignature(signed);
+      if (!sigValid) {
+        LOGGER.warn("Signature of JWT token could not be verified. Please check the public key");
+        return false;
+      }
+      boolean expValid = validateExpiration(signed);
+      if (!expValid) {
+        LOGGER.warn("Expiration time validation of JWT token failed.");
+        return false;
+      }
+      return true;
     } catch (ParseException ex) {
       LOGGER.info("ParseException in validateToken", ex);
       return false;
@@ -180,6 +191,33 @@ public class KnoxJwtRealm extends AuthorizingRealm {
           LOGGER.info("Exception in validateSignature", e);
         }
       }
+    }
+    return valid;
+  }
+
+  /**
+   * Validate that the expiration time of the JWT token has not been violated.
+   * If it has then throw an AuthenticationException. Override this method in
+   * subclasses in order to customize the expiration validation behavior.
+   *
+   * @param jwtToken
+   *            the token that contains the expiration date to validate
+   * @return valid true if the token has not expired; false otherwise
+   */
+  protected boolean validateExpiration(SignedJWT jwtToken) {
+    boolean valid = false;
+    try {
+      Date expires = jwtToken.getJWTClaimsSet().getExpirationTime();
+      if (expires == null || new Date().before(expires)) {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("SSO token expiration date has been " + "successfully validated");
+        }
+        valid = true;
+      } else {
+        LOGGER.warn("SSO expiration date validation failed.");
+      }
+    } catch (ParseException pe) {
+      LOGGER.warn("SSO expiration date validation failed.", pe);
     }
     return valid;
   }
