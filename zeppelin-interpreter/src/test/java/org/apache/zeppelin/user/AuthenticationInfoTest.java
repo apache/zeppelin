@@ -28,7 +28,7 @@ public class AuthenticationInfoTest {
 
   @Test
   public void testRoles() {
-    final String roles = "[role1, role2, role with space]";
+    final String roles = "[\"role1\", \"role2\", \"role with space\"]";
 
     final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
         roles, "bar");
