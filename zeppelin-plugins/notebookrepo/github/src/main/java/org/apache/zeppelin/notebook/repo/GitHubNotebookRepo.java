@@ -45,13 +45,14 @@ import java.net.URISyntaxException;
  * - When commit the changes (saving the notebook)
  */
 public class GitHubNotebookRepo extends GitNotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepo.class);
   private ZeppelinConfiguration zeppelinConfiguration;
   private Git git;
 
-  public GitHubNotebookRepo(ZeppelinConfiguration conf) throws IOException {
-    super(conf);
-
+  @Override
+  public void init(ZeppelinConfiguration conf) throws IOException {
+    super.init(conf);
+    LOG.debug("initializing GitHubNotebookRepo");
     this.git = super.getGit();
     this.zeppelinConfiguration = conf;
 
@@ -91,7 +92,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
   private void pullFromRemoteStream() {
     try {
-      LOG.debug("Pull latest changed from remote stream");
+      LOG.debug("Pulling latest changes from remote stream");
       PullCommand pullCommand = git.pull();
       pullCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
@@ -109,7 +110,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
   private void pushToRemoteSteam() {
     try {
-      LOG.debug("Push latest changed from remote stream");
+      LOG.debug("Pushing latest changes to remote stream");
       PushCommand pushCommand = git.push();
       pushCommand.setCredentialsProvider(
         new UsernamePasswordCredentialsProvider(
@@ -120,7 +121,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
       pushCommand.call();
     } catch (GitAPIException e) {
-      LOG.error("Error when pushing latest changes from remote repository", e);
+      LOG.error("Error when pushing latest changes to remote repository", e);
     }
   }
 }
