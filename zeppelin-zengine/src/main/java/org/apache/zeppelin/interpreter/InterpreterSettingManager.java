@@ -434,17 +434,17 @@ public class InterpreterSettingManager {
 
   public List<InterpreterSetting> getInterpreterSettings(String noteId) {
     List<InterpreterSetting> settings = new ArrayList<>();
-      List<String> interpreterSettingIds = interpreterBindings.get(noteId);
-      if (interpreterSettingIds != null) {
-        for (String settingId : interpreterSettingIds) {
-          if (interpreterSettings.containsKey(settingId)) {
-            settings.add(interpreterSettings.get(settingId));
-          } else {
-            LOGGER.warn("InterpreterSetting {} has been removed, but note {} still bind to it.",
-                settingId, noteId);
-          }
+    List<String> interpreterSettingIds = interpreterBindings.get(noteId);
+    if (interpreterSettingIds != null) {
+      for (String settingId : interpreterSettingIds) {
+        if (interpreterSettings.containsKey(settingId)) {
+          settings.add(interpreterSettings.get(settingId));
+        } else {
+          LOGGER.warn("InterpreterSetting {} has been removed, but note {} still bind to it.",
+              settingId, noteId);
         }
       }
+    }
     return settings;
   }
 
@@ -616,36 +616,36 @@ public class InterpreterSettingManager {
    */
   private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
     setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
-      final Thread t = new Thread() {
-        public void run() {
-          try {
-            List<Dependency> deps = setting.getDependencies();
-            if (deps != null) {
-              for (Dependency d : deps) {
-                File destDir = new File(
-                    conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    final Thread t = new Thread() {
+      public void run() {
+        try {
+          List<Dependency> deps = setting.getDependencies();
+          if (deps != null) {
+            for (Dependency d : deps) {
+              File destDir = new File(
+                  conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
-                int numSplits = d.getGroupArtifactVersion().split(":").length;
-                if (!(numSplits >= 3 && numSplits <= 6)) {
-                  dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
-                      new File(destDir, setting.getId()));
-                }
+              int numSplits = d.getGroupArtifactVersion().split(":").length;
+              if (!(numSplits >= 3 && numSplits <= 6)) {
+                dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                    new File(destDir, setting.getId()));
               }
             }
-            setting.setStatus(InterpreterSetting.Status.READY);
-          } catch (Exception e) {
-            LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
-                    " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly.",
-                setting.getGroup()), e);
-            setting.setErrorReason(e.getLocalizedMessage());
-            setting.setStatus(InterpreterSetting.Status.ERROR);
-          } finally {
-
           }
+          setting.setStatus(InterpreterSetting.Status.READY);
+        } catch (Exception e) {
+          LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
+                  " go to interpreter setting page click on edit and save it again to make " +
+                  "this interpreter work properly.",
+              setting.getGroup()), e);
+          setting.setErrorReason(e.getLocalizedMessage());
+          setting.setStatus(InterpreterSetting.Status.ERROR);
+        } finally {
+
         }
-      };
-      t.start();
+      }
+    };
+    t.start();
   }
 
   /**
