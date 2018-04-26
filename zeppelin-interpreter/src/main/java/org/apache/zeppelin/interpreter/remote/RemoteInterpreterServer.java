@@ -643,9 +643,9 @@ public class RemoteInterpreterServer extends Thread
     logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
-    Job job = intp.getScheduler().removeFromWaitingQueue(jobId);
+    Job job = intp.getScheduler().getJob(jobId);
 
-    if (job != null) {
+    if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
     } else {
       try {
@@ -797,20 +797,13 @@ public class RemoteInterpreterServer extends Thread
         logger.info("getStatus:" + Status.UNKNOWN.name());
         return Status.UNKNOWN.name();
       }
-      //TODO(zjffdu) ineffient for loop interpreter and its jobs
-      for (Interpreter intp : interpreters) {
-        for (Job job : intp.getScheduler().getJobsRunning()) {
-          if (jobId.equals(job.getId())) {
-            logger.info("getStatus:" + job.getStatus().name());
-            return job.getStatus().name();
-          }
-        }
 
-        for (Job job : intp.getScheduler().getJobsWaiting()) {
-          if (jobId.equals(job.getId())) {
-            logger.info("getStatus:" + job.getStatus().name());
-            return job.getStatus().name();
-          }
+      for (Interpreter intp : interpreters) {
+        Job job = intp.getScheduler().getJob(jobId);
+        logger.info("job:" + job);
+        if (job != null) {
+          logger.info("getStatus: " + job.getStatus().name());
+          return job.getStatus().name();
         }
       }
     }
