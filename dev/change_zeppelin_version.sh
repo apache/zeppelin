@@ -76,5 +76,5 @@ if is_dev_version "${FROM_VERSION}" || ! is_dev_version "${TO_VERSION}"; then
 
   # Change interpreter's maven version in docs and interpreter-list
   sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' conf/interpreter-list
-  sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' docs/manual/interpreterinstallation.md 
+  sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' docs/usage/interpreter/installation.md
 fi
