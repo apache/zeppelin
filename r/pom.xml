@@ -21,16 +21,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>zeppelin</artifactId>
+    <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <version>0.8.1-SNAPSHOT</version>
+    <relativePath>../interpreter-parent</relativePath>
   </parent>
 
-  <artifactId>zeppelin-zrinterpreter_2.10</artifactId>
+  <groupId>org.apache.zeppelin</groupId>
+  <artifactId>zeppelin-zrinterpreter_${scala.binary.version}</artifactId>
   <packaging>jar</packaging>
+  <version>0.8.1-SNAPSHOT</version>
   <name>Zeppelin: R Interpreter</name>
   <description>R Interpreter for Zeppelin</description>
+  <url>http://zeppelin.apache.org</url>
 
   <properties>
     <script.extension>.sh</script.extension>
@@ -77,7 +80,7 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-spark_${scala.binary.version}</artifactId>
+      <artifactId>spark-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -351,7 +354,6 @@
       </plugin>
     </plugins>
   </build>
-
 
   <profiles>
     <profile>
