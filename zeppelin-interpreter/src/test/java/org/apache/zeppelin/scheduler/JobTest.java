@@ -79,6 +79,6 @@ public class JobTest {
 
     Object failedResult = spyInterpretJob.getReturn();
     assertTrue(failedResult instanceof InterpreterResult);
-    assertEquals(((InterpreterResult)failedResult).message().get(0).getData(), failedMessage);
+    assertEquals(((InterpreterResult) failedResult).message().get(0).getData(), failedMessage);
   }
 }
