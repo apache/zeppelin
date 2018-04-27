@@ -109,7 +109,7 @@ public class BigQueryInterpreter extends Interpreter {
   static final String PROJECT_ID = "zeppelin.bigquery.project_id";
   static final String WAIT_TIME = "zeppelin.bigquery.wait_time";
   static final String MAX_ROWS = "zeppelin.bigquery.max_no_of_rows";
-  static final String LEGACY_SQL = "zeppelin.bigquery.use_legacy_sql";
+  static final String SQL_DIALECT = "zeppelin.bigquery.sql_dialect";
 
   private static String jobId = null;
   private static String projectId = null;
@@ -246,8 +246,19 @@ public class BigQueryInterpreter extends Interpreter {
     String projId = getProperty(PROJECT_ID);
     long wTime = Long.parseLong(getProperty(WAIT_TIME));
     long maxRows = Long.parseLong(getProperty(MAX_ROWS));
-    String legacySql = getProperty(LEGACY_SQL);
-    boolean useLegacySql = legacySql == null ? true : Boolean.parseBoolean(legacySql);
+    String sqlDialect = getProperty(SQL_DIALECT, "").toLowerCase();
+    Boolean useLegacySql;
+    switch (sqlDialect) {
+      case "standardsql":
+        useLegacySql = false;
+        break;
+      case "legacysql":
+        useLegacySql = true;
+        break;
+      default:
+        // Enable query prefix like '#standardSQL' if specified
+        useLegacySql = null;
+    }
     Iterator<GetQueryResultsResponse> pages;
     try {
       pages = run(sql, projId, wTime, maxRows, useLegacySql);
@@ -267,7 +278,7 @@ public class BigQueryInterpreter extends Interpreter {
 
   //Function to run the SQL on bigQuery service
   public static Iterator<GetQueryResultsResponse> run(final String queryString,
-    final String projId, final long wTime, final long maxRows, boolean useLegacySql)
+    final String projId, final long wTime, final long maxRows, Boolean useLegacySql)
       throws IOException {
     try {
       logger.info("Use legacy sql: {}", useLegacySql);

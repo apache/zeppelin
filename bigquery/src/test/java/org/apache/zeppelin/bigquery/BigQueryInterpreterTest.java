@@ -90,6 +90,7 @@ public class BigQueryInterpreterTest {
     p.setProperty("zeppelin.bigquery.project_id", CONSTANTS.getProjectId());
     p.setProperty("zeppelin.bigquery.wait_time", "5000");
     p.setProperty("zeppelin.bigquery.max_no_of_rows", "100");
+    p.setProperty("zeppelin.bigquery.sql_dialect", "");
 
     intpGroup = new InterpreterGroup();
 
@@ -102,7 +103,6 @@ public class BigQueryInterpreterTest {
   @Test
   public void sqlSuccess() {
     InterpreterResult ret = bqInterpreter.interpret(CONSTANTS.getOne(), context);
-
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(ret.message().get(0).getType(), InterpreterResult.Type.TABLE);
 
@@ -111,8 +111,23 @@ public class BigQueryInterpreterTest {
   @Test
   public void badSqlSyntaxFails() {
     InterpreterResult ret = bqInterpreter.interpret(CONSTANTS.getWrong(), context);
-
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
   }
 
+  @Test
+  public void testWithQueryPrefix() {
+    InterpreterResult ret = bqInterpreter.interpret(
+        "#standardSQL\n WITH t AS (select 1) SELECT * FROM t", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+  }
+
+  @Test
+  public void testInterpreterOutputData() {
+    InterpreterResult ret = bqInterpreter.interpret("SELECT 1 AS col1, 2 AS col2", context);
+    String[] lines = ret.message().get(0).getData().split("\\n");
+    assertEquals(2, lines.length);
+    assertEquals("col1\tcol2", lines[0]);
+    assertEquals("1\t2", lines[1]);
+  }
+>>>>>>> 0c3b446... ZEPPELIN-3412 Enable query prefix syntax in bigquery interpreter
 }
