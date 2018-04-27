@@ -29,7 +29,7 @@
         "envName": null,
         "propertyName": "zeppelin.bigquery.sql_dialect",
         "defaultValue": "",
-        "description": "Bigquery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.",
+        "description": "BigQuery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.",
         "type": "string"
       }
     },
