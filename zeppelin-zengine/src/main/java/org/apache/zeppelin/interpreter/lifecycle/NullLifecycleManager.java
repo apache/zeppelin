@@ -32,13 +32,7 @@ public class NullLifecycleManager implements LifecycleManager {
   }
 
   @Override
-  public void onInterpreterGroupCreated(ManagedInterpreterGroup interpreterGroup) {
-
-  }
-
-  @Override
-  public void onInterpreterSessionCreated(ManagedInterpreterGroup interpreterGroup,
-                                          String sessionId) {
+  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {
 
   }
 
