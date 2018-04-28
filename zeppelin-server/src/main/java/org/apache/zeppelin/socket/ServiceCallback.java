@@ -15,28 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.user;
+package org.apache.zeppelin.socket;
 
-import static org.junit.Assert.assertEquals;
+/** This will be used by some services to pass messages to frontend via WebSocket */
+public interface ServiceCallback {
+  void onStart(String message);
 
-import java.util.ArrayList;
-import java.util.Arrays;
+  void onSuccess(String message);
 
-import org.junit.Test;
-
-public class AuthenticationInfoTest {
-
-  @Test
-  public void testRoles() {
-    final String roles = "[\"role1\", \"role2\", \"role with space\"]";
-
-    final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
-        roles, "bar");
-
-    assertEquals(
-        new ArrayList<>(Arrays.asList("role1", "role2", "role with space")),
-        authenticationInfo.getRoles());
-
-  }
-
+  void onFailure(String message);
 }

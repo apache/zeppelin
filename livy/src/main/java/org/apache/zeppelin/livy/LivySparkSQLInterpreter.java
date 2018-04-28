@@ -17,24 +17,34 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.user.AuthenticationInfo;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.ResultMessages;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.user.AuthenticationInfo;
+
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
  */
 public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
-
   public static final String ZEPPELIN_LIVY_SPARK_SQL_FIELD_TRUNCATE =
       "zeppelin.livy.spark.sql.field.truncate";
 
@@ -230,12 +240,13 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
   }
 
   /**
-   * Represent the start and end index of each cell
+   * Represent the start and end index of each cell.
    */
   private static class Pair {
     private int start;
     private int end;
-    public Pair(int start, int end) {
+
+    Pair(int start, int end) {
       this.start = start;
       this.end = end;
     }

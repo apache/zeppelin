@@ -17,21 +17,13 @@
 
 package org.apache.zeppelin.livy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.livy.test.framework.Cluster;
 import org.apache.livy.test.framework.Cluster$;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,13 +34,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 public class LivyInterpreterIT {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LivyInterpreterIT.class);
   private static Cluster cluster;
   private static Properties properties;
 
@@ -313,16 +311,18 @@ public class LivyInterpreterIT {
     // test result string truncate
     if (!isSpark2) {
       result = sparkInterpreter.interpret(
-          "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
-              + "df.collect()", context);
+          "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20)))"
+                  + ".toDF(\"col_1\", \"col_2\")\n"
+                  + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData()
           .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
     } else {
       result = sparkInterpreter.interpret(
-          "val df=spark.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
-              + "df.collect()", context);
+          "val df=spark.createDataFrame(Seq((\"12characters12characters\",20)))"
+                  + ".toDF(\"col_1\", \"col_2\")\n"
+                  + "df.collect()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertTrue(result.message().get(0).getData()
@@ -330,7 +330,8 @@ public class LivyInterpreterIT {
     }
     sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
     // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
-    result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'", context);
+    result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'",
+            context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
     assertEquals("col_1\tcol_2\n12characters12cha...\t20", result.message().get(0).getData());
@@ -348,22 +349,24 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.pyspark",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId",
+            "livy.pyspark", "title", "text", authInfo, null, null, null, null, null, null, output);
     pysparkInterpreter.open();
 
     // test traceback msg
     try {
       pysparkInterpreter.getLivyVersion();
-      // for livy version >=0.3 , input some erroneous spark code, check the shown result is more than one line
-      InterpreterResult result = pysparkInterpreter.interpret("sc.parallelize(wrongSyntax(1, 2)).count()", context);
+      // for livy version >=0.3 , input some erroneous spark code, check the shown result is more
+      // than one line
+      InterpreterResult result = pysparkInterpreter.interpret(
+              "sc.parallelize(wrongSyntax(1, 2)).count()", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().get(0).getData().split("\n").length > 1);
       assertTrue(result.message().get(0).getData().contains("Traceback"));
     } catch (APINotFoundException e) {
       // only livy 0.2 can throw this exception since it doesn't have /version endpoint
-      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would return none-empty
-      // traceback
+      // in livy 0.2, most error msg is encapsulated in evalue field, only print(a) in pyspark would
+      // return none-empty traceback
       InterpreterResult result = pysparkInterpreter.interpret("print(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertTrue(result.message().get(0).getData().split("\n").length > 1);
@@ -461,7 +464,8 @@ public class LivyInterpreterIT {
   }
 
   @Test
-  public void testSparkInterpreterWithDisplayAppInfo_StringWithoutTruncation() throws InterpreterException {
+  public void testSparkInterpreterWithDisplayAppInfo_StringWithoutTruncation()
+          throws InterpreterException {
     if (!checkPreCondition()) {
       return;
     }
@@ -509,16 +513,18 @@ public class LivyInterpreterIT {
 
       if (!isSpark2) {
         result = sparkInterpreter.interpret(
-            "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
-                + "df.collect()", context);
+            "val df=sqlContext.createDataFrame(Seq((\"12characters12characters\",20)))"
+                    + ".toDF(\"col_1\", \"col_2\")\n"
+                    + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(2, result.message().size());
         assertTrue(result.message().get(0).getData()
             .contains("Array[org.apache.spark.sql.Row] = Array([12characters12characters,20])"));
       } else {
         result = sparkInterpreter.interpret(
-            "val df=spark.createDataFrame(Seq((\"12characters12characters\",20))).toDF(\"col_1\", \"col_2\")\n"
-                + "df.collect()", context);
+            "val df=spark.createDataFrame(Seq((\"12characters12characters\",20)))"
+                    + ".toDF(\"col_1\", \"col_2\")\n"
+                    + "df.collect()", context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(2, result.message().size());
         assertTrue(result.message().get(0).getData()
@@ -526,7 +532,8 @@ public class LivyInterpreterIT {
       }
       sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
       // test LivySparkSQLInterpreter which share the same SparkContext with LivySparkInterpreter
-      result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'", context);
+      result = sqlInterpreter.interpret("select * from df where col_1='12characters12characters'",
+              context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
       assertEquals("col_1\tcol_2\n12characters12characters\t20", result.message().get(0).getData());
@@ -554,8 +561,8 @@ public class LivyInterpreterIT {
     AuthenticationInfo authInfo = new AuthenticationInfo("user1");
     MyInterpreterOutputListener outputListener = new MyInterpreterOutputListener();
     InterpreterOutput output = new InterpreterOutput(outputListener);
-    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "livy.sparkr",
-        "title", "text", authInfo, null, null, null, null, null, null, output);
+    final InterpreterContext context = new InterpreterContext("noteId", "paragraphId",
+            "livy.sparkr", "title", "text", authInfo, null, null, null, null, null, null, output);
     sparkRInterpreter.open();
 
     try {
@@ -695,7 +702,8 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
 
-      boolean isSpark2 = isSpark2((BaseLivyInterpreter) sparkInterpreter.getInnerInterpreter(), context);
+      boolean isSpark2 = isSpark2((BaseLivyInterpreter) sparkInterpreter.getInnerInterpreter(),
+              context);
 
       if (!isSpark2) {
         result = sparkInterpreter.interpret(
@@ -708,7 +716,8 @@ public class LivyInterpreterIT {
         sparkInterpreter.interpret("df.registerTempTable(\"df\")", context);
 
         // access table from pyspark
-        result = pysparkInterpreter.interpret("sqlContext.sql(\"select * from df\").show()", context);
+        result = pysparkInterpreter.interpret("sqlContext.sql(\"select * from df\").show()",
+                context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData()
@@ -719,7 +728,8 @@ public class LivyInterpreterIT {
                 "+-----+-----+"));
 
         // access table from sparkr
-        result = sparkRInterpreter.interpret("head(sql(sqlContext, \"select * from df\"))", context);
+        result = sparkRInterpreter.interpret("head(sql(sqlContext, \"select * from df\"))",
+                context);
         assertEquals(InterpreterResult.Code.SUCCESS, result.code());
         assertEquals(1, result.message().size());
         assertTrue(result.message().get(0).getData().contains("col_1 col_2\n1 hello    20"));

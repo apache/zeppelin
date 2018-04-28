@@ -17,12 +17,7 @@ mvn -Dpython.test.exclude='' test -pl python -am
  - **Py4j support**
 
   [Py4j](https://www.py4j.org/) enables Python programs to dynamically access Java objects in a JVM.
-  It is required in order to use Zeppelin [dynamic forms](http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html) feature.
-
- - bootstrap process
-
-  Interpreter environment is setup with thex [bootstrap.py](https://github.com/apache/zeppelin/blob/master/python/src/main/resources/bootstrap.py)
-  It defines `help()` and `z` convenience functions
+  It is required in order to use Zeppelin [dynamic forms](https://zeppelin.apache.org/docs/latest/manual/dynamicform.html) feature.
 
 
 ### Dev prerequisites

@@ -21,6 +21,7 @@ import static java.lang.String.format;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -101,6 +103,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
+  private transient Object delayedPersistLock = new Object();
   private transient NoteEventListener noteEventListener;
   private transient Credentials credentials;
   private transient NoteNameListener noteNameListener;
@@ -645,7 +648,16 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    * Run all paragraphs sequentially. Only used for CronJob
    */
   public synchronized void runAll() {
-    runAll(null, true);
+    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
+    String cronExecutingRoles = (String) getConfig().get("cronExecutingRoles");
+    if (null == cronExecutingUser) {
+      cronExecutingUser = "anonymous";
+    }
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
+        cronExecutingUser,
+        StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
+        null);
+    runAll(authenticationInfo, true);
   }
 
   public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
@@ -653,9 +665,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       if (!p.isEnabled()) {
         continue;
       }
-      if (authenticationInfo != null) {
-        p.setAuthenticationInfo(authenticationInfo);
-      }
+      p.setAuthenticationInfo(authenticationInfo);
       if (!run(p.getId(), blocking)) {
         logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
         break;
@@ -852,7 +862,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private void startDelayedPersistTimer(int maxDelaySec, final AuthenticationInfo subject) {
-    synchronized (this) {
+    synchronized (delayedPersistLock) {
       if (delayedPersist != null) {
         return;
       }
@@ -872,11 +882,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private void stopDelayedPersistTimer() {
-    synchronized (this) {
+    synchronized (delayedPersistLock) {
       if (delayedPersist == null) {
         return;
       }
-
       delayedPersist.cancel(false);
     }
   }

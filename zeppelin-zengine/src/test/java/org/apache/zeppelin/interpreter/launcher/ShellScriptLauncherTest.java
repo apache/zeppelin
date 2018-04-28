@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,6 +30,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ShellScriptLauncherTest {
+  @Before
+  public void setUp() {
+    for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
+      System.clearProperty(confVar.getVarName());
+    }
+  }
 
   @Test
   public void testLauncher() throws IOException {

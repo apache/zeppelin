@@ -517,6 +517,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
   }
 
+  public boolean isUsernameForceLowerCase() {
+    return getBoolean(ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE);
+  }
+
   public boolean isNotebookPublic() {
     return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC);
   }
@@ -601,6 +605,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getZeppelinNotebookCronFolders() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS);
+  }
+
+  public String getZeppelinProxyUrl() {
+    return getString(ConfVars.ZEPPELIN_PROXY_URL);
+  }
+
+  public String getZeppelinProxyUser() {
+    return getString(ConfVars.ZEPPELIN_PROXY_USER);
+  }
+
+  public String getZeppelinProxyPassword() {
+    return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -767,6 +783,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
     ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
+    ZEPPELIN_USERNAME_FORCE_LOWERCASE("zeppelin.username.force.lowercase", false),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
@@ -797,7 +814,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin"),
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
-    ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null);
+    ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
+    ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
+    ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
+    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null);
 
     private String varName;
     @SuppressWarnings("rawtypes")

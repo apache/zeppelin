@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import com.google.gson.Gson;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -59,6 +60,7 @@ import org.apache.zeppelin.utils.SecurityUtils;
 @Produces("application/json")
 public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
+  private static final Gson gson = new Gson();
 
   /**
    * Required by Swagger.
@@ -78,7 +80,7 @@ public class LoginRestApi {
         Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
         if (!currentUser.isAuthenticated()) {
           JWTAuthenticationToken token = new JWTAuthenticationToken(null, cookie.getValue());
-          response = procedeToLogin(currentUser, token);
+          response = proceedToLogin(currentUser, token);
         }
       }
       if (response == null) {
@@ -123,7 +125,7 @@ public class LoginRestApi {
     return false;
   }
 
-  private JsonResponse procedeToLogin(Subject currentUser, AuthenticationToken token) {
+  private JsonResponse proceedToLogin(Subject currentUser, AuthenticationToken token) {
     JsonResponse response = null;
     try {
       currentUser.getSession().stop();
@@ -141,7 +143,7 @@ public class LoginRestApi {
 
       Map<String, String> data = new HashMap<>();
       data.put("principal", principal);
-      data.put("roles", roles.toString());
+      data.put("roles", gson.toJson(roles));
       data.put("ticket", ticket);
 
       response = new JsonResponse(Response.Status.OK, "", data);
@@ -187,7 +189,7 @@ public class LoginRestApi {
 
       UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
 
-      response = procedeToLogin(currentUser, token);
+      response = proceedToLogin(currentUser, token);
     }
 
     if (response == null) {

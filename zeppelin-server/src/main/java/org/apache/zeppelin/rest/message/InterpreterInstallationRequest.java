@@ -14,26 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.apache.zeppelin.rest.message;
 
-public class ZeppelinITUtils {
-  public static final Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-  public static void sleep(long millis, boolean logOutput) {
-    if (logOutput) {
-      LOG.info("Starting sleeping for " + (millis / 1000) + " seconds...");
-      LOG.info("Caller: " + Thread.currentThread().getStackTrace()[2]);
-    }
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      LOG.error("Exception in WebDriverManager while getWebDriver ", e);
-    }
-    if (logOutput) {
-      LOG.info("Finished.");
-    }
+public class InterpreterInstallationRequest {
+  private static final Gson gson = new GsonBuilder().create();
+  private String name;
+  private String artifact;
+
+  public InterpreterInstallationRequest(String name, String artifact) {
+    this.name = name;
+    this.artifact = artifact;
+  }
+
+  public static InterpreterInstallationRequest fromJson(String message) {
+    return gson.fromJson(message, InterpreterInstallationRequest.class);
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getArtifact() {
+    return artifact;
   }
 }
