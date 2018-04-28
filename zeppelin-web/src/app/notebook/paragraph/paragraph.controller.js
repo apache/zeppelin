@@ -888,7 +888,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.editor.commands.bindKey('ctrl-l', null);
       }
 
-      // autocomplete on 'ctrl+.'
+      // Auto-complete on 'TAB' key. 
+      // (The 'ctrl+.' shortcut is deprecated but kept for backward compatibility)
+      $scope.editor.commands.bindKey('tab', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
 
       // Show autocomplete on tab
