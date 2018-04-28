@@ -188,7 +188,6 @@ public class Message implements JsonSerializable {
     REMOVE_NOTE_FORMS,            // remove note forms
     INTERPRETER_INSTALL_STARTED,  // [s-c] start to download an interpreter
     INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
-    REMOVE_NOTE_FORMS,            // remove note forms
     REMOVE_SELECTED_PARAGRAPHS,   // [c-s] remove selected paragraphs
     SELECTED_PARAGRAPHS_REMOVED,  // [s-c] selected paragraphs removed
     CLEAR_SELECTED_PARAGRAPHS_OUTPUT,   // [c-s] clear output selected paragraphs
