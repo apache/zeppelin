@@ -54,13 +54,18 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.echo") instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo");
+    assertFalse(remoteInterpreter.isOpened());
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    Thread.sleep(15*1000);
+    // InterpreterGroup is not removed after 15 seconds, as TimeoutLifecycleManager only manage it after it is started
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
     InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
         "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
         new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
     remoteInterpreter.interpret("hello world", context);
     assertTrue(remoteInterpreter.isOpened());
-    InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
-    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
 
     Thread.sleep(15 * 1000);
     // interpreterGroup is timeout, so is removed.
