@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.slf4j.Logger;
@@ -202,7 +203,11 @@ public abstract class Job {
   }
 
   private synchronized void completeWithError(Throwable error) {
-    setResult(new InterpreterResult(Code.ERROR, error.getMessage()));
+    // TODO(jl): Remove this trick. Most of error are covered by InterpreterException
+    if (error instanceof InterpreterException && null != error.getCause()) {
+      error = error.getCause();
+    }
+    setResult(new InterpreterResult(Code.ERROR, getStack(error)));
     setException(error);
     dateFinished = new Date();
   }
