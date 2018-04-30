@@ -517,7 +517,8 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  class InterpretJob extends Job {
+  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
+  public static class InterpretJob extends Job {
 
     private Interpreter interpreter;
     private String script;
@@ -596,7 +597,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    protected Object jobRun() throws Throwable {
+    // TODO(jl): need to redesign this class
+    public Object jobRun() throws Throwable {
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
