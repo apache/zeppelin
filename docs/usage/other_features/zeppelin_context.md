@@ -35,24 +35,27 @@ environments is described below.
 
 ## Usage in Programming Language Cells
 
-In many programming-language based interpreters (e.g. Spark, Python, R) the zeppelin-context is available
+In many programming-language interpreters (e.g. Apache Spark, Python, R) the zeppelin-context is available
 as a predefined variable `z` that can be used by directly invoking its methods.
 The methods available on the `z` object are described below.
-Interpreters based on programming languages like spark.dep, beam, etc. also provide the
+Other interpreters based on programming languages like spark.dep, Apache Beam, etc. also provide the
 predefined variable `z`.
 
 ### Exploring Spark DataFrames
-The zeppelin-context provides a `show` method, which, using Zeppelin's `table` feature,
-can be used to nicely display a Spark DataFrame:
+In the Apache Spark interpreter, the zeppelin-context provides a `show` method, which, 
+using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
 
 ```
 df = spark.read.csv('/path/to/csv')
 z.show(df)
 ```
 
+This display functionality using the `show` method is planned to be extended uniformly to 
+other interpreters that can access the `z` object.
+
 ### Object Exchange
-`ZeppelinContext` extends map and it's shared between Scala and Python environment.
-So you can put some objects from Scala and read it from Python, vice versa.
+`ZeppelinContext` extends map and it's shared between the Apache Spark and Python environments.
+So you can put some objects using Scala (in an Apache Spark cell) and read it from Python, and vice versa.
 
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
@@ -146,23 +149,23 @@ To learn more about dynamic form, checkout [Dynamic Form](../usage/dynamic_form/
 
 ### Interpreter-Specific Functions
 
-Some interpreters use a subclass of `BaseZepplinContext` augmented with interpreter-specific
-functions. For example the dependency loader (%spark.dep) has `addRepo()`, `load()`, and other
-related methods that implement its functionality. Interpreter-specific functions are
-described within each interpreter's documentation.
+Some interpreters use a subclass of `BaseZepplinContext` augmented with interpreter-specific functions. 
+For example functions of the dependency loader (%spark.dep) can be invoked as `z.addRepo()`, `z.load()`, etc. 
+Such interpreter-specific functions are described within each interpreter's documentation.
 
-## Usage in Non-Programming Cells
+## Usage with Embedded Commands
 
-Cells with a non-programming interpreter (see table below) use a pattern match-and-replace 
-approach to use two of zeppelin-context's features: dynamic forms and 
-object interpolation. 
+In certain interpreters (see table below) zeppelin-context features may be invoked by embedding 
+command strings into the paragraph text. Such embedded command strings are used to invoke 
+dynamic-forms and object-interpolation as described below. 
 
-|                   Non-Programming Interpreters                    |
+|             Interpreters that use Embedded Commands               |
 |-------------------------------------------------------------------|
-|spark.sql, bigquery, cassandra, elasticsearch, file, hbase, ignite, jdbc, kylin, livy, markdown, neo4j, pig, python, shell, zengine    |
+|spark.sql (\*), bigquery, cassandra, elasticsearch, file, hbase, ignite, jdbc (\*), kylin, livy, markdown, neo4j, pig, python, shell (\*), zengine |
 
-Dynamic forms are available in all non-programming interpreters, 
-but object interpolation is only available in a small (but growing) list of interpreters.
+Dynamic forms are available in all of the interpreters in the table above, 
+but object interpolation is only available in a small, but growing, list of interpreters 
+(marked with an asterisk in the table above).
 Both these zeppelin-context features are described below.
 
 ### Dynamic Forms
@@ -223,7 +226,7 @@ enable the feature. The name of the parameter used to enable this feature it is 
 For example, the SparkSQL and Shell interpreters use the parameter names `zeppelin.spark.sql.interpolation` and
 `zeppelin.shell.interpolation` respectively.
 
-At present only the SparkSQL and Shell interpreters support object interpolation.
+At present only the SparkSQL, JDBC, and Shell interpreters support object interpolation.
 
 
 
