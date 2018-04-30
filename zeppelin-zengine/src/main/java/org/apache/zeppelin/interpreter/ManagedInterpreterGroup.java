@@ -48,7 +48,6 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   ManagedInterpreterGroup(String id, InterpreterSetting interpreterSetting) {
     super(id);
     this.interpreterSetting = interpreterSetting;
-    interpreterSetting.getLifecycleManager().onInterpreterGroupCreated(this);
   }
 
   public InterpreterSetting getInterpreterSetting() {
@@ -63,6 +62,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
           properties);
       remoteInterpreterProcess.start(userName);
+      interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
       remoteInterpreterProcess.getRemoteInterpreterEventPoller()
           .setInterpreterProcess(remoteInterpreterProcess);
       remoteInterpreterProcess.getRemoteInterpreterEventPoller().setInterpreterGroup(this);
@@ -156,7 +156,6 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
         interpreter.setInterpreterGroup(this);
       }
       LOGGER.info("Create Session: {} in InterpreterGroup: {} for user: {}", sessionId, id, user);
-      interpreterSetting.getLifecycleManager().onInterpreterSessionCreated(this, sessionId);
       sessions.put(sessionId, interpreters);
       return interpreters;
     }
