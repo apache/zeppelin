@@ -129,5 +129,4 @@ public class BigQueryInterpreterTest {
     assertEquals("col1\tcol2", lines[0]);
     assertEquals("1\t2", lines[1]);
   }
->>>>>>> 0c3b446... ZEPPELIN-3412 Enable query prefix syntax in bigquery interpreter
 }

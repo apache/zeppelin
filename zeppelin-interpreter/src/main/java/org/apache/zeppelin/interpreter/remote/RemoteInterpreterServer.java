@@ -517,7 +517,11 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
+
+
+  /**
+   * TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
+   */
   public static class InterpretJob extends Job {
 
     private Interpreter interpreter;
