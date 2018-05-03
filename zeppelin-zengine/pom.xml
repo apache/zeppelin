@@ -23,14 +23,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-zengine</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.0</version>
+  <version>0.8.1-SNAPSHOT</version>
   <name>Zeppelin: Zengine</name>
   <description>Zeppelin Zengine</description>
 
