@@ -1328,7 +1328,9 @@ public class NotebookServer extends WebSocketServlet
 
     DiffMatchPatch dmp = new DiffMatchPatch();
     String patchText = (String) fromMessage.get("patch");
-    patchText = patchText.replace(",@@", "@@");// javascript add "," if
+
+    // javascript add "," if change contains several patches
+    patchText = patchText.replace(",@@", "@@");
     LinkedList<DiffMatchPatch.Patch> patches =
         (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
 
