@@ -552,6 +552,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.paragraphUrl || $scope.revisionView === true) {
       return;
     }
+    $scope.selectedParagraphsIds.delete(paragraphId);
     removePara(paragraphId);
   });
 
