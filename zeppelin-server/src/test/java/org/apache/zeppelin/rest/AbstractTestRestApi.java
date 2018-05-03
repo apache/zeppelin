@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -45,24 +35,32 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
-import org.apache.zeppelin.interpreter.InterpreterPropertyType;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractTestRestApi {
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.server.ZeppelinServer;
+
+public abstract class AbstractTestRestApi {
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
-  static final String restApiUrl = "/api";
-  static final String url = getUrlToTest();
-  protected static final boolean wasRunning = checkIfServerIsRunning();
+  static final String REST_API_URL = "/api";
+  static final String URL = getUrlToTest();
+  protected static final boolean WAS_RUNNING = checkIfServerIsRunning();
   static boolean isRunningWithAuth = false;
 
   private static File shiroIni = null;
@@ -110,7 +108,7 @@ public abstract class AbstractTestRestApi {
           "/** = authc";
 
   private static File knoxSsoPem = null;
-  private static String KNOX_SSO_PEM =
+  private static String knoxSsoPemCertificate =
       "-----BEGIN CERTIFICATE-----\n"
           + "MIIChjCCAe+gAwIBAgIJALYrdDEXKwcqMA0GCSqGSIb3DQEBBQUAMIGEMQswCQYD\n"
           + "VQQGEwJVUzENMAsGA1UECBMEVGVzdDENMAsGA1UEBxMEVGVzdDEPMA0GA1UEChMG\n"
@@ -138,14 +136,16 @@ public abstract class AbstractTestRestApi {
     } else {
       url = "http://localhost:8080";
     }
-    url += restApiUrl;
-    if (path != null)
+    url += REST_API_URL;
+    if (path != null) {
       url += path;
+    }
+
     return url;
   }
 
   protected static String getUrlToTest() {
-    String url = "http://localhost:8080" + restApiUrl;
+    String url = "http://localhost:8080" + REST_API_URL;
     if (System.getProperty("url") != null) {
       url = System.getProperty("url");
     }
@@ -153,7 +153,7 @@ public abstract class AbstractTestRestApi {
   }
 
   static ExecutorService executor;
-  protected static final Runnable server = new Runnable() {
+  protected static final Runnable SERVER = new Runnable() {
     @Override
     public void run() {
       try {
@@ -165,17 +165,21 @@ public abstract class AbstractTestRestApi {
     }
   };
 
-  private static void start(boolean withAuth, String testClassName, boolean withKnox) throws Exception {
-    if (!wasRunning) {
+  private static void start(boolean withAuth, String testClassName, boolean withKnox)
+          throws Exception {
+    if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
       LOG.info("ZEPPELIN_HOME: " + zeppelinHome.getAbsolutePath());
       confDir = new File(zeppelinHome, "conf_" + testClassName);
       confDir.mkdirs();
 
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinHome.getAbsolutePath());
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(), new File("../zeppelin-web/dist").getAbsolutePath());
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+              zeppelinHome.getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
+              new File("../zeppelin-web/dist").getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+              confDir.getAbsolutePath());
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -187,7 +191,8 @@ public abstract class AbstractTestRestApi {
       if (withAuth) {
         isRunningWithAuth = true;
         // Set Anonymous session to false.
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
+        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(),
+                "false");
 
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
@@ -201,7 +206,7 @@ public abstract class AbstractTestRestApi {
           if (!knoxSsoPem.exists()) {
             knoxSsoPem.createNewFile();
           }
-          FileUtils.writeStringToFile(knoxSsoPem, KNOX_SSO_PEM);
+          FileUtils.writeStringToFile(knoxSsoPem, knoxSsoPemCertificate);
         } else {
           FileUtils.writeStringToFile(shiroIni, zeppelinShiro);
         }
@@ -228,9 +233,8 @@ public abstract class AbstractTestRestApi {
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
           interpretersCompatibleWithScala211Test);
 
-
       executor = Executors.newSingleThreadExecutor();
-      executor.submit(server);
+      executor.submit(SERVER);
       long s = System.currentTimeMillis();
       boolean started = false;
       while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
@@ -246,7 +250,6 @@ public abstract class AbstractTestRestApi {
       LOG.info("Test Zeppelin stared.");
     }
   }
-
 
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
     start(true, testClassName, true);
@@ -274,9 +277,10 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
-    if (!wasRunning && ZeppelinServer.notebook != null) {
+    if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
       // restart interpreter to stop all interpreter processes
-      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager().get();
+      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
+              .get();
       if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
         for (InterpreterSetting setting : settingList) {
           ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
@@ -322,12 +326,13 @@ public abstract class AbstractTestRestApi {
 
   protected static boolean checkIfServerIsRunning() {
     GetMethod request = null;
-    boolean isRunning = true;
+    boolean isRunning;
     try {
       request = httpGet("/version");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
-      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not running");
+      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not " +
+              "running");
       isRunning = false;
     } finally {
       if (request != null) {
@@ -345,13 +350,14 @@ public abstract class AbstractTestRestApi {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
 
-  protected static GetMethod httpGet(String path, String user, String pwd, String cookies) throws IOException {
-    LOG.info("Connecting to {}", url + path);
+  protected static GetMethod httpGet(String path, String user, String pwd, String cookies)
+          throws IOException {
+    LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
-    GetMethod getMethod = new GetMethod(url + path);
-    getMethod.addRequestHeader("Origin", url);
+    GetMethod getMethod = new GetMethod(URL + path);
+    getMethod.addRequestHeader("Origin", URL);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      getMethod.setRequestHeader("Cookie", "JSESSIONID="+ getCookie(user, pwd));
+      getMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     if (!StringUtils.isBlank(cookies)) {
       getMethod.setRequestHeader("Cookie", getMethod.getResponseHeader("Cookie") + ";" + cookies);
@@ -365,13 +371,14 @@ public abstract class AbstractTestRestApi {
     return httpDelete(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static DeleteMethod httpDelete(String path, String user, String pwd) throws IOException {
-    LOG.info("Connecting to {}", url + path);
+  protected static DeleteMethod httpDelete(String path, String user, String pwd)
+          throws IOException {
+    LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
-    DeleteMethod deleteMethod = new DeleteMethod(url + path);
-    deleteMethod.addRequestHeader("Origin", url);
+    DeleteMethod deleteMethod = new DeleteMethod(URL + path);
+    deleteMethod.addRequestHeader("Origin", URL);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      deleteMethod.setRequestHeader("Cookie", "JSESSIONID="+ getCookie(user, pwd));
+      deleteMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     httpClient.executeMethod(deleteMethod);
     LOG.info("{} - {}", deleteMethod.getStatusCode(), deleteMethod.getStatusText());
@@ -383,14 +390,14 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static PostMethod httpPost(String path, String request, String user, String pwd)
-      throws IOException {
-    LOG.info("Connecting to {}", url + path);
+          throws IOException {
+    LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
-    PostMethod postMethod = new PostMethod(url + path);
+    PostMethod postMethod = new PostMethod(URL + path);
     postMethod.setRequestBody(request);
     postMethod.getParams().setCookiePolicy(CookiePolicy.IGNORE_COOKIES);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      postMethod.setRequestHeader("Cookie", "JSESSIONID="+ getCookie(user, pwd));
+      postMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     httpClient.executeMethod(postMethod);
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
@@ -401,15 +408,16 @@ public abstract class AbstractTestRestApi {
     return httpPut(path, body, StringUtils.EMPTY, StringUtils.EMPTY);
   }
 
-  protected static PutMethod httpPut(String path, String body, String user, String pwd) throws IOException {
-    LOG.info("Connecting to {}", url + path);
+  protected static PutMethod httpPut(String path, String body, String user, String pwd)
+          throws IOException {
+    LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
-    PutMethod putMethod = new PutMethod(url + path);
-    putMethod.addRequestHeader("Origin", url);
+    PutMethod putMethod = new PutMethod(URL + path);
+    putMethod.addRequestHeader("Origin", URL);
     RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
     putMethod.setRequestEntity(entity);
     if (userAndPasswordAreNotBlank(user, pwd)) {
-      putMethod.setRequestHeader("Cookie", "JSESSIONID="+ getCookie(user, pwd));
+      putMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
     }
     httpClient.executeMethod(putMethod);
     LOG.info("{} - {}", putMethod.getStatusCode(), putMethod.getStatusText());
@@ -418,8 +426,8 @@ public abstract class AbstractTestRestApi {
 
   private static String getCookie(String user, String password) throws IOException {
     HttpClient httpClient = new HttpClient();
-    PostMethod postMethod = new PostMethod(url + "/login");
-    postMethod.addRequestHeader("Origin", url);
+    PostMethod postMethod = new PostMethod(URL + "/login");
+    postMethod.addRequestHeader("Origin", URL);
     postMethod.setParameter("password", password);
     postMethod.setParameter("userName", user);
     httpClient.executeMethod(postMethod);
@@ -538,7 +546,6 @@ public abstract class AbstractTestRestApi {
     };
   }
 
-
   public static void ps() {
     DefaultExecutor executor = new DefaultExecutor();
     executor.setStreamHandler(new PumpStreamHandler(System.out, System.err));
@@ -553,22 +560,30 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-
-  /** Status code matcher */
-  protected Matcher<? super HttpMethodBase> isForbidden() { return responsesWith(403); }
+  /**
+   * Status code matcher.
+   */
+  protected Matcher<? super HttpMethodBase> isForbidden() {
+    return responsesWith(403);
+  }
 
   protected Matcher<? super HttpMethodBase> isAllowed() {
     return responsesWith(200);
   }
 
-  protected Matcher<? super HttpMethodBase> isCreated() { return responsesWith(201); }
+  protected Matcher<? super HttpMethodBase> isCreated() {
+    return responsesWith(201);
+  }
 
-  protected Matcher<? super HttpMethodBase> isBadRequest() { return responsesWith(400); }
+  protected Matcher<? super HttpMethodBase> isBadRequest() {
+    return responsesWith(400);
+  }
 
-  protected Matcher<? super HttpMethodBase> isNotFound() { return responsesWith(404); }
+  protected Matcher<? super HttpMethodBase> isNotFound() {
+    return responsesWith(404);
+  }
 
   protected Matcher<? super HttpMethodBase> isNotAllowed() {
     return responsesWith(405);
   }
-
 }

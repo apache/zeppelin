@@ -14,8 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -23,12 +28,6 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,14 +39,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
- * Zeppelin notebook rest api tests
+ * Zeppelin notebook rest api tests.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRestApiTest extends AbstractTestRestApi {
@@ -78,8 +78,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     GetMethod get = httpGet("/notebook/job/" + note1.getId() + "/" + paragraphId);
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Set<String>> paragraphStatus = (Map<String, Set<String>>) resp.get("body");
 
     // Check id and status have proper value
@@ -88,7 +88,6 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     //cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
-
   }
 
   @Test
@@ -101,8 +100,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     // run blank paragraph
     PostMethod post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(p.getStatus(), Job.Status.FINISHED);
@@ -111,8 +110,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     p.setText("test");
     post = httpPost("/notebook/job/" + note1.getId() + "/" + p.getId(), "");
     assertThat(post, isAllowed());
-    resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertNotEquals(p.getStatus(), Job.Status.READY);
@@ -142,8 +141,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
 
@@ -173,8 +172,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
     PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
 
@@ -189,15 +188,15 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
     LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
     assertThat(post, isAllowed());
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     String clonedNoteId = (String) resp.get("body");
     post.releaseConnection();
 
     GetMethod get = httpGet("/notebook/" + clonedNoteId);
     assertThat(get, isAllowed());
-    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
 
     assertEquals(resp2Body.get("name"), "Note " + clonedNoteId);
@@ -217,11 +216,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     String paragraphId = p.getId();
     String jsonRequest = "{\"colWidth\": 6.0}";
 
-    PutMethod put = httpPut("/notebook/" + noteId + "/paragraph/" + paragraphId +"/config", jsonRequest);
+    PutMethod put = httpPut("/notebook/" + noteId + "/paragraph/" + paragraphId + "/config",
+            jsonRequest);
     assertThat("test testUpdateParagraphConfig:", put, isAllowed());
 
-    Map<String, Object> resp = gson.fromJson(put.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp = gson.fromJson(put.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> respBody = (Map<String, Object>) resp.get("body");
     Map<String, Object> config = (Map<String, Object>) respBody.get("config");
     put.releaseConnection();
@@ -239,7 +239,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     // Create note and set result explicitly
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
+    InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,
+            InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
 
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -254,15 +255,15 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     // check if paragraph results are cleared
     GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p1.getId());
     assertThat(get, isAllowed());
-    Map<String, Object> resp1 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp1 = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> resp1Body = (Map<String, Object>) resp1.get("body");
     assertNull(resp1Body.get("result"));
 
     get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p2.getId());
     assertThat(get, isAllowed());
-    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
+    Map<String, Object> resp2 = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> resp2Body = (Map<String, Object>) resp2.get("body");
     assertNull(resp2Body.get("result"));
     get.releaseConnection();
@@ -317,6 +318,5 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(Job.Status.FINISHED, p2.getStatus());
     assertNotNull(p2.getResult());
     assertEquals("abc\n", p2.getResult().message().get(0).getData());
-
   }
 }

@@ -58,7 +58,7 @@ public class PythonDockerInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    File pythonScript = new File(getPythonInterpreter().getScriptPath());
+    File pythonWorkDir = getPythonInterpreter().getPythonWorkDir();
     InterpreterOutput out = context.out;
 
     Matcher activateMatcher = activatePattern.matcher(st);
@@ -73,26 +73,23 @@ public class PythonDockerInterpreter extends Interpreter {
       pull(out, image);
 
       // mount pythonscript dir
-      String mountPythonScript = "-v " +
-          pythonScript.getParentFile().getAbsolutePath() +
-          ":/_zeppelin_tmp ";
+      String mountPythonScript = "-v " + pythonWorkDir.getAbsolutePath() +
+          ":/_python_workdir ";
 
       // mount zeppelin dir
-      String mountPy4j = "-v " +
-          zeppelinHome.getAbsolutePath() +
+      String mountPy4j = "-v " + zeppelinHome.getAbsolutePath() +
           ":/_zeppelin ";
 
       // set PYTHONPATH
-      String pythonPath = ":/_zeppelin/" + PythonInterpreter.ZEPPELIN_PY4JPATH + ":" +
-          ":/_zeppelin/" + PythonInterpreter.ZEPPELIN_PYTHON_LIBS;
+      String pythonPath = ".:/_python_workdir/py4j-src-0.9.2.zip:/_python_workdir";
 
       setPythonCommand("docker run -i --rm " +
           mountPythonScript +
           mountPy4j +
           "-e PYTHONPATH=\"" + pythonPath + "\" " +
           image + " " +
-          getPythonInterpreter().getPythonBindPath() + " " +
-          "/_zeppelin_tmp/" + pythonScript.getName());
+          getPythonInterpreter().getPythonExec() + " " +
+          "/_python_workdir/zeppelin_python.py");
       restartPythonProcess();
       out.clear();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");
@@ -108,7 +105,7 @@ public class PythonDockerInterpreter extends Interpreter {
 
   public void setPythonCommand(String cmd) throws InterpreterException {
     PythonInterpreter python = getPythonInterpreter();
-    python.setPythonCommand(cmd);
+    python.setPythonExec(cmd);
   }
 
   private void printUsage(InterpreterOutput out) {

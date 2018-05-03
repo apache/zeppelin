@@ -18,8 +18,6 @@
 package org.apache.zeppelin.markdown;
 
 import org.markdown4j.Markdown4jProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 

@@ -146,6 +146,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Do not change - developer only setting, not for production use</td>
   </tr>
   <tr>
+    <td>zeppelin.spark.sql.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
+  </tr>
+  <tr>
   <td>zeppelin.spark.uiWebUrl</td>
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
@@ -318,109 +323,7 @@ z.load("groupId:artifactId:version").local()
 
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
-
-### Exploring Spark DataFrames
-`ZeppelinContext` provides a `show` method, which, using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
-
-```
-df = spark.read.csv('/path/to/csv')
-z.show(df)
-```
-
-### Object Exchange
-`ZeppelinContext` extends map and it's shared between Scala and Python environment.
-So you can put some objects from Scala and read it from Python, vice versa.
-
-<div class="codetabs">
-  <div data-lang="scala" markdown="1">
-
-{% highlight scala %}
-// Put object from scala
-%spark
-val myObject = ...
-z.put("objName", myObject)
-
-// Exchanging data frames
-myScalaDataFrame = ...
-z.put("myScalaDataFrame", myScalaDataFrame)
-
-val myPythonDataFrame = z.get("myPythonDataFrame").asInstanceOf[DataFrame]
-{% endhighlight %}
-
-  </div>
-  <div data-lang="python" markdown="1">
-
-{% highlight python %}
-# Get object from python
-%spark.pyspark
-myObject = z.get("objName")
-
-# Exchanging data frames
-myPythonDataFrame = ...
-z.put("myPythonDataFrame", postsDf._jdf)
-
-myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
-{% endhighlight %}
-
-  </div>
-</div>
-
-### Form Creation
-
-`ZeppelinContext` provides functions for creating forms.
-In Scala and Python environments, you can create forms programmatically.
-<div class="codetabs">
-  <div data-lang="scala" markdown="1">
-
-{% highlight scala %}
-%spark
-/* Create text input form */
-z.input("formName")
-
-/* Create text input form with default value */
-z.input("formName", "defaultValue")
-
-/* Create select form */
-z.select("formName", Seq(("option1", "option1DisplayName"),
-                         ("option2", "option2DisplayName")))
-
-/* Create select form with default value*/
-z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
-                                    ("option2", "option2DisplayName")))
-{% endhighlight %}
-
-  </div>
-  <div data-lang="python" markdown="1">
-
-{% highlight python %}
-%spark.pyspark
-# Create text input form
-z.input("formName")
-
-# Create text input form with default value
-z.input("formName", "defaultValue")
-
-# Create select form
-z.select("formName", [("option1", "option1DisplayName"),
-                      ("option2", "option2DisplayName")])
-
-# Create select form with default value
-z.select("formName", [("option1", "option1DisplayName"),
-                      ("option2", "option2DisplayName")], "option1")
-{% endhighlight %}
-
-  </div>
-</div>
-
-In sql environment, you can create form in simple template.
-
-```sql
-%spark.sql
-select * from ${table=defaultTableName} where text like '%${search}%'
-```
-
-To learn more about dynamic form, checkout [Dynamic Form](../usage/dynamic_form/intro.html).
-
+See [Zeppelin-Context](../usage/other_features/zeppelin_context.html) for more details.
 
 ## Matplotlib Integration (pyspark)
 Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`,
@@ -464,3 +367,4 @@ This is to make the server communicate with KDC.
   > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin!
+

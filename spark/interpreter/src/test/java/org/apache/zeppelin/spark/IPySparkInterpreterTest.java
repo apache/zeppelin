@@ -27,18 +27,16 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.python.IPythonInterpreterTest;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,152 +44,182 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-public class IPySparkInterpreterTest {
+public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
-  private IPySparkInterpreter iPySparkInterpreter;
   private InterpreterGroup intpGroup;
   private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
-  @Before
-  public void setup() throws InterpreterException {
+  @Override
+  protected Properties initIntpProperties() {
     Properties p = new Properties();
     p.setProperty("spark.master", "local[4]");
     p.setProperty("master", "local[4]");
     p.setProperty("spark.submit.deployMode", "client");
     p.setProperty("spark.app.name", "Zeppelin Test");
-    p.setProperty("zeppelin.spark.useHiveContext", "true");
-    p.setProperty("zeppelin.spark.maxResult", "1000");
+    p.setProperty("zeppelin.spark.useHiveContext", "false");
+    p.setProperty("zeppelin.spark.maxResult", "3");
     p.setProperty("zeppelin.spark.importImplicit", "true");
+    p.setProperty("zeppelin.spark.useNew", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+    p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    return p;
+  }
 
+  @Override
+  protected void startInterpreter(Properties properties) throws InterpreterException {
     intpGroup = new InterpreterGroup();
-    intpGroup.put("session_1", new LinkedList<Interpreter>());
+    intpGroup.put("session_1", new ArrayList<Interpreter>());
 
-    SparkInterpreter sparkInterpreter = new SparkInterpreter(p);
+    LazyOpenInterpreter sparkInterpreter = new LazyOpenInterpreter(
+        new SparkInterpreter(properties));
     intpGroup.get("session_1").add(sparkInterpreter);
     sparkInterpreter.setInterpreterGroup(intpGroup);
-    sparkInterpreter.open();
-    sparkInterpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
 
-    iPySparkInterpreter = new IPySparkInterpreter(p);
-    intpGroup.get("session_1").add(iPySparkInterpreter);
-    iPySparkInterpreter.setInterpreterGroup(intpGroup);
-    iPySparkInterpreter.open();
-    sparkInterpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
+    LazyOpenInterpreter pySparkInterpreter =
+        new LazyOpenInterpreter(new PySparkInterpreter(properties));
+    intpGroup.get("session_1").add(pySparkInterpreter);
+    pySparkInterpreter.setInterpreterGroup(intpGroup);
+
+    interpreter = new LazyOpenInterpreter(new IPySparkInterpreter(properties));
+    intpGroup.get("session_1").add(interpreter);
+    interpreter.setInterpreterGroup(intpGroup);
+
+    interpreter.open();
   }
 
 
-  @After
+  @Override
   public void tearDown() throws InterpreterException {
-    if (iPySparkInterpreter != null) {
-      iPySparkInterpreter.close();
-    }
+    intpGroup.close();
+    interpreter = null;
+    intpGroup = null;
   }
 
   @Test
-  public void testBasics() throws InterruptedException, IOException, InterpreterException {
-    // all the ipython test should pass too.
-    IPythonInterpreterTest.testInterpreter(iPySparkInterpreter);
+  public void testIPySpark() throws InterruptedException, InterpreterException, IOException {
+    testPySpark(interpreter, mockRemoteEventClient);
+  }
 
+  public static void testPySpark(final Interpreter interpreter, RemoteEventClient mockRemoteEventClient)
+      throws InterpreterException, IOException, InterruptedException {
+    reset(mockRemoteEventClient);
     // rdd
-    InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = iPySparkInterpreter.interpret("sc.version", context);
+    InterpreterContext context = createInterpreterContext(mockRemoteEventClient);
+    InterpreterResult result = interpreter.interpret("sc.version", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     String sparkVersion = context.out.toInterpreterResultMessage().get(0).getData();
     // spark url is sent
     verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
-    context = getInterpreterContext();
-    result = iPySparkInterpreter.interpret("sc.range(1,10).sum()", context);
+    context = createInterpreterContext(mockRemoteEventClient);
+    result = interpreter.interpret("sc.range(1,10).sum()", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals("45", interpreterResultMessages.get(0).getData());
+    assertEquals("45", interpreterResultMessages.get(0).getData().trim());
     // spark job url is sent
-    verify(mockRemoteEventClient).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
+//    verify(mockRemoteEventClient).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
 
     // spark sql
-    context = getInterpreterContext();
+    context = createInterpreterContext(mockRemoteEventClient);
     if (!isSpark2(sparkVersion)) {
-      result = iPySparkInterpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
+      result = interpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "+---+---+\n" +
-          "| _1| _2|\n" +
-          "+---+---+\n" +
-          "|  1|  a|\n" +
-          "|  2|  b|\n" +
-          "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+              "| _1| _2|\n" +
+              "+---+---+\n" +
+              "|  1|  a|\n" +
+              "|  2|  b|\n" +
+              "+---+---+", interpreterResultMessages.get(0).getData().trim());
 
-      context = getInterpreterContext();
-      result = iPySparkInterpreter.interpret("z.show(df)", context);
+      context = createInterpreterContext(mockRemoteEventClient);
+      result = interpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "_1	_2\n" +
-          "1	a\n" +
-          "2	b\n", interpreterResultMessages.get(0).getData());
+              "1	a\n" +
+              "2	b", interpreterResultMessages.get(0).getData().trim());
     } else {
-      result = iPySparkInterpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
+      result = interpreter.interpret("df = spark.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "+---+---+\n" +
-          "| _1| _2|\n" +
-          "+---+---+\n" +
-          "|  1|  a|\n" +
-          "|  2|  b|\n" +
-          "+---+---+\n\n", interpreterResultMessages.get(0).getData());
+              "| _1| _2|\n" +
+              "+---+---+\n" +
+              "|  1|  a|\n" +
+              "|  2|  b|\n" +
+              "+---+---+", interpreterResultMessages.get(0).getData().trim());
 
-      context = getInterpreterContext();
-      result = iPySparkInterpreter.interpret("z.show(df)", context);
+      context = createInterpreterContext(mockRemoteEventClient);
+      result = interpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(
           "_1	_2\n" +
-          "1	a\n" +
-          "2	b\n", interpreterResultMessages.get(0).getData());
+              "1	a\n" +
+              "2	b", interpreterResultMessages.get(0).getData().trim());
     }
     // cancel
-    final InterpreterContext context2 = getInterpreterContext();
+    if (interpreter instanceof IPySparkInterpreter) {
+      final InterpreterContext context2 = createInterpreterContext(mockRemoteEventClient);
 
-    Thread thread = new Thread() {
-      @Override
-      public void run() {
-        InterpreterResult result = iPySparkInterpreter.interpret("import time\nsc.range(1,10).foreach(lambda x: time.sleep(1))", context2);
-        assertEquals(InterpreterResult.Code.ERROR, result.code());
-        List<InterpreterResultMessage> interpreterResultMessages = null;
-        try {
-          interpreterResultMessages = context2.out.toInterpreterResultMessage();
-          assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
-        } catch (IOException e) {
-          e.printStackTrace();
+      Thread thread = new Thread() {
+        @Override
+        public void run() {
+          InterpreterResult result = null;
+          try {
+            result = interpreter.interpret("import time\nsc.range(1,10).foreach(lambda x: time.sleep(1))", context2);
+          } catch (InterpreterException e) {
+            e.printStackTrace();
+          }
+          assertEquals(InterpreterResult.Code.ERROR, result.code());
+          List<InterpreterResultMessage> interpreterResultMessages = null;
+          try {
+            interpreterResultMessages = context2.out.toInterpreterResultMessage();
+            assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
         }
-      }
-    };
-    thread.start();
+      };
+      thread.start();
 
-
-    // sleep 1 second to wait for the spark job starts
-    Thread.sleep(1000);
-    iPySparkInterpreter.cancel(context);
-    thread.join();
+      // sleep 1 second to wait for the spark job starts
+      Thread.sleep(1000);
+      interpreter.cancel(context);
+      thread.join();
+    }
 
     // completions
-    List<InterpreterCompletion> completions = iPySparkInterpreter.completion("sc.ran", 6, getInterpreterContext());
+    List<InterpreterCompletion> completions = interpreter.completion("sc.ran", 6, createInterpreterContext(mockRemoteEventClient));
     assertEquals(1, completions.size());
     assertEquals("range", completions.get(0).getValue());
 
+    completions = interpreter.completion("sc.", 3, createInterpreterContext(mockRemoteEventClient));
+    assertTrue(completions.size() > 0);
+    completions.contains(new InterpreterCompletion("range", "range", ""));
+
+    completions = interpreter.completion("1+1\nsc.", 7, createInterpreterContext(mockRemoteEventClient));
+    assertTrue(completions.size() > 0);
+    completions.contains(new InterpreterCompletion("range", "range", ""));
+
+    completions = interpreter.completion("s", 1, createInterpreterContext(mockRemoteEventClient));
+    assertTrue(completions.size() > 0);
+    completions.contains(new InterpreterCompletion("sc", "sc", ""));
+
     // pyspark streaming
-    context = getInterpreterContext();
-    result = iPySparkInterpreter.interpret(
+    context = createInterpreterContext(mockRemoteEventClient);
+    result = interpreter.interpret(
         "from pyspark.streaming import StreamingContext\n" +
             "import time\n" +
             "ssc = StreamingContext(sc, 1)\n" +
@@ -212,11 +240,11 @@ public class IPySparkInterpreterTest {
     assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
   }
 
-  private boolean isSpark2(String sparkVersion) {
+  private static boolean isSpark2(String sparkVersion) {
     return sparkVersion.startsWith("'2.") || sparkVersion.startsWith("u'2.");
   }
 
-  private InterpreterContext getInterpreterContext() {
+  private static InterpreterContext createInterpreterContext(RemoteEventClient mockRemoteEventClient) {
     InterpreterContext context = new InterpreterContext(
         "noteId",
         "paragraphId",

@@ -103,6 +103,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String STATEMENT_PRECODE_KEY = "statementPrecode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
   static final String DEFAULT_COMPLETER_TTL = "120";
@@ -110,6 +111,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String JDBC_JCEKS_FILE = "jceks.file";
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
+  static final String STATEMENT_PRECODE_KEY_TEMPLATE = "%s.statementPrecode";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -125,6 +127,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
+  static final String DEFAULT_STATEMENT_PRECODE = DEFAULT_KEY + DOT + STATEMENT_PRECODE_KEY;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -585,18 +588,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
     for (int item = 0; item < sql.length(); item++) {
       character = sql.charAt(item);
 
-      if ((singleLineComment && (character == '\n' || item == sql.length() - 1))
-          || (multiLineComment && character == '/' && sql.charAt(item - 1) == '*')) {
+      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
         singleLineComment = false;
-        multiLineComment = false;
-        if (item == sql.length() - 1 && query.length() > 0) {
-          queries.add(StringUtils.trim(query.toString()));
-        }
-        continue;
       }
 
-      if (singleLineComment || multiLineComment) {
-        continue;
+      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
+        multiLineComment = false;
       }
 
       if (character == '\'') {
@@ -619,16 +616,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
           && sql.length() > item + 1) {
         if (character == '-' && sql.charAt(item + 1) == '-') {
           singleLineComment = true;
-          continue;
-        }
-
-        if (character == '/' && sql.charAt(item + 1) == '*') {
+        } else if (character == '/' && sql.charAt(item + 1) == '*') {
           multiLineComment = true;
-          continue;
         }
       }
 
-      if (character == ';' && !quoteString && !doubleQuoteString) {
+      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
+          && !singleLineComment) {
         queries.add(StringUtils.trim(query.toString()));
         query = new StringBuilder();
       } else if (item == sql.length() - 1) {
@@ -711,6 +705,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
         try {
           getJDBCConfiguration(user).saveStatement(paragraphId, statement);
 
+          String statementPrecode =
+              getProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, propertyKey));
+          
+          if (StringUtils.isNotBlank(statementPrecode)) {
+            statement.execute(statementPrecode);
+          }
+
           boolean isResultSetAvailable = statement.execute(sqlToExecute);
           getJDBCConfiguration(user).setConnectionInDBDriverPoolSuccessful(propertyKey);
           if (isResultSetAvailable) {
@@ -782,7 +783,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
+    String cmd = Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation")) ?
+            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
     logger.debug("Run SQL command '{}'", cmd);
     String propertyKey = getPropertyKey(cmd);
 

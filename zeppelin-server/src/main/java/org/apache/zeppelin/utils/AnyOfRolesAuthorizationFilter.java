@@ -19,9 +19,10 @@ package org.apache.zeppelin.utils;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authz.RolesAuthorizationFilter;
 
+import java.io.IOException;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import java.io.IOException;
 
 /**
  * Allows access if current user has at least one role of the specified list.
@@ -30,11 +31,9 @@ import java.io.IOException;
  * of {@literal AND} on the specified roles.
  */
 public class AnyOfRolesAuthorizationFilter extends RolesAuthorizationFilter {
-
   @Override
   public boolean isAccessAllowed(ServletRequest request, ServletResponse response,
-                                 Object mappedValue) throws IOException {
-
+          Object mappedValue) throws IOException {
     final Subject subject = getSubject(request, response);
     final String[] rolesArray = (String[]) mappedValue;
 

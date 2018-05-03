@@ -17,18 +17,7 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.resource.Resource;
-import org.apache.zeppelin.resource.ResourcePool;
 import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Config;
@@ -38,6 +27,18 @@ import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
 
 /**
  * Neo4j connection manager for Zeppelin.
@@ -66,9 +67,7 @@ public class Neo4jConnectionManager {
   private final AuthToken authToken;
 
   /**
-   * 
-   * Enum type for the AuthToken 
-   *
+   * Enum type for the AuthToken.
    */
   public enum Neo4jAuthType {NONE, BASIC}
 
@@ -147,5 +146,4 @@ public class Neo4jConnectionManager {
     }
     return keys;
   }
-
 }

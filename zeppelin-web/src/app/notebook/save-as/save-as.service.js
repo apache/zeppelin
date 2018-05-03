@@ -38,19 +38,17 @@ function SaveAsService(browserDetectService) {
       }
       angular.element('body > iframe#SaveAsId').remove();
     } else {
-      let binaryData = [];
-      binaryData.push(BOM);
-      binaryData.push(content);
-      content = window.URL.createObjectURL(new Blob(binaryData));
-
-      angular.element('body').append('<a id="SaveAsId"></a>');
-      let saveAsElement = angular.element('body > a#SaveAsId');
-      saveAsElement.attr('href', content);
-      saveAsElement.attr('download', filename + '.' + extension);
-      saveAsElement.attr('target', '_blank');
-      saveAsElement[0].click();
-      saveAsElement.remove();
-      window.URL.revokeObjectURL(content);
+      const fileName = filename + '.' + extension;
+      const json = JSON.stringify(content);
+      const blob = new Blob([json], {type: 'octet/stream'});
+      const url = window.URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style = 'display: none';
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
   };
 }

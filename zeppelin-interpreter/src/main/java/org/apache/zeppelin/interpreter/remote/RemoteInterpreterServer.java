@@ -453,16 +453,10 @@ public class RemoteInterpreterServer extends Thread
 
     progressMap.remove(interpreterContext.getParagraphId());
 
-    InterpreterResult result;
-    if (job.getStatus() == Status.ERROR) {
-      result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
-    } else {
-      result = (InterpreterResult) job.getReturn();
-
-      // in case of job abort in PENDING status, result can be null
-      if (result == null) {
-        result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
-      }
+    InterpreterResult  result = (InterpreterResult) job.getReturn();
+    // in case of job abort in PENDING status, result can be null
+    if (result == null) {
+      result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
     }
     return convert(result,
         context.getConfig(),
@@ -519,7 +513,8 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  class InterpretJob extends Job {
+  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
+  public static class InterpretJob extends Job {
 
     private Interpreter interpreter;
     private String script;
@@ -527,7 +522,7 @@ public class RemoteInterpreterServer extends Thread
     private Map<String, Object> infos;
     private Object results;
 
-    InterpretJob(
+    public InterpretJob(
         String jobId,
         String jobName,
         JobListener listener,
@@ -598,7 +593,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    protected Object jobRun() throws Throwable {
+    // TODO(jl): need to redesign this class
+    public Object jobRun() throws Throwable {
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);

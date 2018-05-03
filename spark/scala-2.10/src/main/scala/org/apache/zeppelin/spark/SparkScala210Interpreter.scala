@@ -67,7 +67,7 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     settings.usejavacp.value = true
     settings.classpath.value = getUserJars.mkString(File.pathSeparator)
     Console.setOut(interpreterOutput)
-    sparkILoop = new SparkILoop(null, new JPrintWriter(Console.out, true))
+    sparkILoop = new SparkILoop()
 
     setDeclaredField(sparkILoop, "settings", settings)
     callMethod(sparkILoop, "createInterpreter")

@@ -450,16 +450,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       if (!$scope.note.config.cronExecutingUser) {
         $scope.note.config.cronExecutingUser = $rootScope.ticket.principal;
       }
+      if (!$scope.note.config.cronExecutingRoles) {
+        $scope.note.config.cronExecutingRoles = $rootScope.ticket.roles;
+      }
     } else {
       $scope.note.config.cronExecutingUser = '';
+      $scope.note.config.cronExecutingRoles = '';
     }
     $scope.note.config.cron = cronExpr;
-    $scope.setConfig();
-  };
-
-  /** Set the username of the user to be used to execute all notes in notebook **/
-  $scope.setCronExecutingUser = function(cronExecutingUser) {
-    $scope.note.config.cronExecutingUser = cronExecutingUser;
     $scope.setConfig();
   };
 
@@ -1013,7 +1011,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       closeByBackdrop: false,
       closeByKeyboard: false,
       title: '',
-      message: 'Do you want to restart ' + interpreter.name + ' interpreter?',
+      message: 'Do you want to restart ' + _.escape(interpreter.name) + ' interpreter?',
       callback: function(result) {
         if (result) {
           let payload = {
@@ -1034,7 +1032,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
               console.log('Error %o %o', status, data.message);
               BootstrapDialog.show({
                 title: 'Error restart interpreter.',
-                message: data.message,
+                message: _.escape(data.message),
               });
             });
           return false;
@@ -1053,7 +1051,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         closable: false,
         title: 'Setting Owners Permissions',
         message: 'Please fill the [Owners] field. If not, it will set as current user.\n\n' +
-          'Current user : [ ' + $rootScope.ticket.principal + ']',
+          'Current user : [ ' + _.escape($rootScope.ticket.principal) + ']',
         buttons: [
           {
             label: 'Set',
@@ -1086,9 +1084,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         BootstrapDialog.alert({
           closable: true,
           title: 'Permissions Saved Successfully',
-          message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-           $scope.permissions.readers + '\n\n' + 'Runners : ' + $scope.permissions.runners +
-           '\n\n' + 'Writers  : ' + $scope.permissions.writers,
+          message: 'Owners : ' + _.escape($scope.permissions.owners)
+          + '\n\n' +
+          'Readers : ' + _.escape($scope.permissions.readers) +
+          '\n\n' +
+          'Runners : ' + _.escape($scope.permissions.runners) +
+          '\n\n' +
+          'Writers  : ' + _.escape($scope.permissions.writers),
         });
         $scope.showPermissions = false;
       });
@@ -1100,7 +1102,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: 'Insufficient privileges',
-        message: data.message,
+        message: _.escape(data.message),
         buttons: [
           {
             label: 'Login',

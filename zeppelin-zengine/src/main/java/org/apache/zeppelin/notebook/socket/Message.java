@@ -186,6 +186,8 @@ public class Message implements JsonSerializable {
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
     REMOVE_NOTE_FORMS,            // remove note forms
+    INTERPRETER_INSTALL_STARTED,  // [s-c] start to download an interpreter
+    INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
     SEQUENTIAL_RUN_STATUS         // [s-c] sequential run status will be change
   }
 
