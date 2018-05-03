@@ -16,15 +16,12 @@
 
 package org.apache.zeppelin.lens;
 
-import java.util.Properties;
-
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.shell.core.Shell;
  
 /**
- * workaround for https://github.com/spring-projects/spring-shell/issues/73
+ * workaround for https://github.com/spring-projects/spring-shell/issues/73.
  */
 public class LensBootstrap extends org.springframework.shell.Bootstrap {
   public LensBootstrap() {

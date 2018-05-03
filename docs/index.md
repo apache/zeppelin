@@ -74,6 +74,7 @@ limitations under the License.
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
   * [Notebook actions](./usage/other_features/notebook_actions.html)
+  * [Zeppelin-Context](./usage/other_features/zeppelin_context.html)
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
@@ -160,3 +161,4 @@ limitations under the License.
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
   * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
+

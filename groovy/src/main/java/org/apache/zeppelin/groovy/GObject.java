@@ -16,42 +16,36 @@
  */
 package org.apache.zeppelin.groovy;
 
-
-import java.io.StringWriter;
-
 import org.slf4j.Logger;
 
-import java.util.Properties;
+import java.io.StringWriter;
 import java.util.Collection;
-import java.util.Map;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import groovy.xml.MarkupBuilder;
 import groovy.lang.Closure;
+import groovy.xml.MarkupBuilder;
 
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-
-import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
-import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.RemoteWorksController;
-import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  * Groovy interpreter for Zeppelin.
  */
 public class GObject extends groovy.lang.GroovyObjectSupport {
-
   Logger log;
   StringWriter out;
   Properties props;
   InterpreterContext interpreterContext;
   Map<String, Object> bindings;
-
 
   public GObject(Logger log, StringWriter out, Properties p, InterpreterContext ctx,
       Map<String, Object> bindings) {
@@ -90,7 +84,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * returns gui object
+   * returns gui object.
    */
   public GUI getGui() {
     return interpreterContext.getGui();
@@ -182,9 +176,9 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * starts or continues rendering table rows
+   * starts or continues rendering table rows.
    *
-   * @param obj: 1. List(rows) of List(columns) where first line is a header
+   * @param obj List(rows) of List(columns) where first line is a header
    */
   public void table(Object obj) {
     if (obj == null) {
@@ -294,7 +288,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * Run paragraph by id
+   * Run paragraph by id.
    */
   @ZeppelinApi
   public void run(String noteId, String paragraphId) {
@@ -302,7 +296,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * Run paragraph by id
+   * Run paragraph by id.
    */
   @ZeppelinApi
   public void run(String paragraphId) {
@@ -311,7 +305,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * Run paragraph by id
+   * Run paragraph by id.
    */
   @ZeppelinApi
   public void run(String noteId, String paragraphId, InterpreterContext context) {
@@ -364,6 +358,4 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   public void runAll(InterpreterContext context) {
     runNote(context.getNoteId());
   }
-
-
 }

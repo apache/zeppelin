@@ -544,34 +544,39 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   function appendTableOutput(data) {
-    if (!$scope.$parent.result.data) {
-      $scope.$parent.result.data = [];
-      tableData = undefined;
-    }
-    if (!$scope.$parent.result.data[data.index]) {
-      $scope.$parent.result.data[data.index] = '';
-    }
-    if (!tableData) {
-      $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(data.data);
-      $rootScope.$broadcast(
-        'updateResult',
-        {'data': $scope.$parent.result.data[data.index], 'type': 'TABLE'},
-        undefined,
-        paragraph,
-        data.index);
-      let elemId = `p${$scope.id}_table`;
-      renderGraph(elemId, 'table', true);
-    } else {
-      let textRows = data.data.split('\n');
-      for (let i = 0; i < textRows.length; i++) {
-        if (textRows[i] !== '') {
-          let row = textRows[i].split('\t');
-          tableData.rows.push(row);
-          let builtInViz = builtInVisualizations['table'];
-          if (builtInViz.instance !== undefined) {
-            builtInViz.instance.append([row], tableData.columns);
+    if (ParagraphStatus.FINISHED !== paragraph.status) {
+      if (!$scope.$parent.result.data) {
+        $scope.$parent.result.data = [];
+        tableData = undefined;
+      }
+      if (!$scope.$parent.result.data[data.index]) {
+        $scope.$parent.result.data[data.index] = '';
+      }
+      if (tableData) {
+        let textRows = data.data.split('\n');
+        for (let i = 0; i < textRows.length; i++) {
+          if (textRows[i] !== '') {
+            let row = textRows[i].split('\t');
+            tableData.rows.push(row);
+            let builtInViz = builtInVisualizations['table'];
+            if (builtInViz.instance !== undefined) {
+              builtInViz.instance.append([row], tableData.columns);
+            }
           }
         }
+      }
+      if (!tableData
+        || !builtInVisualizations[$scope.graphMode].instance.append) {
+        $scope.$parent.result.data[data.index] = $scope.$parent.result.data[data.index].concat(
+          data.data);
+        $rootScope.$broadcast(
+          'updateResult',
+          {'data': $scope.$parent.result.data[data.index], 'type': 'TABLE'},
+          $scope.config,
+          paragraph,
+          data.index);
+        let elemId = `p${$scope.id}_` + $scope.graphMode;
+        renderGraph(elemId, $scope.graphMode, true);
       }
     }
   }

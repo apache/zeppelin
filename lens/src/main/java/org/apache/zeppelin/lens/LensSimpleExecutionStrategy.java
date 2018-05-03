@@ -15,17 +15,17 @@
  */
 package org.apache.zeppelin.lens;
 
-import  org.springframework.shell.core.*;
-
-import java.util.logging.Logger;
-
+import org.springframework.shell.core.ExecutionProcessor;
+import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.shell.support.logging.HandlerUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
+import java.util.logging.Logger;
+
 /**
- * workaround for https://github.com/spring-projects/spring-shell/issues/73
+ * workaround for https://github.com/spring-projects/spring-shell/issues/73.
  */
 public class LensSimpleExecutionStrategy implements ExecutionStrategy {
 
@@ -48,8 +48,7 @@ public class LensSimpleExecutionStrategy implements ExecutionStrategy {
           processor.afterThrowingInvocation(parseResult, th);
           return handleThrowable(th);
         }
-      }
-      else {
+      } else {
         return invoke(parseResult);
       }
     }
@@ -82,5 +81,4 @@ public class LensSimpleExecutionStrategy implements ExecutionStrategy {
   public void terminate() {
     // do nothing
   }
-
 }

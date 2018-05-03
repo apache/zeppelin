@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
+
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,8 +30,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Map;
-
-import static org.junit.Assert.assertTrue;
 
 public class ConfigurationsRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();

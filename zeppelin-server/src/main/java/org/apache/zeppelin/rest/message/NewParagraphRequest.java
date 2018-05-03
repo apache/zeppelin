@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.common.JsonSerializable;
 
 import java.util.HashMap;
+
+import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * NewParagraphRequest rest api request message
@@ -39,7 +39,6 @@ public class NewParagraphRequest implements JsonSerializable {
   HashMap< String, Object > config;
 
   public NewParagraphRequest() {
-
   }
 
   public String getTitle() {
@@ -54,7 +53,9 @@ public class NewParagraphRequest implements JsonSerializable {
     return index;
   }
 
-  public HashMap< String, Object > getConfig() { return config; }
+  public HashMap< String, Object > getConfig() {
+    return config;
+  }
 
   public String toJson() {
     return gson.toJson(this);

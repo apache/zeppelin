@@ -14,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.server.JsonResponse;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,15 +24,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.util.Map;
+
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.server.JsonResponse;
 
 /**
- * Configurations Rest API Endpoint
+ * Configurations Rest API Endpoint.
  */
 @Path("/configurations")
 @Produces("application/json")
 public class ConfigurationsRestApi {
-
   private Notebook notebook;
 
   public ConfigurationsRestApi() {}
@@ -89,5 +88,4 @@ public class ConfigurationsRestApi {
 
     return new JsonResponse(Status.OK, "", configurations).build();
   }
-
 }

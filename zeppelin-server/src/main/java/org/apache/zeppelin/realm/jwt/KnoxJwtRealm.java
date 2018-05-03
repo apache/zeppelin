@@ -16,24 +16,7 @@
  */
 package org.apache.zeppelin.realm.jwt;
 
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.servlet.ServletException;
+import java.util.Date;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.Groups;
@@ -47,11 +30,31 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.SignedJWT;
+
 /**
- * Created for org.apache.zeppelin.server
+ * Created for org.apache.zeppelin.server.
  */
 public class KnoxJwtRealm extends AuthorizingRealm {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(KnoxJwtRealm.class);
 
   private String providerUrl;
@@ -66,8 +69,9 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   private String groupPrincipalMapping;
 
   private SimplePrincipalMapper mapper = new SimplePrincipalMapper();
+
   /**
-   * Configuration object needed by for hadoop classes
+   * Configuration object needed by for Hadoop classes.
    */
   private Configuration hadoopConfig;
 
@@ -94,14 +98,12 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     } catch (final Exception e) {
       LOGGER.error("Exception in onInit", e);
     }
-
   }
 
   @Override
   public boolean supports(AuthenticationToken token) {
     return token != null && token instanceof JWTAuthenticationToken;
   }
-
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) {
@@ -128,18 +130,27 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   protected boolean validateToken(String token) {
     try {
       SignedJWT signed = SignedJWT.parse(token);
-      return validateSignature(signed);
+      boolean sigValid = validateSignature(signed);
+      if (!sigValid) {
+        LOGGER.warn("Signature of JWT token could not be verified. Please check the public key");
+        return false;
+      }
+      boolean expValid = validateExpiration(signed);
+      if (!expValid) {
+        LOGGER.warn("Expiration time validation of JWT token failed.");
+        return false;
+      }
+      return true;
     } catch (ParseException ex) {
       LOGGER.info("ParseException in validateToken", ex);
       return false;
     }
   }
 
-  public static RSAPublicKey parseRSAPublicKey(String pem)
-      throws IOException, ServletException {
-    String PEM_HEADER = "-----BEGIN CERTIFICATE-----\n";
-    String PEM_FOOTER = "\n-----END CERTIFICATE-----";
-    String fullPem = PEM_HEADER + pem + PEM_FOOTER;
+  public static RSAPublicKey parseRSAPublicKey(String pem) throws IOException, ServletException {
+    final String pemHeader = "-----BEGIN CERTIFICATE-----\n";
+    final String pemFooter = "\n-----END CERTIFICATE-----";
+    String fullPem = pemHeader + pem + pemFooter;
     PublicKey key = null;
     try {
       CertificateFactory fact = CertificateFactory.getInstance("X.509");
@@ -149,7 +160,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
       key = cer.getPublicKey();
     } catch (CertificateException ce) {
       String message = null;
-      if (pem.startsWith(PEM_HEADER)) {
+      if (pem.startsWith(pemHeader)) {
         message = "CertificateException - be sure not to include PEM header "
             + "and footer in the PEM configuration element.";
       } else {
@@ -167,9 +178,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   protected boolean validateSignature(SignedJWT jwtToken) {
     boolean valid = false;
     if (JWSObject.State.SIGNED == jwtToken.getState()) {
-
       if (jwtToken.getSignature() != null) {
-
         try {
           RSAPublicKey publicKey = parseRSAPublicKey(publicKeyPath);
           JWSVerifier verifier = new RSASSAVerifier(publicKey);
@@ -184,6 +193,33 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     return valid;
   }
 
+  /**
+   * Validate that the expiration time of the JWT token has not been violated.
+   * If it has then throw an AuthenticationException. Override this method in
+   * subclasses in order to customize the expiration validation behavior.
+   *
+   * @param jwtToken
+   *            the token that contains the expiration date to validate
+   * @return valid true if the token has not expired; false otherwise
+   */
+  protected boolean validateExpiration(SignedJWT jwtToken) {
+    boolean valid = false;
+    try {
+      Date expires = jwtToken.getJWTClaimsSet().getExpirationTime();
+      if (expires == null || new Date().before(expires)) {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("SSO token expiration date has been " + "successfully validated");
+        }
+        valid = true;
+      } else {
+        LOGGER.warn("SSO expiration date validation failed.");
+      }
+    } catch (ParseException pe) {
+      LOGGER.warn("SSO expiration date validation failed.", pe);
+    }
+    return valid;
+  }
+
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     Set<String> roles = mapGroupPrincipals(principals.toString());
@@ -191,8 +227,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
   }
 
   /**
-   * Query the Hadoop implementation of {@link Groups} to retrieve groups for
-   * provided user.
+   * Query the Hadoop implementation of {@link Groups} to retrieve groups for provided user.
    */
   public Set<String> mapGroupPrincipals(final String mappedPrincipalName) {
     /* return the groups as seen by Hadoop */
@@ -295,4 +330,3 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     this.groupPrincipalMapping = groupPrincipalMapping;
   }
 }
-

@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', WebsocketEventFactory);
 
-function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv) {
+function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ngToast) {
   'ngInject';
 
   let websocketCalls = {};
@@ -154,7 +154,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv) {
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: 'Details',
-        message: data.info.toString(),
+        message: _.escape(data.info.toString()),
         buttons: [{
           // close all the dialogs when there are error on running all paragraphs
           label: 'Close',
@@ -181,6 +181,10 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('setNoteRevisionResult', data);
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
+    } else if (op === 'INTERPRETER_INSTALL_STARTED') {
+      ngToast.info(data.message);
+    } else if (op === 'INTERPRETER_INSTALL_RESULT') {
+      ngToast.info(data.message);
     } else {
       console.error(`unknown websocket op: ${op}`);
     }

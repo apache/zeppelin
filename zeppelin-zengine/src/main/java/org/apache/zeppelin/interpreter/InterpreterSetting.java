@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -519,7 +520,8 @@ public class InterpreterSetting {
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
       if (entry.getValue().getValue() != null) {
-        jProperties.setProperty(entry.getKey(), entry.getValue().getValue().toString());
+        jProperties.setProperty(entry.getKey().trim(),
+            entry.getValue().getValue().toString().trim());
       }
     }
 
@@ -677,8 +679,9 @@ public class InterpreterSetting {
   List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId) {
     List<Interpreter> interpreters = new ArrayList<>();
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
+    Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
-      Interpreter interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+      Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
           info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
@@ -688,7 +691,16 @@ public class InterpreterSetting {
       LOGGER.info("Interpreter {} created for user: {}, sessionId: {}",
           interpreter.getClassName(), user, sessionId);
     }
-    interpreters.add(new ConfInterpreter(getJavaProperties(), interpreterGroupId, this));
+
+    // TODO(zjffdu) this kind of hardcode is ugly. For now SessionConfInterpreter is used
+    // for livy, we could add new property in interpreter-setting.json when there's new interpreter
+    // require SessionConfInterpreter
+    if (group.equals("livy")) {
+      interpreters.add(
+          new SessionConfInterpreter(intpProperties, sessionId, interpreterGroupId, this));
+    } else {
+      interpreters.add(new ConfInterpreter(intpProperties, sessionId, interpreterGroupId, this));
+    }
     return interpreters;
   }
 
@@ -750,7 +762,11 @@ public class InterpreterSetting {
     //TODO(zjffdu) It requires user can not create interpreter with name `conf`,
     // conf is a reserved word of interpreter name
     if (replName.equals("conf")) {
-      return ConfInterpreter.class.getName();
+      if (group.equals("livy")) {
+        return SessionConfInterpreter.class.getName();
+      } else {
+        return ConfInterpreter.class.getName();
+      }
     }
     return null;
   }

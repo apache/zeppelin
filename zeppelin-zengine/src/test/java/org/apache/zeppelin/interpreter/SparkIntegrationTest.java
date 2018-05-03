@@ -75,7 +75,7 @@ public class SparkIntegrationTest {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark");
 
-    InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").getContext();
+    InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     String detectedSparkVersion = interpreterResult.message().get(0).getData();

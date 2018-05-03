@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
+
+import com.google.gson.Gson;
 
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 
 /**
- * NewInterpreterSetting rest api request message
+ * NewInterpreterSetting REST API request message.
  */
 public class NewInterpreterSettingRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
@@ -39,7 +39,6 @@ public class NewInterpreterSettingRequest implements JsonSerializable {
   private InterpreterOption option;
 
   public NewInterpreterSettingRequest() {
-
   }
 
   public String getName() {

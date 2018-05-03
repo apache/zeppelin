@@ -211,7 +211,7 @@ public class Notebook implements NoteEventListener {
       newNote.setCronSupported(getConf());
       List<Paragraph> paragraphs = oldNote.getParagraphs();
       for (Paragraph p : paragraphs) {
-        newNote.addCloneParagraph(p);
+        newNote.addCloneParagraph(p, subject);
       }
 
       notebookAuthorization.setNewNotePermissions(newNote.getId(), subject);
@@ -233,7 +233,7 @@ public class Notebook implements NoteEventListener {
    * @throws IOException, CloneNotSupportedException, IllegalArgumentException
    */
   public Note cloneNote(String sourceNoteId, String newNoteName, AuthenticationInfo subject)
-      throws IOException, CloneNotSupportedException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
 
     Note sourceNote = getNote(sourceNoteId);
     if (sourceNote == null) {
@@ -252,7 +252,7 @@ public class Notebook implements NoteEventListener {
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
-      newNote.addCloneParagraph(p);
+      newNote.addCloneParagraph(p, subject);
     }
 
     noteSearchService.addIndexDoc(newNote);
@@ -521,7 +521,6 @@ public class Notebook implements NoteEventListener {
 
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
-    note.setRevisionSupported(notebookRepo);
     note.setCronSupported(getConf());
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
@@ -650,6 +649,11 @@ public class Notebook implements NoteEventListener {
 
   public List<Note> getNotesUnderFolder(String folderId) {
     return folders.getFolder(folderId).getNotesRecursively();
+  }
+
+  public List<Note> getNotesUnderFolder(String folderId,
+      Set<String> userAndRoles) {
+    return folders.getFolder(folderId).getNotesRecursively(userAndRoles, notebookAuthorization);
   }
 
   public List<Note> getAllNotes() {
@@ -1058,6 +1062,16 @@ public class Notebook implements NoteEventListener {
   private void fireUnbindInterpreter(Note note, InterpreterSetting setting) {
     for (NotebookEventListener listener : notebookEventListeners) {
       listener.onUnbindInterpreter(note, setting);
+    }
+  }
+
+  public Boolean isRevisionSupported() {
+    if (notebookRepo instanceof NotebookRepoSync) {
+      return ((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo();
+    } else if (notebookRepo instanceof NotebookRepoWithVersionControl) {
+      return true;
+    } else {
+      return false;
     }
   }
 

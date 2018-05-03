@@ -54,8 +54,8 @@ else:
 
 class IPySparkZeppelinContext(PyZeppelinContext):
 
-    def __init__(self, z):
-        super(IPySparkZeppelinContext, self).__init__(z)
+    def __init__(self, z, gateway):
+        super(IPySparkZeppelinContext, self).__init__(z, gateway)
 
     def show(self, obj):
         from pyspark.sql import DataFrame
@@ -64,4 +64,4 @@ class IPySparkZeppelinContext(PyZeppelinContext):
         else:
             super(IPySparkZeppelinContext, self).show(obj)
 
-z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext())
+z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext(), gateway)

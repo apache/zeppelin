@@ -199,7 +199,6 @@ public class RemoteInterpreterServer extends Thread
         }
       }).start();
     }
-    logger.info("Starting remote interpreter server on port {}", port);
     server.serve();
   }
 
@@ -281,7 +280,7 @@ public class RemoteInterpreterServer extends Thread
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
-      hookRegistry = new InterpreterHookRegistry(interpreterGroup.getId());
+      hookRegistry = new InterpreterHookRegistry();
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
       interpreterGroup.setInterpreterHookRegistry(hookRegistry);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -420,21 +419,21 @@ public class RemoteInterpreterServer extends Thread
 
 
   @Override
-  public RemoteInterpreterResult interpret(String noteId, String className, String st,
+  public RemoteInterpreterResult interpret(String sessionId, String className, String st,
                                            RemoteInterpreterContext interpreterContext)
       throws TException {
     if (logger.isDebugEnabled()) {
       logger.debug("st:\n{}", st);
     }
-    Interpreter intp = getInterpreter(noteId, className);
+    Interpreter intp = getInterpreter(sessionId, className);
     InterpreterContext context = convert(interpreterContext);
-    context.setClassName(intp.getClassName());
+    context.setInterpreterClassName(intp.getClassName());
 
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
     InterpretJob job = new InterpretJob(
         interpreterContext.getParagraphId(),
-        "remoteInterpretJob_" + System.currentTimeMillis(),
+        "RemoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
         JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
@@ -454,16 +453,10 @@ public class RemoteInterpreterServer extends Thread
 
     progressMap.remove(interpreterContext.getParagraphId());
 
-    InterpreterResult result;
-    if (job.getStatus() == Status.ERROR) {
-      result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
-    } else {
-      result = (InterpreterResult) job.getReturn();
-
-      // in case of job abort in PENDING status, result can be null
-      if (result == null) {
-        result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
-      }
+    InterpreterResult  result = (InterpreterResult) job.getReturn();
+    // in case of job abort in PENDING status, result can be null
+    if (result == null) {
+      result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
     }
     return convert(result,
         context.getConfig(),
@@ -513,18 +506,15 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    public void beforeStatusChange(Job job, Status before, Status after) {
-    }
-
-    @Override
-    public void afterStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job job, Status before, Status after) {
       synchronized (this) {
         notifyAll();
       }
     }
   }
 
-  class InterpretJob extends Job {
+  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
+  public static class InterpretJob extends Job {
 
     private Interpreter interpreter;
     private String script;
@@ -532,7 +522,7 @@ public class RemoteInterpreterServer extends Thread
     private Map<String, Object> infos;
     private Object results;
 
-    InterpretJob(
+    public InterpretJob(
         String jobId,
         String jobName,
         JobListener listener,
@@ -568,8 +558,8 @@ public class RemoteInterpreterServer extends Thread
       InterpreterHookListener hookListener = new InterpreterHookListener() {
         @Override
         public void onPreExecute(String script) {
-          String cmdDev = interpreter.getHook(noteId, HookType.PRE_EXEC_DEV);
-          String cmdUser = interpreter.getHook(noteId, HookType.PRE_EXEC);
+          String cmdDev = interpreter.getHook(noteId, HookType.PRE_EXEC_DEV.getName());
+          String cmdUser = interpreter.getHook(noteId, HookType.PRE_EXEC.getName());
 
           // User defined hook should be executed before dev hook
           List<String> cmds = Arrays.asList(cmdDev, cmdUser);
@@ -584,8 +574,8 @@ public class RemoteInterpreterServer extends Thread
 
         @Override
         public void onPostExecute(String script) {
-          String cmdDev = interpreter.getHook(noteId, HookType.POST_EXEC_DEV);
-          String cmdUser = interpreter.getHook(noteId, HookType.POST_EXEC);
+          String cmdDev = interpreter.getHook(noteId, HookType.POST_EXEC_DEV.getName());
+          String cmdUser = interpreter.getHook(noteId, HookType.POST_EXEC.getName());
 
           // User defined hook should be executed after dev hook
           List<String> cmds = Arrays.asList(cmdUser, cmdDev);
@@ -603,7 +593,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    protected Object jobRun() throws Throwable {
+    // TODO(jl): need to redesign this class
+    public Object jobRun() throws Throwable {
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
@@ -621,9 +612,16 @@ public class RemoteInterpreterServer extends Thread
 
         if (result == null || result.code() == Code.SUCCESS) {
           // Add hooks to script from registry.
-          // Global scope first, followed by notebook scope
-          processInterpreterHooks(null);
+          // note scope first, followed by global scope.
+          // Here's the code after hooking:
+          //     global_pre_hook
+          //     note_pre_hook
+          //     script
+          //     note_post_hook
+          //     global_post_hook
           processInterpreterHooks(context.getNoteId());
+          processInterpreterHooks(null);
+          logger.debug("Script after hooks: " + script);
           result = interpreter.interpret(script, context);
         }
 
@@ -642,8 +640,7 @@ public class RemoteInterpreterServer extends Thread
         // put result into resource pool
         if (resultMessages.size() > 0) {
           int lastMessageIndex = resultMessages.size() - 1;
-          if (resultMessages.get(lastMessageIndex).getType() ==
-              InterpreterResult.Type.TABLE) {
+          if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
             context.getResourcePool().put(
                 context.getNoteId(),
                 context.getParagraphId(),
@@ -671,10 +668,11 @@ public class RemoteInterpreterServer extends Thread
 
 
   @Override
-  public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext)
-      throws TException {
+  public void cancel(String sessionId,
+                     String className,
+                     RemoteInterpreterContext interpreterContext) throws TException {
     logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
-    Interpreter intp = getInterpreter(noteId, className);
+    Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
     Job job = intp.getScheduler().removeFromWaitingQueue(jobId);
 
@@ -746,8 +744,10 @@ public class RemoteInterpreterServer extends Thread
         new TypeToken<List<RemoteInterpreterContextRunner>>() {
         }.getType());
 
-    for (InterpreterContextRunner r : runners) {
-      contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+    if (runners != null) {
+      for (InterpreterContextRunner r : runners) {
+        contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+      }
     }
 
     return new InterpreterContext(
@@ -794,7 +794,7 @@ public class RemoteInterpreterServer extends Thread
         String output;
         try {
           output = new String(out.toByteArray());
-          logger.debug("Output Update: {}", output);
+          logger.debug("Output Update for index {}: {}", index, output);
           eventClient.onInterpreterOutputUpdate(
               noteId, paragraphId, index, out.getType(), output);
         } catch (IOException e) {
@@ -923,7 +923,7 @@ public class RemoteInterpreterServer extends Thread
       if (interpreters == null) {
         return Status.UNKNOWN.name();
       }
-
+      //TODO(zjffdu) ineffient for loop interpreter and its jobs
       for (Interpreter intp : interpreters) {
         for (Job job : intp.getScheduler().getJobsRunning()) {
           if (jobId.equals(job.getId())) {

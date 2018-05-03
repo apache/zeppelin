@@ -35,7 +35,7 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
 <table class="table-configuration">
   <tr>
     <th>Name</th>
-    <th>Value</th>
+    <th>Default</th>
     <th>Description</th>
   </tr>
   <tr>
@@ -63,6 +63,11 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td></td>
     <td>The path to the keytab file</td>
   </tr>
+  <tr>
+    <td>zeppelin.shell.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
+  </tr>
 </table>
 
 ## Example
@@ -82,3 +87,25 @@ export LAUNCH_KERBEROS_REFRESH_INTERVAL=4h
 # Change kinit number retries (default value is 5), which means if the kinit command fails for 5 retries consecutively it will close the interpreter. 
 export KINIT_FAIL_THRESHOLD=10
 ```
+
+## Object Interpolation
+The shell interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+The following example shows one use of this facility:
+
+####In Scala cell:
+```
+z.put("dataFileName", "members-list-003.parquet")
+    // ...
+val members = spark.read.parquet(z.get("dataFileName"))
+    // ...
+```
+
+####In later Shell cell:
+```
+%sh rm -rf {dataFileName}
+```
+
+Object interpolation is disabled by default, and can be enabled (for the Shell interpreter) by 
+setting the value of the property `zeppelin.shell.interpolation` to `true` (see _Configuration_ above). 
+More details of this feature can be found in [Zeppelin-Context](../usage/other_features/zeppelin_context.html)
+

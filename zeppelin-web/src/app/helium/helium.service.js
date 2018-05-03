@@ -106,6 +106,10 @@ export default function HeliumService($http, $sce, baseUrlSrv) {
     return $http.post(baseUrlSrv.getRestApiBase() + '/helium/disable/' + name);
   };
 
+  this.installInterpreter = function(installRequest) {
+    return $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/install', installRequest);
+  };
+
   this.saveConfig = function(pkg, defaultPackageConfig, closeConfigPanelCallback) {
     // in case of local package, it will include `/`
     const pkgArtifact = encodeURIComponent(pkg.artifact);

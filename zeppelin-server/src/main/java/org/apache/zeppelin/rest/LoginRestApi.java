@@ -16,11 +16,24 @@
  */
 package org.apache.zeppelin.rest;
 
+import com.google.gson.Gson;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,14 +44,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
+
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
@@ -46,18 +52,15 @@ import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Created for org.apache.zeppelin.rest.message on 17/03/16.
+ * Created for org.apache.zeppelin.rest.message.
  */
-
 @Path("/login")
 @Produces("application/json")
 public class LoginRestApi {
-
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
+  private static final Gson gson = new Gson();
 
   /**
    * Required by Swagger.
@@ -65,7 +68,6 @@ public class LoginRestApi {
   public LoginRestApi() {
     super();
   }
-
 
   @GET
   @ZeppelinApi
@@ -78,7 +80,7 @@ public class LoginRestApi {
         Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
         if (!currentUser.isAuthenticated()) {
           JWTAuthenticationToken token = new JWTAuthenticationToken(null, cookie.getValue());
-          response = procedeToLogin(currentUser, token);
+          response = proceedToLogin(currentUser, token);
         }
       }
       if (response == null) {
@@ -123,7 +125,7 @@ public class LoginRestApi {
     return false;
   }
 
-  private JsonResponse procedeToLogin(Subject currentUser, AuthenticationToken token) {
+  private JsonResponse proceedToLogin(Subject currentUser, AuthenticationToken token) {
     JsonResponse response = null;
     try {
       currentUser.getSession().stop();
@@ -141,7 +143,7 @@ public class LoginRestApi {
 
       Map<String, String> data = new HashMap<>();
       data.put("principal", principal);
-      data.put("roles", roles.toString());
+      data.put("roles", gson.toJson(roles));
       data.put("ticket", ticket);
 
       response = new JsonResponse(Response.Status.OK, "", data);
@@ -187,7 +189,7 @@ public class LoginRestApi {
 
       UsernamePasswordToken token = new UsernamePasswordToken(userName, password);
 
-      response = procedeToLogin(currentUser, token);
+      response = proceedToLogin(currentUser, token);
     }
 
     if (response == null) {
@@ -229,5 +231,4 @@ public class LoginRestApi {
     }
     return redirectURL.toString();
   }
-
 }

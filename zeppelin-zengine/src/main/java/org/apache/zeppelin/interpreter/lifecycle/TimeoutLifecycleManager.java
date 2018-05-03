@@ -58,18 +58,14 @@ public class TimeoutLifecycleManager implements LifecycleManager {
   }
 
   @Override
-  public void onInterpreterGroupCreated(ManagedInterpreterGroup interpreterGroup) {
+  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {
+    LOGGER.info("Process of InterpreterGroup {} is started", interpreterGroup.getId());
     interpreterGroups.put(interpreterGroup, System.currentTimeMillis());
   }
 
   @Override
-  public void onInterpreterSessionCreated(ManagedInterpreterGroup interpreterGroup,
-                                          String sessionId) {
-
-  }
-
-  @Override
   public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {
+    LOGGER.debug("InterpreterGroup {} is used in session {}", interpreterGroup.getId(), sessionId);
     interpreterGroups.put(interpreterGroup, System.currentTimeMillis());
   }
 }

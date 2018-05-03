@@ -86,7 +86,8 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -108,6 +109,13 @@
         "description": "Show full exception stacktrace for SQL queries if set to true.",
         "type": "checkbox"
       },
+      "zeppelin.spark.sql.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
@@ -126,7 +134,8 @@
     "editor": {
       "language": "sql",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -152,7 +161,8 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -178,7 +188,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -188,7 +199,8 @@
     "properties": {},
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   },
   {
@@ -227,7 +239,8 @@
     },
     "editor": {
       "language": "r",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

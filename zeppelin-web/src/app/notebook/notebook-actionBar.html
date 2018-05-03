@@ -100,7 +100,7 @@ limitations under the License.
       </button>
     </span>
 
-    <span class="labelBtn btn-group" role="group" ng-if="note.config.isRevisionSupported">
+    <span class="labelBtn btn-group" role="group" ng-if="isRevisionSupported()" >
       <div class="btn-group" role="group">
         <button type="button"
                 class="btn btn-default btn-xs dropdown-toggle"
@@ -289,13 +289,6 @@ limitations under the License.
                 <p ng-show="note.info.cron" class="text-danger cron-info">
                   {{note.info.cron}}
                 </p>
-              </div>
-              <div>
-                <span>- Cron executing user (click enter in field to submit)</span>
-                <input type="text"
-                       ng-model="note.config.cronExecutingUser"
-                       ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
-                       dropdown-input />
               </div>
               <div>
                 <span>- auto-restart interpreter on cron execution </span>

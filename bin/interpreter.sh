@@ -205,7 +205,8 @@ fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" && "${INTERPRETER_ID}" != "spark" ]]; then
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+  if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
     suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
        INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
@@ -213,6 +214,7 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" && "${INTERPRETER_ID}" != "spark" ]]; th
            INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
        fi
     fi
+  fi
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
