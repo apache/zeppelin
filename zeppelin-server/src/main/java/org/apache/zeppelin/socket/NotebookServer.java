@@ -1741,7 +1741,7 @@ public class NotebookServer extends WebSocketServlet
     p.abort();
   }
 
-  private void runAllParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void runAllParagraphs(final NotebookSocket conn, HashSet<String> userAndRoles,
           Notebook notebook, final Message fromMessage) throws IOException {
     final String noteId = (String) fromMessage.get("noteId");
     if (StringUtils.isBlank(noteId)) {
