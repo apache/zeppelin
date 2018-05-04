@@ -1071,16 +1071,11 @@
 
               <!-- compiled R packages (binaries) -->
               <exclude>**/R/lib/**</exclude>
-              <exclude>**/r/lib/**</exclude>
+              <exclude>**/lib/rzeppelin/**</exclude>
 
-               <!--R-related files with alternative licenses-->
+              <!--R-related files with alternative licenses-->
 
-              <exclude>**/R/rzeppelin/R/globals.R</exclude>
-              <exclude>**/R/rzeppelin/R/common.R</exclude>
-              <exclude>**/R/rzeppelin/R/protocol.R</exclude>
-              <exclude>**/R/rzeppelin/R/rServer.R</exclude>
-              <exclude>**/R/rzeppelin/R/scalaInterpreter.R</exclude>
-              <exclude>**/R/rzeppelin/R/zzz.R</exclude>
+              <exclude>**/R/rzeppelin/R/*.R</exclude>
               <exclude>**/src/main/scala/scala/Console.scala</exclude>
               <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
               <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
