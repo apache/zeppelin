@@ -50,9 +50,6 @@ import py4j.GatewayServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +78,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private IPythonInterpreter iPythonInterpreter;
   private BaseZeppelinContext zeppelinContext;
   private String condaPythonExec;  // set by PythonCondaInterpreter
+  private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -118,6 +116,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     try {
+      this.usePy4jAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "true"));
       createGatewayServerAndStartScript();
     } catch (IOException e) {
       LOGGER.error("Fail to open PythonInterpreter", e);
@@ -131,18 +130,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     // use the FQDN as the server address instead of 127.0.0.1 so that python process in docker
     // container can also connect to this gateway server.
-    String serverAddress = getLocalIP();
-    gatewayServer = new GatewayServer(this,
-        port,
-        GatewayServer.DEFAULT_PYTHON_PORT,
-        InetAddress.getByName(serverAddress),
-        InetAddress.getByName(serverAddress),
-        GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-        GatewayServer.DEFAULT_READ_TIMEOUT,
-        (List) null);
-    ;
+    String serverAddress = PythonUtils.getLocalIP(properties);
+    String secret = PythonUtils.createSecret(256);
+    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret,
+        usePy4jAuth);
     gatewayServer.start();
-    LOGGER.info("Starting GatewayServer at " + serverAddress + ":" + port);
 
     // launch python process to connect to the gateway server in JVM side
     createPythonScript();
@@ -160,13 +152,17 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
     executor.setStreamHandler(streamHandler);
     executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-
     Map<String, String> env = setupPythonEnv();
+    if (usePy4jAuth) {
+      env.put("PY4J_GATEWAY_SECRET", secret);
+    }
     LOGGER.info("Launching Python Process Command: " + cmd.getExecutable() +
         " " + StringUtils.join(cmd.getArguments(), " "));
     executor.execute(cmd, env, this);
     pythonScriptRunning.set(true);
   }
+
+
 
   private void createPythonScript() throws IOException {
     // set java.io.tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
@@ -183,29 +179,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     copyResourceToPythonWorkDir("python/zeppelin_context.py", "zeppelin_context.py");
     copyResourceToPythonWorkDir("python/backend_zinline.py", "backend_zinline.py");
     copyResourceToPythonWorkDir("python/mpl_config.py", "mpl_config.py");
-    copyResourceToPythonWorkDir("python/py4j-src-0.9.2.zip", "py4j-src-0.9.2.zip");
+    copyResourceToPythonWorkDir("python/py4j-src-0.10.7.zip", "py4j-src-0.10.7.zip");
   }
 
   protected boolean useIPython() {
     return this.iPythonInterpreter != null;
-  }
-
-  private String getLocalIP() {
-    // zeppelin.python.gatewayserver_address is only for unit test on travis.
-    // Because the FQDN would fail unit test on travis ci.
-    String gatewayserver_address =
-        properties.getProperty("zeppelin.python.gatewayserver_address");
-    if (gatewayserver_address != null) {
-      return gatewayserver_address;
-    }
-
-    try {
-      return Inet4Address.getLocalHost().getHostAddress();
-    } catch (UnknownHostException e) {
-      LOGGER.warn("can't get local IP", e);
-    }
-    // fall back to loopback addreess
-    return "127.0.0.1";
   }
 
   private void copyResourceToPythonWorkDir(String srcResourceName,
@@ -227,7 +205,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     Map<String, String> env = EnvironmentUtils.getProcEnvironment();
     appendToPythonPath(env, pythonWorkDir.getAbsolutePath());
     if (useBuiltinPy4j) {
-      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.9.2.zip");
+      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.7.zip");
     }
     LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
     return env;

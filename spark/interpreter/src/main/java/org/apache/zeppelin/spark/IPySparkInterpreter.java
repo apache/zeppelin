@@ -53,15 +53,19 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     PySparkInterpreter pySparkInterpreter = getPySparkInterpreter();
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getSparkInterpreter();
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
     if (!conf.contains("spark.submit.deployMode") ||
         !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
-      setAddBulitinPy4j(false);
     }
+    setAddBulitinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 
