@@ -43,6 +43,9 @@ import java.net.URISyntaxException;
  *
  * The logic for updating the remote repository on GitHub from local repository is the following:
  * - When commit the changes (saving the notebook)
+ *
+ * You should be able to use this integration with all remote git repositories that accept
+ * username + password authentication, not just GitHub.
  */
 public class GitHubNotebookRepo extends GitNotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepo.class);
