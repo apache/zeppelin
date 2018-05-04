@@ -19,6 +19,12 @@
 package org.apache.zeppelin.spark;
 
 
+import java.io.IOException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.slf4j.Logger;
@@ -37,6 +43,8 @@ public abstract class SparkShims {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkShims.class);
 
   private static SparkShims sparkShims;
+
+  private HttpClient httpClient;
 
   private static SparkShims loadShims(String sparkVersion) throws ReflectiveOperationException {
     Class<?> sparkShimsClass;
@@ -57,6 +65,10 @@ public abstract class SparkShims {
       String sparkMajorVersion = getSparkMajorVersion(sparkVersion);
       try {
         sparkShims = loadShims(sparkMajorVersion);
+        sparkShims.setHttpClient(
+            HttpClientBuilder.create()
+                .setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+                .build());
       } catch (ReflectiveOperationException e) {
         throw new RuntimeException(e);
       }
@@ -87,10 +99,25 @@ public abstract class SparkShims {
     return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
   }
 
+  protected void setHttpClient(HttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
+
   protected void buildSparkJobUrl(String sparkWebUrl, int jobId, Properties jobProperties) {
     String jobGroupId = jobProperties.getProperty("spark.jobGroup.id");
     String uiEnabled = jobProperties.getProperty("spark.ui.enabled");
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
+    // See ZEPPELIN-2221 which fixes an issue passing wrong parameters. It's related to YARN-6615.
+    HttpGet httpGetRequest = new HttpGet(jobUrl);
+    try {
+      if (httpClient.execute(httpGetRequest).getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+        LOGGER.info("Job url is not correct. See YARN-6615");
+        jobUrl = sparkWebUrl + "/jobs";
+      }
+    } catch (IOException ignore) {
+      jobUrl = sparkWebUrl + "/jobs";
+    }
+
     String noteId = getNoteId(jobGroupId);
     String paragraphId = getParagraphId(jobGroupId);
     // Button visible if Spark UI property not set, set as invalid boolean or true
