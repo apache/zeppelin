@@ -125,7 +125,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
 
-  private Map<String, Boolean> collaborativeModeList = new HashMap<>();
+  private HashSet<String> collaborativeModeList = new HashSet<>();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -439,7 +439,7 @@ public class NotebookServer extends WebSocketServlet
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
-      collaborativeStatusCheck(noteId, socketList);
+      checkCollaborativeStatus(noteId, socketList);
     }
   }
 
@@ -449,7 +449,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketList != null) {
         socketList.remove(socket);
       }
-      collaborativeStatusCheck(noteId, socketList);
+      checkCollaborativeStatus(noteId, socketList);
     }
   }
 
@@ -468,14 +468,15 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-  private void collaborativeStatusCheck(String noteId, List<NotebookSocket> socketList) {
-    if (!collaborativeModeList.containsKey(noteId)) {
-      collaborativeModeList.put(noteId, false);
-    }
-    Boolean collaborativeStatusOld = collaborativeModeList.get(noteId);
+  private void checkCollaborativeStatus(String noteId, List<NotebookSocket> socketList) {
+    Boolean collaborativeStatusOld = collaborativeModeList.contains(noteId);
     Boolean collaborativeStatusNew = socketList.size() > 1;
     if (collaborativeStatusNew != collaborativeStatusOld) {
-      collaborativeModeList.put(noteId, collaborativeStatusNew);
+      if (collaborativeStatusNew) {
+        collaborativeModeList.add(noteId);
+      } else {
+        collaborativeModeList.remove(noteId);
+      }
       Message message = new Message(OP.COLLABORATIVE_MODE_STATUS);
       message.put("status", collaborativeStatusNew);
       broadcast(noteId, message);
@@ -1308,14 +1309,28 @@ public class NotebookServer extends WebSocketServlet
 
   private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                               Notebook notebook, Message fromMessage) throws IOException {
-    String paragraphId = (String) fromMessage.get("id");
+    String paragraphId = null;
+    try {
+      paragraphId = (String) fromMessage.get("id");
+    } catch (ClassCastException e) {
+      LOG.error("Failed to get paragraph ID from message", e);
+      return;
+    }
     if (paragraphId == null) {
       return;
     }
 
     String noteId = getOpenNoteId(conn);
     if (noteId == null) {
-      noteId = (String) fromMessage.get("noteId");
+      try {
+        noteId = (String) fromMessage.get("noteId");
+      } catch (ClassCastException e) {
+        LOG.error("Failed to get note ID from message", e);
+        return;
+      }
+      if (noteId == null) {
+        return;
+      }
     }
 
     if (!hasParagraphWriterPermission(conn, notebook, noteId,
@@ -1324,15 +1339,39 @@ public class NotebookServer extends WebSocketServlet
     }
 
     final Note note = notebook.getNote(noteId);
+    if (note == null) {
+      return;
+    }
     Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return;
+    }
 
     DiffMatchPatch dmp = new DiffMatchPatch();
-    String patchText = (String) fromMessage.get("patch");
+    String patchText = null;
 
-    // javascript add "," if change contains several patches
-    patchText = patchText.replace(",@@", "@@");
-    LinkedList<DiffMatchPatch.Patch> patches =
-        (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
+    try {
+      patchText = (String) fromMessage.get("patch");
+    } catch (ClassCastException e) {
+      LOG.error("Failed to get patch from message", e);
+      return;
+    }
+    if (patchText == null) {
+      return;
+    }
+
+
+    LinkedList<DiffMatchPatch.Patch> patches;
+    try {
+      patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
+    } catch (ClassCastException e) {
+      LOG.error("Failed to parse patches", e);
+      return;
+    }
+    if (patches == null) {
+      return;
+    }
+
 
     String paragraphText = p.getText();
     paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];
@@ -2499,7 +2538,7 @@ public class NotebookServer extends WebSocketServlet
     }
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
-    resp.put("collaborativeModeStatus", collaborativeModeList.get(noteId));
+    resp.put("collaborativeModeStatus", collaborativeModeList.contains(noteId));
     conn.send(serializeMessage(resp));
   }
 

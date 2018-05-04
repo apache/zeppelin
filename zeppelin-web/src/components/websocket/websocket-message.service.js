@@ -248,6 +248,9 @@ function WebsocketMessageService($rootScope, websocketEvents) {
     },
 
     patchParagraph: function(paragraphId, noteId, patch) {
+      // javascript add "," if change contains several patches
+      // but java library requires patch list without ","
+      patch = patch.replace(/,@@/g, '@@');
       return websocketEvents.sendNewEvent({
         op: 'PATCH_PARAGRAPH',
         data: {

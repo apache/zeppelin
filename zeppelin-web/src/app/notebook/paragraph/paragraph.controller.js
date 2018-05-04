@@ -712,7 +712,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       }
     }
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
-    if ($scope.cursorPosition && $scope.cursorPosition && $scope.cursorPosition) {
+    if ($scope.cursorPosition) {
       editor.moveCursorToPosition($scope.cursorPosition);
       $scope.cursorPosition = null;
     }
@@ -722,7 +722,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.originalText = $scope.originalText ? $scope.originalText : '';
     let patch = $scope.diffMatchPatch.patch_make($scope.originalText, $scope.dirtyText).toString();
     $scope.originalText = $scope.dirtyText;
-    patchParagraph($scope.paragraph, patch);
+    return websocketMsgSrv.patchParagraph($scope.paragraph.id, $route.current.pathParams.noteId, patch);
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -1282,11 +1282,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $route.current.pathParams.noteId);
   };
 
-  const patchParagraph = function(paragraph, patch) {
-    const id = paragraph.id;
-    return websocketMsgSrv.patchParagraph(id, $route.current.pathParams.noteId, patch);
-  };
-
   /** Utility function */
   $scope.goToSingleParagraph = function() {
     let noteId = $route.current.pathParams.noteId;
@@ -1598,8 +1593,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       let newPosition = $scope.editor.getCursorPosition();
       if (newPosition && newPosition.row && newPosition.column) {
         $scope.cursorPosition = $scope.editor.getCursorPosition();
-      } else {
-        console.log('NOOOOOOO Save');
       }
     }
   });
