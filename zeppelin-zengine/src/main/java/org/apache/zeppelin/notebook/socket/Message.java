@@ -222,8 +222,8 @@ public class Message implements JsonSerializable {
   public <T> T getType(String key, Logger LOG) {
     try {
       return getType(key);
-    } catch (Exception e) {
-      LOG.error("Failed to get " + key + " from message" , e);
+    } catch (ClassCastException e) {
+      LOG.error("Failed to get " + key + " from message (Invalid type). " , e);
       return null;
     }
   }
