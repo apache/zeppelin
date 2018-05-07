@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook.socket;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -216,6 +217,15 @@ public class Message implements JsonSerializable {
 
   public <T> T getType(String key) {
     return (T) data.get(key);
+  }
+
+  public <T> T getType(String key, Logger LOG, String errorMessage) {
+    try {
+      return getType(key);
+    } catch (Exception e) {
+      LOG.error(errorMessage, e);
+      return null;
+    }
   }
 
   @Override

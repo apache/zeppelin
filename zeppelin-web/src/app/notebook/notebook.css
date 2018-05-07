@@ -469,3 +469,9 @@
     position: relative;
     top: -16px;
 }
+
+/*Bootstrap uib-tooltip: max-width = 200px
+  because of this the string can come out */
+.tooltip-inner {
+  max-width: none !important;
+}

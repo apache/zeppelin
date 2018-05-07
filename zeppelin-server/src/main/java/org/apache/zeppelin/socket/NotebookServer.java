@@ -469,18 +469,23 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void checkCollaborativeStatus(String noteId, List<NotebookSocket> socketList) {
-    Boolean collaborativeStatusOld = collaborativeModeList.contains(noteId);
-    Boolean collaborativeStatusNew = socketList.size() > 1;
-    if (collaborativeStatusNew != collaborativeStatusOld) {
-      if (collaborativeStatusNew) {
-        collaborativeModeList.add(noteId);
-      } else {
-        collaborativeModeList.remove(noteId);
-      }
-      Message message = new Message(OP.COLLABORATIVE_MODE_STATUS);
-      message.put("status", collaborativeStatusNew);
-      broadcast(noteId, message);
+    boolean collaborativeStatusNew = socketList.size() > 1;
+    if (collaborativeStatusNew) {
+      collaborativeModeList.add(noteId);
+    } else {
+      collaborativeModeList.remove(noteId);
     }
+
+    Message message = new Message(OP.COLLABORATIVE_MODE_STATUS);
+    message.put("status", collaborativeStatusNew);
+    if (collaborativeStatusNew) {
+      HashSet<String> userList = new HashSet<>();
+      for (NotebookSocket noteSocket: socketList) {
+        userList.add(noteSocket.getUser());
+      }
+      message.put("users", userList);
+    }
+    broadcast(noteId, message);
   }
 
   private String getOpenNoteId(NotebookSocket socket) {
@@ -1309,25 +1314,14 @@ public class NotebookServer extends WebSocketServlet
 
   private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                               Notebook notebook, Message fromMessage) throws IOException {
-    String paragraphId = null;
-    try {
-      paragraphId = (String) fromMessage.get("id");
-    } catch (ClassCastException e) {
-      LOG.error("Failed to get paragraph ID from message", e);
-      return;
-    }
+    String paragraphId = fromMessage.getType("id", LOG, "Failed to get paragraph ID from message");
     if (paragraphId == null) {
       return;
     }
 
     String noteId = getOpenNoteId(conn);
     if (noteId == null) {
-      try {
-        noteId = (String) fromMessage.get("noteId");
-      } catch (ClassCastException e) {
-        LOG.error("Failed to get note ID from message", e);
-        return;
-      }
+      noteId = fromMessage.getType("noteId", LOG, "Failed to get note ID from message");
       if (noteId == null) {
         return;
       }
@@ -1348,30 +1342,20 @@ public class NotebookServer extends WebSocketServlet
     }
 
     DiffMatchPatch dmp = new DiffMatchPatch();
-    String patchText = null;
-
-    try {
-      patchText = (String) fromMessage.get("patch");
-    } catch (ClassCastException e) {
-      LOG.error("Failed to get patch from message", e);
-      return;
-    }
+    String patchText = fromMessage.getType("patch", LOG, "Failed to get patch from message");
     if (patchText == null) {
       return;
     }
 
-
-    LinkedList<DiffMatchPatch.Patch> patches;
+    LinkedList<DiffMatchPatch.Patch> patches = null;
     try {
       patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
     } catch (ClassCastException e) {
       LOG.error("Failed to parse patches", e);
-      return;
     }
     if (patches == null) {
       return;
     }
-
 
     String paragraphText = p.getText();
     paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];

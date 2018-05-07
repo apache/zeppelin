@@ -1083,7 +1083,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
-          $rootScope.$broadcast('collaborativeModeStatus', {'status': data.collaborativeModeStatus});
           if (paragraph.id === data.paragraphId) {
             deferred.resolve(data);
           }

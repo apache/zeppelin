@@ -36,6 +36,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
   $scope.collaborativeMode = false;
+  $scope.collaborativeModeUsers = [];
   $scope.looknfeelOption = ['default', 'simple', 'report'];
   $scope.cronOption = [
     {name: 'None', value: undefined},
@@ -1254,6 +1255,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.$on('collaborativeModeStatus', function(event, data) {
     $scope.collaborativeMode = Boolean(data.status);
+    $scope.collaborativeModeUsers = data.users;
   });
 
   $scope.$on('patchReceived', function(event, data) {
