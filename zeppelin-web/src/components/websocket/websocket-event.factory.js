@@ -179,8 +179,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       $rootScope.$broadcast('selectedParagraphsRemoved', data.idList);
     } else if (op === 'PARAGRAPH_MOVED') {
       $rootScope.$broadcast('moveParagraph', data.id, data.index);
-    } else if (op === 'SEVERAL_PARAGRAPHS_MOVED') {
-      $rootScope.$broadcast('severalParagraphsMoved', data.id, data.index);
+    } else if (op === 'PARAGRAPHS_MOVED') {
+      $rootScope.$broadcast('paragraphsMoved', data.id, data.index);
     } else if (op === 'NOTE_UPDATED') {
       $rootScope.$broadcast('updateNote', data.name, data.config, data.info);
     } else if (op === 'SET_NOTE_REVISION') {

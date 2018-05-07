@@ -109,7 +109,7 @@ function WebsocketMessageService($rootScope, websocketEvents) {
     },
 
     moveSeveralParagraphs: function(paragraphsIds, newIndex) {
-      websocketEvents.sendNewEvent({op: 'MOVE_SEVERAL_PARAGRAPHS', data: {ids: paragraphsIds, index: newIndex}});
+      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPHS', data: {ids: paragraphsIds, index: newIndex}});
     },
 
     insertParagraph: function(newIndex) {

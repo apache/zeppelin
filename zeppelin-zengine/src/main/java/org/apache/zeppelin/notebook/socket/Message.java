@@ -192,8 +192,8 @@ public class Message implements JsonSerializable {
     SELECTED_PARAGRAPHS_REMOVED,  // [s-c] selected paragraphs removed
     CLEAR_SELECTED_PARAGRAPHS_OUTPUT,   // [c-s] clear output selected paragraphs
     SELECTED_PARAGRAPHS,                // [s-c] selected paragraph info
-    MOVE_SEVERAL_PARAGRAPHS,            // [c-s] move paragraphs on new index
-    SEVERAL_PARAGRAPHS_MOVED            // [s-c] several paragraph moved
+    MOVE_PARAGRAPHS,            // [c-s] move paragraphs on new index
+    PARAGRAPHS_MOVED            // [s-c] several paragraph moved
   }
 
   private static final Gson gson = new Gson();

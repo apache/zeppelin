@@ -32,7 +32,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
-  $scope.isAnableRun = true;
+  $scope.isEnableRun = true;
   $scope.viewOnly = false;
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
@@ -575,7 +575,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   });
 
-  $scope.$on('severalParagraphsMoved', function(event, paragraphsIds, newIdx) {
+  $scope.$on('paragraphsMoved', function(event, paragraphsIds, newIdx) {
     if ($scope.revisionView === true) {
       return;
     }
@@ -1331,7 +1331,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.toggleToRunParagraphs = function() {
     let paragraphsIds = $scope.selectedParagraphsIds;
     let broadcastMessage;
-    if ($scope.isAnableRun) {
+    if ($scope.isEnableRun) {
       broadcastMessage = 'disableForRunById';
     } else {
       broadcastMessage = 'enableForRunById';
@@ -1340,7 +1340,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       $rootScope.$broadcast(broadcastMessage, id);
     });
 
-    $scope.isAnableRun = !$scope.isAnableRun;
+    $scope.isEnableRun = !$scope.isEnableRun;
   };
 
   $scope.toggleParagraphsTable = function() {

@@ -291,8 +291,8 @@ public class NotebookServer extends WebSocketServlet
         case MOVE_PARAGRAPH:
           moveParagraph(conn, userAndRoles, notebook, messagereceived);
           break;
-        case MOVE_SEVERAL_PARAGRAPHS:
-          moveSeveralParagraphs(conn, userAndRoles, notebook, messagereceived);
+        case MOVE_PARAGRAPHS:
+          moveParagraphs(conn, userAndRoles, notebook, messagereceived);
           break;
         case INSERT_PARAGRAPH:
           insertParagraph(conn, userAndRoles, notebook, messagereceived);
@@ -1686,7 +1686,7 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.PARAGRAPH_MOVED).put("id", paragraphId).put("index", newIndex));
   }
 
-  private void moveSeveralParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+  private void moveParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
       Notebook notebook, Message fromMessage) throws IOException {
     final ArrayList<String> idList = (ArrayList<String>) fromMessage.get("ids");
     final ArrayList<Double> indexList = (ArrayList<Double>) fromMessage.get("index");
@@ -1712,7 +1712,7 @@ public class NotebookServer extends WebSocketServlet
     }
     note.persist(subject);
     broadcast(note.getId(),
-        new Message(OP.SEVERAL_PARAGRAPHS_MOVED).put("id", idList).put("index", indexList));
+        new Message(OP.PARAGRAPHS_MOVED).put("id", idList).put("index", indexList));
   }
 
   private String insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
