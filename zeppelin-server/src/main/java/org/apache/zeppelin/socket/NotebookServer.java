@@ -1314,14 +1314,14 @@ public class NotebookServer extends WebSocketServlet
 
   private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                               Notebook notebook, Message fromMessage) throws IOException {
-    String paragraphId = fromMessage.getType("id", LOG, "Failed to get paragraph ID from message");
+    String paragraphId = fromMessage.getType("id", LOG);
     if (paragraphId == null) {
       return;
     }
 
     String noteId = getOpenNoteId(conn);
     if (noteId == null) {
-      noteId = fromMessage.getType("noteId", LOG, "Failed to get note ID from message");
+      noteId = fromMessage.getType("noteId", LOG);
       if (noteId == null) {
         return;
       }
@@ -1342,7 +1342,7 @@ public class NotebookServer extends WebSocketServlet
     }
 
     DiffMatchPatch dmp = new DiffMatchPatch();
-    String patchText = fromMessage.getType("patch", LOG, "Failed to get patch from message");
+    String patchText = fromMessage.getType("patch", LOG);
     if (patchText == null) {
       return;
     }

@@ -219,11 +219,11 @@ public class Message implements JsonSerializable {
     return (T) data.get(key);
   }
 
-  public <T> T getType(String key, Logger LOG, String errorMessage) {
+  public <T> T getType(String key, Logger LOG) {
     try {
       return getType(key);
     } catch (Exception e) {
-      LOG.error(errorMessage, e);
+      LOG.error("Failed to get " + key + " from message" , e);
       return null;
     }
   }
