@@ -21,8 +21,10 @@ package org.apache.zeppelin.spark;
 
 import java.io.IOException;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
@@ -109,13 +111,19 @@ public abstract class SparkShims {
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
     // See ZEPPELIN-2221 which fixes an issue passing wrong parameters. It's related to YARN-6615.
     HttpGet httpGetRequest = new HttpGet(jobUrl);
+    HttpResponse httpResponse = null;
     try {
-      if (httpClient.execute(httpGetRequest).getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+      httpResponse = httpClient.execute(httpGetRequest);
+      if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
         LOGGER.info("Job url is not correct. See YARN-6615");
         jobUrl = sparkWebUrl + "/jobs";
       }
     } catch (IOException ignore) {
       jobUrl = sparkWebUrl + "/jobs";
+    } finally {
+      if (null != httpResponse) {
+        HttpClientUtils.closeQuietly(httpResponse);
+      }
     }
 
     String noteId = getNoteId(jobGroupId);
