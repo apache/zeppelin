@@ -72,7 +72,12 @@ public class SparkShimsTest {
 
     when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
 
-    SparkShims sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+    SparkShims sparkShims;
+    try {
+      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+    } catch (Exception e) {
+      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+    }
     sparkShims.setHttpClient(mockHttpClient);
 
     sparkShims.buildSparkJobUrl("http://sparkurl", 0, mockProperties);
@@ -96,7 +101,7 @@ public class SparkShimsTest {
 
     when(mockHttpClient.execute(Matchers.<HttpUriRequest>any())).thenReturn(mockHttpResponse);
     when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-    when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_MOVED_TEMPORARILY);
+    when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
 
     when(BaseZeppelinContext.getEventClient()).thenReturn(mockRemoteEventClientWrapper);
     ArgumentCaptor<Map<String, String>> mapArgumentCaptor = ArgumentCaptor.forClass((Class<Map<String, String>>)(Class)Map.class);
@@ -106,7 +111,12 @@ public class SparkShimsTest {
 
     when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
 
-    SparkShims sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+    SparkShims sparkShims;
+    try {
+      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+    } catch (Exception e) {
+      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+    }
     sparkShims.setHttpClient(mockHttpClient);
 
     sparkShims.buildSparkJobUrl("http://sparkurl", 0, mockProperties);
