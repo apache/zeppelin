@@ -126,6 +126,9 @@ public class NotebookServer extends WebSocketServlet
 
 
   private HashSet<String> collaborativeModeList = new HashSet<>();
+  private Boolean collaborativeModeEnable = ZeppelinConfiguration
+          .create()
+          .isZeppelinNotebookCollaborativeModeEnable();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -469,6 +472,9 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private void checkCollaborativeStatus(String noteId, List<NotebookSocket> socketList) {
+    if (!collaborativeModeEnable) {
+      return;
+    }
     boolean collaborativeStatusNew = socketList.size() > 1;
     if (collaborativeStatusNew) {
       collaborativeModeList.add(noteId);
@@ -1314,6 +1320,9 @@ public class NotebookServer extends WebSocketServlet
 
   private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
                               Notebook notebook, Message fromMessage) throws IOException {
+    if (!collaborativeModeEnable) {
+      return;
+    }
     String paragraphId = fromMessage.getType("id", LOG);
     if (paragraphId == null) {
       return;
@@ -2522,7 +2531,6 @@ public class NotebookServer extends WebSocketServlet
     }
     resp.put("editor", notebook().getInterpreterSettingManager().
         getEditorSetting(interpreter, user, noteId, replName));
-    resp.put("collaborativeModeStatus", collaborativeModeList.contains(noteId));
     conn.send(serializeMessage(resp));
   }
 

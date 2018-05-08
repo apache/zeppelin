@@ -67,6 +67,12 @@
   <description>hide homescreen notebook from list when this value set to true</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.collaborative.mode.enable</name>
+  <value>true</value>
+  <description>Enable basic opportunity for collaborative editing. Does not change the logic of operation if the note is used by one person.</description>
+</property>
+
 <!-- Google Cloud Storage notebook storage -->
 <!--
 <property>
