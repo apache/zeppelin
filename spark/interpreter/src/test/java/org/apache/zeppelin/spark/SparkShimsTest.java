@@ -75,7 +75,7 @@ public class SparkShimsTest {
     SparkShims sparkShims;
     try {
       sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
-    } catch (Exception e) {
+    } catch (Throwable ignore) {
       sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
     }
     sparkShims.setHttpClient(mockHttpClient);
@@ -114,7 +114,7 @@ public class SparkShimsTest {
     SparkShims sparkShims;
     try {
       sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
-    } catch (Exception e) {
+    } catch (Throwable ignore) {
       sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
     }
     sparkShims.setHttpClient(mockHttpClient);
