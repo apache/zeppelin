@@ -58,7 +58,6 @@ function git_clone() {
 
   # remove unnecessary files
   rm "${WORKING_DIR}/zeppelin/.gitignore"
-  rm -rf "${WORKING_DIR}/zeppelin/.git"
   rm -rf "${WORKING_DIR}/zeppelin/.github"
   rm -rf "${WORKING_DIR}/zeppelin/docs"
 }

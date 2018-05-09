@@ -46,7 +46,7 @@ if [[ $RELEASE_VERSION == *"SNAPSHOT"* ]]; then
   DO_SNAPSHOT="yes"
 fi
 
-PUBLISH_PROFILES="-Ppublish-distr -Pspark-2.2 -Pr"
+PUBLISH_PROFILES="-Pspark-2.2 -Pr"
 PROJECT_OPTIONS="-pl !zeppelin-distribution"
 NEXUS_STAGING="https://repository.apache.org/service/local/staging"
 NEXUS_PROFILE="153446d1ac37c4"
@@ -126,7 +126,8 @@ function publish_to_maven() {
 
   echo "Created Nexus staging repository: ${staged_repo_id}"
 
-  tmp_repo="$(mktemp -d /tmp/zeppelin-repo-XXXXX)"
+  mkdir /tmp/zeppelin-repo-${RELEASE_VERSION}
+  tmp_repo=/tmp/zeppelin-repo-${RELEASE_VERSION}
 
   # build with scala-2.10
   echo "mvn clean install -DskipTests \
