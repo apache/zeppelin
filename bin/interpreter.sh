@@ -105,7 +105,10 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
 fi
 ZEPPELIN_LOGFILE+="${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
-JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
+
+if [[ -z "${ZEPPELIN_SPARK_K8_CLUSTER}" ]]; then
+    JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
+fi
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
@@ -228,6 +231,7 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUB
     INTERPRETER_RUN_COMMAND+="'"
 fi
 
+echo $INTERPRETER_RUN_COMMAND
 eval $INTERPRETER_RUN_COMMAND &
 pid=$!
 
