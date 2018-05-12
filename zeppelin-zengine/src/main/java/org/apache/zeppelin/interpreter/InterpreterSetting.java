@@ -808,7 +808,7 @@ public class InterpreterSetting {
       public void run() {
         try {
           // dependencies to prevent library conflict
-          File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + getId());
+          File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
           if (localRepoDir.exists()) {
             try {
               FileUtils.forceDelete(localRepoDir);
