@@ -40,7 +40,7 @@
     <bigquery.test.exclude>**/BigQueryInterpreterTest.java</bigquery.test.exclude>
 
     <!-- library versions -->
-    <bigquery.api.version>v2-rev265-1.21.0</bigquery.api.version>
+    <gcp-beta.version>0.38.0-beta</gcp-beta.version>
     <gson.version>2.6</gson.version>
     <interpreter.name>bigquery</interpreter.name>
   </properties>
@@ -48,24 +48,20 @@
   <dependencies>
 
     <dependency>
-        <groupId>com.google.apis</groupId>
-        <artifactId>google-api-services-bigquery</artifactId>
-        <version>${bigquery.api.version}</version>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-bigquery</artifactId>
+      <version>${gcp-beta.version}</version>
     </dependency>
     <dependency>
-        <groupId>com.google.oauth-client</groupId>
-        <artifactId>google-oauth-client</artifactId>
-        <version>${project.oauth.version}</version>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-bigquery</artifactId>
+      <version>v2-rev377-1.23.0</version>
     </dependency>
     <dependency>
-        <groupId>com.google.http-client</groupId>
-        <artifactId>google-http-client-jackson2</artifactId>
-        <version>${project.http.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.oauth-client</groupId>
-      <artifactId>google-oauth-client-jetty</artifactId>
-      <version>${project.oauth.version}</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>20.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
