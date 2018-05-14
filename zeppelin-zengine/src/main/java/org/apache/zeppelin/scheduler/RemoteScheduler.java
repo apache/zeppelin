@@ -253,12 +253,10 @@ public class RemoteScheduler implements Scheduler {
       if (status == Status.UNKNOWN) {
         // not found this job in the remote schedulers.
         // maybe not submitted, maybe already finished
-        //Status status = getLastStatus();
-        listener.afterStatusChange(job, null, null);
         return job.getStatus();
       }
       lastStatus = status;
-      listener.afterStatusChange(job, null, status);
+      listener.onStatusChange(job, null, status);
       return status;
     }
   }
@@ -350,11 +348,7 @@ public class RemoteScheduler implements Scheduler {
     }
 
     @Override
-    public void beforeStatusChange(Job job, Status before, Status after) {
-    }
-
-    @Override
-    public void afterStatusChange(Job job, Status before, Status after) {
+    public void onStatusChange(Job job, Status before, Status after) {
       // Update remoteStatus
       if (jobExecuted == false) {
         if (after == Status.FINISHED || after == Status.ABORT

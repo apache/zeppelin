@@ -18,13 +18,7 @@
 package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -34,15 +28,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.notebook.FileSystemStorage;
-import org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +58,9 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
     super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
-    this.fs = FileSystemStorage.get(zConf);
+    this.fs = new FileSystemStorage(zConf, zConf.getRecoveryDir());
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
+        " for Zeppelin Recovery.");
     this.recoveryDir = this.fs.makeQualified(new Path(zConf.getRecoveryDir()));
     LOGGER.info("Using folder {} to store recovery data", recoveryDir);
     this.fs.tryMkDir(recoveryDir);

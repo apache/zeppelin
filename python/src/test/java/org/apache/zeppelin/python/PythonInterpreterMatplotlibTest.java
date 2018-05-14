@@ -80,7 +80,7 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
   }
 
   @After
-  public void afterTest() throws IOException {
+  public void afterTest() throws IOException, InterpreterException {
     python.close();
   }
 

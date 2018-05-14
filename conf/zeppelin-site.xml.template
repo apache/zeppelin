@@ -67,6 +67,23 @@
   <description>hide homescreen notebook from list when this value set to true</description>
 </property>
 
+<!-- Google Cloud Storage notebook storage -->
+<!--
+<property>
+  <name>zeppelin.notebook.gcs.dir</name>
+  <value></value>
+  <description>
+    A GCS path in the form gs://bucketname/path/to/dir.
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+ </description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
 
 <!-- Amazon S3 notebook storage -->
 <!-- Creates the following directory structure: s3://{bucket}/{username}/{notebook-id}/note.json -->
@@ -394,6 +411,12 @@
 </property>
 
 <property>
+  <name>zeppelin.username.force.lowercase</name>
+  <value>false</value>
+  <description>Force convert username case to lower case, useful for Active Directory/LDAP. Default is not to change case</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.default.owner.username</name>
   <value></value>
   <description>Set owner role by default</description>
@@ -417,6 +440,7 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<!--
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.class</name>
   <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
@@ -427,14 +451,15 @@
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
   <value>60000</value>
-  <description>milliseconds of the interval to checking whether interpreter is time out</description>
+  <description>Milliseconds of the interval to checking whether interpreter is time out</description>
 </property>
 
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
   <value>3600000</value>
-  <description>milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
+  <description>Milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
 </property>
+-->
 
 <!--
 <property>
@@ -468,39 +493,18 @@
 </property>
 -->
 <!--
+
 <property>
   <name>zeppelin.server.xxss.protection</name>
   <value>1</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
 </property>
 -->
+
 <!--
 <property>
   <name>zeppelin.interpreter.callback.portRange</name>
   <value>10000:10010</value>
-</property>
--->
-
-<!--
-<property>
-  <name>zeppelin.interpreter.lifecyclemanager.class</name>
-  <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
-</property>
--->
-
-<!--
-<property>
-  <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
-  <value>6000</value>
-  <description>Check interval of interpreter expiration in seconds</description>
-</property>
--->
-
-<!--
-<property>
-  <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
-  <value>3600000</value>
-  <description>Threshold of interpreter idle time in seconds, interpeter exceed this threshold will be killed</description>  
 </property>
 -->
 
@@ -520,5 +524,40 @@
 </property>
 -->
 
+<!-- GitHub configurations
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value></value>
+  <description>remote Git repository URL</description>
+</property>
 
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value></value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.origin</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.cron.enable</name>
+  <value>false</value>
+  <description>Notebook enable cron scheduler feature</description>
+</property>
+<property>
+  <name>zeppelin.notebook.cron.folders</name>
+  <value></value>
+  <description>Notebook cron folders</description>
+</property>
+-->
 </configuration>

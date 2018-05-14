@@ -19,7 +19,7 @@
 
 usage() {
   echo "usage) $0 [OLD version] [NEW version]"
-  echo "   ex. $0 0.8.0-SNAPSHOT 0.8.0"
+  echo "   ex. $0 0.9.0-SNAPSHOT 0.9.0"
   exit 1
 }
 
@@ -76,5 +76,5 @@ if is_dev_version "${FROM_VERSION}" || ! is_dev_version "${TO_VERSION}"; then
 
   # Change interpreter's maven version in docs and interpreter-list
   sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' conf/interpreter-list
-  sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' docs/manual/interpreterinstallation.md 
+  sed -i '' 's/:'"${FROM_VERSION}"'/:'"${TO_VERSION}"'/g' docs/usage/interpreter/installation.md
 fi

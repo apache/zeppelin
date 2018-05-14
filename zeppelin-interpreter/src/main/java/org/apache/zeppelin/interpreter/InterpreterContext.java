@@ -62,7 +62,7 @@ public class InterpreterContext {
   private AngularObjectRegistry angularObjectRegistry;
   private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners = new ArrayList<>();
-  private String className;
+  private String interpreterClassName;
   private RemoteEventClientWrapper client;
   private RemoteWorksController remoteWorksController;
   private Map<String, Integer> progressMap;
@@ -83,9 +83,28 @@ public class InterpreterContext {
       return this;
     }
 
-    public InterpreterContext getContext() {
+    public Builder setEventClient(RemoteEventClientWrapper client) {
+      context.client = client;
+      return this;
+    }
+
+    public Builder setInterpreterClassName(String intpClassName) {
+      context.interpreterClassName = intpClassName;
+      return this;
+    }
+
+    public Builder setReplName(String replName) {
+      context.replName = replName;
+      return this;
+    }
+
+    public InterpreterContext build() {
       return context;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   private InterpreterContext() {
@@ -214,16 +233,20 @@ public class InterpreterContext {
     return runners;
   }
 
-  public String getClassName() {
-    return className;
+  public String getInterpreterClassName() {
+    return interpreterClassName;
   }
   
-  public void setClassName(String className) {
-    this.className = className;
+  public void setInterpreterClassName(String className) {
+    this.interpreterClassName = className;
   }
 
   public RemoteEventClientWrapper getClient() {
     return client;
+  }
+
+  public void setClient(RemoteEventClientWrapper client) {
+    this.client = client;
   }
 
   public RemoteWorksController getRemoteWorksController() {

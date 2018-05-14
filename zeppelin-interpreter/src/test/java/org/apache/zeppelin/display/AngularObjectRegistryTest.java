@@ -17,13 +17,12 @@
 
 package org.apache.zeppelin.display;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class AngularObjectRegistryTest {
 
@@ -47,10 +46,13 @@ public class AngularObjectRegistryTest {
           }
 
           @Override
-          public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
+          public void onRemove(String interpreterGroupId,
+                               String name,
+                               String noteId,
+                               String paragraphId) {
             onRemove.incrementAndGet();
           }
-    });
+        });
 
     registry.add("name1", "value1", "note1", null);
     assertEquals(1, registry.getAll("note1", null).size());
@@ -65,12 +67,12 @@ public class AngularObjectRegistryTest {
     assertEquals(1, onRemove.get());
 
     assertEquals(null, registry.get("name1", "note1", null));
-    
+
     // namespace
     registry.add("name1", "value11", "note2", null);
     assertEquals("value11", registry.get("name1", "note2", null).get());
     assertEquals(null, registry.get("name1", "note1", null));
-    
+
     // null namespace
     registry.add("name1", "global1", null, null);
     assertEquals("global1", registry.get("name1", null, null).get());

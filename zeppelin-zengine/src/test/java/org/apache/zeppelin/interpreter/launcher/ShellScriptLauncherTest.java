@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.launcher;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,6 +30,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ShellScriptLauncherTest {
+  @Before
+  public void setUp() {
+    for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
+      System.clearProperty(confVar.getVarName());
+    }
+  }
 
   @Test
   public void testLauncher() throws IOException {
@@ -38,7 +45,8 @@ public class ShellScriptLauncherTest {
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
     InterpreterOption option = new InterpreterOption();
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "intpGroupId", "groupId", "groupName", "name");
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name");
     InterpreterClient client = launcher.launch(context);
     assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
@@ -48,6 +56,7 @@ public class ShellScriptLauncherTest {
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(1, interpreterProcess.getEnv().size());
     assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
+    assertEquals(true, interpreterProcess.isUserImpersonated());
   }
 
 }

@@ -35,6 +35,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,8 +62,8 @@ public class NotebookAuthorization {
    */
   private static Map<String, Set<String>> userRoles = new HashMap<>();
   private static ZeppelinConfiguration conf;
-  private static Gson gson;
-  private static String filePath;
+
+  private static ConfigStorage configStorage;
 
   private NotebookAuthorization() {}
 
@@ -70,11 +71,8 @@ public class NotebookAuthorization {
     if (instance == null) {
       instance = new NotebookAuthorization();
       conf = config;
-      filePath = conf.getNotebookAuthorizationPath();
-      GsonBuilder builder = new GsonBuilder();
-      builder.setPrettyPrinting();
-      gson = builder.create();
       try {
+        configStorage = ConfigStorage.getInstance(config);
         loadFromFile();
       } catch (IOException e) {
         LOG.error("Error loading NotebookAuthorization", e);
@@ -93,26 +91,10 @@ public class NotebookAuthorization {
   }
 
   private static void loadFromFile() throws IOException {
-    File settingFile = new File(filePath);
-    LOG.info(settingFile.getAbsolutePath());
-    if (!settingFile.exists()) {
-      // nothing to read
-      return;
+    NotebookAuthorizationInfoSaving info = configStorage.loadNotebookAuthorization();
+    if (info != null) {
+      authInfo = info.authInfo;
     }
-    FileInputStream fis = new FileInputStream(settingFile);
-    InputStreamReader isr = new InputStreamReader(fis);
-    BufferedReader bufferedReader = new BufferedReader(isr);
-    StringBuilder sb = new StringBuilder();
-    String line;
-    while ((line = bufferedReader.readLine()) != null) {
-      sb.append(line);
-    }
-    isr.close();
-    fis.close();
-
-    String json = sb.toString();
-    NotebookAuthorizationInfoSaving info = NotebookAuthorizationInfoSaving.fromJson(json);
-    authInfo = info.authInfo;
   }
   
   public void setRoles(String user, Set<String> roles) {
@@ -133,27 +115,14 @@ public class NotebookAuthorization {
   }
   
   private void saveToFile() {
-    String jsonString;
-
     synchronized (authInfo) {
       NotebookAuthorizationInfoSaving info = new NotebookAuthorizationInfoSaving();
       info.authInfo = authInfo;
-      jsonString = gson.toJson(info);
-    }
-
-    try {
-      File settingFile = new File(filePath);
-      if (!settingFile.exists()) {
-        settingFile.createNewFile();
+      try {
+        configStorage.save(info);
+      } catch (IOException e) {
+        LOG.error("Error saving notebook authorization file", e);
       }
-
-      FileOutputStream fos = new FileOutputStream(settingFile, false);
-      OutputStreamWriter out = new OutputStreamWriter(fos);
-      out.append(jsonString);
-      out.close();
-      fos.close();
-    } catch (IOException e) {
-      LOG.error("Error saving notebook authorization file: " + e.getMessage());
     }
   }
   
@@ -236,6 +205,21 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
+  /*
+  * If case conversion is enforced, then change entity names to lower case
+  */
+  private Set<String> checkCaseAndConvert(Set<String> entities) {
+    if (conf.isUsernameForceLowerCase()) {
+      Set<String> set2 = new HashSet<String>();
+      for (String name : entities) {
+        set2.add(name.toLowerCase());
+      }
+      return set2;
+    } else {
+      return entities;
+    }
+  }
+
   public Set<String> getOwners(String noteId) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     Set<String> entities = null;
@@ -245,6 +229,8 @@ public class NotebookAuthorization {
       entities = noteAuthInfo.get("owners");
       if (entities == null) {
         entities = new HashSet<>();
+      } else {
+        entities = checkCaseAndConvert(entities);
       }
     }
     return entities;
@@ -259,6 +245,8 @@ public class NotebookAuthorization {
       entities = noteAuthInfo.get("readers");
       if (entities == null) {
         entities = new HashSet<>();
+      } else {
+        entities = checkCaseAndConvert(entities);
       }
     }
     return entities;
@@ -273,6 +261,8 @@ public class NotebookAuthorization {
       entities = noteAuthInfo.get("runners");
       if (entities == null) {
         entities = new HashSet<>();
+      } else {
+        entities = checkCaseAndConvert(entities);
       }
     }
     return entities;
@@ -287,6 +277,8 @@ public class NotebookAuthorization {
       entities = noteAuthInfo.get("writers");
       if (entities == null) {
         entities = new HashSet<>();
+      } else {
+        entities = checkCaseAndConvert(entities);
       }
     }
     return entities;

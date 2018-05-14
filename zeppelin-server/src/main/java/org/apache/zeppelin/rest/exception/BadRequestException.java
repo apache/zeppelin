@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.exception;
 
-import org.apache.zeppelin.utils.ExceptionUtils;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import org.apache.zeppelin.utils.ExceptionUtils;
 
 /**
  * BadRequestException handler for WebApplicationException.
  */
 public class BadRequestException extends WebApplicationException {
-
   public BadRequestException() {
     super(ExceptionUtils.jsonResponse(BAD_REQUEST));
   }

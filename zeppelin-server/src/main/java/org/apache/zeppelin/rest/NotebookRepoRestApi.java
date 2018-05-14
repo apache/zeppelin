@@ -16,6 +16,13 @@
  */
 package org.apache.zeppelin.rest;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonSyntaxException;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +33,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithSettings;
@@ -35,11 +41,6 @@ import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.JsonSyntaxException;
 
 /**
  * NoteRepo rest API endpoint.
@@ -48,7 +49,6 @@ import com.google.gson.JsonSyntaxException;
 @Path("/notebook-repositories")
 @Produces("application/json")
 public class NotebookRepoRestApi {
-
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoRestApi.class);
 
   private NotebookRepoSync noteRepos;
@@ -62,7 +62,7 @@ public class NotebookRepoRestApi {
   }
 
   /**
-   * List all notebook repository
+   * List all notebook repository.
    */
   @GET
   @ZeppelinApi
@@ -74,7 +74,7 @@ public class NotebookRepoRestApi {
   }
 
   /**
-   * Reload notebook repository
+   * Reload notebook repository.
    */
   @GET
   @Path("reload")
@@ -99,7 +99,7 @@ public class NotebookRepoRestApi {
       return new JsonResponse<>(Status.NOT_FOUND, "", Collections.emptyMap()).build();
     }
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    NotebookRepoSettingsRequest newSettings = NotebookRepoSettingsRequest.EMPTY;
+    NotebookRepoSettingsRequest newSettings;
     try {
       newSettings = NotebookRepoSettingsRequest.fromJson(payload);
     } catch (JsonSyntaxException e) {

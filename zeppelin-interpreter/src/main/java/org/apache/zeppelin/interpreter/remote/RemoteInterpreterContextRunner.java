@@ -18,7 +18,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
 
 /**
  *

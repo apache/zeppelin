@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryException;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +50,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
+    assertTrue(interpreterSetting.getLifecycleManager() instanceof NullLifecycleManager);
     assertEquals(3, interpreterSetting.getInterpreterInfos().size());
     // 3 other builtin properties:
     //   * zeppelin.interpreter.output.limit
@@ -71,6 +72,12 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     List<RemoteRepository> repositories = interpreterSettingManager.getRepositories();
     assertEquals(2, repositories.size());
     assertEquals("central", repositories.get(0).getId());
+
+    // verify interpreter binding
+    List<String> interpreterSettingIds = interpreterSettingManager.getInterpreterBinding("2C6793KRV");
+    assertEquals(2, interpreterSettingIds.size());
+    assertEquals("test", interpreterSettingIds.get(0));
+    assertEquals("test2", interpreterSettingIds.get(1));
 
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
@@ -200,7 +207,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("shared");
 
@@ -220,7 +227,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("isolated");
 
@@ -241,7 +248,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException {
+  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException, InterpreterNotFoundException {
     InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
     defaultInterpreterSetting.getOption().setPerNote("scoped");
 
@@ -266,7 +273,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testGetEditor() throws IOException {
+  public void testGetEditor() throws IOException, InterpreterNotFoundException {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo");
     // get editor setting from interpreter-setting.json

@@ -23,7 +23,7 @@ public interface InterpreterOutputListener {
   /**
    * update all message outputs
    */
-  public void onUpdateAll(InterpreterOutput out);
+  void onUpdateAll(InterpreterOutput out);
 
   /**
    * called when newline is detected
@@ -31,12 +31,12 @@ public interface InterpreterOutputListener {
    * @param out
    * @param line
    */
-  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line);
+  void onAppend(int index, InterpreterResultMessageOutput out, byte[] line);
 
   /**
    * when entire output is updated. eg) after detecting new display system
    * @param index
    * @param out
    */
-  public void onUpdate(int index, InterpreterResultMessageOutput out);
+  void onUpdate(int index, InterpreterResultMessageOutput out);
 }

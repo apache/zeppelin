@@ -26,7 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -45,19 +45,13 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -268,6 +262,7 @@ public class InterpreterSetting {
 
   void postProcessing() {
     this.status = Status.READY;
+    this.id = this.name;
     if (this.lifecycleManager == null) {
       this.lifecycleManager = new NullLifecycleManager(conf);
     }
@@ -287,7 +282,7 @@ public class InterpreterSetting {
    */
   public InterpreterSetting(InterpreterSetting o) {
     this();
-    this.id = generateId();
+    this.id = o.name;
     this.name = o.name;
     this.group = o.group;
     this.properties = convertInterpreterProperties(
@@ -525,7 +520,8 @@ public class InterpreterSetting {
     Map<String, InterpreterProperty> iProperties = (Map<String, InterpreterProperty>) properties;
     for (Map.Entry<String, InterpreterProperty> entry : iProperties.entrySet()) {
       if (entry.getValue().getValue() != null) {
-        jProperties.setProperty(entry.getKey(), entry.getValue().getValue().toString());
+        jProperties.setProperty(entry.getKey().trim(),
+            entry.getValue().getValue().toString().trim());
       }
     }
 
@@ -683,8 +679,9 @@ public class InterpreterSetting {
   List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId) {
     List<Interpreter> interpreters = new ArrayList<>();
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
+    Properties intpProperties = getJavaProperties();
     for (InterpreterInfo info : interpreterInfos) {
-      Interpreter interpreter = new RemoteInterpreter(getJavaProperties(), sessionId,
+      Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
           info.getClassName(), user, lifecycleManager);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
@@ -694,18 +691,28 @@ public class InterpreterSetting {
       LOGGER.info("Interpreter {} created for user: {}, sessionId: {}",
           interpreter.getClassName(), user, sessionId);
     }
-    interpreters.add(new ConfInterpreter(getJavaProperties(), interpreterGroupId, this));
+
+    // TODO(zjffdu) this kind of hardcode is ugly. For now SessionConfInterpreter is used
+    // for livy, we could add new property in interpreter-setting.json when there's new interpreter
+    // require SessionConfInterpreter
+    if (group.equals("livy")) {
+      interpreters.add(
+          new SessionConfInterpreter(intpProperties, sessionId, interpreterGroupId, this));
+    } else {
+      interpreters.add(new ConfInterpreter(intpProperties, sessionId, interpreterGroupId, this));
+    }
     return interpreters;
   }
 
   synchronized RemoteInterpreterProcess createInterpreterProcess(String interpreterGroupId,
+                                                                 String userName,
                                                                  Properties properties)
       throws IOException {
     if (launcher == null) {
       createLauncher();
     }
     InterpreterLaunchContext launchContext = new
-        InterpreterLaunchContext(properties, option, interpreterRunner,
+        InterpreterLaunchContext(properties, option, interpreterRunner, userName,
         interpreterGroupId, id, group, name);
     RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
     process.setRemoteInterpreterEventPoller(
@@ -755,7 +762,11 @@ public class InterpreterSetting {
     //TODO(zjffdu) It requires user can not create interpreter with name `conf`,
     // conf is a reserved word of interpreter name
     if (replName.equals("conf")) {
-      return ConfInterpreter.class.getName();
+      if (group.equals("livy")) {
+        return SessionConfInterpreter.class.getName();
+      } else {
+        return ConfInterpreter.class.getName();
+      }
     }
     return null;
   }
@@ -799,7 +810,7 @@ public class InterpreterSetting {
       public void run() {
         try {
           // dependencies to prevent library conflict
-          File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + getId());
+          File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
           if (localRepoDir.exists()) {
             try {
               FileUtils.forceDelete(localRepoDir);
@@ -904,6 +915,13 @@ public class InterpreterSetting {
               // in case user forget to specify type in interpreter-setting.json
           );
           newProperties.put(key, property);
+        } else if (value instanceof String) {
+          InterpreterProperty newProperty = new InterpreterProperty(
+              key,
+              value,
+              "string");
+
+          newProperties.put(newProperty.getName(), newProperty);
         } else {
           throw new RuntimeException("Can not convert this type of property: " +
               value.getClass());

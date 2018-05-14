@@ -17,8 +17,17 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.common.collect.Maps;
+import javax.validation.constraints.NotNull;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.socket.ServiceCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonatype.aether.repository.RemoteRepository;
+
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,45 +43,45 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.InterpreterService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonatype.aether.repository.RemoteRepository;
 
 /**
- * Interpreter Rest API
+ * Interpreter Rest API.
  */
 @Path("/interpreter")
 @Produces("application/json")
 public class InterpreterRestApi {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private InterpreterSettingManager interpreterSettingManager;
-  private NotebookServer notebookServer;
+  private final InterpreterService interpreterService;
+  private final InterpreterSettingManager interpreterSettingManager;
+  private final NotebookServer notebookServer;
 
-  public InterpreterRestApi() {
-  }
-
-  public InterpreterRestApi(InterpreterSettingManager interpreterSettingManager,
+  public InterpreterRestApi(
+      InterpreterService interpreterService,
+      InterpreterSettingManager interpreterSettingManager,
       NotebookServer notebookWsServer) {
+    this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
   }
 
   /**
-   * List all interpreter settings
+   * List all interpreter settings.
    */
   @GET
   @Path("setting")
@@ -82,7 +91,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get a setting
+   * Get a setting.
    */
   @GET
   @Path("setting/{settingId}")
@@ -103,7 +112,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new interpreter setting
+   * Add new interpreter setting.
    *
    * @param message NewInterpreterSettingRequest
    */
@@ -159,7 +168,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Remove interpreter setting
+   * Remove interpreter setting.
    */
   @DELETE
   @Path("setting/{settingId}")
@@ -171,7 +180,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Restart interpreter setting
+   * Restart interpreter setting.
    */
   @PUT
   @Path("setting/restart/{settingId}")
@@ -203,7 +212,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * List all available interpreters by group
+   * List all available interpreters by group.
    */
   @GET
   @ZeppelinApi
@@ -213,7 +222,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * List of dependency resolving repositories
+   * List of dependency resolving repositories.
    */
   @GET
   @Path("repository")
@@ -224,7 +233,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new repository
+   * Add new repository.
    *
    * @param message Repository
    */
@@ -246,7 +255,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * get metadata values
+   * Get metadata values.
    */
   @GET
   @Path("metadata/{settingId}")
@@ -262,7 +271,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Delete repository
+   * Delete repository.
    *
    * @param repoId ID of repository
    */
@@ -290,4 +299,52 @@ public class InterpreterRestApi {
     return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
 
+  /** Install interpreter */
+  @POST
+  @Path("install")
+  @ZeppelinApi
+  public Response installInterpreter(@NotNull String message) {
+    logger.info("Install interpreter: {}", message);
+    InterpreterInstallationRequest request = InterpreterInstallationRequest.fromJson(message);
+
+    try {
+      interpreterService.installInterpreter(
+          request,
+          new ServiceCallback() {
+            @Override
+            public void onStart(String message) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Starting");
+              data.put("message", message);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+
+            @Override
+            public void onSuccess(String message) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Succeed");
+              data.put("message", message);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+
+            @Override
+            public void onFailure(String message) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Failed");
+              data.put("message", message);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+          });
+    } catch (Throwable t) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, t.getMessage()).build();
+    }
+
+    return new JsonResponse<>(Status.OK).build();
+  }
 }

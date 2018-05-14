@@ -22,19 +22,21 @@
         "envName": null,
         "propertyName": "zeppelin.bigquery.max_no_of_rows",
         "defaultValue": "100000",
-        "description": "Maximum number of rows to fetch from BigQuery"
+        "description": "Maximum number of rows to fetch from BigQuery",
+        "type": "number"
       },
-      "zeppelin.bigquery.use_legacy_sql": {
+      "zeppelin.bigquery.sql_dialect": {
         "envName": null,
-        "propertyName": "zeppelin.bigquery.use_legacy_sql",
-        "defaultValue": "true",
-        "description": "set true to use legacy sql",
-        "type": "checkbox"
+        "propertyName": "zeppelin.bigquery.sql_dialect",
+        "defaultValue": "",
+        "description": "BigQuery SQL dialect (standardSQL or legacySQL). If empty, query prefix like '#standardSQL' can be used.",
+        "type": "string"
       }
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

@@ -108,6 +108,12 @@
         "defaultValue": "true",
         "description": "Whether display app info",
         "type": "checkbox"
+      },
+      "zeppelin.livy.restart_dead_session": {
+        "propertyName": "zeppelin.livy.restart_dead_session",
+        "defaultValue": "false",
+        "description": "Whether restart a dead session",
+        "type": "checkbox"
       }
     },
     "option": {
@@ -122,7 +128,8 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -162,7 +169,8 @@
     "editor": {
       "language": "sql",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -183,7 +191,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -204,7 +213,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -225,7 +235,24 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "livy",
+    "name": "shared",
+    "className": "org.apache.zeppelin.livy.LivySharedInterpreter",
+    "properties": {
+    },
+    "option": {
+      "remote": true,
+      "port": -1,
+      "perNote": "shared",
+      "perUser": "scoped",
+      "isExistingProcess": false,
+      "setPermission": false,
+      "users": []
     }
   }
 ]

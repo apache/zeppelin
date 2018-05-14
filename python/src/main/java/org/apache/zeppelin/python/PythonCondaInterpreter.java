@@ -31,9 +31,10 @@ import java.util.regex.Pattern;
 
 /**
  * Conda support
+ * TODO(zjffdu) Add removing conda env
  */
 public class PythonCondaInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
+  private static Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
   public static final String CONDA_PYTHON_PATH = "/bin/python";
   public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
@@ -145,33 +146,22 @@ public class PythonCondaInterpreter extends Interpreter {
       }
     }
     setCurrentCondaEnvName(envName);
-    python.setPythonCommand(binPath);
+    python.setPythonExec(binPath);
   }
 
   private void restartPythonProcess() throws InterpreterException {
-    PythonInterpreter python = getPythonInterpreter();
+    logger.debug("Restarting PythonInterpreter");
+    Interpreter python =
+        getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
     python.close();
     python.open();
   }
 
   protected PythonInterpreter getPythonInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p =
         getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    python = (PythonInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return python;
+    return (PythonInterpreter) ((LazyOpenInterpreter)p).getInnerInterpreter();
   }
 
   public static String runCondaCommandForTextOutput(String title, List<String> commands)
@@ -392,27 +382,50 @@ public class PythonCondaInterpreter extends Interpreter {
 
   public static String runCommand(List<String> commands)
       throws IOException, InterruptedException {
-
-    StringBuilder sb = new StringBuilder();
-
-    ProcessBuilder builder = new ProcessBuilder(commands);
-    builder.redirectErrorStream(true);
-    Process process = builder.start();
-    InputStream stdout = process.getInputStream();
-    BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
-    String line;
-    while ((line = br.readLine()) != null) {
-      sb.append(line);
-      sb.append("\n");
+    logger.info("Starting shell commands: " + StringUtils.join(commands, " "));
+    Process process = Runtime.getRuntime().exec(commands.toArray(new String[0]));
+    StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
+    StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream());
+    errorGobbler.start();
+    outputGobbler.start();
+    if (process.waitFor() != 0) {
+      throw new IOException("Fail to run shell commands: " + StringUtils.join(commands, " "));
     }
-    int r = process.waitFor(); // Let the process finish.
+    logger.info("Complete shell commands: " + StringUtils.join(commands, " "));
+    return outputGobbler.getOutput();
+  }
 
-    if (r != 0) {
-      throw new RuntimeException("Failed to execute `" +
-          StringUtils.join(commands, " ") + "` exited with " + r);
+  private static class StreamGobbler extends Thread {
+    InputStream is;
+    StringBuilder output = new StringBuilder();
+
+    // reads everything from is until empty.
+    StreamGobbler(InputStream is) {
+      this.is = is;
     }
 
-    return sb.toString();
+    public void run() {
+      try {
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line = null;
+        long startTime = System.currentTimeMillis();
+        while ( (line = br.readLine()) != null) {
+          output.append(line + "\n");
+          // logging per 5 seconds
+          if ((System.currentTimeMillis() - startTime) > 5000) {
+            logger.info(line);
+            startTime = System.currentTimeMillis();
+          }
+        }
+      } catch (IOException ioe) {
+        ioe.printStackTrace();
+      }
+    }
+
+    public String getOutput() {
+      return output.toString();
+    }
   }
 
   public static String runCommand(String ... command)

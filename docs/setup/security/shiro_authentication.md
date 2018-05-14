@@ -210,6 +210,30 @@ securityManager.realms = $zeppelinHubRealm
 
 > Note: ZeppelinHub is not releated to Apache Zeppelin project.
 
+### Knox SSO
+[KnoxSSO](https://knox.apache.org/books/knox-0-13-0/dev-guide.html#KnoxSSO+Integration) provides an abstraction for integrating any number of authentication systems and SSO solutions and enables participating web applications to scale to those solutions more easily. Without the token exchange capabilities offered by KnoxSSO each component UI would need to integrate with each desired solution on its own.
+
+To enable this, apply the following change in `conf/shiro.ini` under `[main]` section.
+
+```
+### A sample for configuring Knox JWT Realm
+knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm
+## Domain of Knox SSO
+knoxJwtRealm.providerUrl = https://domain.example.com/
+## Url for login
+knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html
+## Url for logout
+knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout
+knoxJwtRealm.redirectParam = originalUrl
+knoxJwtRealm.cookieName = hadoop-jwt
+knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
+knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
+knoxJwtRealm.principalMapping = principal.mapping
+# This is required if KNOX SSO is enabled, to check if "knoxJwtRealm.cookieName" cookie was expired/deleted.  
+authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
+```
+
+
 ## Secure Cookie for Zeppelin Sessions (optional)
 Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
 not be accessed via client side scripts thus preventing majority of Cross-site scripting (XSS) attacks.

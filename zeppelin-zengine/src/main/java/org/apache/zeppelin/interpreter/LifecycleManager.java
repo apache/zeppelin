@@ -24,10 +24,7 @@ package org.apache.zeppelin.interpreter;
  */
 public interface LifecycleManager {
 
-  void onInterpreterGroupCreated(ManagedInterpreterGroup interpreterGroup);
-
-  void onInterpreterSessionCreated(ManagedInterpreterGroup interpreterGroup,
-                                   String sessionId);
+  void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup);
 
   void onInterpreterUse(ManagedInterpreterGroup interpreterGroup,
                         String sessionId);

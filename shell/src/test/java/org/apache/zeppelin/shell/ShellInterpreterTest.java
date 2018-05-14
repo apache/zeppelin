@@ -20,14 +20,15 @@ package org.apache.zeppelin.shell;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class ShellInterpreterTest {
 

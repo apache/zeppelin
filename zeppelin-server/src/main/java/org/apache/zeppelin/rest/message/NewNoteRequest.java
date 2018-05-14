@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
+
+import java.util.List;
+
 import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
- *  NewNoteRequest rest api request message
- *
+ *  NewNoteRequest rest api request message.
  */
 public class NewNoteRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
@@ -35,7 +32,6 @@ public class NewNoteRequest implements JsonSerializable {
   List<NewParagraphRequest> paragraphs;
 
   public NewNoteRequest (){
-
   }
 
   public String getName() {

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.python;
 
+import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -25,9 +26,12 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.httpclient.util.ExceptionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -74,7 +78,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private IPythonClient ipythonClient;
   private GatewayServer gatewayServer;
 
-  private PythonZeppelinContext zeppelinContext;
+  protected BaseZeppelinContext zeppelinContext;
   private String pythonExecutable;
   private long ipythonLaunchTimeout;
   private String additionalPythonPath;
@@ -112,6 +116,12 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     this.useBuiltinPy4j = add;
   }
 
+  public BaseZeppelinContext buildZeppelinContext() {
+    return new PythonZeppelinContext(
+        getInterpreterGroup().getInterpreterHookRegistry(),
+        Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
+  }
+
   @Override
   public void open() throws InterpreterException {
     try {
@@ -121,17 +131,22 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       }
       pythonExecutable = getProperty("zeppelin.python", "python");
       LOGGER.info("Python Exec: " + pythonExecutable);
-
+      String checkPrerequisiteResult = checkIPythonPrerequisite(pythonExecutable);
+      if (!StringUtils.isEmpty(checkPrerequisiteResult)) {
+        throw new InterpreterException("IPython prerequisite is not meet: " +
+            checkPrerequisiteResult);
+      }
       ipythonLaunchTimeout = Long.parseLong(
           getProperty("zeppelin.ipython.launch.timeout", "30000"));
-      this.zeppelinContext = new PythonZeppelinContext(
-          getInterpreterGroup().getInterpreterHookRegistry(),
-          Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
+      this.zeppelinContext = buildZeppelinContext();
       int ipythonPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       int jvmGatewayPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       LOGGER.info("Launching IPython Kernel at port: " + ipythonPort);
       LOGGER.info("Launching JVM Gateway at port: " + jvmGatewayPort);
-      ipythonClient = new IPythonClient("127.0.0.1", ipythonPort);
+      int message_size = Integer.parseInt(getProperty("zeppelin.ipython.grpc.message_size",
+          32 * 1024 * 1024 + ""));
+      ipythonClient = new IPythonClient(ManagedChannelBuilder.forAddress("127.0.0.1", ipythonPort)
+          .usePlaintext(true).maxInboundMessageSize(message_size));
       launchIPythonKernel(ipythonPort);
       setupJVMGateway(jvmGatewayPort);
     } catch (Exception e) {
@@ -139,8 +154,15 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
-  public boolean checkIPythonPrerequisite() {
-    ProcessBuilder processBuilder = new ProcessBuilder("pip", "freeze");
+  /**
+   * non-empty return value mean the errors when checking ipython prerequisite.
+   * empty value mean IPython prerequisite is meet.
+   * 
+   * @param pythonExec
+   * @return
+   */
+  public String checkIPythonPrerequisite(String pythonExec) {
+    ProcessBuilder processBuilder = new ProcessBuilder(pythonExec, "-m", "pip", "freeze");
     try {
       File stderrFile = File.createTempFile("zeppelin", ".txt");
       processBuilder.redirectError(stderrFile);
@@ -150,33 +172,28 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       Process proc = processBuilder.start();
       int ret = proc.waitFor();
       if (ret != 0) {
-        LOGGER.warn("Fail to run pip freeze.\n" +
-            IOUtils.toString(new FileInputStream(stderrFile)));
-        return false;
+        return "Fail to run pip freeze.\n" +
+            IOUtils.toString(new FileInputStream(stderrFile));
       }
       String freezeOutput = IOUtils.toString(new FileInputStream(stdoutFile));
       if (!freezeOutput.contains("jupyter-client=")) {
-        InterpreterContext.get().out.write("jupyter-client is not installed\n".getBytes());
-        return false;
+        return "jupyter-client is not installed.";
       }
       if (!freezeOutput.contains("ipykernel=")) {
-        InterpreterContext.get().out.write("ipkernel is not installed\n".getBytes());
-        return false;
+        return "ipkernel is not installed";
       }
       if (!freezeOutput.contains("ipython=")) {
-        InterpreterContext.get().out.write("ipython is not installed\n".getBytes());
-        return false;
+        return "ipython is not installed";
       }
       if (!freezeOutput.contains("grpcio=")) {
-        InterpreterContext.get().out.write("grpcio is not installed\n".getBytes());
-        return false;
+        return "grpcio is not installed";
       }
       LOGGER.info("IPython prerequisite is meet");
-      return true;
     } catch (Exception e) {
       LOGGER.warn("Fail to checkIPythonPrerequisite", e);
-      return false;
+      return "Fail to checkIPythonPrerequisite: " + ExceptionUtils.getStackTrace(e);
     }
+    return "";
   }
 
   private void setupJVMGateway(int jvmGatewayPort) throws IOException {
@@ -191,6 +208,22 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             .replace("${JVM_GATEWAY_PORT}", jvmGatewayPort + "")).build());
     if (response.getStatus() == ExecuteStatus.ERROR) {
       throw new IOException("Fail to setup JVMGateway\n" + response.getOutput());
+    }
+
+    input =
+        getClass().getClassLoader().getResourceAsStream("python/zeppelin_context.py");
+    lines = IOUtils.readLines(input);
+    response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
+        .setCode(StringUtils.join(lines, System.lineSeparator())).build());
+    if (response.getStatus() == ExecuteStatus.ERROR) {
+      throw new IOException("Fail to import ZeppelinContext\n" + response.getOutput());
+    }
+
+    response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
+        .setCode("z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)")
+        .build());
+    if (response.getStatus() == ExecuteStatus.ERROR) {
+      throw new IOException("Fail to setup ZeppelinContext\n" + response.getOutput());
     }
 
     if (additionalPythonInitFile != null) {
@@ -210,16 +243,21 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private void launchIPythonKernel(int ipythonPort)
       throws IOException, URISyntaxException {
     // copy the python scripts to a temp directory, then launch ipython kernel in that folder
-    File tmpPythonScriptFolder = Files.createTempDirectory("zeppelin_ipython").toFile();
+    File pythonWorkDir = Files.createTempDirectory("zeppelin_ipython").toFile();
     String[] ipythonScripts = {"ipython_server.py", "ipython_pb2.py", "ipython_pb2_grpc.py"};
     for (String ipythonScript : ipythonScripts) {
       URL url = getClass().getClassLoader().getResource("grpc/python"
           + "/" + ipythonScript);
-      FileUtils.copyURLToFile(url, new File(tmpPythonScriptFolder, ipythonScript));
+      FileUtils.copyURLToFile(url, new File(pythonWorkDir, ipythonScript));
     }
 
+    //TODO(zjffdu) don't do hard code on py4j here
+    File py4jDestFile = new File(pythonWorkDir, "py4j-src-0.9.2.zip");
+    FileUtils.copyURLToFile(getClass().getClassLoader().getResource(
+        "python/py4j-src-0.9.2.zip"), py4jDestFile);
+
     CommandLine cmd = CommandLine.parse(pythonExecutable);
-    cmd.addArgument(tmpPythonScriptFolder.getAbsolutePath() + "/ipython_server.py");
+    cmd.addArgument(pythonWorkDir.getAbsolutePath() + "/ipython_server.py");
     cmd.addArgument(ipythonPort + "");
     DefaultExecutor executor = new DefaultExecutor();
     ProcessLogOutputStream processOutput = new ProcessLogOutputStream(LOGGER);
@@ -228,20 +266,12 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     executor.setWatchdog(watchDog);
 
     if (useBuiltinPy4j) {
-      String py4jLibPath = null;
-      if (System.getenv("ZEPPELIN_HOME") != null) {
-        py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator
-            + PythonInterpreter.ZEPPELIN_PY4JPATH;
-      } else {
-        Path workingPath = Paths.get("..").toAbsolutePath();
-        py4jLibPath = workingPath + File.separator + PythonInterpreter.ZEPPELIN_PY4JPATH;
-      }
       if (additionalPythonPath != null) {
         // put the py4j at the end, because additionalPythonPath may already contain py4j.
         // e.g. PySparkInterpreter
-        additionalPythonPath = additionalPythonPath + ":" + py4jLibPath;
+        additionalPythonPath = additionalPythonPath + ":" + py4jDestFile.getAbsolutePath();
       } else {
-        additionalPythonPath = py4jLibPath;
+        additionalPythonPath = py4jDestFile.getAbsolutePath();
       }
     }
 
@@ -291,9 +321,9 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     if (watchDog != null) {
-      LOGGER.debug("Kill IPython Process");
+      LOGGER.info("Kill IPython Process");
       ipythonClient.stop(StopRequest.newBuilder().build());
       watchDog.destroyProcess();
       gatewayServer.shutdown();
@@ -304,6 +334,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   public InterpreterResult interpret(String st, InterpreterContext context) {
     zeppelinContext.setGui(context.getGui());
     zeppelinContext.setNoteGui(context.getNoteGui());
+    zeppelinContext.setInterpreterContext(context);
     interpreterOutput.setInterpreterOutput(context.out);
     ExecuteResponse response =
         ipythonClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
@@ -319,7 +350,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     ipythonClient.cancel(CancelRequest.newBuilder().build());
   }
 
@@ -329,26 +360,31 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     return 0;
   }
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
+    LOGGER.debug("Call completion for: " + buf);
     List<InterpreterCompletion> completions = new ArrayList<>();
     CompletionResponse response =
         ipythonClient.complete(
             CompletionRequest.getDefaultInstance().newBuilder().setCode(buf)
                 .setCursor(cursor).build());
     for (int i = 0; i < response.getMatchesCount(); i++) {
-      completions.add(new InterpreterCompletion(
-          response.getMatches(i), response.getMatches(i), ""));
+      String match = response.getMatches(i);
+      int lastIndexOfDot = match.lastIndexOf(".");
+      if (lastIndexOfDot != -1) {
+        match = match.substring(lastIndexOfDot + 1);
+      }
+      completions.add(new InterpreterCompletion(match, match, ""));
     }
     return completions;
   }
 
-  public PythonZeppelinContext getZeppelinContext() {
+  public BaseZeppelinContext getZeppelinContext() {
     return zeppelinContext;
   }
 

@@ -41,7 +41,7 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
   }
 
   @Override
-  protected Map<String, String> buildEnvFromProperties() {
+  protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
     Map<String, String> env = new HashMap<String, String>();
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
@@ -70,6 +70,11 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     for (String name : sparkProperties.stringPropertyNames()) {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
+    String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
+    if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
+        !useProxyUserEnv.equals("false"))) {
+      sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+    }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
 
@@ -83,6 +88,19 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
       if (envValue != null) {
         env.put(envName, envValue);
       }
+    }
+
+    String keytab = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+    String principal =
+        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
+
+    if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
+      env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
+      env.put("ZEPPELIN_SERVER_KERBEROS_PRINCIPAL", principal);
+      LOGGER.info("Run Spark under secure mode with keytab: " + keytab +
+          ", principal: " + principal);
+    } else {
+      LOGGER.info("Run Spark under non-secure mode as no keytab and principal is specified");
     }
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
@@ -143,7 +161,8 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
 
     File sparkRPath = new File(sparkRBasePath, "sparkr.zip");
     if (sparkRPath.exists() && sparkRPath.isFile()) {
-      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives", sparkRPath.getAbsolutePath());
+      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives",
+          sparkRPath.getAbsolutePath() + "#sparkr");
     } else {
       LOGGER.warn("sparkr.zip is not found, SparkR may not work.");
     }
@@ -194,12 +213,12 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
   }
 
   private String toShellFormat(String value) {
-    if (value.contains("\'") && value.contains("\"")) {
+    if (value.contains("'") && value.contains("\"")) {
       throw new RuntimeException("Spark property value could not contain both \" and '");
-    } else if (value.contains("\'")) {
+    } else if (value.contains("'")) {
       return "\"" + value + "\"";
     } else {
-      return "\'" + value + "\'";
+      return "'" + value + "'";
     }
   }
 

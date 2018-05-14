@@ -11,6 +11,10 @@
         "description": "The path for custom groovy classes location. If empty `./interpreter/groovy/classes`",
         "type": "textarea"
       }
+    },
+    "editor": {
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

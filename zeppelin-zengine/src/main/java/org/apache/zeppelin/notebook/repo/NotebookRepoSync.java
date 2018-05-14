@@ -17,33 +17,27 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * Notebook repository sync with remote storage
  */
-public class NotebookRepoSync implements NotebookRepo {
+public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIds";
@@ -54,16 +48,20 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
-  private final boolean oneWaySync;
+  private boolean oneWaySync;
 
   /**
    * @param conf
    */
   @SuppressWarnings("static-access")
-  public NotebookRepoSync(ZeppelinConfiguration conf) {
+  public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
+    init(conf);
+  }
+
+  public void init(ZeppelinConfiguration conf) throws IOException {
     config = conf;
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
-    String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
+    String allStorageClassNames = conf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
       LOG.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}", defaultStorage);
@@ -75,23 +73,18 @@ public class NotebookRepoSync implements NotebookRepo {
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
-      Class<?> notebookStorageClass;
-      try {
-        notebookStorageClass = getClass().forName(storageClassNames[i].trim());
-        Constructor<?> constructor = notebookStorageClass.getConstructor(
-            ZeppelinConfiguration.class);
-        repos.add((NotebookRepo) constructor.newInstance(conf));
-        LOG.info("Instantiate NotebookRepo: " + storageClassNames[i]);
-      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
-          InstantiationException | IllegalAccessException | IllegalArgumentException |
-          InvocationTargetException e) {
-        LOG.warn("Failed to initialize {} notebook storage class", storageClassNames[i], e);
+      NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
+      if (notebookRepo != null) {
+        notebookRepo.init(conf);
+        repos.add(notebookRepo);
       }
     }
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
       LOG.info("No storage could be initialized, using default {} storage", defaultStorage);
-      initializeDefaultStorage(conf);
+      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(defaultStorage);
+      defaultNotebookRepo.init(conf);
+      repos.add(defaultNotebookRepo);
     }
     // sync for anonymous mode on start
     if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
@@ -100,21 +93,6 @@ public class NotebookRepoSync implements NotebookRepo {
       } catch (IOException e) {
         LOG.error("Couldn't sync on start ", e);
       }
-    }
-  }
-
-  @SuppressWarnings("static-access")
-  private void initializeDefaultStorage(ZeppelinConfiguration conf) {
-    Class<?> notebookStorageClass;
-    try {
-      notebookStorageClass = getClass().forName(defaultStorage);
-      Constructor<?> constructor = notebookStorageClass.getConstructor(
-                ZeppelinConfiguration.class);
-      repos.add((NotebookRepo) constructor.newInstance(conf));
-    } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
-        InstantiationException | IllegalAccessException | IllegalArgumentException |
-        InvocationTargetException e) {
-      LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
   }
 
@@ -324,7 +302,7 @@ public class NotebookRepoSync implements NotebookRepo {
     return maxRepoNum;
   }
 
-  NotebookRepo getRepo(int repoIndex) throws IOException {
+  public NotebookRepo getRepo(int repoIndex) throws IOException {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
       throw new IOException("Requested storage index " + repoIndex
           + " isn't initialized," + " repository count is " + getRepoCount());
@@ -438,6 +416,21 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
+  public Boolean isRevisionSupportedInDefaultRepo() {
+    return isRevisionSupportedInRepo(0);
+  }
+
+  public Boolean isRevisionSupportedInRepo(int repoIndex) {
+    try {
+      if (getRepo(repoIndex) instanceof NotebookRepoWithVersionControl) {
+        return true;
+      }
+    } catch (IOException e) {
+      LOG.error("Error getting default repo", e);
+    }
+    return false;
+  }
+
   //checkpoint to all available storages
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
@@ -450,7 +443,11 @@ public class NotebookRepoSync implements NotebookRepo {
     Revision rev = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
+        if (isRevisionSupportedInRepo(i)) {
+          allRepoCheckpoints
+              .add(((NotebookRepoWithVersionControl) getRepo(i))
+                  .checkpoint(noteId, checkpointMsg, subject));
+        }
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
           getRepo(i).getClass().toString(), i, noteId);
@@ -477,7 +474,9 @@ public class NotebookRepoSync implements NotebookRepo {
   public Note get(String noteId, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
-      revisionNote = getRepo(0).get(noteId, revId, subject);
+      if (isRevisionSupportedInDefaultRepo()) {
+        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, revId, subject);
+      }
     } catch (IOException e) {
       LOG.error("Failed to get revision {} of note {}", revId, noteId, e);
     }
@@ -488,7 +487,9 @@ public class NotebookRepoSync implements NotebookRepo {
   public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
     List<Revision> revisions = Collections.emptyList();
     try {
-      revisions = getRepo(0).revisionHistory(noteId, subject);
+      if (isRevisionSupportedInDefaultRepo()) {
+        revisions = ((NotebookRepoWithVersionControl) getRepo(0)).revisionHistory(noteId, subject);
+      }
     } catch (IOException e) {
       LOG.error("Failed to list revision history", e);
     }
@@ -523,7 +524,10 @@ public class NotebookRepoSync implements NotebookRepo {
     Note currentNote = null, revisionNote = null;
     for (int i = 0; i < repoBound; i++) {
       try {
-        currentNote = getRepo(i).setNoteRevision(noteId, revId, subject);
+        if (isRevisionSupportedInRepo(i)) {
+          currentNote = ((NotebookRepoWithVersionControl) getRepo(i))
+              .setNoteRevision(noteId, revId, subject);
+        }
       } catch (IOException e) {
         // already logged
         currentNote = null;
@@ -535,4 +539,5 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     return revisionNote;
   }
+
 }

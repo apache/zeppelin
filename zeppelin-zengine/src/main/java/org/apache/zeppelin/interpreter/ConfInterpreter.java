@@ -33,14 +33,17 @@ public class ConfInterpreter extends Interpreter {
 
   private static Logger LOGGER = LoggerFactory.getLogger(ConfInterpreter.class);
 
-  private String interpreterGroupId;
-  private InterpreterSetting interpreterSetting;
+  protected String sessionId;
+  protected String interpreterGroupId;
+  protected InterpreterSetting interpreterSetting;
 
 
   public ConfInterpreter(Properties properties,
+                         String sessionId,
                          String interpreterGroupId,
                          InterpreterSetting interpreterSetting) {
     super(properties);
+    this.sessionId = sessionId;
     this.interpreterGroupId = interpreterGroupId;
     this.interpreterSetting = interpreterSetting;
   }
