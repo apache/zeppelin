@@ -53,6 +53,10 @@ limitations under the License.
     <td></td>
     <td>BigQuery SQL dialect (standardSQL or legacySQL). If empty, [query prefix](https://cloud.google.com/bigquery/docs/reference/standard-sql/enabling-standard-sql#sql-prefix) like '#standardSQL' can be used.</td>
   </tr>
+  <tr>
+    <td>zeppelin.bigquery.interpolation</td>
+    <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
+  </tr>
 </table>
 
 
@@ -118,6 +122,28 @@ ORDER BY
 LIMIT
   40
 ```
+
+## Object Interpolation
+The BigQuery interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+The following example shows one use of this facility:
+
+####In Scala cell:
+```
+z.put("country_code", "KR")
+    // ...
+```
+
+
+```bash
+%bigquery.sql
+    select * from patents_list where 
+    priority_country = '{country_code}' and filing_date like '2015-%'
+```
+
+Object interpolation is disabled by default, and can be enabled  by 
+setting the value of the property `zeppelin.bigquery.interpolation` to `true` (see _More Properties_ above). 
+More details of this feature can be found in the Spark interpreter documentation under 
+[Object Interpolation](spark.html#object-interpolation)
 
 ## Technical description
 
