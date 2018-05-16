@@ -102,6 +102,7 @@ export default class TableVisualization extends Visualization {
       flatEntityAccess: true,
       fastWatch: false,
       treeRowHeaderAlwaysVisible: false,
+      exporterExcelFilename: 'myFile.xlsx',
 
       columnDefs: columnNames.map((colName) => {
         return {
