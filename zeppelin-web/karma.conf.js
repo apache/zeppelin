@@ -88,6 +88,8 @@ module.exports = function(config) {
       'bower_components/ngclipboard/dist/ngclipboard.js',
       'bower_components/jsdiff/diff.js',
       'bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js',
+      'bower_components/jszip/dist/jszip.js',
+      'bower_components/excel-builder-js/dist/excel-builder.dist.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
 
