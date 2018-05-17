@@ -1366,7 +1366,7 @@ public class NotebookServer extends WebSocketServlet
       return;
     }
 
-    String paragraphText = p.getText();
+    String paragraphText = p.getText() == null ? "" : p.getText();
     paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];
     p.setText(paragraphText);
     Message message = new Message(OP.PATCH_PARAGRAPH).put("patch", patchText)
