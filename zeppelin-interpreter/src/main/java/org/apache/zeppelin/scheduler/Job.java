@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,7 +202,7 @@ public abstract class Job {
   }
 
   private synchronized void completeWithError(Throwable error) {
-    setResult(error.getMessage());
+    setResult(new InterpreterResult(Code.ERROR, getStack(error)));
     setException(error);
     dateFinished = new Date();
   }

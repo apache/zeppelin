@@ -107,5 +107,5 @@ val members = spark.read.parquet(z.get("dataFileName"))
 
 Object interpolation is disabled by default, and can be enabled (for the Shell interpreter) by 
 setting the value of the property `zeppelin.shell.interpolation` to `true` (see _Configuration_ above). 
-More details of this feature can be found in the Spark interpreter documentation under 
-[Object Interpolation](spark.html#object-interpolation)
+More details of this feature can be found in [Zeppelin-Context](../usage/other_features/zeppelin_context.html)
+
