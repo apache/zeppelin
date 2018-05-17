@@ -864,7 +864,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     sqlCompleter = createOrUpdateSqlCompleter(sqlCompleter, connection, propertyKey, buf, cursor);
     sqlCompletersMap.put(sqlCompleterKey, sqlCompleter);
-    sqlCompleter.complete(buf, cursor, candidates);
+    sqlCompleter.fillCandidates(buf, cursor, candidates);
 
     return candidates;
   }
