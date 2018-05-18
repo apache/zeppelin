@@ -16,6 +16,11 @@
   padding-top: 36px;
 }
 
+.notebookContent .bottom-pad {
+  clear: both;
+  height: 280px;
+}
+
 .revision  {
   max-width: 250px;
   margin-bottom: 0 !important;
