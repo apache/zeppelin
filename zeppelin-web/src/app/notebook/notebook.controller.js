@@ -1002,6 +1002,14 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $timeout(makeSearchBoxVisible());
   });
 
+  const checkInterpreterStatus = function(interpreterObj) {
+    const index = _.findIndex($scope.interpreterBindings, {'id': interpreterObj.id});
+    if(interpreterObj.errorReason) {
+      $scope.interpreterBindings[index].errorReason = interpreterObj.errorReason;
+    }
+    $scope.interpreterBindings[index].status = interpreterObj.status;
+  };
+
   $scope.restartInterpreter = function(interpreter) {
     const thisConfirm = BootstrapDialog.confirm({
       closable: false,
@@ -1023,6 +1031,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
             .success(function(data, status, headers, config) {
               let index = _.findIndex($scope.interpreterSettings, {'id': interpreter.id});
               $scope.interpreterSettings[index] = data.body;
+              checkInterpreterStatus(data.body);
               thisConfirm.close();
             }).error(function(data, status, headers, config) {
               thisConfirm.close();
