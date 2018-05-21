@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -24,106 +25,129 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.hadoop.util.VersionInfo;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({BaseZeppelinContext.class})
-@PowerMockIgnore({"javax.net.ssl.*","javax.security.*"})
+@RunWith(Enclosed.class)
 public class SparkShimsTest {
 
-  @Test
-  @SuppressWarnings("unchecked")
-  public void buildSparkJobUrlTest() throws IOException {
-    HttpClient mockHttpClient = mock(HttpClient.class);
-    HttpResponse mockHttpResponse = mock(HttpResponse.class);
-    StatusLine mockStatusLine = mock(StatusLine.class);
-
-    PowerMockito.mockStatic(BaseZeppelinContext.class);
-    RemoteEventClientWrapper mockRemoteEventClientWrapper = mock(RemoteEventClientWrapper.class);
-
-    Properties mockProperties = mock(Properties.class);
-
-    when(mockHttpClient.execute(Matchers.<HttpUriRequest>any())).thenReturn(mockHttpResponse);
-    when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-    when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
-
-    when(BaseZeppelinContext.getEventClient()).thenReturn(mockRemoteEventClientWrapper);
-    ArgumentCaptor<Map<String, String>> mapArgumentCaptor = ArgumentCaptor.forClass((Class<Map<String, String>>)(Class)Map.class);
-    doNothing()
-        .when(mockRemoteEventClientWrapper)
-        .onParaInfosReceived(anyString(), anyString(), mapArgumentCaptor.capture());
-
-    when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
-
-    SparkShims sparkShims;
-    try {
-      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
-    } catch (Throwable ignore) {
-      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+  @RunWith(Parameterized.class)
+  public static class ParamTests {
+    @Parameters(name = "Hadoop {0} supports jobUrl: {1}")
+    public static Collection<Object[]> data() {
+      return Arrays.asList(
+          new Object[][] {
+            {"2.6.0", false},
+            {"2.6.1", false},
+            {"2.6.2", false},
+            {"2.6.3", false},
+            {"2.6.4", false},
+            {"2.6.5", false},
+            {"2.6.6", true}, // The latest fixed version
+            {"2.6.7", true}, // Future version
+            {"2.7.0", false},
+            {"2.7.1", false},
+            {"2.7.2", false},
+            {"2.7.3", false},
+            {"2.7.4", true}, // The latest fixed version
+            {"2.7.5", true}, // Future versions
+            {"2.8.0", false},
+            {"2.8.1", false},
+            {"2.8.2", true}, // The latest fixed version
+            {"2.8.3", true}, // Future versions
+            {"2.9.0", true}, // The latest fixed version
+            {"2.9.1", true}, // Future versions
+            {"3.0.0", true}, // The latest fixed version
+            {"3.0.0-alpha4", true}, // The latest fixed version
+            {"3.0.1", true}, // Future versions
+          });
     }
-    sparkShims.setHttpClient(mockHttpClient);
 
-    sparkShims.buildSparkJobUrl("http://sparkurl", 0, mockProperties);
+    @Parameter public String version;
 
-    Map<String, String> mapValue = mapArgumentCaptor.getValue();
-    assertTrue(mapValue.keySet().contains("jobUrl"));
-    assertTrue(mapValue.get("jobUrl").contains("/jobs/job?id="));
+    @Parameter(1)
+    public boolean expected;
+
+    @Test
+    public void checkYarnVersionTest() {
+      SparkShims sparkShims =
+          new SparkShims() {
+            @Override
+            public void setupSparkListener(String master, String sparkWebUrl) {}
+          };
+      assertEquals(expected, sparkShims.supportYarn6615(version));
+    }
   }
 
-  @Test
-  @SuppressWarnings("unchecked")
-  public void buildSparkJobUrlWithoutJobIdTest() throws IOException {
-    HttpClient mockHttpClient = mock(HttpClient.class);
-    HttpResponse mockHttpResponse = mock(HttpResponse.class);
-    StatusLine mockStatusLine = mock(StatusLine.class);
-
-    PowerMockito.mockStatic(BaseZeppelinContext.class);
-    RemoteEventClientWrapper mockRemoteEventClientWrapper = mock(RemoteEventClientWrapper.class);
-
-    Properties mockProperties = mock(Properties.class);
-
-    when(mockHttpClient.execute(Matchers.<HttpUriRequest>any())).thenReturn(mockHttpResponse);
-    when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
-    when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
-
-    when(BaseZeppelinContext.getEventClient()).thenReturn(mockRemoteEventClientWrapper);
-    ArgumentCaptor<Map<String, String>> mapArgumentCaptor = ArgumentCaptor.forClass((Class<Map<String, String>>)(Class)Map.class);
-    doNothing()
-        .when(mockRemoteEventClientWrapper)
-        .onParaInfosReceived(anyString(), anyString(), mapArgumentCaptor.capture());
-
-    when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
+  @RunWith(PowerMockRunner.class)
+  @PrepareForTest({BaseZeppelinContext.class, VersionInfo.class})
+  @PowerMockIgnore({"javax.net.*", "javax.security.*"})
+  public static class SingleTests {
+    @Mock Properties mockProperties;
+    @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;
 
     SparkShims sparkShims;
-    try {
-      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
-    } catch (Throwable ignore) {
-      sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+
+    @Before
+    public void setUp() {
+      PowerMockito.mockStatic(BaseZeppelinContext.class);
+      RemoteEventClientWrapper mockRemoteEventClientWrapper = mock(RemoteEventClientWrapper.class);
+
+      when(BaseZeppelinContext.getEventClient()).thenReturn(mockRemoteEventClientWrapper);
+      doNothing()
+          .when(mockRemoteEventClientWrapper)
+          .onParaInfosReceived(anyString(), anyString(), argumentCaptor.capture());
+
+      when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
+
+      try {
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+      } catch (Throwable ignore) {
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+      }
     }
-    sparkShims.setHttpClient(mockHttpClient);
 
-    sparkShims.buildSparkJobUrl("http://sparkurl", 0, mockProperties);
+    @Test
+    public void runUnerLocalTest() {
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockProperties);
 
-    Map<String, String> mapValue = mapArgumentCaptor.getValue();
-    assertTrue(mapValue.keySet().contains("jobUrl"));
-    assertFalse(mapValue.get("jobUrl").contains("/jobs/job?id="));
-    assertTrue(mapValue.get("jobUrl").contains("/jobs"));
+      Map<String, String> mapValue = argumentCaptor.getValue();
+      assertTrue(mapValue.keySet().contains("jobUrl"));
+      assertTrue(mapValue.get("jobUrl").contains("/jobs/job?id="));
+    }
+
+    @Test
+    public void runUnerYarnTest() {
+
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockProperties);
+
+      Map<String, String> mapValue = argumentCaptor.getValue();
+      assertTrue(mapValue.keySet().contains("jobUrl"));
+
+      if (sparkShims.supportYarn6615(VersionInfo.getVersion())) {
+        assertTrue(mapValue.get("jobUrl").contains("/jobs/job?id="));
+      } else {
+        assertFalse(mapValue.get("jobUrl").contains("/jobs/job?id="));
+      }
+    }
   }
 }
