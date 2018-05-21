@@ -163,7 +163,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     this.sc = sc;
     env = SparkEnv.get();
     sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
+    sparkShims.setupSparkListener(sc.master(), sparkUrl);
   }
 
   public SparkContext getSparkContext() {
@@ -873,7 +873,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
     sparkUrl = getSparkUIUrl();
     sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
+    sparkShims.setupSparkListener(sc.master(), sparkUrl);
 
     numReferenceOfSparkContext.incrementAndGet();
   }
