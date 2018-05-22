@@ -18,6 +18,7 @@
 package org.apache.zeppelin.storage;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -51,7 +52,7 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
     LOGGER.info("Save Interpreter Setting to " + interpreterSettingPath.getAbsolutePath());
-    writeToFile(settingInfos.toJson(), interpreterSettingPath);
+    atomicWriteToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
   @Override
@@ -68,7 +69,7 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
     LOGGER.info("Save notebook authorization to file: " + authorizationPath);
-    writeToFile(authorizationInfoSaving.toJson(), authorizationPath);
+    atomicWriteToFile(authorizationInfoSaving.toJson(), authorizationPath);
   }
 
   @Override
@@ -95,17 +96,21 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void saveCredentials(String credentials) throws IOException {
     LOGGER.info("Save Credentials to file: " + credentialPath);
-    writeToFile(credentials, credentialPath);
+    atomicWriteToFile(credentials, credentialPath);
   }
 
   private String readFromFile(File file) throws IOException {
     return IOUtils.toString(new FileInputStream(file));
   }
 
-  private void writeToFile(String content, File file) throws IOException {
-    FileOutputStream out = new FileOutputStream(file);
+  private void atomicWriteToFile(String content, File file) throws IOException {
+    File directory = file.getParentFile();
+    String fileName = file.getName() + ".tmp";
+    File tempFile = new File(directory, fileName);
+    FileOutputStream out = new FileOutputStream(tempFile);
     IOUtils.write(content, out);
     out.close();
+    FileUtils.moveFile(tempFile, file);
   }
 
 }
