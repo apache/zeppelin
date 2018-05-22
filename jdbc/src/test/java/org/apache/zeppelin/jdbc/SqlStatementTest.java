@@ -69,7 +69,8 @@ public class SqlStatementTest {
         schemas, tablesInDefaultSchema, keywords);
 
     assertTrue(sqlStatementActiveSchemaTables.getActiveSchemaTables().contains("prod_dds.account"));
-    assertTrue(sqlStatementActiveSchemaTables.getActiveSchemaTables().contains("prod_emart.application"));
+    assertTrue(sqlStatementActiveSchemaTables.getActiveSchemaTables()
+        .contains("prod_emart.application"));
     assertEquals(0, sqlStatementActiveSchemaTables.getCursorPosition());
   }
 
@@ -78,8 +79,8 @@ public class SqlStatementTest {
     String statement = "select acc.z from account acc left join prod_emart.application app on ;";
     int cursor = 12;
 
-    SqlStatement sqlStatementAliasForTableInDefaultSchema = new SqlStatement(statement, cursor, defaultSchema,
-        schemas, tablesInDefaultSchema, keywords);
+    SqlStatement sqlStatementAliasForTableInDefaultSchema = new SqlStatement(statement, cursor,
+        defaultSchema, schemas, tablesInDefaultSchema, keywords);
 
     assertEquals(defaultSchema, sqlStatementAliasForTableInDefaultSchema.getSchema());
     assertEquals("account", sqlStatementAliasForTableInDefaultSchema.getTable());
@@ -103,7 +104,8 @@ public class SqlStatementTest {
 
   @Test
   public void testSqlStatementSchemaTableColumn() {
-    String statement = "select prod_emart.application.yy from account acc left join prod_emart.application app on ;";
+    String statement = "select prod_emart.application.yy from account acc"
+        + "left join prod_emart.application app on ;";
     int cursor = 32;
 
     SqlStatement sqlStatementSchemaTableColumn = new SqlStatement(statement, cursor, defaultSchema,
