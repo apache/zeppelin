@@ -1034,12 +1034,13 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
               checkInterpreterStatus(data.body);
               thisConfirm.close();
             }).error(function(data, status, headers, config) {
+              checkInterpreterStatus({
+                id: interpreter.id,
+                errorReason: 'Not able to restart the interpreter.',
+                status: 'YELLOW',
+              });
               thisConfirm.close();
               console.log('Error %o %o', status, data.message);
-              BootstrapDialog.show({
-                title: 'Error restart interpreter.',
-                message: _.escape(data.message),
-              });
             });
           return false;
         }
