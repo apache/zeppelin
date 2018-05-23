@@ -136,6 +136,7 @@ export default class TableVisualization extends Visualization {
       saveTreeView: true,
       saveFilter: true,
       saveSelection: false,
+      customScroller: (uiGrid) => uiGrid.on('wheel', (event) => event.stopPropagation()),
     };
 
     return gridOptions;
