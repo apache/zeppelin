@@ -18,7 +18,6 @@
 package org.apache.zeppelin.storage;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
@@ -29,7 +28,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileSystems;
+import java.nio.file.FileSystem;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Storing config in local file system
@@ -105,12 +108,15 @@ public class LocalConfigStorage extends ConfigStorage {
 
   private void atomicWriteToFile(String content, File file) throws IOException {
     File directory = file.getParentFile();
-    String fileName = file.getName() + ".tmp";
-    File tempFile = new File(directory, fileName);
+    String fileNameParts[] = file.getName().split("\\.");
+    File tempFile = File.createTempFile(fileNameParts[0], fileNameParts[1], directory);
     FileOutputStream out = new FileOutputStream(tempFile);
     IOUtils.write(content, out);
     out.close();
-    FileUtils.moveFile(tempFile, file);
+    FileSystem defaultFileSystem = FileSystems.getDefault();
+    Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
+    Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
+    Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
   }
 
 }
