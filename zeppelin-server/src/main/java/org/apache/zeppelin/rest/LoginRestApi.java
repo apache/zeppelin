@@ -18,6 +18,7 @@ package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
 
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,9 +80,14 @@ public class LoginRestApi {
       Cookie cookie = headers.getCookies().get(knoxJwtRealm.getCookieName());
       if (cookie != null && cookie.getValue() != null) {
         Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
-        if (!currentUser.isAuthenticated()) {
-          JWTAuthenticationToken token = new JWTAuthenticationToken(null, cookie.getValue());
-          response = proceedToLogin(currentUser, token);
+        JWTAuthenticationToken token = new JWTAuthenticationToken(null, cookie.getValue());
+        try {
+          String name = knoxJwtRealm.getName(token);
+          if (!currentUser.isAuthenticated() || !currentUser.getPrincipal().equals(name)) {
+            response = proceedToLogin(currentUser, token);
+          }
+        } catch (ParseException e) {
+          LOG.error("ParseException in LoginRestApi: ", e);
         }
       }
       if (response == null) {
@@ -129,7 +135,7 @@ public class LoginRestApi {
   private JsonResponse proceedToLogin(Subject currentUser, AuthenticationToken token) {
     JsonResponse response = null;
     try {
-      currentUser.getSession().stop();
+      logoutCurrentUser();
       currentUser.getSession(true);
       currentUser.login(token);
 
@@ -206,10 +212,7 @@ public class LoginRestApi {
   @ZeppelinApi
   public Response logout() {
     JsonResponse response;
-    Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
-    TicketContainer.instance.removeTicket(SecurityUtils.getPrincipal());
-    currentUser.getSession().stop();
-    currentUser.logout();
+    logoutCurrentUser();
     if (isKnoxSSOEnabled()) {
       KnoxJwtRealm knoxJwtRealm = getJTWRealm();
       Map<String, String> data = new HashMap<>();
@@ -233,4 +236,10 @@ public class LoginRestApi {
     return redirectURL.toString();
   }
 
+  private void logoutCurrentUser() {
+    Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
+    TicketContainer.instance.removeTicket(SecurityUtils.getPrincipal());
+    currentUser.getSession().stop();
+    currentUser.logout();
+  }
 }
