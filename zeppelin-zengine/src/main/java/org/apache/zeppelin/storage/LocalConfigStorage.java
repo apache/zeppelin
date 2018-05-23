@@ -111,7 +111,12 @@ public class LocalConfigStorage extends ConfigStorage {
     String fileNameParts[] = file.getName().split("\\.");
     File tempFile = File.createTempFile(fileNameParts[0], fileNameParts[1], directory);
     FileOutputStream out = new FileOutputStream(tempFile);
-    IOUtils.write(content, out);
+    try {
+      IOUtils.write(content, out);
+    } catch (IOException iox) {
+      tempFile.delete();
+      throw iox;
+    }
     out.close();
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
