@@ -329,6 +329,12 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.zeppelin-project.zeppelin</groupId>
+        <artifactId>unused</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -564,6 +570,26 @@
       </configuration>
     </plugin>
     -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <shadedArtifactAttached>false</shadedArtifactAttached>
+          <artifactSet>
+            <includes>
+              <include>org.zeppelin-project.zeppelin:unused</include>
+            </includes>
+          </artifactSet>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
 
     <pluginManagement>
