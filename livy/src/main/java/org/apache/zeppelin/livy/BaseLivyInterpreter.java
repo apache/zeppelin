@@ -95,6 +95,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
   private String livyURL;
   private int sessionCreationTimeout;
   private int pullStatusInterval;
+  private int maxLogLines;
   protected boolean displayAppInfo;
   private boolean restartDeadSession;
   protected LivyVersion livyVersion;
@@ -120,6 +121,8 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         property.getProperty("zeppelin.livy.session.create_timeout", 120 + ""));
     this.pullStatusInterval = Integer.parseInt(
         property.getProperty("zeppelin.livy.pull_status.interval.millis", 1000 + ""));
+    this.maxLogLines = Integer.parseInt(property.getProperty("zeppelin.livy.maxLogLines",
+        "1000"));
     this.restTemplate = createRestTemplate();
     if (!StringUtils.isBlank(property.getProperty("zeppelin.livy.http.headers"))) {
       String[] headers = property.getProperty("zeppelin.livy.http.headers").split(";");
@@ -338,7 +341,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         if ((System.currentTimeMillis() - start) / 1000 > sessionCreationTimeout) {
           String msg = "The creation of session " + sessionInfo.id + " is timeout within "
               + sessionCreationTimeout + " seconds, appId: " + sessionInfo.appId
-              + ", log: " + sessionInfo.log;
+              + ", log:\n" + StringUtils.join(getSessionLog(sessionInfo.id).log, "\n");
           throw new LivyException(msg);
         }
         Thread.sleep(pullStatusInterval);
@@ -347,7 +350,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
             sessionInfo.appId);
         if (sessionInfo.isFinished()) {
           String msg = "Session " + sessionInfo.id + " is finished, appId: " + sessionInfo.appId
-              + ", log: " + sessionInfo.log;
+              + ", log:\n" + StringUtils.join(getSessionLog(sessionInfo.id).log, "\n");
           throw new LivyException(msg);
         }
       }
@@ -360,6 +363,11 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   private SessionInfo getSessionInfo(int sessionId) throws LivyException {
     return SessionInfo.fromJson(callRestAPI("/sessions/" + sessionId, "GET"));
+  }
+
+  private SessionLog getSessionLog(int sessionId) throws LivyException {
+    return SessionLog.fromJson(callRestAPI("/sessions/" + sessionId + "/log?size=" + maxLogLines,
+        "GET"));
   }
 
   public InterpreterResult interpret(String code,
@@ -818,6 +826,20 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
     public static SessionInfo fromJson(String json) {
       return gson.fromJson(json, SessionInfo.class);
+    }
+  }
+
+  private static class SessionLog {
+    public int id;
+    public int from;
+    public int size;
+    public List<String> log;
+
+    SessionLog() {
+    }
+
+    public static SessionLog fromJson(String json) {
+      return gson.fromJson(json, SessionLog.class);
     }
   }
 
