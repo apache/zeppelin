@@ -33,7 +33,7 @@ limitations under the License.
               ng-click="runParagraphs(note.id)"
               ng-class="{'disabled':isNoteRunning()}"
               tooltip-placement="bottom"
-              uib-tooltip="{{isSelectionMode() ? 'Run selected paragraph' : 'Run all paragraphs'}}"
+              uib-tooltip="{{isSelectionMode() ? 'Run selected paragraphs' : 'Run all paragraphs'}}"
               ng-disabled="revisionView">
         <i class="icon-control-play"></i>
       </button>
@@ -100,7 +100,7 @@ limitations under the License.
               data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
               data-only-selected-paragraphs="true"
               data-selected-paragraphs="{{getSelectedParagraphs()}}"
-              tooltip-placement="bottom" uib-tooltip="Clone this note use selected paragraphs">
+              tooltip-placement="bottom" uib-tooltip="Clone this note using selected paragraphs">
         <i class="fa fa-copy"></i>
       </button>
 
@@ -138,7 +138,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-if="isSelectionMode()"
               ng-click="removeSelectedParagraph(note.id)"
-              tooltip-placement="bottom" uib-tooltip="Delete selected paragraph">
+              tooltip-placement="bottom" uib-tooltip="Delete selected paragraphs">
         <i class="fa fa-recycle"></i>
       </button>
       <button type="button"
