@@ -36,6 +36,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
   $scope.looknfeelOption = ['default', 'simple', 'report'];
+  $scope.noteFormTitle = null;
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -439,6 +440,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.setConfig();
     }
+  };
+
+  $scope.setNoteFormTitle = function(noteFormTitle) {
+    $scope.note.config.noteFormTitle = noteFormTitle;
+    $scope.setConfig();
   };
 
   /** Set cron expression for this note **/
