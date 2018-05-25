@@ -469,3 +469,7 @@
     position: relative;
     top: -16px;
 }
+
+.notebook-form-title {
+  padding: 3px;
+}
