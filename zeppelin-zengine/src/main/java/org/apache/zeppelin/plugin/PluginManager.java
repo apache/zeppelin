@@ -83,8 +83,13 @@ public class PluginManager {
       return null;
     }
     URLClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[0]));
-    Iterator<NotebookRepo> iter = ServiceLoader.load(NotebookRepo.class, classLoader).iterator();
-    NotebookRepo notebookRepo = iter.next();
+    NotebookRepo notebookRepo = null;
+    try {
+      notebookRepo = (NotebookRepo) (Class.forName(notebookRepoClassName, true, classLoader)).newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+    }
+
     if (notebookRepo == null) {
       LOGGER.warn("Unable to load NotebookRepo Plugin: " + notebookRepoClassName);
     }
