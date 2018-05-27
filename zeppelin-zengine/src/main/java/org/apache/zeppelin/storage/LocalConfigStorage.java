@@ -113,6 +113,7 @@ public class LocalConfigStorage extends ConfigStorage {
     try {
       IOUtils.write(content, out);
     } catch (IOException iox) {
+      if (out != null) out.close();
       tempFile.delete();
       throw iox;
     }
