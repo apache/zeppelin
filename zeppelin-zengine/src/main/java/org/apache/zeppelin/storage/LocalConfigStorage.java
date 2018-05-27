@@ -108,8 +108,7 @@ public class LocalConfigStorage extends ConfigStorage {
 
   private void atomicWriteToFile(String content, File file) throws IOException {
     File directory = file.getParentFile();
-    String fileNameParts[] = file.getName().split("\\.");
-    File tempFile = File.createTempFile(fileNameParts[0], fileNameParts[1], directory);
+    File tempFile = File.createTempFile(file.getName(), null, directory);
     FileOutputStream out = new FileOutputStream(tempFile);
     try {
       IOUtils.write(content, out);
@@ -121,7 +120,12 @@ public class LocalConfigStorage extends ConfigStorage {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
-    Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
+    try {
+      Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
+    } catch (IOException iox) {
+      tempFile.delete();
+      throw iox;
+    }
   }
 
 }
