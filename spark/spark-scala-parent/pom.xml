@@ -23,14 +23,14 @@
     <parent>
         <artifactId>spark-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.8.0</version>
+        <version>0.8.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>spark-scala-parent</artifactId>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Zeppelin: Spark Scala Parent</name>
 
