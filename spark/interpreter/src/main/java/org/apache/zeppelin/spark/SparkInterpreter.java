@@ -50,6 +50,7 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
     } else {
       delegation = new OldSparkInterpreter(properties);
     }
+    delegation.setParentSparkInterpreter(this);
   }
 
   @Override
