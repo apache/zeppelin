@@ -281,7 +281,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    Interpreter p = getParentSparkInterpreter()
+        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
     if (p == null) {
       return null;
     }
