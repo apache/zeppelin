@@ -25,7 +25,6 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
