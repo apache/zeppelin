@@ -78,7 +78,7 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
             <execution>
-              <id>copy-interpreter-dependencies</id>
+              <id>copy-dependencies</id>
               <phase>package</phase>
               <goals>
                 <goal>copy-dependencies</goal>
