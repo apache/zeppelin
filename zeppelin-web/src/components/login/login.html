@@ -17,39 +17,38 @@ limitations under the License.
     <div class="modal-dialog">
 
       <!-- Modal content-->
-      <div id="loginModalContent" class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Login</h4>
+      <form id="loginForm" name="loginForm" action="{{ loginFormAction }}" onsubmit="return false;" ng-submit="login()">
+        <div id="loginModalContent" class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Login</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group" ng-show="loginParams.errorText">
+              <div class="alert alert-danger">{{loginParams.errorText}}</div>
+            </div>
+            <div class="form-group">
+              <label for="userName">User Name</label>
+              <input placeholder="User Name" type="text" class="form-control" id="userName" name="userName" required autofocus
+                     ng-keypress="loginParams.errorText = ''"
+                     ng-model="loginParams.userName" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input placeholder="Password" type="password" class="form-control" id="password" name="password" required
+                     ng-keypress="loginParams.errorText = ''"
+                     ng-model="loginParams.password" />
+            </div>
+          </div>
+          <div class="modal-footer" ng-switch on="SigningIn">
+            <div ng-switch-when="true">
+              <button type="button" class="btn btn-default btn-primary" disabled><i class="fa fa-circle-o-notch fa-spin"></i> Signing In</button>
+            </div>
+            <div ng-switch-default>
+              <button type="submit" class="btn btn-default btn-primary">Login</button>
+            </div>
+          </div>
         </div>
-        <div class="modal-body">
-          <div class="form-group" ng-show="loginParams.errorText">
-            <div class="alert alert-danger">{{loginParams.errorText}}</div>
-          </div>
-          <div class="form-group">
-            <label for="userName">User Name</label>
-            <input placeholder="User Name" type="text" class="form-control" id="userName"
-                   ng-enter="login()"
-                   ng-keypress="loginParams.errorText = ''"
-                   ng-model="loginParams.userName" />
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input placeholder="Password" type="password" class="form-control" id="password"
-                   ng-enter="login()"
-                   ng-keypress="loginParams.errorText = ''"
-                   ng-model="loginParams.password" />
-          </div>
-
-        </div>
-        <div class="modal-footer" ng-switch on="SigningIn">
-          <div ng-switch-when="true">
-            <button type="button" class="btn btn-default btn-primary" disabled><i class="fa fa-circle-o-notch fa-spin"></i> Signing In</button>
-          </div>
-          <div ng-switch-default>
-            <button type="button" class="btn btn-default btn-primary" ng-click="login()">Login</button>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   </div>
