@@ -225,3 +225,7 @@
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
 }
+
+.hide-last-boundaries.pagination:only-of-type {
+  display: none;
+}
