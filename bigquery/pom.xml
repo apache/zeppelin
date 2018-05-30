@@ -81,12 +81,6 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.apis</groupId>
-      <artifactId>google-api-services-bigquery</artifactId>
-      <version>v2-rev377-1.23.0</version>
-    </dependency>
-  </dependencies>
 
   <build>
     <plugins>
