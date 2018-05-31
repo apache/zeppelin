@@ -16,11 +16,10 @@ limitations under the License.
   <h3>
     <div class="notebook-actionBar-title"
          ng-controller="ElasticInputCtrl as input">
-      <input type="text" pu-elastic-input class="form-control2" placeholder="New name"
-             style="min-width: 0px; max-width: 85%;"
+      <input type="text" pu-elastic-input class="form-control-title-input" placeholder="New name"
              ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
              ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2"
+      <p class="form-control-title"
          ng-class="{'reverse-ellipsis ellipsis':noteName(note).length > 45}"
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
