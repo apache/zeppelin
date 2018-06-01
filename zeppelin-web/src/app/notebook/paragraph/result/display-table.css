@@ -43,7 +43,7 @@ input[class *=coltuiGrid] {
 }
 
 .ui-grid-zeppelin-special-textarea {
-  width: -webkit-fill-available;
+  width: 100%;
   overflow: hidden;
   resize: none;
 }
