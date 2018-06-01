@@ -55,6 +55,7 @@ limitations under the License.
   </tr>
   <tr>
     <td>zeppelin.bigquery.interpolation</td>
+    <td></td>
     <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
   </tr>
 </table>
