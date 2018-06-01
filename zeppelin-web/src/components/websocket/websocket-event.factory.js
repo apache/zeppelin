@@ -110,6 +110,10 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       });
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'PATCH_PARAGRAPH') {
+      $rootScope.$broadcast('patchReceived', data);
+    } else if (op === 'COLLABORATIVE_MODE_STATUS') {
+      $rootScope.$broadcast('collaborativeModeStatus', data);
     } else if (op === 'RUN_PARAGRAPH_USING_SPELL') {
       $rootScope.$broadcast('runParagraphUsingSpell', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {

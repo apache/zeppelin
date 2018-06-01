@@ -102,6 +102,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Context path of the web application</td>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.collaborative.mode.enable</h6></td>
+    <td>true</td>
+    <td>Enable basic opportunity for collaborative editing. Does not change the logic of operation if the note is used by one person.</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_SSL</h6></td>
     <td><h6 class="properties">zeppelin.ssl</h6></td>
     <td>false</td>
