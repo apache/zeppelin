@@ -145,6 +145,7 @@ limitations under the License.
   * [Kylin](./interpreter/kylin.html)
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
+  * [Mahout](./interpreter/mahout.html)
   * [Markdown](./interpreter/markdown.html)
   * [Neo4j](./interpreter/neo4j.html)
   * [Pig](./interpreter/pig.html)
@@ -154,7 +155,7 @@ limitations under the License.
   * [SAP](./interpreter/sap.html)
   * [Scalding](./interpreter/scalding.html)
   * [Scio](./interpreter/scio.html)
-  * [Shell](./interpreter/Shell.html)
+  * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
   
 #### External Resources
