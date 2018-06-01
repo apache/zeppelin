@@ -66,20 +66,19 @@ and directories with custom jar files you need for your scalding commands.
 
 **Set arguments to the scalding repl**
 
-The default arguments are: "--local --repl"
+The default arguments are: `--local --repl`
 
-For hdfs mode you need to add: "--hdfs --repl"
+For hdfs mode you need to add: `--hdfs --repl`
 
-If you want to add custom jars, you need to add:
-"-libjars directory/*:directory/*"
+If you want to add custom jars, you need to add: `-libjars directory/*:directory/*`
 
 For reducer estimation, you need to add something like:
-"-Dscalding.reducer.estimator.classes=com.twitter.scalding.reducer_estimation.InputSizeReducerEstimator"
+`-Dscalding.reducer.estimator.classes=com.twitter.scalding.reducer_estimation.InputSizeReducerEstimator`
 
 **Set max.open.instances**
 
 If you want to control the maximum number of open interpreters, you have to select "scoped" interpreter for note
-option and set max.open.instances argument.
+option and set `max.open.instances` argument.
 
 ## Testing the Interpreter
 

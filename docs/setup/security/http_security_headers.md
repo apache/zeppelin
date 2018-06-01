@@ -89,9 +89,9 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 
 You can choose appropriate value from below.
 
-* DENY
-* SAMEORIGIN
-* ALLOW-FROM _uri_
+* `DENY`
+* `SAMEORIGIN`
+* `ALLOW-FROM uri`
 
 ## Setting up Server Header
 

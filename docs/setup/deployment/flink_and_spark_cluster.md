@@ -20,7 +20,7 @@ limitations under the License.
 
 {% include JB/setup %}
 
-# Install with flink and spark cluster
+# Install with Flink and Spark cluster
 
 <div id="toc"></div>
 
@@ -158,9 +158,7 @@ See the [Zeppelin tutorial](../../quickstart/tutorial.html) for basic Zeppelin u
 ##### Flink Test
 Create a new notebook named "Flink Test" and copy and paste the following code.
 
-
 ```scala
-
 %flink  // let Zeppelin know what interpreter to use.
 
 val text = benv.fromElements("In the time of chimpanzees, I was a monkey",   // some lines of text to analyze

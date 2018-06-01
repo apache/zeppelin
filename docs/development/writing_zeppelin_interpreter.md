@@ -235,11 +235,11 @@ println(a)
 ### 0.6.0 and later
 Inside of a note, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will call your interpreter.
 
-You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. If you omit [INTERPRETER\_NAME], then first available interpreter will be selected in the [INTERPRETER\_GROUP].
-Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME] will be chosen from default interpreter group.
+You can omit either `[INTERPRETER\_GROUP]` or `[INTERPRETER\_NAME]`. If you omit `[INTERPRETER\_NAME]`, then first available interpreter will be selected in the `[INTERPRETER\_GROUP]`.
+Likewise, if you skip `[INTERPRETER\_GROUP]`, then `[INTERPRETER\_NAME]` will be chosen from default interpreter group.
 
 
-For example, if you have two interpreter myintp1 and myintp2 in group mygrp, you can call myintp1 like
+For example, if you have two interpreter `myintp1` and `myintp2` in group `mygrp`, you can call myintp1 like
 
 ```
 %mygrp.myintp1
@@ -247,7 +247,7 @@ For example, if you have two interpreter myintp1 and myintp2 in group mygrp, you
 codes for myintp1
 ```
 
-and you can call myintp2 like
+and you can call `myintp2` like
 
 ```
 %mygrp.myintp2
@@ -255,7 +255,7 @@ and you can call myintp2 like
 codes for myintp2
 ```
 
-If you omit your interpreter name, it'll select first available interpreter in the group ( myintp1 ).
+If you omit your interpreter name, it'll select first available interpreter in the group ( `myintp1` ).
 
 ```
 %mygrp

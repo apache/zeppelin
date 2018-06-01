@@ -102,9 +102,9 @@ For more interpreter binding information see [here](../usage/interpreter/overvie
 ### How to use
 You can analyze your data by using [OLAP Cube](http://lens.apache.org/user/olap-cube.html) [QL](http://lens.apache.org/user/cli.html) which is a high level SQL like language to query and describe data sets organized in data cubes.
 You may experience OLAP Cube like this [Video tutorial](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
-As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh). All of these functions also can be used on Zeppelin by using Lens interpreter.
+As you can see in this video, they are using Lens Client Shell(`./bin/lens-cli.sh`). All of these functions also can be used on Zeppelin by using Lens interpreter.
 
-<li> Create and Use(Switch) Databases.
+<li> Create and Use (Switch) Databases.
 
 ```sql
 create database newDb
@@ -161,17 +161,21 @@ create fact your/path/to/lens/client/examples/resources/sales-raw-fact.xml
 <li> Add partitions to Dimtable and Fact.
 
 ```
-dimtable add single-partition --dimtable_name customer_table --storage_name local --path your/path/to/lens/client/examples/resources/customer-local-part.xml
+dimtable add single-partition --dimtable_name customer_table --storage_name local 
+--path your/path/to/lens/client/examples/resources/customer-local-part.xml
 ```
 
 ```
-fact add partitions --fact_name sales_raw_fact --storage_name local --path your/path/to/lens/client/examples/resources/sales-raw-local-parts.xml
+fact add partitions --fact_name sales_raw_fact --storage_name local 
+--path your/path/to/lens/client/examples/resources/sales-raw-local-parts.xml
 ```
 
 <li> Now, you can run queries on cubes.
 
 ```
-query execute cube select customer_city_name, product_details.description, product_details.category, product_details.color, store_sales from sales where time_range_in(delivery_time, '2015-04-11-00', '2015-04-13-00')
+query execute cube select customer_city_name, product_details.description, 
+product_details.category, product_details.color, store_sales from sales 
+where time_range_in(delivery_time, '2015-04-11-00', '2015-04-13-00')
 ```
 
 ![Lens Query Result]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-result.png)

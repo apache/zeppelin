@@ -585,7 +585,7 @@ To configure the **Cassandra** interpreter, go to the **Interpreter** menu and s
 The **Cassandra** interpreter is using the official **[Cassandra Java Driver]** and most of the parameters are used
 to configure the Java driver
 
-Below are the configuration parameters and their default value.
+Below are the configuration parameters and their default values.
 
  <table class="table-configuration">
    <tr>

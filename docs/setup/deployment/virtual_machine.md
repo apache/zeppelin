@@ -25,9 +25,7 @@ limitations under the License.
 
 ## Overview
 
-Apache Zeppelin distribution includes a script directory
-
- `scripts/vagrant/zeppelin-dev`
+Apache Zeppelin distribution includes a script directory `scripts/vagrant/zeppelin-dev`
 
 This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin. It can also be used to run an existing Zeppelin build if you don't plan to build from source.
 For PySpark users, this script includes several helpful [Python Libraries](#python-extras).
@@ -87,8 +85,8 @@ By default, Vagrant will share your project directory (the directory with the Va
 
 Running the following commands in the guest machine should display these expected versions:
 
-`node --version` should report *v0.12.7*
-`mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
+* `node --version` should report *v0.12.7*
+* `mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.7.0_85*
 
 The virtual machine consists of:
 
@@ -189,4 +187,4 @@ show(plt)
 ### R Extras
 
 With zeppelin running, an R Tutorial notebook will be available.  The R packages required to run the examples and graphs in this tutorial notebook were installed by this virtual machine.
-The installed R Packages include: Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
+The installed R Packages include: `knitr`, `devtools`, `repr`, `rCharts`, `ggplot2`, `googleVis`, `mplot`, `htmltools`, `base64enc`, `data.table`.
