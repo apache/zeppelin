@@ -70,34 +70,51 @@ The interpreter can use all modules already installed (with pip, easy_install...
 
 - get the Conda Infomation: 
 
-    ```%python.conda info```
+    ```
+    %python.conda info
+    ```
     
 - list the Conda environments: 
 
-    ```%python.conda env list```
+    ```
+    %python.conda env list
+    ```
 
 - create a conda enviornment: 
-    ```%python.conda create --name [ENV NAME]```
+
+    ```
+    %python.conda create --name [ENV NAME]
+    ```
     
 - activate an environment (python interpreter will be restarted): 
 
-    ```%python.conda activate [ENV NAME]```
+    ```
+    %python.conda activate [ENV NAME]
+    ```
 
 - deactivate
 
-    ```%python.conda deactivate```
+    ```
+    %python.conda deactivate
+    ```
     
 - get installed package list inside the current environment
 
-    ```%python.conda list```
+    ```
+    %python.conda list
+    ```
     
 - install package
 
-    ```%python.conda install [PACKAGE NAME]```
+    ```
+    %python.conda install [PACKAGE NAME]
+    ```
   
 - uninstall package
   
-    ```%python.conda uninstall [PACKAGE NAME]```
+    ```
+    %python.conda uninstall [PACKAGE NAME]
+    ```
 
 ### Docker
 
