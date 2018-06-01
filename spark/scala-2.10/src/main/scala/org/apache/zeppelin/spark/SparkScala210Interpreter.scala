@@ -35,8 +35,9 @@ import scala.tools.nsc.interpreter._
   * SparkInterpreter for scala-2.10
   */
 class SparkScala210Interpreter(override val conf: SparkConf,
-                               override val depFiles: java.util.List[String])
-  extends BaseSparkScalaInterpreter(conf, depFiles) {
+                               override val depFiles: java.util.List[String],
+                               override val printReplOutput: java.lang.Boolean)
+  extends BaseSparkScalaInterpreter(conf, depFiles, printReplOutput) {
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -66,8 +67,11 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     settings.embeddedDefaults(Thread.currentThread().getContextClassLoader())
     settings.usejavacp.value = true
     settings.classpath.value = getUserJars.mkString(File.pathSeparator)
-    Console.setOut(interpreterOutput)
     sparkILoop = new SparkILoop(null, new JPrintWriter(Console.out, true))
+    if (printReplOutput) {
+      Console.setOut(interpreterOutput)
+    }
+    sparkILoop = new SparkILoop()
 
     setDeclaredField(sparkILoop, "settings", settings)
     callMethod(sparkILoop, "createInterpreter")
