@@ -385,6 +385,32 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
+  @Test
+  public void testDisableReplOutput() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.printREPLOutput", "false");
+
+    interpreter = new SparkInterpreter(properties);
+    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    interpreter.open();
+
+    InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // no output for define new variable
+    assertEquals("", output);
+
+    result = interpreter.interpret("print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // output from print statement will still be displayed
+    assertEquals("hello world", output);
+  }
+
   @After
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {

@@ -38,7 +38,8 @@ import scala.util.control.NonFatal
   * @param depFiles
   */
 abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
-                                         val depFiles: java.util.List[String]) {
+                                         val depFiles: java.util.List[String],
+                                         val printReplOutput: java.lang.Boolean) {
 
   protected lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
