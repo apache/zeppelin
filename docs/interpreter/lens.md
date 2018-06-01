@@ -35,8 +35,8 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
 2. Before running Lens, you have to set HIVE_HOME and HADOOP_HOME. If you want to get more information about this, please refer to [here](http://lens.apache.org/lenshome/install-and-run.html#Installation). Lens also provides Pseudo Distributed mode. [Lens pseudo-distributed setup](http://lens.apache.org/lenshome/pseudo-distributed-setup.html) is done by using [docker](https://www.docker.com/). Hive server and hadoop daemons are run as separate processes in lens pseudo-distributed setup.
 3. Now, you can start lens server (or stop).
 
-```
-./bin/lens-ctl start (or stop)
+```bash
+./bin/lens-ctl start # (or stop)
 ```
 
 ## Configuring Lens Interpreter
@@ -106,7 +106,7 @@ As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh
 
 <li> Create and Use(Switch) Databases.
 
-```
+```sql
 create database newDb
 ```
 

@@ -44,7 +44,7 @@ If you are running Windows and don't yet have python installed, [install Python 
 1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads.html)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
 
-    ```
+    ```bash
     sudo easy_install pip
     sudo pip install ansible
     ansible --version
@@ -58,7 +58,7 @@ Thats it ! You can now run `vagrant ssh` and this will place you into the guest 
 
 If you don't wish to build Zeppelin from scratch, run the z-manager installer script while running in the guest VM:
 
-```
+```bash
 curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-installer.sh | bash
 ```
 
@@ -67,7 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 
 You can now 
 
-```
+```bash
 git clone git://git.apache.org/zeppelin.git
 ```
 
@@ -108,7 +108,7 @@ The virtual machine consists of:
 
 This assumes you've already cloned the project either on the host machine in the zeppelin-dev directory (to be shared with the guest machine) or cloned directly into a directory while running inside the guest machine.  The following build steps will also include Python and R support via PySpark and SparkR:
 
-```
+```bash
 cd /zeppelin
 mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
 ./bin/zeppelin-daemon.sh start

@@ -171,7 +171,8 @@ If Zeppelin cannot find the matplotlib backend files (which should usually be fo
 then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
 
 If you are unable to load the inline backend, use `z.show(plt)`:
- ```python
+
+```python
 %python
 import matplotlib.pyplot as plt
 plt.figure()

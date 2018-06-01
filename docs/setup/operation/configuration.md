@@ -368,8 +368,9 @@ A condensed example can be found in the top answer to this [StackOverflow post](
 
 The keystore holds the private key and certificate on the server end. The trustore holds the trusted client certificates. Be sure that the path and password for these two stores are correctly configured in the password fields below. They can be obfuscated using the Jetty password tool. After Maven pulls in all the dependency to build Zeppelin, one of the Jetty jars contain the Password tool. Invoke this command from the Zeppelin home build directory with the appropriate version, user, and password.
 
-```
-java -cp ./zeppelin-server/target/lib/jetty-all-server-<version>.jar org.eclipse.jetty.util.security.Password <user> <password>
+```bash
+java -cp ./zeppelin-server/target/lib/jetty-all-server-<version>.jar \
+org.eclipse.jetty.util.security.Password <user> <password>
 ```
 
 If you are using a self-signed, a certificate signed by an untrusted CA, or if client authentication is enabled, then the client must have a browser create exceptions for both the normal HTTPS port and WebSocket port. This can by done by trying to establish an HTTPS connection to both ports in a browser (e.g. if the ports are 443 and 8443, then visit https://127.0.0.1:443 and https://127.0.0.1:8443). This step can be skipped if the server certificate is signed by a trusted CA and client auth is disabled.
@@ -378,7 +379,7 @@ If you are using a self-signed, a certificate signed by an untrusted CA, or if c
 
 The following properties needs to be updated in the `zeppelin-site.xml` in order to enable server side SSL.
 
-```
+```xml
 <property>
   <name>zeppelin.server.ssl.port</name>
   <value>8443</value>
@@ -421,7 +422,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 
 The following properties needs to be updated in the `zeppelin-site.xml` in order to enable client side certificate authentication.
 
-```
+```xml
 <property>
   <name>zeppelin.server.ssl.port</name>
   <value>8443</value>
@@ -461,7 +462,7 @@ Please notice that passwords will be stored in *plain text* by default. To encry
 
 You can generate an appropriate encryption key any way you'd like - for instance, by using the openssl tool:
 
-```
+```bash
 openssl enc -aes-128-cbc -k secret -P -md sha1
 ```
 
@@ -476,7 +477,7 @@ The Password tool documentation can be found [here](http://www.eclipse.org/jetty
 
 After using the tool:
 
-```
+```bash
 java -cp $ZEPPELIN_HOME/zeppelin-server/target/lib/jetty-util-9.2.15.v20160210.jar \
          org.eclipse.jetty.util.security.Password  \
          password
@@ -489,7 +490,7 @@ MD5:5f4dcc3b5aa765d61d8327deb882cf99
 
 update your configuration with the obfuscated password :
 
-```
+```xml
 <property>
   <name>zeppelin.ssl.keystore.password</name>
   <value>OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</value>

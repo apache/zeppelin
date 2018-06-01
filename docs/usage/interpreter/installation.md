@@ -31,19 +31,19 @@ If you downloaded `netinst` binary package, you need to install by using below c
 
 #### Install all community managed interpreters
 
-```
+```bash
 ./bin/install-interpreter.sh --all
 ```
 
 #### Install specific interpreters
 
-```
+```bash
 ./bin/install-interpreter.sh --name md,shell,jdbc,python
 ```
 
 You can get full list of community managed interpreters by running
 
-```
+```bash
 ./bin/install-interpreter.sh --list
 ```
 
@@ -85,14 +85,14 @@ Zeppelin support both Scala 2.10 and 2.11 for several interpreters as below:
 
 If you install one of these interpreters only with `--name` option, installer will download interpreter built with Scala 2.11 by default. If you want to specify Scala version, you will need to add `--artifact` option. Here is the example of installing flink interpreter built with Scala 2.10.
 
-```
+```bash
 ./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-flink_2.10:0.7.0
 ```
 
 #### Install Spark interpreter built with Scala 2.10
 Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version earlier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
 
-```
+```bash
 rm -rf ./interpreter/spark
 ./bin/install-interpreter.sh --name spark --artifact org.apache.zeppelin:zeppelin-spark_2.10:0.7.0
 ```
@@ -107,7 +107,7 @@ You can also install 3rd party interpreters located in the maven repository by u
 
 #### Install 3rd party interpreters
 
-```
+```bash
 ./bin/install-interpreter.sh --name interpreter1 --artifact groupId1:artifact1:version1
 ```
 
@@ -117,7 +117,7 @@ After restart Zeppelin, then [create interpreter setting](./overview.html#what-i
 
 #### Install multiple 3rd party interpreters at once
 
-```
+```bash
 ./bin/install-interpreter.sh --name interpreter1,interpreter2 --artifact groupId1:artifact1:version1,groupId2:artifact2:version2
 ```
 

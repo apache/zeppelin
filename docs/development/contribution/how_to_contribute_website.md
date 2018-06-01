@@ -39,7 +39,7 @@ Documentation website is hosted in 'master' branch under `/docs/` dir.
 First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
 Get the source code on your development machine using git.
 
-```
+```bash
 git clone git://git.apache.org/zeppelin.git
 cd docs
 ```

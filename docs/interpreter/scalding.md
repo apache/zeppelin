@@ -28,7 +28,7 @@ limitations under the License.
 ## Building the Scalding Interpreter
 You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
 
-```
+```bash
 mvn clean package -Pscalding -DskipTests
 ```
 
@@ -88,7 +88,7 @@ option and set max.open.instances argument.
 In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, 
 we will count words (of course!), and plot a graph of the top 10 words in the book.
 
-```
+```scala
 %scalding
 
 import scala.io.Source
@@ -144,7 +144,7 @@ res4: com.twitter.scalding.Mode = Hdfs(true,Configuration: core-default.xml, cor
 
 **Test HDFS read**
 
-```
+```scala
 val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
 testfile.dump
 ```
@@ -153,7 +153,7 @@ This command should print the contents of the hdfs file /user/x/testfile.
 
 **Test map-reduce job**
 
-```
+```scala
 val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
 val a = testfile.groupAll.size.values
 a.toList
