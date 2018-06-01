@@ -1504,7 +1504,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.isShowNoteForms = function() {
-    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+    if ($scope.note && !_.isEmpty($scope.note.noteForms) && !$scope.paragraphUrl) {
       return true;
     }
     return false;
