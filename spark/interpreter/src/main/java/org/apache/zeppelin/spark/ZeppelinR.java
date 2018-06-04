@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -146,7 +147,9 @@ public class ZeppelinR implements ExecuteResultHandler {
     cmd.addArgument(libPath);
     cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
     cmd.addArgument(Integer.toString(timeout));
-    
+    if (sparkVersion.isSecretSocketSupported()) {
+      cmd.addArgument(SparkRBackend.socketSecret());
+    }
     // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
     logger.debug(cmd.toString());
 
