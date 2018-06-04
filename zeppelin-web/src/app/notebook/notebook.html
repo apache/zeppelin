@@ -120,9 +120,24 @@ limitations under the License.
 
   <div class="note-jump"></div>
   <div id="noteForms" ng-if="isShowNoteForms()" class="paragraph-space box">
-    <div>
-      <h4>Note forms</h4>
-    </div>
+      <h4>
+        <div ng-controller="ElasticInputCtrl as input" class="title" style="min-height: 25px;">
+          <input type="text"
+                 pu-elastic-input
+                 style="min-width: 400px; max-width: 80%;"
+                 placeholder="Untitled form"
+                 ng-model="note.config.noteFormTitle"
+                 ng-if="input.showEditor"
+                 ng-escape="input.showEditor = false; note.config.noteFormTitle = oldTitle;"
+                 ng-blur="setNoteFormTitle(note.config.noteFormTitle); input.showEditor = false"
+                 ng-enter="setNoteFormTitle(note.config.noteFormTitle); input.showEditor = false"
+                 focus-if="input.showEditor" />
+          <div ng-show="!input.showEditor" class="notebook-form-title"
+               ng-bind-html="note.config.noteFormTitle || 'Untitled form'"
+               ng-click="input.showEditor = true; oldTitle = note.config.noteFormTitle;">
+          </div>
+        </div>
+      </h4>
     <hr />
     <div>
       <dynamic-forms

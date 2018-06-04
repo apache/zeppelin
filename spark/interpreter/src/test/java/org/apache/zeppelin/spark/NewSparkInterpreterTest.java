@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.common.io.Files;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -30,10 +32,10 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -42,6 +44,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,7 @@ import static org.mockito.Mockito.verify;
 public class NewSparkInterpreterTest {
 
   private SparkInterpreter interpreter;
+  private DepInterpreter depInterpreter;
 
   // catch the streaming output in onAppend
   private volatile String output = "";
@@ -351,10 +355,43 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
+  //TODO(zjffdu) This unit test will fail due to classpath issue, should enable it after the classpath issue is fixed.
+  @Ignore
+  public void testDepInterpreter() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    interpreter = new SparkInterpreter(properties);
+    depInterpreter = new DepInterpreter(properties);
+    interpreter.setInterpreterGroup(intpGroup);
+    depInterpreter.setInterpreterGroup(intpGroup);
+    intpGroup.put("session_1", new ArrayList<Interpreter>());
+    intpGroup.get("session_1").add(interpreter);
+    intpGroup.get("session_1").add(depInterpreter);
+
+    depInterpreter.open();
+    InterpreterResult result =
+        depInterpreter.interpret("z.load(\"com.databricks:spark-avro_2.11:3.2.0\")", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    interpreter.open();
+    result = interpreter.interpret("import com.databricks.spark.avro._", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
   @After
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {
       this.interpreter.close();
+    }
+    if (this.depInterpreter != null) {
+      this.depInterpreter.close();
     }
   }
 

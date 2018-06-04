@@ -39,8 +39,10 @@ function SaveAsService(browserDetectService) {
       angular.element('body > iframe#SaveAsId').remove();
     } else {
       const fileName = filename + '.' + extension;
-      const json = JSON.stringify(content);
-      const blob = new Blob([json], {type: 'octet/stream'});
+      let binaryData = [];
+      binaryData.push(BOM);
+      binaryData.push(content);
+      let blob = new Blob(binaryData, {type: 'octet/stream'});
       const url = window.URL.createObjectURL(blob);
       let a = document.createElement('a');
       document.body.appendChild(a);

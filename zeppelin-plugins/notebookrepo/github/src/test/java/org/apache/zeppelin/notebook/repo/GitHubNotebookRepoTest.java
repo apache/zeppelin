@@ -119,7 +119,8 @@ public class GitHubNotebookRepoTest {
             "access-token");
 
     // Create the Notebook repository (configured for the local repository)
-    gitHubNotebookRepo = new GitHubNotebookRepo(conf);
+    gitHubNotebookRepo = new GitHubNotebookRepo();
+    gitHubNotebookRepo.init(conf);
   }
 
   @After

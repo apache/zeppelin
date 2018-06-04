@@ -473,3 +473,7 @@
 .tooltip-inner {
   max-width: 450px;
 }
+
+.notebook-form-title {
+  padding: 3px;
+}
