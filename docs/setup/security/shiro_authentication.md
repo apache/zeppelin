@@ -285,6 +285,20 @@ anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
 /api/credential/** = authc, roles[admin]
 ```
 
+### Apply multiple roles or user in Shiro configuration
+If there is a need that user with "**any of the defined roles or user itself**" should be allowed, then following Shiro configuration can be used:
+
+```
+[main]
+anyofrolesuser = org.apache.zeppelin.utils.AnyOfRolesUserAuthorizationFilter
+
+[urls]
+
+/api/interpreter/** = authc, anyofrolesuser[admin, user1]
+/api/configurations/** = authc, roles[admin]
+/api/credential/** = authc, roles[admin]
+```
+
 <br/>
 
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
