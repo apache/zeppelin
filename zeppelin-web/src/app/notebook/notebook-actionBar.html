@@ -249,6 +249,16 @@ limitations under the License.
         </button>
       </span>
 
+      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-show="collaborativeMode"
+                tooltip-placement="bottom" uib-tooltip="Users who watch this note: {{collaborativeModeUsers.join(', ')}}"
+                style="background-color: rgba(0,151,255,0.36)">
+          <i class="icon-eye"> {{collaborativeModeUsers.length}}</i>
+        </button>
+      </span>
+
       <span ng-hide="viewOnly">
       <div class="labelBtn btn-group" ng-if="note.config.isZeppelinNotebookCronEnable">
         <div class="btn btn-default btn-xs dropdown-toggle"
