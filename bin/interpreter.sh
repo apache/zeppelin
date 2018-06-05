@@ -201,6 +201,21 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   else
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
+elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+  else
+    # autodetect HADOOP_CONF_HOME by heuristic
+    if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+      if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+        export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+      elif [[ -d "/etc/hadoop/conf" ]]; then
+        export HADOOP_CONF_DIR="/etc/hadoop/conf"
+      fi
+    fi
+  fi
+
 fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"

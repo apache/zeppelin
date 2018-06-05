@@ -368,14 +368,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.apache.zeppelin</groupId>
-        <artifactId>zeppelin-zengine</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
         <groupId>org.bitbucket.cowwoc</groupId>
         <artifactId>diff-match-patch</artifactId>
         <version>1.1</version>

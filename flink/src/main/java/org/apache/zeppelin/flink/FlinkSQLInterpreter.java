@@ -17,52 +17,42 @@
 
 package org.apache.zeppelin.flink;
 
-import org.apache.flink.api.scala.ExecutionEnvironment;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-public class FlinkInterpreter extends Interpreter {
+public class FlinkSQLInterpreter extends Interpreter {
 
-  private FlinkScalaInterpreter innerIntp;
-  private FlinkZeppelinContext z;
+  private FlinkSQLScalaInterpreter sqlScalaInterpreter;
 
-  public FlinkInterpreter(Properties properties) {
+  public FlinkSQLInterpreter(Properties properties) {
     super(properties);
-    this.innerIntp = new FlinkScalaInterpreter(getProperties());
   }
+
 
   @Override
   public void open() throws InterpreterException {
-    this.innerIntp.open();
-
-    // bind ZeppelinContext
+    FlinkInterpreter flinkInterpreter =
+        getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
+    FlinkZeppelinContext z = flinkInterpreter.getZeppelinContext();
     int maxRow = Integer.parseInt(getProperty("zeppelin.flink.maxResult", "1000"));
-    this.z = new FlinkZeppelinContext(innerIntp.getBatchTableEnviroment(),
-        getInterpreterGroup().getInterpreterHookRegistry(), maxRow);
-    List<String> modifiers = new ArrayList<>();
-    modifiers.add("@transient");
-    this.innerIntp.bind("z", z.getClass().getCanonicalName(), z, modifiers);
+    this.sqlScalaInterpreter = new FlinkSQLScalaInterpreter(
+        flinkInterpreter.getInnerScalaInterpreter(), z, maxRow);
   }
 
   @Override
   public void close() throws InterpreterException {
-    this.innerIntp.close();
+
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    this.z.setInterpreterContext(context);
-    this.z.setGui(context.getGui());
-    this.z.setNoteGui(context.getNoteGui());
-    return innerIntp.interpret(st, context);
+    return sqlScalaInterpreter.interpret(st, context);
   }
 
   @Override
@@ -72,32 +62,11 @@ public class FlinkInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() throws InterpreterException {
-    return FormType.NATIVE;
+    return FormType.SIMPLE;
   }
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return 0;
   }
-
-  @Override
-  public List<InterpreterCompletion> completion(String buf,
-                                                int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
-    return innerIntp.completion(buf, cursor, interpreterContext);
-  }
-
-  FlinkScalaInterpreter getInnerScalaInterpreter() {
-    return this.innerIntp;
-  }
-
-  ExecutionEnvironment getExecutionEnviroment() {
-    return this.innerIntp.getExecutionEnviroment();
-  }
-
-  FlinkZeppelinContext getZeppelinContext() {
-    return this.z;
-  }
-
 }
