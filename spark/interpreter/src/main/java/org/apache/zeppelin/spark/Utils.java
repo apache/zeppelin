@@ -149,7 +149,11 @@ class Utils {
   }
   
   public static String buildJobGroupId(InterpreterContext context) {
-    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
+    String uName = "anonymous";
+    if (context.getAuthenticationInfo() != null) {
+      uName = getUserName(context.getAuthenticationInfo());
+    }
+    return "zeppelin-" + uName + "-" + context.getNoteId() + "-" + context.getParagraphId();
   }
 
   public static String buildJobDesc(InterpreterContext context) {
