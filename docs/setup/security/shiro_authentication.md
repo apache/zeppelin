@@ -104,6 +104,9 @@ To learn more about Apache Shiro Realm, please check [this documentation](http:/
 
 We also provide community custom Realms.
 
+**Note**: When using any of the below realms the default 
+      password-based (IniRealm) authentication needs to be disabled.
+
 ### Active Directory
 
 ```
@@ -267,6 +270,7 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 
 ### Apply multiple roles in Shiro configuration
 By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:
+
 ```
 [urls]
 
@@ -274,6 +278,7 @@ By default, Shiro will allow access to a URL if only user is part of "**all the 
 ```
 
 If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
+
 ```
 [main]
 anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
