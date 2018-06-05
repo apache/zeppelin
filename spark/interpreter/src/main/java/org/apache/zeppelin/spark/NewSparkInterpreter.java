@@ -81,7 +81,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     try {
       String scalaVersion = extractScalaVersion();
       LOGGER.info("Using Scala Version: " + scalaVersion);
-      setupConfForPySpark();
       SparkConf conf = new SparkConf();
       for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (!StringUtils.isBlank(entry.getValue().toString())) {
@@ -124,48 +123,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
     }
-  }
-
-  private void setupConfForPySpark() {
-    String sparkHome = getProperty("SPARK_HOME");
-    File pysparkFolder = null;
-    if (sparkHome == null) {
-      String zeppelinHome =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../../")
-              .getValue().toString();
-      pysparkFolder = new File(zeppelinHome,
-          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
-    } else {
-      pysparkFolder = new File(sparkHome, "python" + File.separator + "lib");
-    }
-
-    ArrayList<String> pysparkPackages = new ArrayList<>();
-    for (File file : pysparkFolder.listFiles()) {
-      if (file.getName().equals("pyspark.zip")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-      if (file.getName().startsWith("py4j-")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-    }
-
-    if (pysparkPackages.size() != 2) {
-      throw new RuntimeException("Not correct number of pyspark packages: " +
-          StringUtils.join(pysparkPackages, ","));
-    }
-    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
-    System.setProperty("spark.files", mergeProperty(System.getProperty("spark.files", ""),
-        StringUtils.join(pysparkPackages, ",")));
-    System.setProperty("spark.submit.pyFiles", mergeProperty(
-        System.getProperty("spark.submit.pyFiles", ""), StringUtils.join(pysparkPackages, ",")));
-
-  }
-
-  private String mergeProperty(String originalValue, String appendedValue) {
-    if (StringUtils.isBlank(originalValue)) {
-      return appendedValue;
-    }
-    return originalValue + "," + appendedValue;
   }
 
   @Override
