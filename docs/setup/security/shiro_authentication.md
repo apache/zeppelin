@@ -273,14 +273,16 @@ By default, Shiro will allow access to a URL if only user is part of "**all the 
 /api/interpreter/** = authc, roles[admin, role1]
 ```
 
-If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
+### Apply multiple roles or user in Shiro configuration
+If there is a need that user with "**any of the defined roles or user itself**" should be allowed, then following Shiro configuration can be used:
+
 ```
 [main]
-anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
+anyofrolesuser = org.apache.zeppelin.utils.AnyOfRolesUserAuthorizationFilter
 
 [urls]
 
-/api/interpreter/** = authc, anyofroles[admin, role1]
+/api/interpreter/** = authc, anyofrolesuser[admin, user1]
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]
 ```
