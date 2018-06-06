@@ -63,14 +63,14 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       "securityManager.sessionManager = $sessionManager\n" +
       "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
       "shiro.loginUrl = /api/login\n" +
-      "anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter\n" +
+      "anyofrolesuser = org.apache.zeppelin.utils.AnyOfRolesUserAuthorizationFilter\n" +
       "[roles]\n" +
       "admin = *\n" +
       "hr = *\n" +
       "finance = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
-      "/api/interpreter/** = authc, anyofroles[admin, finance]\n" +
+      "/api/interpreter/** = authc, anyofrolesuser[admin, finance]\n" +
       "/** = authc";
 
   static String originalShiro = "";
@@ -172,7 +172,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testAnyOfRoles() throws Exception {
+  public void testAnyOfRolesUser() throws Exception {
     try {
       AuthenticationIT authenticationIT = new AuthenticationIT();
       authenticationIT.authenticationUser("admin", "password1");
@@ -220,7 +220,7 @@ public class AuthenticationIT extends AbstractZeppelinIT {
       authenticationIT.logoutUser("hr1");
 
     } catch (Exception e) {
-      handleException("Exception in AuthenticationIT while testAnyOfRoles ", e);
+      handleException("Exception in AuthenticationIT while testAnyOfRolesUser ", e);
     }
   }
 
