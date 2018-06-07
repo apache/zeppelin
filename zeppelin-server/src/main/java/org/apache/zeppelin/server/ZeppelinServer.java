@@ -16,8 +16,12 @@
  */
 package org.apache.zeppelin.server;
 
+import java.util.Collection;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -98,6 +102,21 @@ public class ZeppelinServer extends Application {
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    Collection<Realm> realms = ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
+        .getSecurityManager()).getRealms();
+    if (realms.size() > 1) {
+      Boolean isIniRealmEnabled = false;
+      for (Object realm : realms) {
+        if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+          isIniRealmEnabled = true;
+          break;
+        }
+      }
+      if (isIniRealmEnabled) {
+        throw new Exception("IniRealm/password based auth mechanisms should be exclusive. "
+            + "Consider removing [users] block from shiro.ini");
+      }
+    }
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
