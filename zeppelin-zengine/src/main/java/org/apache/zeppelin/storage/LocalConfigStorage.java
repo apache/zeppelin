@@ -113,8 +113,8 @@ public class LocalConfigStorage extends ConfigStorage {
     try {
       IOUtils.write(content, out);
     } catch (IOException iox) {
-      if (out != null) out.close();
-      tempFile.delete();
+      if (!tempFile.delete())
+        tempFile.deleteOnExit();
       throw iox;
     }
     out.close();
@@ -124,7 +124,8 @@ public class LocalConfigStorage extends ConfigStorage {
     try {
       Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException iox) {
-      tempFile.delete();
+      if (!tempFile.delete())
+        tempFile.deleteOnExit();
       throw iox;
     }
   }
