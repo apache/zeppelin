@@ -649,14 +649,17 @@ public class RemoteInterpreterServer extends Thread
         }
         // put result into resource pool
         if (resultMessages.size() > 0) {
-          int lastMessageIndex = resultMessages.size() - 1;
-          if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
-            context.getResourcePool().put(
-                context.getNoteId(),
-                context.getParagraphId(),
-                WellKnownResourceName.ZeppelinTableResult.toString(),
-                resultMessages.get(lastMessageIndex));
+          LinkedList<InterpreterResultMessage> tableList = new LinkedList<>();
+          for (InterpreterResultMessage message : resultMessages) {
+            if (message.getType() == InterpreterResult.Type.TABLE) {
+              tableList.add(message);
+            }
           }
+          context.getResourcePool().put(
+                  context.getNoteId(),
+                  context.getParagraphId(),
+                  WellKnownResourceName.ZeppelinTableResult.toString(),
+                  tableList);
         }
         return new InterpreterResult(result.code(), resultMessages);
       } finally {
