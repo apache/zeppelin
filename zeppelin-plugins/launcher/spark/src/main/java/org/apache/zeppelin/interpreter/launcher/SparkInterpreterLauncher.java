@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -75,6 +83,30 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
         !useProxyUserEnv.equals("false"))) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+    }
+    Path localRepoPath =
+        Paths.get(zConf.getInterpreterLocalRepoPath(), context.getInterpreterSettingId());
+    if (isYarnMode()
+        && getDeployMode().equals("cluster")
+        && Files.exists(localRepoPath)
+        && Files.isDirectory(localRepoPath)) {
+      List<String> extraJars = Lists.newArrayList();
+      try {
+        for (Path jar :
+            Files.newDirectoryStream(
+                localRepoPath,
+                new Filter<Path>() {
+                  @Override
+                  public boolean accept(Path entry) throws IOException {
+                    return Files.isRegularFile(entry);
+                  }
+                })) {
+          extraJars.add(jar.toAbsolutePath().toString());
+        }
+      } catch (IOException e) {
+        LOGGER.error("Cannot make a list of additional jars from localRepo: {}", localRepoPath);
+      }
+      sparkConfBuilder.append(" --jars " + Joiner.on(",").join(extraJars));
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
