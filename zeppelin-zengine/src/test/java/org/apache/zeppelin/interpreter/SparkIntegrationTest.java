@@ -114,13 +114,14 @@ public class SparkIntegrationTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException, YarnException, InterpreterException {
+  public void testLocalMode() throws IOException, YarnException, InterpreterException, InterruptedException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
+    sparkInterpreterSetting.setProperty("spark.pyspark.python", getPythonExec());
 
     testInterpreterBasics();
 
@@ -141,7 +142,7 @@ public class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
-    sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
+    sparkInterpreterSetting.setProperty("spark.pyspark.python", getPythonExec());
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
 
     testInterpreterBasics();

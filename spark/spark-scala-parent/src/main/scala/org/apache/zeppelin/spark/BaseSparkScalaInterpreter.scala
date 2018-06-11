@@ -109,9 +109,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     if (sc != null) {
       sc.stop()
     }
-    if (sparkHttpServer != null) {
-      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-    }
     sc = null
     sqlContext = null
     if (sparkSession != null) {

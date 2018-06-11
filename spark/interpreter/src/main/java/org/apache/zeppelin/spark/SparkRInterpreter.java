@@ -100,7 +100,8 @@ public class SparkRInterpreter extends Interpreter {
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
 
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
+    zeppelinR =
+        new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
     try {
       zeppelinR.open();
     } catch (IOException e) {

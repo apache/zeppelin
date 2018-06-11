@@ -61,6 +61,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
       setAddBulitinPy4j(false);
     }
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 

@@ -84,6 +84,8 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private String additionalPythonPath;
   private String additionalPythonInitFile;
   private boolean useBuiltinPy4j = true;
+  private boolean useAuth = false;
+  private String secret;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
@@ -147,8 +149,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
           32 * 1024 * 1024 + ""));
       ipythonClient = new IPythonClient(ManagedChannelBuilder.forAddress("127.0.0.1", ipythonPort)
           .usePlaintext(true).maxInboundMessageSize(message_size));
+      this.useAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "false"));
+      this.secret = Py4JUtils.createSecret(256);
       launchIPythonKernel(ipythonPort);
-      setupJVMGateway(jvmGatewayPort);
+      setupJVMGateway(jvmGatewayPort, secret, useAuth);
     } catch (Exception e) {
       throw new RuntimeException("Fail to open IPythonInterpreter", e);
     }
@@ -196,8 +200,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     return "";
   }
 
-  private void setupJVMGateway(int jvmGatewayPort) throws IOException {
-    gatewayServer = new GatewayServer(this, jvmGatewayPort);
+  private void setupJVMGateway(int jvmGatewayPort, String secret, boolean useAuth)
+      throws IOException {
+    gatewayServer =
+        Py4JUtils.createGatewayServer(this, "127.0.0.1", jvmGatewayPort, secret, useAuth);
     gatewayServer.start();
 
     InputStream input =
@@ -302,6 +308,9 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       }
     } else {
       envs.put("PYTHONPATH", additionalPythonPath);
+    }
+    if (useAuth) {
+      envs.put("PY4J_GATEWAY_SECRET", secret);
     }
     LOGGER.info("PYTHONPATH:" + envs.get("PYTHONPATH"));
     return envs;
