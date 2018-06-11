@@ -202,19 +202,22 @@ public class ZeppelinServer extends Application {
     this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
 
     // Register MBean
-    MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-    try {
-      mBeanServer.registerMBean(
-          notebookWsServer,
-          new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
-      mBeanServer.registerMBean(
-          interpreterSettingManager,
-          new ObjectName(
-              "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
-    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
-        | MalformedObjectNameException
-        | NotCompliantMBeanException e) {
-      e.printStackTrace();
+    if (null != System.getenv("ZEPPELIN_ENABLE_JMX")) {
+      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+      try {
+        mBeanServer.registerMBean(
+            notebookWsServer,
+            new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
+        mBeanServer.registerMBean(
+            interpreterSettingManager,
+            new ObjectName(
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
+      } catch (InstanceAlreadyExistsException
+          | MBeanRegistrationException
+          | MalformedObjectNameException
+          | NotCompliantMBeanException e) {
+        LOG.error("Failed to register MBeans", e);
+      }
     }
   }
 
