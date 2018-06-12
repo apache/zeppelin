@@ -185,6 +185,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       ngToast.info(data.message);
     } else if (op === 'INTERPRETER_INSTALL_RESULT') {
       ngToast.info(data.message);
+    } else if (op === 'NOTICE') {
+      ngToast.info(data.notice);
     } else {
       console.error(`unknown websocket op: ${op}`);
     }

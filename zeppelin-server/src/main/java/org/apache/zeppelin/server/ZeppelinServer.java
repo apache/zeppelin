@@ -16,7 +16,14 @@
  */
 package org.apache.zeppelin.server;
 
+import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.realm.Realm;
@@ -193,6 +200,25 @@ public class ZeppelinServer extends Application {
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
     this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
+
+    // Register MBean
+    if ("true".equals(System.getenv("ZEPPELIN_ENABLE_JMX"))) {
+      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+      try {
+        mBeanServer.registerMBean(
+            notebookWsServer,
+            new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
+        mBeanServer.registerMBean(
+            interpreterSettingManager,
+            new ObjectName(
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
+      } catch (InstanceAlreadyExistsException
+          | MBeanRegistrationException
+          | MalformedObjectNameException
+          | NotCompliantMBeanException e) {
+        LOG.error("Failed to register MBeans", e);
+      }
+    }
   }
 
   public static void main(String[] args) throws InterruptedException {
