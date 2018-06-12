@@ -190,7 +190,8 @@ public class Message implements JsonSerializable {
     INTERPRETER_INSTALL_STARTED,  // [s-c] start to download an interpreter
     INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
     COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
-    PATCH_PARAGRAPH               // [c-s][s-c] patch editor text
+    PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
+    NOTICE                        // [s-c] Notice
   }
 
   private static final Gson gson = new Gson();
