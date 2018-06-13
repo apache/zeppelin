@@ -235,6 +235,12 @@
 </property>
 
 <property>
+  <name>zeppelin.interpreter.client.socket.timeout</name>
+  <value>900000</value>
+  <description>Interpreter client socket timeout in msec.</description>
+</property>
+
+<property>
   <name>zeppelin.interpreter.output.limit</name>
   <value>102400</value>
   <description>Output message from interpreter exceeding the limit will be truncated</description>

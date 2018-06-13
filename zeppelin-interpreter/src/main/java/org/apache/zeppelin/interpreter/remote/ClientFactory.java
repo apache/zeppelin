@@ -30,6 +30,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 /**
  *
@@ -47,6 +48,9 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
   @Override
   public Client create() throws Exception {
     TSocket transport = new TSocket(host, port);
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    transport.setTimeout(conf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CLIENT_SOCKET_TIMEOUT));
+
     try {
       transport.open();
     } catch (TTransportException e) {
