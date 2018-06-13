@@ -753,7 +753,7 @@ z.put("country_code", "KR")
 Object interpolation is disabled by default, and can be enabled for all instances of the JDBC interpreter by 
 setting the value of the property `zeppelin.jdbc.interpolation` to `true` (see _More Properties_ above). 
 More details of this feature can be found in the Spark interpreter documentation under 
-[Object Interpolation](spark.html#object-interpolation)
+[Zeppelin-Context](../usage/other_features/zeppelin_context.html)
 
 ## Bug reporting
 If you find a bug using JDBC interpreter, please create a [JIRA](https://issues.apache.org/jira/browse/ZEPPELIN) ticket.

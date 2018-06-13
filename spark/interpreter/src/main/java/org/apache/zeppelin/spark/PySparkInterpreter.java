@@ -180,17 +180,22 @@ public class PySparkInterpreter extends PythonInterpreter {
 
   // Run python shell
   // Choose python in the order of
-  // PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON > zeppelin.pyspark.python
+  // spark.pyspark.driver.python > spark.pyspark.python > PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON
   @Override
   protected String getPythonExec() {
-    String pythonExec = getProperty("zeppelin.pyspark.python", "python");
+    if (!StringUtils.isBlank(getProperty("spark.pyspark.driver.python", ""))) {
+      return properties.getProperty("spark.pyspark.driver.python");
+    }
+    if (!StringUtils.isBlank(getProperty("spark.pyspark.python", ""))) {
+      return properties.getProperty("spark.pyspark.python");
+    }
     if (System.getenv("PYSPARK_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_PYTHON");
+      return System.getenv("PYSPARK_PYTHON");
     }
     if (System.getenv("PYSPARK_DRIVER_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_DRIVER_PYTHON");
+      return System.getenv("PYSPARK_DRIVER_PYTHON");
     }
-    return pythonExec;
+    return "python";
   }
 
   @Override

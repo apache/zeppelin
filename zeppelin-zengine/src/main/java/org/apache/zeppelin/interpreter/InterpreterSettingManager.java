@@ -81,7 +81,7 @@ import java.util.Map;
  * Besides that InterpreterSettingManager also manage the interpreter setting binding.
  * TODO(zjffdu) We could move it into another separated component.
  */
-public class InterpreterSettingManager {
+public class InterpreterSettingManager implements InterpreterSettingManagerMBean {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -957,5 +957,18 @@ public class InterpreterSettingManager {
         LOGGER.error("Can't close interpreterGroup", e);
       }
     }
+  }
+
+  @Override
+  public Set<String> getRunningInterpreters() {
+    Set<String> runningInterpreters = Sets.newHashSet();
+    for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
+      for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
+        if (null != mig.getRemoteInterpreterProcess()) {
+          runningInterpreters.add(entry.getKey());
+        }
+      }
+    }
+    return runningInterpreters;
   }
 }

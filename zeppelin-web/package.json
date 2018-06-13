@@ -25,7 +25,7 @@
     "test": "karma start karma.conf.js"
   },
   "dependencies": {
-    "angular-ui-grid": "^4.2.4",
+    "angular-ui-grid": "4.4.6",
     "angular-viewport-watch": "github:wix/angular-viewport-watch",
     "ansi_up": "^2.0.2",
     "github-markdown-css": "2.6.0",
@@ -34,7 +34,8 @@
     "headroom.js": "^0.9.3",
     "moment": "^2.18.1",
     "moment-duration-format": "^1.3.0",
-    "scrollmonitor": "^1.2.3"
+    "scrollmonitor": "^1.2.3",
+    "diff-match-patch": "1.0.0"
   },
   "devDependencies": {
     "autoprefixer": "^6.5.4",
