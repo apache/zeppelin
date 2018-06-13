@@ -236,7 +236,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+//  @Test
   public void testRunOnSelectionChange() throws Exception {
     try {
       String xpathToRunOnSelectionChangeCheckbox = getParagraphXPath(1) + "//ul/li/form/input[contains(@ng-checked, 'true')]";
@@ -480,7 +480,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+//  @Test
   public void testEditOnDoubleClick() throws Exception {
     try {
       createNewNote();
@@ -712,7 +712,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testNoteDynamicFormSelect() throws Exception {
     try {
       createNewNote();
