@@ -213,5 +213,12 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-zengine</artifactId>
+      <version>0.7.2</version>
+    </dependency>
+
   </dependencies>
 </project>
