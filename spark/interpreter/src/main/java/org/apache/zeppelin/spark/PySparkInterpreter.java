@@ -130,11 +130,11 @@ public class PySparkInterpreter extends PythonInterpreter {
     try {
       URLClassLoader newCl = new URLClassLoader(urls, oldCl);
       Thread.currentThread().setContextClassLoader(newCl);
-      // create Python Process and JVM gateway
-      super.open();
       // must create spark interpreter after ClassLoader is set, otherwise the additional jars
       // can not be loaded by spark repl.
       this.sparkInterpreter = getSparkInterpreter();
+      // create Python Process and JVM gateway
+      super.open();
     } finally {
       Thread.currentThread().setContextClassLoader(oldCl);
     }
@@ -175,7 +175,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     callPython(new PythonInterpretRequest(
         String.format("if 'sc' in locals():\n\tsc.setJobGroup('%s', '%s')", jobGroup, jobDesc),
-        false));
+        false, false));
   }
 
   // Run python shell
