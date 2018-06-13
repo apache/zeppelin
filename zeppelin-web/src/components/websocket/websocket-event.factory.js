@@ -110,6 +110,10 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       });
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'PATCH_PARAGRAPH') {
+      $rootScope.$broadcast('patchReceived', data);
+    } else if (op === 'COLLABORATIVE_MODE_STATUS') {
+      $rootScope.$broadcast('collaborativeModeStatus', data);
     } else if (op === 'SELECTED_PARAGRAPHS') {
       let paragraphs = data.paragraphs;
       paragraphs.forEach((para) => {
@@ -191,6 +195,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
       ngToast.info(data.message);
     } else if (op === 'INTERPRETER_INSTALL_RESULT') {
       ngToast.info(data.message);
+    } else if (op === 'NOTICE') {
+      ngToast.info(data.notice);
     } else {
       console.error(`unknown websocket op: ${op}`);
     }

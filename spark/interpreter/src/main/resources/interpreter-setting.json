@@ -170,9 +170,16 @@
     "name": "pyspark",
     "className": "org.apache.zeppelin.spark.PySparkInterpreter",
     "properties": {
-      "zeppelin.pyspark.python": {
+      "PYSPARK_PYTHON": {
         "envName": "PYSPARK_PYTHON",
-        "propertyName": null,
+        "propertyName": "PYSPARK_PYTHON",
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with",
+        "type": "string"
+      },
+      "PYSPARK_DRIVER_PYTHON": {
+        "envName": "PYSPARK_DRIVER_PYTHON",
+        "propertyName": "PYSPARK_DRIVER_PYTHON",
         "defaultValue": "python",
         "description": "Python command to run pyspark with",
         "type": "string"

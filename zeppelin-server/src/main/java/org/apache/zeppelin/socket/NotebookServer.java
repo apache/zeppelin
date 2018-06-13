@@ -98,13 +98,16 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 
-/**
- * Zeppelin websocket service.
- */
+/** Zeppelin websocket service. */
 public class NotebookServer extends WebSocketServlet
-    implements NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-    RemoteInterpreterProcessListener, ApplicationEventListener {
+    implements NotebookSocketListener,
+        JobListenerFactory,
+        AngularObjectRegistryListener,
+        RemoteInterpreterProcessListener,
+        ApplicationEventListener,
+        NotebookServerMBean {
 
   /**
    * Job manager service type.
@@ -123,6 +126,10 @@ public class NotebookServer extends WebSocketServlet
   }
 
 
+  private HashSet<String> collaborativeModeList = new HashSet<>();
+  private Boolean collaborativeModeEnable = ZeppelinConfiguration
+          .create()
+          .isZeppelinNotebookCollaborativeModeEnable();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static Gson gson = new GsonBuilder()
       .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -380,6 +387,9 @@ public class NotebookServer extends WebSocketServlet
         case REMOVE_NOTE_FORMS:
           removeNoteForms(conn, userAndRoles, notebook, messagereceived);
           break;
+        case PATCH_PARAGRAPH:
+          patchParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
         case REMOVE_SELECTED_PARAGRAPHS:
           removeSelectedParagraphs(conn, userAndRoles, notebook, messagereceived);
           break;
@@ -442,6 +452,7 @@ public class NotebookServer extends WebSocketServlet
       if (!socketList.contains(socket)) {
         socketList.add(socket);
       }
+      checkCollaborativeStatus(noteId, socketList);
     }
   }
 
@@ -451,6 +462,7 @@ public class NotebookServer extends WebSocketServlet
       if (socketList != null) {
         socketList.remove(socket);
       }
+      checkCollaborativeStatus(noteId, socketList);
     }
   }
 
@@ -467,6 +479,29 @@ public class NotebookServer extends WebSocketServlet
         removeConnectionFromNote(noteId, socket);
       }
     }
+  }
+
+  private void checkCollaborativeStatus(String noteId, List<NotebookSocket> socketList) {
+    if (!collaborativeModeEnable) {
+      return;
+    }
+    boolean collaborativeStatusNew = socketList.size() > 1;
+    if (collaborativeStatusNew) {
+      collaborativeModeList.add(noteId);
+    } else {
+      collaborativeModeList.remove(noteId);
+    }
+
+    Message message = new Message(OP.COLLABORATIVE_MODE_STATUS);
+    message.put("status", collaborativeStatusNew);
+    if (collaborativeStatusNew) {
+      HashSet<String> userList = new HashSet<>();
+      for (NotebookSocket noteSocket: socketList) {
+        userList.add(noteSocket.getUser());
+      }
+      message.put("users", userList);
+    }
+    broadcast(noteId, message);
   }
 
   private String getOpenNoteId(NotebookSocket socket) {
@@ -1314,6 +1349,62 @@ public class NotebookServer extends WebSocketServlet
     } else {
       broadcastParagraph(note, p);
     }
+  }
+
+  private void patchParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                              Notebook notebook, Message fromMessage) throws IOException {
+    if (!collaborativeModeEnable) {
+      return;
+    }
+    String paragraphId = fromMessage.getType("id", LOG);
+    if (paragraphId == null) {
+      return;
+    }
+
+    String noteId = getOpenNoteId(conn);
+    if (noteId == null) {
+      noteId = fromMessage.getType("noteId", LOG);
+      if (noteId == null) {
+        return;
+      }
+    }
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+
+    final Note note = notebook.getNote(noteId);
+    if (note == null) {
+      return;
+    }
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return;
+    }
+
+    DiffMatchPatch dmp = new DiffMatchPatch();
+    String patchText = fromMessage.getType("patch", LOG);
+    if (patchText == null) {
+      return;
+    }
+
+    LinkedList<DiffMatchPatch.Patch> patches = null;
+    try {
+      patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
+    } catch (ClassCastException e) {
+      LOG.error("Failed to parse patches", e);
+    }
+    if (patches == null) {
+      return;
+    }
+
+    String paragraphText = p.getText() == null ? "" : p.getText();
+    paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];
+    p.setText(paragraphText);
+    Message message = new Message(OP.PATCH_PARAGRAPH).put("patch", patchText)
+                                                     .put("paragraphId", p.getId());
+    broadcastExcept(note.getId(), message, conn);
   }
 
   private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
@@ -2774,5 +2865,21 @@ public class NotebookServer extends WebSocketServlet
       note.persist(subject);
       broadcastNoteForms(note);
     }
+  }
+
+  @Override
+  public Set<String> getConnectedUsers() {
+    Set<String> connectionList = Sets.newHashSet();
+    for (NotebookSocket notebookSocket : connectedSockets) {
+      connectionList.add(notebookSocket.getUser());
+    }
+    return connectionList;
+  }
+
+  @Override
+  public void sendMessage(String message) {
+    Message m = new Message(OP.NOTICE);
+    m.data.put("notice", message);
+    broadcast(m);
   }
 }

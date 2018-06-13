@@ -16,6 +16,7 @@ import {SpellResult} from '../../spell';
 import {isParagraphRunning, ParagraphStatus} from './paragraph.status';
 
 import moment from 'moment';
+import DiffMatchPatch from 'diff-match-patch';
 
 require('moment-duration-format');
 
@@ -42,6 +43,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.paragraph.results.msg = [];
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.cursorPosition = null;
+  $scope.diffMatchPatch = new DiffMatchPatch();
 
   // transactional info for spell execution
   $scope.spellTransaction = {
@@ -702,9 +705,24 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     let dirtyText = session.getValue();
     $scope.dirtyText = dirtyText;
     if ($scope.dirtyText !== $scope.originalText) {
-      $scope.startSaveTimer();
+      if ($scope.collaborativeMode) {
+        $scope.sendPatch();
+      } else {
+        $scope.startSaveTimer();
+      }
     }
     setParagraphMode(session, dirtyText, editor.getCursorPosition());
+    if ($scope.cursorPosition) {
+      editor.moveCursorToPosition($scope.cursorPosition);
+      $scope.cursorPosition = null;
+    }
+  };
+
+  $scope.sendPatch = function() {
+    $scope.originalText = $scope.originalText ? $scope.originalText : '';
+    let patch = $scope.diffMatchPatch.patch_make($scope.originalText, $scope.dirtyText).toString();
+    $scope.originalText = $scope.dirtyText;
+    return websocketMsgSrv.patchParagraph($scope.paragraph.id, $route.current.pathParams.noteId, patch);
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -1560,6 +1578,22 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     };
 
     $scope.updateParagraph(oldPara, newPara, updateCallback);
+  });
+
+  $scope.$on('patchReceived', function(event, data) {
+    if (data.paragraphId === $scope.paragraph.id) {
+      let patch = data.patch;
+      patch = $scope.diffMatchPatch.patch_fromText(patch);
+      if (!$scope.paragraph.text || $scope.paragraph.text === undefined) {
+        $scope.paragraph.text = '';
+      }
+      $scope.paragraph.text = $scope.diffMatchPatch.patch_apply(patch, $scope.paragraph.text)[0];
+      $scope.originalText = angular.copy($scope.paragraph.text);
+      let newPosition = $scope.editor.getCursorPosition();
+      if (newPosition && newPosition.row && newPosition.column) {
+        $scope.cursorPosition = $scope.editor.getCursorPosition();
+      }
+    }
   });
 
   $scope.$on('updateProgress', function(event, data) {

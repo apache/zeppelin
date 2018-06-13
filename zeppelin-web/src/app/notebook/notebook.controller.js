@@ -36,6 +36,8 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.viewOnly = false;
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
+  $scope.collaborativeMode = false;
+  $scope.collaborativeModeUsers = [];
   $scope.looknfeelOption = ['default', 'simple', 'report'];
   $scope.noteFormTitle = null;
   $scope.selectedParagraphsIds = new Set();
@@ -1488,6 +1490,16 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.saveCursorPosition(paragraph);
   });
 
+  $scope.$on('collaborativeModeStatus', function(event, data) {
+    $scope.collaborativeMode = Boolean(data.status);
+    $scope.collaborativeModeUsers = data.users;
+  });
+
+  $scope.$on('patchReceived', function(event, data) {
+    $scope.collaborativeMode = true;
+  });
+
+
   $scope.$on('runAllBelowAndCurrent', function(event, paragraph, isNeedConfirm) {
     let allParagraphs = $scope.note.paragraphs;
     let toRunParagraphs = [];
@@ -1735,7 +1747,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.isShowNoteForms = function() {
-    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+    if ($scope.note && !_.isEmpty($scope.note.noteForms) && !$scope.paragraphUrl) {
       return true;
     }
     return false;
