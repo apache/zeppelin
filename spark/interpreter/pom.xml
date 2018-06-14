@@ -22,14 +22,14 @@
   <parent>
     <artifactId>spark-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>spark-interpreter</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.0</version>
+  <version>0.8.1-SNAPSHOT</version>
   <name>Zeppelin: Spark Interpreter</name>
   <description>Zeppelin spark support</description>
 

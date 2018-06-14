@@ -22,14 +22,14 @@
   <parent>
     <artifactId>spark-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>spark2-shims</artifactId>
-  <version>0.8.0</version>
+  <version>0.8.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Zeppelin: Spark2 Shims</name>
 
