@@ -444,4 +444,55 @@ public class RemoteInterpreterTest {
     assertArrayEquals(expected.values().toArray(), gui.getForms().values().toArray());
   }
 
+  @Test
+  public void testReplaceContextParametersInSettingsForSharedInterpreter() throws TTransportException, IOException, InterpreterException {
+    interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
+    String propertyName = "variable.with.replace";
+    String userName = "username";
+    interpreterSetting.setProperty(propertyName, "#{user}");
+    Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
+    LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
+    assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
+    assertEquals(userName, interpreter.getProperty(propertyName));
+    InterpreterContext.remove();
+  }
+
+  @Test
+  public void testReplaceContextParametersInSettingsForIsolatedInterpreter() throws TTransportException, IOException, InterpreterException {
+    interpreterSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
+    String propertyName = "variable.with.replace";
+    String userName = "username";
+    interpreterSetting.setProperty(propertyName, "#{user}");
+    Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        new GUI(),null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
+    LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
+    assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
+    assertEquals(userName, interpreter.getProperty(propertyName));
+    InterpreterContext.remove();
+  }
+
+  @Test
+  public void testReplaceContextParametersInSettingsForScopedInterpreter() throws TTransportException, IOException, InterpreterException {
+    interpreterSetting.getOption().setPerNote(InterpreterOption.SCOPED);
+    String propertyName = "variable.with.replace";
+    String userName = "username";
+    interpreterSetting.setProperty(propertyName, "#{user}");
+    Interpreter interpreter = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "sleep",
+        "title", "text", new AuthenticationInfo(userName), new HashMap<String, Object>(), new GUI(),
+        new GUI(), null, null, new ArrayList<InterpreterContextRunner>(), null);
+    InterpreterContext.set(context);
+    LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
+    assertEquals(Code.SUCCESS, lazyOpenInterpreter.interpret("10", context).code());
+    assertEquals(userName, lazyOpenInterpreter.getProperty(propertyName));
+    InterpreterContext.remove();
+  }
+
 }
