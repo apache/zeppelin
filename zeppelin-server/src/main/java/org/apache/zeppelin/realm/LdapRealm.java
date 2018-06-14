@@ -48,6 +48,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.ShiroException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -217,26 +218,29 @@ public class LdapRealm extends JndiLdapRealm {
     super.onInit();
     if (!org.apache.commons.lang.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
-      LdapContextFactory defaultFactory = getContextFactory();
-      ((JndiLdapContextFactory) defaultFactory).setSystemPassword(getSystemPassword());
-      setContextFactory(defaultFactory);
+      ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
+          getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
     }
   }
 
-  private String getSystemPassword() {
+  static String getSystemPassword(String hadoopSecurityCredentialPath,
+      String keystorePass) {
     String password = "";
     try {
       Configuration configuration = new Configuration();
       configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          this.hadoopSecurityCredentialPath);
+          hadoopSecurityCredentialPath);
       CredentialProvider provider = CredentialProviderFactory.getProviders(configuration).get(0);
-      CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
-          keystorePass);
+      CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(keystorePass);
       if (credEntry != null) {
         password = new String(credEntry.getCredential());
       }
-    } catch (Exception e) {
-      log.debug("ignored error from getting credential entry from keystore", e);
+    } catch (IOException e) {
+      throw new ShiroException("Error from getting credential entry from keystore", e);
+    }
+    if (org.apache.commons.lang.StringUtils.isEmpty(password)) {
+      throw new ShiroException("Error getting SystemPassword from the provided keystore:"
+          + keystorePass + ", in path:" + hadoopSecurityCredentialPath);
     }
     return password;
   }
