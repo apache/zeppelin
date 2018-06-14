@@ -16,7 +16,7 @@ import {ParagraphStatus} from '../notebook/paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route, Utils) {
   'ngInject';
 
   let interpreterSettingsTmp = [];
@@ -25,6 +25,10 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showAddNewSetting = false;
   $scope.showRepositoryInfo = false;
   $scope.searchInterpreter = '';
+  $scope.modalAttr = {
+    showmodal: false,
+    path: '',
+  };
   $scope._ = _;
   $scope.interpreterPropertyTypes = [];
   ngToast.dismiss();
@@ -760,6 +764,29 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     getInterpreterSettings();
     getAvailableInterpreters();
     getRepositories();
+  };
+
+  $scope.showInterpreterWebUI = function(settingId) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
+      .then(function(res) {
+        if (res.data.body === undefined) {
+          BootstrapDialog.alert({
+            message: `No ${settingId} application running`,
+          });
+          return;
+        }
+        if (res.data.body.url) {
+          $scope.modalAttr.showmodal = true;
+          $scope.modalAttr.path = res.data.body.url;
+          Utils.triggerClick('#modalLink');
+        } else {
+          BootstrapDialog.alert({
+            message: _.escape(res.data.body.message),
+          });
+        }
+      }).catch(function(res) {
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
+      });
   };
 
   $scope.getInterpreterBindingModeDocsLink = function() {

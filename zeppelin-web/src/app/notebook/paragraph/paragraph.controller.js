@@ -31,7 +31,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, noteVarShareService,
-                       heliumService) {
+                       heliumService, Utils) {
   'ngInject';
 
   let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
@@ -45,6 +45,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.editor = null;
   $scope.cursorPosition = null;
   $scope.diffMatchPatch = new DiffMatchPatch();
+  $scope.modalAttr={
+    showmodal: false,
+    path: '',
+  };
 
   // transactional info for spell execution
   $scope.spellTransaction = {
@@ -1907,4 +1911,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.$emit('occurrencesExists', searchRanges.length);
     }
   });
+
+  $scope.showInterpreterWebView = function(url) {
+    $scope.modalAttr.showmodal = true;
+    $scope.modalAttr.path = url;
+    Utils.triggerClick('#modalLink');
+  };
 }

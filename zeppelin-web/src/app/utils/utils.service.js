@@ -12,36 +12,12 @@
  * limitations under the License.
  */
 
-body {
-  background: #ecf0f1;
-}
-
-.noteAction {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  color: #2c3e50;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.editor,
-.executionTime,
-.nv-controlsWrap {
-  display: block;
-}
-
-.paragraph-col .focused {
-  box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.3);
-  border-color: white;
-}
-
-.ng-toast.ng-toast--top {
-  top: 100px;
-}
-@media (min-width: 992px) {
-  .modal-xl > .modal-dialog {
-    width: 95%;
-    width: 95%vh;
-    height: 95%;
-    height: 95%vh;
-    margin: 30px auto;
-  }
-}
+  angular.module('zeppelinWebApp').service('Utils', function($timeout) {
+    this.triggerClick = function(el) {
+      const self = this;
+      self.elId= el;
+      $timeout(function() {
+        angular.element(self.elId).trigger('click');
+      }, 100);
+    };
+  });
