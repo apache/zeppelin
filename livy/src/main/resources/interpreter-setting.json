@@ -111,13 +111,13 @@
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Whether display app info",
         "type": "checkbox"
       },
       "zeppelin.livy.restart_dead_session": {
         "propertyName": "zeppelin.livy.restart_dead_session",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Whether restart a dead session",
         "type": "checkbox"
       }
