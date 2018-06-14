@@ -110,15 +110,15 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       }
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
-      sparkUrl = this.innerInterpreter.sparkUrl();
-      sparkShims = SparkShims.getInstance(sc.version());
-      sparkShims.setupSparkListener(sc.master(), sparkUrl);
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
       this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
           Lists.newArrayList("@transient"));
+
+      sparkUrl = this.innerInterpreter.sparkUrl();
+      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
     } catch (Exception e) {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
@@ -231,10 +231,9 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
         infos.put("message", "No spark url defined");
       }
     }
-    if (ctx != null && ctx.getClient() != null) {
+    if (ctx != null) {
       LOGGER.debug("Sending metadata to Zeppelin server: {}", infos.toString());
-      getZeppelinContext().setEventClient(ctx.getClient());
-      ctx.getClient().onMetaInfosReceived(infos);
+      ctx.getIntpEventClient().onMetaInfosReceived(infos);
     }
   }
 

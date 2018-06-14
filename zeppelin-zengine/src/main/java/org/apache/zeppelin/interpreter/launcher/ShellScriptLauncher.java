@@ -82,9 +82,10 @@ public class ShellScriptLauncher extends InterpreterLauncher {
           + context.getInterpreterSettingId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          zConf.getCallbackPortRange(), zConf.getInterpreterPortRange(),
+          context.getZeppelinServerRPCPort(), context.getZeppelinServerHost(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
-          buildEnvFromProperties(context), connectTimeout, name, option.isUserImpersonate());
+          buildEnvFromProperties(context), connectTimeout, name,
+          context.getInterpreterGroupId(), option.isUserImpersonate());
     }
   }
 

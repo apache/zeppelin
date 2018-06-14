@@ -17,28 +17,20 @@
 
 package org.apache.zeppelin.scheduler;
 
-import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterInfo;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -47,12 +39,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
-
-  private static final String INTERPRETER_SCRIPT =
-      System.getProperty("os.name").startsWith("Windows") ?
-          "../bin/interpreter.cmd" :
-          "../bin/interpreter.sh";
+public class RemoteSchedulerTest extends AbstractInterpreterTest
+    implements RemoteInterpreterProcessListener {
 
   private InterpreterSetting interpreterSetting;
   private SchedulerFactory schedulerSvc;
@@ -61,22 +49,9 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Before
   public void setUp() throws Exception {
+    super.setUp();
     schedulerSvc = new SchedulerFactory();
-
-    InterpreterOption interpreterOption = new InterpreterOption();
-    InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterA.class.getName(), "mock", true, new HashMap<String, Object>());
-    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
-    interpreterInfos.add(interpreterInfo1);
-    InterpreterRunner runner = new InterpreterRunner(INTERPRETER_SCRIPT, INTERPRETER_SCRIPT);
-    interpreterSetting = new InterpreterSetting.Builder()
-        .setId("test")
-        .setName("test")
-        .setGroup("test")
-        .setInterpreterInfos(interpreterInfos)
-        .setOption(interpreterOption)
-        .setRunner(runner)
-        .setInterpreterDir("../interpeters/test")
-        .create();
+    interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
   }
 
   @After
@@ -86,7 +61,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Test
   public void test() throws Exception {
-    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
+    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
 
     intpA.open();
 
@@ -112,19 +87,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
       @Override
       protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", new InterpreterContext(
-            "note",
-            "jobId",
-            null,
-            "title",
-            "text",
-            new AuthenticationInfo(),
-            new HashMap<String, Object>(),
-            new GUI(),
-            new GUI(),
-            null,
-            new LocalResourcePool("pool1"),
-            new LinkedList<InterpreterContextRunner>(), null));
+        intpA.interpret("1000", InterpreterContext.builder()
+                .setNoteId("noteId")
+                .setParagraphId("jobId")
+                .setResourcePool(new LocalResourcePool("pool1"))
+                .build());
         return "1000";
       }
 
@@ -142,6 +109,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
     int cycles = 0;
     while (!job.isRunning() && cycles < MAX_WAIT_CYCLES) {
+      LOGGER.info("Status:" + job.getStatus());
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
@@ -167,26 +135,18 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   @Test
   public void testAbortOnPending() throws Exception {
-    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
+    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
     intpA.open();
 
     Scheduler scheduler = intpA.getScheduler();
 
     Job job1 = new Job("jobId1", "jobName1", null, 200) {
       Object results;
-      InterpreterContext context = new InterpreterContext(
-          "note",
-          "jobId1",
-          null,
-          "title",
-          "text",
-          new AuthenticationInfo(),
-          new HashMap<String, Object>(),
-          new GUI(),
-          new GUI(),
-          null,
-          new LocalResourcePool("pool1"),
-          new LinkedList<InterpreterContextRunner>(), null);
+      InterpreterContext context = InterpreterContext.builder()
+          .setNoteId("noteId")
+          .setParagraphId("jobId1")
+          .setResourcePool(new LocalResourcePool("pool1"))
+          .build();
 
       @Override
       public Object getReturn() {
@@ -229,19 +189,11 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
     Job job2 = new Job("jobId2", "jobName2", null, 200) {
       public Object results;
-      InterpreterContext context = new InterpreterContext(
-          "note",
-          "jobId2",
-          null,
-          "title",
-          "text",
-          new AuthenticationInfo(),
-          new HashMap<String, Object>(),
-          new GUI(),
-          new GUI(),
-          null,
-          new LocalResourcePool("pool1"),
-          new LinkedList<InterpreterContextRunner>(), null);
+      InterpreterContext context = InterpreterContext.builder()
+          .setNoteId("noteId")
+          .setParagraphId("jobId2")
+          .setResourcePool(new LocalResourcePool("pool1"))
+          .build();
 
       @Override
       public Object getReturn() {
@@ -335,18 +287,13 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
   }
 
   @Override
-  public void onGetParagraphRunners(String noteId, String paragraphId, RemoteWorksEventListener callback) {
-    if (callback != null) {
-      callback.onFinished(new LinkedList<>());
-    }
-  }
+  public void runParagraphs(String noteId, List<Integer> paragraphIndices, List<String> paragraphIds, String curParagraphId) throws IOException {
 
-  @Override
-  public void onRemoteRunParagraph(String noteId, String PsaragraphID) throws Exception {
   }
 
   @Override
   public void onParaInfosReceived(String noteId, String paragraphId,
                                   String interpreterSettingId, Map<String, String> metaInfos) {
   }
+
 }

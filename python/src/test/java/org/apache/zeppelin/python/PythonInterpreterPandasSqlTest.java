@@ -79,15 +79,9 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     intpGroup = new InterpreterGroup();
 
     out = new InterpreterOutput(this);
-    context = new InterpreterContext("note", "id", null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        out);
+    context = InterpreterContext.builder()
+        .setInterpreterOut(out)
+        .build();
     InterpreterContext.set(context);
 
     python = new PythonInterpreter(p);
