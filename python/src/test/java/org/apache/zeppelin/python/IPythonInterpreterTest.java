@@ -21,11 +21,9 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,7 +33,6 @@ import java.util.Properties;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
@@ -69,13 +66,15 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   }
 
   @Test
-  public void testIPythonAdvancedFeatures() throws InterpreterException, InterruptedException, IOException {
+  public void testIPythonAdvancedFeatures()
+      throws InterpreterException, InterruptedException, IOException {
     // ipython help
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret("range?", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("range(stop)"));
 
     // timeit
@@ -114,10 +113,12 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   public void testIPythonPlotting() throws InterpreterException, InterruptedException, IOException {
     // matplotlib
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = interpreter.interpret("%matplotlib inline\nimport matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
+    InterpreterResult result = interpreter.interpret("%matplotlib inline\n" +
+        "import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
     // the order of IMAGE and TEXT is not determined
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
@@ -203,13 +204,15 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     startInterpreter(properties);
 
     // to make this test can run under both python2 and python3
-    InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    InterpreterResult result =
+        interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
     result = interpreter.interpret("print('1'*3000)", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum: 3000"));
 
@@ -223,7 +226,8 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     properties.setProperty("zeppelin.ipython.grpc.message_size", "5000");
     startInterpreter(properties);
     // to make this test can run under both python2 and python3
-    result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
+    result =
+        interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
