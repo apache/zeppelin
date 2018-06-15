@@ -47,11 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -62,9 +60,9 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- *  Interpreter for Python, it is the first implementation of interpreter for Python, so with less
- *  features compared to IPythonInterpreter, but requires less prerequisites than
- *  IPythonInterpreter, only python installation is required.
+ * Interpreter for Python, it is the first implementation of interpreter for Python, so with less
+ * features compared to IPythonInterpreter, but requires less prerequisites than
+ * IPythonInterpreter, only python installation is required.
  */
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
@@ -141,7 +139,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
         InetAddress.getByName(serverAddress),
         GatewayServer.DEFAULT_CONNECT_TIMEOUT,
         GatewayServer.DEFAULT_READ_TIMEOUT,
-        (List) null);;
+        (List) null);
+    ;
     gatewayServer.start();
     LOGGER.info("Starting GatewayServer at " + serverAddress + ":" + port);
 
@@ -367,6 +366,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
+          // ignore this exception
         }
       }
     }
@@ -522,7 +522,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     List<InterpreterCompletion> results = new LinkedList<>();
-    for (String name: completionList) {
+    for (String name : completionList) {
       results.add(new InterpreterCompletion(name, name, StringUtils.EMPTY));
     }
     return results;
@@ -538,8 +538,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     String completionScriptText = "";
     try {
       completionScriptText = text.substring(0, cursor);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOGGER.error(e.toString());
       return null;
     }
@@ -558,13 +557,11 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     if (completionStartPosition == completionEndPosition) {
       completionStartPosition = 0;
-    }
-    else
-    {
+    } else {
       completionStartPosition = completionEndPosition - completionStartPosition;
     }
     resultCompletionText = completionScriptText.substring(
-        completionStartPosition , completionEndPosition);
+        completionStartPosition, completionEndPosition);
 
     return resultCompletionText;
   }
