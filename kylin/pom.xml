@@ -23,7 +23,7 @@
     <parent>
         <artifactId>interpreter-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.8.0</version>
+        <version>0.8.1-SNAPSHOT</version>
         <relativePath>../interpreter-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -31,7 +31,7 @@
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-kylin</artifactId>
     <packaging>jar</packaging>
-    <version>0.8.0</version>
+    <version>0.8.1-SNAPSHOT</version>
     <name>Zeppelin: Kylin interpreter</name>
 
     <properties>
