@@ -51,8 +51,7 @@ public class ShellScriptLauncher extends InterpreterLauncher {
     InterpreterRunner runner = context.getRunner();
     String groupName = context.getInterpreterSettingGroup();
     String name = context.getInterpreterSettingName();
-    int connectTimeout =
-        zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    int connectTimeout = getConnectTimeout();
 
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(
