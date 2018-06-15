@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.io.IOException;
+
 /**
  * Interface to InterpreterClient which is created by InterpreterLauncher. This is the component
  * that is used to for the communication from zeppelin-server process to zeppelin interpreter
@@ -26,7 +28,7 @@ public interface InterpreterClient {
 
   String getInterpreterSettingName();
 
-  void start(String userName);
+  void start(String userName) throws IOException;
 
   void stop();
 

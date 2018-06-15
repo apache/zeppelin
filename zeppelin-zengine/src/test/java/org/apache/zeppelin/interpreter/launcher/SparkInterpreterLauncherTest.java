@@ -38,6 +38,28 @@ public class SparkInterpreterLauncherTest {
   }
 
   @Test
+  public void testConnectTimeOut() throws IOException {
+    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    Properties properties = new Properties();
+    properties.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
+    InterpreterClient client = launcher.launch(context);
+    assertTrue( client instanceof RemoteInterpreterManagedProcess);
+    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertEquals("name", interpreterProcess.getInterpreterSettingName());
+    assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
+    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
+    assertEquals(10000, interpreterProcess.getConnectTimeout());
+    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+    assertTrue(interpreterProcess.getEnv().size() >= 2);
+    assertEquals(true, interpreterProcess.isUserImpersonated());
+  }
+
+  @Test
   public void testLocalMode() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);

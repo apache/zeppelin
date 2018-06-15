@@ -97,7 +97,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @Override
-  public void start(String userName) {
+  public void start(String userName) throws IOException {
     // start server process
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
@@ -143,11 +143,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     try {
       synchronized (running) {
         if (!running.get()) {
-          running.wait(getConnectTimeout() * 2);
+          running.wait(getConnectTimeout());
         }
       }
       if (!running.get()) {
-        throw new RuntimeException(new String(cmdOut.toByteArray()));
+        throw new IOException(new String(
+            String.format("Interpreter Process creation is time out in %d seconds",
+                getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
+                "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
+                cmdOut.toString()));
       }
     } catch (InterruptedException e) {
       logger.error("Remote interpreter is not accessible");
