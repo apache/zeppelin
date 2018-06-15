@@ -17,30 +17,26 @@
 
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class PythonInterpreterMatplotlibTest implements InterpreterOutputListener {
   private InterpreterGroup intpGroup;
@@ -98,9 +94,12 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret = python.interpret("plt.show()", context);
 
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Type.TEXT, out.getOutputAt(0).getType());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), InterpreterResult.Type.HTML, out.getOutputAt(1).getType());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()),
+        InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()),
+        InterpreterResult.Type.TEXT, out.getOutputAt(0).getType());
+    assertEquals(new String(out.getOutputAt(1).toByteArray()),
+        InterpreterResult.Type.HTML, out.getOutputAt(1).getType());
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("data:image/png;base64"));
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("<div>"));
   }
@@ -122,17 +121,18 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     // type to HTML.
     ret = python.interpret("plt.show()", context);
 
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()),
+        InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(0, ret.message().size());
 
     // Now test that new plot is drawn. It should be identical to the
     // previous one.
     ret = python.interpret("plt.plot([1, 2, 3])", context);
-    String msg1 =  new String(out.getOutputAt(0).toByteArray());
+    String msg1 = new String(out.getOutputAt(0).toByteArray());
     InterpreterResult.Type type1 = out.getOutputAt(0).getType();
 
     ret2 = python.interpret("plt.show()", context);
-    String msg2 =  new String(out.getOutputAt(0).toByteArray());
+    String msg2 = new String(out.getOutputAt(0).toByteArray());
     InterpreterResult.Type type2 = out.getOutputAt(0).getType();
 
     assertEquals(msg1, msg2);
@@ -155,16 +155,16 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     // of FigureManager, causing show() to set the output
     // type to HTML even though the figure is inactive.
     ret = python.interpret("plt.show()", context);
-    String msg1 =  new String(out.getOutputAt(0).toByteArray());
+    String msg1 = new String(out.getOutputAt(0).toByteArray());
     assertNotSame("", msg1);
 
     // Now test that plot can be reshown if it is updated. It should be
     // different from the previous one because it will plot the same line
     // again but in a different color.
     ret = python.interpret("plt.plot([1, 2, 3])", context);
-    msg1 =  new String(out.getOutputAt(1).toByteArray());
+    msg1 = new String(out.getOutputAt(1).toByteArray());
     ret2 = python.interpret("plt.show()", context);
-    String msg2 =  new String(out.getOutputAt(1).toByteArray());
+    String msg2 = new String(out.getOutputAt(1).toByteArray());
 
     assertNotSame(msg1, msg2);
   }
