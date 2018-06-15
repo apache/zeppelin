@@ -185,6 +185,17 @@ securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
 ```
 
+Also instead of specifying systemPassword in clear text in `shiro.ini` administrator can choose to specify the same in "hadoop credential". 
+Create a keystore file using the hadoop credential command line:
+``` 
+hadoop credential create ldapRealm.systemPassword -provider jceks://file/user/zeppelin/conf/zeppelin.jceks
+```
+
+Add the following line in the `shiro.ini` file:
+``` 
+ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
+```
+
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
 moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
