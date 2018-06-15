@@ -31,12 +31,10 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
 
   private GenericObjectPool<Client> clientPool;
-  private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
   public RemoteInterpreterProcess(
       int connectTimeout) {
-    this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     this.connectTimeout = connectTimeout;
   }
 
