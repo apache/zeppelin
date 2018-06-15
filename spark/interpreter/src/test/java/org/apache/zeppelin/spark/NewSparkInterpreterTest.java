@@ -67,7 +67,7 @@ public class NewSparkInterpreterTest {
   // catch the interpreter output in onUpdate
   private InterpreterResultMessageOutput messageOutput;
 
-  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
+  private RemoteEventClient mockRemoteEventClient;
 
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -82,6 +82,7 @@ public class NewSparkInterpreterTest {
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
 
+    mockRemoteEventClient = mock(RemoteEventClient.class);
     interpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
