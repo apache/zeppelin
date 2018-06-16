@@ -23,6 +23,8 @@
 # export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
 # export ZEPPELIN_SSL_PORT       		# ssl port (used when ssl environment variable is set to true)
+# export ZEPPELIN_JMX_ENABLE    		# Enable JMX feature by defining "true"
+# export ZEPPELIN_JMX_PORT      		# Port number which JMX uses. Default: "9996"
 
 # export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.

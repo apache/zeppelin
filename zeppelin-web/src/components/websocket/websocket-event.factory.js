@@ -177,6 +177,8 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv) {
       $rootScope.$broadcast('setNoteRevisionResult', data);
     } else if (op === 'PARAS_INFO') {
       $rootScope.$broadcast('updateParaInfos', data);
+    } else if (op === 'NOTICE') {
+      ngToast.info(data.notice);
     } else {
       console.error(`unknown websocket op: ${op}`);
     }
