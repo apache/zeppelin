@@ -187,7 +187,7 @@ public class Message implements JsonSerializable {
     SAVE_NOTE_FORMS,              // save note forms
     REMOVE_NOTE_FORMS,            // remove note forms
     NOTICE                        // [s-c] Notice
-    }
+  }
 
   private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
