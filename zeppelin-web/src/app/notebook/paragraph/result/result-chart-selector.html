@@ -73,6 +73,17 @@ limitations under the License.
   </ul>
 </div>
 
+<div class="btn-group"
+     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !viewOnly"
+     style="margin-bottom: 10px;">
+  <button type="button" class="btn btn-default btn-sm"
+          style="margin-left:10px" enabled="false"
+          ng-click="switchViz('table')"
+          uib-tooltip="Please use data-grid's download menu" tooltip-placement="bottom-left">
+    <i class="fa fa-download"></i>
+  </button>
+</div>
+
 <span
    ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
