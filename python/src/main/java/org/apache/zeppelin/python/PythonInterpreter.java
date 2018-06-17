@@ -66,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
-  private static final int MAX_TIMEOUT_SEC = 10;
+  private static final int MAX_TIMEOUT_SEC = 30;
 
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
@@ -291,10 +291,16 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   public class PythonInterpretRequest {
     public String statements;
     public boolean isForCompletion;
+    public boolean isCallHooks;
 
     public PythonInterpretRequest(String statements, boolean isForCompletion) {
+      this(statements, isForCompletion, true);
+    }
+
+    public PythonInterpretRequest(String statements, boolean isForCompletion, boolean isCallHooks) {
       this.statements = statements;
       this.isForCompletion = isForCompletion;
+      this.isCallHooks = isCallHooks;
     }
 
     public String statements() {
@@ -303,6 +309,10 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     public boolean isForCompletion() {
       return isForCompletion;
+    }
+
+    public boolean isCallHooks() {
+      return isCallHooks;
     }
   }
 
@@ -599,7 +609,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     String bootstrapCode =
         IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceName));
     try {
-      InterpreterResult result = interpret(bootstrapCode, InterpreterContext.get());
+      // Add hook explicitly, otherwise python will fail to execute the statement
+      InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
+          InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
         throw new IOException("Fail to run bootstrap script: " + resourceName);
       }
