@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/**
+ * MBean for NotebookServer
+ */
 package org.apache.zeppelin.socket;
 
 import java.util.Set;
