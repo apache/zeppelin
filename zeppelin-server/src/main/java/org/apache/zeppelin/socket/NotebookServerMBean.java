@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-/**
- * MBean for NotebookServer
- */
 package org.apache.zeppelin.socket;
 
 import java.util.Set;
 
+/**
+ * MBean for NotebookServer
+ */
 public interface NotebookServerMBean {
   Set<String> getConnectedUsers();
 
