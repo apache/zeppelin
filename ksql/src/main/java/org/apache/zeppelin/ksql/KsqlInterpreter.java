@@ -38,11 +38,13 @@ public class KsqlInterpreter extends Interpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KsqlInterpreter.class);
 
-  public static final String KSQL_INTERPRETER_PARALLELISM =
-          "ksql.interpreter.parallelism";
+  public static final String KSQL_INTERPRETER_PARALLELISM = "ksql.interpreter.parallelism";
   public static final String KSQL_URL = "ksql.url";
 
-  public static final String DEFAULT_URL = "http://localhost:8088";
+  static final String DEFAULT_URL = "http://localhost:8088";
+  static final String DEFAULT_PARALLELISM = "10";
+
+  private QueryExecutor queryExecutor;
 
   public KsqlInterpreter(Properties properties) {
     super(properties);
@@ -52,6 +54,7 @@ public class KsqlInterpreter extends Interpreter {
   public void open() {
     final String url = getProperty(KSQL_URL, DEFAULT_URL);
 
+    queryExecutor = new QueryExecutor(url);
   }
 
   @Override
@@ -59,8 +62,9 @@ public class KsqlInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
-    return null;
+  public InterpreterResult interpret(String statement, InterpreterContext context) {
+    KsqlQuery query = new KsqlQuery(statement);
+    return queryExecutor.execute(query);
   }
 
   @Override
@@ -79,14 +83,14 @@ public class KsqlInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     return Collections.emptyList();
   }
 
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-            .createOrGetParallelScheduler(KsqlInterpreter.class.getName() + this.hashCode(),
-                    parseInt(getProperty(KSQL_INTERPRETER_PARALLELISM)));
+      .createOrGetParallelScheduler(KsqlInterpreter.class.getName() + this.hashCode(),
+        parseInt(getProperty(KSQL_INTERPRETER_PARALLELISM, DEFAULT_PARALLELISM)));
   }
 }
