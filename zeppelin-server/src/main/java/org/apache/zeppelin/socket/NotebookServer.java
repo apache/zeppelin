@@ -83,7 +83,7 @@ import com.google.gson.reflect.TypeToken;
  */
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-    RemoteInterpreterProcessListener, ApplicationEventListener {
+    RemoteInterpreterProcessListener, ApplicationEventListener, NotebookServerMBean {
 
   /**
    * Job manager service type
@@ -465,6 +465,18 @@ public class NotebookServer extends WebSocketServlet
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(note.getId(), m);
+        }
+      }
+    }
+  }
+
+  public void broadcast(Message m) {
+    synchronized (connectedSockets) {
+      for (NotebookSocket ns : connectedSockets) {
+        try {
+          ns.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("Send error: " + m, e);
         }
       }
     }
@@ -2630,5 +2642,21 @@ public class NotebookServer extends WebSocketServlet
       note.persist(subject);
       broadcastNoteForms(note);
     }
+  }
+
+  @Override
+  public Set<String> getConnectedUsers() {
+    Set<String> connectionList = Sets.newHashSet();
+    for (NotebookSocket notebookSocket : connectedSockets) {
+      connectionList.add(notebookSocket.getUser());
+    }
+    return connectionList;
+  }
+
+  @Override
+  public void sendMessage(String message) {
+    Message m = new Message(OP.NOTICE);
+    m.data.put("notice", message);
+    broadcast(m);
   }
 }

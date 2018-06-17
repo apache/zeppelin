@@ -71,6 +71,14 @@ if not defined ZEPPELIN_JAVA_OPTS (
     set ZEPPELIN_JAVA_OPTS=%ZEPPELIN_JAVA_OPTS% -Dfile.encoding=%ZEPPELIN_ENCODING% %ZEPPELIN_MEM%
 )
 
+if defined ZEPPELIN_JMX_ENABLE (
+  if not defined ZEPPELIN_JMX_PORT (
+    set ZEPPELIN_JMX_PORT="9996"
+  }
+  set JMX_JAVA_OPTS=" -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=${ZEPPELIN_JMX_PORT} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+  set ZEPPELIN_JAVA_OPTS=%JMX_JAVA_OPTS% %ZEPPELIN_JAVA_OPTS
+)
+
 if not defined JAVA_OPTS (
     set JAVA_OPTS=%ZEPPELIN_JAVA_OPTS%
 ) else (
