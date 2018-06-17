@@ -72,6 +72,7 @@
     <module>python</module>
     <module>lens</module>
     <module>cassandra</module>
+    <module>ksql</module>
     <module>elasticsearch</module>
     <module>bigquery</module>
     <module>alluxio</module>

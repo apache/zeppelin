@@ -1,0 +1,19 @@
+[
+  {
+    "group": "ksql",
+    "name": "ksql",
+    "className": "org.apache.zeppelin.ksql.KsqlInterpreter",
+    "properties": {
+      "ksql.url": {
+        "envName": null,
+        "propertyName": "ksql.url",
+        "defaultValue": "http://localhost:8088",
+        "description": "URL of KSQL Server, default: http://localhost:8088",
+        "type": "textarea"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false
+    }
+  }
+]
