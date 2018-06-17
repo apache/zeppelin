@@ -87,7 +87,7 @@
 
   <properties>
     <!-- language versions -->
-    <java.version>1.7</java.version>
+    <java.version>1.8</java.version>
     <scala.version>2.10.5</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scalatest.version>2.2.4</scalatest.version>
