@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').factory('websocketEvents', WebsocketEventFactory);
 
-function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv) {
+function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ngToast) {
   'ngInject';
 
   let websocketCalls = {};
