@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
@@ -17,14 +17,14 @@ package org.apache.zeppelin.completer;
 import jline.console.completer.Completer;
 
 /**
- * Completer with time to live
+ * Completer with time to live.
  */
-public class CachedCompleter {
-  private Completer completer;
+public class CachedCompleter<T extends Completer>  {
+  private T completer;
   private int ttlInSeconds;
   private long createdAt;
 
-  public CachedCompleter(Completer completer, int ttlInSeconds) {
+  public CachedCompleter(T completer, int ttlInSeconds) {
     this.completer = completer;
     this.ttlInSeconds = ttlInSeconds;
     this.createdAt = System.currentTimeMillis();
@@ -38,7 +38,7 @@ public class CachedCompleter {
     return false;
   }
 
-  public Completer getCompleter() {
+  public T getCompleter() {
     return completer;
   }
 }
