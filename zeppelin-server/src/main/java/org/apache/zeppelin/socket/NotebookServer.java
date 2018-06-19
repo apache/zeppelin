@@ -2533,13 +2533,6 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.INTERPRETER_SETTINGS).put("interpreterSettings", availableSettings)));
   }
 
-  @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
-    InterpreterSetting interpreterSetting =
-        notebook().getInterpreterSettingManager().get(settingId);
-    interpreterSetting.setInfos(metaInfos);
-  }
-
   private void switchConnectionToWatcher(NotebookSocket conn, Message messagereceived) {
     if (!isSessionAllowedToSwitchToWatcher(conn)) {
       LOG.error("Cannot switch this client to watcher, invalid security key");

@@ -122,7 +122,6 @@ public class SparkRInterpreter extends Interpreter {
   public InterpreterResult interpret(String lines, InterpreterContext interpreterContext)
       throws InterpreterException {
 
-    sparkInterpreter.populateSparkWebUrl(interpreterContext);
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
     String jobDesc = "Started by: " +
        Utils.getUserName(interpreterContext.getAuthenticationInfo());

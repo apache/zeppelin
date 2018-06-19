@@ -294,14 +294,6 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  public synchronized void onMetaInfosReceived(Map<String, String> infos) {
-    try {
-      intpEventServiceClient.sendMetaInfo(intpGroupId, gson.toJson(infos));
-    } catch (TException e) {
-      LOGGER.warn("Fail to sendMetaInfo: " + infos, e);
-    }
-  }
-
   public synchronized void onParaInfosReceived(Map<String, String> infos) {
     try {
       intpEventServiceClient.sendParagraphInfo(intpGroupId, gson.toJson(infos));

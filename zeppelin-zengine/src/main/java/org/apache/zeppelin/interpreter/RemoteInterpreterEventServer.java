@@ -296,22 +296,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   @Override
-  public void sendMetaInfo(String intpGroupId, String json) throws TException {
-    InterpreterGroup interpreterGroup =
-        interpreterSettingManager.getInterpreterGroupById(intpGroupId);
-    if (interpreterGroup == null) {
-      throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
-    }
-
-    Map<String, String> metaInfos = gson.fromJson(json,
-        new TypeToken<Map<String, String>>() {
-        }.getType());
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
-    listener.onMetaInfosReceived(settingId, metaInfos);
-  }
-
-  @Override
   public void sendParagraphInfo(String intpGroupId, String json) throws TException {
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);

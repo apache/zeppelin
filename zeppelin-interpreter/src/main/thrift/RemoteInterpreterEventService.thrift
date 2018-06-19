@@ -102,7 +102,6 @@ service RemoteInterpreterEventService {
   void updateAngularObject(1: string intpGroupId, 2: string json);
   void removeAngularObject(1: string intpGroupId, 2: string noteId, 3: string paragraphId, 4: string name);
 
-  void sendMetaInfo(1: string intpGroupId, 2: string json);
   void sendParagraphInfo(1: string intpGroupId, 2: string json);
 
   list<string> getAllResources(1: string intpGroupId);

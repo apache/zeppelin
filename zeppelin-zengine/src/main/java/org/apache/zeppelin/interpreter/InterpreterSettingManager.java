@@ -840,8 +840,6 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     // Check if dependency in specified path is changed
     // If it did, overwrite old dependency jar with new one
     if (intpSetting != null) {
-      // clean up metaInfos
-      intpSetting.setInfos(null);
       copyDependenciesFromLocalPath(intpSetting);
       intpSetting.closeInterpreters(user, noteId);
     } else {
