@@ -81,7 +81,8 @@ class SparkScala211Interpreter(override val conf: SparkConf,
 
     sparkILoop.in = reader
     sparkILoop.initializeSynchronous()
-    callMethod(sparkILoop, "scala$tools$nsc$interpreter$ILoop$$loopPostInit")
+    sparkILoop.intp.setContextClassLoader()
+    reader.postInit()
     this.scalaCompleter = reader.completion.completer()
 
     createSparkContext()
