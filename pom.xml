@@ -738,9 +738,6 @@
   <profiles>
     <profile>
       <id>scala-2.10</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <scala.version>2.10.5</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
@@ -749,6 +746,9 @@
 
     <profile>
       <id>scala-2.11</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <properties>
         <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
