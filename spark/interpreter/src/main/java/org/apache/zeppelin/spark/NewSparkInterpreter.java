@@ -141,7 +141,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
     z.setInterpreterContext(context);
-    populateSparkWebUrl(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
     return innerInterpreter.interpret(st, context);
@@ -214,27 +213,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       return "2.10";
     } else {
       return "2.11";
-    }
-  }
-
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("url", sparkUrl);
-    String uiEnabledProp = properties.getProperty("spark.ui.enabled", "true");
-    java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
-        uiEnabledProp.trim());
-    if (!uiEnabled) {
-      infos.put("message", "Spark UI disabled");
-    } else {
-      if (StringUtils.isNotBlank(sparkUrl)) {
-        infos.put("message", "Spark UI enabled");
-      } else {
-        infos.put("message", "No spark url defined");
-      }
-    }
-    if (ctx != null) {
-      LOGGER.debug("Sending metadata to Zeppelin server: {}", infos.toString());
-      ctx.getIntpEventClient().onMetaInfosReceived(infos);
     }
   }
 

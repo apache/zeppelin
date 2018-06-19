@@ -144,7 +144,6 @@ public class PySparkInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    sparkInterpreter.populateSparkWebUrl(context);
     return super.interpret(st, context);
   }
 

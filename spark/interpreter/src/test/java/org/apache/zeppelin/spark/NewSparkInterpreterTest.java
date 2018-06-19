@@ -91,8 +91,6 @@ public class NewSparkInterpreterTest {
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("a: String = hello world\n", output);
-    // spark web url is sent
-    verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
 
     result = interpreter.interpret("print(a)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

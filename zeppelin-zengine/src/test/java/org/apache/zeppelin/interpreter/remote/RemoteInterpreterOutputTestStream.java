@@ -132,11 +132,6 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   }
 
   @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
-
-  }
-
-  @Override
   public void runParagraphs(String noteId, List<Integer> paragraphIndices, List<String> paragraphIds, String curParagraphId) throws IOException {
 
   }
