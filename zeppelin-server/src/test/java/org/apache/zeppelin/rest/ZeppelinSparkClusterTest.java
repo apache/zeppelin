@@ -225,7 +225,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("[1] 3", p.getResult().message().get(0).getData().trim());
   }
 
-  @Test
+  // @Test
   public void pySparkTest() throws IOException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote(anonymous);

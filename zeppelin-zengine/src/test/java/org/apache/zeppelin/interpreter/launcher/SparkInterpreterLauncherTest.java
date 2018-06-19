@@ -42,6 +42,7 @@ public class SparkInterpreterLauncherTest {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
     SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
+    properties.setProperty("SPARK_HOME", "/user/spark");
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
     InterpreterOption option = new InterpreterOption();
