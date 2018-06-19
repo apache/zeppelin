@@ -114,6 +114,7 @@ admin = *
 # Comment out the following line if you would like to authorize only admin users to restart interpreters.
 /api/interpreter/setting/restart/** = authc
 /api/interpreter/** = authc, roles[admin]
+/api/notebook-repositories/** = authc, roles[admin]
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]
 /api/admin/** = authc, roles[admin]
