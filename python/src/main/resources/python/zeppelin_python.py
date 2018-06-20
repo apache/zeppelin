@@ -111,12 +111,18 @@ while True :
 
     # Get post-execute hooks
     try:
-      global_hook = intp.getHook('post_exec_dev')
+      if req.isCallHooks():
+        global_hook = intp.getHook('post_exec_dev')
+      else:
+        global_hook = None
     except:
       global_hook = None
 
     try:
-      user_hook = __zeppelin__.getHook('post_exec')
+      if req.isCallHooks():
+        user_hook = __zeppelin__.getHook('post_exec')
+      else:
+        user_hook = None
     except:
       user_hook = None
 
@@ -133,7 +139,6 @@ while True :
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
-
       to_run_exec, to_run_single = (code.body[:-(nhooks + 1)],
                                     [code.body[-(nhooks + 1)]])
       try:

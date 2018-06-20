@@ -162,8 +162,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     this(property);
     this.sc = sc;
     env = SparkEnv.get();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
   }
 
   public SparkContext getSparkContext() {
@@ -281,7 +279,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    Interpreter p = getParentSparkInterpreter()
+        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
     if (p == null) {
       return null;
     }
@@ -872,8 +871,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
     sparkUrl = getSparkUIUrl();
     sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
-
+    sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
     numReferenceOfSparkContext.incrementAndGet();
   }
 
@@ -926,10 +924,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
         infos.put("message", "No spark url defined");
       }
     }
-    if (ctx != null && ctx.getClient() != null) {
+    if (ctx != null) {
       logger.info("Sending metadata to Zeppelin server: {}", infos.toString());
-      getZeppelinContext().setEventClient(ctx.getClient());
-      ctx.getClient().onMetaInfosReceived(infos);
+      ctx.getIntpEventClient().onMetaInfosReceived(infos);
     }
   }
 

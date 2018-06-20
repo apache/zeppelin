@@ -19,7 +19,6 @@ package org.apache.zeppelin.spark;
 
 
 import com.google.common.io.Files;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -28,15 +27,13 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.python.IPythonInterpreterTest;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,7 +48,7 @@ import static org.mockito.Mockito.verify;
 public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
   private InterpreterGroup intpGroup;
-  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
+  private RemoteInterpreterEventClient mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
 
   @Override
   protected Properties initIntpProperties() {
@@ -70,13 +67,17 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     return p;
   }
 
+
   @Override
   protected void startInterpreter(Properties properties) throws InterpreterException {
-    intpGroup = new InterpreterGroup();
-    intpGroup.put("session_1", new ArrayList<Interpreter>());
+    InterpreterContext context = getInterpreterContext();
+    context.setIntpEventClient(mockIntpEventClient);
+    InterpreterContext.set(context);
 
     LazyOpenInterpreter sparkInterpreter = new LazyOpenInterpreter(
         new SparkInterpreter(properties));
+    intpGroup = new InterpreterGroup();
+    intpGroup.put("session_1", new ArrayList<Interpreter>());
     intpGroup.get("session_1").add(sparkInterpreter);
     sparkInterpreter.setInterpreterGroup(intpGroup);
 
@@ -102,32 +103,32 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
   @Test
   public void testIPySpark() throws InterruptedException, InterpreterException, IOException {
-    testPySpark(interpreter, mockRemoteEventClient);
+    testPySpark(interpreter, mockIntpEventClient);
   }
 
-  public static void testPySpark(final Interpreter interpreter, RemoteEventClient mockRemoteEventClient)
+  public static void testPySpark(final Interpreter interpreter, RemoteInterpreterEventClient mockIntpEventClient)
       throws InterpreterException, IOException, InterruptedException {
-    reset(mockRemoteEventClient);
+    reset(mockIntpEventClient);
     // rdd
-    InterpreterContext context = createInterpreterContext(mockRemoteEventClient);
+    InterpreterContext context = createInterpreterContext(mockIntpEventClient);
     InterpreterResult result = interpreter.interpret("sc.version", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     String sparkVersion = context.out.toInterpreterResultMessage().get(0).getData();
     // spark url is sent
-    verify(mockRemoteEventClient).onMetaInfosReceived(any(Map.class));
+    verify(mockIntpEventClient).onMetaInfosReceived(any(Map.class));
 
-    context = createInterpreterContext(mockRemoteEventClient);
+    context = createInterpreterContext(mockIntpEventClient);
     result = interpreter.interpret("sc.range(1,10).sum()", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals("45", interpreterResultMessages.get(0).getData().trim());
     // spark job url is sent
-//    verify(mockRemoteEventClient).onParaInfosReceived(any(String.class), any(String.class), any(Map.class));
+    verify(mockIntpEventClient).onParaInfosReceived(any(Map.class));
 
     // spark sql
-    context = createInterpreterContext(mockRemoteEventClient);
+    context = createInterpreterContext(mockIntpEventClient);
     if (!isSpark2(sparkVersion)) {
       result = interpreter.interpret("df = sqlContext.createDataFrame([(1,'a'),(2,'b')])\ndf.show()", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -140,7 +141,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
               "|  2|  b|\n" +
               "+---+---+", interpreterResultMessages.get(0).getData().trim());
 
-      context = createInterpreterContext(mockRemoteEventClient);
+      context = createInterpreterContext(mockIntpEventClient);
       result = interpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -160,7 +161,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
               "|  2|  b|\n" +
               "+---+---+", interpreterResultMessages.get(0).getData().trim());
 
-      context = createInterpreterContext(mockRemoteEventClient);
+      context = createInterpreterContext(mockIntpEventClient);
       result = interpreter.interpret("z.show(df)", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -171,7 +172,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     }
     // cancel
     if (interpreter instanceof IPySparkInterpreter) {
-      final InterpreterContext context2 = createInterpreterContext(mockRemoteEventClient);
+      final InterpreterContext context2 = createInterpreterContext(mockIntpEventClient);
 
       Thread thread = new Thread() {
         @Override
@@ -201,24 +202,24 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     }
 
     // completions
-    List<InterpreterCompletion> completions = interpreter.completion("sc.ran", 6, createInterpreterContext(mockRemoteEventClient));
+    List<InterpreterCompletion> completions = interpreter.completion("sc.ran", 6, createInterpreterContext(mockIntpEventClient));
     assertEquals(1, completions.size());
     assertEquals("range", completions.get(0).getValue());
 
-    completions = interpreter.completion("sc.", 3, createInterpreterContext(mockRemoteEventClient));
+    completions = interpreter.completion("sc.", 3, createInterpreterContext(mockIntpEventClient));
     assertTrue(completions.size() > 0);
     completions.contains(new InterpreterCompletion("range", "range", ""));
 
-    completions = interpreter.completion("1+1\nsc.", 7, createInterpreterContext(mockRemoteEventClient));
+    completions = interpreter.completion("1+1\nsc.", 7, createInterpreterContext(mockIntpEventClient));
     assertTrue(completions.size() > 0);
     completions.contains(new InterpreterCompletion("range", "range", ""));
 
-    completions = interpreter.completion("s", 1, createInterpreterContext(mockRemoteEventClient));
+    completions = interpreter.completion("s", 1, createInterpreterContext(mockIntpEventClient));
     assertTrue(completions.size() > 0);
     completions.contains(new InterpreterCompletion("sc", "sc", ""));
 
     // pyspark streaming
-    context = createInterpreterContext(mockRemoteEventClient);
+    context = createInterpreterContext(mockIntpEventClient);
     result = interpreter.interpret(
         "from pyspark.streaming import StreamingContext\n" +
             "import time\n" +
@@ -244,22 +245,12 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     return sparkVersion.startsWith("'2.") || sparkVersion.startsWith("u'2.");
   }
 
-  private static InterpreterContext createInterpreterContext(RemoteEventClient mockRemoteEventClient) {
-    InterpreterContext context = new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        "replName",
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        null,
-        null,
-        null,
-        new InterpreterOutput(null));
-    context.setClient(mockRemoteEventClient);
-    return context;
+  private static InterpreterContext createInterpreterContext(RemoteInterpreterEventClient mockRemoteEventClient) {
+    return InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setIntpEventClient(mockRemoteEventClient)
+        .setInterpreterOut(new InterpreterOutput(null))
+        .build();
   }
 }

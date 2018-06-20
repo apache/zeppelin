@@ -15,23 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter.remote;
+package org.apache.zeppelin.interpreter;
 
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import java.util.Set;
 
-/**
- *
- */
-public class RemoteInterpreterContextRunner extends InterpreterContextRunner {
-
-  public RemoteInterpreterContextRunner(String noteId, String paragraphId) {
-    super(noteId, paragraphId);
-  }
-
-  @Override
-  public void run() {
-    // this class should be used only for gson deserialize abstract class
-    // code should not reach here
-    throw new RuntimeException("Assert");
-  }
+public interface InterpreterSettingManagerMBean {
+  Set<String> getRunningInterpreters();
 }

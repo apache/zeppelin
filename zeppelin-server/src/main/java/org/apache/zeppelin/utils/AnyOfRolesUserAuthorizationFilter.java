@@ -16,21 +16,19 @@
  */
 package org.apache.zeppelin.utils;
 
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.web.filter.authz.RolesAuthorizationFilter;
-
 import java.io.IOException;
-
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.web.filter.authz.RolesAuthorizationFilter;
 
 /**
  * Allows access if current user has at least one role of the specified list.
  * <p>
  * Basically, it's the same as {@link RolesAuthorizationFilter} but using {@literal OR} instead
- * of {@literal AND} on the specified roles.
+ * of {@literal AND} on the specified roles or user.
  */
-public class AnyOfRolesAuthorizationFilter extends RolesAuthorizationFilter {
+public class AnyOfRolesUserAuthorizationFilter extends RolesAuthorizationFilter {
   @Override
   public boolean isAccessAllowed(ServletRequest request, ServletResponse response,
           Object mappedValue) throws IOException {
@@ -43,7 +41,7 @@ public class AnyOfRolesAuthorizationFilter extends RolesAuthorizationFilter {
     }
 
     for (String roleName : rolesArray) {
-      if (subject.hasRole(roleName)) {
+      if (subject.hasRole(roleName) || subject.getPrincipal().equals(roleName)) {
         return true;
       }
     }

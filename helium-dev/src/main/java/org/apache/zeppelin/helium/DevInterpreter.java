@@ -17,17 +17,16 @@
 
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * Dummy interpreter to support development mode for Zeppelin app
@@ -36,6 +35,7 @@ public class DevInterpreter extends Interpreter {
 
   private InterpreterEvent interpreterEvent;
   private InterpreterContext context;
+  private DevZeppelinContext z;
 
   public static boolean isInterpreterName(String replName) {
     return replName.equals("dev");
@@ -59,6 +59,7 @@ public class DevInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    this.z = new DevZeppelinContext(null, 1000);
   }
 
   @Override
@@ -66,10 +67,10 @@ public class DevInterpreter extends Interpreter {
   }
 
   public void rerun() {
-    for (InterpreterContextRunner r : context.getRunners()) {
-      if (context.getParagraphId().equals(r.getParagraphId())) {
-        r.run();
-      }
+    try {
+      z.run(context.getParagraphId());
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to rerun", e);
     }
   }
 
@@ -77,6 +78,7 @@ public class DevInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
     this.context = context;
+    this.z.setInterpreterContext(context);
     try {
       return interpreterEvent.interpret(st, context);
     } catch (Exception e) {

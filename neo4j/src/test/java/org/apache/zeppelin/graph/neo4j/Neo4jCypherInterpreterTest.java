@@ -16,11 +16,14 @@
  */
 package org.apache.zeppelin.graph.neo4j;
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.gson.Gson;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.graph.neo4j.Neo4jConnectionManager.Neo4jAuthType;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.graph.GraphResult;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,23 +35,10 @@ import org.neo4j.harness.ServerControls;
 import org.neo4j.harness.TestServerBuilders;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.graph.neo4j.Neo4jConnectionManager.Neo4jAuthType;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.graph.GraphResult;
-import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
+import static org.junit.Assert.assertEquals;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neo4jCypherInterpreterTest {
@@ -91,15 +81,9 @@ public class Neo4jCypherInterpreterTest {
     p.setProperty(Neo4jConnectionManager.NEO4J_AUTH_TYPE, Neo4jAuthType.NONE.toString());
     p.setProperty(Neo4jConnectionManager.NEO4J_MAX_CONCURRENCY, "50");
     interpreter = new Neo4jCypherInterpreter(p);
-    context = new InterpreterContext("note", "id", null, "title", "text",
-            new AuthenticationInfo(),
-            new HashMap<String, Object>(),
-            new GUI(),
-            new GUI(),
-            new AngularObjectRegistry(new InterpreterGroup().getId(), null),
-            new LocalResourcePool("id"),
-            new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(null));
+    context = InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .build();;
   }
 
   @After

@@ -19,9 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -72,19 +71,12 @@ public class ZeppCtxtVariableTest {
 
     resourcePool = new LocalResourcePool("ZeppelinContextVariableInterpolationTest");
 
-    InterpreterContext.set(new InterpreterContext("InterpolationTestNoteId",
-            "InterpolationTestParagraphTitle",
-            null,
-            "InterpolationTestParagraphTitle",
-            "InterpolationTestParagraphText",
-            new AuthenticationInfo("InterpolationTestUser", null, "testTicket"),
-            null,
-            null,
-            null,
-            null,
-            resourcePool,
-            null,
-            null));
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setResourcePool(resourcePool)
+        .build();
+    InterpreterContext.set(context);
 
     interpreter = new TestInterpreter(new Properties());
 

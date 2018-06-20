@@ -17,16 +17,7 @@
 
 package org.apache.zeppelin.livy;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
-
 import org.apache.commons.lang.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -39,7 +30,12 @@ import org.apache.zeppelin.interpreter.ResultMessages;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.user.AuthenticationInfo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
 
 /**
  * Livy SparkSQL Interpreter for Zeppelin.
@@ -78,20 +74,9 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
-      InterpreterContext context = new InterpreterContext(
-          "noteId",
-          "paragraphId",
-          "replName",
-          "paragraphTitle",
-          "paragraphText",
-          new AuthenticationInfo(),
-          new HashMap<String, Object>(),
-          new GUI(),
-          new GUI(),
-          null,
-          null,
-          null,
-          new InterpreterOutput(null));
+      InterpreterContext context = InterpreterContext.builder()
+          .setInterpreterOut(new InterpreterOutput(null))
+          .build();
       InterpreterResult result = sparkInterpreter.interpret("spark", context);
       if (result.code() == InterpreterResult.Code.SUCCESS &&
           result.message().get(0).getData().contains("org.apache.spark.sql.SparkSession")) {

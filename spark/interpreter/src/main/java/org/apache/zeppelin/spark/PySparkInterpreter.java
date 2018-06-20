@@ -130,11 +130,11 @@ public class PySparkInterpreter extends PythonInterpreter {
     try {
       URLClassLoader newCl = new URLClassLoader(urls, oldCl);
       Thread.currentThread().setContextClassLoader(newCl);
-      // create Python Process and JVM gateway
-      super.open();
       // must create spark interpreter after ClassLoader is set, otherwise the additional jars
       // can not be loaded by spark repl.
       this.sparkInterpreter = getSparkInterpreter();
+      // create Python Process and JVM gateway
+      super.open();
     } finally {
       Thread.currentThread().setContextClassLoader(oldCl);
     }
@@ -175,22 +175,27 @@ public class PySparkInterpreter extends PythonInterpreter {
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     callPython(new PythonInterpretRequest(
         String.format("if 'sc' in locals():\n\tsc.setJobGroup('%s', '%s')", jobGroup, jobDesc),
-        false));
+        false, false));
   }
 
   // Run python shell
   // Choose python in the order of
-  // PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON > zeppelin.pyspark.python
+  // spark.pyspark.driver.python > spark.pyspark.python > PYSPARK_DRIVER_PYTHON > PYSPARK_PYTHON
   @Override
   protected String getPythonExec() {
-    String pythonExec = getProperty("zeppelin.pyspark.python", "python");
+    if (!StringUtils.isBlank(getProperty("spark.pyspark.driver.python", ""))) {
+      return properties.getProperty("spark.pyspark.driver.python");
+    }
+    if (!StringUtils.isBlank(getProperty("spark.pyspark.python", ""))) {
+      return properties.getProperty("spark.pyspark.python");
+    }
     if (System.getenv("PYSPARK_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_PYTHON");
+      return System.getenv("PYSPARK_PYTHON");
     }
     if (System.getenv("PYSPARK_DRIVER_PYTHON") != null) {
-      pythonExec = System.getenv("PYSPARK_DRIVER_PYTHON");
+      return System.getenv("PYSPARK_DRIVER_PYTHON");
     }
-    return pythonExec;
+    return "python";
   }
 
   @Override

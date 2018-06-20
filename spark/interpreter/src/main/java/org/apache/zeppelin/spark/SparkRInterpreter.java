@@ -33,6 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,7 @@ public class SparkRInterpreter extends Interpreter {
   private AtomicBoolean rbackendDead = new AtomicBoolean(false);
   private SparkContext sc;
   private JavaSparkContext jsc;
+  private String secret;
 
   public SparkRInterpreter(Properties property) {
     super(property);
@@ -75,20 +77,21 @@ public class SparkRInterpreter extends Interpreter {
       // yarn-cluster mode
       sparkRLibPath = "sparkr";
     }
-
-    // Share the same SparkRBackend across sessions
-    synchronized (SparkRBackend.backend()) {
-      if (!SparkRBackend.isStarted()) {
-        SparkRBackend.init();
-        SparkRBackend.start();
-      }
+    if (!new File(sparkRLibPath).exists()) {
+      throw new InterpreterException(String.format("sparkRLib %s doesn't exist", sparkRLibPath));
     }
 
-    int port = SparkRBackend.port();
     this.sparkInterpreter = getSparkInterpreter();
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
+    // Share the same SparkRBackend across sessions
     SparkVersion sparkVersion = new SparkVersion(sc.version());
+    synchronized (SparkRBackend.backend()) {
+      if (!SparkRBackend.isStarted()) {
+        SparkRBackend.init(sparkVersion);
+        SparkRBackend.start();
+      }
+    }
     this.isSpark2 = sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0);
     int timeout = this.sc.getConf().getInt("spark.r.backendConnectionTimeout", 6000);
 
@@ -100,7 +103,7 @@ public class SparkRInterpreter extends Interpreter {
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
 
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port, sparkVersion, timeout, this);
+    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
     try {
       zeppelinR.open();
     } catch (IOException e) {
