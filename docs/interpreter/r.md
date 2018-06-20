@@ -40,12 +40,30 @@ R -e "print(1+1)"
 
 To enjoy plots, install additional libraries with:
 
-```
-+ devtools with `R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"`
-+ knitr with `R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"`
-+ ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
-+ Other vizualisation librairies: `R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); require(devtools); install_github('ramnathv/rCharts')"`
-```
++ devtools with 
+
+  ```bash
+  R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"
+  ```
+  
++ knitr with 
+  
+  ```bash
+  R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"
+  ```
+  
++ ggplot2 with
+
+  ```bash
+  R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"
+  ```
+
++ Other visualization libraries: 
+  
+  ```bash
+  R -e "install.packages(c('devtools','mplot', 'googleVis'), repos = 'http://cran.us.r-project.org'); 
+  require(devtools); install_github('ramnathv/rCharts')"
+  ```
 
 We recommend you to also install the following optional R libraries for happy data analytics:
 

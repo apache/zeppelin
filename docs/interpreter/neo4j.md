@@ -75,7 +75,7 @@ In a notebook, to enable the **Neo4j** interpreter, click the **Gear** icon and 
 In a paragraph, use `%neo4j` to select the Neo4j interpreter and then input the Cypher commands.
 For list of Cypher commands please refer to the official [Cyper Refcard](http://neo4j.com/docs/cypher-refcard/current/)
 
-```bash
+```
 %neo4j
 //Sample the TrumpWorld dataset
 WITH
@@ -92,7 +92,7 @@ The Neo4j interpreter leverages the [Network display system](../usage/display_sy
 
 This query:
 
-```bash
+```
 %neo4j
 MATCH (vp:Person {name:"VLADIMIR PUTIN"}), (dt:Person {name:"DONALD J. TRUMP"})
 MATCH path = allShortestPaths( (vp)-[*]-(dt) )
@@ -104,7 +104,7 @@ produces the following result_
 ### Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) inside your queries. This query:
 
-```bash
+```
 %neo4j
 MATCH (o:Organization)-[r]-()
 RETURN o.name, count(*), collect(distinct type(r)) AS types

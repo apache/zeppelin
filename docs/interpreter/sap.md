@@ -98,7 +98,7 @@ If generated query contains promtps, then promtps will appear as dynamic form af
 
 Example query
 
-```
+```sql
 %sap
 
 universe [Universe Name];

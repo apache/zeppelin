@@ -91,6 +91,7 @@ g.table(
 
 
 * `String g.getProperty('PROPERTY_NAME')` 
+
    ```groovy 
    g.PROPERTY_NAME
    g.'PROPERTY_NAME'
