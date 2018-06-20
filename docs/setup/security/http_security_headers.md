@@ -32,7 +32,7 @@ It also prevents MITM attack by not allowing User to override the invalid certif
 
 The following property needs to be updated in the zeppelin-site.xml in order to enable HSTS. You can choose appropriate value for "max-age".
 
-```
+```xml
 <property>
   <name>zeppelin.server.strict.transport</name>
   <value>max-age=631138519</value>
@@ -55,7 +55,7 @@ The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chr
  
 The following property needs to be updated in the zeppelin-site.xml in order to set X-XSS-PROTECTION header. 
 
-```
+```xml
 <property>
   <name>zeppelin.server.xxss.protection</name>
   <value>1; mode=block</value>
@@ -78,7 +78,7 @@ The X-Frame-Options HTTP response header can indicate browser to avoid clickjack
 
 The following property needs to be updated in the zeppelin-site.xml in order to set X-Frame-Options header.
 
-```
+```xml
 <property>
   <name>zeppelin.server.xframe.options</name>
   <value>SAMEORIGIN</value>
@@ -89,9 +89,9 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 
 You can choose appropriate value from below.
 
-* DENY
-* SAMEORIGIN
-* ALLOW-FROM _uri_
+* `DENY`
+* `SAMEORIGIN`
+* `ALLOW-FROM uri`
 
 ## Setting up Server Header
 
@@ -99,7 +99,7 @@ Security conscious organisations does not want to reveal the Application Server 
 
 The following property needs to be updated in the zeppelin-site.xml in order to set Server header.
 
-```
+```xml
 <property>
     <name>zeppelin.server.jetty.name</name>
     <value>Jetty(7.6.0.v20120127)</value>

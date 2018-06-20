@@ -360,8 +360,10 @@ This is to make the server communicate with KDC.
 
 3. Add the two properties below to Spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
-        spark.yarn.principal
-        spark.yarn.keytab
+    ```
+    spark.yarn.principal
+    spark.yarn.keytab
+    ```
 
   > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 

@@ -35,7 +35,7 @@ user2 = password2, role2
 
 #### 2. Enable password-less ssh for the user you want to impersonate (say user1).
 
-```
+```bash
 adduser user1
 #ssh-keygen (optional if you don't already have generated ssh-key.
 ssh user1@localhost mkdir -p .ssh
@@ -44,14 +44,14 @@ cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 
 Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
 
-```
+```bash
 export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
 ```
 
 
 #### 4. Restart zeppelin server.
 
-```
+```bash
 # for OSX, linux
 bin/zeppelin-daemon restart
 
@@ -76,7 +76,7 @@ Go to interpreter setting page, and enable "User Impersonate" in any of the inte
 
 #### 6. Test with a simple paragraph
 
-```
+```bash
 %sh
 whoami
 ```
