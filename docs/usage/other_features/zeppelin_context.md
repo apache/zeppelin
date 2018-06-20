@@ -45,7 +45,7 @@ predefined variable `z`.
 In the Apache Spark interpreter, the zeppelin-context provides a `show` method, which, 
 using Zeppelin's `table` feature, can be used to nicely display a Spark DataFrame:
 
-```
+```scala
 df = spark.read.csv('/path/to/csv')
 z.show(df)
 ```
@@ -186,12 +186,14 @@ interpolated into a paragraph text by using such a pattern containing the object
 The following example shows one use of this facility:
 
 ####In Scala cell:
-```
+
+```scala
 z.put("minAge", 35)
 ```
 
 ####In later SQL cell:
-```
+
+```sql
 %sql select * from members where age >= {minAge}
 ```
 
@@ -205,7 +207,7 @@ object interpolation mechanism. For these cases an escaping mechanism is availab
 doubled braces {{ and }} should be used. The following example shows the use of {{ and }} for passing a
 regular expression containing just { and } into the paragraph text.
 
-```
+```sql
 %sql select * from members where name rlike '[aeiou]{{3}}'
 ```
 

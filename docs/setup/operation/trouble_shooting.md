@@ -19,7 +19,7 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Trouble Shooting 
+# Troubleshooting 
 
 <div id="toc"></div>
 

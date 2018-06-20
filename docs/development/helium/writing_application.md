@@ -147,7 +147,7 @@ Resouce name is a string which will be compared with the name of objects in the 
 
 Application may require two or more resources. Required resources can be listed inside of the json array. For example, if the application requires object "name1", "name2" and "className1" type of object to run, resources field can be
 
-```
+```json
 resources: [
   [ "name1", "name2", ":className1", ...]
 ]
@@ -155,7 +155,7 @@ resources: [
 
 If Application can handle alternative combination of required resources, alternative set can be listed as below.
 
-```
+```json
 resources: [
   [ "name", ":className"],
   [ "altName", ":altClassName1"],
@@ -165,7 +165,7 @@ resources: [
 
 Easier way to understand this scheme is
 
-```
+```json
 resources: [
    [ 'resource' AND 'resource' AND ... ] OR
    [ 'resource' AND 'resource' AND ... ] OR

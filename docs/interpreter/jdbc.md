@@ -738,16 +738,18 @@ The JDBC interpreter also supports interpolation of `ZeppelinContext` objects in
 The following example shows one use of this facility:
 
 ####In Scala cell:
-```
+
+```scala
 z.put("country_code", "KR")
     // ...
 ```
 
 ####In later JDBC cell:
+
 ```sql
 %jdbc_interpreter_name
-    select * from patents_list where 
-    priority_country = '{country_code}' and filing_date like '2015-%'
+select * from patents_list where 
+priority_country = '{country_code}' and filing_date like '2015-%'
 ```
 
 Object interpolation is disabled by default, and can be enabled for all instances of the JDBC interpreter by 
