@@ -26,6 +26,7 @@ public class InterpreterContextTest {
 
   @Test
   public void testThreadLocal() {
+    InterpreterContext.remove();
     assertNull(InterpreterContext.get());
 
     InterpreterContext.set(InterpreterContext.builder()
