@@ -749,23 +749,13 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
-    //    List<InterpreterContextRunner> contextRunners = new LinkedList<>();
-    //    List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-    //        new TypeToken<List<RemoteInterpreterContextRunner>>() {
-    //        }.getType());
-    //
-    //    if (runners != null) {
-    //      for (InterpreterContextRunner r : runners) {
-    //        contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
-    //      }
-    //    }
-
     return InterpreterContext.builder()
         .setNoteId(ric.getNoteId())
         .setParagraphId(ric.getParagraphId())
         .setReplName(ric.getReplName())
         .setParagraphTitle(ric.getParagraphTitle())
         .setParagraphText(ric.getParagraphText())
+        .setLocalProperties(ric.getLocalProperties())
         .setAuthenticationInfo(AuthenticationInfo.fromJson(ric.getAuthenticationInfo()))
         .setGUI(GUI.fromJson(ric.getGui()))
         .setNoteGUI(GUI.fromJson(ric.getNoteGui()))
@@ -775,22 +765,6 @@ public class RemoteInterpreterServer extends Thread
         .setIntpEventClient(intpEventClient)
         .setProgressMap(progressMap)
         .build();
-    //    return new InterpreterContext(
-    //        ric.getNoteId(),
-    //        ric.getParagraphId(),
-    //        ric.getReplName(),
-    //        ric.getParagraphTitle(),
-    //        ric.getParagraphText(),
-    //        AuthenticationInfo.fromJson(ric.getAuthenticationInfo()),
-    //        (Map<String, Object>) gson.fromJson(ric.getConfig(),
-    //            new TypeToken<Map<String, Object>>() {
-    //            }.getType()),
-    //        GUI.fromJson(ric.getGui()),
-    //        GUI.fromJson(ric.getNoteGui()),
-    //        interpreterGroup.getAngularObjectRegistry(),
-    //        interpreterGroup.getResourcePool(),
-    //        output, intpEventClient,
-    //        progressMap);
   }
 
 

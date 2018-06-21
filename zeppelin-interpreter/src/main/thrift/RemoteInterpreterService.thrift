@@ -28,6 +28,7 @@ struct RemoteInterpreterContext {
   7: string config,   // json serialized config
   8: string gui,      // json serialized gui
   9: string noteGui,      // json serialized note gui
+  10: map<string, string> localProperties
 }
 
 struct RemoteInterpreterResultMessage {
