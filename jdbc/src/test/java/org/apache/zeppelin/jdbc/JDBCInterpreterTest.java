@@ -43,7 +43,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
@@ -107,28 +109,27 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
 
   @Test
-  public void testForParsePropertyKey() throws IOException {
+  public void testForParsePropertyKey() {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
+    Map<String, String> localProperties = new HashMap<>();
+    InterpreterContext interpreterContext = InterpreterContext.builder()
+        .setLocalProperties(localProperties)
+        .build();
+    assertEquals(JDBCInterpreter.DEFAULT_KEY, t.getPropertyKey(interpreterContext));
 
-    assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
-        "fake");
+    localProperties = new HashMap<>();
+    localProperties.put("db", "mysql");
+    interpreterContext = InterpreterContext.builder()
+        .setLocalProperties(localProperties)
+        .build();
+    assertEquals("mysql", t.getPropertyKey(interpreterContext));
 
-    assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
-        "");
-
-    assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
-        "default");
-
-    // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
-    assertEquals(t.getPropertyKey(
-            "(prefix1)\n select max(cant) from test_table where id >= 2452640"), "prefix1");
-
-    assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
-            "prefix2");
-
-    // when you use a %jdbc, prefix is the default
-    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
-            "default");
+    localProperties = new HashMap<>();
+    localProperties.put("hive", "hive");
+    interpreterContext = InterpreterContext.builder()
+        .setLocalProperties(localProperties)
+        .build();
+    assertEquals("hive", t.getPropertyKey(interpreterContext));
   }
 
   @Test
@@ -143,9 +144,14 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 
-    String sqlQuery = "(fake) select * from test_table";
-
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+    String sqlQuery = "select * from test_table";
+    Map<String, String> localProperties = new HashMap<>();
+    localProperties.put("db", "fake");
+    InterpreterContext context = InterpreterContext.builder()
+        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+        .setLocalProperties(localProperties)
+        .build();
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
 
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
@@ -539,11 +545,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
             "create table test_precode_2 (id int); insert into test_precode_2 values (2);");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
-    jdbcInterpreter.executePrecode(interpreterContext);
 
-    String sqlQuery = "(anotherPrefix) select *from test_precode_2";
+    Map<String, String> localProperties = new HashMap<>();
+    localProperties.put("db", "anotherPrefix");
+    InterpreterContext context = InterpreterContext.builder()
+        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+        .setLocalProperties(localProperties)
+        .build();
+    jdbcInterpreter.executePrecode(context);
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+    String sqlQuery = "select * from test_precode_2";
+
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
@@ -601,9 +614,16 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
     jdbcInterpreter.open();
 
-    String sqlQuery = "(anotherPrefix) select @v";
+    Map<String, String> localProperties = new HashMap<>();
+    localProperties.put("db", "anotherPrefix");
+    InterpreterContext context = InterpreterContext.builder()
+        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+        .setLocalProperties(localProperties)
+        .build();
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+    String sqlQuery = "select @v";
+
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());

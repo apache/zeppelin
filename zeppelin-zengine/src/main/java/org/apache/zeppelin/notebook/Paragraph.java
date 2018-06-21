@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -74,7 +75,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN =
+      Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -85,6 +87,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private String title;
   private String text;  // text is composed of intpText and scriptText.
   private transient String intpText;
+  private transient Map<String, String> localProperties = new HashMap<>();
   private transient String scriptText;
   private String user;
   private Date dateUpdated;
@@ -188,11 +191,36 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
+      // clean localProperties, otherwise previous localProperties will be used for the next run
+      this.localProperties.clear();
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
         this.intpText = matcher.group(2);
-        this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+
+        if (matcher.groupCount() == 3 && matcher.group(3) != null) {
+          String localPropertiesText = matcher.group(3);
+          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() -1)
+              .split(",");
+          for (String split : splits) {
+            String[] kv = split.split("=");
+            if (StringUtils.isBlank(split) || kv.length == 0) {
+              continue;
+            }
+            if (kv.length > 2) {
+              throw new RuntimeException("Invalid paragraph properties format: " + split);
+            }
+            if (kv.length == 1) {
+              localProperties.put(kv[0].trim(), kv[0].trim());
+            } else {
+              localProperties.put(kv[0].trim(), kv[1].trim());
+            }
+          }
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() +
+              localPropertiesText.length() + 1).trim();
+        } else {
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+        }
       } else {
         this.intpText = "";
         this.scriptText = this.text.trim();
@@ -231,6 +259,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public Note getNote() {
     return note;
+  }
+
+  public Map<String, String> getLocalProperties() {
+    return localProperties;
   }
 
   public boolean isEnabled() {
@@ -568,6 +600,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
             .setReplName(intpText)
             .setParagraphTitle(title)
             .setParagraphText(text)
+            .setLocalProperties(localProperties)
             .setAuthenticationInfo(authenticationInfo)
             .setConfig(config)
             .setGUI(settings)
@@ -611,6 +644,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
             .setParagraphTitle(title)
             .setParagraphText(text)
             .setAuthenticationInfo(authenticationInfo)
+            .setLocalProperties(localProperties)
             .setConfig(config)
             .setGUI(settings)
             .setNoteGUI(getNoteGui())
