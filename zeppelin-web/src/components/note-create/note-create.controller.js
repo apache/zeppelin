@@ -64,7 +64,7 @@ function NoteCreateCtrl($scope, noteListFactory, $routeParams, websocketMsgSrv) 
         }
       }
     });
-    return (path ? path + '/' : '') + 'Untitled Note ' + newCount;
+    return (path ? path + '/' : 'Users/' + $scope.ticket.screenUsername + '/') + 'Untitled Note ' + newCount;
   };
 
   vm.cloneNoteName = function() {
