@@ -83,10 +83,6 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     this.groupRolesMap.putAll(groupRolesMap);
   }
 
-  public Map getGroupRolesMap() {
-    return groupRolesMap;
-  }
-
   LdapContextFactory ldapContextFactory;
 
   protected void onInit() {
@@ -278,7 +274,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   public Map<String, String> getListRoles() {
     Map<String, String> roles = new HashMap<>();
-    Iterator it = getGroupRolesMap().entrySet().iterator();
+    Iterator it = this.groupRolesMap.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry pair = (Map.Entry) it.next();
       roles.put((String) pair.getValue(), "*");
