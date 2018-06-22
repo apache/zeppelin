@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.LinkedHashMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -82,14 +83,14 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap;
+  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
     /*--------------------------------------------
     |         C O N S T R U C T O R S           |
     ============================================*/
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
-    this.groupRolesMap = groupRolesMap;
+    this.groupRolesMap.putAll(groupRolesMap);
   }
 
     /*--------------------------------------------
