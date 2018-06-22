@@ -42,6 +42,7 @@ public class SparkIntegrationTest {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
+        {"2.3.1"},
         {"2.2.1"},
         {"2.1.2"},
         {"2.0.2"},
