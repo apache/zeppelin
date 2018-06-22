@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 
@@ -88,6 +89,11 @@ public class GUI implements Serializable {
 
   public Object textbox(String id) {
     return textbox(id, "");
+  }
+
+  public Object password(String id) {
+    forms.put(id, new Password(id));
+    return params.get(id);
   }
 
   public Object select(String id, Object defaultValue, ParamOption[] options) {
