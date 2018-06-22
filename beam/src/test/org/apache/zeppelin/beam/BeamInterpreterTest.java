@@ -17,21 +17,20 @@
 
 package org.apache.zeppelin.beam;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+
 /**
- * 
  * BeamInterpreterTest
- *
  */
 public class BeamInterpreterTest {
 
@@ -43,8 +42,7 @@ public class BeamInterpreterTest {
     Properties p = new Properties();
     beam = new BeamInterpreter(p);
     beam.open();
-    context = new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null,
-        null);
+    context = InterpreterContext.builder().build();
   }
 
   @AfterClass
