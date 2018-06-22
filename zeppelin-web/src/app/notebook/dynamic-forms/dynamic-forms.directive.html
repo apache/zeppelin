@@ -42,6 +42,25 @@ limitations under the License.
              name="{{formulaire.name}}" />
     </div>
     <div ng-if="actiononchange === true">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'Password'"
+             ng-change="action()"
+             ng-model-options='{ debounce: 1000 }'
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             type="password"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="!actiononchange">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'Password'"
+             ng-enter="action()"
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             type="password"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="actiononchange === true">
       <select class="form-control input-sm"
               ng-if="forms[formulaire.name].type == 'Select'"
               ng-change="action()"
