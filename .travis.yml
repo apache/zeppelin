@@ -42,7 +42,7 @@ env:
 matrix:
   include:
     # Test License compliance using RAT tool
-    - jdk: "openjdk7"
+    - jdk: "oraclejdk8"
       dist: trusty
       env: BUILD_PLUGINS="false" SCALA_VER="2.11" PROFILE="-Prat -Pr" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
@@ -73,12 +73,12 @@ matrix:
       dist: trusty
       addons:
         firefox: "31.0"
-      env: BUILD_PLUGINS="true" CI="true" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop2 -Phadoop-2.6 -Phelium-dev -Pexamples -Pintegration" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl .,zeppelin-integration -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" CI="true" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl .,zeppelin-integration -DfailIfNoTests=false"
 
     # Test interpreter modules
-    - jdk: "openjdk7"
+    - jdk: "oraclejdk8"
       dist: trusty
-      env: BUILD_PLUGINS="false" PYTHON="3" SCALA_VER="2.10" PROFILE="-Pscalding" BUILD_FLAG="package -DskipTests -DskipRat -Pr" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: BUILD_PLUGINS="false" PYTHON="3" SCALA_VER="2.10" PROFILE="-Pscalding -Pscala-2.10" BUILD_FLAG="package -DskipTests -DskipRat -Pr" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Run ZeppelinSparkClusterTest & SparkIntegrationTest in one build would exceed the time limitation of travis, so running them separately
 
@@ -92,10 +92,10 @@ matrix:
     - sudo: required
       jdk: "oraclejdk8"
       dist: trusty
-      env: BUILD_PLUGINS="true" PYTHON="3" PROFILE="-Pspark-1.6" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=SparkIntegrationTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" PYTHON="3" SCALA_VER="2.10" PROFILE="-Pspark-1.6 -Pscala-2.10" SPARKR="true" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=SparkIntegrationTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
     # Test spark module for 2.1.0 with scala 2.11
-    - jdk: "openjdk7"
+    - jdk: "oraclejdk8"
       dist: trusty
       env: BUILD_PLUGINS="false" PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.1 -Phadoop2 -Pscala-2.11 -Pr" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies,r" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.rinterpreter.*,org.apache.spark.api.r.* -DfailIfNoTests=false"
 
@@ -107,8 +107,8 @@ matrix:
     # Test python/pyspark with python 2, livy 0.5
     - sudo: required
       dist: trusty
-      jdk: "openjdk7"
-      env: BUILD_PLUGINS="false" PYTHON="2" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy" TEST_PROJECTS=""
+      jdk: "oraclejdk8"
+      env: BUILD_PLUGINS="false" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" LIVY_VER="0.5.0-incubating" PROFILE="-Pspark-1.6 -Phadoop2 -Pscala-2.10" BUILD_FLAG="install -am -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl livy" TEST_PROJECTS=""
 
     # Test livy 0.5 with spark 2.2.0 under python3
     - sudo: required
