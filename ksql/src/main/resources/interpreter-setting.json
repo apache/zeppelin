@@ -13,7 +13,8 @@
       }
     },
     "editor": {
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "language": "sql"
     }
   }
 ]
