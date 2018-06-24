@@ -35,6 +35,7 @@
 
     <properties>
         <commons-lang.version>3.7</commons-lang.version>
+        <commons-collections.version>4.1</commons-collections.version>
         <jackson.version>2.9.6</jackson.version>
 
         <!-- test library versions -->
@@ -55,6 +56,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons-collections.version}</version>
         </dependency>
 
         <dependency>

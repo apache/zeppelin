@@ -46,16 +46,22 @@ public class KsqlQuery {
 
   private static List<Pair<Pattern, QueryType>> PATTERNS;
 
+  private static final String END_STATEMENT = "\\s*;\\s*$";
+  private static final String TABLE_NAME_PATTERN = "[_a-zA-Z0-9][-a-zA-Z0-9._]*";
+
   static {
     PATTERNS = new ArrayList<>();
-    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+streams\\s*;\\s*$",
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+streams" + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_STREAMS));
-    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+tables\\s*;\\s*$",
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+tables" + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_TABLES));
-    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+properties\\s*;\\s*$",
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+properties" + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_PROPS));
-    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+topics\\s*;\\s*$",
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+topics + END_STATEMENT",
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_TOPICS));
+    PATTERNS.add(Pair.of(Pattern.compile("^describe\\s+(extended)?\\s*"
+        + TABLE_NAME_PATTERN + END_STATEMENT,
+        Pattern.CASE_INSENSITIVE), QueryType.DESCRIBE));
   }
 
   KsqlQuery() {

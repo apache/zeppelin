@@ -1,0 +1,44 @@
+[
+  {
+    "description": {
+      "statementText": "",
+      "name": "TWEETS_PER_LANG",
+      "readQueries": [
+        "CTAS_TWEETS_PER_LANG : create table tweets_per_lang as select lang, count(*) from tweets window tumbling(size 1 minute) group by lang;"
+      ],
+      "writeQueries": [
+        "id:CTAS_TWEETS_PER_LANG - create table tweets_per_lang as select lang, count(*) from tweets window tumbling(size 1 minute) group by lang;"
+      ],
+      "schema": [
+        {
+          "name": "ROWTIME",
+          "type": "BIGINT"
+        },
+        {
+          "name": "ROWKEY",
+          "type": "VARCHAR(STRING)"
+        },
+        {
+          "name": "LANG",
+          "type": "VARCHAR(STRING)"
+        },
+        {
+          "name": "KSQL_COL_1",
+          "type": "BIGINT"
+        }
+      ],
+      "type": "TABLE",
+      "key": "TWEETS.LANG",
+      "timestamp": "",
+      "statistics": "",
+      "errorStats": "",
+      "extended": false,
+      "serdes": "AVRO",
+      "kafkaTopic": "TWEETS_PER_LANG",
+      "topology": "",
+      "executionPlan": "",
+      "replication": 0,
+      "partitions": 0
+    }
+  }
+]
