@@ -156,7 +156,7 @@ public class QueryExecutor {
       Map<String, String> entry = (Map<String, String>) obj;
       sb.append(entry.getOrDefault("name", ""));
       sb.append('\t');
-      sb.append(entry.getOrDefault("stream", ""));
+      sb.append(entry.getOrDefault("topic", ""));
       sb.append('\t');
       sb.append(entry.getOrDefault("format", ""));
       sb.append('\n');
