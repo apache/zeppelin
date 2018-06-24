@@ -57,6 +57,8 @@ public class QueryExecutor {
     HANDLERS.put(KsqlQuery.QueryType.SHOW_STREAMS, func);
     func = QueryExecutor::formatProperties;
     HANDLERS.put(KsqlQuery.QueryType.SHOW_PROPS, func);
+    func = QueryExecutor::formatTopics;
+    HANDLERS.put(KsqlQuery.QueryType.SHOW_TOPICS, func);
   }
 
   QueryExecutor(final String url) {
@@ -200,4 +202,53 @@ public class QueryExecutor {
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
+
+  public static InterpreterResult formatTopics(final String payload) {
+    Map<String, Object> m;
+    try {
+      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
+      });
+      if (results.size() < 1) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "No data returned!");
+      }
+      m = (Map<String, Object>) (results.get(0));
+      m = (Map<String, Object>) (m.get("kafka_topics"));
+      if (m == null) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR,
+          "No kafka_topics section in result!");
+      }
+    } catch (IOException ex) {
+      LOGGER.error("Exception: ", ex);
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "Exception: " + ex.getMessage());
+    }
+
+    List<Object> values = (List<Object>) (m.get("topics"));
+    if (values == null) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "No topics section in result!");
+    }
+
+    StringBuilder sb = new StringBuilder(TABLE_MAGIC);
+    sb.append("Name\tRegistered?\tPartition count\tReplica Information");
+    sb.append("\tConsumer count\tConsumer group count\n");
+    for (Object obj : values) {
+      Map<String, Object> entry = (Map<String, Object>) obj;
+      sb.append(entry.getOrDefault("name", ""));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("registered", false));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("partitionCount", 0));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("replicaInfo", ""));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("consumerCount", 0));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("consumerGroupCount", ""));
+      sb.append('\n');
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+  }
+
 }
