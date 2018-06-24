@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryExecutor {
   private static final Logger LOGGER = LoggerFactory.getLogger(QueryExecutor.class);
@@ -47,6 +49,14 @@ public class QueryExecutor {
   String queryEndpoint;
   String ksqlEndpoint;
   String statusEndpoint;
+
+  String fetchSize = "10";
+
+  // TODO(alex): Hack! get rid of it
+  private static final String LIMIT_ERROR_MESSAGE = "LIMIT reached for the partition.";
+
+  private static final Pattern LIMIT_REGEX = Pattern.compile("LIMIT\\s+\\d+",
+      Pattern.CASE_INSENSITIVE);
 
   private static final Map<KsqlQuery.QueryType, Function<String, InterpreterResult>> HANDLERS =
       new TreeMap();
@@ -62,14 +72,17 @@ public class QueryExecutor {
     HANDLERS.put(KsqlQuery.QueryType.SHOW_TOPICS, func);
     func = QueryExecutor::formatDescribe;
     HANDLERS.put(KsqlQuery.QueryType.DESCRIBE, func);
+    func = QueryExecutor::formatSelect;
+    HANDLERS.put(KsqlQuery.QueryType.SELECT, func);
   }
 
-  QueryExecutor(final String url) {
+  QueryExecutor(final String url, String fetchSize) {
     LOGGER.info("Initializing query executor for URL: {}", url);
     // TODO(alex): parse URL, normalize it, and then append endpoints...
     queryEndpoint = url + "/query";
     ksqlEndpoint = url + "/ksql";
     statusEndpoint = url + "/status";
+    this.fetchSize = fetchSize;
   }
 
   public InterpreterResult execute(KsqlQuery query) {
@@ -80,9 +93,16 @@ public class QueryExecutor {
     InterpreterResult result = null;
     try {
       KsqlQuery.QueryType queryType = query.getType();
+      String queryString = query.getQuery();
       final String endpoint;
       if (queryType == KsqlQuery.QueryType.SELECT) {
         endpoint = queryEndpoint;
+        Matcher matcher = LIMIT_REGEX.matcher(queryString);
+        if (!matcher.find()) {
+          queryString = queryString.substring(0, queryString.length() - 1) + " LIMIT "
+            + fetchSize + ";";
+          LOGGER.info("Resulting query: '" + queryString + "'");
+        }
       } else {
         endpoint = ksqlEndpoint;
       }
@@ -90,7 +110,7 @@ public class QueryExecutor {
       CloseableHttpClient httpclient = HttpClients.createDefault();
       HttpPost httpPost = new HttpPost(endpoint);
       // TODO(alex): use correct JSON generation
-      StringEntity entity = new StringEntity("{\"ksql\":\"" + query.getQuery() + "\"}");
+      StringEntity entity = new StringEntity("{\"ksql\":\"" + queryString + "\"}");
       httpPost.setEntity(entity);
       httpPost.addHeader("Content-Type", "application/json");
 
@@ -371,16 +391,86 @@ public class QueryExecutor {
       sb.append("</td></tr>");
     }
 
-    /*
-    description.statistics (string) – A string containing statistics about production/consumption
-    to/from the backing topic (extended only).
-    description.errorStats (string) – A string containing statistics about errors
-    producing/consuming to/from the backing topic (extended only).
-     */
-
     sb.append("</table>");
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
 
+  public static InterpreterResult formatSelect(final String payload) {
+    String[] rows = payload.split("\n");
+    StringBuilder sb = new StringBuilder();
+    int maxCellCount = 0;
+    for (int i = 0; i < rows.length; i++) {
+      try {
+        String str = rows[i].trim();
+        LOGGER.info("raw row=" + str);
+        if (str.isEmpty()) {
+          continue;
+        }
+        Map<String, Object> m = OBJECT_MAPPER.readValue(str,
+            new TypeReference<Map<String, Object>>() {
+            });
+        Map<String, Object> row = (Map<String, Object>) m.get("row");
+        LOGGER.info("row=" + row);
+        if (row == null) {
+          Map<String, Object> errorMessage = (Map<String, Object>) m.get("errorMessage");
+          if (errorMessage != null) {
+            String message = (String) errorMessage.getOrDefault("message", "");
+            if (message.equalsIgnoreCase(LIMIT_ERROR_MESSAGE)) {
+              break;
+            }
+            if (i == 0) {
+              return new InterpreterResult(InterpreterResult.Code.ERROR,
+                "Error executing query: " + message);
+            } else {
+              sb.append("Error processing row ");
+              sb.append(i);
+              sb.append(": ");
+              sb.append(message);
+              sb.append('\n');
+            }
+          }
+        } else {
+          List<Object> values = (List<Object>) row.get("columns");
+          boolean isFirst = true;
+          int count = 0;
+          for (Object obj: values) {
+            if (!isFirst) {
+              sb.append('\t');
+            }
+            if (obj != null) {
+              String objStr = obj.toString().replaceAll("[\t\n]", " ");
+              sb.append(objStr);
+            } else {
+              sb.append("null");
+            }
+            isFirst = false;
+            count++;
+          }
+          sb.append('\n');
+          if (count > maxCellCount) {
+            maxCellCount = count;
+          }
+        }
+      } catch (Exception ex) {
+        sb.append("Error processing row ");
+        sb.append(i);
+        sb.append(": ");
+        sb.append(ex.getMessage());
+        sb.append('\n');
+      }
+    }
+
+    StringBuilder result =  new StringBuilder(TABLE_MAGIC);
+    for (int i = 0; i < maxCellCount; i++) {
+      if (i > 0) {
+        result.append('\t');
+      }
+      result.append("Col " + i);
+    }
+    result.append('\n');
+    result.append(sb.toString());
+    LOGGER.info("Result='" + result + "'");
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, result.toString());
+  }
 }

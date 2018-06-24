@@ -62,6 +62,8 @@ public class KsqlQuery {
     PATTERNS.add(Pair.of(Pattern.compile("^describe\\s+(extended)?\\s*"
         + TABLE_NAME_PATTERN + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.DESCRIBE));
+    PATTERNS.add(Pair.of(Pattern.compile("^select\\s+.*" + END_STATEMENT,
+        Pattern.CASE_INSENSITIVE), QueryType.SELECT));
   }
 
   KsqlQuery() {
@@ -69,8 +71,8 @@ public class KsqlQuery {
   }
 
   KsqlQuery(final String q) {
-    query = q;
-    type = analyzeQuery(q);
+    query = q.trim();
+    type = analyzeQuery(query);
     LOGGER.debug("Initializing KsqlQuery: {}, type: {}", query, type.name());
   }
 

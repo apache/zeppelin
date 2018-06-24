@@ -40,9 +40,11 @@ public class KsqlInterpreter extends Interpreter {
 
   public static final String KSQL_INTERPRETER_PARALLELISM = "ksql.interpreter.parallelism";
   public static final String KSQL_URL = "ksql.url";
+  public static final String KSQL_FETCH_SIZE = "ksql.fetchSize";
 
   static final String DEFAULT_URL = "http://localhost:8088";
   static final String DEFAULT_PARALLELISM = "10";
+  static final String DEFAULT_FETCH_SIZE = "10";
 
   private QueryExecutor queryExecutor;
 
@@ -53,8 +55,9 @@ public class KsqlInterpreter extends Interpreter {
   @Override
   public void open() {
     final String url = getProperty(KSQL_URL, DEFAULT_URL);
+    final String fetchSize = getProperty(KSQL_FETCH_SIZE, DEFAULT_FETCH_SIZE);
 
-    queryExecutor = new QueryExecutor(url);
+    queryExecutor = new QueryExecutor(url, fetchSize);
   }
 
   @Override
