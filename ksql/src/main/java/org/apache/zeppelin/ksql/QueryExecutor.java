@@ -147,6 +147,8 @@ public class QueryExecutor {
         "Exception: " + ex.getMessage());
     }
 
+    boolean isTables = "tables".equalsIgnoreCase(type);
+
     List<Object> values = (List<Object>) (m.get(type));
     if (values == null) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -154,14 +156,22 @@ public class QueryExecutor {
     }
 
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
-    sb.append("Name\tStream\tFormat\n");
+    sb.append("Name\tStream\tFormat");
+    if (isTables) {
+      sb.append("\tWindowed?");
+    }
+    sb.append('\n');
     for (Object obj : values) {
-      Map<String, String> entry = (Map<String, String>) obj;
+      Map<String, Object> entry = (Map<String, Object>) obj;
       sb.append(entry.getOrDefault("name", ""));
       sb.append('\t');
       sb.append(entry.getOrDefault("topic", ""));
       sb.append('\t');
       sb.append(entry.getOrDefault("format", ""));
+      if (isTables) {
+        sb.append('\t');
+        sb.append(entry.getOrDefault("isWindowed", false));
+      }
       sb.append('\n');
     }
 
