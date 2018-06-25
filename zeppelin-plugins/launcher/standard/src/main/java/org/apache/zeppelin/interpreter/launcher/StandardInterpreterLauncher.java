@@ -35,11 +35,11 @@ import java.util.Map;
 /**
  * Interpreter Launcher which use shell script to launch the interpreter process.
  */
-public class ShellScriptLauncher extends InterpreterLauncher {
+public class StandardInterpreterLauncher extends InterpreterLauncher {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ShellScriptLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StandardInterpreterLauncher.class);
 
-  public ShellScriptLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
+  public StandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     super(zConf, recoveryStorage);
   }
 
