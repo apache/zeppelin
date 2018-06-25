@@ -49,8 +49,6 @@ public abstract class AbstractSparkInterpreter extends Interpreter {
 
   public abstract JavaSparkContext getJavaSparkContext();
 
-  public abstract void populateSparkWebUrl(InterpreterContext ctx);
-
   public abstract SparkZeppelinContext getZeppelinContext();
 
   public abstract String getSparkUIUrl();

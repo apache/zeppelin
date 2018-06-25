@@ -19,10 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -117,7 +117,6 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterContext.set(context);
-    sparkInterpreter.populateSparkWebUrl(context);
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
