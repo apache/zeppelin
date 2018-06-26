@@ -59,6 +59,7 @@ public class InterpreterContext {
   private ResourcePool resourcePool;
   private String interpreterClassName;
   private Map<String, Integer> progressMap;
+  private Map<String, String> localProperties = new HashMap<>();
   private RemoteInterpreterEventClient intpEventClient;
 
   /**
@@ -146,6 +147,10 @@ public class InterpreterContext {
       return this;
     }
 
+    public Builder setLocalProperties(Map<String, String> localProperties) {
+      context.localProperties = localProperties;
+      return this;
+    }
 
     public InterpreterContext build() {
       InterpreterContext.set(context);
@@ -180,6 +185,10 @@ public class InterpreterContext {
 
   public String getParagraphTitle() {
     return paragraphTitle;
+  }
+
+  public Map<String, String> getLocalProperties() {
+    return localProperties;
   }
 
   public AuthenticationInfo getAuthenticationInfo() {

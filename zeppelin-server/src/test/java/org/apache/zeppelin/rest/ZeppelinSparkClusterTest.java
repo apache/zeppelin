@@ -162,6 +162,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId(), true);
     assertEquals(Status.ERROR, p.getStatus());
     assertTrue(p.getResult().message().get(0).getData().contains("error: "));
+
+    // test local properties
+    p.setText("%spark(p1=v1,p2=v2) print(z.getInterpreterContext().getLocalProperties().size())");
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    assertEquals("2", p.getResult().message().get(0).getData());
   }
 
   @Test
