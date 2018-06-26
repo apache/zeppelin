@@ -559,7 +559,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testSingleDynamicFormSelectForm() throws Exception {
     try {
       createNewNote();
@@ -636,7 +636,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testMultipleDynamicFormsSameType() throws Exception {
     try {
       createNewNote();
