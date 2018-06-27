@@ -102,6 +102,13 @@
         "description": "Execute multiple SQL concurrently if set true.",
         "type": "checkbox"
       },
+      "zeppelin.spark.concurrentSQL.max": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL_MAX",
+        "propertyName": "zeppelin.spark.concurrentSQL.max",
+        "defaultValue": 10,
+        "description": "Max number of SQL concurrently executed",
+        "type": "number"
+      },
       "zeppelin.spark.sql.stacktrace": {
         "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
         "propertyName": "zeppelin.spark.sql.stacktrace",

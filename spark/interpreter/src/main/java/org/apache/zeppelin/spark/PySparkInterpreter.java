@@ -150,10 +150,17 @@ public class PySparkInterpreter extends PythonInterpreter {
   @Override
   protected void preCallPython(InterpreterContext context) {
     String jobGroup = Utils.buildJobGroupId(context);
-    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String jobDesc = Utils.buildJobDesc(context);
     callPython(new PythonInterpretRequest(
         String.format("if 'sc' in locals():\n\tsc.setJobGroup('%s', '%s')", jobGroup, jobDesc),
         false, false));
+
+    String pool = "None";
+    if (context.getLocalProperties().containsKey("pool")) {
+      pool = "'" + context.getLocalProperties().get("pool") + "'";
+    }
+    String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
+    callPython(new PythonInterpretRequest(setPoolStmt, false, false));
   }
 
   // Run python shell

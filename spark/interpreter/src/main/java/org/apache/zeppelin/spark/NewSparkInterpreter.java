@@ -86,8 +86,14 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
         if (!StringUtils.isBlank(entry.getValue().toString())) {
           conf.set(entry.getKey().toString(), entry.getValue().toString());
         }
+        // zeppelin.spark.useHiveContext & zeppelin.spark.concurrentSQL are legacy zeppelin
+        // properties, convert them to spark properties here.
         if (entry.getKey().toString().equals("zeppelin.spark.useHiveContext")) {
           conf.set("spark.useHiveContext", entry.getValue().toString());
+        }
+        if (entry.getKey().toString().equals("zeppelin.spark.concurrentSQL")
+            && entry.getValue().toString().equals("true")) {
+          conf.set("spark.scheduler.mode", "FAIR");
         }
       }
       // use local mode for embedded spark mode when spark.master is not found
@@ -141,8 +147,11 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
     z.setInterpreterContext(context);
-    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
-    sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
+    sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
+    // set spark.scheduler.pool to null to clear the pool assosiated with this paragraph
+    // sc.setLocalProperty("spark.scheduler.pool", null) will clean the pool
+    sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+
     return innerInterpreter.interpret(st, context);
   }
 

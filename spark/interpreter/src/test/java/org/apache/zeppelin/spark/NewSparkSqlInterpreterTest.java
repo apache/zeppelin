@@ -48,10 +48,10 @@ public class NewSparkSqlInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local");
+    p.setProperty("spark.master", "local[4]");
     p.setProperty("spark.app.name", "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
-    p.setProperty("zeppelin.spark.concurrentSQL", "false");
+    p.setProperty("zeppelin.spark.concurrentSQL", "true");
     p.setProperty("zeppelin.spark.sqlInterpreter.stacktrace", "false");
     p.setProperty("zeppelin.spark.useNew", "true");
     intpGroup = new InterpreterGroup();
@@ -179,4 +179,49 @@ public class NewSparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
   }
+
+  @Test
+  public void testConcurrentSQL() throws InterpreterException, InterruptedException {
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+    } else {
+      sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+    }
+
+    Thread thread1 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    Thread thread2 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    // start running 2 spark sql, each would sleep 10 seconds, the totally running time should
+    // be less than 20 seconds, which means they run concurrently.
+    long start = System.currentTimeMillis();
+    thread1.start();
+    thread2.start();
+    thread1.join();
+    thread2.join();
+    long end = System.currentTimeMillis();
+    assertTrue("running time must be less than 20 seconds", ((end - start)/1000) < 20);
+
+  }
+
 }
