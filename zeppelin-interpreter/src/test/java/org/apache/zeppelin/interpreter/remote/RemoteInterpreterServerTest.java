@@ -22,13 +22,16 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
+import org.apache.zeppelin.resource.DistributedResourcePool;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +61,47 @@ public class RemoteInterpreterServerTest {
 
     server.intpEventClient.onAppStatusUpdate("", "", "", "");
     stopRemoteInterpreterServer(server, 10 * 10000);
+  }
+
+  @Test
+  public void testSaveTablesInResourcePool() throws IOException, TException, InterruptedException {
+
+    RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
+            RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(),
+            ":", "groupId", true);
+    server.intpEventClient = mock(RemoteInterpreterEventClient.class);
+
+    startRemoteInterpreterServer(server, 10 * 1000);
+
+    Map<String, String> intpProperties = new HashMap<>();
+    intpProperties.put("zeppelin.interpreter.localRepo", "/tmp");
+    server.createInterpreter("group_1", "session_1", Test3Interpreter.class.getName(),
+            intpProperties, "user_1");
+
+    Test3Interpreter interpreter = (Test3Interpreter) ((LazyOpenInterpreter) server
+            .getInterpreterGroup().get("session_1").get(0)).getInnerInterpreter();
+
+    final RemoteInterpreterContext intpContext = new RemoteInterpreterContext();
+    intpContext.setNoteId("note_1");
+    intpContext.setParagraphId("paragraph_1");
+    intpContext.setGui("{}");
+    intpContext.setNoteGui("{}");
+
+    server.interpret("session_1", Test3Interpreter.class.getName(), "tables", intpContext);
+
+    LinkedList<InterpreterResultMessage> messageList = (LinkedList<InterpreterResultMessage>)
+            ((DistributedResourcePool) server.getInterpreterGroup().getResourcePool())
+                    .get("note_1", "paragraph_1",
+                            "zeppelin.paragraph.result.table", false).get();
+    assertEquals(messageList.size(), 3);
+    assertEquals(messageList.get(0).getType(), InterpreterResult.Type.TABLE);
+    assertEquals(messageList.get(0).getData(), interpreter.tableText1);
+    assertEquals(messageList.get(1).getType(), InterpreterResult.Type.TABLE);
+    assertEquals(messageList.get(1).getData(), interpreter.tableText2);
+    assertEquals(messageList.get(2).getType(), InterpreterResult.Type.TABLE);
+    assertEquals(messageList.get(2).getData(), interpreter.tableText3);
+
+    stopRemoteInterpreterServer(server, 10 * 1000);
   }
 
   private void startRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
@@ -281,5 +325,56 @@ public class RemoteInterpreterServerTest {
 
     }
 
+  }
+
+  public static class Test3Interpreter extends Interpreter {
+    String tableText1 = "id (table 1)\tvalue (table 1)\n1 (table 1)\t1000 (table 1)\n";
+    String tableText2 = "id (table 2)\tvalue (table 2)\n2 (table 2)\t1000 (table 2)\n";
+    String tableText3 = "id (table 3)\tvalue (table 3)\n3 (table 3)\t1000 (table 3)\n";
+
+    public Test3Interpreter(Properties properties) {
+      super(properties);
+    }
+
+    @Override
+    public void open() throws InterpreterException {
+
+    }
+
+    @Override
+    public void close() throws InterpreterException {
+
+    }
+
+    @Override
+    public InterpreterResult interpret(String st, InterpreterContext context) {
+      try {
+        context.out.setType(InterpreterResult.Type.TABLE);
+        context.out.write(tableText1);
+        context.out.setType(InterpreterResult.Type.TABLE);
+        context.out.write(tableText2);
+        context.out.setType(InterpreterResult.Type.TABLE);
+        context.out.write(tableText3);
+      } catch (IOException e) {
+        e.printStackTrace();
+        return new InterpreterResult(InterpreterResult.Code.ERROR);
+      }
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    }
+
+    @Override
+    public void cancel(InterpreterContext context) throws InterpreterException {
+
+    }
+
+    @Override
+    public FormType getFormType() throws InterpreterException {
+      return null;
+    }
+
+    @Override
+    public int getProgress(InterpreterContext context) throws InterpreterException {
+      return 0;
+    }
   }
 }
