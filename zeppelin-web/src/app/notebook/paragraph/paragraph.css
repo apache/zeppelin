@@ -189,6 +189,11 @@
   padding: 4px;
 }
 
+.paragraph .control button {
+  border: 0;
+  padding: 1px 3px;
+}
+
 .paragraph .control li {
   font-size: 12px;
   margin-bottom: 4px;
@@ -547,3 +552,4 @@ table.table-striped {
 .network-labels {
   margin: 0.2em;
 }
+

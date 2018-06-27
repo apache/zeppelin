@@ -44,14 +44,28 @@ limitations under the License.
 
   <!-- Run / Cancel button -->
   <span ng-if="!revisionView">
-    <span class="icon-control-play" style="cursor:pointer;color:#3071A9"
-          tooltip-placement="top" uib-tooltip="Run this paragraph (Shift+Enter)"
-          ng-click="runParagraphFromButton(getEditorValue())"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
-    <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C"
-          tooltip-placement="top" uib-tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
-          ng-click="cancelParagraph(paragraph)"
-          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+    <button
+        class="btn btn-default btn-xs"
+        type="button"
+        aria-expanded="true"
+        tooltip-placement="top"
+        uib-tooltip="Run this paragraph (Shift+Enter)"
+        ng-click="runParagraphFromButton(getEditorValue())"
+        ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled">
+      <i class="icon-control-play"></i>
+    </button>
+
+    <button
+        class="btn btn-default btn-xs"
+        type="button"
+        aria-expanded="true"
+        tooltip-placement="top"
+        uib-tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
+        ng-click="cancelParagraph(paragraph)"
+        ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'">
+      <i class="icon-control-pause"></i>
+    </button>
+
     <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
       <a href="{{paragraph.runtimeInfos.jobUrl[0]}}" target="_blank"><span class="fa fa-tasks"></span> Spark job </a>
     </span>
@@ -66,19 +80,44 @@ limitations under the License.
          </li>
       </ul>
     </span>
-    <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
-          uib-tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
-          ng-click="toggleEditor(paragraph)"></span>
-    <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
-          uib-tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
-          ng-click="toggleOutput(paragraph)"></span>
-    <span class="dropdown navbar-right">
-      <span class="icon-settings" style="cursor:pointer"
-            data-toggle="dropdown"
-            type="button">
-      </span>
 
-      <ul class="dropdown-menu dropdown-menu-right" role="menu" style="width:270px;z-index:1002">
+    <button
+        class="btn btn-default btn-xs"
+        tooltip-placement="top"
+        uib-tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
+        ng-click="toggleEditor(paragraph)">
+      <i class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}"></i>
+    </button>
+
+    <button
+        class="btn btn-default btn-xs"
+        tooltip-placement="top"
+        uib-tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
+        ng-click="toggleOutput(paragraph)">
+      <i class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}"></i>
+    </button>
+
+    <!-- remove paragraph -->
+    <button
+        class="btn btn-default btn-xs"
+        ng-click="removeParagraph(paragraph)"
+        ng-if="note.paragraphs.length > 1"
+        tooltip-placement="top"
+        uib-tooltip="Remove Paragraph (Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D)">
+      <i class="zi-remove"></i>
+    </button>
+
+    <div class="dropdown" style="display: inline-block;">
+      <button
+          class="btn btn-default btn-xs dropdown-toggle"
+          type="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="true">
+        <i class="zi-circle-ellipsis"></i>
+      </button>
+
+      <ul class="dropdown-menu dropdown-menu-right" role="menu" style="width:270px; z-index:1002">
         <li ng-controller="clipboardCtrl" ng-click="$event.stopPropagation()" style="text-align:center;margin-top:4px;">
           <a  ngclipboard
               ngclipboard-success="complete($event)"
@@ -207,14 +246,7 @@ limitations under the License.
             Clear output
           </a>
         </li>
-        <li>
-          <!-- remove paragraph -->
-          <a ng-click="removeParagraph(paragraph)" ng-if="note.paragraphs.length > 1"><span class="fa fa-times shortcut-icon"></span>
-            <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D</span>
-            Remove
-          </a>
-        </li>
       </ul>
-    </span>
+    </div>
   </span>
 </div>
