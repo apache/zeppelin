@@ -103,6 +103,20 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
+  public Object password(String name) {
+    return password(name, false);
+  }
+
+  @ZeppelinApi
+  public Object password(String name, boolean noteForm) {
+    if (noteForm) {
+      return noteGui.password(name);
+    } else {
+      return gui.password(name);
+    }
+  }
+
+  @ZeppelinApi
   public Collection<Object> checkbox(String name, ParamOption[] options) {
     return checkbox(name, options, false);
   }

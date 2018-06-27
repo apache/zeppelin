@@ -499,6 +499,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     String code = "%spark.spark println(z.textbox(\"my_input\", \"default_name\"))\n" +
+        "println(z.password(\"my_pwd\"))\n" +
         "println(z.select(\"my_select\", \"1\"," +
         "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\"))))\n" +
         "val items=z.checkbox(\"my_checkbox\", Seq(\"2\"), " +
@@ -510,17 +511,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     assertEquals(Status.FINISHED, p.getStatus());
     Iterator<String> formIter = p.settings.getForms().keySet().iterator();
-    assert (formIter.next().equals("my_input"));
-    assert (formIter.next().equals("my_select"));
-    assert (formIter.next().equals("my_checkbox"));
+    assertEquals("my_input", formIter.next());
+    assertEquals("my_pwd", formIter.next());
+    assertEquals("my_select", formIter.next());
+    assertEquals("my_checkbox", formIter.next());
 
     // check dynamic forms values
     String[] result = p.getResult().message().get(0).getData().split("\n");
-    assertEquals(4, result.length);
+    assertEquals(5, result.length);
     assertEquals("default_name", result[0]);
-    assertEquals("1", result[1]);
-    assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
-    assertEquals("2", result[3]);
+    assertEquals("null", result[1]);
+    assertEquals("1", result[2]);
+    assertEquals("items: Seq[Object] = Buffer(2)", result[3]);
+    assertEquals("2", result[4]);
   }
 
   @Test
@@ -528,6 +531,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     String code = "%spark.pyspark print(z.input('my_input', 'default_name'))\n" +
+        "print(z.password('my_pwd'))\n" +
         "print(z.select('my_select', " +
         "[('1', 'select_1'), ('2', 'select_2')], defaultValue='1'))\n" +
         "items=z.checkbox('my_checkbox', " +
@@ -538,16 +542,18 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     assertEquals(Status.FINISHED, p.getStatus());
     Iterator<String> formIter = p.settings.getForms().keySet().iterator();
-    assert (formIter.next().equals("my_input"));
-    assert (formIter.next().equals("my_select"));
-    assert (formIter.next().equals("my_checkbox"));
+    assertEquals("my_input", formIter.next());
+    assertEquals("my_pwd", formIter.next());
+    assertEquals("my_select", formIter.next());
+    assertEquals("my_checkbox", formIter.next());
 
     // check dynamic forms values
     String[] result = p.getResult().message().get(0).getData().split("\n");
-    assertEquals(3, result.length);
+    assertEquals(4, result.length);
     assertEquals("default_name", result[0]);
-    assertEquals("1", result[1]);
-    assertEquals("2", result[2]);
+    assertEquals("None", result[1]);
+    assertEquals("1", result[2]);
+    assertEquals("2", result[3]);
   }
 
   @Test

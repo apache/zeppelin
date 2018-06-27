@@ -19,10 +19,9 @@ package org.apache.zeppelin.display;
 
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -34,14 +33,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class InputTest {
-
-  @Before
-  public void setUp() throws Exception {
-  }
-
-  @After
-  public void tearDown() throws Exception {
-  }
 
   @Test
   public void testFormExtraction() {
@@ -61,12 +52,21 @@ public class InputTest {
     form = forms.get("input_form");
     assertEquals("xxx", form.defaultValue);
     assertTrue(form instanceof TextBox);
+    assertEquals("Input Form", form.getDisplayName());
+
+    // password form with display name
+    script = "${password:my_pwd(My Password)}";
+    forms = Input.extractSimpleQueryForm(script, false);
+    form = forms.get("my_pwd");
+    assertTrue(form instanceof Password);
+    assertEquals("My Password", form.getDisplayName());
 
     // selection form
     script = "${select_form(Selection Form)=op1,op1|op2(Option 2)|op3}";
     form = Input.extractSimpleQueryForm(script, false).get("select_form");
     assertEquals("select_form", form.name);
     assertEquals("op1", form.defaultValue);
+    assertEquals("Selection Form", form.getDisplayName());
     assertTrue(form instanceof Select);
     assertArrayEquals(new ParamOption[]{
         new ParamOption("op1", null),

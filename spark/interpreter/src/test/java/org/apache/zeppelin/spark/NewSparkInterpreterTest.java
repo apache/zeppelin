@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import com.google.common.io.Files;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -214,6 +215,14 @@ public class NewSparkInterpreterTest {
     TextBox textBox = (TextBox) context.getGui().getForms().get("name");
     assertEquals("name", textBox.getName());
     assertEquals("default_name", textBox.getDefaultValue());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.password(\"pwd\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, context.getGui().getForms().size());
+    assertTrue(context.getGui().getForms().get("pwd") instanceof Password);
+    Password pwd = (Password) context.getGui().getForms().get("pwd");
+    assertEquals("pwd", pwd.getName());
 
     context = getInterpreterContext();
     result = interpreter.interpret("z.checkbox(\"checkbox_1\", Seq(\"value_2\"), Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")))", context);
