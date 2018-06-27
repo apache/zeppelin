@@ -423,6 +423,33 @@ public class NewSparkInterpreterTest {
     assertEquals("hello world", output);
   }
 
+  @Test
+  public void testSchedulePool() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("spark.scheduler.mode", "FAIR");
+
+    interpreter = new SparkInterpreter(properties);
+    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    interpreter.open();
+
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("pool", "pool1");
+    InterpreterResult result = interpreter.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("pool1", interpreter.getSparkContext().getLocalProperty("spark.scheduler.pool"));
+
+    // pool is reset to null if user don't specify it via paragraph properties
+    result = interpreter.interpret("sc.range(1, 10).sum", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(null, interpreter.getSparkContext().getLocalProperty("spark.scheduler.pool"));
+  }
+
   @After
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {
