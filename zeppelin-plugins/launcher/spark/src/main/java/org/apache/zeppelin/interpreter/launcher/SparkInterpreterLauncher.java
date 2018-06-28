@@ -32,7 +32,7 @@ import java.util.Properties;
 /**
  * Spark specific launcher.
  */
-public class SparkInterpreterLauncher extends ShellScriptLauncher {
+public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
