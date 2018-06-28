@@ -499,10 +499,6 @@
               <shadedPattern>org.apache.zeppelin.com.google</shadedPattern>
             </relocation>
             <relocation>
-              <pattern>py4j.</pattern>
-              <shadedPattern>org.apache.zeppelin.py4j.</shadedPattern>
-            </relocation>
-            <relocation>
               <pattern>com.facebook.fb303</pattern>
               <shadedPattern>org.apache.zeppelin.com.facebook.fb303</shadedPattern>
             </relocation>

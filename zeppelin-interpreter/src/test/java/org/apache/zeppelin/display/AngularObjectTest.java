@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.display;
 
+import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.junit.Test;
 
@@ -78,7 +79,7 @@ public class AngularObjectTest {
   }
 
   @Test
-  public void testListener() {
+  public void testListener() throws TException {
     final AtomicInteger updated = new AtomicInteger(0);
     AngularObject ao = new AngularObject("name", "value", "note1", null,
         new AngularObjectListener() {
@@ -103,7 +104,7 @@ public class AngularObjectTest {
   }
 
   @Test
-  public void testWatcher() throws InterruptedException {
+  public void testWatcher() throws InterruptedException, TException {
     final AtomicInteger updated = new AtomicInteger(0);
     final AtomicInteger onWatch = new AtomicInteger(0);
     AngularObject ao = new AngularObject("name", "value", "note1", null,

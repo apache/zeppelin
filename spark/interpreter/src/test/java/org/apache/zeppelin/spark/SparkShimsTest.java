@@ -20,7 +20,6 @@ package org.apache.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,7 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -42,7 +42,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -92,7 +91,9 @@ public class SparkShimsTest {
       SparkShims sparkShims =
           new SparkShims() {
             @Override
-            public void setupSparkListener(String master, String sparkWebUrl) {}
+            public void setupSparkListener(String master,
+                                           String sparkWebUrl,
+                                           InterpreterContext context) {}
           };
       assertEquals(expected, sparkShims.supportYarn6615(version));
     }
@@ -106,19 +107,15 @@ public class SparkShimsTest {
     @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;
 
     SparkShims sparkShims;
+    InterpreterContext mockContext;
+    RemoteInterpreterEventClient mockIntpEventClient;
 
     @Before
     public void setUp() {
-      PowerMockito.mockStatic(BaseZeppelinContext.class);
-      RemoteEventClientWrapper mockRemoteEventClientWrapper = mock(RemoteEventClientWrapper.class);
-
-      when(BaseZeppelinContext.getEventClient()).thenReturn(mockRemoteEventClientWrapper);
-      doNothing()
-          .when(mockRemoteEventClientWrapper)
-          .onParaInfosReceived(anyString(), anyString(), argumentCaptor.capture());
-
-      when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
-
+      mockContext = mock(InterpreterContext.class);
+      mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
+      when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
+      doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
       try {
         sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
       } catch (Throwable ignore) {
@@ -127,8 +124,8 @@ public class SparkShimsTest {
     }
 
     @Test
-    public void runUnerLocalTest() {
-      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockProperties);
+    public void runUnderLocalTest() {
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockProperties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
@@ -136,9 +133,9 @@ public class SparkShimsTest {
     }
 
     @Test
-    public void runUnerYarnTest() {
+    public void runUnderYarnTest() {
 
-      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockProperties);
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockProperties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));

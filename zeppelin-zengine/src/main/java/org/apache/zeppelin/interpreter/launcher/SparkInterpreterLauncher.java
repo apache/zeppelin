@@ -58,6 +58,7 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     setupPropertiesForSparkR(sparkProperties);
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       env.put("ZEPPELIN_SPARK_YARN_CLUSTER", "true");
+      sparkProperties.setProperty("spark.yarn.submit.waitAppCompletion", "false");
     }
 
     StringBuilder sparkConfBuilder = new StringBuilder();

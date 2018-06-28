@@ -26,10 +26,11 @@ public class InterpreterContextTest {
 
   @Test
   public void testThreadLocal() {
+    InterpreterContext.remove();
     assertNull(InterpreterContext.get());
 
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null,
-        null, null, null, null, null));
+    InterpreterContext.set(InterpreterContext.builder()
+        .build());
     assertNotNull(InterpreterContext.get());
 
     InterpreterContext.remove();

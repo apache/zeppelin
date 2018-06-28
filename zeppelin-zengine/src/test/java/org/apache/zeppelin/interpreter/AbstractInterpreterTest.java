@@ -73,4 +73,11 @@ public abstract class AbstractInterpreterTest {
   protected Note createNote() {
     return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
   }
+
+  protected InterpreterContext createDummyInterpreterContext() {
+    return InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
+  }
 }

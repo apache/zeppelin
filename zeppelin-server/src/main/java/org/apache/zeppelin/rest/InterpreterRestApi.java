@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -39,7 +38,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -252,22 +250,6 @@ public class InterpreterRestApi {
           ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.OK).build();
-  }
-
-  /**
-   * Get metadata values.
-   */
-  @GET
-  @Path("metadata/{settingId}")
-  @ZeppelinApi
-  public Response getMetaInfo(@Context HttpServletRequest req,
-      @PathParam("settingId") String settingId) {
-    InterpreterSetting interpreterSetting = interpreterSettingManager.get(settingId);
-    if (interpreterSetting == null) {
-      return new JsonResponse<>(Status.NOT_FOUND).build();
-    }
-    Map<String, String> infos = interpreterSetting.getInfos();
-    return new JsonResponse<>(Status.OK, "metadata", infos).build();
   }
 
   /**

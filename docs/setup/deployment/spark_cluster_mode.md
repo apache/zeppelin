@@ -38,14 +38,14 @@ You can simply set up Spark standalone environment with below steps.
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
 
-```
+```bash
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_standalone
 docker build -t "spark_standalone" .
 ```
 
 ### 2. Run docker
 
-```
+```bash
 docker run -it \
 -p 8080:8080 \
 -p 7077:7077 \
@@ -70,7 +70,7 @@ After running single paragraph with Spark interpreter in Zeppelin, browse `https
 
 You can also simply verify that Spark is running well in Docker with below command.
 
-```
+```bash
 ps -ef | grep spark
 ```
 
@@ -83,14 +83,14 @@ You can simply set up [Spark on YARN](http://spark.apache.org/docs/latest/runnin
 ### 1. Build Docker file
 You can find docker script files under `scripts/docker/spark-cluster-managers`.
 
-```
+```bash
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_yarn_cluster
 docker build -t "spark_yarn" .
 ```
 
 ### 2. Run docker
 
-```
+```bash
 docker run -it \
  -p 5000:5000 \
  -p 9000:9000 \
@@ -120,7 +120,7 @@ Note that `sparkmaster` hostname used here to run docker container should be def
 
 You can simply verify the processes of Spark and YARN are running well in Docker with below command.
 
-```
+```bash
 ps -ef
 ```
 
@@ -129,7 +129,7 @@ You can also check each application web UI for HDFS on `http://<hostname>:50070/
 ### 4. Configure Spark interpreter in Zeppelin
 Set following configurations to `conf/zeppelin-env.sh`.
 
-```
+```bash
 export MASTER=yarn-client
 export HADOOP_CONF_DIR=[your_hadoop_conf_path]
 export SPARK_HOME=[your_spark_home_path]
@@ -154,7 +154,7 @@ You can simply set up [Spark on Mesos](http://spark.apache.org/docs/latest/runni
 
 ### 1. Build Docker file
 
-```
+```bash
 cd $ZEPPELIN_HOME/scripts/docker/spark-cluster-managers/spark_mesos
 docker build -t "spark_mesos" .
 ```
@@ -162,7 +162,7 @@ docker build -t "spark_mesos" .
 
 ### 2. Run docker
 
-```
+```bash
 docker run --net=host -it \
 -p 8080:8080 \
 -p 7077:7077 \
@@ -183,7 +183,7 @@ Note that `sparkmaster` hostname used here to run docker container should be def
 
 You can simply verify the processes of Spark and Mesos are running well in Docker with below command.
 
-```
+```bash
 ps -ef
 ```
 
@@ -192,7 +192,7 @@ You can also check each application web UI for Mesos on `http://<hostname>:5050/
 
 ### 4. Configure Spark interpreter in Zeppelin
 
-```
+```bash
 export MASTER=mesos://127.0.1.1:5050
 export MESOS_NATIVE_JAVA_LIBRARY=[PATH OF libmesos.so]
 export SPARK_HOME=[PATH OF SPARK HOME]

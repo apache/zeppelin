@@ -58,7 +58,7 @@ body {
   visibility: hidden;
 }
 
-.noteAction .form-control-static2 > span {
+.noteAction .form-control-title > span {
   visibility: visible;
 }
 
