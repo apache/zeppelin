@@ -17,13 +17,15 @@
 
 package org.apache.zeppelin.spark;
 
+
 import com.google.common.io.Files;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
 import org.junit.Test;
 
@@ -33,9 +35,10 @@ import java.util.Properties;
 
 import static org.mockito.Mockito.mock;
 
+
 public class PySparkInterpreterTest extends PythonInterpreterTest {
 
-  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
+  private RemoteInterpreterEventClient mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
 
   @Override
   public void setUp() throws InterpreterException {
@@ -52,13 +55,18 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
-    InterpreterContext.set(getInterpreterContext(mockRemoteEventClient));
     // create interpreter group
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
+    InterpreterContext context = InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mockRemoteEventClient)
+        .build();
+    InterpreterContext.set(context);
     LazyOpenInterpreter sparkInterpreter =
         new LazyOpenInterpreter(new SparkInterpreter(properties));
+
     intpGroup.get("note").add(sparkInterpreter);
     sparkInterpreter.setInterpreterGroup(intpGroup);
 
@@ -86,4 +94,10 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     IPySparkInterpreterTest.testPySpark(interpreter, mockRemoteEventClient);
   }
 
+  @Override
+  protected InterpreterContext getInterpreterContext() {
+    InterpreterContext context = super.getInterpreterContext();
+    context.setIntpEventClient(mockRemoteEventClient);
+    return context;
+  }
 }

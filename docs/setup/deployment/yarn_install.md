@@ -105,7 +105,7 @@ hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 ## Start/Stop
 ### Start Zeppelin
 
-```
+```bash
 cd /home/zeppelin/zeppelin
 bin/zeppelin-daemon.sh start
 ```
@@ -113,7 +113,7 @@ After successful start, visit http://[zeppelin-server-host-name]:8080 with your 
 
 ### Stop Zeppelin
 
-```
+```bash
 bin/zeppelin-daemon.sh stop
 ```
 

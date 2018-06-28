@@ -37,7 +37,7 @@ Check [zeppelin-web: Local Development](https://github.com/apache/zeppelin/tree/
  
 this script would be helpful when changing JDK version frequently.
 
-```
+```bash
 function setjdk() {
   if [ $# -ne 0 ]; then
   # written based on OSX. 
@@ -59,7 +59,7 @@ you can use this function like `setjdk 1.8` / `setjdk 1.7`
 
 ### Building Submodules Selectively 
 
-```
+```bash
 # build `zeppelin-web` only
 mvn clean -pl 'zeppelin-web' package -DskipTests;
 
@@ -71,7 +71,8 @@ mvn clean package -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTest
 
 # build spark related modules with profiles: scala 2.11, spark 2.1 hadoop 2.7 
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.7 -Pscala-2.11 -pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
+mvn clean package -Pspark-2.1 -Phadoop-2.7 -Pscala-2.11 \
+-pl 'spark,spark-dependencies,zeppelin-server' --am -DskipTests
 
 # build `zeppelin-server` and `markdown` with dependencies
 mvn clean package -pl 'markdown,zeppelin-server' --am -DskipTests
@@ -79,7 +80,7 @@ mvn clean package -pl 'markdown,zeppelin-server' --am -DskipTests
 
 ### Running Individual Tests
 
-```
+```bash
 # run the `HeliumBundleFactoryTest` test class
 mvn test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=HeliumBundleFactoryTest
 ```
@@ -88,13 +89,15 @@ mvn test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=HeliumBundleFac
 
 Make sure that Zeppelin instance is started to execute integration tests (= selenium tests).
 
-```
+```bash
 # run the `SparkParagraphIT` test class
-TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=SparkParagraphIT
+TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am \
+-DfailIfNoTests=false -Dtest=SparkParagraphIT
 
 # run the `testSqlSpark` test function only in the `SparkParagraphIT` class
 # but note that, some test might be dependent on the previous tests
-TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am -DfailIfNoTests=false -Dtest=SparkParagraphIT#testSqlSpark
+TEST_SELENIUM="true" mvn test -pl 'zeppelin-server' --am \
+-DfailIfNoTests=false -Dtest=SparkParagraphIT#testSqlSpark
 ```
 
 

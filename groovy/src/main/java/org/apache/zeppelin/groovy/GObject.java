@@ -16,26 +16,23 @@
  */
 package org.apache.zeppelin.groovy;
 
-import org.slf4j.Logger;
-
-import java.io.StringWriter;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import groovy.lang.Closure;
 import groovy.xml.MarkupBuilder;
-
+import org.apache.thrift.TException;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.RemoteWorksController;
+import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Groovy interpreter for Zeppelin.
@@ -46,6 +43,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   Properties props;
   InterpreterContext interpreterContext;
   Map<String, Object> bindings;
+  GroovyZeppelinContext z;
 
   public GObject(Logger log, StringWriter out, Properties p, InterpreterContext ctx,
       Map<String, Object> bindings) {
@@ -54,6 +52,8 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     this.interpreterContext = ctx;
     this.props = p;
     this.bindings = bindings;
+    this.z = new GroovyZeppelinContext(null, 1000);
+    this.z.setInterpreterContext(this.interpreterContext);
   }
 
   public Object getProperty(String key) {
@@ -87,17 +87,17 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
    * returns gui object.
    */
   public GUI getGui() {
-    return interpreterContext.getGui();
+    return z.getGui();
   }
 
   @ZeppelinApi
   public Object input(String name) {
-    return input(name, "");
+    return z.input(name, "");
   }
 
   @ZeppelinApi
   public Object input(String name, Object defaultValue) {
-    return getGui().input(name, defaultValue);
+    return z.input(name, defaultValue);
   }
 
   private ParamOption[] toParamOptions(Map<Object, String> options) {
@@ -111,23 +111,23 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 
   @ZeppelinApi
   public Object select(String name, Map<Object, String> options) {
-    return select(name, "", options);
+    return z.select(name, "", toParamOptions(options));
   }
 
   @ZeppelinApi
   public Object select(String name, Object defaultValue, Map<Object, String> options) {
-    return getGui().select(name, defaultValue, toParamOptions(options));
+    return z.select(name, defaultValue, toParamOptions(options));
   }
 
   @ZeppelinApi
   public Collection<Object> checkbox(String name, Map<Object, String> options) {
-    return checkbox(name, options.keySet(), options);
+    return z.checkbox(name, new ArrayList<Object>(options.keySet()), toParamOptions(options));
   }
 
   @ZeppelinApi
   public Collection<Object> checkbox(String name, Collection<Object> defaultChecked,
       Map<Object, String> options) {
-    return getGui().checkbox(name, defaultChecked, toParamOptions(options));
+    return z.checkbox(name, new ArrayList<Object>(defaultChecked), toParamOptions(options));
   }
 
 
@@ -236,23 +236,12 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
    * @return value
    */
   public Object angular(String name) {
-    AngularObject ao = getAngularObject(name);
-    if (ao == null) {
-      return null;
-    } else {
-      return ao.get();
-    }
+    return z.angular(name);
   }
 
   @SuppressWarnings("unchecked")
-  public void angularBind(String name, Object o, String noteId) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-
-    if (registry.get(name, noteId, null) == null) {
-      registry.add(name, o, noteId, null);
-    } else {
-      registry.get(name, noteId, null).set(o);
-    }
+  public void angularBind(String name, Object o, String noteId) throws TException {
+    z.angularBind(name, o, noteId);
   }
 
   /**
@@ -262,100 +251,56 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
    * @param name name of the variable
    * @param o value
    */
-  public void angularBind(String name, Object o) {
+  public void angularBind(String name, Object o) throws TException {
     angularBind(name, o, interpreterContext.getNoteId());
   }
 
-  /*------------------------------------------RUN----------------------------------------*/
+  /**
+   * Run paragraph by id.
+   */
   @ZeppelinApi
-  public List<InterpreterContextRunner> getInterpreterContextRunner(String noteId,
-      String paragraphId, InterpreterContext interpreterContext) {
-    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
-    if (remoteWorksController != null) {
-      return remoteWorksController.getRemoteContextRunner(noteId, paragraphId);
-    }
-    return new LinkedList<InterpreterContextRunner>();
-  }
-
-  @ZeppelinApi
-  public List<InterpreterContextRunner> getInterpreterContextRunner(String noteId,
-      InterpreterContext interpreterContext) {
-    RemoteWorksController remoteWorksController = interpreterContext.getRemoteWorksController();
-    if (remoteWorksController != null) {
-      return remoteWorksController.getRemoteContextRunner(noteId);
-    }
-    return new LinkedList<InterpreterContextRunner>();
+  public void run(String noteId, String paragraphId) throws IOException {
+    z.run(noteId, paragraphId);
   }
 
   /**
    * Run paragraph by id.
    */
   @ZeppelinApi
-  public void run(String noteId, String paragraphId) {
-    run(noteId, paragraphId, interpreterContext);
+  public void run(String paragraphId) throws IOException {
+    z.run(paragraphId);
   }
 
   /**
    * Run paragraph by id.
    */
   @ZeppelinApi
-  public void run(String paragraphId) {
-    String noteId = interpreterContext.getNoteId();
-    run(noteId, paragraphId, interpreterContext);
+  public void run(String noteId, String paragraphId, InterpreterContext context)
+      throws IOException {
+    z.run(noteId, paragraphId, context);
   }
 
-  /**
-   * Run paragraph by id.
-   */
-  @ZeppelinApi
-  public void run(String noteId, String paragraphId, InterpreterContext context) {
-    if (paragraphId.equals(context.getParagraphId())) {
-      throw new RuntimeException("Can not run current Paragraph");
-    }
-    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, paragraphId,
-        context);
-    if (runners.size() <= 0) {
-      throw new RuntimeException("Paragraph " + paragraphId + " not found " + runners.size());
-    }
-    for (InterpreterContextRunner r : runners) {
-      r.run();
-    }
+  public void runNote(String noteId) throws IOException {
+    z.runNote(noteId);
   }
 
-  public void runNote(String noteId) {
-    runNote(noteId, interpreterContext);
-  }
-
-  public void runNote(String noteId, InterpreterContext context) {
-    String runningNoteId = context.getNoteId();
-    String runningParagraphId = context.getParagraphId();
-    List<InterpreterContextRunner> runners = getInterpreterContextRunner(noteId, context);
-
-    if (runners.size() <= 0) {
-      throw new RuntimeException("Note " + noteId + " not found " + runners.size());
-    }
-
-    for (InterpreterContextRunner r : runners) {
-      if (r.getNoteId().equals(runningNoteId) && r.getParagraphId().equals(runningParagraphId)) {
-        continue;
-      }
-      r.run();
-    }
+  public void runNote(String noteId, InterpreterContext context) throws IOException {
+    z.runNote(noteId, context);
   }
 
   /**
    * Run all paragraphs. except this.
    */
   @ZeppelinApi
-  public void runAll() {
-    runAll(interpreterContext);
+  public void runAll() throws IOException {
+    z.runAll(interpreterContext);
   }
 
   /**
    * Run all paragraphs. except this.
    */
   @ZeppelinApi
-  public void runAll(InterpreterContext context) {
-    runNote(context.getNoteId());
+  public void runAll(InterpreterContext context) throws IOException {
+    z.runNote(context.getNoteId());
   }
 }

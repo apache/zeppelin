@@ -43,8 +43,7 @@ public class PigInterpreterSparkTest {
     properties.put("zeppelin.pig.includeJobStats", includeJobStats + "");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null,
-        null, null, null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
 
   }
   @After

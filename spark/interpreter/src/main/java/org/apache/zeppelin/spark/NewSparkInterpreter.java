@@ -95,9 +95,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
       String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
       Class clazz = Class.forName(innerIntpClassName);
-      this.innerInterpreter =
-          (BaseSparkScalaInterpreter) clazz.getConstructor(SparkConf.class, List.class)
-              .newInstance(conf, getDependencyFiles());
+      this.innerInterpreter = (BaseSparkScalaInterpreter)
+          clazz.getConstructor(SparkConf.class, List.class, Boolean.class)
+              .newInstance(conf, getDependencyFiles(),
+                  Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
       this.innerInterpreter.open();
 
       sc = this.innerInterpreter.sc();
@@ -110,15 +111,15 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       }
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
-      sparkUrl = this.innerInterpreter.sparkUrl();
-      sparkShims = SparkShims.getInstance(sc.version());
-      sparkShims.setupSparkListener(sc.master(), sparkUrl);
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
       this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
           Lists.newArrayList("@transient"));
+
+      sparkUrl = this.innerInterpreter.sparkUrl();
+      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
     } catch (Exception e) {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
@@ -140,7 +141,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
     z.setInterpreterContext(context);
-    populateSparkWebUrl(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
     return innerInterpreter.interpret(st, context);
@@ -213,28 +213,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       return "2.10";
     } else {
       return "2.11";
-    }
-  }
-
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("url", sparkUrl);
-    String uiEnabledProp = properties.getProperty("spark.ui.enabled", "true");
-    java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
-        uiEnabledProp.trim());
-    if (!uiEnabled) {
-      infos.put("message", "Spark UI disabled");
-    } else {
-      if (StringUtils.isNotBlank(sparkUrl)) {
-        infos.put("message", "Spark UI enabled");
-      } else {
-        infos.put("message", "No spark url defined");
-      }
-    }
-    if (ctx != null && ctx.getClient() != null) {
-      LOGGER.debug("Sending metadata to Zeppelin server: {}", infos.toString());
-      getZeppelinContext().setEventClient(ctx.getClient());
-      ctx.getClient().onMetaInfosReceived(infos);
     }
   }
 

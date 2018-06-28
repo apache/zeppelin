@@ -42,8 +42,7 @@ public class ShellInterpreterTest {
     p.setProperty("shell.command.timeout.millisecs", "2000");
     shell = new ShellInterpreter(p);
 
-    context = new InterpreterContext("", "1", null, "", "", null, null, null, null, null, null,
-        null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
     shell.open();
   }
 

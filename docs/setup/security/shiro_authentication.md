@@ -46,8 +46,8 @@ Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-si
 
 ### 3. Start Zeppelin
 
-```
-bin/zeppelin-daemon.sh start (or restart)
+```bash
+bin/zeppelin-daemon.sh start #(or restart)
 ```
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
@@ -183,6 +183,17 @@ ldapRealm.allowedRolesForAuthentication = admin_role,user_role
 ldapRealm.permissionsByRole= user_role = *:ToDoItemsJdo:*:*, *:ToDoItem:*:*; admin_role = *
 securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
+```
+
+Also instead of specifying systemPassword in clear text in `shiro.ini` administrator can choose to specify the same in "hadoop credential". 
+Create a keystore file using the hadoop credential command line:
+``` 
+hadoop credential create ldapRealm.systemPassword -provider jceks://file/user/zeppelin/conf/zeppelin.jceks
+```
+
+Add the following line in the `shiro.ini` file:
+``` 
+ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
 ```
 
 ### PAM

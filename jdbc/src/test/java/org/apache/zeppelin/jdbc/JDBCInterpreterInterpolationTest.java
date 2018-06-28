@@ -69,8 +69,11 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
                 "('mou', 'mouse');");
     resourcePool = new LocalResourcePool("JdbcInterpolationTest");
 
-    interpreterContext = new InterpreterContext("", "1", null, "", "",
-            new AuthenticationInfo("testUser"), null, null, null, null, resourcePool, null, null);
+    interpreterContext = InterpreterContext.builder()
+        .setParagraphId("paragraph_1")
+        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+        .setResourcePool(resourcePool)
+        .build();
   }
 
   @Test

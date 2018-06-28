@@ -634,7 +634,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
 
-  @Test
+  // @Test
   public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException, InterpreterNotFoundException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);

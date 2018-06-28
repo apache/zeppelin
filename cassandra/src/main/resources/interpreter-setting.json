@@ -224,7 +224,7 @@
       "cassandra.ssl.enabled": {
         "envName": null,
         "propertyName": "cassandra.ssl.enabled",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Cassandra SSL",
         "type": "checkbox"
       },

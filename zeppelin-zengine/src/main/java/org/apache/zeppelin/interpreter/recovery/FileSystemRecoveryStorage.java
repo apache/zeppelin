@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.notebook.FileSystemStorage;
@@ -114,11 +113,6 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
               interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
           // interpreterSettingManager may be null when this class is used when it is used
           // stop-interpreter.sh
-          if (interpreterSettingManager != null) {
-            client.setRemoteInterpreterEventPoller(new RemoteInterpreterEventPoller(
-                interpreterSettingManager.getRemoteInterpreterProcessListener(),
-                interpreterSettingManager.getAppEventListener()));
-          }
           clients.put(groupId, client);
           LOGGER.info("Recovering Interpreter Process: " + hostPort[0] + ":" + hostPort[1]);
         }

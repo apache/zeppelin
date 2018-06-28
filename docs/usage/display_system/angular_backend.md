@@ -99,6 +99,7 @@ In this section, we will introduce a simpler and more intuitive way of using **A
 Here are some usages.
 
 ### Import
+
 ```scala
 // In notebook scope
 import org.apache.zeppelin.display.angular.notebookscope._
