@@ -21,7 +21,59 @@ limitations under the License.
 
 # Download Apache Zeppelin
 
-The latest release of Apache Zeppelin is **0.7.3**.
+The latest release of Apache Zeppelin is **0.8.0**.
+
+  - 0.8.0 released on June 28, 2018 ([release notes](./releases/zeppelin-release-0.8.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.8.0))
+
+    * Binary package with all interpreters ([Install guide](../../docs/0.8.0/install/install.html)):
+    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.8.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz'">zeppelin-0.8.0-bin-all.tgz</div> (939 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.sha512))</p>
+
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.8.0/manual/interpreterinstallation.html)):
+    <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.8.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz'">zeppelin-0.8.0-bin-netinst.tgz</div> (306 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz.sha512))</p>
+
+    * Source:
+    <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.8.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0.tgz'">zeppelin-0.8.0.tgz</a> (58 MB,
+    [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0.tgz.asc),
+    [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0.tgz.md5),
+    [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0.tgz.sha512))
+
+# Using the official docker image
+
+Make sure that [docker](https://www.docker.com/community-edition) is installed in your local machine.  
+
+Use this command to launch Apache Zeppelin in a container.
+
+```bash
+docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.8.0
+```
+
+To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
+
+```bash
+docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.8.0
+```
+
+If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
+
+## Verify the integrity of the files
+
+It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/zeppelin/KEYS) file.
+
+
+
+## Build from source
+
+For developers, to get latest *0.9.0-SNAPSHOT* check [README](https://github.com/apache/zeppelin/blob/master/README.md).
+
+
+
+## Old releases
 
   - 0.7.3 released on Sep 21, 2017 ([release notes](./releases/zeppelin-release-0.7.3.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.3))
 
@@ -42,38 +94,6 @@ The latest release of Apache Zeppelin is **0.7.3**.
     [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.asc),
     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.md5),
     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.7.3/zeppelin-0.7.3.tgz.sha512))
-
-# Using the official docker image
-
-Make sure that [docker](https://www.docker.com/community-edition) is installed in your local machine.  
-
-Use this command to launch Apache Zeppelin in a container.
-
-```bash
-docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:0.7.3
-```
-
-To persist `logs` and `notebook` directories, use the [volume](https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v-read-only) option for docker container.
-
-```bash
-docker run -p 8080:8080 --rm -v $PWD/logs:/logs -v $PWD/notebook:/notebook -e ZEPPELIN_LOG_DIR='/logs' -e ZEPPELIN_NOTEBOOK_DIR='/notebook' --name zeppelin apache/zeppelin:0.7.3
-```
-
-If you have trouble accessing `localhost:8080` in the browser, Please clear browser cache.
-
-## Verify the integrity of the files
-
-It is essential that you [verify](https://www.apache.org/info/verification.html) the integrity of the downloaded files using the PGP or MD5 signatures. This signature should be matched against the [KEYS](https://www.apache.org/dist/zeppelin/KEYS) file.
-
-
-
-## Build from source
-
-For developers, to get latest *0.8.0-SNAPSHOT* check [README](https://github.com/apache/zeppelin/blob/master/README.md).
-
-
-
-## Old releases
 
   - 0.7.2 released on Jun 12, 2017 ([release notes](./releases/zeppelin-release-0.7.2.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.7.2))
 
