@@ -38,6 +38,13 @@
     <category rdf:resource="http://projects.apache.org/category/big-data" />
     <release>
       <Version>
+        <name>0.8.0</name>
+        <created>2018-06-28</created>
+        <revision>0.8.0</revision>
+      </Version>
+    </release>
+    <release>
+      <Version>
         <name>0.7.3</name>
         <created>2017-09-21</created>
         <revision>0.7.3</revision>
