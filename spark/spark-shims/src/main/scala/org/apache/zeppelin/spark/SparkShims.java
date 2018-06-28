@@ -116,6 +116,8 @@ public abstract class SparkShims {
       infos.put("jobUrl", jobUrl);
       infos.put("label", "SPARK JOB");
       infos.put("tooltip", "View in Spark web UI");
+      infos.put("noteId", context.getNoteId());
+      infos.put("paraId", context.getParagraphId());
       context.getIntpEventClient().onParaInfosReceived(infos);
     }
   }
