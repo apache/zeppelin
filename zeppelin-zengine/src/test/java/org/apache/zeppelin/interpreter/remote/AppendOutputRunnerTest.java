@@ -139,7 +139,6 @@ public class AppendOutputRunnerTest {
     TestAppender appender = new TestAppender();
     Logger logger = Logger.getRootLogger();
     logger.addAppender(appender);
-    Logger.getLogger(RemoteInterpreterEventPoller.class);
 
     runner.run();
     List<LoggingEvent> log;

@@ -762,27 +762,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     getRepositories();
   };
 
-  $scope.showSparkUI = function(settingId) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
-      .then(function(res) {
-        if (res.data.body === undefined) {
-          BootstrapDialog.alert({
-            message: 'No spark application running',
-          });
-          return;
-        }
-        if (res.data.body.url) {
-          window.open(res.data.body.url, '_blank');
-        } else {
-          BootstrapDialog.alert({
-            message: _.escape(res.data.body.message),
-          });
-        }
-      }).catch(function(res) {
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
-      });
-  };
-
   $scope.getInterpreterBindingModeDocsLink = function() {
     const currentVersion = $rootScope.zeppelinVersion;
     return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`;

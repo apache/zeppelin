@@ -14,14 +14,11 @@
 # limitations under the License.
 
 # setup ruby
-# Assumes Ubuntu Server 14.04 LTS
+# Assumes Ubuntu Server 16.04 LTS
 ---
 
-- name: Install ruby 1.9.3
-  apt: pkg=ruby1.9.3 state=present
-
-- name: set global ruby version
-  alternatives: name=ruby path=/usr/bin/ruby1.9.1 link=/usr/bin/ruby
+- name: Install ruby
+  apt: pkg=ruby state=present
 
 - name: Install make
   apt: pkg=make state=latest

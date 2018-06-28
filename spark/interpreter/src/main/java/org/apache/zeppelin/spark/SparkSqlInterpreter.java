@@ -96,7 +96,6 @@ public class SparkSqlInterpreter extends Interpreter {
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
 
-    sparkInterpreter.populateSparkWebUrl(context);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
     sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();

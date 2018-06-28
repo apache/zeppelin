@@ -26,13 +26,6 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.thrift.TException;
-import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransportException;
-import org.apache.zeppelin.interpreter.thrift.CallbackInfo;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterCallbackService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,39 +45,44 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       RemoteInterpreterManagedProcess.class);
 
   private final String interpreterRunner;
-  private final String callbackPortRange;
+  private final int zeppelinServerRPCPort;
+  private final String zeppelinServerRPCHost;
   private final String interpreterPortRange;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   private AtomicBoolean running = new AtomicBoolean(false);
-  private TServer callbackServer;
   private String host = null;
   private int port = -1;
   private final String interpreterDir;
   private final String localRepoDir;
   private final String interpreterSettingName;
+  private final String interpreterGroupId;
   private final boolean isUserImpersonated;
 
   private Map<String, String> env;
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
-      String callbackPortRange,
+      int zeppelinServerRPCPort,
+      String zeppelinServerRPCHost,
       String interpreterPortRange,
       String intpDir,
       String localRepoDir,
       Map<String, String> env,
       int connectTimeout,
       String interpreterSettingName,
+      String interpreterGroupId,
       boolean isUserImpersonated) {
     super(connectTimeout);
     this.interpreterRunner = intpRunner;
-    this.callbackPortRange = callbackPortRange;
+    this.zeppelinServerRPCPort = zeppelinServerRPCPort;
+    this.zeppelinServerRPCHost = zeppelinServerRPCHost;
     this.interpreterPortRange = interpreterPortRange;
     this.env = env;
     this.interpreterDir = intpDir;
     this.localRepoDir = localRepoDir;
     this.interpreterSettingName = interpreterSettingName;
+    this.interpreterGroupId = interpreterGroupId;
     this.isUserImpersonated = isUserImpersonated;
   }
 
@@ -99,71 +97,19 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   @Override
-  public void start(String userName) {
+  public void start(String userName) throws IOException {
     // start server process
-    final String callbackHost;
-    final int callbackPort;
-    TServerSocket tSocket = null;
-    try {
-      tSocket = RemoteInterpreterUtils.createTServerSocket(callbackPortRange);
-      callbackPort = tSocket.getServerSocket().getLocalPort();
-      callbackHost = RemoteInterpreterUtils.findAvailableHostAddress();
-    } catch (IOException e1) {
-      throw new RuntimeException(e1);
-    }
-
-    logger.info("Thrift server for callback will start. Port: {}", callbackPort);
-    try {
-      callbackServer = new TThreadPoolServer(
-        new TThreadPoolServer.Args(tSocket).processor(
-          new RemoteInterpreterCallbackService.Processor<>(
-            new RemoteInterpreterCallbackService.Iface() {
-              @Override
-              public void callback(CallbackInfo callbackInfo) throws TException {
-                logger.info("RemoteInterpreterServer Registered: {}", callbackInfo);
-                host = callbackInfo.getHost();
-                port = callbackInfo.getPort();
-                running.set(true);
-                synchronized (running) {
-                  running.notify();
-                }
-              }
-            })));
-      // Start thrift server to receive callbackInfo from RemoteInterpreterServer;
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          callbackServer.serve();
-        }
-      }).start();
-
-      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-        @Override
-        public void run() {
-          if (callbackServer.isServing()) {
-            callbackServer.stop();
-          }
-        }
-      }));
-
-      while (!callbackServer.isServing()) {
-        logger.debug("callbackServer is not serving");
-        Thread.sleep(500);
-      }
-      logger.debug("callbackServer is serving now");
-    } catch (InterruptedException e) {
-      logger.warn("", e);
-    }
-
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-c", false);
-    cmdLine.addArgument(callbackHost, false);
+    cmdLine.addArgument(zeppelinServerRPCHost, false);
     cmdLine.addArgument("-p", false);
-    cmdLine.addArgument(Integer.toString(callbackPort), false);
+    cmdLine.addArgument(String.valueOf(zeppelinServerRPCPort), false);
     cmdLine.addArgument("-r", false);
     cmdLine.addArgument(interpreterPortRange, false);
+    cmdLine.addArgument("-i", false);
+    cmdLine.addArgument(interpreterGroupId, false);
     if (isUserImpersonated && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
@@ -197,12 +143,15 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     try {
       synchronized (running) {
         if (!running.get()) {
-          running.wait(getConnectTimeout() * 2);
+          running.wait(getConnectTimeout());
         }
       }
       if (!running.get()) {
-        callbackServer.stop();
-        throw new RuntimeException(new String(cmdOut.toByteArray()));
+        throw new IOException(new String(
+            String.format("Interpreter Process creation is time out in %d seconds",
+                getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
+                "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
+                cmdOut.toString()));
       }
     } catch (InterruptedException e) {
       logger.error("Remote interpreter is not accessible");
@@ -211,11 +160,6 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   public void stop() {
-    // shutdown EventPoller first.
-    this.getRemoteInterpreterEventPoller().shutdown();
-    if (callbackServer.isServing()) {
-      callbackServer.stop();
-    }
     if (isRunning()) {
       logger.info("Kill interpreter process");
       try {
@@ -243,6 +187,16 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     logger.info("Interpreter process exited {}", exitValue);
     running.set(false);
 
+  }
+
+  // called by RemoteInterpreterServer to notify that RemoteInterpreter Process is started
+  public void processStarted(int port, String host) {
+    this.port = port;
+    this.host = host;
+    synchronized (running) {
+      running.set(true);
+      running.notify();
+    }
   }
 
   @Override

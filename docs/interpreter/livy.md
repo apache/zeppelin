@@ -177,7 +177,7 @@ Basically, you can use
 
 **spark**
 
-```
+```scala
 %livy.spark
 sc.version
 ```
@@ -185,14 +185,14 @@ sc.version
 
 **pyspark**
 
-```
+```python
 %livy.pyspark
 print "1"
 ```
 
 **sparkR**
 
-```
+```r
 %livy.sparkr
 hello <- function( name ) {
     sprintf( "Hello, %s", name );
@@ -209,7 +209,8 @@ This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only avalible for livy sql interpreter.
-```
+
+```sql
 %livy.sql
 select * from products where ${product_id=1}
 ```

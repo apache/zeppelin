@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -105,6 +106,72 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public void checkInvalidOrigin(){
     NotebookServer server = new NotebookServer();
     assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
+  }
+
+  @Test
+  public void testCollaborativeEditing() throws IOException {
+    if (!ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+      return;
+    }
+    NotebookSocket sock1 = createWebSocket();
+    NotebookSocket sock2 = createWebSocket();
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    notebookServer.onMessage(sock1, new Message(OP.NEW_NOTE).put("name", noteName).toJson());
+    Note createdNote = null;
+    for (Note note : notebook.getAllNotes()) {
+      if (note.getName().equals(noteName)) {
+        createdNote = note;
+        break;
+      }
+    }
+
+    Message message = new Message(OP.GET_NOTE).put("id", createdNote.getId());
+    notebookServer.onMessage(sock1, message.toJson());
+    notebookServer.onMessage(sock2, message.toJson());
+
+    Paragraph paragraph = createdNote.getParagraphs().get(0);
+    String paragraphId = paragraph.getId();
+
+    String[] patches = new String[]{
+        "@@ -0,0 +1,3 @@\n+ABC\n",            // ABC
+        "@@ -1,3 +1,4 @@\n ABC\n+%0A\n",      // press Enter
+        "@@ -1,4 +1,7 @@\n ABC%0A\n+abc\n",   // abc
+        "@@ -1,7 +1,45 @@\n ABC\n-%0Aabc\n+ ssss%0Aabc ssss\n" // add text in two string
+    };
+
+    int sock1SendCount = 0;
+    int sock2SendCount = 0;
+    reset(sock1);
+    reset(sock2);
+    patchParagraph(sock1, paragraphId, patches[0]);
+    assertEquals("ABC", paragraph.getText());
+    verify(sock1, times(sock1SendCount)).send(anyString());
+    verify(sock2, times(++sock2SendCount)).send(anyString());
+
+    patchParagraph(sock2, paragraphId, patches[1]);
+    assertEquals("ABC\n", paragraph.getText());
+    verify(sock1, times(++sock1SendCount)).send(anyString());
+    verify(sock2, times(sock2SendCount)).send(anyString());
+
+    patchParagraph(sock1, paragraphId, patches[2]);
+    assertEquals("ABC\nabc", paragraph.getText());
+    verify(sock1, times(sock1SendCount)).send(anyString());
+    verify(sock2, times(++sock2SendCount)).send(anyString());
+
+    patchParagraph(sock2, paragraphId, patches[3]);
+    assertEquals("ABC ssss\nabc ssss", paragraph.getText());
+    verify(sock1, times(++sock1SendCount)).send(anyString());
+    verify(sock2, times(sock2SendCount)).send(anyString());
+
+    notebook.removeNote(createdNote.getId(), anonymous);
+  }
+
+  private void patchParagraph(NotebookSocket noteSocket, String paragraphId, String patch) {
+    Message message = new Message(OP.PATCH_PARAGRAPH);
+    message.put("patch", patch);
+    message.put("id", paragraphId);
+    notebookServer.onMessage(noteSocket, message.toJson());
   }
 
   @Test
@@ -414,8 +481,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
         .put("name", noteName)
         .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
+    int sendCount = 2;
+    if (ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+      sendCount++;
+    }
     // expect the events are broadcasted properly
-    verify(sock1, times(2)).send(anyString());
+    verify(sock1, times(sendCount)).send(anyString());
 
     Note createdNote = null;
     for (Note note : notebook.getAllNotes()) {

@@ -17,8 +17,8 @@
 
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -28,19 +28,18 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public abstract class BasePythonInterpreterTest {
 
@@ -58,10 +57,12 @@ public abstract class BasePythonInterpreterTest {
   public void testPythonBasics() throws InterpreterException, InterruptedException, IOException {
 
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
+    InterpreterResult result =
+        interpreter.interpret("import sys\nprint(sys.version[0])", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     Thread.sleep(100);
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
 
     // single output without print
@@ -111,7 +112,7 @@ public abstract class BasePythonInterpreterTest {
 
     // assignment
     context = getInterpreterContext();
-    result = interpreter.interpret("abc=1",context);
+    result = interpreter.interpret("abc=1", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -119,7 +120,8 @@ public abstract class BasePythonInterpreterTest {
 
     // if block
     context = getInterpreterContext();
-    result = interpreter.interpret("if abc > 0:\n\tprint('True')\nelse:\n\tprint('False')", context);
+    result =
+        interpreter.interpret("if abc > 0:\n\tprint('True')\nelse:\n\tprint('False')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -143,7 +145,8 @@ public abstract class BasePythonInterpreterTest {
     if (interpreter instanceof IPythonInterpreter) {
       interpreterResultMessages = context.out.toInterpreterResultMessage();
       assertEquals(1, interpreterResultMessages.size());
-      assertTrue(interpreterResultMessages.get(0).getData().contains("name 'unknown' is not defined"));
+      assertTrue(interpreterResultMessages.get(0).getData().contains(
+          "name 'unknown' is not defined"));
     } else if (interpreter instanceof PythonInterpreter) {
       assertTrue(result.message().get(0).getData().contains("name 'unknown' is not defined"));
     }
@@ -165,14 +168,14 @@ public abstract class BasePythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret(
         "from __future__ import print_function\n" +
-        "def greet(name):\n" +
-        "    print('Hello', name)\n" +
-        "greet('Jack')", context);
+            "def greet(name):\n" +
+            "    print('Hello', name)\n" +
+            "greet('Jack')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertEquals("Hello Jack\n",interpreterResultMessages.get(0).getData());
+    assertEquals("Hello Jack\n", interpreterResultMessages.get(0).getData());
 
     // ZEPPELIN-1114
     context = getInterpreterContext();
@@ -225,10 +228,12 @@ public abstract class BasePythonInterpreterTest {
   public void testZeppelinContext() throws InterpreterException, InterruptedException, IOException {
     // TextBox
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = interpreter.interpret("z.input(name='text_1', defaultValue='value_1')", context);
+    InterpreterResult result =
+        interpreter.interpret("z.input(name='text_1', defaultValue='value_1')", context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
+    List<InterpreterResultMessage> interpreterResultMessages =
+        context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("'value_1'"));
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("text_1") instanceof TextBox);
@@ -236,9 +241,20 @@ public abstract class BasePythonInterpreterTest {
     assertEquals("text_1", textbox.getName());
     assertEquals("value_1", textbox.getDefaultValue());
 
+    // Password
+    context = getInterpreterContext();
+    result =
+        interpreter.interpret("z.password(name='pwd_1')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(context.getGui().getForms().get("pwd_1") instanceof Password);
+    Password password = (Password) context.getGui().getForms().get("pwd_1");
+    assertEquals("pwd_1", password.getName());
+
     // Select
     context = getInterpreterContext();
-    result = interpreter.interpret("z.select(name='select_1', options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
+    result = interpreter.interpret("z.select(name='select_1'," +
+        " options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("select_1") instanceof Select);
@@ -250,7 +266,8 @@ public abstract class BasePythonInterpreterTest {
 
     // CheckBox
     context = getInterpreterContext();
-    result = interpreter.interpret("z.checkbox(name='checkbox_1', options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
+    result = interpreter.interpret("z.checkbox(name='checkbox_1'," +
+        "options=[('value_1', 'name_1'), ('value_2', 'name_2')])", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("checkbox_1") instanceof CheckBox);
@@ -262,7 +279,8 @@ public abstract class BasePythonInterpreterTest {
 
     // Pandas DataFrame
     context = getInterpreterContext();
-    result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
+    result = interpreter.interpret("import pandas as pd\n" +
+        "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
@@ -270,18 +288,21 @@ public abstract class BasePythonInterpreterTest {
     assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
 
     context = getInterpreterContext();
-    result = interpreter.interpret("import pandas as pd\ndf = pd.DataFrame({'id':[1,2,3,4], 'name':['a','b','c', 'd']})\nz.show(df)", context);
+    result = interpreter.interpret("import pandas as pd\n" +
+        "df = pd.DataFrame({'id':[1,2,3,4], 'name':['a','b','c', 'd']})\nz.show(df)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
     assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    assertEquals("<font color=red>Results are limited by 3.</font>\n", interpreterResultMessages.get(1).getData());
+    assertEquals("<font color=red>Results are limited by 3.</font>\n",
+        interpreterResultMessages.get(1).getData());
 
     // z.show(matplotlib)
     context = getInterpreterContext();
-    result = interpreter.interpret("import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)\nz.show(plt)", context);
+    result = interpreter.interpret("import matplotlib.pyplot as plt\n" +
+        "data=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)\nz.show(plt)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
@@ -289,7 +310,8 @@ public abstract class BasePythonInterpreterTest {
 
     // clear output
     context = getInterpreterContext();
-    result = interpreter.interpret("import time\nprint(\"Hello\")\ntime.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
+    result = interpreter.interpret("import time\nprint(\"Hello\")\n" +
+        "time.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
     assertEquals("%text world\n", context.out.getCurrentOutput().toString());
   }
 
@@ -299,33 +321,24 @@ public abstract class BasePythonInterpreterTest {
     String restoreCode = "z = __zeppelin__\n";
     String validCode = "z.input(\"test\")\n";
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreter.interpret(validCode, getInterpreterContext()).code());
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreter.interpret(redefinitionCode, getInterpreterContext()).code());
-    assertEquals(InterpreterResult.Code.ERROR, interpreter.interpret(validCode, getInterpreterContext()).code());
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreter.interpret(restoreCode, getInterpreterContext()).code());
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreter.interpret(validCode, getInterpreterContext()).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        interpreter.interpret(validCode, getInterpreterContext()).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        interpreter.interpret(redefinitionCode, getInterpreterContext()).code());
+    assertEquals(InterpreterResult.Code.ERROR,
+        interpreter.interpret(validCode, getInterpreterContext()).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        interpreter.interpret(restoreCode, getInterpreterContext()).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        interpreter.interpret(validCode, getInterpreterContext()).code());
   }
 
   protected InterpreterContext getInterpreterContext() {
-    return new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        "replName",
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        null,
-        null,
-        null,
-        new InterpreterOutput(null));
-  }
-
-  protected InterpreterContext getInterpreterContext(RemoteEventClient mockRemoteEventClient) {
-    InterpreterContext context = getInterpreterContext();
-    context.setClient(mockRemoteEventClient);
-    return context;
+    return InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+        .build();
   }
 }

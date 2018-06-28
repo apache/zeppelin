@@ -16,7 +16,7 @@ describe('Home e2e Test', function() {
 
   let scrollToElementAndClick = function(elem) {
     browser.executeScript("arguments[0].scrollIntoView(false);", elem.getWebElement())
-    browser.sleep(100)
+    browser.sleep(300)
     clickOn(elem)
   }
 

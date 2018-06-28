@@ -31,6 +31,8 @@ import java.util.Properties;
  */
 public abstract class AbstractSparkInterpreter extends Interpreter {
 
+  private SparkInterpreter parentSparkInterpreter;
+
   public AbstractSparkInterpreter(Properties properties) {
     super(properties);
   }
@@ -47,11 +49,17 @@ public abstract class AbstractSparkInterpreter extends Interpreter {
 
   public abstract JavaSparkContext getJavaSparkContext();
 
-  public abstract void populateSparkWebUrl(InterpreterContext ctx);
-
   public abstract SparkZeppelinContext getZeppelinContext();
 
   public abstract String getSparkUIUrl();
 
   public abstract boolean isUnsupportedSparkVersion();
+
+  public void setParentSparkInterpreter(SparkInterpreter parentSparkInterpreter) {
+    this.parentSparkInterpreter = parentSparkInterpreter;
+  }
+
+  public SparkInterpreter getParentSparkInterpreter() {
+    return parentSparkInterpreter;
+  }
 }

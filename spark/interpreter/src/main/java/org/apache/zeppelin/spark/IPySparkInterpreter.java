@@ -53,15 +53,19 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     PySparkInterpreter pySparkInterpreter = getPySparkInterpreter();
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getSparkInterpreter();
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
     if (!conf.contains("spark.submit.deployMode") ||
         !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
-      setAddBulitinPy4j(false);
     }
+    setAddBulitinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 
@@ -113,11 +117,14 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterContext.set(context);
-    sparkInterpreter.populateSparkWebUrl(context);
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
-    return super.interpret(setJobGroupStmt +"\n" + st, context);
+    InterpreterResult result = super.interpret(setJobGroupStmt, context);
+    if (result.code().equals(InterpreterResult.Code.ERROR)) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    }
+    return super.interpret(st, context);
   }
 
   @Override

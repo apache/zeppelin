@@ -20,7 +20,7 @@ limitations under the License.
 
 {% include JB/setup %}
 
-# Install with flink and spark cluster
+# Install with Flink and Spark cluster
 
 <div id="toc"></div>
 
@@ -48,24 +48,24 @@ For git, openssh-server, and OpenJDK 7 we will be using the apt package manager.
 ##### git
 From the command prompt:
 
-```
+```bash
 sudo apt-get install git
 ```
 
 ##### openssh-server
 
-```
+```bash
 sudo apt-get install openssh-server
 ```
 
 ##### OpenJDK 7
 
-```
+```bash
 sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
 ```
 *A note for those using Ubuntu 16.04*: To install `openjdk-7` on Ubuntu 16.04, one must add a repository.  [Source](http://askubuntu.com/questions/761127/ubuntu-16-04-and-openjdk-7)
 
-``` bash
+```bash
 sudo add-apt-repository ppa:openjdk-r/ppa
 sudo apt-get update
 sudo apt-get install openjdk-7-jdk openjdk-7-jre-lib
@@ -76,26 +76,26 @@ Zeppelin requires maven version 3.x.  The version available in the repositories 
 
 Purge any existing versions of maven.
 
-```
+```bash
 sudo apt-get purge maven maven2
 ```
 
 Download the maven 3.3.9 binary.
 
-```
+```bash
 wget "http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz"
 ```
 
 Unarchive the binary and move to the `/usr/local` directory.
 
-```
+```bash
 tar -zxvf apache-maven-3.3.9-bin.tar.gz
 sudo mv ./apache-maven-3.3.9 /usr/local
 ```
 
 Create symbolic links in `/usr/bin`.
 
-```
+```bash
 sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/bin/mvn
 ```
 
@@ -105,19 +105,19 @@ This provides a quick overview of Zeppelin installation from source, however the
 From the command prompt:
 Clone Zeppelin.
 
-```
+```bash
 git clone https://github.com/apache/zeppelin.git
 ```
 
 Enter the Zeppelin root directory.
 
-```
+```bash
 cd zeppelin
 ```
 
 Package Zeppelin.
 
-```
+```bash
 mvn clean package -DskipTests -Pspark-1.6 -Dflink.version=1.1.3 -Pscala-2.10
 ```
 
@@ -145,7 +145,7 @@ As long as you didn't edit any code, it is unlikely the build is failing because
 
 Start the Zeppelin daemon.
 
-```
+```bash
 bin/zeppelin-daemon.sh start
 ```
 
@@ -158,9 +158,7 @@ See the [Zeppelin tutorial](../../quickstart/tutorial.html) for basic Zeppelin u
 ##### Flink Test
 Create a new notebook named "Flink Test" and copy and paste the following code.
 
-
 ```scala
-
 %flink  // let Zeppelin know what interpreter to use.
 
 val text = benv.fromElements("In the time of chimpanzees, I was a monkey",   // some lines of text to analyze
@@ -238,7 +236,7 @@ Run the code to make sure the built-in Zeppelin Flink interpreter is working pro
 
 Finally, stop the Zeppelin daemon.  From the command prompt run:
 
-```
+```bash
 bin/zeppelin-daemon.sh stop
 ```
 
@@ -273,7 +271,7 @@ See the [Flink Installation guide](https://github.com/apache/flink/blob/master/R
 
 Return to the directory where you have been downloading, this tutorial assumes that is `$HOME`. Clone Flink,  check out release-1.1.3-rc2, and build.
 
-```
+```bash
 cd $HOME
 git clone https://github.com/apache/flink.git
 cd flink
@@ -283,7 +281,7 @@ mvn clean install -DskipTests
 
 Start the Flink Cluster in stand-alone mode
 
-```
+```bash
 build-target/bin/start-cluster.sh
 ```
 
@@ -297,14 +295,16 @@ In a browser, navigate to http://`yourip`:8082 to see the Flink Web-UI.  Click o
 If no task managers are present, restart the Flink cluster with the following commands:
 
 (if binaries)
-```
+
+```bash
 flink-1.1.3/bin/stop-cluster.sh
 flink-1.1.3/bin/start-cluster.sh
 ```
 
 
 (if built from source)
-```
+
+```bash
 build-target/bin/stop-cluster.sh
 build-target/bin/start-cluster.sh
 ```
@@ -339,13 +339,13 @@ Return to the directory where you have been downloading, this tutorial assumes t
   the time of writing. You are free to check out other version, just make sure you build Zeppelin against the correct version of Spark. However if you use Spark 2.0, the word count example will need to be changed as Spark 2.0 is not compatible with the following examples.
 
 
-```
+```bash
 cd $HOME
 ```
 
 Clone, check out, and build Spark version 1.6.x.
 
-```
+```bash
 git clone https://github.com/apache/spark.git
 cd spark
 git checkout branch-1.6
@@ -362,7 +362,7 @@ cd $HOME
 
 Start the Spark cluster in stand alone mode, specifying the webui-port as some port other than 8080 (the webui-port of Zeppelin).
 
-```
+```bash
 spark/sbin/start-master.sh --webui-port 8082
 ```
 **Note:** Why `--webui-port 8082`? There is a digression toward the end of this document that explains this.
@@ -375,13 +375,13 @@ Toward the top of the page there will be a *URL*: spark://`yourhost`:7077.  Note
 
 Start the slave using the URI from the Spark master WebUI:
 
-```
+```bash
 spark/sbin/start-slave.sh spark://yourhostname:7077
 ```
 
 Return to the root directory and start the Zeppelin daemon.
 
-```
+```bash
 cd $HOME
 
 zeppelin/bin/zeppelin-daemon.sh start
