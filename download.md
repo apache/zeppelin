@@ -25,13 +25,13 @@ The latest release of Apache Zeppelin is **0.8.0**.
 
   - 0.8.0 released on June 28, 2018 ([release notes](./releases/zeppelin-release-0.8.0.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.8.0))
 
-    * Binary package with all interpreters ([Install guide](../../docs/0.8.0/install/install.html)):
+    * Binary package with all interpreters ([Install guide](../../docs/0.8.0/quickstart/install.html)):
     <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.8.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz'">zeppelin-0.8.0-bin-all.tgz</div> (939 MB,
     [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.asc),
     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.md5),
     [sha](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-all.tgz.sha512))</p>
 
-    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.8.0/manual/interpreterinstallation.html)):
+    * Binary package with Spark interpreter and interpreter net-install script ([interpreter installation guide](../../docs/0.8.0/usage/interpreter/installation.html)):
     <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-netinst', '0.8.0'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz'">zeppelin-0.8.0-bin-netinst.tgz</div> (306 MB,
     [pgp](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz.asc),
     [md5](https://www.apache.org/dist/zeppelin/zeppelin-0.8.0/zeppelin-0.8.0-bin-netinst.tgz.md5),
