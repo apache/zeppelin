@@ -99,6 +99,7 @@ public class SecurityRestApi {
   @Path("userlist/{searchText}")
   public Response getUserList(@PathParam("searchText") final String searchText) {
 
+    final int numUsersToFetch = 5;
     List<String> usersList = new ArrayList<>();
     List<String> rolesList = new ArrayList<>();
     try {
@@ -115,13 +116,15 @@ public class SecurityRestApi {
             usersList.addAll(getUserListObj.getUserList((IniRealm) realm));
             rolesList.addAll(getUserListObj.getRolesList((IniRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
-            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText));
+            usersList.addAll(getUserListObj.getUserList((JndiLdapRealm) realm, searchText,
+                numUsersToFetch));
           } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
-            usersList.addAll(getUserListObj.getUserList((LdapRealm) realm, searchText));
+            usersList.addAll(getUserListObj.getUserList((LdapRealm) realm, searchText,
+                numUsersToFetch));
             rolesList.addAll(getUserListObj.getRolesList((LdapRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
             usersList.addAll(getUserListObj.getUserList((ActiveDirectoryGroupRealm) realm,
-                searchText));
+                searchText, numUsersToFetch));
           } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserListObj.getUserList((JdbcRealm) realm));
           }
@@ -151,7 +154,7 @@ public class SecurityRestApi {
         autoSuggestUserList.add(user);
         maxLength++;
       }
-      if (maxLength == 5) {
+      if (maxLength == numUsersToFetch) {
         break;
       }
     }
