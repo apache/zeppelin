@@ -59,11 +59,11 @@ export default class TableData extends Dataset {
         if (i === 0) {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
-          let valueOfCol;
-          if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
-            col = valueOfCol;
+          let valueOfCol = Number(col);
+          if (valueOfCol > Number.MAX_SAFE_INTEGER || valueOfCol < Number.MIN_SAFE_INTEGER) {
+            valueOfCol = col;
           }
-          cols.push(col);
+          cols.push(valueOfCol);
           cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
         }
       }
