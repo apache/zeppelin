@@ -80,3 +80,5 @@ import './app/modal/modal.directive.js';
 import './app/modal/modal.controller.js';
 import './app/utils/utils.service.js';
 import './app/utils/iframe.directive.js';
+import './app/utils/customStopEvent.directive.js';
+import './app/utils/angularPopover.directive.js';

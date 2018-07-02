@@ -12,16 +12,14 @@
  * limitations under the License.
  */
 
-  angular.module('zeppelinWebApp').service('Utils', function($timeout) {
-    this.triggerClick = function(el) {
-      const self = this;
-      self.elId= el;
-      $timeout(function() {
-        angular.element(self.elId).trigger('click');
-      }, 100);
-    };
 
-    this.Constants = {
-      'X-Frame-Params': 'spark.ui.allowFramingFrom',
-    };
-  });
+angular.module('zeppelinWebApp').directive('customStopEvent', function() {
+  return {
+    restrict: 'A',
+    link: function(scope, element) {
+      element.bind('click', function(event) {
+        event.stopPropagation();
+      });
+    },
+  };
+});

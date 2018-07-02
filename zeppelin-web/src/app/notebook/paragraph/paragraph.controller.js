@@ -190,6 +190,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     } else if (config.editorSetting.editOnDblClick) {
       editorSetting.isOutputHidden = config.editorSetting.editOnDblClick;
     }
+    if($scope.paragraph.runtimeInfos) {
+      const sparkInterpreterObj = $scope.$parent.interpreterSettings.find(function(inter) {
+        return inter.name.includes('spark');
+      });
+      if(sparkInterpreterObj.properties.hasOwnProperty(Utils.Constants['X-Frame-Params'])) {
+        $scope.paragraph.hasXframe = true;
+      }
+    }
   };
 
   const isTabCompletion = function() {
@@ -1912,9 +1920,13 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.showInterpreterWebView = function(url) {
+  $scope.showInterpreterWebViewInline = function(url) {
     $scope.modalAttr.showmodal = true;
     $scope.modalAttr.path = url;
     Utils.triggerClick('#modalLink');
+  };
+
+  $scope.showInterpreterWebViewNewTab= function(url) {
+    window.open(url);
   };
 }

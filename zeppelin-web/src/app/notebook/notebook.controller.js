@@ -138,6 +138,28 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
+  /** fetch all interpreter setting */
+  const getInterpreterSettings = function() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
+      .then(function(res) {
+        $scope.interpreterSettings = res.data.body;
+      }).catch(function(res) {
+        if (res.status === 401) {
+          ngToast.danger({
+            content: 'You don\'t have permission on this page',
+            verticalPosition: 'bottom',
+            timeout: '3000',
+          });
+          setTimeout(function() {
+            window.location = baseUrlSrv.getBase();
+          }, 3000);
+        }
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
+      });
+  };
+
+  getInterpreterSettings();
+
   /** Init the new controller */
   const initNotebook = function() {
     noteVarShareService.clear();

@@ -45,3 +45,8 @@ body {
     margin: 30px auto;
   }
 }
+.link {
+  text-decoration: none;
+  cursor: pointer;
+  color:#3071A9;
+}
