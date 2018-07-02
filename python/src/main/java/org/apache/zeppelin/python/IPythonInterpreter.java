@@ -178,7 +178,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         return "jupyter-client is not installed.";
       }
       if (!freezeOutput.contains("ipykernel=")) {
-        return "ipkernel is not installed";
+        return "ipykernel is not installed";
       }
       if (!freezeOutput.contains("ipython=")) {
         return "ipython is not installed";
