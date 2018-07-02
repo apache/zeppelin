@@ -60,7 +60,7 @@ export default class TableData extends Dataset {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
           let valueOfCol = Number(col);
-          if (valueOfCol > Number.MAX_SAFE_INTEGER || valueOfCol < Number.MIN_SAFE_INTEGER) {
+          if (isNaN(valueOfCol) || valueOfCol > Number.MAX_SAFE_INTEGER || valueOfCol < Number.MIN_SAFE_INTEGER) {
             valueOfCol = col;
           }
           cols.push(valueOfCol);
