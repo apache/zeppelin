@@ -136,7 +136,7 @@ public class ParallelScheduler implements Scheduler {
     private Scheduler scheduler;
     private Job job;
 
-    public JobRunner(Scheduler scheduler, Job job) {
+    JobRunner(Scheduler scheduler, Job job) {
       this.scheduler = scheduler;
       this.job = job;
     }

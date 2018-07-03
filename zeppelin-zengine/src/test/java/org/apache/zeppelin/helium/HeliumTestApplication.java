@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeliumTestApplication extends Application {
-  AtomicInteger numRun = new AtomicInteger(0);
+  private AtomicInteger numRun = new AtomicInteger(0);
   public HeliumTestApplication(ApplicationContext context) {
     super(context);
   }

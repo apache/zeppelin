@@ -58,6 +58,10 @@ body {
   visibility: hidden;
 }
 
+.noteAction .form-control-title > span {
+  visibility: visible;
+}
+
 .noteAction:hover span,
 .noteAction:hover button,
 .noteAction:hover form {

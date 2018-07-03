@@ -14,50 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.Application;
-
+import java.lang.management.ManagementFactory;
+import java.util.Collection;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.helium.Helium;
-import org.apache.zeppelin.helium.HeliumApplicationFactory;
-import org.apache.zeppelin.helium.HeliumBundleFactory;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.rest.ConfigurationsRestApi;
-import org.apache.zeppelin.rest.CredentialRestApi;
-import org.apache.zeppelin.rest.HeliumRestApi;
-import org.apache.zeppelin.rest.InterpreterRestApi;
-import org.apache.zeppelin.rest.LoginRestApi;
-import org.apache.zeppelin.rest.NotebookRepoRestApi;
-import org.apache.zeppelin.rest.NotebookRestApi;
-import org.apache.zeppelin.rest.SecurityRestApi;
-import org.apache.zeppelin.rest.ZeppelinRestApi;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.search.LuceneSearch;
-import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -76,6 +49,44 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.helium.Helium;
+import org.apache.zeppelin.helium.HeliumApplicationFactory;
+import org.apache.zeppelin.helium.HeliumBundleFactory;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.rest.ConfigurationsRestApi;
+import org.apache.zeppelin.rest.CredentialRestApi;
+import org.apache.zeppelin.rest.HeliumRestApi;
+import org.apache.zeppelin.rest.InterpreterRestApi;
+import org.apache.zeppelin.rest.LoginRestApi;
+import org.apache.zeppelin.rest.NotebookRepoRestApi;
+import org.apache.zeppelin.rest.NotebookRestApi;
+import org.apache.zeppelin.rest.SecurityRestApi;
+import org.apache.zeppelin.rest.ZeppelinRestApi;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.service.InterpreterService;
+import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.storage.ConfigStorage;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.utils.SecurityUtils;
+
 /**
  * Main class of Zeppelin.
  */
@@ -90,17 +101,36 @@ public class ZeppelinServer extends Application {
   private final InterpreterSettingManager interpreterSettingManager;
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+  private ConfigStorage configStorage;
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
-  private DependencyResolver depResolver;
+  private InterpreterService interpreterService;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
-    this.depResolver = new DependencyResolver(
-        conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
+    if (conf.getShiroPath().length() > 0) {
+      try {
+        Collection<Realm> realms = ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
+            .getSecurityManager()).getRealms();
+        if (realms.size() > 1) {
+          Boolean isIniRealmEnabled = false;
+          for (Object realm : realms) {
+            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+              isIniRealmEnabled = true;
+              break;
+            }
+          }
+          if (isIniRealmEnabled) {
+            throw new Exception("IniRealm/password based auth mechanisms should be exclusive. "
+                + "Consider removing [users] block from shiro.ini");
+          }
+        }
+      } catch (UnavailableSecurityManagerException e) {
+        LOG.error("Failed to initialise shiro configuraion", e);
+      }
+    }
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
@@ -114,46 +144,53 @@ public class ZeppelinServer extends Application {
        * packaged into binary package.
        */
       heliumBundleFactory = new HeliumBundleFactory(
+          conf,
+          null,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")),
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-spell")));
     } else {
       heliumBundleFactory = new HeliumBundleFactory(
+          conf,
+          null,
           new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
           new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
           new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")),
           new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
     }
 
-    this.helium = new Helium(
+    this.schedulerFactory = SchedulerFactory.singleton();
+    this.interpreterSettingManager = new InterpreterSettingManager(conf, notebookWsServer,
+        notebookWsServer, notebookWsServer);
+    this.replFactory = new InterpreterFactory(interpreterSettingManager);
+    this.notebookRepo = new NotebookRepoSync(conf);
+    this.noteSearchService = new LuceneSearch();
+    this.notebookAuthorization = NotebookAuthorization.getInstance();
+    this.credentials = new Credentials(
+        conf.credentialsPersist(),
+        conf.getCredentialsPath(),
+        conf.getCredentialsEncryptKey());
+    notebook = new Notebook(conf,
+        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
+            noteSearchService, notebookAuthorization, credentials);
+    this.configStorage = ConfigStorage.getInstance(conf);
+
+    ZeppelinServer.helium = new Helium(
         conf.getHeliumConfPath(),
         conf.getHeliumRegistry(),
         new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO),
             "helium-registry-cache"),
         heliumBundleFactory,
-        heliumApplicationFactory);
+        heliumApplicationFactory,
+        interpreterSettingManager);
 
     // create bundle
     try {
-      heliumBundleFactory.buildBundle(helium.getBundlePackagesToBundle());
+      heliumBundleFactory.buildAllPackages(helium.getBundlePackagesToBundle());
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
     }
-
-    this.schedulerFactory = new SchedulerFactory();
-    this.interpreterSettingManager = new InterpreterSettingManager(conf, depResolver,
-        new InterpreterOption(true));
-    this.replFactory = new InterpreterFactory(conf, notebookWsServer,
-        notebookWsServer, heliumApplicationFactory, depResolver, SecurityUtils.isAuthenticated(),
-        interpreterSettingManager);
-    this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch();
-    this.notebookAuthorization = NotebookAuthorization.init(conf);
-    this.credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath());
-    notebook = new Notebook(conf,
-        notebookRepo, schedulerFactory, replFactory, interpreterSettingManager, notebookWsServer,
-            noteSearchService, notebookAuthorization, credentials);
 
     // to update notebook from application event from remote process.
     heliumApplicationFactory.setNotebook(notebook);
@@ -162,11 +199,30 @@ public class ZeppelinServer extends Application {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+    this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
+
+    // Register MBean
+    if ("true".equals(System.getenv("ZEPPELIN_ENABLE_JMX"))) {
+      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+      try {
+        mBeanServer.registerMBean(
+            notebookWsServer,
+            new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
+        mBeanServer.registerMBean(
+            interpreterSettingManager,
+            new ObjectName(
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
+      } catch (InstanceAlreadyExistsException
+          | MBeanRegistrationException
+          | MalformedObjectNameException
+          | NotCompliantMBeanException e) {
+        LOG.error("Failed to register MBeans", e);
+      }
+    }
   }
 
   public static void main(String[] args) throws InterruptedException {
-
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
@@ -177,7 +233,7 @@ public class ZeppelinServer extends Application {
     // Web UI
     final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
-    // REST api
+    // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
 
     // Notebook server
@@ -189,6 +245,9 @@ public class ZeppelinServer extends Application {
     LOG.info("Starting zeppelin server");
     try {
       jettyWebServer.start(); //Instantiates ZeppelinServer
+      if (conf.getJettyName() != null) {
+        org.eclipse.jetty.http.HttpGenerator.setJettyVersion(conf.getJettyName());
+      }
     } catch (Exception e) {
       LOG.error("Error while running jettyServer", e);
       System.exit(-1);
@@ -200,7 +259,9 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyWebServer.stop();
-          notebook.getInterpreterSettingManager().shutdown();
+          if (!conf.isRecoveryEnabled()) {
+            ZeppelinServer.notebook.getInterpreterSettingManager().close();
+          }
           notebook.close();
           Thread.sleep(3000);
         } catch (Exception e) {
@@ -209,7 +270,6 @@ public class ZeppelinServer extends Application {
         LOG.info("Bye");
       }
     });
-
 
     // when zeppelin is started inside of ide (especially for eclipse)
     // for graceful shutdown, input any key in console window
@@ -223,11 +283,12 @@ public class ZeppelinServer extends Application {
     }
 
     jettyWebServer.join();
-    ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    if (!conf.isRecoveryEnabled()) {
+      ZeppelinServer.notebook.getInterpreterSettingManager().close();
+    }
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-
     final Server server = new Server();
     ServerConnector connector;
 
@@ -237,7 +298,6 @@ public class ZeppelinServer extends Application {
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(conf.getServerSslPort());
       httpConfig.setOutputBufferSize(32768);
-      httpConfig.setRequestHeaderSize(8192);
       httpConfig.setResponseHeaderSize(8192);
       httpConfig.setSendServerVersion(true);
 
@@ -256,6 +316,7 @@ public class ZeppelinServer extends Application {
       connector = new ServerConnector(server);
     }
 
+    configureRequestHeaderSize(conf, connector);
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
@@ -272,14 +333,21 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static void setupNotebookServer(WebAppContext webapp,
-                                          ZeppelinConfiguration conf) {
+  private static void configureRequestHeaderSize(ZeppelinConfiguration conf,
+          ServerConnector connector) {
+    HttpConnectionFactory cf = (HttpConnectionFactory)
+            connector.getConnectionFactory(HttpVersion.HTTP_1_1.toString());
+    int requestHeaderSize = conf.getJettyRequestHeaderSize();
+    cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
+  }
+
+  private static void setupNotebookServer(WebAppContext webapp, ZeppelinConfiguration conf) {
     notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
-    final ServletContextHandler cxfContext = new ServletContextHandler(
+    final ServletContextHandler context = new ServletContextHandler(
         ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
@@ -306,29 +374,29 @@ public class ZeppelinServer extends Application {
     return sslContextFactory;
   }
 
-  private static void setupRestApiContextHandler(WebAppContext webapp,
-                                                 ZeppelinConfiguration conf) {
+  private static void setupRestApiContextHandler(WebAppContext webapp, ZeppelinConfiguration conf) {
+    final ServletHolder servletHolder = new ServletHolder(
+            new org.glassfish.jersey.servlet.ServletContainer());
 
-    final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
-    cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
-    cxfServletHolder.setName("rest");
-    cxfServletHolder.setForcedPath("rest");
+    servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
+    servletHolder.setName("rest");
+    servletHolder.setForcedPath("rest");
 
     webapp.setSessionHandler(new SessionHandler());
-    webapp.addServlet(cxfServletHolder, "/api/*");
+    webapp.addServlet(servletHolder, "/api/*");
 
     String shiroIniPath = conf.getShiroPath();
     if (!StringUtils.isBlank(shiroIniPath)) {
       webapp.setInitParameter("shiroConfigLocations", new File(shiroIniPath).toURI().toString());
-      SecurityUtils.initSecurityManager(shiroIniPath);
-      webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class));
+      SecurityUtils.setIsEnabled(true);
+      webapp.addFilter(ShiroFilter.class, "/api/*", EnumSet.allOf(DispatcherType.class))
+              .setInitParameter("staticSecurityManagerEnabled", "true");
       webapp.addEventListener(new EnvironmentLoaderListener());
     }
   }
 
   private static WebAppContext setupWebAppContext(ContextHandlerCollection contexts,
-                                                  ZeppelinConfiguration conf) {
-
+          ZeppelinConfiguration conf) {
     WebAppContext webApp = new WebAppContext();
     webApp.setContextPath(conf.getServerContextPath());
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
@@ -356,7 +424,6 @@ public class ZeppelinServer extends Application {
             Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
 
     return webApp;
-
   }
 
   @Override
@@ -369,12 +436,12 @@ public class ZeppelinServer extends Application {
   public Set<Object> getSingletons() {
     Set<Object> singletons = new HashSet<>();
 
-    /** Rest-api root endpoint */
+    /* Rest-api root endpoint */
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
-    NotebookRestApi notebookApi
-      = new NotebookRestApi(notebook, notebookWsServer, noteSearchService);
+    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer,
+            noteSearchService);
     singletons.add(notebookApi);
 
     NotebookRepoRestApi notebookRepoApi = new NotebookRepoRestApi(notebookRepo, notebookWsServer);
@@ -383,8 +450,8 @@ public class ZeppelinServer extends Application {
     HeliumRestApi heliumApi = new HeliumRestApi(helium, notebook);
     singletons.add(heliumApi);
 
-    InterpreterRestApi interpreterApi = new InterpreterRestApi(interpreterSettingManager,
-        notebookWsServer);
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(interpreterService,
+        interpreterSettingManager, notebookWsServer);
     singletons.add(interpreterApi);
 
     CredentialRestApi credentialApi = new CredentialRestApi(credentials);
@@ -403,11 +470,11 @@ public class ZeppelinServer extends Application {
   }
 
   /**
-   * Check if it is source build or binary package
+   * Check if it is source build or binary package.
+   *
    * @return
    */
   private static boolean isBinaryPackage(ZeppelinConfiguration conf) {
     return !new File(conf.getRelativeDir("zeppelin-web")).isDirectory();
   }
 }
-

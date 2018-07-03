@@ -16,12 +16,12 @@
  */
 package org.apache.zeppelin.utils;
 
-import org.apache.zeppelin.util.Util;
-
 import java.util.Locale;
 
+import org.apache.zeppelin.util.Util;
+
 /**
- * CommandLine Support Class
+ * CommandLine Support Class.
  */
 public class CommandLineUtils {
   public static void main(String[] args) {
@@ -30,12 +30,12 @@ public class CommandLineUtils {
     }
 
     String usage = args[0].toLowerCase(Locale.US);
-    switch (usage){
-        case "--version":
-        case "-v":
-          System.out.println(Util.getVersion());
-          break;
-        default:
+    switch (usage) {
+      case "--version":
+      case "-v":
+        System.out.println(Util.getVersion());
+        break;
+      default:
     }
   }
 }

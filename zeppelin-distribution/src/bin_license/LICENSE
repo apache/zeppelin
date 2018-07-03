@@ -32,14 +32,13 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Avro (org.apache.avro:avro:1.7.7 - http://avro.apache.org)
     (Apache 2.0) Apache Curator (org.apache.curator:curator:2.4.0 - http://curator.apache.org/)
     (Apache 2.0) Apache Cassandra (http://cassandra.apache.org/)
-    (Apache 2.0) Apache CXF (http://cxf.apache.org/)
     (Apache 2.0) Apache HBase (http://hbase.apache.org/)
     (Apache 2.0) Apache Ignite (http://ignite.apache.org/)
     (Apache 2.0) Apache Kylin (http://kylin.apache.org/)
     (Apache 2.0) Apache Lens (http://lens.apache.org/)
     (Apache 2.0) Apache Flink (http://flink.apache.org/)
     (Apache 2.0) Apache Beam (http://beam.apache.org/)
-    (Apache 2.0) Apache Thrift 0.9.2 (org.apache.thrift:libthrift:0.9.2 - http://thrift.apache.org/)
+    (Apache 2.0) Apache Thrift 0.9.3 (org.apache.thrift:libthrift:0.9.3 - http://thrift.apache.org/)
     (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
     (Apache 2.0) Apache Zookeeper (org.apache.zookeeper:zookeeper:jar:3.4.5 - http://zookeeper.apache.org/)
     (Apache 2.0) Chill (com.twitter:chill:0.8.0 - https://github.com/twitter/chill/)
@@ -96,8 +95,8 @@ The following components are provided under Apache License.
     (Apache 2.0) Lucene Suggest (org.apache.lucene:lucene-suggest:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-suggest)
     (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
     (Apache 2.0) Joda convert (org.joda:joda-convert:1.8.1 - http://joda-convert.sourceforge.net)
-    (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
-    (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
+    (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.3.2 - https://shiro.apache.org)
+    (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.3.2 - https://shiro.apache.org)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
     (Apache 2.0) Protocol Buffers (com.google.protobuf:protobuf-java:2.5.0 - https://github.com/google/protobuf/releases)
     (Apache 2.0) Alluxio Shell (org.alluxio:alluxio-shell:1.0.0 - http://alluxio.org)
@@ -118,6 +117,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Utility classes for Jetty (org.mortbay.jetty:jetty-util:6.1.26 - http://javadox.com/org.mortbay.jetty/jetty/6.1.26/overview-tree.html)
     (Apache 2.0) Servlet API (org.mortbay.jetty:servlet-api:2.5-20081211 - https://en.wikipedia.org/wiki/Jetty_(web_server))
     (Apache 2.0) Google HTTP Client Library for Java (com.google.http-client:google-http-client-jackson2:1.21.0 - https://github.com/google/google-http-java-client/tree/dev/google-http-client-jackson2)
+    (Apache 2.0) validation-api (javax.validation - http://beanvalidation.org/)
     (Apache 2.0) pegdown (org.pegdown:pegdown:1.6.0 - https://github.com/sirthias/pegdown)
     (Apache 2.0) parboiled-java (org.parboiled:parboiled-java:1.1.7 - https://github.com/sirthias/parboiled)
     (Apache 2.0) parboiled-core (org.parboiled:parboiled-core:1.1.7 - https://github.com/sirthias/parboiled)
@@ -216,6 +216,8 @@ The following components are provided under Apache License.
     (Apache 2.0) Scalatest 2.2.4 (org.scalatest:scalatest_2.10:2.2.4 - https://github.com/scalatest/scalatest)
     (Apache 2.0) frontend-maven-plugin 1.3 (com.github.eirslett:frontend-maven-plugin:1.3 - https://github.com/eirslett/frontend-maven-plugin/blob/frontend-plugins-1.3/LICENSE
     (Apache 2.0) frontend-plugin-core 1.3 (com.github.eirslett:frontend-plugin-core) - https://github.com/eirslett/frontend-maven-plugin/blob/frontend-plugins-1.3/LICENSE
+    (Apache 2.0) mongo-java-driver 3.4.1 (org.mongodb:mongo-java-driver:3.4.1) - https://github.com/mongodb/mongo-java-driver/blob/master/LICENSE.txt
+    (Apache 2.0) Neo4j Java Driver (https://github.com/neo4j/neo4j-java-driver) - https://github.com/neo4j/neo4j-java-driver/blob/1.4.3/LICENSE.txt
 
 ========================================================================
 MIT licenses
@@ -228,7 +230,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Json3 v3.3.1 (http://bestiejs.github.io/json3) - https://github.com/bestiejs/json3/blob/v3.3.1/LICENSE
     (The MIT License) es5-shim v3.1.0 (https://github.com/es-shims/es5-shim) - https://github.com/es-shims/es5-shim/blob/v3.1.0/LICENSE
     (The MIT License) bootstrap v3.2.0 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.2.0/LICENSE
-    (The MIT License) UI Bootstrap v0.13.0 (http://angular-ui.github.io/bootstrap/) - https://github.com/angular-ui/bootstrap/blob/0.13.0/LICENSE
+    (The MIT License) UI Bootstrap v2.5.0 (http://angular-ui.github.io/bootstrap/) - https://github.com/angular-ui/bootstrap/blob/2.5.0/LICENSE
     (The MIT License) bootstrap3-dialog v1.34.7 (https://github.com/nakupanda/bootstrap3-dialog/tree/v1.34.7) - https://github.com/nakupanda/bootstrap3-dialog/tree/v1.34.7
     (The MIT License) Angular Websocket v1.0.13 (http://angularclass.github.io/angular-websocket/) - https://github.com/AngularClass/angular-websocket/blob/v1.0.13/LICENSE
     (The MIT License) UI.Ace v0.1.1 (http://angularclass.github.io/angular-websocket/) - https://github.com/angular-ui/ui-ace/blob/master/LICENSE
@@ -243,9 +245,9 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) lodash v3.9.3 (https://lodash.com/) - https://github.com/lodash/lodash/blob/3.9.3/LICENSE.txt
     (The MIT License) angular-filter v0.5.4 (https://github.com/a8m/angular-filter) - https://github.com/a8m/angular-filter/blob/v0.5.4/license.md
     (The MIT License) ngToast v2.0.0 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
-    (The MIT License) Handsontable v0.24.2 (https://github.com/handsontable/handsontable) - https://github.com/handsontable/handsontable/blob/master/LICENSE
-    (The MIT License) Zeroclipboard v2.2.0 (https://github.com/zeroclipboard/zeroclipboard) - https://github.com/zeroclipboard/zeroclipboard/blob/v2.2.0/LICENSE
-    (The MIT License) Moment v2.9.0 (https://github.com/moment/moment) - https://github.com/moment/moment/blob/2.9.0/LICENSE
+    (The MIT License) moment v2.18.1 (https://github.com/moment/moment) - https://github.com/moment/moment/blob/2.18.1/LICENSE
+    (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/1.3.0/LICENSE
+    (The MIT License) angular-ui-grid v4.0.4 (https://github.com/angular-ui/ui-grid) - https://github.com/angular-ui/ui-grid/blob/v4.0.4/LICENSE.md
     (The MIT License) Pikaday v1.3.2 (https://github.com/dbushell/Pikaday) - https://github.com/dbushell/Pikaday/blob/1.3.2/LICENSE
     (The MIT License) slf4j v1.7.10 (org.slf4j:slf4j-api:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
     (The MIT License) slf4j v1.7.21 (org.slf4j:slf4j-simple:1.7.21 - http://www.slf4j.org) - http://www.slf4j.org/license.html
@@ -253,7 +255,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
     (The MIT License) AnchorJS (https://github.com/bryanbraun/anchorjs) - https://github.com/bryanbraun/anchorjs/blob/master/README.md#license
     (The MIT License) moment-duration-format v1.3.0 (https://github.com/jsmreese/moment-duration-format) - https://github.com/jsmreese/moment-duration-format/blob/master/LICENSE
-    (The MIT License) github-markdown-css 2.4.0 (https://github.com/sindresorhus/github-markdown-css) - https://github.com/sindresorhus/github-markdown-css/blob/gh-pages/license
+    (The MIT License) github-markdown-css 2.6.0 (https://github.com/sindresorhus/github-markdown-css) - https://github.com/sindresorhus/github-markdown-css/blob/v2.6.0/license
     (The MIT License) scopt (com.github.scopt:scopt_2.10:3.2.0 - https://github.com/scopt/scopt)
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
     (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.16 - http://www.slf4j.org)
@@ -268,7 +270,11 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Java LSH 0.10 (info.debatty:java-lsh:0.10 - https://github.com/tdebatty/java-LSH)
     (The MIT License) JSoup 1.6.1 (org.jsoup:jsoup:1.6.1 - https://github.com/jhy/jsoup/)
     (The MIT License) Unirest 1.4.9 (com.mashape.unirest:unirest-java:1.4.9 - https://github.com/Mashape/unirest-java)
-    (The MIT License) ngclipboard v1.1.1 (https://github.com/sachinchoolur/ngclipboard) - https://github.com/sachinchoolur/ngclipboard/blob/1.1.1/LICENSE)
+    (The MIT License) ngclipboard v1.1.1 (https://github.com/sachinchoolur/ngclipboard) - https://github.com/sachinchoolur/ngclipboard/blob/1.1.1/LICENSE
+    (The MIT License) headroom.js 0.9.3 (https://github.com/WickyNilliams/headroom.js) - https://github.com/WickyNilliams/headroom.js/blob/master/LICENSE
+    (The MIT License) angular-viewport-watch 0.135 (https://github.com/wix/angular-viewport-watch) - https://github.com/wix/angular-viewport-watch/blob/master/LICENSE
+    (The MIT License) ansi-up 2.0.2 (https://github.com/drudru/ansi_up) - https://github.com/drudru/ansi_up#license
+    (The MIT License) bcpkix-jdk15on 1.52 (org.bouncycastle:bcpkix-jdk15on:1.52 https://github.com/bcgit/bc-java) - https://github.com/bcgit/bc-java/blob/master/LICENSE.html
 
 ========================================================================
 BSD-style licenses
@@ -305,7 +311,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
 
 The following components are provided under the BSD-style License.
 
-    (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
+    (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.5.4.201711221230-r - https://eclipse.org/jgit/)
     (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:3.0.3 - http://code.google.com/p/kryo/)
     (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.3 - http://code.google.com/p/minlog/)
     (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)
@@ -346,9 +352,10 @@ The following components are provided under the CDDL License.
 
     (CDDL 1.0) javax.activation (javax.activation:activation:jar:1.1.1 - http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
     (CDDL 1.0) java.annotation (javax.annotation:javax.annotation-api:jar:1.2:compile - http://jcp.org/en/jsr/detail?id=250)
-    (CDDL 1.1) Jersey (com.sun.jersey:jersey:jar:1.9 - https://jersey.java.net/)
     (CDDL 1.1) jersey-core (org.glassfish.jersey.core:jersey-core:2.22.2 - https://jersey.java.net/)
-    (CDDL 1.1) hk2 (org.glassfish.hk2 - https://hk2.java.net/2.5.0-b03/)
+    (CDDL 1.0) javax.ws.rs-api (javax.ws.rs - https://jax-rs-spec.java.net/)
+    (CDDL 1.1) jersey-client (org.glassfish.jersey.client:jersey-core:2.22.2 - https://jersey.java.net/)
+    (CDDL 1.1) jersey-media (org.glassfish.jersey.media:jersey-core:2.22.2 - https://jersey.java.net/)
     (CDDL 1.1) jersey-core (com.sun.jersey:jersey-core:1.9 - https://jersey.java.net/jersey-core/)
     (CDDL 1.1) jersey-json (com.sun.jersey:jersey-json:1.9 - https://jersey.java.net/jersey-json/)
     (CDDL 1.1) jersey-server (com.sun.jersey:jersey-server:1.9 - https://jersey.java.net/jersey-server/)

@@ -104,9 +104,16 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Local repository for dependency loader</td>
   </tr>
   <tr>
-    <td>zeppelin.pyspark.python</td>
+    <td>PYSPARK_PYTHON</td>
     <td>python</td>
-    <td>Python command to run pyspark with</td>
+    <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code>).
+            Property <code>spark.pyspark.python</code> take precedence if it is set</td>
+  </tr>
+  <tr>
+    <td>PYSPARK_DRIVER_PYTHON</td>
+    <td>python</td>
+    <td>Python binary executable to use for PySpark in driver only (default is <code>PYSPARK_PYTHON</code>).
+            Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
   </tr>
   <tr>
     <td>zeppelin.spark.concurrentSQL</td>
@@ -132,6 +139,21 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>zeppelin.spark.importImplicit</td>
     <td>true</td>
     <td>Import implicits, UDF collection, and sql if set true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.enableSupportedVersionCheck</td>
+    <td>true</td>
+    <td>Do not change - developer only setting, not for production use</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.sql.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
+  </tr>
+  <tr>
+  <td>zeppelin.spark.uiWebUrl</td>
+    <td></td>
+    <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
 </table>
 
@@ -169,12 +191,21 @@ For example,
  * **local[*]** in local mode
  * **spark://master:7077** in standalone cluster
  * **yarn-client** in Yarn client mode
+ * **yarn-cluster** in Yarn cluster mode
  * **mesos://host:5050** in Mesos cluster
 
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. 
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way.
 For the further information about Spark & Zeppelin version compatibility, please refer to "Available Interpreters" section in [Zeppelin download page](https://zeppelin.apache.org/download.html).
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
+
+### 3. Yarn mode
+Zeppelin support both yarn client and yarn cluster mode (yarn cluster mode is supported from 0.8.0). For yarn mode, you must specify `SPARK_HOME` & `HADOOP_CONF_DIR`.
+You can either specify them in `zeppelin-env.sh`, or in interpreter setting page. Specifying them in `zeppelin-env.sh` means you can use only one version of `spark` & `hadoop`. Specifying them
+in interpreter setting page means you can use multiple versions of `spark` & `hadoop` in one zeppelin instance.
+
+### 4. New Version of SparkInterpreter
+There's one new version of SparkInterpreter with better spark support and code completion starting from Zeppelin 0.8.0. We enable it by default, but user can still use the old version of SparkInterpreter by setting `zeppelin.spark.useNew` as `false` in its interpreter setting.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
@@ -184,14 +215,21 @@ Staring from 0.6.1 SparkSession is available as variable `spark` when you are us
 
 <a name="dependencyloading"> </a>
 
+### How to pass property to SparkConf
+
+There're 2 kinds of properties that would be passed to SparkConf
+
+ * Standard spark property (prefix with `spark.`). e.g. `spark.executor.memory` will be passed to `SparkConf`
+ * Non-standard spark property (prefix with `zeppelin.spark.`).  e.g. `zeppelin.spark.property_1`, `property_1` will be passed to `SparkConf`
+
 ## Dependency Management
 There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
 
 ### 1. Setting Dependencies via Interpreter Setting
-Please see [Dependency Management](../manual/dependencymanagement.html) for the details.
+Please see [Dependency Management](../usage/interpreter/dependency_management.html) for the details.
 
 ### 2. Loading Spark Properties
-Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. 
+Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations.
 The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properties that user can set to distribute libraries are:
 
 <table class="table-configuration">
@@ -224,7 +262,7 @@ Here are few examples:
   ```bash
     export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
   ```
-    
+
 * `SPARK_HOME/conf/spark-defaults.conf`
 
   ```
@@ -284,116 +322,33 @@ z.load("groupId:artifactId:version").local()
 
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
-
-### Object Exchange
-`ZeppelinContext` extends map and it's shared between Scala and Python environment.
-So you can put some objects from Scala and read it from Python, vice versa.
-
-<div class="codetabs">
-  <div data-lang="scala" markdown="1">
-
-{% highlight scala %}
-// Put object from scala
-%spark
-val myObject = ...
-z.put("objName", myObject)
-
-// Exchanging data frames
-myScalaDataFrame = ...
-z.put("myScalaDataFrame", myScalaDataFrame)
-
-val myPythonDataFrame = z.get("myPythonDataFrame").asInstanceOf[DataFrame]
-{% endhighlight %}
-
-  </div>
-  <div data-lang="python" markdown="1">
-
-{% highlight python %}
-# Get object from python
-%spark.pyspark
-myObject = z.get("objName")
-
-# Exchanging data frames
-myPythonDataFrame = ...
-z.put("myPythonDataFrame", postsDf._jdf)
-
-myScalaDataFrame = DataFrame(z.get("myScalaDataFrame"), sqlContext)
-{% endhighlight %}
-
-  </div>
-</div>
-
-### Form Creation
-
-`ZeppelinContext` provides functions for creating forms.
-In Scala and Python environments, you can create forms programmatically.
-<div class="codetabs">
-  <div data-lang="scala" markdown="1">
-
-{% highlight scala %}
-%spark
-/* Create text input form */
-z.input("formName")
-
-/* Create text input form with default value */
-z.input("formName", "defaultValue")
-
-/* Create select form */
-z.select("formName", Seq(("option1", "option1DisplayName"),
-                         ("option2", "option2DisplayName")))
-
-/* Create select form with default value*/
-z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
-                                    ("option2", "option2DisplayName")))
-{% endhighlight %}
-
-  </div>
-  <div data-lang="python" markdown="1">
-
-{% highlight python %}
-%spark.pyspark
-# Create text input form
-z.input("formName")
-
-# Create text input form with default value
-z.input("formName", "defaultValue")
-
-# Create select form
-z.select("formName", [("option1", "option1DisplayName"),
-                      ("option2", "option2DisplayName")])
-
-# Create select form with default value
-z.select("formName", [("option1", "option1DisplayName"),
-                      ("option2", "option2DisplayName")], "option1")
-{% endhighlight %}
-
-  </div>
-</div>
-
-In sql environment, you can create form in simple template.
-
-```sql
-%spark.sql
-select * from ${table=defaultTableName} where text like '%${search}%'
-```
-
-To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
-
+See [Zeppelin-Context](../usage/other_features/zeppelin_context.html) for more details.
 
 ## Matplotlib Integration (pyspark)
-Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`, a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html), since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through utilizing Zeppelin's built-in [Angular Display System](../displaysystem/back-end-angular.html), as shown below:
+Both the `python` and `pyspark` interpreters have built-in support for inline visualization using `matplotlib`,
+a popular plotting library for python. More details can be found in the [python interpreter documentation](../interpreter/python.html),
+since matplotlib support is identical. More advanced interactive plotting can be done with pyspark through
+utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/angular_backend.html), as shown below:
 
-<img class="img-responsive" src="../assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
 ## Interpreter setting option
 
-You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter. Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental). It creates separated SparkContext per each notebook in `isolated` mode.
+You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter.
+Spark interpreter creates separated Scala compiler per each notebook but share a single SparkContext in `scoped` mode (experimental).
+It creates separated SparkContext per each notebook in `isolated` mode.
+
+## IPython support
+
+By default, zeppelin would use IPython in `pyspark` when IPython is available, Otherwise it would fall back to the original PySpark implementation.
+If you don't want to use IPython, then you can set `zeppelin.pyspark.useIPython` as `false` in interpreter setting. For the IPython features, you can refer doc
+[Python Interpreter](python.html)
 
 
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
-<img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 ### Configuration Setup
 
@@ -405,9 +360,12 @@ This is to make the server communicate with KDC.
 
 3. Add the two properties below to Spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
-        spark.yarn.principal
-        spark.yarn.keytab
+    ```
+    spark.yarn.principal
+    spark.yarn.keytab
+    ```
 
   > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin!
+

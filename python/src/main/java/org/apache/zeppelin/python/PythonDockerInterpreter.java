@@ -1,30 +1,38 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,6 +45,7 @@ public class PythonDockerInterpreter extends Interpreter {
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
+  private File zeppelinHome;
 
   public PythonDockerInterpreter(Properties property) {
     super(property);
@@ -44,7 +53,11 @@ public class PythonDockerInterpreter extends Interpreter {
 
   @Override
   public void open() {
-
+    if (System.getenv("ZEPPELIN_HOME") != null) {
+      zeppelinHome = new File(System.getenv("ZEPPELIN_HOME"));
+    } else {
+      zeppelinHome = Paths.get("..").toAbsolutePath().toFile();
+    }
   }
 
   @Override
@@ -53,7 +66,9 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
+    File pythonWorkDir = getPythonInterpreter().getPythonWorkDir();
     InterpreterOutput out = context.out;
 
     Matcher activateMatcher = activatePattern.matcher(st);
@@ -66,7 +81,25 @@ public class PythonDockerInterpreter extends Interpreter {
     } else if (activateMatcher.matches()) {
       String image = activateMatcher.group(1);
       pull(out, image);
-      setPythonCommand("docker run -i --rm " + image + " python -iu");
+
+      // mount pythonscript dir
+      String mountPythonScript = "-v " + pythonWorkDir.getAbsolutePath() +
+          ":/_python_workdir ";
+
+      // mount zeppelin dir
+      String mountPy4j = "-v " + zeppelinHome.getAbsolutePath() +
+          ":/_zeppelin ";
+
+      // set PYTHONPATH
+      String pythonPath = ".:/_python_workdir/py4j-src-0.10.7.zip:/_python_workdir";
+
+      setPythonCommand("docker run -i --rm " +
+          mountPythonScript +
+          mountPy4j +
+          "-e PYTHONPATH=\"" + pythonPath + "\" " +
+          image + " " +
+          getPythonInterpreter().getPythonExec() + " " +
+          "/_python_workdir/zeppelin_python.py");
       restartPythonProcess();
       out.clear();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");
@@ -79,9 +112,10 @@ public class PythonDockerInterpreter extends Interpreter {
     }
   }
 
-  public void setPythonCommand(String cmd) {
+
+  public void setPythonCommand(String cmd) throws InterpreterException {
     PythonInterpreter python = getPythonInterpreter();
-    python.setPythonCommand(cmd);
+    python.setPythonExec(cmd);
   }
 
   private void printUsage(InterpreterOutput out) {
@@ -114,21 +148,27 @@ public class PythonDockerInterpreter extends Interpreter {
    */
   @Override
   public Scheduler getScheduler() {
-    PythonInterpreter pythonInterpreter = getPythonInterpreter();
-    if (pythonInterpreter != null) {
-      return pythonInterpreter.getScheduler();
-    } else {
+    PythonInterpreter pythonInterpreter = null;
+    try {
+      pythonInterpreter = getPythonInterpreter();
+      if (pythonInterpreter != null) {
+        return pythonInterpreter.getScheduler();
+      } else {
+        return null;
+      }
+    } catch (InterpreterException e) {
+      e.printStackTrace();
       return null;
     }
   }
 
-  private void restartPythonProcess() {
+  private void restartPythonProcess() throws InterpreterException {
     PythonInterpreter python = getPythonInterpreter();
     python.close();
     python.open();
   }
 
-  protected PythonInterpreter getPythonInterpreter() {
+  protected PythonInterpreter getPythonInterpreter() throws InterpreterException {
     LazyOpenInterpreter lazy = null;
     PythonInterpreter python = null;
     Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
@@ -147,7 +187,7 @@ public class PythonDockerInterpreter extends Interpreter {
     return python;
   }
 
-  public boolean pull(InterpreterOutput out, String image) {
+  public boolean pull(InterpreterOutput out, String image) throws InterpreterException {
     int exit = 0;
     try {
       exit = runCommand(out, "docker", "pull", image);

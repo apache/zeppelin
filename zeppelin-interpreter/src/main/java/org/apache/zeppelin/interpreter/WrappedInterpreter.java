@@ -21,5 +21,5 @@ package org.apache.zeppelin.interpreter;
  * WrappedInterpreter
  */
 public interface WrappedInterpreter {
-  public Interpreter getInnerInterpreter();
+  Interpreter getInnerInterpreter();
 }

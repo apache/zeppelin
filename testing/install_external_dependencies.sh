@@ -20,8 +20,8 @@
 set -ev
 touch ~/.environ
 
-# Install R dependencies if R profiles are used
-if [[ ${PROFILE/"-Pr "} != $PROFILE ]] || [[ ${PROFILE/"-Psparkr "} != $PROFILE ]] ; then
+# Install R dependencies if SPARKR is true
+if [[ "${SPARKR}" = "true" ]] ; then
   echo "R_LIBS=~/R" > ~/.Renviron
   echo "export R_LIBS=~/R" >> ~/.environ
   source ~/.environ
@@ -30,6 +30,7 @@ if [[ ${PROFILE/"-Pr "} != $PROFILE ]] || [[ ${PROFILE/"-Psparkr "} != $PROFILE 
     R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   fi
 fi
 
@@ -44,5 +45,6 @@ if [[ -n "$PYTHON" ]] ; then
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib pandasql
+  conda install -q pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10
+  pip install -q ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 fi

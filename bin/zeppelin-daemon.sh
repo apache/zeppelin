@@ -67,6 +67,10 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+fi
+
 # Add jdbc connector jar
 # ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/jdbc-connector-jar"
 
@@ -213,18 +217,6 @@ function stop() {
       action_msg "${ZEPPELIN_NAME} stop" "${SET_OK}"
     fi
   fi
-
-  # list all pid that used in remote interpreter and kill them
-  for f in ${ZEPPELIN_PID_DIR}/*.pid; do
-    if [[ ! -f ${f} ]]; then
-      continue;
-    fi
-
-    pid=$(cat ${f})
-    wait_for_zeppelin_to_die $pid 20
-    $(rm -f ${f})
-  done
-
 }
 
 function find_zeppelin_process() {

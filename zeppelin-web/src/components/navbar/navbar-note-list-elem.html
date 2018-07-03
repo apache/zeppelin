@@ -1,0 +1,50 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<a class="notebook-list-item" ng-if="navbar.isFilterNote(node) && !node.children" href="#/notebook/{{node.id}}">
+  <i style="font-size: 10px; margin-right: 2px; margin-left: 10px;" ng-class="query.q && node.isTrash ? 'fa fa-trash-o' : 'icon-doc'" ></i>
+  <span>{{noteName(node)}}</span>
+</a>
+
+<li ng-if="node.children">
+  <expand-collapse>
+      <div ng-mouseenter="showFolderButton=true" ng-mouseleave="showFolderButton=false">
+        <a class="notebook-list-item" href="javascript:void(0)">
+          <div ng-if="node.id !== navbar.TRASH_FOLDER_ID">
+            <i style="font-size: 10px; margin-right: 2px; margin-left: 10px" class="fa fa-folder"></i>
+            <span>{{noteName(node)}}</span>
+            <i data-toggle="modal" data-target="#noteCreateModal" ng-controller="NoteCreateCtrl as noteCreateCtrl"
+              ng-click="noteCreateCtrl.getInterpreterSettings()" data-path="{{node.id}}"
+              style="font-size: 12px; margin-left: 5px; margin-right: 5px;"
+              ng-show="showFolderButton" class="fa fa-plus"
+              uib-tooltip="Create new note"
+              tooltip-placement="{{calculateTooltipPlacement(node)}}">
+            </i>
+          </div>
+          <div ng-if="node.id === navbar.TRASH_FOLDER_ID">
+            <i style="font-size: 12px; margin-right: 2px; margin-left: 10px;" class="fa fa-trash-o"></i>
+            <span>Trash</span>
+          </div>
+        </a>
+      </div>
+  </expand-collapse>
+  <div class="expandable" style="color: black;">
+    <ul>
+      <li ng-repeat="node in node.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by $index"
+          ng-class="{'active' : navbar.isActive(node.id)}"
+          ng-include="'components/navbar/navbar-note-list-elem.html'">
+      </li>
+    </ul>
+  </div>
+</li>

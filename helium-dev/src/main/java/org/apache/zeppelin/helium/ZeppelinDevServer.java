@@ -38,18 +38,18 @@ public class ZeppelinDevServer extends
 
   private DevInterpreter interpreter = null;
   private InterpreterOutput out;
-  public ZeppelinDevServer(int port) throws TException {
-    super(port);
+  public ZeppelinDevServer(int port) throws TException, IOException {
+    super(null, port, null, ":");
   }
 
   @Override
-  protected Interpreter getInterpreter(String sessionKey, String className) throws TException {
+  protected Interpreter getInterpreter(String sessionId, String className) throws TException {
     synchronized (this) {
       InterpreterGroup interpreterGroup = getInterpreterGroup();
       if (interpreterGroup == null || interpreterGroup.isEmpty()) {
         createInterpreter(
             "dev",
-            sessionKey,
+            sessionId,
             DevInterpreter.class.getName(),
             new HashMap<String, String>(),
             "anonymous");
@@ -57,18 +57,18 @@ public class ZeppelinDevServer extends
       }
     }
 
-    Interpreter intp = super.getInterpreter(sessionKey, className);
+    Interpreter intp = super.getInterpreter(sessionId, className);
     interpreter = (DevInterpreter) (
         ((LazyOpenInterpreter) intp).getInnerInterpreter());
     interpreter.setInterpreterEvent(this);
-    return super.getInterpreter(sessionKey, className);
+    return super.getInterpreter(sessionId, className);
   }
 
   @Override
   protected InterpreterOutput createInterpreterOutput(
       final String noteId, final String paragraphId) {
     if (out == null) {
-      final RemoteInterpreterEventClient eventClient = getEventClient();
+      final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
         out = new InterpreterOutput(new InterpreterOutputListener() {
           @Override

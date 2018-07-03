@@ -16,55 +16,58 @@
  */
 package org.apache.zeppelin.utils;
 
+import com.google.common.collect.Sets;
+
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.text.IniRealm;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.realm.LdapRealm;
-import org.mortbay.log.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.naming.NamingException;
 
-import com.google.common.collect.Sets;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.LdapRealm;
+import org.apache.zeppelin.server.ZeppelinServer;
 
 /**
- * Tools for securing Zeppelin
+ * Tools for securing Zeppelin.
  */
 public class SecurityUtils {
-
   private static final String ANONYMOUS = "anonymous";
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
   private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
-  
-  public static void initSecurityManager(String shiroPath) {
-    IniSecurityManagerFactory factory = new IniSecurityManagerFactory("file:" + shiroPath);
-    SecurityManager securityManager = factory.getInstance();
-    org.apache.shiro.SecurityUtils.setSecurityManager(securityManager);
-    isEnabled = true;
+
+  public static void setIsEnabled(boolean value) {
+    isEnabled = value;
   }
 
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
-    if (sourceHost == null || sourceHost.isEmpty()) {
-      return false;
+
+    String sourceUriHost = "";
+
+    if (sourceHost != null && !sourceHost.isEmpty()) {
+      sourceUriHost = new URI(sourceHost).getHost();
+      sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase();
     }
-    String sourceUriHost = new URI(sourceHost).getHost();
-    sourceUriHost = (sourceUriHost == null) ? "" : sourceUriHost.toLowerCase();
 
     sourceUriHost = sourceUriHost.toLowerCase();
     String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();
@@ -76,7 +79,7 @@ public class SecurityUtils {
   }
 
   /**
-   * Return the authenticated user if any otherwise returns "anonymous"
+   * Return the authenticated user if any otherwise returns "anonymous".
    *
    * @return shiro principal
    */
@@ -88,9 +91,25 @@ public class SecurityUtils {
 
     String principal;
     if (subject.isAuthenticated()) {
-      principal = subject.getPrincipal().toString();
+      principal = extractPrincipal(subject);
+      if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
+        log.debug("Converting principal name " + principal
+            + " to lower case:" + principal.toLowerCase());
+        principal = principal.toLowerCase();
+      }
     } else {
       principal = ANONYMOUS;
+    }
+    return principal;
+  }
+
+  private static String extractPrincipal(Subject subject) {
+    String principal;
+    Object principalObject = subject.getPrincipal();
+    if (principalObject instanceof Principal) {
+      principal = ((Principal) principalObject).getName();
+    } else {
+      principal = String.valueOf(principalObject);
     }
     return principal;
   }
@@ -107,7 +126,7 @@ public class SecurityUtils {
   }
 
   /**
-   * Return the roles associated with the authenticated user if any otherwise returns empty set
+   * Return the roles associated with the authenticated user if any otherwise returns empty set.
    * TODO(prasadwagle) Find correct way to get user roles (see SHIRO-492)
    *
    * @return shiro roles
@@ -129,7 +148,20 @@ public class SecurityUtils {
           allRoles = ((IniRealm) realm).getIni().get("roles");
           break;
         } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
-          allRoles = ((LdapRealm) realm).getListRoles();
+          try {
+            AuthorizationInfo auth = ((LdapRealm) realm).queryForAuthorizationInfo(
+                    new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
+                    ((LdapRealm) realm).getContextFactory()
+            );
+            if (auth != null) {
+              roles = new HashSet<>(auth.getRoles());
+            }
+          } catch (NamingException e) {
+            log.error("Can't fetch roles", e);
+          }
+          break;
+        } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
+          allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
         }
       }
@@ -147,7 +179,7 @@ public class SecurityUtils {
   }
 
   /**
-   * Checked if shiro enabled or not
+   * Checked if shiro enabled or not.
    */
   public static boolean isAuthenticated() {
     if (!isEnabled) {

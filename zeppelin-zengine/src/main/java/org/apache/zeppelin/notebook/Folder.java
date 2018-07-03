@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,6 +214,25 @@ public class Folder {
       notes.addAll(child.getNotesRecursively());
     }
 
+    return notes;
+  }
+
+  public List<Note> getNotesRecursively(Set<String> userAndRoles,
+      NotebookAuthorization notebookAuthorization) {
+    final Set<String> entities = Sets.newHashSet();
+    if (userAndRoles != null) {
+      entities.addAll(userAndRoles);
+    }
+
+    List<Note> notes = new ArrayList<>();
+    for (Note note : getNotes()) {
+      if (notebookAuthorization.isOwner(note.getId(), entities)) {
+        notes.add(note);
+      }
+    }
+    for (Folder child : children.values()) {
+      notes.addAll(child.getNotesRecursively(userAndRoles, notebookAuthorization));
+    }
     return notes;
   }
 

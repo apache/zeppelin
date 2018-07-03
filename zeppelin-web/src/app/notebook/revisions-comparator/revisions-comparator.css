@@ -1,0 +1,276 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.revisions-comparator {
+  background: white;
+  padding: 10px 15px 15px 15px;
+  margin-left: -10px;
+  margin-right: -10px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.revisions-comparator-panel {
+  transition-property: border, left, background-color;
+  transition-duration: 250ms, 500ms, 200ms;
+  transition-timing-function: ease-out;
+  position: relative;
+  left: 0;
+  width: 95%;
+  background-color: rgba(255, 255, 0, 0.10);
+  border: 1px solid rgba(120, 129, 82, 0.08);
+  margin-right: 15px;
+  min-width: 270px;
+}
+
+.revisions-comparator-panel:first-child {
+  margin-top: 5px;
+}
+
+.revisions-comparator-panel:last-child {
+  margin-bottom: 5px;
+}
+
+.revisions-comparator-panel:hover {
+  border: 1px solid rgba(55, 54, 35, 0.35);
+  background-color: rgba(255, 204, 0, 0.15);
+}
+
+.revisions-comparator-panel-selected {
+  background-color: rgba(252, 255, 0, 0.53) !important;
+  border: 1px solid rgba(55, 54, 35, 0.49)
+}
+
+.revisions-comparator-panel-heading {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.revisions-comparator-panel.ng-enter,
+.revisions-comparator-panel.ng-enter.ng-enter-active ,
+.revisions-comparator-panel.ng-leave,
+.revisions-comparator-panel.ng-leave-active {
+  transition-duration: 0s !important;
+}
+
+.cursor-hand {
+  cursor: pointer;
+}
+
+.paragraphs-div {
+  overflow: auto;
+  height: 35vh;
+}
+
+.paragraphs-div-border {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.commit-tree {
+  width: 100%;
+  margin-right: 0;
+  margin-bottom: 10px;
+  border: 2px solid grey;
+  border-radius: 5px !important;
+}
+
+.commit-rows {
+  height: 30vh;
+  overflow: auto;
+  display: block;
+  width: 100%;
+}
+
+.commit-rows tr:nth-child(even) {
+  background-color: rgba(128, 128, 128, 0.06);
+}
+
+.commit-tree tr:hover {
+  background-color: rgba(48, 113, 169, 0.21);
+}
+
+.selected-revision {
+  background-color: rgba(48, 113, 169, 0.47) !important;
+}
+
+.commit-tree table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  padding: 2px;
+  margin-bottom: 0px;
+}
+
+.commit-tree tr {
+  width: 100%;
+}
+
+.commit-tree td:nth-child(1),
+.commit-tree th:nth-child(1) {
+  width: 10%;
+}
+
+.commit-tree td:nth-child(2),
+.commit-tree th:nth-child(2) {
+  width: 20%;
+}
+
+.commit-tree th{
+  font-weight: normal;
+  font-size: 1.2em;
+  background-color: #317bb4;
+  color: rgb(255, 255, 255);
+  text-align: center;
+}
+
+.commit-tree .commit-rows td{
+  padding-left: 15px;
+}
+
+.commit-tree thead tr {
+  display: block;
+  position: relative;
+}
+
+.empty-code-panel {
+  text-align: center;
+  padding-top: 25%;
+  font-size: 30px;
+  color: grey;
+}
+
+.empty-paragraph-message {
+  font-size: 2em;
+  color: grey;
+  margin: 0 auto;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.revisions-comparator-bar {
+  margin-left: 25px;
+
+}
+
+.revisions-comparator-bar .btn-group {
+  margin: 0 20px;
+}
+
+.revisions-comparator-code-panel {
+  display: block;
+  clear: both;
+  width: 95%;
+  float: left;
+  height: 70vh;
+  overflow-y: auto;
+}
+
+.revisions-comparator-code-panel-title {
+  width: 50%;
+  float: left;
+  font-size: 14px;
+  padding: 5px;
+}
+
+.revisions-comparator-bar {
+  width: 400px;
+  padding-bottom: 10px;
+}
+
+.revisions-comparator-status {
+  font-size: 12px;
+  padding-left: 10px;
+}
+
+#diffPanel {
+  height: 100%;
+  padding-left: 10px;
+  border: 2px solid grey;
+  border-radius: 5px !important;
+}
+
+#diffPanel .panel-group {
+  height: inherit;
+  overflow: auto;
+}
+
+.revision-name-for-compare {
+  cursor: default;
+  overflow: hidden;
+  vertical-align: bottom;
+  display: inline-block;
+  max-width: 100px;
+  padding: 1px 5px;
+}
+
+.revisions-comparator-caret {
+  padding-bottom: 5px;
+}
+
+.revisions-comparator-link, .revisions-comparator-link:hover,
+.revisions-comparator-link:visited, .revisions-comparator-link:focus {
+  text-decoration: none;
+  outline: none;
+  color: #000;
+}
+
+.revisions-comparator-first-string {
+  display: block;
+  height: 2em;
+  overflow: hidden;
+  padding-top: 6px;
+  padding-left: 5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: grey;
+}
+
+.revisions-comparator-dropdown {
+  padding: 5px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.color-green-row {
+  background-color: rgba(0, 226, 0, 0.22);
+  display: block;
+  color: green;
+}
+
+.color-red-row {
+  background-color: rgba(226, 0, 0, 0.22);
+  display: block;
+  color: red;
+}
+
+.color-green {
+  color: green;
+}
+
+.color-red {
+  color: red;
+}
+
+.color-black {
+  color: black;
+}
+
+.color-orange {
+  color: orange;
+}
+

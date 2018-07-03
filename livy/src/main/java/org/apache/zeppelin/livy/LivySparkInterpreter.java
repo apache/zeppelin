@@ -17,23 +17,12 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Livy Spark interpreter for Zeppelin.
  */
-public class LivySparkInterpreter extends BaseLivyInterprereter {
+public class LivySparkInterpreter extends BaseLivyInterpreter {
 
   public LivySparkInterpreter(Properties property) {
     super(property);
@@ -47,7 +36,7 @@ public class LivySparkInterpreter extends BaseLivyInterprereter {
   @Override
   protected String extractAppId() throws LivyException {
     return extractStatementResult(
-        interpret("sc.applicationId", null, false, false).message()
+        interpret("sc.applicationId", null, false, false, false).message()
             .get(0).getData());
   }
 
@@ -55,10 +44,11 @@ public class LivySparkInterpreter extends BaseLivyInterprereter {
   protected String extractWebUIAddress() throws LivyException {
     interpret(
         "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
-        null, false, false);
+        null,
+        null, false, false, false);
     return extractStatementResult(
         interpret(
-            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false)
+            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false, false)
             .message().get(0).getData());
   }
 

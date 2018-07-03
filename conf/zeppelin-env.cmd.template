@@ -22,6 +22,8 @@ REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set Z
 REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxPermSize=512m
 REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
+REM set ZEPPELIN_JMX_ENABLE     		REM Enable JMX feature by defining it like "true"
+REM set ZEPPELIN_JMX_PORT       		REM Port number which JMX uses. Default: "9996"
 
 REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.
 REM set ZEPPELIN_PID_DIR        		REM The pid files are stored. /tmp by default.
@@ -38,6 +40,10 @@ REM set ZEPPELIN_NOTEBOOK_S3_SSE               REM Server-side encryption enable
 REM set ZEPPELIN_IDENT_STRING   		REM A string representing this instance of zeppelin. $USER by default.
 REM set ZEPPELIN_NICENESS       		REM The scheduling priority for daemons. Defaults to 0.
 REM set ZEPPELIN_INTERPRETER_LOCALREPO         REM Local repository for interpreter's additional dependency loading
+REM set ZEPPELIN_INTERPRETER_DEP_MVNREPO       REM Maven principal repository for interpreter's additional dependency loading
+REM set ZEPPELIN_HELIUM_NODE_INSTALLER_URL     REM Remote Node installer url for Helium dependency loader
+REM set ZEPPELIN_HELIUM_NPM_INSTALLER_URL      REM Remote Npm installer url for Helium dependency loader
+REM set ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL  REM Remote Yarn package installer url for Helium dependency loader
 REM set ZEPPELIN_NOTEBOOK_STORAGE		REM Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 REM set ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC		REM If there are multiple notebook storages, should we treat the first one as the only source of truth?
 

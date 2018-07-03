@@ -19,7 +19,7 @@ function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
 
   $scope.looknfeel = 'default';
 
-  var init = function() {
+  let init = function() {
     $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
   };
 
@@ -57,4 +57,3 @@ function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
   // Remove BootstrapDialog animation
   BootstrapDialog.configDefaultOptions({animate: false});
 }
-

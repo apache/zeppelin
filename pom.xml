@@ -24,7 +24,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.apache.org</url>
@@ -52,10 +52,11 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>interpreter-parent</module>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
-    <module>spark-dependencies</module>
+    <module>groovy</module>
     <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
@@ -75,34 +76,47 @@
     <module>bigquery</module>
     <module>alluxio</module>
     <module>scio</module>
+    <module>neo4j</module>
+    <module>sap</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
+    <module>zeppelin-jupyter</module>
+    <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
   </modules>
 
   <properties>
     <!-- language versions -->
+    <java.version>1.8</java.version>
     <scala.version>2.10.5</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <scalatest.version>2.2.4</scalatest.version>
     <scalacheck.version>1.12.5</scalacheck.version>
 
+    <!-- frontend maven plugin related versions-->
+    <node.version>v8.9.3</node.version>
+    <npm.version>5.5.1</npm.version>
+    <plugin.frontend.version>1.4</plugin.frontend.version>
+
     <!-- common library versions -->
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
-    <libthrift.version>0.9.2</libthrift.version>
+    <libthrift.version>0.9.3</libthrift.version>
     <gson.version>2.2</gson.version>
-    <guava.version>15.0</guava.version>
+    <gson-extras.version>0.2.1</gson-extras.version>
     <jetty.version>9.2.15.v20160210</jetty.version>
-    <httpcomponents.core.version>4.3.3</httpcomponents.core.version>
-    <httpcomponents.client.version>4.3.6</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.1</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.1</httpcomponents.client.version>
+    <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <commons.codec.version>1.5</commons.codec.version>
     <commons.io.version>2.4</commons.io.version>
-    <commons.collections.version>3.2.1</commons.collections.version>
+    <commons.collections.version>3.2.2</commons.collections.version>
     <commons.logging.version>1.1.1</commons.logging.version>
-    <shiro.version>1.2.3</shiro.version>
+    <commons.cli.version>1.3.1</commons.cli.version>
+    <shiro.version>1.3.2</shiro.version>
+    <joda.version>2.9.9</joda.version>
 
     <!-- test library versions -->
     <junit.version>4.12</junit.version>
@@ -131,6 +145,9 @@
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
+
+    <!-- to be able to exclude some tests using command line -->
+    <tests.to.exclude/>
   </properties>
 
   <dependencyManagement>
@@ -173,6 +190,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpasyncclient</artifactId>
+        <version>${httpcomponents.asyncclient.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>${commons.lang.version}</version>
@@ -182,6 +205,12 @@
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>${gson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.danilopianini</groupId>
+        <artifactId>gson-extras</artifactId>
+        <version>${gson-extras.version}</version>
       </dependency>
 
       <dependency>
@@ -215,9 +244,15 @@
       </dependency>
 
       <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${commons.cli.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${joda.version}</version>
       </dependency>
 
       <!-- Apache Shiro -->
@@ -303,9 +338,35 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${plugin.compiler.version}</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <flattenMode>ossrh</flattenMode>
+          <updatePomFile>true</updatePomFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Test coverage plugin -->
@@ -333,9 +394,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
         <configuration>
+          <skip>true</skip>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
           <configLocation>_tools/checkstyle.xml</configLocation>
-          <enableRSS>false</enableRSS>
+          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
         </configuration>
         <executions>
           <execution>
@@ -346,7 +415,7 @@
             </goals>
             <configuration>
               <failOnViolation>true</failOnViolation>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
             </configuration>
           </execution>
           <execution>
@@ -356,7 +425,7 @@
               <goal>checkstyle-aggregate</goal>
             </goals>
             <configuration>
-              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*</excludes>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
             </configuration>
           </execution>
         </executions>
@@ -383,26 +452,6 @@
                   </includes>
                 </resource>
               </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/lib</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
             </configuration>
           </execution>
         </executions>
@@ -475,7 +524,28 @@
         <version>${plugin.deploy.version}</version>
       </plugin>
 
-      <!--TODO(alex): make part of the build and reconcile conflicts
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>2.2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skipPoms>false</skipPoms>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+        </configuration>
+      </plugin>
+
+    <!--TODO(alex): make part of the build and reconcile conflicts
     <plugin>
       <groupId>com.ning.maven.plugins</groupId>
       <artifactId>maven-duplicate-finder-plugin</artifactId>
@@ -507,6 +577,22 @@
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${plugin.dependency.version}</version>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                <overWriteReleases>false</overWriteReleases>
+                <overWriteSnapshots>false</overWriteSnapshots>
+                <overWriteIfNewer>true</overWriteIfNewer>
+                <includeScope>runtime</includeScope>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
@@ -514,6 +600,12 @@
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <environmentVariables>
+              <IS_ZEPPELIN_TEST>true</IS_ZEPPELIN_TEST>
+            </environmentVariables>
+            <excludes>
+              <exclude>${tests.to.exclude}</exclude>
+            </excludes>
           </configuration>
           <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
             <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
@@ -667,7 +759,7 @@
     <profile>
       <id>scala-2.11</id>
       <properties>
-        <scala.version>2.11.7</scala.version>
+        <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>
     </profile>
@@ -679,6 +771,10 @@
           <id>cloudera</id>
           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
+        <repository>
+          <id>hortonworks</id>
+          <url>http://repo.hortonworks.com/content/groups/public/</url>
+        </repository>
       </repositories>
     </profile>
 
@@ -687,6 +783,13 @@
       <id>geode</id>
       <modules>
         <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>integration</id>
+      <modules>
+        <module>zeppelin-integration</module>
       </modules>
     </profile>
 
@@ -898,6 +1001,45 @@
               <exclude>**/interpreter-setting.json</exclude>
               <exclude>**/constants.json</exclude>
               <exclude>scripts/**</exclude>
+              <exclude>**/**/*.log</exclude>
+              <exclude>**/**/logs/**</exclude>
+
+              <!-- bundled from zeppelin-web -->
+              <exclude>**/test/karma.conf.js</exclude>
+              <exclude>**/test/spec/**</exclude>
+              <exclude>**/.babelrc</exclude>
+              <exclude>**/.bowerrc</exclude>
+              <exclude>.editorconfig</exclude>
+              <exclude>.eslintrc</exclude>
+              <exclude>protractor.conf.js</exclude>
+              <exclude>**/.tmp/**</exclude>
+              <exclude>**/target/**</exclude>
+              <exclude>**/node/**</exclude>
+              <exclude>**/node_modules/**</exclude>
+              <exclude>**/bower_components/**</exclude>
+              <exclude>**/dist/**</exclude>
+              <exclude>**/.buildignore</exclude>
+              <exclude>**/.npmignore</exclude>
+              <exclude>**/.jshintrc</exclude>
+              <exclude>**/yarn.lock</exclude>
+              <exclude>**/bower.json</exclude>
+              <exclude>**/src/fonts/Patua-One*</exclude>
+              <exclude>**/src/fonts/patua-one*</exclude>
+              <exclude>**/src/fonts/Roboto*</exclude>
+              <exclude>**/src/fonts/roboto*</exclude>
+              <exclude>**/src/fonts/fontawesome*</exclude>
+              <exclude>**/src/fonts/font-awesome*</exclude>
+              <exclude>**/src/styles/font-awesome*</exclude>
+              <exclude>**/src/fonts/Simple-Line*</exclude>
+              <exclude>**/src/fonts/simple-line*</exclude>
+              <exclude>**/src/fonts/Source-Code-Pro*</exclude>
+              <exclude>**/src/fonts/source-code-pro*</exclude>
+              <exclude>**/src/**/**.test.js</exclude>
+              <exclude>**/e2e/**/**.spec.js</exclude>
+              <exclude>package-lock.json</exclude>
+
+              <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
+              <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
@@ -944,22 +1086,21 @@
               <exclude>**/package.json</exclude>
 
               <!-- compiled R packages (binaries) -->
-              <exclude>R/lib/**</exclude>
-              <exclude>r/lib/**</exclude>
+              <exclude>**/R/lib/**</exclude>
+              <exclude>**/lib/rzeppelin/**</exclude>
 
               <!--R-related files with alternative licenses-->
-              <exclude>r/R/rzeppelin/R/globals.R</exclude>
-              <exclude>r/R/rzeppelin/R/common.R</exclude>
-              <exclude>r/R/rzeppelin/R/protocol.R</exclude>
-              <exclude>r/R/rzeppelin/R/rServer.R</exclude>
-              <exclude>r/R/rzeppelin/R/scalaInterpreter.R</exclude>
-              <exclude>r/R/rzeppelin/R/zzz.R</exclude>
-              <exclude>r/src/main/scala/scala/Console.scala</exclude>
-              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
-              <exclude>r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
-              <!--The following files are mechanical-->
-              <exclude>r/R/rzeppelin/DESCRIPTION</exclude>
-              <exclude>r/R/rzeppelin/NAMESPACE</exclude>
+
+              <exclude>**/R/rzeppelin/R/*.R</exclude>
+              <exclude>**/src/main/scala/scala/Console.scala</exclude>
+              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/Package.scala</exclude>
+              <exclude>**/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/RClient.scala</exclude>
+
+               <!--The following files are mechanical-->
+              <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
+              <exclude>**/R/rzeppelin/NAMESPACE</exclude>
+
+              <exclude>python/src/main/resources/grpc/**/*</exclude>
             </excludes>
           </configuration>
 

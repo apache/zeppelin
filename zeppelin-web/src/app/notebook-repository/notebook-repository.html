@@ -1,0 +1,98 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="interpreterHead">
+  <div class="header">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="new_h3">
+          Notebook Repository
+        </h3>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        Manage your Notebook Repositories' settings.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box width-full"
+     ng-repeat="repo in noterepo.notebookRepos | orderBy: 'name'">
+  <div id="{{repo.name | lowercase}}">
+    <div class="row interpreter">
+
+      <div class="col-md-12">
+        <h3 class="interpreter-title">{{repo.name}}</h3>
+        <span style="float:right" ng-show="repo.settings.length > 0">
+          <button class="btn btn-default btn-xs"
+                  ng-click="valueform.$show();">
+            <span class="fa fa-pencil"></span> edit</button>
+        </span>
+      </div>
+    </div>
+    <div class="row interpreter">
+      <div class="col-md-12" ng-show="repo.settings.length > 0">
+        <h5>Settings</h5>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th style="width:40%">name</th>
+              <th style="width:60%">value</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="setting in repo.settings" >
+            <td ng-bind="setting.name"></td>
+            <td>
+              <span class="btn-group">
+                <span ng-show="setting.type === 'DROPDOWN'">
+                  <span editable-select="setting.selected"
+                          e-name="{{setting.name}}"
+                          e-ng-options="s.value as s.name for s in setting.value"
+                          class="selectpicker" ng-disabled="!valueform.$visible" e-form="valueform">
+                          {{noterepo.showDropdownSelected(setting)}}
+                  </span>
+                </span>
+                <span ng-show="setting.type === 'INPUT'">
+                  <span editable-textarea="setting.selected" e-name="{{setting.name}}" e-form="valueform" e-msd-elastic e-cols="100">
+                    {{setting.selected | breakFilter}}
+                  </span>
+                </span>
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <span style="float:right" ng-show="valueform.$visible">
+      <form editable-form name="valueform"
+            onbeforesave="noterepo.saveNotebookRepo(valueform, repo, $data)"
+            ng-show="valueform.$visible">
+        <button type="submit" class="btn btn-primary btn-xs">
+          <span class="fa fa-check"></span> Save
+        </button>
+        <button type="button" class="btn btn-default btn-xs"
+                ng-disabled="valueform.$waiting"
+                ng-click="valueform.$cancel();">
+          <span class="fa fa-remove"></span> Cancel
+        </button>
+      </form>
+    </span>
+    <div class="row interpreter">
+      <div ng-show="repo.settings.length === 0 || valueform.$hidden" class="col-md-12 gray40-message">
+        <em>Currently there are no settings for this Notebook Repository</em>
+      </div>
+    </div>
+  </div>
+</div>

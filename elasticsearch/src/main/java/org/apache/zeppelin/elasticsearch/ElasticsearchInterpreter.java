@@ -17,6 +17,23 @@
 
 package org.apache.zeppelin.elasticsearch;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +49,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import com.github.wnameless.json.flattener.JsonFlattener;
+
+import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
 import org.apache.zeppelin.elasticsearch.action.HitWrapper;
@@ -43,29 +62,11 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.wnameless.json.flattener.JsonFlattener;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-
 
 /**
  * Elasticsearch Interpreter for Zeppelin.
  */
 public class ElasticsearchInterpreter extends Interpreter {
-
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
   private static final String HELP = "Elasticsearch interpreter:\n"
@@ -83,14 +84,13 @@ public class ElasticsearchInterpreter extends Interpreter {
       + "    . same comments as for the search\n"
       + "  - get /index/type/id\n"
       + "  - delete /index/type/id\n"
-      + "  - index /ndex/type/id <json-formatted document>\n"
+      + "  - index /index/type/id <json-formatted document>\n"
       + "    . the id can be omitted, elasticsearch will generate one";
 
   protected static final List<String> COMMANDS = Arrays.asList(
       "count", "delete", "get", "help", "index", "search");
 
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
-
 
   public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
   public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
@@ -106,37 +106,32 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   public ElasticsearchInterpreter(Properties property) {
     super(property);
-
   }
 
   @Override
   public void open() {
-    logger.info("Properties: {}", getProperty());
+    logger.info("Properties: {}", getProperties());
 
     String clientType = getProperty(ELASTICSEARCH_CLIENT_TYPE);
     clientType = clientType == null ? null : clientType.toLowerCase();
 
     try {
       this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
-    }
-    catch (final NumberFormatException e) {
+    } catch (final NumberFormatException e) {
       this.resultSize = 10;
       logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
-          property.get(ELASTICSEARCH_RESULT_SIZE), e);
+          getProperty(ELASTICSEARCH_RESULT_SIZE), e);
     }
 
     try {
       if (StringUtils.isEmpty(clientType) || "transport".equals(clientType)) {
-        elsClient = new TransportBasedClient(getProperty());
-      }
-      else if ("http".equals(clientType)) {
-        elsClient = new HttpBasedClient(getProperty());
-      }
-      else {
+        elsClient = new TransportBasedClient(getProperties());
+      } else if ("http".equals(clientType)) {
+        elsClient = new HttpBasedClient(getProperties());
+      } else {
         logger.error("Unknown type of Elasticsearch client: " + clientType);
       }
-    }
-    catch (final IOException e) {
+    } catch (final IOException e) {
       logger.error("Open connection with Elasticsearch", e);
     }
   }
@@ -202,23 +197,18 @@ public class ElasticsearchInterpreter extends Interpreter {
     try {
       if ("get".equalsIgnoreCase(method)) {
         return processGet(urlItems, interpreterContext);
-      }
-      else if ("count".equalsIgnoreCase(method)) {
+      } else if ("count".equalsIgnoreCase(method)) {
         return processCount(urlItems, data, interpreterContext);
-      }
-      else if ("search".equalsIgnoreCase(method)) {
+      } else if ("search".equalsIgnoreCase(method)) {
         return processSearch(urlItems, data, currentResultSize, interpreterContext);
-      }
-      else if ("index".equalsIgnoreCase(method)) {
+      } else if ("index".equalsIgnoreCase(method)) {
         return processIndex(urlItems, data);
-      }
-      else if ("delete".equalsIgnoreCase(method)) {
+      } else if ("delete".equalsIgnoreCase(method)) {
         return processDelete(urlItems);
       }
 
       return processHelp(InterpreterResult.Code.ERROR, "Unknown command");
-    }
-    catch (final Exception e) {
+    } catch (final Exception e) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Error : " + e.getMessage());
     }
   }
@@ -239,12 +229,13 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) {
     final List suggestions = new ArrayList<>();
 
     for (final String cmd : COMMANDS) {
       if (cmd.toLowerCase().contains(s)) {
-        suggestions.add(new InterpreterCompletion(cmd, cmd));
+        suggestions.add(new InterpreterCompletion(cmd, cmd, CompletionType.command.name()));
       }
     }
     return suggestions;
@@ -257,7 +248,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private String[] getIndexTypeId(String[] urlItems) {
-
     if (urlItems.length < 3) {
       return null;
     }
@@ -277,7 +267,6 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   private InterpreterResult processHelp(InterpreterResult.Code code, String additionalMessage) {
     final StringBuffer buffer = new StringBuffer();
-
     if (additionalMessage != null) {
       buffer.append(additionalMessage).append("\n");
     }
@@ -295,7 +284,6 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @return Result of the get request, it contains a JSON-formatted string
    */
   private InterpreterResult processGet(String[] urlItems, InterpreterContext interpreterContext) {
-
     final String[] indexTypeId = getIndexTypeId(urlItems);
 
     if (indexTypeId == null) {
@@ -330,7 +318,6 @@ public class ElasticsearchInterpreter extends Interpreter {
    */
   private InterpreterResult processCount(String[] urlItems, String data,
       InterpreterContext interpreterContext) {
-
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index1,index2,.../type1,type2,...)");
@@ -357,7 +344,6 @@ public class ElasticsearchInterpreter extends Interpreter {
    */
   private InterpreterResult processSearch(String[] urlItems, String data, int size,
       InterpreterContext interpreterContext) {
-
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index1,index2,.../type1,type2,...)");
@@ -380,7 +366,6 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @return Result of the index request, it contains the id of the document
    */
   private InterpreterResult processIndex(String[] urlItems, String data) {
-
     if (urlItems.length < 2 || urlItems.length > 3) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index/type or /index/type/id)");
@@ -402,7 +387,6 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @return Result of the delete request, it contains the id of the deleted document
    */
   private InterpreterResult processDelete(String[] urlItems) {
-
     final String[] indexTypeId = getIndexTypeId(urlItems);
 
     if (indexTypeId == null) {
@@ -424,7 +408,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private ActionResponse searchData(String[] urlItems, String query, int size) {
-
     String[] indices = null;
     String[] types = null;
 
@@ -439,7 +422,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private InterpreterResult buildAggResponseMessage(Aggregations aggregations) {
-
     // Only the result of the first aggregation is returned
     //
     final Aggregation agg = aggregations.asList().get(0);
@@ -448,11 +430,9 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     if (agg instanceof InternalMetricsAggregation) {
       resMsg = XContentHelper.toString((InternalMetricsAggregation) agg).toString();
-    }
-    else if (agg instanceof InternalSingleBucketAggregation) {
+    } else if (agg instanceof InternalSingleBucketAggregation) {
       resMsg = XContentHelper.toString((InternalSingleBucketAggregation) agg).toString();
-    }
-    else if (agg instanceof InternalMultiBucketAggregation) {
+    } else if (agg instanceof InternalMultiBucketAggregation) {
       final Set<String> headerKeys = new HashSet<>();
       final List<Map<String, Object>> buckets = new LinkedList<>();
       final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
@@ -464,8 +444,7 @@ public class ElasticsearchInterpreter extends Interpreter {
           final Map<String, Object> bucketMap = JsonFlattener.flattenAsMap(builder.string());
           headerKeys.addAll(bucketMap.keySet());
           buckets.add(bucketMap);
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
           logger.error("Processing bucket: " + e.getMessage(), e);
         }
       }
@@ -494,7 +473,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private InterpreterResult buildAggResponseMessage(List<AggWrapper> aggregations) {
-
     final InterpreterResult.Type resType = InterpreterResult.Type.TABLE;
     String resMsg = "";
 
@@ -529,7 +507,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private String buildSearchHitsResponseMessage(ActionResponse response) {
-
     if (response.getHits() == null || response.getHits().size() == 0) {
       return "";
     }
@@ -551,8 +528,7 @@ public class ElasticsearchInterpreter extends Interpreter {
         if (fieldNameMatcher.matches()) {
           flattenMap.put(fieldNameMatcher.group(1) + fieldNameMatcher.group(2),
               flattenJsonMap.get(fieldName));
-        }
-        else {
+        } else {
           flattenMap.put(fieldName, flattenJsonMap.get(fieldName));
         }
       }
@@ -588,7 +564,6 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private InterpreterResult buildResponseMessage(ActionResponse response) {
-
     final List<AggWrapper> aggregations = response.getAggregations();
 
     if (aggregations != null && aggregations.size() > 0) {

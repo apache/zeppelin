@@ -17,19 +17,17 @@
 package org.apache.zeppelin.interpreter.install;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.util.Util;
 import org.sonatype.aether.RepositoryException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -224,43 +222,43 @@ public class InstallInterpreter {
     for (int i = 0; i < args.length; i++) {
       String arg = args[i].toLowerCase(Locale.US);
       switch (arg) {
-          case "--list":
-          case "-l":
-            installer.list();
-            System.exit(0);
-            break;
-          case "--all":
-          case "-a":
-            all = true;
-            break;
-          case "--name":
-          case "-n":
-            names = args[++i];
-            break;
-          case "--artifact":
-          case "-t":
-            artifacts = args[++i];
-            break;
-          case "--version":
-          case "-v":
-            Util.getVersion();
-            break;
-          case "--proxy-url":
-            proxyUrl = new URL(args[++i]);
-            break;
-          case "--proxy-user":
-            proxyUser = args[++i];
-            break;
-          case "--proxy-password":
-            proxyPassword = args[++i];
-            break;
-          case "--help":
-          case "-h":
-            usage();
-            System.exit(0);
-            break;
-          default:
-            System.out.println("Unknown option " + arg);
+        case "--list":
+        case "-l":
+          installer.list();
+          System.exit(0);
+          break;
+        case "--all":
+        case "-a":
+          all = true;
+          break;
+        case "--name":
+        case "-n":
+          names = args[++i];
+          break;
+        case "--artifact":
+        case "-t":
+          artifacts = args[++i];
+          break;
+        case "--version":
+        case "-v":
+          Util.getVersion();
+          break;
+        case "--proxy-url":
+          proxyUrl = new URL(args[++i]);
+          break;
+        case "--proxy-user":
+          proxyUser = args[++i];
+          break;
+        case "--proxy-password":
+          proxyPassword = args[++i];
+          break;
+        case "--help":
+        case "-h":
+          usage();
+          System.exit(0);
+          break;
+        default:
+          System.out.println("Unknown option " + arg);
       }
     }
 

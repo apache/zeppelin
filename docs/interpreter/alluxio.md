@@ -246,5 +246,5 @@ Following steps are performed:
 *  using sh interpreter it's checked the existence of the new file copied from Alluxio and its content is showed
 
 <center>
-  ![Alluxio Interpreter Example](../assets/themes/zeppelin/img/docs-img/alluxio-example.png)
+  ![Alluxio Interpreter Example]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/alluxio-example.png)
 </center>

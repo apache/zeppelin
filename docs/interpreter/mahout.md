@@ -29,6 +29,7 @@ Apache Mahout is a collection of packages that enable machine learning and matri
 
 ### Easy Installation
 To quickly and easily get up and running using Apache Mahout, run the following command from the top-level directory of the Zeppelin install:
+
 ```bash
 python scripts/mahout/add_mahout.py
 ```
@@ -39,34 +40,34 @@ This will create the `%sparkMahout` and `%flinkMahout` interpreters, and restart
 
 The `add_mahout.py` script contains several command line arguments for advanced users.
 
-<table class="table-configuration">
+  <table class="table-configuration">
   <tr>
     <th>Argument</th>
     <th>Description</th>
     <th>Example</th>
   </tr>
   <tr>
-    <td>--zeppelin_home</td>
+    <td>`--zeppelin_home`</td>
     <td>This is the path to the Zeppelin installation.  This flag is not needed if the script is run from the top-level installation directory or from the `zeppelin/scripts/mahout` directory.</td>
-    <td>/path/to/zeppelin</td>
+    <td>`/path/to/zeppelin`</td>
   </tr>
   <tr>
-    <td>--mahout_home</td>
+    <td>`--mahout_home`</td>
     <td>If the user has already installed Mahout, this flag can set the path to `MAHOUT_HOME`.  If this is set, downloading Mahout will be skipped.</td>
-    <td>/path/to/mahout_home</td>
+    <td>`/path/to/mahout_home`</td>
   </tr>
   <tr>
-    <td>--restart_later</td>
-    <td>Restarting is necessary for updates to take effect. By default the script will restart Zeppelin for you- restart will be skipped if this flag is set.</td>
+    <td>`--restart_later`</td>
+    <td>Restarting is necessary for updates to take effect. By default the script will restart Zeppelin for you. Restart will be skipped if this flag is set.</td>
     <td>NA</td>
   </tr>
   <tr>
-    <td>--force_download</td>
+    <td>`--force_download`</td>
     <td>This flag will force the script to re-download the binary even if it already exists.  This is useful for previously failed downloads.</td>
     <td>NA</td>
   </tr>
   <tr>
-      <td>--overwrite_existing</td>
+      <td>`--overwrite_existing`</td>
       <td>This flag will force the script to overwrite existing `%sparkMahout` and `%flinkMahout` interpreters. Useful when you want to just start over.</td>
       <td>NA</td>
     </tr>
@@ -165,6 +166,7 @@ Resource Pools are a powerful Zeppelin feature that lets us share information be
 ### Setting up a Resource Pool in Flink
 
 In Spark based interpreters resource pools are accessed via the ZeppelinContext API.  To put and get things from the resource pool one can be done simple
+
 ```scala
 val myVal = 1
 z.put("foo", myVal)

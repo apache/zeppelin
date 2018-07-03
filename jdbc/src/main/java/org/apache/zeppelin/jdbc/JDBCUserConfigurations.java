@@ -15,14 +15,14 @@
 package org.apache.zeppelin.jdbc;
 
 import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.zeppelin.user.UsernamePassword;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.zeppelin.user.UsernamePassword;
 
 /**
  * UserConfigurations for JDBC impersonation.
@@ -48,12 +48,6 @@ public class JDBCUserConfigurations {
   }
 
   public void initConnectionPoolMap() throws SQLException {
-    Iterator<String> it = poolingDriverMap.keySet().iterator();
-    while (it.hasNext()) {
-      String driverName = it.next();
-      poolingDriverMap.get(driverName).closePool(driverName);
-      it.remove();
-    }
     poolingDriverMap.clear();
     isSuccessful.clear();
   }
@@ -112,5 +106,4 @@ public class JDBCUserConfigurations {
     }
     return false;
   }
-
 }

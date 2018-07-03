@@ -12,21 +12,221 @@
  * limitations under the License.
  */
 
-#searchTermId {  
-  min-width: 200px;
+/* ------------------------------------------- */
+/* Navbar
+/* ------------------------------------------- */
+
+.navbar-brand.navbar-title {
+  margin-top: -3px;
+  margin-right: 20px;
 }
 
+.navbar-title > span {
+  font-family: 'Patua One', cursive;
+  font-size: 25px;
+  color: white;
+}
+
+.navbar-menu {
+  font-weight: 300;
+  font-size: 16px;
+}
+
+.navbar-inverse .navbar-nav > li > a.navbar-menu-notebook:focus {
+  background-color: transparent;
+}
+
+.navbar-inverse .navbar-nav > li > a.navbar-menu-notebook:hover{
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  padding-top: 16px;
+}
+
+.navbar-logo {
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.navbar-search {
+  font-size: 14px;
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#navbar-search {
+  min-width: 170px;
+}
 
 @media (min-width: 795px) and (max-width: 830px) {
-  input#searchTermId {  
-    width: 170px;
-    min-width: 170px;
+  #navbar-search {
+    width: 150px;
+    min-width: 150px;
   }
 }
 
 @media (min-width: 768px) and (max-width: 794px) {
-  input#searchTermId {  
-    width: 140px;
-    min-width: 140px;
+  #navbar-search {
+    width: 130px;
+    min-width: 130px;
   }
+}
+
+/** required to pin, unpin `navbar-fixed-top` */
+.navbar-fixed-top.headroom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transition: all .2s ease-in-out;
+}
+.navbar-fixed-top.headroom--unpinned { top: -100px; }
+.navbar-fixed-top.headroom--pinned { top: 0; /** `navbar` top */ }
+
+.navbar-inverse {
+  background: #3071a9;
+  color: #fff;
+  border-color: #3071a9;
+  font-size: 18px;
+}
+
+.navbar-inverse .navbar-nav > .open > a,
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
+  color: #fff;
+  background: #3071a9;
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  background: #3071a9;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: transparent;
+}
+
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+  color: #fff;
+  background: #080808;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Patua One', cursive;
+  font-size: 32px;
+}
+
+a.navbar-brand:hover {
+  color: #fff !important;
+}
+
+@media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
+  #notebook-list li a {
+    color: #ecf0f1;
+  }
+
+  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a,
+  #notebook-list li a {
+    padding: 5px 15px 5px 25px;
+    line-height: 20px;
+  }
+
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+    color: #D3D3D3;
+  }
+
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus,
+  #notebook-list li a:hover {
+    color: #fff;
+    background: transparent;
+  }
+
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
+    color: #fff;
+    background: #080808;
+  }
+
+  .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
+    background: #3071A9;
+  }
+
+  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border-color: #3071A9;
+  }
+}
+
+.username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: inline-block;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+
+/* About Dialog */
+
+.modal-header-about {
+  background-color: #3071a9;
+  border: 2px solid #3071a9;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.modal-header-about > .close {
+  color: #cfcfcf;
+  opacity: 1;
+}
+
+.modal-header-about > .modal-title {
+  font-weight: 300;
+  font-size: 20px;
+  color: #e8e8e8;
+}
+
+.modal-body-about-version {
+  font-weight: 500;
+}
+
+.modal-body-about {
+  height: 250px;
+  padding: 50px;
+}
+
+.modal-body-about .logo {
+  padding-top: 30px;
+}
+
+.modal-body-about .logo img {
+  width: 95%;
+}
+
+.modal-body-about .content {
+  text-align: center;
+}
+
+.modal-body-about .content h3 {
+  font-family: 'Patua One';
+  color: #3071A9;
+  font-size: 30px;
+  margin: 0 auto;
 }

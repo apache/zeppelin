@@ -17,17 +17,17 @@
 
 package org.apache.zeppelin.interpreter.mock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class MockInterpreter2 extends Interpreter{
   Map<String, Object> vars = new HashMap<>();
@@ -97,7 +97,8 @@ public class MockInterpreter2 extends Interpreter{
 	}
 
 	@Override
-	public List<InterpreterCompletion> completion(String buf, int cursor) {
+	public List<InterpreterCompletion> completion(String buf, int cursor,
+			InterpreterContext interpreterContext) {
 		return null;
 	}
 }

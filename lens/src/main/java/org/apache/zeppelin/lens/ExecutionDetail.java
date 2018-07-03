@@ -19,25 +19,29 @@ package org.apache.zeppelin.lens;
 
 import org.apache.lens.client.LensClient;
 import org.springframework.shell.core.JLineShell;
+
 /**
- * Pojo tracking query execution details
- * Used to cancel the query
+ * Pojo tracking query execution details. Used to cancel the query.
  */
 public class ExecutionDetail {
   private String queryHandle;
   private LensClient lensClient;
   private JLineShell shell;
+
   ExecutionDetail(String qh, LensClient lensClient, JLineShell shell) {
     this.queryHandle = qh;
     this.lensClient = lensClient;
     this.shell = shell;
   }
+
   public JLineShell getShell() {
     return shell;
   }
+
   public String getQueryHandle() {
     return queryHandle;
   }
+
   public LensClient getLensClient() {
     return lensClient;
   }

@@ -12,18 +12,20 @@
  * limitations under the License.
  */
 
+// import globally uses css here
+import 'github-markdown-css/github-markdown.css';
+
 import './app/app.js';
 import './app/app.controller.js';
 import './app/home/home.controller.js';
-import './app/handsontable/handsonHelper.js';
 import './app/notebook/notebook.controller.js';
 
-/** start: global variable `zeppelin` related files */
 import './app/tabledata/tabledata.js';
 import './app/tabledata/transformation.js';
 import './app/tabledata/pivot.js';
 import './app/tabledata/passthrough.js';
 import './app/tabledata/columnselector.js';
+import './app/tabledata/advanced-transformation.js';
 import './app/visualization/visualization.js';
 import './app/visualization/builtins/visualization-table.js';
 import './app/visualization/builtins/visualization-nvd3chart.js';
@@ -32,46 +34,44 @@ import './app/visualization/builtins/visualization-piechart.js';
 import './app/visualization/builtins/visualization-areachart.js';
 import './app/visualization/builtins/visualization-linechart.js';
 import './app/visualization/builtins/visualization-scatterchart.js';
-/** end: global variable `zeppelin` related files */
 
-import './app/jobmanager/jobmanager.controller.js';
-import './app/jobmanager/jobs/job.controller.js';
-import './app/jobmanager/jobmanager.filter.js';
+import './app/jobmanager/jobmanager.component.js';
 import './app/interpreter/interpreter.controller.js';
 import './app/interpreter/interpreter.filter.js';
+import './app/interpreter/interpreter-item.directive.js';
+import './app/interpreter/widget/number-widget.directive.js';
 import './app/credential/credential.controller.js';
 import './app/configuration/configuration.controller.js';
+import './app/notebook/revisions-comparator/revisions-comparator.component.js';
 import './app/notebook/paragraph/paragraph.controller.js';
+import './app/notebook/paragraph/clipboard.controller.js';
+import './app/notebook/paragraph/resizable.directive.js';
 import './app/notebook/paragraph/result/result.controller.js';
+import './app/notebook/paragraph/code-editor/code-editor.directive.js';
+import './app/notebook/save-as/save-as.service.js';
+import './app/notebook/save-as/browser-detect.service.js';
+import './app/notebook/elastic-input/elastic-input.controller.js';
+import './app/notebook/dropdown-input/dropdown-input.directive.js';
+import './app/notebook/note-var-share.service.js';
+import './app/notebook-repository/notebook-repository.controller.js';
 import './app/search/result-list.controller.js';
-import './app/notebookRepos/notebookRepos.controller.js';
-import './app/helium/helium.controller.js';
-import './components/arrayOrderingSrv/arrayOrdering.service.js';
-import './components/clipboard/clipboard.controller.js';
+import './app/search/search.service.js';
+import './app/helium';
+import './app/helium/helium.service.js';
+import './app/notebook/dynamic-forms/dynamic-forms.directive.js';
+import './components/array-ordering/array-ordering.service.js';
 import './components/navbar/navbar.controller.js';
-import './components/ngescape/ngescape.directive.js';
-import './components/interpreter/interpreter.directive.js';
-import './components/expandCollapse/expandCollapse.directive.js';
-import './components/noteName-create/notename.controller.js';
-import './components/noteName-import/notenameImport.controller.js';
-import './components/popover-html-unsafe/popover-html-unsafe.directive.js';
-import './components/popover-html-unsafe/popover-html-unsafe-popup.directive.js';
-import './components/editor/codeEditor.directive.js';
-import './components/ngenter/ngenter.directive.js';
-import './components/dropdowninput/dropdowninput.directive.js';
-import './components/resizable/resizable.directive.js';
-import './components/noteName-create/visible.directive.js';
-import './components/websocketEvents/websocketMsg.service.js';
-import './components/websocketEvents/websocketEvents.factory.js';
-import './components/noteListDataFactory/noteList.datafactory.js';
-import './components/baseUrl/baseUrl.service.js';
-import './components/browser-detect/browserDetect.service.js';
-import './components/saveAs/saveAs.service.js';
-import './components/searchService/search.service.js';
+import './components/navbar/expand-collapse/expand-collapse.directive.js';
+import './components/note-create/note-create.controller.js';
+import './components/note-create/visible.directive.js';
+import './components/note-import/note-import.controller.js';
+import './components/ng-enter/ng-enter.directive.js';
+import './components/ng-escape/ng-escape.directive.js';
+import './components/websocket/websocket-message.service.js';
+import './components/websocket/websocket-event.factory.js';
+import './components/note-list/note-list.factory.js';
+import './components/base-url/base-url.service.js';
 import './components/login/login.controller.js';
-import './components/elasticInputCtrl/elasticInput.controller.js';
-import './components/noteAction/noteAction.service.js';
-import './components/notevarshareService/notevarshare.service.js';
-import './components/rename/rename.controller.js';
-import './components/rename/rename.service.js';
-import './components/helium/helium.service.js';
+import './components/note-action/note-action.service.js';
+import './components/note-rename/note-rename.controller.js';
+import './components/note-rename/note-rename.service.js';

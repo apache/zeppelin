@@ -24,14 +24,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-interpreter</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Interpreter</name>
   <description>Zeppelin Interpreter</description>
 
@@ -43,6 +43,7 @@
     <aether.version>1.12</aether.version>
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
+    <jline.version>2.12.1</jline.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -58,6 +59,16 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.danilopianini</groupId>
+      <artifactId>gson-extras</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
     </dependency>
 
     <dependency>
@@ -124,6 +135,12 @@
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-impl</artifactId>
       <version>${aether.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
+      <version>1.52</version>
     </dependency>
 
     <dependency>
@@ -203,6 +220,12 @@
     </dependency>
 
     <dependency>
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>${jline.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -214,4 +237,28 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

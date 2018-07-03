@@ -1,0 +1,43 @@
+[
+  {
+    "group": "sap",
+    "name": "universe",
+    "className": "org.apache.zeppelin.sap.UniverseInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "universe.api.url": {
+        "envName": null,
+        "propertyName": "universe.api.url",
+        "defaultValue": "http://localhost:6405/biprws",
+        "description": "API url of Universe",
+        "type": "url"
+      },
+      "universe.user": {
+        "envName": null,
+        "propertyName": "universe.user",
+        "defaultValue": "",
+        "description": "Username for API of Universe",
+        "type": "string"
+      },
+      "universe.password": {
+        "envName": null,
+        "propertyName": "universe.password",
+        "defaultValue": "",
+        "description": "Password for API of Universe",
+        "type": "password"
+      },
+      "universe.authType": {
+        "envName": null,
+        "propertyName": "universe.password",
+        "defaultValue": "secEnterprise",
+        "description": "Type of authentication for API of Universe. Available values: secEnterprise, secLDAP, secWinAD, secSAPR3",
+        "type": "string"
+      }
+    },
+    "editor": {
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  }
+]

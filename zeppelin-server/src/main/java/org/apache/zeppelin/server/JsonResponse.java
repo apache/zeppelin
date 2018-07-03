@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.server;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
 
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response.ResponseBuilder;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * Json response builder.
@@ -41,7 +40,6 @@ public class JsonResponse<T> {
     this.status = status;
     this.message = null;
     this.body = null;
-
   }
 
   public JsonResponse(javax.ws.rs.core.Response.Status status, String message) {

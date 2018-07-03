@@ -17,13 +17,17 @@
 
 package org.apache.zeppelin.notebook.socket;
 
+import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+import org.slf4j.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Zeppelin websocket massage template class.
  */
-public class Message {
+public class Message implements JsonSerializable {
   /**
    * Representation of event type.
    */
@@ -149,6 +153,10 @@ public class Message {
     SET_NOTE_REVISION,            // [c-s] set current notebook head to this revision
                                   // @param noteId
                                   // @param revisionId
+    NOTE_REVISION_FOR_COMPARE,    // [c-s] get certain revision of note for compare
+                                  // @param noteId
+                                  // @param revisionId
+                                  // @param position
     APP_APPEND_OUTPUT,            // [s-c] append output
     APP_UPDATE_OUTPUT,            // [s-c] update (replace) output
     APP_LOAD,                     // [s-c] on app load
@@ -167,6 +175,7 @@ public class Message {
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
+    SESSION_LOGOUT,               // [s-c] error information to be sent
     WATCHER,                      // [s-c] Change websocket to watcher mode.
     PARAGRAPH_ADDED,              // [s-c] paragraph is added
     PARAGRAPH_REMOVED,            // [s-c] paragraph deleted
@@ -174,10 +183,18 @@ public class Message {
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
-    RUN_PARAGRAPH_USING_SPELL,     // [s-c] run paragraph using spell
-    PARAS_INFO                    // [s-c] paragraph runtime infos
+    RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
+    PARAS_INFO,                   // [s-c] paragraph runtime infos
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
+    INTERPRETER_INSTALL_STARTED,  // [s-c] start to download an interpreter
+    INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
+    COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
+    PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
+    NOTICE                        // [s-c] Notice
   }
 
+  private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
   
   public OP op;
@@ -203,6 +220,15 @@ public class Message {
     return (T) data.get(key);
   }
 
+  public <T> T getType(String key, Logger LOG) {
+    try {
+      return getType(key);
+    } catch (ClassCastException e) {
+      LOG.error("Failed to get " + key + " from message (Invalid type). " , e);
+      return null;
+    }
+  }
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("Message{");
@@ -210,5 +236,13 @@ public class Message {
     sb.append(", op=").append(op);
     sb.append('}');
     return sb.toString();
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static Message fromJson(String json) {
+    return gson.fromJson(json, Message.class);
   }
 }

@@ -15,14 +15,6 @@
  * limitations under the License.
  */
 
-// Generated on 2014-08-29 using generator-angular 0.9.5
-
-// # Globbing
-// for performance reasons we're only matching one level down:
-// 'test/spec/{,*/}*.js'
-// use this if you want to recursively match all subfolders:
-// 'test/spec/**/*.js'
-
 module.exports = function(grunt) {
 
   // Load grunt tasks automatically
@@ -46,22 +38,6 @@ module.exports = function(grunt) {
 
     // Project settings
     yeoman: appConfig,
-
-    babel: {
-      options: {
-        sourceMap: true,
-        presets: ['es2015'],
-        plugins: ['transform-object-rest-spread']
-      },
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '.tmp/concat/scripts',
-          src: ['scripts.js'],
-          dest: '.tmp/concat/scripts',
-        }]
-      }
-    },
 
     // use ngAnnotate instead og ngMin
     ngAnnotate: {
@@ -102,14 +78,7 @@ module.exports = function(grunt) {
     watch: {
       bower: {
         files: ['bower.json'],
-        tasks: ['wiredep']
-      },
-      js: {
-        files: [
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ],
-        tasks: ['newer:eslint:all'],
+        tasks: ['wiredep:dist', 'wiredep:test']
       },
       html: {
         files: [
@@ -120,7 +89,6 @@ module.exports = function(grunt) {
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: [
-          'newer:eslint:test',
           'karma'
         ]
       },
@@ -148,24 +116,6 @@ module.exports = function(grunt) {
       }
     },
 
-    eslint: {
-      all: {
-        src: [
-          'Gruntfile.js',
-          '<%= yeoman.app %>/app/**/*.js',
-          '<%= yeoman.app %>/components/**/*.js'
-        ]
-      },
-      test: {
-        options: {
-          rules: {
-            'no-undef': 0
-          }
-        },
-        src: ['test/spec/{,*/}*.js']
-      }
-    },
-
     // Add vendor prefixed styles
     postcss: {
       options: {
@@ -186,15 +136,24 @@ module.exports = function(grunt) {
 
     // Automatically inject Bower components into the app
     wiredep: {
-      options: {},
-      app: {
+      ci: {
         src: ['<%= yeoman.app %>/index.html'],
-        ignorePath: /\.\.\//
+        ignorePath: /\.\.\//,
+        exclude: [
+        ]
+      },
+      dist: {
+        src: ['<%= yeoman.app %>/index.html'],
+        ignorePath: /\.\.\//,
+        exclude: [
+        ],
       },
       test: {
         devDependencies: true,
         src: '<%= karma.unit.configFile %>',
         ignorePath: /\.\.\//,
+        exclude: [
+        ],
         fileTypes: {
           js: {
             block: /(([\s\t]*)\/{2}\s*?bower:\s*?(\S*))(\n|\r|.)*?(\/{2}\s*endbower)/gi,
@@ -413,7 +372,7 @@ module.exports = function(grunt) {
     // Test settings
     karma: {
       unit: {
-        configFile: 'test/karma.conf.js',
+        configFile: 'karma.conf.js',
         singleRun: true
       }
     }
@@ -421,7 +380,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('pre-webpack-dev', 'Compile then start a connect web server', function(target) {
     grunt.task.run([
-      'wiredep',
+      'wiredep:test',
+      'wiredep:dist',
     ]);
   });
 
@@ -430,9 +390,15 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('pre-webpack-dist', [
-    'eslint',
     'htmlhint',
-    'wiredep',
+    'wiredep:test',
+    'wiredep:dist',
+  ]);
+
+  grunt.registerTask('pre-webpack-ci', [
+    'htmlhint',
+    'wiredep:test',
+    'wiredep:ci',
   ]);
 
   grunt.registerTask('post-webpack-dist', [
