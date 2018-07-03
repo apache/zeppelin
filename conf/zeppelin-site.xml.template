@@ -67,6 +67,12 @@
   <description>hide homescreen notebook from list when this value set to true</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.collaborative.mode.enable</name>
+  <value>true</value>
+  <description>Enable collaborative mode</description>
+</property>
+
 <!-- Google Cloud Storage notebook storage -->
 <!--
 <property>
@@ -330,7 +336,7 @@
 
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
-  <value>30000</value>
+  <value>60000</value>
   <description>Interpreter process connect timeout in msec.</description>
 </property>
 

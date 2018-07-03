@@ -17,7 +17,7 @@ limitations under the License.
   <div class="form-group col-sm-6 col-md-6 col-lg-4"
        ng-repeat="formulaire in forms | toArray"
        ng-init="loadForm(formulaire, params)">
-    <label class="control-label input-sm" ng-class="{'disable': disable}">{{formulaire.name}}</label>
+    <label class="control-label input-sm" ng-class="{'disable': disable}">{{formulaire.displayName}}</label>
     <a ng-if="removeaction">
       <i class="fa fa-times"
          ng-click="removeaction(formulaire.name)"
@@ -39,6 +39,25 @@ limitations under the License.
              ng-enter="action()"
              ng-model="params[formulaire.name]"
              ng-class="{'disable': disable}"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="actiononchange === true">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'Password'"
+             ng-change="action()"
+             ng-model-options='{ debounce: 1000 }'
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             type="password"
+             name="{{formulaire.name}}" />
+    </div>
+    <div ng-if="!actiononchange">
+      <input class="form-control input-sm"
+             ng-if="forms[formulaire.name].type == 'Password'"
+             ng-enter="action()"
+             ng-model="params[formulaire.name]"
+             ng-class="{'disable': disable}"
+             type="password"
              name="{{formulaire.name}}" />
     </div>
     <div ng-if="actiononchange === true">

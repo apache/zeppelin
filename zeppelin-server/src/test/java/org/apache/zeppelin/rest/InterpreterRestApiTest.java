@@ -373,35 +373,6 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     delete.releaseConnection();
   }
 
-  @Test
-  public void testGetMetadataInfo() throws IOException {
-    String jsonRequest = "{\"name\":\"spark_new\",\"group\":\"spark\"," +
-            "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
-            "\"type\": \"textarea\"}}," +
-            "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\"," +
-            "\"name\":\"md\"}],\"dependencies\":[]," +
-            "\"option\": { \"remote\": true, \"session\": false }}";
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
-    InterpreterSetting created = convertResponseToInterpreterSetting(
-            post.getResponseBodyAsString());
-    String settingId = created.getId();
-    Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("key1", "value1");
-    infos.put("key2", "value2");
-    ZeppelinServer.notebook.getInterpreterSettingManager().get(settingId).setInfos(infos);
-    GetMethod get = httpGet("/interpreter/metadata/" + settingId);
-    assertThat(get, isAllowed());
-    JsonObject body = getBodyFieldFromResponse(get.getResponseBodyAsString());
-    assertEquals(body.entrySet().size(), infos.size());
-    java.util.Map.Entry<String, JsonElement> item = body.entrySet().iterator().next();
-    if (item.getKey().equals("key1")) {
-      assertEquals(item.getValue().getAsString(), "value1");
-    } else {
-      assertEquals(item.getValue().getAsString(), "value2");
-    }
-    get.releaseConnection();
-  }
-
   private JsonObject getBodyFieldFromResponse(String rawResponse) {
     JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
     return response.getAsJsonObject("body");

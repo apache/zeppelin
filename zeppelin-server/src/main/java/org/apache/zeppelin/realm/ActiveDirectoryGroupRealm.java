@@ -16,10 +16,8 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.LinkedHashMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -79,10 +77,10 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap;
+  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
-    this.groupRolesMap = groupRolesMap;
+    this.groupRolesMap.putAll(groupRolesMap);
   }
 
   LdapContextFactory ldapContextFactory;
@@ -141,19 +139,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
       password = this.systemPassword;
     } else {
-      try {
-        Configuration configuration = new Configuration();
-        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-                this.hadoopSecurityCredentialPath);
-        CredentialProvider provider = CredentialProviderFactory.getProviders(configuration).get(0);
-        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
-                keystorePass);
-        if (credEntry != null) {
-          password = new String(credEntry.getCredential());
-        }
-      } catch (Exception e) {
-        log.debug("ignored error from getting credential entry from keystore", e);
-      }
+      password = LdapRealm.getSystemPassword(hadoopSecurityCredentialPath, keystorePass);
     }
     return password;
   }

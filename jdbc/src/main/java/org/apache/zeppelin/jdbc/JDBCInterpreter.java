@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -787,12 +788,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     String cmd = Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation")) ?
             interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
     logger.debug("Run SQL command '{}'", cmd);
-    String propertyKey = getPropertyKey(cmd);
-
-    if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
-      cmd = cmd.substring(propertyKey.length() + 2);
-    }
-
+    String propertyKey = getPropertyKey(contextInterpreter);
     cmd = cmd.trim();
     logger.debug("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
     return executeSql(propertyKey, cmd, contextInterpreter);
@@ -811,20 +807,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
     }
   }
 
-  public String getPropertyKey(String cmd) {
-    boolean firstLineIndex = cmd.startsWith("(");
-
-    if (firstLineIndex) {
-      int configStartIndex = cmd.indexOf("(");
-      int configLastIndex = cmd.indexOf(")");
-      if (configStartIndex != -1 && configLastIndex != -1) {
-        return cmd.substring(configStartIndex + 1, configLastIndex);
-      } else {
-        return null;
-      }
-    } else {
-      return DEFAULT_KEY;
+  public String getPropertyKey(InterpreterContext interpreterContext) {
+    Map<String, String> localProperties = interpreterContext.getLocalProperties();
+    // It is recommended to use this kind of format: %jdbc(db=mysql)
+    if (localProperties.containsKey("db")) {
+      return localProperties.get("db");
     }
+    // %jdbc(mysql) is only for backward compatibility
+    for (Map.Entry<String, String> entry : localProperties.entrySet()) {
+      if (entry.getKey().equals(entry.getValue())) {
+        return entry.getKey();
+      }
+    }
+    return DEFAULT_KEY;
   }
 
   @Override
@@ -850,7 +845,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
     List<InterpreterCompletion> candidates = new ArrayList<>();
-    String propertyKey = getPropertyKey(buf);
+    String propertyKey = getPropertyKey(interpreterContext);
     String sqlCompleterKey =
         String.format("%s.%s", interpreterContext.getAuthenticationInfo().getUser(), propertyKey);
     SqlCompleter sqlCompleter = sqlCompletersMap.get(sqlCompleterKey);

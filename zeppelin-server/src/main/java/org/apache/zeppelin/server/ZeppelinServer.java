@@ -16,8 +16,20 @@
  */
 package org.apache.zeppelin.server;
 
+import java.lang.management.ManagementFactory;
+import java.util.Collection;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -98,6 +110,27 @@ public class ZeppelinServer extends Application {
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    if (conf.getShiroPath().length() > 0) {
+      try {
+        Collection<Realm> realms = ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
+            .getSecurityManager()).getRealms();
+        if (realms.size() > 1) {
+          Boolean isIniRealmEnabled = false;
+          for (Object realm : realms) {
+            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+              isIniRealmEnabled = true;
+              break;
+            }
+          }
+          if (isIniRealmEnabled) {
+            throw new Exception("IniRealm/password based auth mechanisms should be exclusive. "
+                + "Consider removing [users] block from shiro.ini");
+          }
+        }
+      } catch (UnavailableSecurityManagerException e) {
+        LOG.error("Failed to initialise shiro configuraion", e);
+      }
+    }
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
@@ -167,6 +200,25 @@ public class ZeppelinServer extends Application {
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
     this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
+
+    // Register MBean
+    if ("true".equals(System.getenv("ZEPPELIN_ENABLE_JMX"))) {
+      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+      try {
+        mBeanServer.registerMBean(
+            notebookWsServer,
+            new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
+        mBeanServer.registerMBean(
+            interpreterSettingManager,
+            new ObjectName(
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
+      } catch (InstanceAlreadyExistsException
+          | MBeanRegistrationException
+          | MalformedObjectNameException
+          | NotCompliantMBeanException e) {
+        LOG.error("Failed to register MBeans", e);
+      }
+    }
   }
 
   public static void main(String[] args) throws InterruptedException {

@@ -66,8 +66,7 @@ public class PigQueryInterpreterTest {
     pigInterpreter.open();
     pigQueryInterpreter.open();
 
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null,
-        null, null, null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
   }
 
   @After

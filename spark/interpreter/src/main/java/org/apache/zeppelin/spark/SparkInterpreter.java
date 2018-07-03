@@ -50,6 +50,7 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
     } else {
       delegation = new OldSparkInterpreter(properties);
     }
+    delegation.setParentSparkInterpreter(this);
   }
 
   @Override
@@ -128,11 +129,6 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public JavaSparkContext getJavaSparkContext() {
     return delegation.getJavaSparkContext();
-  }
-
-  @Override
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    delegation.populateSparkWebUrl(ctx);
   }
 
   @Override

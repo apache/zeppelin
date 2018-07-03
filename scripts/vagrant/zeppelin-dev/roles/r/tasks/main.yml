@@ -16,21 +16,6 @@
 # Install R binaries and CRAN packages
 ---
 
-# The Ubuntu archives on CRAN are signed with a key with ID E084DAB9. Add this key to the system.
-- name: repository | add public key
-  apt_key:
-    id: E084DAB9
-    keyserver: keyserver.ubuntu.com
-    state: present
-
-# in order to get the latest version of R, add CRAN repository to the to the list of sources
-- name: repository | add cran-r
-  apt_repository:
-    repo: "{{item.type}} {{item.url}}"
-    state: present
-    update_cache: true
-  with_items: r_repository
-
 - name: Install R. This may take a while.
   apt: pkg=r-base state=present
 
