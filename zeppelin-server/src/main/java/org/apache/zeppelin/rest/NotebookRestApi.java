@@ -45,7 +45,11 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.NotFoundException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
-import org.apache.zeppelin.rest.message.*;
+import org.apache.zeppelin.rest.message.CronRequest;
+import org.apache.zeppelin.rest.message.NewNoteRequest;
+import org.apache.zeppelin.rest.message.RenameNoteRequest;
+import org.apache.zeppelin.rest.message.NewParagraphRequest;
+import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -420,7 +424,8 @@ public class NotebookRestApi {
   @PUT
   @Path("{noteId}/rename")
   @ZeppelinApi
-  public Response renameNote(@PathParam("noteId") String noteId, String message) throws IOException {
+  public Response renameNote(@PathParam("noteId") String noteId,
+                             String message) throws IOException {
     LOG.info("rename note by JSON {}", message);
     RenameNoteRequest request = gson.fromJson(message, RenameNoteRequest.class);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());

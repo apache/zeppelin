@@ -26,14 +26,15 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
  *  RenameNoteRequest rest api request message
  *
  */
+
 public class RenameNoteRequest {
-    String name;
+  String name;
 
-    public RenameNoteRequest (){
+  public RenameNoteRequest (){
 
-    }
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 }
