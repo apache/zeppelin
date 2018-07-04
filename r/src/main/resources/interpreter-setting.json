@@ -1,0 +1,61 @@
+[
+  {
+    "group": "spark",
+    "name": "r",
+    "className": "org.apache.zeppelin.rinterpreter.RRepl",
+    "properties": {
+      "rhadoop.cmd": {
+        "envName": "HADOOP_CMD",
+        "defaultValue": "",
+        "type": "textarea"
+      },
+      "rhadooop.streamingjar": {
+        "envName": "HADOOP_STREAMING",
+        "defaultValue": "",
+        "type": "textarea"
+      },
+      "rscala.debug": {
+        "envName": "RSCALA_DEBUG",
+        "defaultValue": false,
+        "type": "checkbox"
+      },
+      "rscala.timeout": {
+        "envName": "RSCALA_TIMEOUT",
+        "defaultValue": "60",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionKey": "TAB"
+    }
+  },
+  {
+    "group": "spark",
+    "name": "knitr",
+    "className": "org.apache.zeppelin.rinterpreter.RRepl",
+    "properties": {
+      "rhadoop.cmd": {
+        "envName": "HADOOP_CMD",
+        "defaultValue": "",
+        "type": "textarea"
+      },
+      "rhadooop.streamingjar": {
+        "envName": "HADOOP_STREAMING",
+        "defaultValue": "",
+        "type": "textarea"
+      },
+      "rscala.debug": {
+        "envName": "RSCALA_DEBUG",
+        "defaultValue": false,
+        "type": "checkbox"
+      },
+      "rscala.timeout": {
+        "envName": "RSCALA_TIMEOUT",
+        "defaultValue": "60",
+        "type": "number"
+      }
+    }
+  }
+]

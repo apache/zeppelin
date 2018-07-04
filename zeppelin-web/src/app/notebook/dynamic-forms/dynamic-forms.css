@@ -1,0 +1,24 @@
+import './note-create.css'
+
+.dynamicForm {
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+.dynamicForm.form-horizontal .form-group {
+  margin-right: 0;
+  margin-left:  0;
+}
+
+.dynamicForm.form-horizontal .form-group label {
+  padding-left: 0;
+}
+
+.dynamicForm.form-horizontal .form-group .checkbox-item {
+  padding-left: 0;
+  padding-right: 10px;
+}
+
+.dynamicForm.form-horizontal .form-group .checkbox-item input {
+  margin-right: 2px;
+}

@@ -16,18 +16,17 @@
  */
 package org.apache.zeppelin.rest;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,21 +34,23 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  * NotebookRepo rest api test.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRepoRestApiTest extends AbstractTestRestApi {
-
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp();
+    AbstractTestRestApi.startUp(NotebookRepoRestApiTest.class.getSimpleName());
   }
 
   @AfterClass
@@ -64,7 +65,8 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   
   private List<Map<String, Object>> getListOfReposotiry() throws IOException {
     GetMethod get = httpGet("/notebook-repositories");
-    Map<String, Object> responce = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> responce = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     get.releaseConnection();
     return (List<Map<String, Object>>) responce.get("body");
   }
@@ -76,30 +78,43 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     assertThat(status, is(200));
   }
   
-  @Test public void ThatCanGetNotebookRepositoiesSettings() throws IOException {
+  @Test
+  public void thatCanGetNotebookRepositoiesSettings() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     assertThat(listOfRepositories.size(), is(not(0)));
   }
+
+  @Test
+  public void reloadRepositories() throws IOException {
+    GetMethod get = httpGet("/notebook-repositories/reload");
+    int status = get.getStatusCode();
+    get.releaseConnection();
+    assertThat(status, is(200)); 
+  }
   
-  @Test public void setNewDirectoryForLocalDirectory() throws IOException {
+  @Test
+  public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
     String localVfs = StringUtils.EMPTY;
     String className = StringUtils.EMPTY;
 
     for (int i = 0; i < listOfRepositories.size(); i++) {
       if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
-        localVfs = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        localVfs =
+                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
+                        .get(0).get("selected");
         className = (String) listOfRepositories.get(i).get("className");
         break;
       }
     }
 
     if (StringUtils.isBlank(localVfs)) {
-      // no loval VFS set...
+      // no local VFS set...
       return;
     }
 
-    String payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"/tmp/newDir\" } }";
+    String payload = "{ \"name\": \"" + className + "\", \"settings\" : " +
+            "{ \"Notebook Path\" : \"/tmp/newDir\" } }";
     updateNotebookRepoWithNewSetting(payload);
     
     // Verify
@@ -107,14 +122,17 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     String updatedPath = StringUtils.EMPTY;
     for (int i = 0; i < listOfRepositories.size(); i++) {
       if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
-        updatedPath = (String) ((List<Map<String, Object>>)listOfRepositories.get(i).get("settings")).get(0).get("selected");
+        updatedPath =
+                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
+                        .get(0).get("selected");
         break;
       }
     }
-    assertThat(updatedPath, is("/tmp/newDir"));
+    assertThat(updatedPath, anyOf(is("/tmp/newDir"), is("/tmp/newDir/")));
     
     // go back to normal
-    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" + localVfs + "\" } }";
+    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" +
+            localVfs + "\" } }";
     updateNotebookRepoWithNewSetting(payload);
   }
 }

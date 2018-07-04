@@ -16,13 +16,14 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class InterpreterOutputTest implements InterpreterOutputListener {
@@ -171,13 +172,15 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     // truncate text
     out.write("%text hello\nworld\n");
     assertEquals("hello", new String(out.getOutputAt(0).toByteArray()));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("Truncated"));
+    out.getOutputAt(1).flush();
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("truncated"));
 
     // truncate table
     out = new InterpreterOutput(this);
     out.write("%table key\tvalue\nhello\t100\nworld\t200\n");
     assertEquals("key\tvalue", new String(out.getOutputAt(0).toByteArray()));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("Truncated"));
+    out.getOutputAt(1).flush();
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("truncated"));
 
     // does not truncate html
     out = new InterpreterOutput(this);

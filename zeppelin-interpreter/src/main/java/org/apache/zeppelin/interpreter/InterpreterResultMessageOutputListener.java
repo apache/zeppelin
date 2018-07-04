@@ -24,10 +24,10 @@ public interface InterpreterResultMessageOutputListener {
    * called when newline is detected
    * @param line
    */
-  public void onAppend(InterpreterResultMessageOutput out, byte[] line);
+  void onAppend(InterpreterResultMessageOutput out, byte[] line);
 
   /**
    * when entire output is updated. eg) after detecting new display system
    */
-  public void onUpdate(InterpreterResultMessageOutput out);
+  void onUpdate(InterpreterResultMessageOutput out);
 }

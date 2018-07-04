@@ -26,7 +26,7 @@ limitations under the License.
 ## Overview
 [Apache Lens](https://lens.apache.org/) provides an Unified Analytics interface. Lens aims to cut the Data Analytics silos by providing a single view of data across multiple tiered data stores and optimal execution environment for the analytical query. It seamlessly integrates Hadoop with traditional data warehouses to appear like one.
 
-![Apache Lens](../assets/themes/zeppelin/img/docs-img/lens-logo.png)
+![Apache Lens]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-logo.png)
 
 ## Installing and Running Lens
 In order to use Lens interpreters, you may install Apache Lens in some simple steps:
@@ -35,8 +35,8 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
 2. Before running Lens, you have to set HIVE_HOME and HADOOP_HOME. If you want to get more information about this, please refer to [here](http://lens.apache.org/lenshome/install-and-run.html#Installation). Lens also provides Pseudo Distributed mode. [Lens pseudo-distributed setup](http://lens.apache.org/lenshome/pseudo-distributed-setup.html) is done by using [docker](https://www.docker.com/). Hive server and hadoop daemons are run as separate processes in lens pseudo-distributed setup.
 3. Now, you can start lens server (or stop).
 
-```
-./bin/lens-ctl start (or stop)
+```bash
+./bin/lens-ctl start # (or stop)
 ```
 
 ## Configuring Lens Interpreter
@@ -90,23 +90,23 @@ At the "Interpreters" menu, you can edit Lens interpreter or create new one. Zep
   </tr>
 </table>
 
-![Apache Lens Interpreter Setting](../assets/themes/zeppelin/img/docs-img/lens-interpreter-setting.png)
+![Apache Lens Interpreter Setting]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-interpreter-setting.png)
 
 ### Interpreter Binding for Zeppelin Notebook
 After configuring Lens interpreter, create your own notebook, then you can bind interpreters like below image.
 
-![Zeppelin Notebook Interpreter Binding](../assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
+![Zeppelin Notebook Interpreter Binding]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
 
-For more interpreter binding information see [here](http://zeppelin.apache.org/docs/manual/interpreters.html).
+For more interpreter binding information see [here](../usage/interpreter/overview.html#interpreter-binding-mode).
 
 ### How to use
 You can analyze your data by using [OLAP Cube](http://lens.apache.org/user/olap-cube.html) [QL](http://lens.apache.org/user/cli.html) which is a high level SQL like language to query and describe data sets organized in data cubes.
 You may experience OLAP Cube like this [Video tutorial](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
-As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh). All of these functions also can be used on Zeppelin by using Lens interpreter.
+As you can see in this video, they are using Lens Client Shell(`./bin/lens-cli.sh`). All of these functions also can be used on Zeppelin by using Lens interpreter.
 
-<li> Create and Use(Switch) Databases.
+<li> Create and Use (Switch) Databases.
 
-```
+```sql
 create database newDb
 ```
 
@@ -161,24 +161,28 @@ create fact your/path/to/lens/client/examples/resources/sales-raw-fact.xml
 <li> Add partitions to Dimtable and Fact.
 
 ```
-dimtable add single-partition --dimtable_name customer_table --storage_name local --path your/path/to/lens/client/examples/resources/customer-local-part.xml
+dimtable add single-partition --dimtable_name customer_table --storage_name local 
+--path your/path/to/lens/client/examples/resources/customer-local-part.xml
 ```
 
 ```
-fact add partitions --fact_name sales_raw_fact --storage_name local --path your/path/to/lens/client/examples/resources/sales-raw-local-parts.xml
+fact add partitions --fact_name sales_raw_fact --storage_name local 
+--path your/path/to/lens/client/examples/resources/sales-raw-local-parts.xml
 ```
 
 <li> Now, you can run queries on cubes.
 
 ```
-query execute cube select customer_city_name, product_details.description, product_details.category, product_details.color, store_sales from sales where time_range_in(delivery_time, '2015-04-11-00', '2015-04-13-00')
+query execute cube select customer_city_name, product_details.description, 
+product_details.category, product_details.color, store_sales from sales 
+where time_range_in(delivery_time, '2015-04-11-00', '2015-04-13-00')
 ```
 
-![Lens Query Result](../assets/themes/zeppelin/img/docs-img/lens-result.png)
+![Lens Query Result]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-result.png)
 
 These are just examples that provided in advance by Lens. If you want to explore whole tutorials of Lens, see the [tutorial video](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
 
 ## Lens UI Service
 Lens also provides web UI service. Once the server starts up, you can open the service on http://serverhost:19999/index.html and browse. You may also check the structure that you made and use query easily here.
 
-![Lens UI Service](../assets/themes/zeppelin/img/docs-img/lens-ui-service.png)
+![Lens UI Service]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/lens-ui-service.png)

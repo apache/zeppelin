@@ -28,8 +28,8 @@ import java.io.IOException;
  * Can be used to channel output from interpreters.
  */
 public class InterpreterOutputStream extends LogOutputStream {
-  public static Logger logger;
-  InterpreterOutput interpreterOutput;
+  private Logger logger;
+  volatile InterpreterOutput interpreterOutput;
   boolean ignoreLeadingNewLinesFromScalaReporter = false;
 
   public InterpreterOutputStream(Logger logger) {

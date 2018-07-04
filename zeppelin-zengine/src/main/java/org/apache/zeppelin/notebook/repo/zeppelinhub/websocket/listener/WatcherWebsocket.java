@@ -21,12 +21,11 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
+import org.apache.zeppelin.ticket.TicketContainer;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 
 /**
  * Zeppelin Watcher that will forward user note to ZeppelinHub.
@@ -34,7 +33,7 @@ import com.google.gson.Gson;
  */
 public class WatcherWebsocket implements WebSocketListener {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
-  private static final Gson GSON = new Gson();
+  private static final String watcherPrincipal = "watcher";
   public Session connection;
   
   public static WatcherWebsocket createInstace() {
@@ -54,7 +53,10 @@ public class WatcherWebsocket implements WebSocketListener {
   public void onWebSocketConnect(Session session) {
     LOG.info("WatcherWebsocket connection opened");
     this.connection = session;
-    session.getRemote().sendStringByFuture(GSON.toJson(new Message(OP.WATCHER)));
+    Message watcherMsg = new Message(OP.WATCHER);
+    watcherMsg.principal = watcherPrincipal;
+    watcherMsg.ticket = TicketContainer.instance.getTicket(watcherPrincipal);
+    session.getRemote().sendStringByFuture(watcherMsg.toJson());
   }
 
   @Override
@@ -64,7 +66,7 @@ public class WatcherWebsocket implements WebSocketListener {
 
   @Override
   public void onWebSocketText(String message) {
-    WatcherMessage watcherMsg = GSON.fromJson(message, WatcherMessage.class);
+    WatcherMessage watcherMsg = WatcherMessage.fromJson(message);
     if (StringUtils.isBlank(watcherMsg.noteId)) {
       return;
     }

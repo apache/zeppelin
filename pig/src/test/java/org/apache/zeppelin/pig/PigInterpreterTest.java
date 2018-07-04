@@ -16,16 +16,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -33,8 +30,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 
 public class PigInterpreterTest {
 
@@ -47,8 +46,7 @@ public class PigInterpreterTest {
     properties.put("zeppelin.pig.includeJobStats", includeJobStats + "");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
-            null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
   }
 
   @After
@@ -89,7 +87,8 @@ public class PigInterpreterTest {
     result = pigInterpreter.interpret(pigscript, context);
     assertEquals(Type.TEXT, result.message().get(0).getType());
     assertEquals(Code.ERROR, result.code());
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // execution error
     pigscript = "a = load 'invalid_path';"
@@ -139,7 +138,8 @@ public class PigInterpreterTest {
     assertEquals(Code.ERROR, result.code());
     // no job is launched, so no jobStats
     assertTrue(!result.message().get(0).getData().contains("Counters:"));
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // execution error
     pigscript = "a = load 'invalid_path';"

@@ -16,6 +16,11 @@
  */
 
 package org.apache.zeppelin.interpreter;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Interpreter related constants
  * 
@@ -31,5 +36,18 @@ public class Constants {
   public static final int ZEPPELIN_INTERPRETER_DEFAUlT_PORT = 29914;
 
   public static final int ZEPPELIN_INTERPRETER_OUTPUT_LIMIT = 1024 * 100;
+
+  public static final Map<String, TimeUnit> TIME_SUFFIXES;
+
+  static {
+    TIME_SUFFIXES = new HashMap<>();
+    TIME_SUFFIXES.put("us", TimeUnit.MICROSECONDS);
+    TIME_SUFFIXES.put("ms", TimeUnit.MILLISECONDS);
+    TIME_SUFFIXES.put("s", TimeUnit.SECONDS);
+    TIME_SUFFIXES.put("m", TimeUnit.MINUTES);
+    TIME_SUFFIXES.put("min", TimeUnit.MINUTES);
+    TIME_SUFFIXES.put("h", TimeUnit.HOURS);
+    TIME_SUFFIXES.put("d", TimeUnit.DAYS);
+  }
 
 }

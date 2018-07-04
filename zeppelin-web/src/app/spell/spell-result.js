@@ -21,6 +21,7 @@ export const DefaultDisplayType = {
   HTML: 'HTML',
   ANGULAR: 'ANGULAR',
   TEXT: 'TEXT',
+  NETWORK: 'NETWORK',
 };
 
 export const DefaultDisplayMagic = {
@@ -29,6 +30,7 @@ export const DefaultDisplayMagic = {
   '%html': DefaultDisplayType.HTML,
   '%angular': DefaultDisplayType.ANGULAR,
   '%text': DefaultDisplayType.TEXT,
+  '%network': DefaultDisplayType.NETWORK,
 };
 
 export class DataWithType {
@@ -87,7 +89,7 @@ export class DataWithType {
     let previousMagic = DefaultDisplayType.TEXT;
 
     // create `DataWithType` whenever see available display type.
-    for(let i = 0; i < splited.length; i++) {
+    for (let i = 0; i < splited.length; i++) {
       const g = splited[i];
       const magic = SpellResult.extractMagic(g);
 
@@ -134,7 +136,9 @@ export class DataWithType {
     // if the type is specified, just return it
     // handle non-specified dataWithTypes only
     if (type) {
-      return new Promise((resolve) => { resolve([dataWithType]); });
+      return new Promise((resolve) => {
+        resolve([dataWithType]);
+      });
     }
 
     let wrapped;
@@ -149,12 +153,11 @@ export class DataWithType {
       });
     } else if (SpellResult.isPromise(data)) {
       // if data is a promise,
-      wrapped = data.then(generated => {
+      wrapped = data.then((generated) => {
         const result =
           DataWithType.parseStringData(generated, customDisplayType);
         return result;
-      })
-
+      });
     } else {
       // if data is a object, parse it to multiples
       wrapped = new Promise((resolve) => {
@@ -234,9 +237,9 @@ export class SpellResult {
   }
 
   static createPropagable(resultMsg) {
-    return resultMsg.map(dt => {
+    return resultMsg.map((dt) => {
       return DataWithType.createPropagable(dt);
-    })
+    });
   }
 
   add(resultData, resultType) {
@@ -254,20 +257,20 @@ export class SpellResult {
    * @return {Promise<Array<DataWithType>>}
    */
   getAllParsedDataWithTypes(customDisplayType, magic, textWithoutMagic) {
-    const promises = this.dataWithTypes.map(dt => {
+    const promises = this.dataWithTypes.map((dt) => {
       return DataWithType.produceMultipleData(
         dt, customDisplayType, magic, textWithoutMagic);
     });
 
     // some promises can include an array so we need to flatten them
-    const flatten = Promise.all(promises).then(values => {
+    const flatten = Promise.all(promises).then((values) => {
       return values.reduce((acc, cur) => {
         if (Array.isArray(cur)) {
           return acc.concat(cur);
         } else {
           return acc.concat([cur]);
         }
-      })
+      });
     });
 
     return flatten;

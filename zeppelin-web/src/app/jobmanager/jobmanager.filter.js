@@ -12,37 +12,45 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('jobManager', jobManagerFilter);
+export function JobManagerFilter() {
+  function filterContext(jobs, filterConfig) {
+    let interpreter = filterConfig.interpreterFilterValue;
+    let noteName = filterConfig.noteNameFilterValue;
+    let isSortByAsc = filterConfig.isSortByAsc;
+    let filteredJobs = jobs;
 
-function jobManagerFilter() {
-  function filterContext(jobItems, filterConfig) {
-    var filterValueInterpreter = filterConfig.filterValueInterpreter;
-    var filterValueNotebookName = filterConfig.filterValueNotebookName;
-    var isSortByAsc = filterConfig.isSortByAsc;
-    var filterItems = jobItems;
-
-    if (filterValueInterpreter === undefined) {
-      filterItems = _.filter(filterItems, function(jobItem) {
-        return jobItem.interpreter === undefined ? true : false;
+    if (typeof interpreter === 'undefined') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        return typeof jobItem.interpreter === 'undefined';
       });
-    } else if (filterValueInterpreter !== '*') {
-      filterItems = _.where(filterItems, {interpreter: filterValueInterpreter});
+    } else if (interpreter !== '*') {
+      filteredJobs = filteredJobs.filter((j) => j.interpreter === interpreter);
     }
 
-    if (filterValueNotebookName !== '') {
-      filterItems = _.filter(filterItems, function(jobItem) {
-        var lowerFilterValue = filterValueNotebookName.toLocaleLowerCase();
-        var lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
+    // filter by note name
+    if (noteName !== '') {
+      filteredJobs = filteredJobs.filter((jobItem) => {
+        let lowerFilterValue = noteName.toLocaleLowerCase();
+        let lowerNotebookName = jobItem.noteName.toLocaleLowerCase();
         return lowerNotebookName.match(new RegExp('.*' + lowerFilterValue + '.*'));
       });
     }
 
-    filterItems = _.sortBy(filterItems, function(sortItem) {
-      return sortItem.noteName.toLowerCase();
+    // sort by name
+    filteredJobs = filteredJobs.sort((jobItem) => {
+      return jobItem.noteName.toLowerCase();
     });
 
-    return isSortByAsc ? filterItems : filterItems.reverse();
+    // sort by timestamp
+    filteredJobs = filteredJobs.sort((x, y) => {
+      if (isSortByAsc) {
+        return x.unixTimeLastRun - y.unixTimeLastRun;
+      } else {
+        return y.unixTimeLastRun - x.unixTimeLastRun;
+      }
+    });
+
+    return filteredJobs;
   }
   return filterContext;
 }
-

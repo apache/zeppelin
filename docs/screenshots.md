@@ -20,22 +20,22 @@ limitations under the License.
 
 <div class="row">
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/sparksql.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/sparksql.png" /></a>
+          <a href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/sparksql.png"><img class="thumbnail" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/sparksql.png" /></a>
           <center>Spark SQL with inline visualization</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/spark.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/spark.png" /></a>
+          <a href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/spark.png"><img class="thumbnail" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/spark.png" /></a>
           <center>Scala code runs with Spark</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/markdown.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/markdown.png" /></a>
+          <a href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/markdown.png"><img class="thumbnail" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/markdown.png" /></a>
           <center>Markdown supported</center>
      </div>
 </div>
 <br />
 <div class="row">
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/notebook.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/notebook.png" /></a>
+          <a href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/notebook.png"><img class="thumbnail" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/notebook.png" /></a>
           <center>Notebook</center>
      </div>
      <div class="col-md-3">

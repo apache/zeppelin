@@ -1,0 +1,150 @@
+{
+  "interpreterSettings": {
+    "2C3RWCVAG": {
+      "id": "2C3RWCVAG",
+      "name": "test",
+      "group": "test",
+      "properties": {
+        "property_1": "value_1",
+        "property_2": "new_value_2",
+        "property_3": "value_3"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "echo",
+          "class": "org.apache.zeppelin.interpreter.EchoInterpreter",
+          "defaultInterpreter": true,
+          "editor": {
+            "language": "java",
+            "editOnDblClick": false
+          }
+        }
+      ],
+      "dependencies": [],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2CKWE7B19": {
+      "id": "2CKWE7B19",
+      "name": "test2",
+      "group": "test",
+      "properties": {
+        "property_1": "value_1",
+        "property_2": "new_value_2",
+        "property_3": "value_3"
+      },
+      "status": "READY",
+      "interpreterGroup": [
+        {
+          "name": "echo",
+          "class": "org.apache.zeppelin.interpreter.EchoInterpreter",
+          "defaultInterpreter": true,
+          "editor": {
+            "language": "java",
+            "editOnDblClick": false
+          }
+        }
+      ],
+      "dependencies": [],
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2C4BJDRRZ" : {
+      "group": "mock1",
+      "name": "mock1",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2C3PTPMUH" : {
+      "group": "mock2",
+      "name": "mock2",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter2",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "isolated",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    },
+
+    "2C5DCRVGM" : {
+      "group": "mock_resource_pool",
+      "name": "mock_resource_pool",
+      "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterResourcePool",
+      "properties": {
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
+    }
+  },
+  "interpreterBindings": {
+    "2C6793KRV": [
+      "2C3RWCVAG",
+      "2CKWE7B19"
+    ]
+  },
+  "interpreterRepositories": [
+    {
+      "id": "central",
+      "type": "default",
+      "url": "http://repo1.maven.org/maven2/",
+      "releasePolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "snapshotPolicy": {
+        "enabled": true,
+        "updatePolicy": "daily",
+        "checksumPolicy": "warn"
+      },
+      "mirroredRepositories": [],
+      "repositoryManager": false
+    }
+  ]
+}

@@ -26,12 +26,12 @@ import org.apache.zeppelin.interpreter.InterpreterContext
 import org.apache.zeppelin.interpreter.InterpreterResult
 import org.apache.zeppelin.rinterpreter.rscala.RException
 
-class RReplInterpreter(property: Properties, startSpark : Boolean = true) extends RInterpreter(property, startSpark) {
+class RReplInterpreter(properties: Properties, startSpark : Boolean = true) extends RInterpreter(properties, startSpark) {
 
- // protected val rContext : RContext = RContext(property)
+ // protected val rContext : RContext = RContext(properties)
 
-  def this(property : Properties) = {
-    this(property, true)
+  def this(properties : Properties) = {
+    this(properties, true)
   }
   private var firstCell : Boolean = true
   def interpret(st: String, context: InterpreterContext): InterpreterResult = {

@@ -27,9 +27,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult
 import org.apache.zeppelin.rinterpreter.rscala.RException
 
 
-class KnitRInterpreter(property: Properties, startSpark : Boolean = true) extends RInterpreter(property, startSpark) {
-  def this(property : Properties) = {
-    this(property, true)
+class KnitRInterpreter(properties: Properties, startSpark : Boolean = true) extends RInterpreter(properties, startSpark) {
+  def this(properties : Properties) = {
+    this(properties, true)
   }
 
   override def open: Unit = {

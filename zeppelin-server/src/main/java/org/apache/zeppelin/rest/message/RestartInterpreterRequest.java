@@ -14,20 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
+import com.google.gson.Gson;
+
+import org.apache.zeppelin.common.JsonSerializable;
+
 /**
- * RestartInterpreter rest api request message
+ * RestartInterpreter rest api request message.
  */
-public class RestartInterpreterRequest {
+public class RestartInterpreterRequest implements JsonSerializable {
+  private static final Gson gson = new Gson();
+
   String noteId;
 
   public RestartInterpreterRequest() {
-
   }
 
   public String getNoteId() {
     return noteId;
+  }
+
+  public String toJson() {
+    return gson.toJson(this);
+  }
+
+  public static RestartInterpreterRequest fromJson(String json) {
+    return gson.fromJson(json, RestartInterpreterRequest.class);
   }
 }

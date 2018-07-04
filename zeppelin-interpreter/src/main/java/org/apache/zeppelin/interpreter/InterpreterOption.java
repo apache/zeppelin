@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 /**
  *
@@ -27,8 +28,10 @@ public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
+  private static ZeppelinConfiguration conf =  ZeppelinConfiguration.create();
 
-  boolean remote;
+  // always set it as true, keep this field just for backward compatibility
+  boolean remote = true;
   String host = null;
   int port = -1;
 
@@ -37,7 +40,7 @@ public class InterpreterOption {
 
   boolean isExistingProcess;
   boolean setPermission;
-  List<String> users;
+  List<String> owners;
   boolean isUserImpersonate;
 
   public boolean isExistingProcess() {
@@ -64,8 +67,15 @@ public class InterpreterOption {
     this.setPermission = setPermission;
   }
 
-  public List<String> getUsers() {
-    return users;
+  public List<String> getOwners() {
+    if (null != owners && conf.isUsernameForceLowerCase()) {
+      List<String> lowerCaseUsers = new ArrayList<String>();
+      for (String owner : owners) {
+        lowerCaseUsers.add(owner.toLowerCase());
+      }
+      return lowerCaseUsers;
+    }
+    return owners;
   }
 
   public boolean isUserImpersonate() {
@@ -77,14 +87,9 @@ public class InterpreterOption {
   }
 
   public InterpreterOption() {
-    this(false);
   }
 
-  public InterpreterOption(boolean remote) {
-    this(remote, SHARED, SHARED);
-  }
-
-  public InterpreterOption(boolean remote, String perUser, String perNote) {
+  public InterpreterOption(String perUser, String perNote) {
     if (perUser == null) {
       throw new NullPointerException("perUser can not be null.");
     }
@@ -92,7 +97,6 @@ public class InterpreterOption {
       throw new NullPointerException("perNote can not be null.");
     }
 
-    this.remote = remote;
     this.perUser = perUser;
     this.perNote = perNote;
   }
@@ -106,18 +110,10 @@ public class InterpreterOption {
     option.perUser = other.perUser;
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
-    option.users = (null == other.users) ?
-        new ArrayList<String>() : new ArrayList<>(other.users);
+    option.owners = (null == other.owners) ?
+        new ArrayList<String>() : new ArrayList<>(other.owners);
 
     return option;
-  }
-
-  public boolean isRemote() {
-    return remote;
-  }
-
-  public void setRemote(boolean remote) {
-    this.remote = remote;
   }
 
   public String getHost() {

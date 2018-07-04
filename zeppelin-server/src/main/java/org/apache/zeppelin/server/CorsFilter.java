@@ -14,11 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.server;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +34,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.utils.SecurityUtils;
+
 /**
- * Cors filter
- *
+ * Cors filter.
  */
 public class CorsFilter implements Filter {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);
 
   @Override
@@ -73,13 +71,19 @@ public class CorsFilter implements Filter {
   }
 
   private void addCorsHeaders(HttpServletResponse response, String origin) {
-    response.addHeader("Access-Control-Allow-Origin", origin);
-    response.addHeader("Access-Control-Allow-Credentials", "true");
-    response.addHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
-    response.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
+    response.setHeader("Access-Control-Allow-Origin", origin);
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
+    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
     DateFormat fullDateFormatEN =
         DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, new Locale("EN", "en"));
-    response.addHeader("Date", fullDateFormatEN.format(new Date()));
+    response.setHeader("Date", fullDateFormatEN.format(new Date()));
+    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
+    response.setHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
+    if (zeppelinConfiguration.useSsl()) {
+      response.setHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
+    }
+    response.setHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
   }
 
   @Override

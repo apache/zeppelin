@@ -29,12 +29,11 @@ trait AbstractAngularModelTest extends FlatSpec
 with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
-    val context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-      new java.util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
-        intpGroup.getId(), null),
-      null,
-      new java.util.LinkedList[InterpreterContextRunner](),
-      new InterpreterOutput(null));
+    val context = InterpreterContext.builder
+      .setNoteId("noteId")
+      .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+      .setInterpreterOut(new InterpreterOutput(null))
+      .build()
 
     InterpreterContext.set(context)
     super.beforeEach() // To be stackable, must call super.beforeEach

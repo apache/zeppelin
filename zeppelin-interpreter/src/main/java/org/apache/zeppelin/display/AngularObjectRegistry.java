@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.display;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -252,5 +251,10 @@ public class AngularObjectRegistry {
 
   public void setRegistry(Map<String, Map<String, AngularObject>> registry) {
     this.registry = registry;
+    for (Map<String, AngularObject> map : registry.values()) {
+      for (AngularObject ao : map.values()) {
+        ao.setListener(angularObjectListener);
+      }
+    }
   }
 }

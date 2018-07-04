@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.dep;
 
-import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -34,8 +33,7 @@ import org.sonatype.aether.transfer.TransferResource;
  * Simple listener that show deps downloading progress.
  */
 public class TransferListener extends AbstractTransferListener {
-  Logger logger = LoggerFactory.getLogger(TransferListener.class);
-  private PrintStream out;
+  private Logger logger = LoggerFactory.getLogger(TransferListener.class);
 
   private Map<TransferResource, Long> downloads = new ConcurrentHashMap<>();
 
@@ -55,13 +53,13 @@ public class TransferListener extends AbstractTransferListener {
   @Override
   public void transferProgressed(TransferEvent event) {
     TransferResource resource = event.getResource();
-    downloads.put(resource, Long.valueOf(event.getTransferredBytes()));
+    downloads.put(resource, event.getTransferredBytes());
 
     StringBuilder buffer = new StringBuilder(64);
 
     for (Map.Entry<TransferResource, Long> entry : downloads.entrySet()) {
       long total = entry.getKey().getContentLength();
-      long complete = entry.getValue().longValue();
+      long complete = entry.getValue();
 
       buffer.append(getStatus(complete, total)).append("  ");
     }
@@ -122,7 +120,7 @@ public class TransferListener extends AbstractTransferListener {
   @Override
   public void transferFailed(TransferEvent event) {
     transferCompleted(event);
-    event.getException().printStackTrace(out);
+    logger.warn("Unsuccessful transfer", event.getException());
   }
 
   private void transferCompleted(TransferEvent event) {
@@ -135,10 +133,10 @@ public class TransferListener extends AbstractTransferListener {
 
   @Override
   public void transferCorrupted(TransferEvent event) {
-    event.getException().printStackTrace(out);
+    logger.error("Corrupted transfer", event.getException());
   }
 
-  protected long toKB(long bytes) {
+  private long toKB(long bytes) {
     return (bytes + 1023) / 1024;
   }
 

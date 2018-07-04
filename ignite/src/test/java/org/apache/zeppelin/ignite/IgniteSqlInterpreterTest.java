@@ -16,24 +16,24 @@
  */
 package org.apache.zeppelin.ignite;
 
-import java.util.Collections;
-import java.util.Properties;
-
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.marshaller.optimized.OptimizedMarshaller;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,8 +43,7 @@ import static org.junit.Assert.assertEquals;
 public class IgniteSqlInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
-  private static final InterpreterContext INTP_CONTEXT =
-      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null, null);
+  private static final InterpreterContext INTP_CONTEXT = InterpreterContext.builder().build();
 
   private Ignite ignite;
   private IgniteSqlInterpreter intp;
@@ -66,7 +65,8 @@ public class IgniteSqlInterpreterTest {
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL,
+            "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
 
     intp = new IgniteSqlInterpreter(props);
 
@@ -83,14 +83,15 @@ public class IgniteSqlInterpreterTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws InterpreterException {
     intp.close();
     ignite.close();
   }
 
   @Test
   public void testSql() {
-    InterpreterResult result = intp.interpret("select name, age from person where age > 10", INTP_CONTEXT);
+    InterpreterResult result = intp.interpret("select name, age from person where age > 10",
+            INTP_CONTEXT);
 
     assertEquals(Code.SUCCESS, result.code());
     assertEquals(Type.TABLE, result.message().get(0).getType());

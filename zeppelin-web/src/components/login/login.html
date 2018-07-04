@@ -17,7 +17,7 @@ limitations under the License.
     <div class="modal-dialog">
 
       <!-- Modal content-->
-      <div class="modal-content" id="NoteImportCtrl" ng-init="NoteImportInit">
+      <div id="loginModalContent" class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h4 class="modal-title">Login</h4>
@@ -29,6 +29,7 @@ limitations under the License.
           <div class="form-group">
             <label for="userName">User Name</label>
             <input placeholder="User Name" type="text" class="form-control" id="userName"
+                   ng-enter="login()"
                    ng-keypress="loginParams.errorText = ''"
                    ng-model="loginParams.userName" />
           </div>

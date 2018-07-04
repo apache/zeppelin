@@ -1,5 +1,5 @@
 {
-  "preset": "google",
+  "extends": ["eslint:recommended", "google"],
   "env": {
     "browser": true,
     "jasmine": true,
@@ -14,6 +14,7 @@
   },
   "globals": {
     "angular": false,
+    "inject": false,
     "_": false,
     "jQuery": false,
     "hljs": false,
@@ -35,7 +36,6 @@
     "curly": 2,
     "eqeqeq": 2,
     "wrap-iife": [2, "any"],
-    "no-use-before-define": 0,
     "new-cap": 2,
     "no-caller": 2,
     "quotes": [2, "single"],
@@ -43,6 +43,12 @@
     "no-undef": 2,
     "no-unused-vars": [2, { "vars": "local", "args": "none" }],
     "strict": [2, "global"],
-    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}]
+    "max-len": [2, {"code": 120, "ignoreComments": true, "ignoreRegExpLiterals": true}],
+    "require-jsdoc": "off",
+    "no-console": ["off"],
+    "valid-jsdoc": "off",
+    "semi": [2, "always"],
+    "no-invalid-this": 1,
+    "indent": ["error", 2, { "SwitchCase": 1 }]
   }
 }

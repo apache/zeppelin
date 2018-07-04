@@ -122,6 +122,15 @@ $(function() {
     $('#toc').toc();
   });
 
+  $(document).click(function(event) {
+    // fold navbar when a user click other components
+    var clickover = $(event.target);
+    var _opened = $(".navbar-collapse").hasClass("navbar-collapse in");
+    if (_opened === true && !clickover.hasClass("navbar-toggle")) {
+      $("button.navbar-toggle").click();
+    }
+  });
+
   // Scroll now too in case we had opened the page on a hash, but wait a bit because some browsers
   // will try to do *their* initial scroll after running the onReady handler.
   $(window).load(function() { setTimeout(function() { maybeScrollToHash(); }, 25); });
