@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.rest.message;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.zeppelin.interpreter.InterpreterOption;
-
 /**
  *  RenameNoteRequest rest api request message
  *
