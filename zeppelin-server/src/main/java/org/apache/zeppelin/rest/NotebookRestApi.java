@@ -277,7 +277,7 @@ public class NotebookRestApi {
   }
 
   /**
-   * e
+   *
    * Bind a setting to note.
    *
    * @throws IOException
@@ -290,7 +290,7 @@ public class NotebookRestApi {
         "Insufficient privileges you cannot bind any interpreters to this note");
 
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>() {}.getType());
-    notebook.bindInterpretersToNote(SecurityUtils.getPrincipal(), noEteId, settingIdList);
+    notebook.bindInterpretersToNote(SecurityUtils.getPrincipal(), noteId, settingIdList);
     return new JsonResponse<>(Status.OK).build();
   }
 
