@@ -200,4 +200,37 @@ public class SparkInterpreterLauncherTest {
     Files.deleteIfExists(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
+
+  @Test
+  public void testYarnClusterMode_3() throws IOException {
+    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
+    SparkInterpreterLauncher launcher = new SparkInterpreterLauncher(zConf, null);
+    Properties properties = new Properties();
+    properties.setProperty("SPARK_HOME", "/user/spark");
+    properties.setProperty("property_1", "value_1");
+    properties.setProperty("master", "yarn");
+    properties.setProperty("spark.submit.deployMode", "cluster");
+    properties.setProperty("spark.files", "file_1");
+    properties.setProperty("spark.jars", "jar_1");
+
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "spark", "spark", 0, "host");
+    Path localRepoPath = Paths.get(zConf.getInterpreterLocalRepoPath(), context.getInterpreterSettingId());
+    FileUtils.deleteDirectory(localRepoPath.toFile());
+    Files.createDirectories(localRepoPath);
+
+    InterpreterClient client = launcher.launch(context);
+    assertTrue( client instanceof RemoteInterpreterManagedProcess);
+    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertEquals("spark", interpreterProcess.getInterpreterSettingName());
+    assertTrue(interpreterProcess.getInterpreterDir().endsWith("/interpreter/spark"));
+    assertTrue(interpreterProcess.getLocalRepoDir().endsWith("/local-repo/groupId"));
+    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
+    assertTrue(interpreterProcess.getEnv().size() >= 3);
+    assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
+    assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
+    assertEquals(" --master yarn --files .//conf/log4j_yarn_cluster.properties --conf spark.files='file_1' --conf spark.jars='jar_1' --conf spark.submit.deployMode='cluster' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    FileUtils.deleteDirectory(localRepoPath.toFile());
+  }
 }
