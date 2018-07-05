@@ -16,7 +16,11 @@
  */
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.tabledata.ColumnDef;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interpreter result message
@@ -24,10 +28,18 @@ import java.io.Serializable;
 public class InterpreterResultMessage implements Serializable {
   InterpreterResult.Type type;
   String data;
+  List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
 
   public InterpreterResultMessage(InterpreterResult.Type type, String data) {
     this.type = type;
     this.data = data;
+  }
+
+  public InterpreterResultMessage(InterpreterResult.Type type, String data,
+                                  List<ColumnDef.TYPE> columnTypes) {
+    this.type = type;
+    this.data = data;
+    this.columnTypes = columnTypes;
   }
 
   public InterpreterResult.Type getType() {
@@ -36,6 +48,10 @@ public class InterpreterResultMessage implements Serializable {
 
   public String getData() {
     return data;
+  }
+
+  public List<ColumnDef.TYPE> getColumnTypes() {
+    return columnTypes;
   }
 
   public String toString() {

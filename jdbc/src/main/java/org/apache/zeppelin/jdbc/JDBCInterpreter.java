@@ -14,6 +14,20 @@
  */
 package org.apache.zeppelin.jdbc;
 
+import static java.sql.Types.BIGINT;
+import static java.sql.Types.DATE;
+import static java.sql.Types.DECIMAL;
+import static java.sql.Types.DOUBLE;
+import static java.sql.Types.FLOAT;
+import static java.sql.Types.INTEGER;
+import static java.sql.Types.NUMERIC;
+import static java.sql.Types.REAL;
+import static java.sql.Types.SMALLINT;
+import static java.sql.Types.TIME;
+import static java.sql.Types.TIME_WITH_TIMEZONE;
+import static java.sql.Types.TIMESTAMP;
+import static java.sql.Types.TIMESTAMP_WITH_TIMEZONE;
+import static java.sql.Types.TINYINT;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
@@ -32,6 +46,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.tabledata.ColumnDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -568,6 +583,39 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return msg.toString();
   }
 
+  private List<ColumnDef.TYPE> getResultColumnTypes(ResultSet resultSet) throws SQLException {
+    List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
+    ResultSetMetaData md = resultSet.getMetaData();
+    for (int i = 1; i < md.getColumnCount() + 1; i++) {
+      final ColumnDef.TYPE columnType = castSqlTypeToColumnType(md.getColumnType(i));
+      columnTypes.add(columnType);
+    }
+    return columnTypes;
+  }
+
+  private ColumnDef.TYPE castSqlTypeToColumnType(int t) {
+    switch(t) {
+      case DATE:
+      case TIME:
+      case TIME_WITH_TIMEZONE:
+      case TIMESTAMP:
+      case TIMESTAMP_WITH_TIMEZONE:
+        return ColumnDef.TYPE.DATE;
+      case BIGINT:
+      case DECIMAL:
+      case DOUBLE:
+      case FLOAT:
+      case INTEGER:
+      case NUMERIC:
+      case REAL:
+      case TINYINT:
+      case SMALLINT:
+        return ColumnDef.TYPE.LONG;
+      default:
+        return ColumnDef.TYPE.STRING;
+    }
+  }
+
   private boolean isDDLCommand(int updatedCount, int columnCount) throws SQLException {
     return updatedCount < 0 && columnCount <= 0 ? true : false;
   }
@@ -725,8 +773,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   "Query executed successfully.");
             } else {
               MutableBoolean isComplete = new MutableBoolean(true);
-              String results = getResults(resultSet,
-                  !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE), isComplete);
+              final Boolean isTable = !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE);
+              String results = getResults(resultSet, isTable, isComplete);
+              List<ColumnDef.TYPE> columnTypes = getResultColumnTypes(resultSet);
+
               interpreterResult.add(results);
               if (!isComplete.booleanValue()) {
                 interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
