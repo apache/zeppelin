@@ -21,7 +21,8 @@ package org.apache.zeppelin.resource;
  */
 public enum WellKnownResourceName {
   ZeppelinReplResult("zeppelin.repl.result"),                 // last object of repl
-  ZeppelinTableResult("zeppelin.paragraph.result.table");     // paragraph run result
+  ZeppelinTableResult("zeppelin.paragraph.result.table"),     // paragraph run result
+  ZeppelinTableType("zeppelin.paragraph.result.table.type");  // paragraph run result's type
 
   String name;
   WellKnownResourceName(String name) {
