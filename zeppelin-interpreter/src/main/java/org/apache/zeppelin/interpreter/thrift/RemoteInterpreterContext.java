@@ -65,6 +65,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   private static final org.apache.thrift.protocol.TField GUI_FIELD_DESC = new org.apache.thrift.protocol.TField("gui", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField NOTE_GUI_FIELD_DESC = new org.apache.thrift.protocol.TField("noteGui", org.apache.thrift.protocol.TType.STRING, (short)9);
   private static final org.apache.thrift.protocol.TField LOCAL_PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("localProperties", org.apache.thrift.protocol.TType.MAP, (short)10);
+  private static final org.apache.thrift.protocol.TField NOTE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("noteName", org.apache.thrift.protocol.TType.STRING, (short)11);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -73,6 +74,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   }
 
   public String noteId; // required
+  public String noteName; // required
   public String paragraphId; // required
   public String replName; // required
   public String paragraphTitle; // required
@@ -94,7 +96,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     CONFIG((short)7, "config"),
     GUI((short)8, "gui"),
     NOTE_GUI((short)9, "noteGui"),
-    LOCAL_PROPERTIES((short)10, "localProperties");
+    LOCAL_PROPERTIES((short)10, "localProperties"),
+    NOTE_NAME((short)11, "noteName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -129,6 +132,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
           return NOTE_GUI;
         case 10: // LOCAL_PROPERTIES
           return LOCAL_PROPERTIES;
+        case 11: // NOTE_NAME
+          return NOTE_NAME;
         default:
           return null;
       }
@@ -194,6 +199,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.NOTE_NAME, new org.apache.thrift.meta_data.FieldMetaData("noteName", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoteInterpreterContext.class, metaDataMap);
   }
@@ -203,6 +210,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
 
   public RemoteInterpreterContext(
     String noteId,
+    String noteName,
     String paragraphId,
     String replName,
     String paragraphTitle,
@@ -215,6 +223,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   {
     this();
     this.noteId = noteId;
+    this.noteName = noteName;
     this.paragraphId = paragraphId;
     this.replName = replName;
     this.paragraphTitle = paragraphTitle;
@@ -232,6 +241,9 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   public RemoteInterpreterContext(RemoteInterpreterContext other) {
     if (other.isSetNoteId()) {
       this.noteId = other.noteId;
+    }
+    if (other.isSetNoteName()) {
+      this.noteName = other.noteName;
     }
     if (other.isSetParagraphId()) {
       this.paragraphId = other.paragraphId;
@@ -270,6 +282,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   @Override
   public void clear() {
     this.noteId = null;
+    this.noteName = null;
     this.paragraphId = null;
     this.replName = null;
     this.paragraphTitle = null;
@@ -302,6 +315,29 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   public void setNoteIdIsSet(boolean value) {
     if (!value) {
       this.noteId = null;
+    }
+  }
+  public String getNoteName() {
+    return this.noteName;
+  }
+
+  public RemoteInterpreterContext setNoteName(String noteName) {
+    this.noteName = noteName;
+    return this;
+  }
+
+  public void unsetNoteName() {
+    this.noteName = null;
+  }
+
+  /** Returns true if field noteName is set (has been assigned a value) and false otherwise */
+  public boolean isSetNoteName() {
+    return this.noteName != null;
+  }
+
+  public void setNoteNameIsSet(boolean value) {
+    if (!value) {
+      this.noteName = null;
     }
   }
 
@@ -613,7 +649,13 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
         setLocalProperties((Map<String,String>)value);
       }
       break;
-
+    case NOTE_NAME:
+      if (value == null) {
+        unsetNoteName();
+      } else {
+        setNoteName((String)value);
+      }
+      break;
     }
   }
 
@@ -649,6 +691,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     case LOCAL_PROPERTIES:
       return getLocalProperties();
 
+    case NOTE_NAME:
+      return getNoteName();
     }
     throw new IllegalStateException();
   }
@@ -680,6 +724,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       return isSetNoteGui();
     case LOCAL_PROPERTIES:
       return isSetLocalProperties();
+    case NOTE_NAME:
+      return isSetNoteName();
     }
     throw new IllegalStateException();
   }
@@ -705,6 +751,15 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (!this.noteId.equals(that.noteId))
         return false;
     }
+
+    boolean this_present_noteName = true && this.isSetNoteName();
+    boolean that_present_noteName = true && that.isSetNoteName();
+    if (this_present_noteName || that_present_noteName) {
+          if (!(this_present_noteName && that_present_noteName))
+              return false;
+          if (!this.noteName.equals(that.noteName))
+              return false;
+     }
 
     boolean this_present_paragraphId = true && this.isSetParagraphId();
     boolean that_present_paragraphId = true && that.isSetParagraphId();
@@ -799,6 +854,11 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     if (present_noteId)
       list.add(noteId);
 
+    boolean present_noteName = true && (isSetNoteName());
+    list.add(present_noteName);
+    if (present_noteName)
+      list.add(noteName);
+
     boolean present_paragraphId = true && (isSetParagraphId());
     list.add(present_paragraphId);
     if (present_paragraphId)
@@ -861,6 +921,16 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     }
     if (isSetNoteId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetNoteName()).compareTo(other.isSetNoteName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNoteName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteName, other.noteName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -980,6 +1050,14 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       sb.append("null");
     } else {
       sb.append(this.noteId);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("noteName:");
+    if (this.noteName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.noteName);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -1189,6 +1267,14 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 11: // NOTE_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.noteName = iprot.readString();
+              struct.setNoteNameIsSet(true);
+            } else {
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1207,6 +1293,11 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (struct.noteId != null) {
         oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
         oprot.writeString(struct.noteId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.noteName != null) {
+        oprot.writeFieldBegin(NOTE_NAME_FIELD_DESC);
+        oprot.writeString(struct.noteName);
         oprot.writeFieldEnd();
       }
       if (struct.paragraphId != null) {
@@ -1310,7 +1401,10 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (struct.isSetLocalProperties()) {
         optionals.set(9);
       }
-      oprot.writeBitSet(optionals, 10);
+      if (struct.isSetNoteName()) {
+        optionals.set(10);
+      }
+      oprot.writeBitSet(optionals, 11);
       if (struct.isSetNoteId()) {
         oprot.writeString(struct.noteId);
       }
@@ -1348,12 +1442,15 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
           }
         }
       }
+      if (struct.isSetNoteName()) {
+        oprot.writeString(struct.noteName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, RemoteInterpreterContext struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(10);
+      BitSet incoming = iprot.readBitSet(11);
       if (incoming.get(0)) {
         struct.noteId = iprot.readString();
         struct.setNoteIdIsSet(true);
@@ -1404,6 +1501,10 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
           }
         }
         struct.setLocalPropertiesIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.noteName = iprot.readString();
+        struct.setNoteNameIsSet(true);
       }
     }
   }

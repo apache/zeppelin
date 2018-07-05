@@ -751,6 +751,7 @@ public class RemoteInterpreterServer extends Thread
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
     return InterpreterContext.builder()
         .setNoteId(ric.getNoteId())
+        .setNoteName(ric.getNoteName())
         .setParagraphId(ric.getParagraphId())
         .setReplName(ric.getReplName())
         .setParagraphTitle(ric.getParagraphTitle())
