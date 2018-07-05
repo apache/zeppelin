@@ -46,6 +46,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.tabledata.ColumnDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -777,7 +778,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
               String results = getResults(resultSet, isTable, isComplete);
               List<ColumnDef.TYPE> columnTypes = getResultColumnTypes(resultSet);
 
-              interpreterResult.add(results);
+              final InterpreterResultMessage interpreterResMsg = new InterpreterResultMessage(
+                  isTable ? InterpreterResult.Type.TABLE : InterpreterResult.Type.TEXT,
+                  results,
+                  columnTypes
+              );
+              interpreterResult.add(interpreterResMsg);
               if (!isComplete.booleanValue()) {
                 interpreterResult.add(ResultMessages.getExceedsLimitRowsMessage(getMaxResult(),
                     String.format("%s.%s", COMMON_KEY, MAX_LINE_KEY)));
