@@ -540,15 +540,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return null;
   }
 
-  private String getResults(ResultSet resultSet, boolean isTableType, MutableBoolean isComplete)
+  private String getResults(ResultSet resultSet, MutableBoolean isComplete)
       throws SQLException {
     ResultSetMetaData md = resultSet.getMetaData();
     StringBuilder msg;
-    if (isTableType) {
-      msg = new StringBuilder(TABLE_MAGIC_TAG);
-    } else {
-      msg = new StringBuilder();
-    }
+    msg = new StringBuilder();
 
     for (int i = 1; i < md.getColumnCount() + 1; i++) {
       if (i > 1) {
@@ -774,10 +770,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
                   "Query executed successfully.");
             } else {
               MutableBoolean isComplete = new MutableBoolean(true);
-              final Boolean isTable = !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE);
-              String results = getResults(resultSet, isTable, isComplete);
+
+              String results = getResults(resultSet, isComplete);
               List<ColumnDef.TYPE> columnTypes = getResultColumnTypes(resultSet);
 
+              final Boolean isTable = !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE);
               final InterpreterResultMessage interpreterResMsg = new InterpreterResultMessage(
                   isTable ? InterpreterResult.Type.TABLE : InterpreterResult.Type.TEXT,
                   results,
