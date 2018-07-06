@@ -776,7 +776,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/Using Flink for batch processing",
+  "name": "Using Flink for batch processing",
   "id": "2C35YU814",
   "angularObjects": {
     "2C4PVECE6:shared_process": [],

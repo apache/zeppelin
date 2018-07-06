@@ -34,49 +34,57 @@ public interface NotebookRepoWithVersionControl extends NotebookRepo {
 
   /**
    * chekpoint (set revision) for notebook.
-   * @param noteId Id of the Notebook
+   * @param noteId Id of the note
+   * @param noteName name of the note
    * @param checkpointMsg message description of the checkpoint
    * @return Rev
    * @throws IOException
    */
-  @ZeppelinApi public Revision checkpoint(String noteId, String checkpointMsg,
-                                          AuthenticationInfo subject) throws IOException;
+  @ZeppelinApi Revision checkpoint(String noteId,
+                                   String noteName,
+                                   String checkpointMsg,
+                                   AuthenticationInfo subject) throws IOException;
 
   /**
    * Get particular revision of the Notebook.
    * 
-   * @param noteId Id of the Notebook
+   * @param noteId Id of the note
+   * @param noteName name of the note
    * @param revId revision of the Notebook
    * @return a Notebook
    * @throws IOException
    */
-  @ZeppelinApi public Note get(String noteId, String revId, AuthenticationInfo subject)
+  @ZeppelinApi Note get(String noteId, String noteName, String revId, AuthenticationInfo subject)
       throws IOException;
 
   /**
    * List of revisions of the given Notebook.
    * 
-   * @param noteId id of the Notebook
+   * @param noteId id of the note
+   * @param noteName name of the note
+   * @param subject
    * @return list of revisions
    */
-  @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
+  @ZeppelinApi List<Revision> revisionHistory(String noteId,
+                                              String noteName,
+                                              AuthenticationInfo subject) throws IOException;
 
   /**
    * Set note to particular revision.
    * 
    * @param noteId Id of the Notebook
+   * @param noteName name of the note
    * @param revId revision of the Notebook
    * @return a Notebook
    * @throws IOException
    */
-  @ZeppelinApi
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException;
+  @ZeppelinApi Note setNoteRevision(String noteId, String noteName, String revId,
+                                    AuthenticationInfo subject) throws IOException;
 
   /**
    * Represents the 'Revision' a point in life of the notebook
    */
-  static class Revision {
+  class Revision {
     public static final Revision EMPTY = new Revision(StringUtils.EMPTY, StringUtils.EMPTY, 0);
     
     public String id;

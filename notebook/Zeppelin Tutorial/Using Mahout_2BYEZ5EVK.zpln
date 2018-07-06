@@ -859,7 +859,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/Using Mahout",
+  "name": "Using Mahout",
   "id": "2BYEZ5EVK",
   "angularObjects": {
     "2C6WUGPNH:shared_process": [],

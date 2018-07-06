@@ -197,7 +197,8 @@ public class ZeppelinServer extends ResourceConfig {
     heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
-    notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
+    notebook.addNotebookEventListener(notebookWsServer);
+
 
     // Register MBean
     if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {

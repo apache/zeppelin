@@ -322,7 +322,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/Using Pig for querying data",
+  "name": "Using Pig for querying data",
   "id": "2C57UKYWR",
   "angularObjects": {
     "2C3RWCVAG:shared_process": [],

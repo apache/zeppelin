@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.notebook.repo;
 
 
@@ -7,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +70,7 @@ public class FileSystemNotebookRepoTest {
 
     // create a new note
     Note note = new Note();
-    note.setName("title_1");
+    note.setPath("/title_1");
 
     Map<String, Object> config = new HashMap<>();
     config.put("config_1", "value_1");
@@ -61,20 +79,43 @@ public class FileSystemNotebookRepoTest {
     assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
 
     // read this note from hdfs
-    Note note_copy = hdfsNotebookRepo.get(note.getId(), authInfo);
+    Note note_copy = hdfsNotebookRepo.get(note.getId(), note.getPath(), authInfo);
     assertEquals(note.getName(), note_copy.getName());
     assertEquals(note.getConfig(), note_copy.getConfig());
 
     // update this note
-    note.setName("title_2");
+    note.setPersonalizedMode(true);
     hdfsNotebookRepo.save(note, authInfo);
     assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
-    note_copy = hdfsNotebookRepo.get(note.getId(), authInfo);
+    note_copy = hdfsNotebookRepo.get(note.getId(), note.getPath(), authInfo);
     assertEquals(note.getName(), note_copy.getName());
     assertEquals(note.getConfig(), note_copy.getConfig());
 
+    // move this note
+    String newPath = "/new_folder/title_1";
+    hdfsNotebookRepo.move(note.getId(), note.getPath(), newPath, authInfo);
+    assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
+    assertEquals("title_1", hdfsNotebookRepo.get(note.getId(), newPath, authInfo).getName());
+
     // delete this note
-    hdfsNotebookRepo.remove(note.getId(), authInfo);
+    hdfsNotebookRepo.remove(note.getId(), newPath, authInfo);
+    assertEquals(0, hdfsNotebookRepo.list(authInfo).size());
+
+    // create another new note under folder
+    note = new Note();
+    note.setPath("/folder1/title_1");
+    note.setConfig(config);
+    hdfsNotebookRepo.save(note, authInfo);
+    assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
+
+    hdfsNotebookRepo.move("/folder1", "/folder2/folder3", authInfo);
+    Map<String, NoteInfo> notesInfo = hdfsNotebookRepo.list(authInfo);
+    assertEquals(1, notesInfo.size());
+
+    assertEquals("/folder2/folder3/title_1", notesInfo.get(note.getId()).getPath());
+
+    // delete folder
+    hdfsNotebookRepo.remove("/folder2", authInfo);
     assertEquals(0, hdfsNotebookRepo.list(authInfo).size());
   }
 
@@ -90,12 +131,11 @@ public class FileSystemNotebookRepoTest {
     // scenario_2: note_folder is existed.
     // create a new note
     Note note = new Note();
-    note.setName("title_1");
+    note.setPath("/title_1");
     Map<String, Object> config = new HashMap<>();
     config.put("config_1", "value_1");
     note.setConfig(config);
 
-    fs.mkdirs(new Path(notebookDir, note.getId()));
     hdfsNotebookRepo.save(note, authInfo);
     assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
   }

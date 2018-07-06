@@ -151,7 +151,6 @@ public class RemoteScheduler extends AbstractScheduler {
         return getLastStatus();
       }
       Status status = Status.valueOf(remoteInterpreter.getStatus(job.getId()));
-      LOGGER.info("getStatus:" + status.name());
       if (status == Status.UNKNOWN) {
         // not found this job in the remote schedulers.
         // maybe not submitted, maybe already finished
@@ -159,7 +158,6 @@ public class RemoteScheduler extends AbstractScheduler {
       }
       lastStatus = status;
       listener.onStatusChange(job, null, status);
-      LOGGER.info("status:" + getLastStatus());
       return status;
     }
   }

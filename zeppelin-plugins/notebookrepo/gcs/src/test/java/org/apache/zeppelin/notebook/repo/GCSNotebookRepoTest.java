@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -86,9 +88,10 @@ public class GCSNotebookRepoTest {
 
   private static Note makeRunningNote() {
     Note note = new Note();
+    note.setPath("/test_note");
     note.setConfig(ImmutableMap.<String, Object>of("key", "value"));
 
-    Paragraph p = new Paragraph(note, null, null);
+    Paragraph p = new Paragraph(note, null);
     p.setText("text");
     p.setStatus(Status.RUNNING);
     note.addParagraph(p);
@@ -102,26 +105,26 @@ public class GCSNotebookRepoTest {
 
   @Test
   public void testList() throws Exception {
-    createAt(runningNote, "note.json");
-    createAt(runningNote, "/note.json");
-    createAt(runningNote, "validid/note.json");
-    createAt(runningNote, "validid-2/note.json");
+    createAt(runningNote, "note.zpln");
+    createAt(runningNote, "/note.zpln");
+    createAt(runningNote, "validid/my_12.zpln");
+    createAt(runningNote, "validid-2/my_123.zpln");
     createAt(runningNote, "cannot-be-dir/note.json/foo");
     createAt(runningNote, "cannot/be/nested/note.json");
 
-    List<NoteInfo> infos = notebookRepo.list(AUTH_INFO);
+    Map<String, NoteInfo> infos = notebookRepo.list(AUTH_INFO);
     List<String> noteIds = new ArrayList<>();
-    for (NoteInfo info : infos) {
+    for (NoteInfo info : infos.values()) {
       noteIds.add(info.getId());
     }
     // Only valid paths are gs://bucketname/path/<noteid>/note.json
-    assertThat(noteIds).containsExactlyElementsIn(ImmutableList.of("validid", "validid-2"));
+    assertThat(noteIds).containsExactlyElementsIn(ImmutableList.of("12", "123"));
   }
 
   @Test
   public void testGet_nonexistent() throws Exception {
     try {
-      notebookRepo.get("id", AUTH_INFO);
+      notebookRepo.get("id", "", AUTH_INFO);
       fail();
     } catch (IOException e) {}
   }
@@ -131,7 +134,7 @@ public class GCSNotebookRepoTest {
     create(runningNote);
 
     // Status of saved running note is removed in get()
-    Note got = notebookRepo.get(runningNote.getId(), AUTH_INFO);
+    Note got = notebookRepo.get(runningNote.getId(), runningNote.getPath(),  AUTH_INFO);
     assertThat(got.getLastParagraph().getStatus()).isEqualTo(Status.ABORT);
 
     // But otherwise equal
@@ -141,9 +144,9 @@ public class GCSNotebookRepoTest {
 
   @Test
   public void testGet_malformed() throws Exception {
-    createMalformed("id");
+    createMalformed("id", "/name");
     try {
-      notebookRepo.get("id", AUTH_INFO);
+      notebookRepo.get("id", "/name", AUTH_INFO);
       fail();
     } catch (IOException e) {}
   }
@@ -152,7 +155,7 @@ public class GCSNotebookRepoTest {
   public void testSave_create() throws Exception {
     notebookRepo.save(runningNote, AUTH_INFO);
     // Output is saved
-    assertThat(storage.readAllBytes(makeBlobId(runningNote.getId())))
+    assertThat(storage.readAllBytes(makeBlobId(runningNote.getId(), runningNote.getPath())))
         .isEqualTo(runningNote.toJson().getBytes("UTF-8"));
   }
 
@@ -160,16 +163,16 @@ public class GCSNotebookRepoTest {
   public void testSave_update() throws Exception {
     notebookRepo.save(runningNote, AUTH_INFO);
     // Change name of runningNote
-    runningNote.setName("new-name");
+    runningNote.setPath("/new-name");
     notebookRepo.save(runningNote, AUTH_INFO);
-    assertThat(storage.readAllBytes(makeBlobId(runningNote.getId())))
+    assertThat(storage.readAllBytes(makeBlobId(runningNote.getId(), runningNote.getPath())))
         .isEqualTo(runningNote.toJson().getBytes("UTF-8"));
   }
 
   @Test
   public void testRemove_nonexistent() throws Exception {
     try {
-      notebookRepo.remove("id", AUTH_INFO);
+      notebookRepo.remove("id", "/name", AUTH_INFO);
       fail();
     } catch (IOException e) {}
   }
@@ -177,8 +180,8 @@ public class GCSNotebookRepoTest {
   @Test
   public void testRemove() throws Exception {
     create(runningNote);
-    notebookRepo.remove(runningNote.getId(), AUTH_INFO);
-    assertThat(storage.get(makeBlobId(runningNote.getId()))).isNull();
+    notebookRepo.remove(runningNote.getId(), runningNote.getPath(), AUTH_INFO);
+    assertThat(storage.get(makeBlobId(runningNote.getId(), runningNote.getPath()))).isNull();
   }
 
   private String makeName(String relativePath) {
@@ -189,8 +192,12 @@ public class GCSNotebookRepoTest {
     }
   }
 
-  private BlobId makeBlobId(String noteId) {
-    return BlobId.of(bucketName, makeName(noteId + "/note.json"));
+  private BlobId makeBlobId(String noteId, String notePath) {
+    if (basePath.isPresent()) {
+      return BlobId.of(bucketName, basePath.get() + notePath + "_" + noteId +".zpln");
+    } else {
+      return BlobId.of(bucketName, notePath.substring(1) + "_" + noteId +".zpln");
+    }
   }
 
   private void createAt(Note note, String relativePath) throws IOException {
@@ -200,14 +207,14 @@ public class GCSNotebookRepoTest {
   }
 
   private void create(Note note) throws IOException {
-    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId()))
+    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId(), note.getPath()))
         .setContentType("application/json")
         .build();
     storage.create(info, note.toJson().getBytes("UTF-8"));
   }
 
-  private void createMalformed(String noteId) throws IOException {
-    BlobInfo info = BlobInfo.newBuilder(makeBlobId(noteId))
+  private void createMalformed(String noteId, String notePath) throws IOException {
+    BlobInfo info = BlobInfo.newBuilder(makeBlobId(noteId, notePath))
         .setContentType("application/json")
         .build();
     storage.create(info, "{ invalid-json }".getBytes("UTF-8"));

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,19 +28,26 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.io.Files;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+
+import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.scheduler.Job.Status;
+
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -54,7 +62,7 @@ import org.slf4j.LoggerFactory;
 // TODO(zjffdu) move it to zeppelin-zengine
 public class NotebookRepoSyncTest {
 
-  private File mainZepDir;
+  private File ZEPPELIN_HOME;
   private ZeppelinConfiguration conf;
   private File mainNotebookDir;
   private File secNotebookDir;
@@ -62,7 +70,6 @@ public class NotebookRepoSyncTest {
   private NotebookRepoSync notebookRepoSync;
   private InterpreterFactory factory;
   private InterpreterSettingManager interpreterSettingManager;
-  private DependencyResolver depResolver;
   private SearchService search;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
@@ -71,22 +78,20 @@ public class NotebookRepoSyncTest {
 
   @Before
   public void setUp() throws Exception {
-    String zpath = System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis();
-    mainZepDir = new File(zpath);
-    mainZepDir.mkdirs();
-    new File(mainZepDir, "conf").mkdirs();
-    String mainNotePath = zpath+"/notebook";
-    String secNotePath = mainNotePath + "_secondary";
+    ZEPPELIN_HOME = Files.createTempDir();
+    new File(ZEPPELIN_HOME, "conf").mkdirs();
+    String mainNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook";
+    String secNotePath = ZEPPELIN_HOME.getAbsolutePath() + "/notebook_secondary";
     mainNotebookDir = new File(mainNotePath);
     secNotebookDir = new File(secNotePath);
     mainNotebookDir.mkdirs();
     secNotebookDir.mkdirs();
 
-    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), mainZepDir.getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), ZEPPELIN_HOME.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
-    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), mainZepDir.getAbsolutePath() + "/conf");
+    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), ZEPPELIN_HOME.getAbsolutePath() + "/conf");
     System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
 
     LOG.info("main Note dir : " + mainNotePath);
@@ -95,7 +100,6 @@ public class NotebookRepoSyncTest {
 
     ConfigStorage.reset();
 
-    depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     factory = new InterpreterFactory(interpreterSettingManager);
@@ -104,21 +108,14 @@ public class NotebookRepoSyncTest {
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebookSync =
-        new Notebook(
-            conf,
-            notebookRepoSync,
-            factory,
-            interpreterSettingManager,
-            search,
-            notebookAuthorization,
-            credentials);
+    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
+        notebookAuthorization, credentials);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
   @After
   public void tearDown() throws Exception {
-    delete(mainZepDir);
+    delete(ZEPPELIN_HOME);
   }
 
   @Test
@@ -139,7 +136,7 @@ public class NotebookRepoSyncTest {
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
     assertEquals(1, notebookRepoSync.list(1, anonymous).size());
-    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(), notebookRepoSync.list(1, anonymous).get(0).getId());
 
     notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), anonymous);
   }
@@ -156,7 +153,7 @@ public class NotebookRepoSyncTest {
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
     assertEquals(1, notebookRepoSync.list(1, anonymous).size());
-    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(), notebookRepoSync.list(1, anonymous).get(0).getId());
 
     /* remove Note */
     notebookSync.removeNote(notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous);
@@ -171,7 +168,8 @@ public class NotebookRepoSyncTest {
   public void testSyncUpdateMain() throws IOException {
 
     /* create note */
-    Note note = notebookSync.createNote("test", "", anonymous);
+    Note note = notebookSync.createNote("/test", "test", anonymous);
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -183,41 +181,50 @@ public class NotebookRepoSyncTest {
 
     /* new paragraph not yet saved into storages */
     assertEquals(0, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+        notebookRepoSync.list(0, anonymous).get(0).getId(),
+        notebookRepoSync.list(0, anonymous).get(0).getPath(), anonymous).getParagraphs().size());
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+        notebookRepoSync.list(1, anonymous).get(0).getId(),
+        notebookRepoSync.list(1, anonymous).get(0).getPath(), anonymous).getParagraphs().size());
 
     /* save to storage under index 0 (first storage) */
     notebookRepoSync.save(0, note, anonymous);
 
     /* check paragraph saved to first storage */
     assertEquals(1, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+        notebookRepoSync.list(0, anonymous).get(0).getId(),
+        notebookRepoSync.list(0, anonymous).get(0).getPath(),
+        anonymous).getParagraphs().size());
     /* check paragraph isn't saved to second storage */
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+        notebookRepoSync.list(1, anonymous).get(0).getId(),
+        notebookRepoSync.list(0, anonymous).get(0).getPath(),
+        anonymous).getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync(null);
     /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
-    notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+        notebookRepoSync.list(1, anonymous).get(0).getId(),
+        notebookRepoSync.list(1, anonymous).get(0).getPath(), anonymous).getParagraphs().size());
     /* check whether same paragraph id */
     assertEquals(p1.getId(), notebookRepoSync.get(0,
-        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
+        notebookRepoSync.list(0, anonymous).get(0).getId(),
+        notebookRepoSync.list(0, anonymous).get(0).getPath(), anonymous).getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
-        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
-    notebookRepoSync.remove(note.getId(), anonymous);
+        notebookRepoSync.list(1, anonymous).get(0).getId(),
+        notebookRepoSync.list(1, anonymous).get(0).getPath(), anonymous).getLastParagraph().getId());
+    notebookRepoSync.remove(note.getId(), note.getPath(), anonymous);
   }
 
   @Test
-  public void testSyncOnReloadedList() throws IOException {
+  public void testSyncOnReloadedList() throws Exception {
     /* check that both storage repos are empty */
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
-    File srcDir = new File("src/test/resources/2A94M5J1Z");
-    File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+    File srcDir = new File("src/test/resources/notebook");
+    File destDir = secNotebookDir;
 
     /* copy manually new notebook into secondary storage repo and check repos */
     try {
@@ -225,13 +232,14 @@ public class NotebookRepoSyncTest {
     } catch (IOException e) {
       LOG.error(e.toString(), e);
     }
+
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
-    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
+    assertEquals(2, notebookRepoSync.list(1, anonymous).size());
 
     // After reloading notebooks repos should be synchronized
     notebookSync.reloadAllNotes(anonymous);
-    assertEquals(1, notebookRepoSync.list(0, anonymous).size());
-    assertEquals(1, notebookRepoSync.list(1, anonymous).size());
+    assertEquals(2, notebookRepoSync.list(0, anonymous).size());
+    assertEquals(2, notebookRepoSync.list(1, anonymous).size());
   }
 
   @Test
@@ -240,39 +248,32 @@ public class NotebookRepoSyncTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync =
-        new Notebook(
-            conf,
-            notebookRepoSync,
-            factory,
-            interpreterSettingManager,
-            search,
-            notebookAuthorization,
-            credentials);
+    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
+        notebookAuthorization, credentials);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(0, notebookRepoSync.list(1, null).size());
 
-    File srcDir = new File("src/test/resources/2A94M5J1Z");
-    File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+    File srcDir = new File("src/test/resources/notebook");
+    File destDir = secNotebookDir;
 
-    // copy manually new notebook into secondary storage repo and check repos
+    /* copy manually new notebook into secondary storage repo and check repos */
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
       LOG.error(e.toString(), e);
     }
     assertEquals(0, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
+    assertEquals(2, notebookRepoSync.list(1, null).size());
 
     // after reloading the notebook should be wiped from secondary storage
     notebookSync.reloadAllNotes(null);
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(0, notebookRepoSync.list(1, null).size());
 
-    destDir = new File(mainNotebookDir + "/2A94M5J1Z");
+    destDir = mainNotebookDir;
 
     // copy manually new notebook into primary storage repo and check repos
     try {
@@ -280,13 +281,13 @@ public class NotebookRepoSyncTest {
     } catch (IOException e) {
       LOG.error(e.toString(), e);
     }
-    assertEquals(1, notebookRepoSync.list(0, null).size());
+    assertEquals(2, notebookRepoSync.list(0, null).size());
     assertEquals(0, notebookRepoSync.list(1, null).size());
 
     // after reloading notebooks repos should be synchronized
     notebookSync.reloadAllNotes(null);
-    assertEquals(1, notebookRepoSync.list(0, null).size());
-    assertEquals(1, notebookRepoSync.list(1, null).size());
+    assertEquals(2, notebookRepoSync.list(0, null).size());
+    assertEquals(2, notebookRepoSync.list(1, null).size());
   }
 
   @Test
@@ -295,15 +296,8 @@ public class NotebookRepoSyncTest {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync =
-        new Notebook(
-            vConf,
-            vRepoSync,
-            factory,
-            interpreterSettingManager,
-            search,
-            notebookAuthorization,
-            credentials);
+    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, factory, interpreterSettingManager, search,
+        notebookAuthorization, credentials);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
@@ -314,15 +308,18 @@ public class NotebookRepoSyncTest {
     // no notes
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote("test", "", anonymous);
+    Note note = vNotebookSync.createNote("/test", "test", anonymous);
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
 
-    String noteId = vRepoSync.list(anonymous).get(0).getId();
+    NoteInfo noteInfo = vRepoSync.list(anonymous).values().iterator().next();
+    String noteId = noteInfo.getId();
+    String notePath = noteInfo.getPath();
     // first checkpoint
-    vRepoSync.checkpoint(noteId, "checkpoint message", anonymous);
-    int vCount = gitRepo.revisionHistory(noteId, anonymous).size();
+    vRepoSync.checkpoint(noteId, notePath, "checkpoint message", anonymous);
+    int vCount = gitRepo.revisionHistory(noteId, notePath, anonymous).size();
     assertThat(vCount).isEqualTo(1);
 
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map<String, Object> config = p.getConfig();
     config.put("enabled", true);
@@ -331,16 +328,16 @@ public class NotebookRepoSyncTest {
 
     // save and checkpoint again
     vRepoSync.save(note, anonymous);
-    vRepoSync.checkpoint(noteId, "checkpoint message 2", anonymous);
-    assertThat(gitRepo.revisionHistory(noteId, anonymous).size()).isEqualTo(vCount + 1);
-    notebookRepoSync.remove(note.getId(), anonymous);
+    vRepoSync.checkpoint(noteId, notePath, "checkpoint message 2", anonymous);
+    assertThat(gitRepo.revisionHistory(noteId, notePath, anonymous).size()).isEqualTo(vCount + 1);
+    notebookRepoSync.remove(note.getId(), note.getPath(), anonymous);
   }
 
   @Test
   public void testSyncWithAcl() throws IOException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    Note note = notebookSync.createNote("test", "", user1);
+    Note note = notebookSync.createNote("/test", "test", user1);
     assertEquals(0, note.getParagraphs().size());
 
     // saved on both storages
@@ -358,6 +355,7 @@ public class NotebookRepoSyncTest {
     assertEquals(0, authInfo.getWriters(note.getId()).size());
 
     /* update note and save on secondary storage */
+    note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("hello world");
     assertEquals(1, note.getParagraphs().size());
@@ -365,17 +363,20 @@ public class NotebookRepoSyncTest {
 
     /* check paragraph isn't saved into first storage */
     assertEquals(0, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(0, null).get(0).getId(),
+        notebookRepoSync.list(0, null).get(0).getPath(), null).getParagraphs().size());
     /* check paragraph is saved into second storage */
     assertEquals(1, notebookRepoSync.get(1,
-        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(1, null).get(0).getId(),
+        notebookRepoSync.list(1, null).get(0).getPath(), null).getParagraphs().size());
 
     /* now sync by user1 */
     notebookRepoSync.sync(user1);
 
     /* check that note updated and acl are same on main storage*/
     assertEquals(1, notebookRepoSync.get(0,
-        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
+        notebookRepoSync.list(0, null).get(0).getId(),
+        notebookRepoSync.list(0, null).get(0).getPath(), null).getParagraphs().size());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(1, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
@@ -384,7 +385,7 @@ public class NotebookRepoSyncTest {
 
     /* scenario 2 - note doesn't exist on main storage */
     /* remove from main storage */
-    notebookRepoSync.remove(0, note.getId(), user1);
+    notebookRepoSync.remove(0, note.getId(), note.getPath(), user1);
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
     authInfo.removeNote(note.getId());
@@ -407,16 +408,17 @@ public class NotebookRepoSyncTest {
     assertEquals(true, authInfo.isWriter(note.getId(), entity));
   }
 
-  static void delete(File file){
-    if(file.isFile()) file.delete();
-      else if(file.isDirectory()){
-        File [] files = file.listFiles();
-        if(files!=null && files.length>0){
-          for(File f : files){
-            delete(f);
-          }
+  static void delete(File file) {
+    if (file.isFile()) {
+      file.delete();
+    } else if (file.isDirectory()) {
+      File[] files = file.listFiles();
+      if (files != null && files.length > 0) {
+        for (File f : files) {
+          delete(f);
         }
-        file.delete();
       }
+      file.delete();
+    }
   }
 }

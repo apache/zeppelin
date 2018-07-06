@@ -1,12 +1,23 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.zeppelin.notebook.repo;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.Note;
@@ -15,25 +26,14 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * NotebookRepos for hdfs.
  *
- * Assume the notebook directory structure is as following
- * - notebookdir
- *              - noteId/note.json
- *              - noteId/note.json
- *              - noteId/note.json
  */
 public class FileSystemNotebookRepo implements NotebookRepo {
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemNotebookRepo.class);
@@ -47,41 +47,73 @@ public class FileSystemNotebookRepo implements NotebookRepo {
 
   public void init(ZeppelinConfiguration zConf) throws IOException {
     this.fs = new FileSystemStorage(zConf, zConf.getNotebookDir());
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
-        " for Zeppelin Notebook.");
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName());
     this.notebookDir = this.fs.makeQualified(new Path(zConf.getNotebookDir()));
     LOGGER.info("Using folder {} to store notebook", notebookDir);
     this.fs.tryMkDir(notebookDir);
   }
 
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    List<Path> notePaths = fs.list(new Path(notebookDir, "*/note.json"));
-    List<NoteInfo> noteInfos = new ArrayList<>();
+  public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    List<Path> notePaths = fs.listAll(notebookDir);
+    Map<String, NoteInfo> noteInfos = new HashMap<>();
     for (Path path : notePaths) {
-      NoteInfo noteInfo = new NoteInfo(path.getParent().getName(), "", null);
-      noteInfos.add(noteInfo);
+      try {
+        NoteInfo noteInfo = new NoteInfo(getNoteId(path.getName()),
+            getNotePath(notebookDir.toString(), path.toString()));
+        noteInfos.put(noteInfo.getId(), noteInfo);
+      } catch (IOException e) {
+        LOGGER.warn("Fail to get NoteInfo for note: " + path.getName(), e);
+      }
     }
     return noteInfos;
   }
 
+
   @Override
-  public Note get(final String noteId, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     String content = this.fs.readFile(
-        new Path(notebookDir.toString() + "/" + noteId + "/note.json"));
+        new Path(notebookDir, buildNoteFileName(noteId, notePath)));
     return Note.fromJson(content);
   }
 
   @Override
-  public void save(final Note note, AuthenticationInfo subject) throws IOException {
+  public void save(Note note, AuthenticationInfo subject) throws IOException {
     this.fs.writeFile(note.toJson(),
-        new Path(notebookDir.toString() + "/" + note.getId() + "/note.json"),
+        new Path(notebookDir, buildNoteFileName(note.getId(), note.getPath())),
         true);
   }
 
   @Override
-  public void remove(final String noteId, AuthenticationInfo subject) throws IOException {
-    this.fs.delete(new Path(notebookDir.toString() + "/" + noteId));
+  public void move(String noteId,
+                   String notePath,
+                   String newNotePath,
+                   AuthenticationInfo subject) throws IOException {
+    Path src = new Path(notebookDir, buildNoteFileName(noteId, notePath));
+    Path dest = new Path(notebookDir, buildNoteFileName(noteId, newNotePath));
+    this.fs.move(src, dest);
+  }
+
+  @Override
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject)
+      throws IOException {
+    this.fs.move(new Path(notebookDir, folderPath.substring(1)),
+        new Path(notebookDir, newFolderPath.substring(1)));
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
+    if (!this.fs.delete(new Path(notebookDir.toString(), buildNoteFileName(noteId, notePath)))) {
+      LOGGER.warn("Fail to move note, noteId: " + notePath + ", notePath: " + notePath);
+    }
+  }
+
+  @Override
+  public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
+    if (!this.fs.delete(new Path(notebookDir, folderPath.substring(1)))) {
+      LOGGER.warn("Fail to remove folder: " + folderPath);
+    }
   }
 
   @Override

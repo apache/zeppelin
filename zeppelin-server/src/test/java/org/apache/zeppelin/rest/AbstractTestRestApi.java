@@ -167,7 +167,10 @@ public abstract class AbstractTestRestApi {
     }
   };
 
-  private static void start(boolean withAuth, String testClassName, boolean withKnox)
+  private static void start(boolean withAuth,
+                            String testClassName,
+                            boolean withKnox,
+                            boolean cleanData)
           throws Exception {
     LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
         withAuth, testClassName, withKnox);
@@ -189,6 +192,9 @@ public abstract class AbstractTestRestApi {
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
           "spark");
       notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
+      if (cleanData) {
+        FileUtils.deleteDirectory(notebookDir);
+      }
       System.setProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
           notebookDir.getPath()
@@ -245,15 +251,19 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
-    start(true, testClassName, true);
+    start(true, testClassName, true, true);
   }
   
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
-    start(true, testClassName, false);
+    start(true, testClassName, false, true);
   }
   
   protected static void startUp(String testClassName) throws Exception {
-    start(false, testClassName, false);
+    start(false, testClassName, false, true);
+  }
+
+  protected static void startUp(String testClassName, boolean cleanData) throws Exception {
+    start(false, testClassName, false, cleanData);
   }
 
   private static String getHostname() {

@@ -15,28 +15,11 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.Maps;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
@@ -51,6 +34,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.search.LuceneSearch;
@@ -59,6 +43,28 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class NotebookServiceTest {
 
@@ -69,47 +75,12 @@ public class NotebookServiceTest {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
+
   @Before
   public void setUp() throws Exception {
     ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
-    NotebookRepo notebookRepo =
-        new NotebookRepo() {
-          Map<String, Note> notes = Maps.newHashMap();
+    NotebookRepo notebookRepo = new InMemoryNotebookRepo();
 
-          @Override
-          public void init(ZeppelinConfiguration zConf) throws IOException {}
-
-          @Override
-          public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-            return notes.values().stream().map(NoteInfo::new).collect(Collectors.toList());
-          }
-
-          @Override
-          public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-            return notes.get(noteId);
-          }
-
-          @Override
-          public void save(Note note, AuthenticationInfo subject) throws IOException {
-            notes.put(note.getId(), note);
-          }
-
-          @Override
-          public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-            notes.remove(notes.get(noteId));
-          }
-
-          @Override
-          public void close() {}
-
-          @Override
-          public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-            return null;
-          }
-
-          @Override
-          public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {}
-        };
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
     Interpreter mockInterpreter = mock(Interpreter.class);
@@ -151,30 +122,48 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(homeNote, context);
 
     // create note
-    Note note1 = notebookService.createNote("note1", "test", context, callback);
+    Note note1 = notebookService.createNote("/folder_1/note1", "test", context, callback);
     assertEquals("note1", note1.getName());
     assertEquals(1, note1.getParagraphCount());
     verify(callback).onSuccess(note1, context);
 
     // list note
     reset(callback);
-    List<Map<String, String>> notesInfo = notebookService.listNotes(false, context, callback);
+    List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(1, notesInfo.size());
-    assertEquals(note1.getId(), notesInfo.get(0).get("id"));
-    assertEquals(note1.getName(), notesInfo.get(0).get("name"));
+    assertEquals(note1.getId(), notesInfo.get(0).getId());
+    assertEquals(note1.getName(), notesInfo.get(0).getNoteName());
     verify(callback).onSuccess(notesInfo, context);
 
     // get note
     reset(callback);
-    Note note2 = notebookService.getNote(note1.getId(), context, callback);
-    assertEquals(note1, note2);
-    verify(callback).onSuccess(note2, context);
+    Note note1_copy = notebookService.getNote(note1.getId(), context, callback);
+    assertEquals(note1, note1_copy);
+    verify(callback).onSuccess(note1_copy, context);
 
     // rename note
     reset(callback);
-    notebookService.renameNote(note1.getId(), "new_name", context, callback);
+    notebookService.renameNote(note1.getId(), "/folder_2/new_name", false, context, callback);
     verify(callback).onSuccess(note1, context);
     assertEquals("new_name", note1.getName());
+
+    // move folder
+    reset(callback);
+    notesInfo = notebookService.renameFolder("/folder_2", "/folder_3", context, callback);
+    verify(callback).onSuccess(notesInfo, context);
+    assertEquals(1, notesInfo.size());
+    assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
+
+    // create another note
+    Note note2 = notebookService.createNote("/folder_4/note2", "test", context, callback);
+    assertEquals("note2", note2.getName());
+    verify(callback).onSuccess(note2, context);
+
+    // list note
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(2, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
 
     // delete note
     reset(callback);
@@ -183,22 +172,109 @@ public class NotebookServiceTest {
 
     // list note again
     reset(callback);
-    notesInfo = notebookService.listNotes(false, context, callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(1, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
+
+    // delete folder
+    notesInfo = notebookService.removeFolder("/folder_4", context, callback);
+    verify(callback).onSuccess(notesInfo, context);
+
+    // list note again
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
     assertEquals(0, notesInfo.size());
     verify(callback).onSuccess(notesInfo, context);
 
     // import note
     reset(callback);
-    Note importedNote = notebookService.importNote("imported note", "{}", context, callback);
+    Note importedNote = notebookService.importNote("/Imported Note", "{}", context, callback);
     assertNotNull(importedNote);
     verify(callback).onSuccess(importedNote, context);
 
     // clone note
     reset(callback);
-    Note clonedNote = notebookService.cloneNote(importedNote.getId(), "Cloned Note", context,
-        callback);
+    Note clonedNote = notebookService.cloneNote(importedNote.getId(), "/Backup/Cloned Note",
+        context, callback);
     assertEquals(importedNote.getParagraphCount(), clonedNote.getParagraphCount());
     verify(callback).onSuccess(clonedNote, context);
+
+    // list note
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(2, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
+
+    // move note to Trash
+    notebookService.moveNoteToTrash(importedNote.getId(), context, callback);
+
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(2, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
+
+    boolean moveToTrash = false;
+    for (NoteInfo noteInfo : notesInfo) {
+      if (noteInfo.getId().equals(importedNote.getId())) {
+        assertEquals("/~Trash/Imported Note", noteInfo.getPath());
+        moveToTrash = true;
+      }
+    }
+    assertTrue("No note is moved to trash", moveToTrash);
+
+    // restore it
+    notebookService.restoreNote(importedNote.getId(), context, callback);
+    Note restoredNote = notebookService.getNote(importedNote.getId(), context, callback);
+    assertNotNull(restoredNote);
+    assertEquals("/Imported Note", restoredNote.getPath());
+
+    // move it to Trash again
+    notebookService.moveNoteToTrash(restoredNote.getId(), context, callback);
+
+    // remove note from Trash
+    reset(callback);
+
+    notebookService.removeNote(importedNote.getId(), context, callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(1, notesInfo.size());
+
+    // move folder to Trash
+    notebookService.moveFolderToTrash("Backup", context, callback);
+
+    reset(callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(1, notesInfo.size());
+    verify(callback).onSuccess(notesInfo, context);
+    moveToTrash = false;
+    for (NoteInfo noteInfo : notesInfo) {
+      if (noteInfo.getId().equals(clonedNote.getId())) {
+        assertEquals("/~Trash/Backup/Cloned Note", noteInfo.getPath());
+        moveToTrash = true;
+      }
+    }
+    assertTrue("No folder is moved to trash", moveToTrash);
+
+    // restore folder
+    reset(callback);
+    notebookService.restoreFolder("/~Trash/Backup", context, callback);
+    restoredNote = notebookService.getNote(clonedNote.getId(), context, callback);
+    assertNotNull(restoredNote);
+    assertEquals("/Backup/Cloned Note", restoredNote.getPath());
+
+    // move the folder to trash again
+    notebookService.moveFolderToTrash("Backup", context, callback);
+
+    // remove folder from Trash
+    reset(callback);
+    notebookService.removeFolder("/~Trash/Backup", context, callback);
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(0, notesInfo.size());
+
+    // empty trash
+    notebookService.emptyTrash(context, callback);
+
+    notesInfo = notebookService.listNotesInfo(false, context, callback);
+    assertEquals(0, notesInfo.size());
   }
 
   @Test
@@ -245,6 +321,13 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(p, context);
 
     // run paragraph synchronously via invalid code
+    //TODO(zjffdu) must sleep for a while, otherwise will get wrong status. This should be due to
+    //bug of job component.
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     reset(callback);
     runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
         new HashMap<>(), new HashMap<>(), false, true, context, callback);
@@ -258,5 +341,28 @@ public class NotebookServiceTest {
     notebookService.clearParagraphOutput(note1.getId(), p.getId(), context, callback);
     assertNull(p.getReturn());
     verify(callback).onSuccess(p, context);
+  }
+
+  @Test
+  public void testNormalizeNotePath() throws IOException {
+    assertEquals("/Untitled Note", notebookService.normalizeNotePath(" "));
+    assertEquals("/Untitled Note", notebookService.normalizeNotePath(null));
+    assertEquals("/my_note", notebookService.normalizeNotePath("my_note"));
+    assertEquals("/my  note", notebookService.normalizeNotePath("my\r\nnote"));
+
+    try {
+      String longNoteName = StringUtils.join(
+          IntStream.range(0, 256).boxed().collect(Collectors.toList()), "");
+      notebookService.normalizeNotePath(longNoteName);
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name must be less than 255", e.getMessage());
+    }
+    try {
+      notebookService.normalizeNotePath("my..note");
+      fail("Should fail");
+    } catch (IOException e) {
+      assertEquals("Note name can not contain '..'", e.getMessage());
+    }
   }
 }

@@ -268,7 +268,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Commit note to current repository?',
       callback: function(result) {
         if (result) {
-          websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
+          websocketMsgSrv.checkpointNote($routeParams.noteId, $routeParams.name, commitMessage);
         }
       },
     });
@@ -283,7 +283,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Set notebook head to current revision?',
       callback: function(result) {
         if (result) {
-          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
+          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.name, $routeParams.revisionId);
         }
       },
     });
@@ -505,7 +505,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     const trimmedNewName = newName.trim();
     if (trimmedNewName.length > 0 && $scope.note.name !== trimmedNewName) {
       $scope.note.name = trimmedNewName;
-      websocketMsgSrv.renameNote($scope.note.id, $scope.note.name);
+      websocketMsgSrv.renameNote($scope.note.id, $scope.note.name, true);
     }
   };
 

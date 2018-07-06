@@ -33,16 +33,24 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.notebook.ApplicationState;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteEventListener;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.slf4j.Logger;
@@ -79,7 +87,8 @@ import java.util.Map;
  * (load/create/update/remove/get)
  * TODO(zjffdu) We could move it into another separated component.
  */
-public class InterpreterSettingManager implements InterpreterSettingManagerMBean {
+public class InterpreterSettingManager implements InterpreterSettingManagerMBean,
+    NoteEventListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -873,5 +882,80 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       }
     }
     return runningInterpreters;
+  }
+
+  @Override
+  public void onNoteRemove(Note note, AuthenticationInfo subject) throws IOException {
+    // remove from all interpreter instance's angular object registry
+    for (InterpreterSetting settings : interpreterSettings.values()) {
+      InterpreterGroup interpreterGroup = settings.getInterpreterGroup(subject.getUser(), note.getId());
+      if (interpreterGroup != null) {
+        AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+        if (registry instanceof RemoteAngularObjectRegistry) {
+          // remove paragraph scope object
+          for (Paragraph p : note.getParagraphs()) {
+            ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(note.getId(), p.getId());
+
+            // remove app scope object
+            List<ApplicationState> appStates = p.getAllApplicationStates();
+            if (appStates != null) {
+              for (ApplicationState app : appStates) {
+                ((RemoteAngularObjectRegistry) registry)
+                    .removeAllAndNotifyRemoteProcess(note.getId(), app.getId());
+              }
+            }
+          }
+          // remove note scope object
+          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(note.getId(), null);
+        } else {
+          // remove paragraph scope object
+          for (Paragraph p : note.getParagraphs()) {
+            registry.removeAll(note.getId(), p.getId());
+
+            // remove app scope object
+            List<ApplicationState> appStates = p.getAllApplicationStates();
+            if (appStates != null) {
+              for (ApplicationState app : appStates) {
+                registry.removeAll(note.getId(), app.getId());
+              }
+            }
+          }
+          // remove note scope object
+          registry.removeAll(note.getId(), null);
+        }
+      }
+    }
+
+    removeResourcesBelongsToNote(note.getId());
+  }
+
+  @Override
+  public void onNoteCreate(Note note, AuthenticationInfo subject) throws IOException {
+
+  }
+
+  @Override
+  public void onNoteUpdate(Note note, AuthenticationInfo subject) throws IOException {
+
+  }
+
+  @Override
+  public void onParagraphRemove(Paragraph p) throws IOException {
+
+  }
+
+  @Override
+  public void onParagraphCreate(Paragraph p) throws IOException {
+
+  }
+
+  @Override
+  public void onParagraphUpdate(Paragraph p) throws IOException {
+
+  }
+
+  @Override
+  public void onParagraphStatusChange(Paragraph p, Job.Status status) throws IOException {
+
   }
 }

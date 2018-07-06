@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteEventAsyncListener;
 import org.apache.zeppelin.notebook.Paragraph;
 
 /**
@@ -31,7 +32,11 @@ import org.apache.zeppelin.notebook.Paragraph;
  *  - local Lucene (in-memory, on-disk)
  *  - remote Elasticsearch
  */
-public interface SearchService {
+public abstract class SearchService extends NoteEventAsyncListener {
+
+  public SearchService(String name) {
+    super(name);
+  }
 
   /**
    * Full-text search in all the notes
@@ -39,7 +44,7 @@ public interface SearchService {
    * @param queryStr a query
    * @return A list of matching paragraphs (id, text, snippet w/ highlight)
    */
-  public List<Map<String, String>> query(String queryStr);
+  public abstract List<Map<String, String>> query(String queryStr);
 
   /**
    * Updates all documents in index for the given note:
@@ -49,39 +54,83 @@ public interface SearchService {
    * @param note a Note to update index for
    * @throws IOException
    */
-  public void updateIndexDoc(Note note) throws IOException;
+  public abstract void updateIndexDoc(Note note) throws IOException;
 
   /**
    * Indexes full collection of notes: all the paragraphs + Note names
    *
    * @param collection of Notes
    */
-  public void addIndexDocs(Collection<Note> collection);
+  public abstract void addIndexDocs(Collection<Note> collection);
 
   /**
    * Indexes the given note.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public void addIndexDoc(Note note);
+  public abstract void addIndexDoc(Note note);
 
   /**
    * Deletes all docs on given Note from index
    */
-  public void deleteIndexDocs(Note note);
+  public abstract void deleteIndexDocs(String noteId);
 
   /**
    * Deletes doc for a given
    *
-   * @param note
+   * @param noteId
    * @param p
    * @throws IOException
    */
-  public void deleteIndexDoc(Note note, Paragraph p);
+  public abstract void deleteIndexDoc(String noteId, Paragraph p);
 
   /**
    * Frees the recourses used by index
    */
-  public void close();
+  public void close() {
+    super.close();
+  }
 
+  @Override
+  public void handleNoteCreateEvent(NoteCreateEvent noteCreateEvent) {
+    addIndexDoc(noteCreateEvent.getNote());
+  }
+
+  @Override
+  public void handleNoteRemoveEvent(NoteRemoveEvent noteRemoveEvent) {
+    deleteIndexDocs(noteRemoveEvent.getNote().getId());
+  }
+
+  @Override
+  public void handleNoteUpdateEvent(NoteUpdateEvent noteUpdateEvent) {
+    try {
+      updateIndexDoc(noteUpdateEvent.getNote());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void handleParagraphCreateEvent(ParagraphCreateEvent paragraphCreateEvent) {
+    try {
+      updateIndexDoc(paragraphCreateEvent.getParagraph().getNote());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void handleParagraphRemoveEvent(ParagraphRemoveEvent paragraphRemoveEvent) {
+    Paragraph p = paragraphRemoveEvent.getParagraph();
+    deleteIndexDoc(p.getNote().getId(), p);
+  }
+
+  @Override
+  public void handleParagraphUpdateEvent(ParagraphUpdateEvent paragraphUpdateEvent) {
+    try {
+      updateIndexDoc(paragraphUpdateEvent.getParagraph().getNote());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 }

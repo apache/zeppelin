@@ -24,15 +24,12 @@ import com.microsoft.azure.storage.file.CloudFileClient;
 import com.microsoft.azure.storage.file.CloudFileDirectory;
 import com.microsoft.azure.storage.file.CloudFileShare;
 import com.microsoft.azure.storage.file.ListFileItem;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
@@ -48,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * Azure storage backend for notebooks
  */
 public class AzureNotebookRepo implements NotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(AzureNotebookRepo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AzureNotebookRepo.class);
 
   private ZeppelinConfiguration conf;
   private String user;
@@ -84,50 +81,46 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    List<NoteInfo> infos = new LinkedList<>();
-    NoteInfo info = null;
+  public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    return list(rootDir);
+  }
 
+  private Map<String, NoteInfo> list(CloudFileDirectory folder) throws IOException {
+    Map<String, NoteInfo> notesInfo = new HashMap<>();
     for (ListFileItem item : rootDir.listFilesAndDirectories()) {
-      if (item.getClass() == CloudFileDirectory.class) {
+      if (item instanceof CloudFileDirectory) {
         CloudFileDirectory dir = (CloudFileDirectory) item;
-
-        try {
-          if (dir.getFileReference("note.json").exists()) {
-            info = new NoteInfo(getNote(dir.getName()));
-
-            if (info != null) {
-              infos.add(info);
-            }
+        notesInfo.putAll(list(dir));
+      } else if (item instanceof CloudFile){
+        CloudFile file = (CloudFile) item;
+        if (file.getName().endsWith(".zpln")) {
+          try {
+            String noteName = getNotePath(rootDir.getUri().getPath(), file.getUri().getPath());
+            String noteId = getNoteId(file.getUri().getPath());
+            notesInfo.put(noteId, new NoteInfo(noteId, noteName));
+          } catch (IOException e) {
+            LOGGER.warn(e.getMessage());
           }
-        } catch (StorageException | URISyntaxException e) {
-          String msg = "Error enumerating notebooks from Azure storage";
-          LOG.error(msg, e);
-        } catch (Exception e) {
-          LOG.error(e.getMessage(), e);
+        } else {
+          LOGGER.debug("Skip invalid note file: " + file.getUri().getPath());
         }
       }
     }
-
-    return infos;
+    return notesInfo;
   }
 
-  private Note getNote(String noteId) throws IOException {
+  @Override
+  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     InputStream ins = null;
-
     try {
-      CloudFileDirectory dir = rootDir.getDirectoryReference(noteId);
-      CloudFile file = dir.getFileReference("note.json");
-
-      ins = file.openRead();
+      CloudFile noteFile = rootDir.getFileReference(buildNoteFileName(noteId, notePath));
+      ins = noteFile.openRead();
     } catch (URISyntaxException | StorageException e) {
-      String msg = String.format("Error reading notebook %s from Azure storage", noteId);
-
-      LOG.error(msg, e);
-
+      String msg = String.format("Error reading notebook %s from Azure storage",
+          buildNoteFileName(noteId, notePath));
+      LOGGER.error(msg, e);
       throw new IOException(msg, e);
     }
-
     String json = IOUtils.toString(ins,
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
@@ -135,67 +128,45 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    return getNote(noteId);
-  }
-
-  @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    String json = note.toJson();
-
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Writer writer = new OutputStreamWriter(output);
-    writer.write(json);
-    writer.close();
-    output.close();
-
-    byte[] buffer = output.toByteArray();
-
     try {
-      CloudFileDirectory dir = rootDir.getDirectoryReference(note.getId());
-      dir.createIfNotExists();
-
-      CloudFile cloudFile = dir.getFileReference("note.json");
-      cloudFile.uploadFromByteArray(buffer, 0, buffer.length);
+      CloudFile noteFile = rootDir.getFileReference(buildNoteFileName(note));
+      noteFile.getParent().createIfNotExists();
+      noteFile.uploadText(note.toJson());
     } catch (URISyntaxException | StorageException e) {
-      String msg = String.format("Error saving notebook %s to Azure storage", note.getId());
-
-      LOG.error(msg, e);
-
+      String msg = String.format("Error saving notebook %s to Azure storage",
+          buildNoteFileName(note));
+      LOGGER.error(msg, e);
       throw new IOException(msg, e);
-    }
-  }
-
-  // unfortunately, we need to use a recursive delete here
-  private void delete(ListFileItem item) throws StorageException {
-    if (item.getClass() == CloudFileDirectory.class) {
-      CloudFileDirectory dir = (CloudFileDirectory) item;
-
-      for (ListFileItem subItem : dir.listFilesAndDirectories()) {
-        delete(subItem);
-      }
-
-      dir.deleteIfExists();
-    } else if (item.getClass() == CloudFile.class) {
-      CloudFile file = (CloudFile) item;
-
-      file.deleteIfExists();
     }
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+  public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     try {
-      CloudFileDirectory dir = rootDir.getDirectoryReference(noteId);
-
-      delete(dir);
+      CloudFile noteFile = rootDir.getFileReference(buildNoteFileName(noteId, notePath));
+      noteFile.delete();
     } catch (URISyntaxException | StorageException e) {
-      String msg = String.format("Error deleting notebook %s from Azure storage", noteId);
-
-      LOG.error(msg, e);
-
+      String msg = String.format("Error deleting notebook %s from Azure storage",
+          buildNoteFileName(noteId, notePath));
+      LOGGER.error(msg, e);
       throw new IOException(msg, e);
     }
+  }
+
+  @Override
+  public void remove(String folderPath, AuthenticationInfo subject) {
+
   }
 
   @Override
@@ -204,13 +175,13 @@ public class AzureNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
     return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
   }
 
 }

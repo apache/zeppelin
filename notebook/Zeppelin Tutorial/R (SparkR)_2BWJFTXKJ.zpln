@@ -1279,7 +1279,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial/R (SparkR)",
+  "name": "R (SparkR)",
   "id": "2BWJFTXKJ",
   "angularObjects": {
     "2C9A5UJ3F:shared_process": [],
