@@ -27,7 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Test;
@@ -35,6 +34,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -48,9 +50,6 @@ public class NoteTest {
   ParagraphJobListener paragraphJobListener;
 
   @Mock
-  SearchService index;
-
-  @Mock
   Credentials credentials;
 
   @Mock
@@ -59,8 +58,7 @@ public class NoteTest {
   @Mock
   Scheduler scheduler;
 
-  @Mock
-  NoteEventListener noteEventListener;
+  List<NoteEventListener> noteEventListener = new ArrayList<>();
 
   @Mock
   InterpreterFactory interpreterFactory;
@@ -76,7 +74,7 @@ public class NoteTest {
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
     String pText = "%spark sc.version";
-    Note note = new Note("test", "test", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "test", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(pText);
@@ -92,8 +90,7 @@ public class NoteTest {
 
   @Test
   public void addParagraphWithEmptyReplNameTest() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
-
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getText());
   }
@@ -101,8 +98,7 @@ public class NoteTest {
   @Test
   public void addParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"), anyString())).thenReturn(interpreter);
-
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
     Paragraph p2 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -113,8 +109,7 @@ public class NoteTest {
   @Test
   public void insertParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"), anyString())).thenReturn(interpreter);
-
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%spark ");
     Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
@@ -125,8 +120,7 @@ public class NoteTest {
   @Test
   public void insertParagraphWithInvalidReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"), anyString())).thenReturn(null);
-
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%invalid ");
     Paragraph p2 = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
@@ -136,7 +130,7 @@ public class NoteTest {
 
   @Test
   public void insertParagraphwithUser() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p = note.insertNewParagraph(note.getParagraphs().size(), AuthenticationInfo.ANONYMOUS);
     assertEquals("anonymous", p.getUser());
   }
@@ -146,7 +140,7 @@ public class NoteTest {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"), anyString())).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "result");
     p1.setResult(result);
@@ -160,65 +154,10 @@ public class NoteTest {
     assertNull(p2.getReturn());
   }
 
-  @Test
-  public void getFolderIdTest() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
-    // Ordinary case test
-    note.setName("this/is/a/folder/noteName");
-    assertEquals("this/is/a/folder", note.getFolderId());
-    // Normalize test
-    note.setName("/this/is/a/folder/noteName");
-    assertEquals("this/is/a/folder", note.getFolderId());
-    // Root folder test
-    note.setName("noteOnRootFolder");
-    assertEquals(Folder.ROOT_FOLDER_ID, note.getFolderId());
-    note.setName("/noteOnRootFolderStartsWithSlash");
-    assertEquals(Folder.ROOT_FOLDER_ID, note.getFolderId());
-  }
-
-  @Test
-  public void getNameWithoutPathTest() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
-    // Notes in the root folder
-    note.setName("noteOnRootFolder");
-    assertEquals("noteOnRootFolder", note.getNameWithoutPath());
-    note.setName("/noteOnRootFolderStartsWithSlash");
-    assertEquals("noteOnRootFolderStartsWithSlash", note.getNameWithoutPath());
-    // Notes in subdirectories
-    note.setName("/a/b/note");
-    assertEquals("note", note.getNameWithoutPath());
-    note.setName("a/b/note");
-    assertEquals("note", note.getNameWithoutPath());
-  }
-
-  @Test
-  public void isTrashTest() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
-    // Notes in the root folder
-    note.setName("noteOnRootFolder");
-    assertFalse(note.isTrash());
-    note.setName("/noteOnRootFolderStartsWithSlash");
-    assertFalse(note.isTrash());
-
-    // Notes in subdirectories
-    note.setName("/a/b/note");
-    assertFalse(note.isTrash());
-    note.setName("a/b/note");
-    assertFalse(note.isTrash());
-
-    // Notes in trash
-    note.setName(Folder.TRASH_FOLDER_ID + "/a");
-    assertTrue(note.isTrash());
-    note.setName("/" + Folder.TRASH_FOLDER_ID + "/a");
-    assertTrue(note.isTrash());
-    note.setName(Folder.TRASH_FOLDER_ID + "/a/b/c");
-    assertTrue(note.isTrash());
-  }
 
   @Test
   public void personalizedModeReturnDifferentParagraphInstancePerUser() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
-
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     String user1 = "user1";
     String user2 = "user2";
     note.setPersonalizedMode(true);
@@ -232,7 +171,7 @@ public class NoteTest {
   }
 
   public void testNoteJson() {
-    Note note = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     note.setName("/test_note");
     note.getConfig().put("config_1", "value_1");
     note.getInfo().put("info_1", "value_1");

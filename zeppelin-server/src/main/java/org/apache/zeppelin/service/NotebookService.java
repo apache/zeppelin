@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.service;
 
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import javax.inject.Inject;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.Folder;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -46,15 +43,41 @@ import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
+
+
 /**
- * Service class for Notebook related operations.
+ * Service class for Notebook related operations. It use {@link Notebook} which provides
+ * high level api to access notes.
+ *
+ * In most of methods, this class will check permission first and whether this note existed.
+ * If the operation succeeed, {@link ServiceCallback#onSuccess(Object, ServiceContext)} should be
+ * called, otherwise {@link ServiceCallback#onFailure(Exception, ServiceContext)} should be called.
+ *
  */
 public class NotebookService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookService.class);
+  private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
+      DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
   private static NotebookService self;
 
@@ -154,31 +177,49 @@ public class NotebookService {
   }
 
 
-  public Note createNote(String noteName,
+  public Note createNote(String notePath,
                          String defaultInterpreterGroup,
                          ServiceContext context,
                          ServiceCallback<Note> callback) throws IOException {
+
     if (defaultInterpreterGroup == null) {
       defaultInterpreterGroup = zConf.getString(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
-    if (StringUtils.isBlank(noteName)) {
-      noteName = "Untitled Note";
-    }
+
     try {
-      Note note = notebook.createNote(noteName, defaultInterpreterGroup, context.getAutheInfo());
-      note.addNewParagraph(context.getAutheInfo()); // it's an empty note. so add one paragraph
-      note.setName(noteName);
-      note.setCronSupported(notebook.getConf());
-      note.persist(context.getAutheInfo());
+      Note note = notebook.createNote(normalizeNotePath(notePath), defaultInterpreterGroup,
+          context.getAutheInfo());
+      // it's an empty note. so add one paragraph
+      note.addNewParagraph(context.getAutheInfo());
+      notebook.saveNote(note, context.getAutheInfo());
       callback.onSuccess(note, context);
       return note;
     } catch (IOException e) {
-      callback.onFailure(new IOException("Fail to create Note", e), context);
+      callback.onFailure(new IOException("Fail to create note", e), context);
       return null;
     }
   }
 
+  String normalizeNotePath(String notePath) throws IOException {
+    if (StringUtils.isBlank(notePath)) {
+      notePath = "/Untitled Note";
+    }
+    if (!notePath.startsWith("/")) {
+      notePath = "/" + notePath;
+    }
+
+    notePath = notePath.replace("\r", " ").replace("\n", " ");
+    int pos = notePath.lastIndexOf("/");
+    if ((notePath.length() - pos) > 255) {
+      throw new IOException("Note name must be less than 255");
+    }
+
+    if (notePath.contains("..")) {
+      throw new IOException("Note name can not contain '..'");
+    }
+    return notePath;
+  }
 
   public void removeNote(String noteId,
                          ServiceContext context,
@@ -194,15 +235,10 @@ public class NotebookService {
     }
   }
 
-  public List<Map<String, String>> listNotes(boolean needsReload,
-                                             ServiceContext context,
-                                             ServiceCallback<List<Map<String, String>>> callback)
+  public List<NoteInfo> listNotesInfo(boolean needsReload,
+                                      ServiceContext context,
+                                      ServiceCallback<List<NoteInfo>> callback)
       throws IOException {
-
-    ZeppelinConfiguration conf = notebook.getConf();
-    String homeScreenNoteId = conf.getString(ZEPPELIN_NOTEBOOK_HOMESCREEN);
-    boolean hideHomeScreenNotebookFromList =
-        conf.getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
     if (needsReload) {
       try {
         notebook.reloadAllNotes(context.getAutheInfo());
@@ -210,36 +246,30 @@ public class NotebookService {
         LOGGER.error("Fail to reload notes from repository", e);
       }
     }
-
-    List<Note> notes = notebook.getAllNotes(context.getUserAndRoles());
-    List<Map<String, String>> notesInfo = new LinkedList<>();
-    for (Note note : notes) {
-      Map<String, String> info = new HashMap<>();
-      if (hideHomeScreenNotebookFromList && note.getId().equals(homeScreenNoteId)) {
-        continue;
-      }
-      info.put("id", note.getId());
-      info.put("name", note.getName());
-      notesInfo.add(info);
-    }
-
+    List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
     callback.onSuccess(notesInfo, context);
     return notesInfo;
   }
 
   public void renameNote(String noteId,
-                         String newNoteName,
+                         String newNotePath,
+                         boolean isRelative,
                          ServiceContext context,
                          ServiceCallback<Note> callback) throws IOException {
-    if (!checkPermission(noteId, Permission.WRITER, Message.OP.NOTE_RENAME, context, callback)) {
+    if (!checkPermission(noteId, Permission.OWNER, Message.OP.NOTE_RENAME, context, callback)) {
       return;
     }
-
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      note.setName(newNoteName);
       note.setCronSupported(notebook.getConf());
-      note.persist(context.getAutheInfo());
+      if (isRelative) {
+        newNotePath = note.getParentPath() + "/" + newNotePath;
+      } else {
+        if (!newNotePath.startsWith("/")) {
+          newNotePath = "/" + newNotePath;
+        }
+      }
+      notebook.moveNote(noteId, newNotePath, context.getAutheInfo());
       callback.onSuccess(note, context);
     } else {
       callback.onFailure(new NoteNotFoundException(noteId), context);
@@ -248,22 +278,39 @@ public class NotebookService {
   }
 
   public Note cloneNote(String noteId,
-                        String newNoteName,
+                        String newNotePath,
                         ServiceContext context,
                         ServiceCallback<Note> callback) throws IOException {
-    Note newNote = notebook.cloneNote(noteId, newNoteName, context.getAutheInfo());
-    callback.onSuccess(newNote, context);
-    return newNote;
+    //TODO(zjffdu) move these to Notebook
+    if (StringUtils.isBlank(newNotePath)) {
+      newNotePath = "/Cloned Note_" + noteId;
+    }
+    try {
+      Note newNote = notebook.cloneNote(noteId, normalizeNotePath(newNotePath),
+          context.getAutheInfo());
+      callback.onSuccess(newNote, context);
+      return newNote;
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to clone note", e), context);
+      return null;
+    }
   }
 
-  public Note importNote(String noteName,
+  public Note importNote(String notePath,
                          String noteJson,
                          ServiceContext context,
                          ServiceCallback<Note> callback) throws IOException {
-    Note note = notebook.importNote(noteJson, noteName, context.getAutheInfo());
-    note.persist(context.getAutheInfo());
-    callback.onSuccess(note, context);
-    return note;
+    try {
+      // pass notePath when it is null
+      Note note = notebook.importNote(noteJson, notePath == null ?
+              notePath : normalizeNotePath(notePath),
+          context.getAutheInfo());
+      callback.onSuccess(note, context);
+      return note;
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to import note: " + e.getMessage(), e), context);
+      return null;
+    }
   }
 
   public boolean runParagraph(String noteId,
@@ -311,7 +358,7 @@ public class NotebookService {
     }
 
     try {
-      note.persist(p.getAuthenticationInfo());
+      notebook.saveNote(note, context.getAutheInfo());
       boolean result = note.run(p.getId(), blocking);
       callback.onSuccess(p, context);
       return result;
@@ -319,7 +366,8 @@ public class NotebookService {
       LOGGER.error("Exception from run", ex);
       p.setReturn(new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage()), ex);
       p.setStatus(Job.Status.ERROR);
-      callback.onFailure(new Exception("Fail to run paragraph " + paragraphId, ex), context);
+      // don't call callback.onFailure, we just need to display the error message
+      // in paragraph result section instead of pop up the error window.
       return false;
     }
   }
@@ -399,7 +447,7 @@ public class NotebookService {
       return;
     }
     note.moveParagraph(paragraphId, newIndex);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note.getParagraph(newIndex), context);
   }
 
@@ -419,7 +467,7 @@ public class NotebookService {
       throw new ParagraphNotFoundException(paragraphId);
     }
     Paragraph p = note.removeParagraph(context.getAutheInfo().getUser(), paragraphId);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(p, context);
   }
 
@@ -438,7 +486,7 @@ public class NotebookService {
     }
     Paragraph newPara = note.insertNewParagraph(index, context.getAutheInfo());
     newPara.setConfig(config);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(newPara, context);
     return newPara;
   }
@@ -455,20 +503,53 @@ public class NotebookService {
       callback.onFailure(new NoteNotFoundException(noteId), context);
       return;
     }
-    //restore cron
-    Map<String, Object> config = note.getConfig();
-    if (config.get("cron") != null) {
-      notebook.refreshCron(note.getId());
+
+    if (!note.getPath().startsWith("/" + NoteManager.TRASH_FOLDER)) {
+      callback.onFailure(new IOException("Can not restore this note " + note.getPath() +
+          " as it is not in trash folder"), context);
+      return;
+    }
+    try {
+      String destNotePath = note.getPath().replace("/" + NoteManager.TRASH_FOLDER, "");
+      notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
+      callback.onSuccess(note, context);
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to restore note: " + noteId, e), context);
     }
 
-    if (note.isTrash()) {
-      String newName = note.getName().replaceFirst(Folder.TRASH_FOLDER_ID + "/", "");
-      renameNote(noteId, newName, context, callback);
-    } else {
-      callback.onFailure(new IOException(String.format("Trying to restore a note {} " +
-          "which is not in Trash", noteId)), context);
+  }
+
+  public void restoreFolder(String folderPath,
+                            ServiceContext context,
+                            ServiceCallback<Void> callback) throws IOException {
+
+    if (!folderPath.startsWith("/" + NoteManager.TRASH_FOLDER)) {
+      callback.onFailure(new IOException("Can not restore this folder: " + folderPath +
+          " as it is not in trash folder"), context);
+      return;
+    }
+    try {
+      String destFolderPath = folderPath.replace("/" + NoteManager.TRASH_FOLDER, "");
+      notebook.moveFolder(folderPath, destFolderPath, context.getAutheInfo());
+      callback.onSuccess(null, context);
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to restore folder: " + folderPath, e), context);
+    }
+
+  }
+
+
+  public void restoreAll(ServiceContext context,
+                         ServiceCallback callback) throws IOException {
+
+    try {
+      notebook.restoreAll(context.getAutheInfo());
+      callback.onSuccess(null, context);
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to restore all", e), context);
     }
   }
+
 
   public void updateParagraph(String noteId,
                               String paragraphId,
@@ -504,7 +585,7 @@ public class NotebookService {
       p.setTitle(title);
       p.setText(text);
     }
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(p, context);
   }
 
@@ -555,7 +636,6 @@ public class NotebookService {
   }
 
 
-
   public void updateNote(String noteId,
                          String name,
                          Map<String, Object> config,
@@ -584,7 +664,7 @@ public class NotebookService {
       notebook.refreshCron(note.getId());
     }
 
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
 
@@ -619,7 +699,7 @@ public class NotebookService {
     }
 
     note.setNoteParams(noteParams);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
 
@@ -640,7 +720,7 @@ public class NotebookService {
 
     note.getNoteForms().remove(formName);
     note.getNoteParams().remove(formName);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
 
@@ -662,7 +742,7 @@ public class NotebookService {
     }
 
     NotebookRepoWithVersionControl.Revision revision =
-        notebook.checkpointNote(noteId, commitMessage, context.getAutheInfo());
+        notebook.checkpointNote(noteId, note.getName(), commitMessage, context.getAutheInfo());
     callback.onSuccess(revision, context);
     return revision;
   }
@@ -685,7 +765,7 @@ public class NotebookService {
     //      return null;
     //    }
     List<NotebookRepoWithVersionControl.Revision> revisions =
-        notebook.listRevisionHistory(noteId, context.getAutheInfo());
+        notebook.listRevisionHistory(noteId, note.getPath(), context.getAutheInfo());
     callback.onSuccess(revisions, context);
     return revisions;
   }
@@ -707,7 +787,8 @@ public class NotebookService {
     }
 
     try {
-      Note resultNote = notebook.setNoteRevision(noteId, revisionId, context.getAutheInfo());
+      Note resultNote = notebook.setNoteRevision(noteId, note.getPath(), revisionId,
+          context.getAutheInfo());
       callback.onSuccess(resultNote, context);
       return resultNote;
     } catch (Exception e) {
@@ -731,7 +812,8 @@ public class NotebookService {
         callback)) {
       return;
     }
-    Note revisionNote = notebook.getNoteByRevision(noteId, revisionId, context.getAutheInfo());
+    Note revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
+        context.getAutheInfo());
     callback.onSuccess(revisionNote, context);
   }
 
@@ -754,7 +836,8 @@ public class NotebookService {
     if (revisionId.equals("Head")) {
       revisionNote = notebook.getNote(noteId);
     } else {
-      revisionNote = notebook.getNoteByRevision(noteId, revisionId, context.getAutheInfo());
+      revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
+          context.getAutheInfo());
     }
     callback.onSuccess(revisionNote, context);
   }
@@ -792,7 +875,6 @@ public class NotebookService {
                                String replName,
                                ServiceContext context,
                                ServiceCallback<Map<String, Object>> callback) throws IOException {
-
     Note note = notebook.getNote(noteId);
     if (note == null) {
       callback.onFailure(new NoteNotFoundException(noteId), context);
@@ -828,8 +910,274 @@ public class NotebookService {
     }
 
     note.setPersonalizedMode(isPersonalized);
-    note.persist(context.getAutheInfo());
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
+  }
+
+  public void moveNoteToTrash(String noteId,
+                                 ServiceContext context,
+                                 ServiceCallback<Note> callback) throws IOException {
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return;
+    }
+
+    if (!checkPermission(noteId, Permission.OWNER, Message.OP.MOVE_NOTE_TO_TRASH, context,
+        callback)) {
+      return;
+    }
+    String destNotePath = "/" + NoteManager.TRASH_FOLDER + note.getPath();
+    if (notebook.containsNote(destNotePath)) {
+      destNotePath = destNotePath + " " + TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
+    }
+    notebook.moveNote(noteId, destNotePath, context.getAutheInfo());
+    callback.onSuccess(note, context);
+  }
+
+  public void moveFolderToTrash(String folderPath,
+                              ServiceContext context,
+                              ServiceCallback<Void> callback) throws IOException {
+
+    //TODO(zjffdu) folder permission check
+    //TODO(zjffdu) folderPath is relative path, need to fix it in frontend
+    LOGGER.info("Move folder " + folderPath + " to trash");
+
+    String destFolderPath = "/" + NoteManager.TRASH_FOLDER + "/" + folderPath;
+    if (notebook.containsNote(destFolderPath)) {
+      destFolderPath = destFolderPath + " " +
+          TRASH_CONFLICT_TIMESTAMP_FORMATTER.print(new DateTime());
+    }
+
+    notebook.moveFolder("/" + folderPath, destFolderPath, context.getAutheInfo());
+    callback.onSuccess(null, context);
+  }
+
+  public void emptyTrash(ServiceContext context,
+                         ServiceCallback<Void> callback) throws IOException {
+
+    try {
+      notebook.emptyTrash(context.getAutheInfo());
+      callback.onSuccess(null, context);
+    } catch (IOException e) {
+      callback.onFailure(e, context);
+    }
+
+  }
+
+  public List<NoteInfo> removeFolder(String folderPath,
+                           ServiceContext context,
+                           ServiceCallback<List<NoteInfo>> callback) throws IOException {
+    try {
+      notebook.removeFolder(folderPath, context.getAutheInfo());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      callback.onSuccess(notesInfo, context);
+      return notesInfo;
+    } catch (IOException e) {
+      callback.onFailure(e, context);
+      return null;
+    }
+  }
+
+  public List<NoteInfo> renameFolder(String folderPath,
+                           String newFolderPath,
+                           ServiceContext context,
+                           ServiceCallback<List<NoteInfo>> callback) throws IOException {
+    //TODO(zjffdu) folder permission check
+
+    try {
+      notebook.moveFolder(folderPath, newFolderPath, context.getAutheInfo());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      callback.onSuccess(notesInfo, context);
+      return notesInfo;
+    } catch (IOException e) {
+      callback.onFailure(e, context);
+      return null;
+    }
+  }
+
+  public void spell(String noteId,
+                    Message message,
+                    ServiceContext context,
+                    ServiceCallback<Paragraph> callback) throws IOException {
+
+    try {
+      if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_PARAGRAPH_USING_SPELL, context,
+          callback)) {
+        return;
+      }
+
+      String paragraphId = (String) message.get("id");
+      if (paragraphId == null) {
+        return;
+      }
+
+      String text = (String) message.get("paragraph");
+      String title = (String) message.get("title");
+      Job.Status status = Job.Status.valueOf((String) message.get("status"));
+      Map<String, Object> params = (Map<String, Object>) message.get("params");
+      Map<String, Object> config = (Map<String, Object>) message.get("config");
+
+      Note note = notebook.getNote(noteId);
+      Paragraph p = setParagraphUsingMessage(note, message, paragraphId,
+          text, title, params, config);
+      p.setResult((InterpreterResult) message.get("results"));
+      p.setErrorMessage((String) message.get("errorMessage"));
+      p.setStatusWithoutNotification(status);
+
+      // Spell uses ISO 8601 formatted string generated from moment
+      String dateStarted = (String) message.get("dateStarted");
+      String dateFinished = (String) message.get("dateFinished");
+      SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+      try {
+        p.setDateStarted(df.parse(dateStarted));
+      } catch (ParseException e) {
+        LOGGER.error("Failed parse dateStarted", e);
+      }
+
+      try {
+        p.setDateFinished(df.parse(dateFinished));
+      } catch (ParseException e) {
+        LOGGER.error("Failed parse dateFinished", e);
+      }
+
+      addNewParagraphIfLastParagraphIsExecuted(note, p);
+      notebook.saveNote(note, context.getAutheInfo());
+      callback.onSuccess(p, context);
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to run spell", e), context);
+    }
+
+  }
+
+  private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
+    // if it's the last paragraph and not empty, let's add a new one
+    boolean isTheLastParagraph = note.isLastParagraph(p.getId());
+    if (!(Strings.isNullOrEmpty(p.getText()) ||
+        Strings.isNullOrEmpty(p.getScriptText())) &&
+        isTheLastParagraph) {
+      note.addNewParagraph(p.getAuthenticationInfo());
+    }
+  }
+
+
+  private Paragraph setParagraphUsingMessage(Note note, Message fromMessage, String paragraphId,
+                                             String text, String title, Map<String, Object> params,
+                                             Map<String, Object> config) {
+    Paragraph p = note.getParagraph(paragraphId);
+    p.setText(text);
+    p.setTitle(title);
+    AuthenticationInfo subject =
+        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
+    p.setAuthenticationInfo(subject);
+    p.settings.setParams(params);
+    p.setConfig(config);
+
+    if (note.isPersonalizedMode()) {
+      p = note.getParagraph(paragraphId);
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(subject);
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
+
+    return p;
+  }
+
+  public void updateAngularObject(String noteId, String paragraphId, String interpreterGroupId,
+                                  String varName, Object varValue,
+                                  ServiceContext context,
+                                  ServiceCallback<AngularObject> callback) throws IOException {
+
+    String user = context.getAutheInfo().getUser();
+    AngularObject ao = null;
+    boolean global = false;
+    // propagate change to (Remote) AngularObjectRegistry
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      List<InterpreterSetting> settings =
+          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
+      for (InterpreterSetting setting : settings) {
+        if (setting.getInterpreterGroup(user, note.getId()) == null) {
+          continue;
+        }
+        if (interpreterGroupId.equals(setting.getInterpreterGroup(user, note.getId())
+            .getId())) {
+          AngularObjectRegistry angularObjectRegistry =
+              setting.getInterpreterGroup(user, note.getId()).getAngularObjectRegistry();
+
+          // first trying to get local registry
+          ao = angularObjectRegistry.get(varName, noteId, paragraphId);
+          if (ao == null) {
+            // then try notebook scope registry
+            ao = angularObjectRegistry.get(varName, noteId, null);
+            if (ao == null) {
+              // then try global scope registry
+              ao = angularObjectRegistry.get(varName, null, null);
+              if (ao == null) {
+                LOGGER.warn("Object {} is not binded", varName);
+              } else {
+                // path from client -> server
+                ao.set(varValue, false);
+                global = true;
+              }
+            } else {
+              // path from client -> server
+              ao.set(varValue, false);
+              global = false;
+            }
+          } else {
+            ao.set(varValue, false);
+            global = false;
+          }
+          break;
+        }
+      }
+    }
+
+    callback.onSuccess(ao, context);
+  }
+
+  public void patchParagraph(final String noteId, final String paragraphId, String patchText,
+                             ServiceContext context,
+                             ServiceCallback<String> callback) throws IOException {
+
+    try {
+      if (!checkPermission(noteId, Permission.WRITER, Message.OP.PATCH_PARAGRAPH, context,
+          callback)) {
+        return;
+      }
+
+
+      Note note = notebook.getNote(noteId);
+      if (note == null) {
+        return;
+      }
+      Paragraph p = note.getParagraph(paragraphId);
+      if (p == null) {
+        return;
+      }
+
+      DiffMatchPatch dmp = new DiffMatchPatch();
+      LinkedList<DiffMatchPatch.Patch> patches = null;
+      try {
+        patches = (LinkedList<DiffMatchPatch.Patch>) dmp.patchFromText(patchText);
+      } catch (ClassCastException e) {
+        LOGGER.error("Failed to parse patches", e);
+      }
+      if (patches == null) {
+        return;
+      }
+
+      String paragraphText = p.getText() == null ? "" : p.getText();
+      paragraphText = (String) dmp.patchApply(patches, paragraphText)[0];
+      p.setText(paragraphText);
+      callback.onSuccess(paragraphText, context);
+    } catch (IOException e) {
+      callback.onFailure(new IOException("Fail to patch", e), context);
+    }
   }
 
 

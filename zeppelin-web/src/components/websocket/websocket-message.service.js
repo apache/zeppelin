@@ -37,16 +37,16 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
     },
 
-    moveFolderToTrash: function(folderId) {
-      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
+    moveFolderToTrash: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderPath}});
     },
 
     restoreNote: function(noteId) {
       websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
     },
 
-    restoreFolder: function(folderId) {
-      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
+    restoreFolder: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderPath}});
     },
 
     restoreAll: function() {
@@ -57,8 +57,8 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
     },
 
-    removeFolder: function(folderId) {
-      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
+    removeFolder: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderPath}});
     },
 
     emptyTrash: function() {
@@ -89,12 +89,12 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
     },
 
-    renameNote: function(noteId, noteName) {
-      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}});
+    renameNote: function(noteId, noteName, relative) {
+      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName, relative: relative}});
     },
 
-    renameFolder: function(folderId, folderName) {
-      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}});
+    renameFolder: function(folderId, folderPath) {
+      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderPath}});
     },
 
     moveParagraph: function(paragraphId, newIndex) {

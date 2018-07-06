@@ -43,7 +43,11 @@ public class SimpleServiceCallback<T> implements ServiceCallback<T> {
 
   @Override
   public void onFailure(Exception ex, ServiceContext context) throws IOException {
-    LOGGER.warn(ex.getMessage());
+    String message = ex.getMessage();
+    if (ex.getCause() != null) {
+      message += ", cause: " + ex.getCause().getMessage();
+    }
+    LOGGER.warn(message);
   }
 
 }

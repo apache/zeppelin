@@ -64,8 +64,11 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String pattern, String commitMessage, AuthenticationInfo subject) {
-    Revision revision = super.checkpoint(pattern, commitMessage, subject);
+  public Revision checkpoint(String noteId,
+                             String notePath,
+                             String commitMessage,
+                             AuthenticationInfo subject) throws IOException {
+    Revision revision = super.checkpoint(noteId, notePath, commitMessage, subject);
 
     updateRemoteStream();
 

@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +35,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +64,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
  * Backend for storing Notebooks on S3
  */
 public class S3NotebookRepo implements NotebookRepo {
-  private static final Logger LOG = LoggerFactory.getLogger(S3NotebookRepo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3NotebookRepo.class);
 
   // Use a credential provider chain so that instance profiles can be utilized
   // on an EC2 instance. The order of locations where credentials are searched
@@ -87,6 +85,7 @@ public class S3NotebookRepo implements NotebookRepo {
   private String user;
   private boolean useServerSideEncryption;
   private ZeppelinConfiguration conf;
+  private String rootFolder;
 
   public S3NotebookRepo() {
 
@@ -96,6 +95,7 @@ public class S3NotebookRepo implements NotebookRepo {
     this.conf = conf;
     bucketName = conf.getS3BucketName();
     user = conf.getS3User();
+    rootFolder = user + "/notebook";
     useServerSideEncryption = conf.isS3ServerSideEncryption();
 
     // always use the default provider chain
@@ -174,9 +174,8 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    List<NoteInfo> infos = new LinkedList<>();
-    NoteInfo info;
+  public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    Map<String, NoteInfo> notesInfo = new HashMap<>();
     try {
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
               .withBucketName(bucketName)
@@ -185,10 +184,12 @@ public class S3NotebookRepo implements NotebookRepo {
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
         for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-          if (objectSummary.getKey().endsWith("note.json")) {
-            info = getNoteInfo(objectSummary.getKey());
-            if (info != null) {
-              infos.add(info);
+          if (objectSummary.getKey().endsWith(".zpln")) {
+            try {
+              NoteInfo info = getNoteInfo(objectSummary.getKey());
+              notesInfo.put(info.getId(), info);
+            } catch (IOException e) {
+              LOGGER.warn(e.getMessage());
             }
           }
         }
@@ -197,54 +198,45 @@ public class S3NotebookRepo implements NotebookRepo {
     } catch (AmazonClientException ace) {
       throw new IOException("Unable to list objects in S3: " + ace, ace);
     }
-    return infos;
+    return notesInfo;
   }
 
-  private Note getNote(String key) throws IOException {
+  private NoteInfo getNoteInfo(String key) throws IOException {
+    return new NoteInfo(getNoteId(key), getNotePath(rootFolder, key));
+  }
+
+  @Override
+  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     S3Object s3object;
     try {
-      s3object = s3client.getObject(new GetObjectRequest(bucketName, key));
+      s3object = s3client.getObject(new GetObjectRequest(bucketName,
+          rootFolder + "/" + buildNoteFileName(noteId, notePath)));
     }
     catch (AmazonClientException ace) {
       throw new IOException("Unable to retrieve object from S3: " + ace, ace);
     }
-
     try (InputStream ins = s3object.getObjectContent()) {
       String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
       return Note.fromJson(json);
     }
   }
 
-  private NoteInfo getNoteInfo(String key) throws IOException {
-    Note note = getNote(key);
-    return new NoteInfo(note);
-  }
-
-  @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    return getNote(user + "/" + "notebook" + "/" + noteId + "/" + "note.json");
-  }
-
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
     String json = note.toJson();
-    String key = user + "/" + "notebook" + "/" + note.getId() + "/" + "note.json";
-
-    File file = File.createTempFile("note", "json");
+    String key = rootFolder + "/" + buildNoteFileName(note);
+    File file = File.createTempFile("note", "zpln");
     try {
       Writer writer = new OutputStreamWriter(new FileOutputStream(file));
       writer.write(json);
       writer.close();
-
       PutObjectRequest putRequest = new PutObjectRequest(bucketName, key, file);
-
       if (useServerSideEncryption) {
         // Request server-side encryption.
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
         putRequest.setMetadata(objectMetadata);
       }
-
       s3client.putObject(putRequest);
     }
     catch (AmazonClientException ace) {
@@ -256,11 +248,25 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
-    String key = user + "/" + "notebook" + "/" + noteId;
+  public void move(String noteId, String notePath, String newNotePath,
+                   AuthenticationInfo subject) throws IOException {
+    String key = rootFolder + "/" + buildNoteFileName(noteId, notePath);
+    String newKey = rootFolder + "/" + buildNoteFileName(noteId, newNotePath);
+    s3client.copyObject(bucketName, key, bucketName, newKey);
+    s3client.deleteObject(bucketName, key);
+  }
+
+  @Override
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject)
+      throws IOException {
+    String key = rootFolder + "/" + buildNoteFileName(noteId, notePath);
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);
-
     try {
       ObjectListing objects = s3client.listObjects(listObjectsRequest);
       do {
@@ -276,19 +282,24 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
+  public void remove(String folderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
   public void close() {
     //no-op
   }
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
     return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("Method not implemented");
+    LOGGER.warn("Method not implemented");
   }
 
 }

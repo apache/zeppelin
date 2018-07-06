@@ -146,7 +146,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Test
   public void scalaOutputTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     p.setText("%spark import java.util.Date\n" +
         "import java.net.URL\n" +
@@ -169,21 +169,25 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("2", p.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("55", p.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void sparkSQLTest() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     // test basic dataframe api
     Paragraph p = note.addNewParagraph(anonymous);
     p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
@@ -212,11 +216,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
       assertEquals("_1\t_2\nhello\t20\n", p.getReturn().message().get(0).getData());
     }
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void sparkRTest() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
 
     String sqlContextName = "sqlContext";
     if (isSpark2()) {
@@ -230,12 +236,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("[1] 3", p.getReturn().message().get(0).getData().trim());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   // @Test
   public void pySparkTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
 
     // run markdown paragraph, again
     Paragraph p = note.addNewParagraph(anonymous);
@@ -309,12 +317,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertTrue("[Row(len=u'3')]\n".equals(p.getReturn().message().get(0).getData()) ||
           "[Row(len='3')]\n".equals(p.getReturn().message().get(0).getData()));
     }
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void zRunTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p0 = note.addNewParagraph(anonymous);
     // z.run(paragraphIndex)
     p0.setText("%spark z.run(1)");
@@ -358,7 +368,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("END\n", p3.getReturn().message().get(0).getData());
 
     // run paragraph in note2 via paragraph in note1
-    Note note2 = ZeppelinServer.notebook.createNote(anonymous);
+    Note note2 = ZeppelinServer.notebook.createNote("note2", anonymous);
     Paragraph p20 = note2.addNewParagraph(anonymous);
     p20.setText("%spark val a = 1");
     Paragraph p21 = note2.addNewParagraph(anonymous);
@@ -378,11 +388,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals(Status.FINISHED, p20.getStatus());
     assertEquals(Status.FINISHED, p21.getStatus());
     assertEquals("1", p21.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    ZeppelinServer.notebook.removeNote(note2.getId(), anonymous);
   }
 
   @Test
   public void testZeppelinContextResource() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note.addNewParagraph(anonymous);
     p1.setText("%spark z.put(\"var_1\", \"hello world\")");
@@ -409,11 +422,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("hello world\n", p3.getReturn().message().get(0).getData());
     assertEquals(Status.FINISHED, p4.getStatus());
     assertEquals("hello world\n", p4.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testZeppelinContextHook() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
 
     // register global hook & note1 hook
     Paragraph p1 = note.addNewParagraph(anonymous);
@@ -433,16 +448,19 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals(Status.FINISHED, p2.getStatus());
     assertEquals("1\n3\n5\n4\n2\n", p2.getReturn().message().get(0).getData());
 
-    Note note2 = ZeppelinServer.notebook.createNote(anonymous);
+    Note note2 = ZeppelinServer.notebook.createNote("note2", anonymous);
     Paragraph p3 = note2.addNewParagraph(anonymous);
     p3.setText("%python print(6)");
     note2.run(p3.getId(), true);
     assertEquals("1\n6\n2\n", p3.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    ZeppelinServer.notebook.removeNote(note2.getId(), anonymous);
   }
 
   @Test
   public void pySparkDepLoaderTest() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
 
     // restart spark interpreter to make dep loader work
     ZeppelinServer.notebook.getInterpreterSettingManager().close();
@@ -472,10 +490,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     assertEquals(Status.FINISHED, p1.getStatus());
     assertEquals("2\n", p1.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   private void verifySparkVersionNumber() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
 
     p.setText("%spark print(sc.version)");
@@ -483,6 +503,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     waitForFinish(p);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals(sparkVersion, p.getReturn().message().get(0).getData());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   private int toIntSparkVersion(String sparkVersion) {
@@ -497,7 +519,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   @Test
   public void testSparkZeppelinContextDynamicForms() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     String code = "%spark.spark println(z.textbox(\"my_input\", \"default_name\"))\n" +
         "println(z.password(\"my_pwd\"))\n" +
@@ -525,11 +547,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("1", result[2]);
     assertEquals("2", result[3]);
     assertEquals("items: Seq[Any] = Buffer(2)", result[4]);
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testPySparkZeppelinContextDynamicForms() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     String code = "%spark.pyspark print(z.input('my_input', 'default_name'))\n" +
         "print(z.password('my_pwd'))\n" +
@@ -555,11 +579,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("None", result[1]);
     assertEquals("1", result[2]);
     assertEquals("2", result[3]);
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testAngularObjects() throws IOException, InterpreterNotFoundException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p1 = note.addNewParagraph(anonymous);
 
     // add local angular object
@@ -600,12 +626,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     globalAngularObjects = p4.getBindedInterpreter().getInterpreterGroup()
             .getAngularObjectRegistry().getAll(note.getId(), null);
     assertEquals(0, globalAngularObjects.size());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testConfInterpreter() throws IOException {
     ZeppelinServer.notebook.getInterpreterSettingManager().close();
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
     p.setText("%spark.conf spark.jars.packages\tcom.databricks:spark-csv_2.11:1.2.0");
     note.run(p.getId(), true);
@@ -615,5 +643,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p1.setText("%spark\nimport com.databricks.spark.csv._");
     note.run(p1.getId(), true);
     assertEquals(Status.FINISHED, p1.getStatus());
+
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 }

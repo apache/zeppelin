@@ -128,26 +128,26 @@ function noteActionService(websocketMsgSrv, $location, noteRenameService, noteLi
     });
   };
 
-  this.renameFolder = function(folderId) {
+  this.renameFolder = function(folderPath) {
     noteRenameService.openRenameModal({
       title: 'Rename folder',
-      oldName: folderId,
+      oldName: folderPath,
       callback: function(newName) {
-        let newFolderId = normalizeFolderId(newName);
-        if (_.has(noteListFactory.flatFolderMap, newFolderId)) {
+        let newFolderPath = normalizeFolderId(newName);
+        if (_.has(noteListFactory.flatFolderMap, newFolderPath)) {
           BootstrapDialog.confirm({
             type: BootstrapDialog.TYPE_WARNING,
             closable: true,
             title: 'WARNING! The folder will be MERGED',
-            message: 'The folder will be merged into <strong>' + _.escape(newFolderId) + '</strong>. Are you sure?',
+            message: 'The folder will be merged into <strong>' + _.escape(newFolderPath) + '</strong>. Are you sure?',
             callback: function(result) {
               if (result) {
-                websocketMsgSrv.renameFolder(folderId, newFolderId);
+                websocketMsgSrv.renameFolder(folderPath, newFolderPath);
               }
             },
           });
         } else {
-          websocketMsgSrv.renameFolder(folderId, newFolderId);
+          websocketMsgSrv.renameFolder(folderPath, newFolderPath);
         }
       },
     });

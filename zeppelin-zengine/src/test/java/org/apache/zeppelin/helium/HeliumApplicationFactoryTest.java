@@ -69,6 +69,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             notebookAuthorization,
             new Credentials(false, null, null));
 
+
     heliumAppFactory.setNotebook(notebook);
 
     notebook.addNotebookEventListener(heliumAppFactory);
@@ -94,7 +95,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -139,8 +140,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
-
+    Note note1 = notebook.createNote("note1", anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
@@ -178,7 +178,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -205,7 +205,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   @Test
   public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
     // create note
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote("note1", anonymous);
 
     // add paragraph with invalid magic
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -236,7 +236,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {

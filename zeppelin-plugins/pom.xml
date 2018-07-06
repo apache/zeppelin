@@ -43,7 +43,6 @@
         <module>notebookrepo/github</module>
         <module>notebookrepo/azure</module>
         <module>notebookrepo/gcs</module>
-        <module>notebookrepo/mongodb</module>
         <module>notebookrepo/zeppelin-hub</module>
         <module>notebookrepo/filesystem</module>
 

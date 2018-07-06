@@ -85,8 +85,8 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Sample note - excerpt from Zeppelin Tutorial",
   "id": "2A94M5J2Z",
+  "name": "my_note2",
   "angularObjects": {},
   "config": {
     "looknfeel": "default"

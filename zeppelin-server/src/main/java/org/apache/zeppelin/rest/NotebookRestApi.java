@@ -26,6 +26,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -283,7 +284,7 @@ public class NotebookRestApi extends AbstractRestApi {
         notebookAuthorization.getReaders(noteId), notebookAuthorization.getRunners(noteId),
         notebookAuthorization.getWriters(noteId));
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    note.persist(subject);
+    notebook.saveNote(note, subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK).build();
@@ -292,8 +293,8 @@ public class NotebookRestApi extends AbstractRestApi {
   @GET
   @ZeppelinApi
   public Response getNoteList() throws IOException {
-    List<Map<String, String>> notesInfo = notebookService.listNotes(false, getServiceContext(),
-        new RestServiceCallback());
+    List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, getServiceContext(),
+        new RestServiceCallback<List<NoteInfo>>());
     return new JsonResponse<>(Status.OK, "", notesInfo).build();
   }
 
@@ -442,7 +443,7 @@ public class NotebookRestApi extends AbstractRestApi {
       LOG.warn("Trying to rename notebook {} with empty name parameter", noteId);
       throw new BadRequestException("name can not be empty");
     }
-    notebookService.renameNote(noteId, request.getName(), getServiceContext(),
+    notebookService.renameNote(noteId, request.getName(), false, getServiceContext(),
         new RestServiceCallback<Note>(){
           @Override
           public void onSuccess(Note note, ServiceContext context) throws IOException {
@@ -482,7 +483,7 @@ public class NotebookRestApi extends AbstractRestApi {
       p = note.insertNewParagraph(indexDouble.intValue(), subject);
     }
     initParagraph(p, request, user);
-    note.persist(subject);
+    notebook.saveNote(note, subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK, "", p.getId()).build();
   }
@@ -539,7 +540,7 @@ public class NotebookRestApi extends AbstractRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(user);
-    note.persist(subject);
+    notebook.saveNote(note, subject);
     notebookServer.broadcastParagraph(note, p);
     return new JsonResponse<>(Status.OK, "").build();
   }
@@ -562,7 +563,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Map<String, Object> newConfig = gson.fromJson(message, HashMap.class);
     configureParagraph(p, newConfig, user);
     AuthenticationInfo subject = new AuthenticationInfo(user);
-    note.persist(subject);
+    notebook.saveNote(note, subject);
     return new JsonResponse<>(Status.OK, "", p).build();
   }
 
@@ -1006,7 +1007,7 @@ public class NotebookRestApi extends AbstractRestApi {
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
         AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-        note.persist(subject);
+        notebook.saveNote(note, subject);
       }
     }
   }
