@@ -16,49 +16,37 @@
  */
 package org.apache.zeppelin.interpreter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.tabledata.ColumnDef;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * Interpreter result message
+ * Type of interpreter result message
  */
-public class InterpreterResultMessage implements Serializable {
-  InterpreterResult.Type type;
-  String data;
-  MessageColumnTypes msgColumnTypes;
+public class MessageColumnTypes implements Serializable {
+  List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
 
-  public InterpreterResultMessage(InterpreterResult.Type type, String data) {
-    this.type = type;
-    this.data = data;
-    this.msgColumnTypes = new MessageColumnTypes();
+  public MessageColumnTypes() {
+
   }
 
-  public InterpreterResultMessage(InterpreterResult.Type type, String data,
-                                  List<ColumnDef.TYPE> columnTypes) {
-    this.type = type;
-    this.data = data;
-    this.msgColumnTypes = new MessageColumnTypes(columnTypes);
-  }
-
-  public InterpreterResult.Type getType() {
-    return type;
-  }
-
-  public String getData() {
-    return data;
+  public MessageColumnTypes(Collection<ColumnDef.TYPE> types) {
+    columnTypes.addAll(types);
   }
 
   public List<ColumnDef.TYPE> getListOfColumnTypes() {
-    return msgColumnTypes.getListOfColumnTypes();
-  }
-
-  public MessageColumnTypes getMessageColumnTypes() {
-    return msgColumnTypes;
+    return columnTypes;
   }
 
   public String toString() {
-    return "%" + type.name().toLowerCase() + " " + data;
+    if (columnTypes.isEmpty()) {
+      return "Type is unknown";
+    } else {
+      return StringUtils.join(columnTypes, ", ");
+    }
   }
 }

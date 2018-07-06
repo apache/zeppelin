@@ -606,7 +606,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
       case REAL:
       case TINYINT:
       case SMALLINT:
-        return ColumnDef.TYPE.LONG;
+        return ColumnDef.TYPE.NUMBER;
       default:
         return ColumnDef.TYPE.STRING;
     }

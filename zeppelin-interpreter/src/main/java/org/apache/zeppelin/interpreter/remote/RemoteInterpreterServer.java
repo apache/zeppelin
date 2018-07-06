@@ -657,13 +657,11 @@ public class RemoteInterpreterServer extends Thread
                 context.getParagraphId(),
                 WellKnownResourceName.ZeppelinTableResult.toString(),
                 lastMessage);
-            if (!lastMessage.getColumnTypes().isEmpty()) {
-              context.getResourcePool().put(
-                  context.getNoteId(),
-                  context.getParagraphId(),
-                  WellKnownResourceName.ZeppelinTableType.toString(),
-                  lastMessage.getColumnTypes());
-            }
+            context.getResourcePool().put(
+                context.getNoteId(),
+                context.getParagraphId(),
+                WellKnownResourceName.ZeppelinTableType.toString(),
+                lastMessage.getMessageColumnTypes());
           }
         }
         return new InterpreterResult(result.code(), resultMessages);

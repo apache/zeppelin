@@ -41,7 +41,7 @@ public class InterpreterResultTableData implements TableData, Serializable {
       String[] headerRow = lines[0].split("\t");
       columnDef = new ColumnDef[headerRow.length];
 
-      List<ColumnDef.TYPE> columnTypes = msg.getColumnTypes();
+      List<ColumnDef.TYPE> columnTypes = msg.getListOfColumnTypes();
       if (columnTypes.isEmpty()) {
         for (int i = 0; i < headerRow.length; i++) {
           columnDef[i] = new ColumnDef(headerRow[i], ColumnDef.TYPE.STRING);
