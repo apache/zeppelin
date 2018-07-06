@@ -47,6 +47,7 @@ public class InterpreterContext {
   }
 
   private String noteId;
+  private String noteName;
   private String replName;
   private String paragraphTitle;
   private String paragraphId;
@@ -74,6 +75,11 @@ public class InterpreterContext {
 
     public Builder setNoteId(String noteId) {
       context.noteId = noteId;
+      return this;
+    }
+
+    public Builder setNoteName(String noteName) {
+      context.noteName = noteName;
       return this;
     }
 
@@ -169,6 +175,10 @@ public class InterpreterContext {
 
   public String getNoteId() {
     return noteId;
+  }
+
+  public String getNoteName() {
+    return noteName;
   }
 
   public String getReplName() {
