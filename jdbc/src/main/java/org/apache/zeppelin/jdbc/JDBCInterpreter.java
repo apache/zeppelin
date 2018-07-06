@@ -14,24 +14,14 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static java.sql.Types.BIGINT;
-import static java.sql.Types.DATE;
-import static java.sql.Types.DECIMAL;
-import static java.sql.Types.DOUBLE;
-import static java.sql.Types.FLOAT;
-import static java.sql.Types.INTEGER;
-import static java.sql.Types.NUMERIC;
-import static java.sql.Types.REAL;
-import static java.sql.Types.SMALLINT;
-import static java.sql.Types.TIME;
-import static java.sql.Types.TIME_WITH_TIMEZONE;
-import static java.sql.Types.TIMESTAMP;
-import static java.sql.Types.TIMESTAMP_WITH_TIMEZONE;
-import static java.sql.Types.TINYINT;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
+import static org.apache.zeppelin.jdbc.JDBCUtils.getResultColumnTypes;
+import static org.apache.zeppelin.jdbc.JDBCUtils.getResults;
+import static org.apache.zeppelin.jdbc.JDBCUtils.isDDLCommand;
+import static org.apache.zeppelin.jdbc.JDBCUtils.splitSqlQueries;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -56,7 +46,6 @@ import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -131,9 +120,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String STATEMENT_PRECODE_KEY_TEMPLATE = "%s.statementPrecode";
   static final String DOT = ".";
 
-  private static final char WHITESPACE = ' ';
-  private static final char NEWLINE = '\n';
-  private static final char TAB = '\t';
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
@@ -144,8 +130,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
   static final String DEFAULT_STATEMENT_PRECODE = DEFAULT_KEY + DOT + STATEMENT_PRECODE_KEY;
-
-  static final String EMPTY_COLUMN_VALUE = "";
 
   private static final String CONCURRENT_EXECUTION_KEY = "zeppelin.jdbc.concurrent.use";
   private static final String CONCURRENT_EXECUTION_COUNT =
@@ -539,148 +523,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     return null;
   }
 
-  private String getResults(ResultSet resultSet, MutableBoolean isComplete)
-      throws SQLException {
-    ResultSetMetaData md = resultSet.getMetaData();
-    StringBuilder msg;
-    msg = new StringBuilder();
-
-    for (int i = 1; i < md.getColumnCount() + 1; i++) {
-      if (i > 1) {
-        msg.append(TAB);
-      }
-      msg.append(replaceReservedChars(md.getColumnName(i)));
-    }
-    msg.append(NEWLINE);
-
-    int displayRowCount = 0;
-    while (resultSet.next()) {
-      if (displayRowCount >= getMaxResult()) {
-        isComplete.setValue(false);
-        break;
-      }
-      for (int i = 1; i < md.getColumnCount() + 1; i++) {
-        Object resultObject;
-        String resultValue;
-        resultObject = resultSet.getObject(i);
-        if (resultObject == null) {
-          resultValue = "null";
-        } else {
-          resultValue = resultSet.getString(i);
-        }
-        msg.append(replaceReservedChars(resultValue));
-        if (i != md.getColumnCount()) {
-          msg.append(TAB);
-        }
-      }
-      msg.append(NEWLINE);
-      displayRowCount++;
-    }
-    return msg.toString();
-  }
-
-  private List<ColumnDef.TYPE> getResultColumnTypes(ResultSet resultSet) throws SQLException {
-    List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
-    ResultSetMetaData md = resultSet.getMetaData();
-    for (int i = 1; i < md.getColumnCount() + 1; i++) {
-      final ColumnDef.TYPE columnType = castSqlTypeToColumnType(md.getColumnType(i));
-      columnTypes.add(columnType);
-    }
-    return columnTypes;
-  }
-
-  private ColumnDef.TYPE castSqlTypeToColumnType(int t) {
-    switch(t) {
-      case DATE:
-      case TIME:
-      case TIME_WITH_TIMEZONE:
-      case TIMESTAMP:
-      case TIMESTAMP_WITH_TIMEZONE:
-        return ColumnDef.TYPE.DATE;
-      case BIGINT:
-      case DECIMAL:
-      case DOUBLE:
-      case FLOAT:
-      case INTEGER:
-      case NUMERIC:
-      case REAL:
-      case TINYINT:
-      case SMALLINT:
-        return ColumnDef.TYPE.NUMBER;
-      default:
-        return ColumnDef.TYPE.STRING;
-    }
-  }
-
-  private boolean isDDLCommand(int updatedCount, int columnCount) throws SQLException {
-    return updatedCount < 0 && columnCount <= 0 ? true : false;
-  }
-
-  /*
-  inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
-    pgadmin/dlg/dlgProperty.cpp#L999-L1045
-   */
-  protected ArrayList<String> splitSqlQueries(String sql) {
-    ArrayList<String> queries = new ArrayList<>();
-    StringBuilder query = new StringBuilder();
-    char character;
-
-    Boolean multiLineComment = false;
-    Boolean singleLineComment = false;
-    Boolean quoteString = false;
-    Boolean doubleQuoteString = false;
-
-    for (int item = 0; item < sql.length(); item++) {
-      character = sql.charAt(item);
-
-      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
-        singleLineComment = false;
-      }
-
-      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
-        multiLineComment = false;
-      }
-
-      if (character == '\'') {
-        if (quoteString) {
-          quoteString = false;
-        } else if (!doubleQuoteString) {
-          quoteString = true;
-        }
-      }
-
-      if (character == '"') {
-        if (doubleQuoteString && item > 0) {
-          doubleQuoteString = false;
-        } else if (!quoteString) {
-          doubleQuoteString = true;
-        }
-      }
-
-      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
-          && sql.length() > item + 1) {
-        if (character == '-' && sql.charAt(item + 1) == '-') {
-          singleLineComment = true;
-        } else if (character == '/' && sql.charAt(item + 1) == '*') {
-          multiLineComment = true;
-        }
-      }
-
-      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
-          && !singleLineComment) {
-        queries.add(StringUtils.trim(query.toString()));
-        query = new StringBuilder();
-      } else if (item == sql.length() - 1) {
-        query.append(character);
-        queries.add(StringUtils.trim(query.toString()));
-      } else {
-        query.append(character);
-      }
-    }
-
-    return queries;
-  }
-
   public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
     InterpreterResult interpreterResult = null;
     for (String propertyKey : basePropretiesMap.keySet()) {
@@ -770,7 +612,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
             } else {
               MutableBoolean isComplete = new MutableBoolean(true);
 
-              String results = getResults(resultSet, isComplete);
+              String results = getResults(resultSet, isComplete, getMaxResult());
               List<ColumnDef.TYPE> columnTypes = getResultColumnTypes(resultSet);
 
               final Boolean isTable = !containsIgnoreCase(sqlToExecute, EXPLAIN_PREDICATE);
@@ -823,16 +665,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
       getJDBCConfiguration(user).removeStatement(paragraphId);
     }
     return interpreterResult;
-  }
-
-  /**
-   * For %table response replace Tab and Newline characters from the content.
-   */
-  private String replaceReservedChars(String str) {
-    if (str == null) {
-      return EMPTY_COLUMN_VALUE;
-    }
-    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
   @Override
