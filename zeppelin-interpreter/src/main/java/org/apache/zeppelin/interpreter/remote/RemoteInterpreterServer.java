@@ -758,6 +758,8 @@ public class RemoteInterpreterServer extends Thread
         .setLocalProperties(ric.getLocalProperties())
         .setAuthenticationInfo(AuthenticationInfo.fromJson(ric.getAuthenticationInfo()))
         .setGUI(GUI.fromJson(ric.getGui()))
+        .setConfig(gson.fromJson(ric.getConfig(),
+                   new TypeToken<Map<String, Object>>() {}.getType()))
         .setNoteGUI(GUI.fromJson(ric.getNoteGui()))
         .setAngularObjectRegistry(interpreterGroup.getAngularObjectRegistry())
         .setResourcePool(interpreterGroup.getResourcePool())
