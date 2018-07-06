@@ -155,11 +155,9 @@ public class NewSparkInterpreterTest {
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
     result = interpreter.interpret(
-        "case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)\n",
-        getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    result = interpreter.interpret(
+        "case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)\n" +
         "val bank = bankText.map(s=>s.split(\";\")).filter(s => s(0)!=\"\\\"age\\\"\").map(\n" +
             "    s => Bank(s(0).toInt, \n" +
             "            s(1).replaceAll(\"\\\"\", \"\"),\n" +
@@ -167,7 +165,7 @@ public class NewSparkInterpreterTest {
             "            s(3).replaceAll(\"\\\"\", \"\"),\n" +
             "            s(5).replaceAll(\"\\\"\", \"\").toInt\n" +
             "        )\n" +
-            ")", getInterpreterContext());
+            ").toDF()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // spark version
@@ -407,6 +405,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
 
+    InterpreterContext.set(getInterpreterContext());
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));

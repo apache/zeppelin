@@ -170,7 +170,8 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
       msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult,
           SparkSqlInterpreter.MAX_RESULTS));
     }
-
+    // append %text at the end, otherwise the following output will be put in table as well.
+    msg.append("\n%text ");
     sc.clearJobGroup();
     return msg.toString();
   }
