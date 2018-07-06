@@ -44,6 +44,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +99,10 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Statement statement = connection.createStatement();
     statement.execute(
         "DROP TABLE IF EXISTS test_table; " +
-        "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+        "CREATE TABLE test_table(id varchar(255), name varchar(255));" +
+        "DROP TABLE IF EXISTS test_table_types;" +
+        "CREATE TABLE test_table_types(id integer, name varchar(255), test_date date);"
+    );
 
     PreparedStatement insertStatement = connection.prepareStatement(
             "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
@@ -158,8 +162,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
     assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.emptyList(),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -192,8 +194,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -225,14 +225,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("'Atext;B'\nAtext;B\n", interpreterResult.message().get(1).getData());
     assertEquals("'\\'\t';'\n\\\t;\n", interpreterResult.message().get(2).getData());
     assertEquals("''''\t';'\n'\t;\n", interpreterResult.message().get(3).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
-    assertEquals(Collections.singletonList(ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(1).getListOfColumnTypes());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(2).getListOfColumnTypes());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(3).getListOfColumnTypes());
   }
 
   @Test
@@ -257,13 +249,9 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
         interpreterResult.message().get(0).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
 
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
     assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(1).getListOfColumnTypes());
   }
 
   @Test
@@ -287,8 +275,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
             interpreterResult.message().get(0).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -310,8 +296,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\nc\tnull\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
 
@@ -334,12 +318,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
     assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
     assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
-    assertEquals(Collections.emptyList(),
-        interpreterResult.message().get(1).getListOfColumnTypes());
   }
 
   @Test
@@ -506,8 +486,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\n1\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.singletonList(ColumnDef.TYPE.NUMBER),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -558,8 +536,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\n2\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.singletonList(ColumnDef.TYPE.NUMBER),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -580,8 +556,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("@V\nstatement\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.singletonList(ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -629,8 +603,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("@V\nstatementAnotherPrefix\n", interpreterResult.message().get(0).getData());
-    assertEquals(Collections.singletonList(ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 
   @Test
@@ -660,5 +632,47 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(3, interpreterResult.message().size());
+  }
+
+  @Test
+  public void testSelectQueryTypes() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
+        interpreterResult.message().get(0).getListOfColumnTypes());
+  }
+
+  @Test
+  public void testSelectQueryWithAllTypes() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table_types";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(Arrays.asList(ColumnDef.TYPE.NUMBER, ColumnDef.TYPE.STRING, ColumnDef.TYPE.DATE),
+        interpreterResult.message().get(0).getListOfColumnTypes());
   }
 }
