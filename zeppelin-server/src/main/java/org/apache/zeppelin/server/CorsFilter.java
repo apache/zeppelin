@@ -21,9 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -75,9 +72,7 @@ public class CorsFilter implements Filter {
     response.setHeader("Access-Control-Allow-Credentials", "true");
     response.setHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
     response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
-    DateFormat fullDateFormatEN =
-        DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, new Locale("EN", "en"));
-    response.setHeader("Date", fullDateFormatEN.format(new Date()));
+
     ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
     response.setHeader("X-FRAME-OPTIONS", zeppelinConfiguration.getXFrameOptions());
     if (zeppelinConfiguration.useSsl()) {
