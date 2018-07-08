@@ -16,8 +16,38 @@
  */
 package org.apache.zeppelin.socket;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static java.util.Arrays.asList;
+
 import com.google.gson.Gson;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -33,26 +63,9 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import javax.servlet.http.HttpServletRequest;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 
 /**
- * Basic REST API tests for notebookServer
+ * Basic REST API tests for notebookServer.
  */
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
@@ -96,13 +109,81 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException, InterruptedException {
+  public void testCollaborativeEditing() throws IOException {
+    if (!ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+      return;
+    }
+    NotebookSocket sock1 = createWebSocket();
+    NotebookSocket sock2 = createWebSocket();
+
+    String noteName = "Note with millis " + System.currentTimeMillis();
+    notebookServer.onMessage(sock1, new Message(OP.NEW_NOTE).put("name", noteName).toJson());
+    Note createdNote = null;
+    for (Note note : notebook.getAllNotes()) {
+      if (note.getName().equals(noteName)) {
+        createdNote = note;
+        break;
+      }
+    }
+
+    Message message = new Message(OP.GET_NOTE).put("id", createdNote.getId());
+    notebookServer.onMessage(sock1, message.toJson());
+    notebookServer.onMessage(sock2, message.toJson());
+
+    Paragraph paragraph = createdNote.getParagraphs().get(0);
+    String paragraphId = paragraph.getId();
+
+    String[] patches = new String[]{
+        "@@ -0,0 +1,3 @@\n+ABC\n",            // ABC
+        "@@ -1,3 +1,4 @@\n ABC\n+%0A\n",      // press Enter
+        "@@ -1,4 +1,7 @@\n ABC%0A\n+abc\n",   // abc
+        "@@ -1,7 +1,45 @@\n ABC\n-%0Aabc\n+ ssss%0Aabc ssss\n" // add text in two string
+    };
+
+    int sock1SendCount = 0;
+    int sock2SendCount = 0;
+    reset(sock1);
+    reset(sock2);
+    patchParagraph(sock1, paragraphId, patches[0]);
+    assertEquals("ABC", paragraph.getText());
+    verify(sock1, times(sock1SendCount)).send(anyString());
+    verify(sock2, times(++sock2SendCount)).send(anyString());
+
+    patchParagraph(sock2, paragraphId, patches[1]);
+    assertEquals("ABC\n", paragraph.getText());
+    verify(sock1, times(++sock1SendCount)).send(anyString());
+    verify(sock2, times(sock2SendCount)).send(anyString());
+
+    patchParagraph(sock1, paragraphId, patches[2]);
+    assertEquals("ABC\nabc", paragraph.getText());
+    verify(sock1, times(sock1SendCount)).send(anyString());
+    verify(sock2, times(++sock2SendCount)).send(anyString());
+
+    patchParagraph(sock2, paragraphId, patches[3]);
+    assertEquals("ABC ssss\nabc ssss", paragraph.getText());
+    verify(sock1, times(++sock1SendCount)).send(anyString());
+    verify(sock2, times(sock2SendCount)).send(anyString());
+
+    notebook.removeNote(createdNote.getId(), anonymous);
+  }
+
+  private void patchParagraph(NotebookSocket noteSocket, String paragraphId, String patch) {
+    Message message = new Message(OP.PATCH_PARAGRAPH);
+    message.put("patch", patch);
+    message.put("id", paragraphId);
+    notebookServer.onMessage(noteSocket, message.toJson());
+  }
+
+  @Test
+  public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent()
+          throws IOException, InterruptedException {
     // create a notebook
     Note note1 = notebook.createNote(anonymous);
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId());
+    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
+            .getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
         interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
@@ -117,12 +198,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     note1.run(p1.getId());
 
     // wait for paragraph finished
-    while(true) {
+    while (true) {
       if (p1.getStatus() == Job.Status.FINISHED) {
         break;
       }
       Thread.sleep(100);
     }
+    // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
+    Thread.sleep(1000);
 
     // add angularObject
     interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
@@ -180,7 +263,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     assertNotEquals(null, notebook.getNote(note.getId()));
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
-    assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
+    assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0)
+            .getText());
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -203,16 +287,17 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
     when(note.getParagraph("paragraphId")).thenReturn(paragraph);
 
-
     final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
     final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
     mdGroup.setAngularObjectRegistry(mdRegistry);
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+            "paragraphId");
 
-    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
+    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId"))
+            .thenReturn(ao1);
 
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
@@ -258,8 +343,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+            "paragraphId");
 
     when(mdRegistry.add(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
@@ -304,7 +389,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+            "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
@@ -349,7 +435,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
+    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
+            "paragraphId");
 
     when(mdRegistry.remove(varName, "noteId", "paragraphId")).thenReturn(ao1);
 
@@ -394,8 +481,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
         .put("name", noteName)
         .put("defaultInterpreterId", defaultInterpreterId).toJson());
 
+    int sendCount = 2;
+    if (ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
+      sendCount++;
+    }
     // expect the events are broadcasted properly
-    verify(sock1, times(2)).send(anyString());
+    verify(sock1, times(sendCount)).send(anyString());
 
     Note createdNote = null;
     for (Note note : notebook.getAllNotes()) {
@@ -417,6 +508,4 @@ public class NotebookServerTest extends AbstractTestRestApi {
     when(sock.getRequest()).thenReturn(mockRequest);
     return sock;
   }
-
 }
-

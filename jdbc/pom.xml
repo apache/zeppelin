@@ -100,7 +100,7 @@
         <dependency>
           <groupId>xerces</groupId>
           <artifactId>xercesImpl</artifactId>
-          <version>2.11.0</version>
+          <version>2.11.0.SP5</version>
         </dependency>
       </dependencies>
     </profile>
@@ -361,6 +361,13 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -13,17 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Install Node.js from the official Node.js
+# Install Node.js from package
 ---
 
-- name: Download official Linux x64 distribution from Node.js
-  get_url: url=http://nodejs.org/dist/v0.12.8/node-v0.12.8-linux-x64.tar.gz dest=/tmp/node-v0.12.8-linux-x64.tar.gz
-
-- name: Unpack node
-  unarchive: src=/tmp/node-v0.12.8-linux-x64.tar.gz dest=/tmp/ copy=no
-
 - name: Install Node.js
-  command: tar -C /usr/local --strip-components 1 -xzf /tmp/node-v0.12.8-linux-x64.tar.gz
-  args:
-    creates: /usr/local/bin/node
+  apt: pkg=nodejs state=present
+
+- name: Install npm
+  apt: pkg=npm state=present
 

@@ -53,15 +53,7 @@
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
 
-
-    <spark.archive>spark-${spark.version}</spark.archive>
-    <spark.src.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
-    </spark.src.download.url>
-    <spark.bin.download.url>
-      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
-    </spark.bin.download.url>
-
+    
   </properties>
 
   <dependencies>
@@ -86,6 +78,18 @@
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark1-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark2-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -126,6 +130,18 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>2.6.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -437,14 +453,14 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx1536m -XX:MaxPermSize=256m</argLine>
           <excludes>
             <exclude>**/SparkRInterpreterTest.java</exclude>
             <exclude>${pyspark.test.exclude}</exclude>
             <exclude>${tests.to.exclude}</exclude>
           </excludes>
           <environmentVariables>
-            <PYTHONPATH>${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip:${project.build.directory}/../../../interpreter/lib/python/:${project.build.directory}/../../../interpreter/spark/pyspark/py4j-${py4j.version}-src.zip:.</PYTHONPATH>
+            <PYTHONPATH>${project.build.directory}/../../../interpreter/spark/pyspark/pyspark.zip:${project.build.directory}/../../../interpreter/spark/pyspark/py4j-${py4j.version}-src.zip</PYTHONPATH>
             <ZEPPELIN_HOME>${basedir}/../../</ZEPPELIN_HOME>
           </environmentVariables>
         </configuration>
@@ -483,8 +499,8 @@
               <shadedPattern>org.apache.zeppelin.com.google</shadedPattern>
             </relocation>
             <relocation>
-              <pattern>py4j.</pattern>
-              <shadedPattern>org.apache.zeppelin.py4j.</shadedPattern>
+              <pattern>com.facebook.fb303</pattern>
+              <shadedPattern>org.apache.zeppelin.com.facebook.fb303</shadedPattern>
             </relocation>
           </relocations>
         </configuration>

@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.livy;
 
 import java.util.Properties;
 
 /**
- * Base class for PySpark Interpreter
+ * Base class for PySpark Interpreter.
  */
 public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
 
@@ -32,7 +31,7 @@ public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
   @Override
   protected String extractAppId() throws LivyException {
     return extractStatementResult(
-        interpret("sc.applicationId", null, false, false).message()
+        interpret("sc.applicationId", null, false, false, false).message()
             .get(0).getData());
   }
 
@@ -40,7 +39,7 @@ public abstract class LivyPySparkBaseInterpreter extends BaseLivyInterpreter {
   protected String extractWebUIAddress() throws LivyException {
     return extractStatementResult(
         interpret(
-            "sc._jsc.sc().ui().get().appUIAddress()", null, false, false)
+            "sc._jsc.sc().ui().get().appUIAddress()", null, false, false, false)
             .message().get(0).getData());
   }
 

@@ -23,10 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -34,7 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -42,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +50,7 @@ import java.util.Properties;
  */
 public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NewSparkInterpreter.class);
 
   private BaseSparkScalaInterpreter innerInterpreter;
   private Map<String, String> innerInterpreterClassMap = new HashMap<>();
@@ -69,6 +63,7 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   private SparkVersion sparkVersion;
   private boolean enableSupportedVersionCheck;
   private String sparkUrl;
+  private SparkShims sparkShims;
 
   private static InterpreterHookRegistry hooks;
 
@@ -86,7 +81,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     try {
       String scalaVersion = extractScalaVersion();
       LOGGER.info("Using Scala Version: " + scalaVersion);
-      setupConfForPySpark();
       SparkConf conf = new SparkConf();
       for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (!StringUtils.isBlank(entry.getValue().toString())) {
@@ -101,9 +95,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
       String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
       Class clazz = Class.forName(innerIntpClassName);
-      this.innerInterpreter =
-          (BaseSparkScalaInterpreter) clazz.getConstructor(SparkConf.class, List.class)
-              .newInstance(conf, getDependencyFiles());
+      this.innerInterpreter = (BaseSparkScalaInterpreter)
+          clazz.getConstructor(SparkConf.class, List.class, Boolean.class)
+              .newInstance(conf, getDependencyFiles(),
+                  Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
       this.innerInterpreter.open();
 
       sc = this.innerInterpreter.sc();
@@ -116,66 +111,28 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       }
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
-      sparkUrl = this.innerInterpreter.sparkUrl();
-      setupListeners();
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
       this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
           Lists.newArrayList("@transient"));
+
+      sparkUrl = this.innerInterpreter.sparkUrl();
+      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
     } catch (Exception e) {
-      LOGGER.error(ExceptionUtils.getStackTrace(e));
+      LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
     }
-  }
-
-  private void setupConfForPySpark() {
-    String sparkHome = getProperty("SPARK_HOME");
-    File pysparkFolder = null;
-    if (sparkHome == null) {
-      String zeppelinHome =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../../")
-              .getValue().toString();
-      pysparkFolder = new File(zeppelinHome,
-          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
-    } else {
-      pysparkFolder = new File(sparkHome, "python" + File.separator + "lib");
-    }
-
-    ArrayList<String> pysparkPackages = new ArrayList<>();
-    for (File file : pysparkFolder.listFiles()) {
-      if (file.getName().equals("pyspark.zip")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-      if (file.getName().startsWith("py4j-")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-    }
-
-    if (pysparkPackages.size() != 2) {
-      throw new RuntimeException("Not correct number of pyspark packages: " +
-          StringUtils.join(pysparkPackages, ","));
-    }
-    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
-    System.setProperty("spark.files", mergeProperty(System.getProperty("spark.files", ""),
-        StringUtils.join(pysparkPackages, ",")));
-    System.setProperty("spark.submit.pyFiles", mergeProperty(
-        System.getProperty("spark.submit.pyFiles", ""), StringUtils.join(pysparkPackages, ",")));
-
-  }
-
-  private String mergeProperty(String originalValue, String appendedValue) {
-    if (StringUtils.isBlank(originalValue)) {
-      return appendedValue;
-    }
-    return originalValue + "," + appendedValue;
   }
 
   @Override
   public void close() {
     LOGGER.info("Close SparkInterpreter");
-    innerInterpreter.close();
+    if (innerInterpreter != null) {
+      innerInterpreter.close();
+      innerInterpreter = null;
+    }
   }
 
   @Override
@@ -184,7 +141,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
     z.setInterpreterContext(context);
-    populateSparkWebUrl(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
     return innerInterpreter.interpret(st, context);
@@ -213,67 +169,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     return innerInterpreter.getProgress(Utils.buildJobGroupId(context), context);
   }
 
-  private void setupListeners() {
-    JobProgressListener pl = new JobProgressListener(sc.getConf()) {
-      @Override
-      public synchronized void onJobStart(SparkListenerJobStart jobStart) {
-        super.onJobStart(jobStart);
-        int jobId = jobStart.jobId();
-        String jobGroupId = jobStart.properties().getProperty("spark.jobGroup.id");
-        String uiEnabled = jobStart.properties().getProperty("spark.ui.enabled");
-        String jobUrl = getJobUrl(jobId);
-        String noteId = Utils.getNoteId(jobGroupId);
-        String paragraphId = Utils.getParagraphId(jobGroupId);
-        // Button visible if Spark UI property not set, set as invalid boolean or true
-        java.lang.Boolean showSparkUI =
-            uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
-        if (showSparkUI && jobUrl != null) {
-          RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
-          Map<String, String> infos = new java.util.HashMap<>();
-          infos.put("jobUrl", jobUrl);
-          infos.put("label", "SPARK JOB");
-          infos.put("tooltip", "View in Spark web UI");
-          if (eventClient != null) {
-            eventClient.onParaInfosReceived(noteId, paragraphId, infos);
-          }
-        }
-      }
-
-      private String getJobUrl(int jobId) {
-        String jobUrl = null;
-        if (sparkUrl != null) {
-          jobUrl = sparkUrl + "/jobs/job?id=" + jobId;
-        }
-        return jobUrl;
-      }
-    };
-    try {
-      Object listenerBus = sc.getClass().getMethod("listenerBus").invoke(sc);
-      Method[] methods = listenerBus.getClass().getMethods();
-      Method addListenerMethod = null;
-      for (Method m : methods) {
-        if (!m.getName().equals("addListener")) {
-          continue;
-        }
-        Class<?>[] parameterTypes = m.getParameterTypes();
-        if (parameterTypes.length != 1) {
-          continue;
-        }
-        if (!parameterTypes[0].isAssignableFrom(JobProgressListener.class)) {
-          continue;
-        }
-        addListenerMethod = m;
-        break;
-      }
-      if (addListenerMethod != null) {
-        addListenerMethod.invoke(listenerBus, pl);
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      LOGGER.error(e.toString(), e);
-    }
-  }
-
   public SparkZeppelinContext getZeppelinContext() {
     return this.z;
   }
@@ -300,7 +195,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    Interpreter p = getParentSparkInterpreter()
+        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
     if (p == null) {
       return null;
     }
@@ -317,28 +213,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       return "2.10";
     } else {
       return "2.11";
-    }
-  }
-
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("url", sparkUrl);
-    String uiEnabledProp = properties.getProperty("spark.ui.enabled", "true");
-    java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
-        uiEnabledProp.trim());
-    if (!uiEnabled) {
-      infos.put("message", "Spark UI disabled");
-    } else {
-      if (StringUtils.isNotBlank(sparkUrl)) {
-        infos.put("message", "Spark UI enabled");
-      } else {
-        infos.put("message", "No spark url defined");
-      }
-    }
-    if (ctx != null && ctx.getClient() != null) {
-      LOGGER.debug("Sending metadata to Zeppelin server: {}", infos.toString());
-      getZeppelinContext().setEventClient(ctx.getClient());
-      ctx.getClient().onMetaInfosReceived(infos);
     }
   }
 

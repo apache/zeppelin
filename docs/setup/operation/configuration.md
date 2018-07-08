@@ -27,7 +27,7 @@ limitations under the License.
 There are two locations you can configure Apache Zeppelin.
 
 * **Environment variables** can be defined `conf/zeppelin-env.sh`(`conf\zeppelin-env.cmd` for Windows).
-* **Java properties** can ba defined in `conf/zeppelin-site.xml`.
+* **Java properties** can be defined in `conf/zeppelin-site.xml`.
 
 If both are defined, then the **environment variables** will take priority.
 > Mouse hover on each property and click <i class="fa fa-link fa-flip-horizontal"></i> then you can get a link for that.
@@ -100,6 +100,12 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.server.context.path</h6></td>
     <td>/</td>
     <td>Context path of the web application</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.collaborative.mode.enable</h6></td>
+    <td>true</td>
+    <td>Enable basic opportunity for collaborative editing. Does not change the logic of operation if the note is used by one person.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_SSL</h6></td>
@@ -329,6 +335,30 @@ If both are defined, then the **environment variables** will take priority.
     <td>false</td>
     <td>Enable directory listings on server.</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.url</h6></td>
+    <td></td>
+    <td>GitHub's repository URL. It could be either the HTTP URL or the SSH URL. For example git@github.com:apache/zeppelin.git</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.username</h6></td>
+    <td>token</td>
+    <td>GitHub username. By default it is `token` to use GitHub's API</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.access-token</h6></td>
+    <td>token</td>
+    <td>GitHub access token to use GitHub's API. If username/password combination is used and not GitHub API, then this value is the password</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN</h6></td>
+    <td><h6 class="properties">zeppelin.notebook.git.remote.origin</h6></td>
+    <td>token</td>
+    <td>GitHub remote name. Default is `origin`</td>
+  </tr>
 </table>
 
 
@@ -344,8 +374,9 @@ A condensed example can be found in the top answer to this [StackOverflow post](
 
 The keystore holds the private key and certificate on the server end. The trustore holds the trusted client certificates. Be sure that the path and password for these two stores are correctly configured in the password fields below. They can be obfuscated using the Jetty password tool. After Maven pulls in all the dependency to build Zeppelin, one of the Jetty jars contain the Password tool. Invoke this command from the Zeppelin home build directory with the appropriate version, user, and password.
 
-```
-java -cp ./zeppelin-server/target/lib/jetty-all-server-<version>.jar org.eclipse.jetty.util.security.Password <user> <password>
+```bash
+java -cp ./zeppelin-server/target/lib/jetty-all-server-<version>.jar \
+org.eclipse.jetty.util.security.Password <user> <password>
 ```
 
 If you are using a self-signed, a certificate signed by an untrusted CA, or if client authentication is enabled, then the client must have a browser create exceptions for both the normal HTTPS port and WebSocket port. This can by done by trying to establish an HTTPS connection to both ports in a browser (e.g. if the ports are 443 and 8443, then visit https://127.0.0.1:443 and https://127.0.0.1:8443). This step can be skipped if the server certificate is signed by a trusted CA and client auth is disabled.
@@ -354,7 +385,7 @@ If you are using a self-signed, a certificate signed by an untrusted CA, or if c
 
 The following properties needs to be updated in the `zeppelin-site.xml` in order to enable server side SSL.
 
-```
+```xml
 <property>
   <name>zeppelin.server.ssl.port</name>
   <value>8443</value>
@@ -397,7 +428,7 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 
 The following properties needs to be updated in the `zeppelin-site.xml` in order to enable client side certificate authentication.
 
-```
+```xml
 <property>
   <name>zeppelin.server.ssl.port</name>
   <value>8443</value>
@@ -431,13 +462,13 @@ The following properties needs to be updated in the `zeppelin-site.xml` in order
 
 ### Storing user credentials
 
-In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
+In order to avoid having to re-enter credentials every time you restart/redeploy Zeppelin, you can store the user credentials. Zeppelin supports this via the ZEPPELIN_CREDENTIALS_PERSIST configuration.
 
 Please notice that passwords will be stored in *plain text* by default. To encrypt the passwords, use the ZEPPELIN_CREDENTIALS_ENCRYPT_KEY config variable. This will encrypt passwords using the AES-128 algorithm.
 
 You can generate an appropriate encryption key any way you'd like - for instance, by using the openssl tool:
 
-```
+```bash
 openssl enc -aes-128-cbc -k secret -P -md sha1
 ```
 
@@ -452,7 +483,7 @@ The Password tool documentation can be found [here](http://www.eclipse.org/jetty
 
 After using the tool:
 
-```
+```bash
 java -cp $ZEPPELIN_HOME/zeppelin-server/target/lib/jetty-util-9.2.15.v20160210.jar \
          org.eclipse.jetty.util.security.Password  \
          password
@@ -465,7 +496,7 @@ MD5:5f4dcc3b5aa765d61d8327deb882cf99
 
 update your configuration with the obfuscated password :
 
-```
+```xml
 <property>
   <name>zeppelin.ssl.keystore.password</name>
   <value>OBF:1v2j1uum1xtv1zej1zer1xtn1uvk1v1v</value>
@@ -473,5 +504,9 @@ update your configuration with the obfuscated password :
 </property>
 ```
 
+### Create GitHub Access Token
+
+When using GitHub to track notebooks, one can use GitHub's API for authentication. To create an access token, please use the following link https://github.com/settings/tokens.
+The value of the access token generated is set in the `zeppelin.notebook.git.remote.access-token` property.
 
 **Note:** After updating these configurations, Zeppelin server needs to be restarted.

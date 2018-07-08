@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,17 +23,9 @@ import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.util.JdbcUtils;
-import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
-import org.apache.zeppelin.realm.LdapRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,17 +34,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingEnumeration;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
+import javax.sql.DataSource;
+
+import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
+import org.apache.zeppelin.realm.LdapRealm;
+
 /**
  * This is class which help fetching users from different realms.
  * getUserList() function is overloaded and according to the realm passed to the function it
  * extracts users from its respective realm
  */
 public class GetUserList {
-
   private static final Logger LOG = LoggerFactory.getLogger(GetUserList.class);
 
   /**
-   * function to extract users from shiro.ini
+   * Function to extract users from shiro.ini.
    */
   public List<String> getUserList(IniRealm r) {
     List<String> userList = new ArrayList<>();
@@ -70,7 +70,8 @@ public class GetUserList {
 
 
   /***
-   * Get user roles from shiro.ini
+   * Get user roles from shiro.ini.
+   *
    * @param r
    * @return
    */
@@ -88,18 +89,19 @@ public class GetUserList {
   }
 
   /**
-   * function to extract users from LDAP
+   * Function to extract users from LDAP.
    */
-  public List<String> getUserList(JndiLdapRealm r, String searchText) {
+  public List<String> getUserList(JndiLdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     String userDnTemplate = r.getUserDnTemplate();
     String userDn[] = userDnTemplate.split(",", 2);
     String userDnPrefix = userDn[0].split("=")[0];
     String userDnSuffix = userDn[1];
-    JndiLdapContextFactory CF = (JndiLdapContextFactory) r.getContextFactory();
+    JndiLdapContextFactory cf = (JndiLdapContextFactory) r.getContextFactory();
     try {
-      LdapContext ctx = CF.getSystemLdapContext();
+      LdapContext ctx = cf.getSystemLdapContext();
       SearchControls constraints = new SearchControls();
+      constraints.setCountLimit(numUsersToFetch);
       constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
       String[] attrIDs = {userDnPrefix};
       constraints.setReturningAttributes(attrIDs);
@@ -120,9 +122,9 @@ public class GetUserList {
   }
   
   /**
-   * function to extract users from Zeppelin LdapRealm
+   * Function to extract users from Zeppelin LdapRealm.
    */
-  public List<String> getUserList(LdapRealm r, String searchText) {
+  public List<String> getUserList(LdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     if (LOG.isDebugEnabled()) {
       LOG.debug("SearchText: " + searchText);
@@ -130,16 +132,17 @@ public class GetUserList {
     String userAttribute = r.getUserSearchAttributeName();
     String userSearchRealm = r.getUserSearchBase();
     String userObjectClass = r.getUserObjectClass();
-    JndiLdapContextFactory CF = (JndiLdapContextFactory) r.getContextFactory();
+    JndiLdapContextFactory cf = (JndiLdapContextFactory) r.getContextFactory();
     try {
-      LdapContext ctx = CF.getSystemLdapContext();
+      LdapContext ctx = cf.getSystemLdapContext();
       SearchControls constraints = new SearchControls();
       constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+      constraints.setCountLimit(numUsersToFetch);
       String[] attrIDs = {userAttribute};
       constraints.setReturningAttributes(attrIDs);
       NamingEnumeration result = ctx.search(userSearchRealm, "(&(objectclass=" + 
             userObjectClass + ")(" 
-            + userAttribute + "=" + searchText + "))", constraints);
+            + userAttribute + "=*" + searchText + "*))", constraints);
       while (result.hasMore()) {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userAttribute) != null) {
@@ -164,7 +167,8 @@ public class GetUserList {
   }
   
   /***
-   * Get user roles from shiro.ini for Zeppelin LdapRealm
+   * Get user roles from shiro.ini for Zeppelin LdapRealm.
+   *
    * @param r
    * @return
    */
@@ -184,13 +188,13 @@ public class GetUserList {
     }
     return roleList;
   }
-  
 
-  public List<String> getUserList(ActiveDirectoryGroupRealm r, String searchText) {
+  public List<String> getUserList(ActiveDirectoryGroupRealm r, String searchText,
+      int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     try {
       LdapContext ctx = r.getLdapContextFactory().getSystemLdapContext();
-      userList = r.searchForUserName(searchText, ctx);
+      userList = r.searchForUserName(searchText, ctx, numUsersToFetch);
     } catch (Exception e) {
       LOG.error("Error retrieving User list from ActiveDirectory Realm", e);
     }
@@ -198,7 +202,7 @@ public class GetUserList {
   }
 
   /**
-   * function to extract users from JDBCs
+   * Function to extract users from JDBCs.
    */
   public List<String> getUserList(JdbcRealm obj) {
     List<String> userlist = new ArrayList<>();
@@ -210,7 +214,7 @@ public class GetUserList {
     String retval[];
     String tablename = "";
     String username = "";
-    String userquery = "";
+    String userquery;
     try {
       dataSource = (DataSource) FieldUtils.readField(obj, "dataSource", true);
       authQuery = (String) FieldUtils.readField(obj, "authenticationQuery", true);
@@ -221,10 +225,11 @@ public class GetUserList {
         retval = retval[1].split("with|where", 2);
         tablename = retval[0];
         retval = retval[1].split("where", 2);
-        if (retval.length >= 2)
+        if (retval.length >= 2) {
           retval = retval[1].split("=", 2);
-        else
+        } else {
           retval = retval[0].split("=", 2);
+        }
         username = retval[0];
       }
 
@@ -233,7 +238,6 @@ public class GetUserList {
       }
 
       userquery = String.format("SELECT %s FROM %s", username, tablename);
-
     } catch (IllegalAccessException e) {
       LOG.error("Error while accessing dataSource for JDBC Realm", e);
       return null;
@@ -255,5 +259,4 @@ public class GetUserList {
     }
     return userlist;
   }
-
 }

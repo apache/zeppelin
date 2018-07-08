@@ -23,10 +23,6 @@ import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.crypto.hash.DefaultHashService;
-import org.apache.shiro.crypto.hash.Hash;
-import org.apache.shiro.crypto.hash.HashRequest;
-import org.apache.shiro.crypto.hash.HashService;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.jvnet.libpam.PAM;
@@ -39,11 +35,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * An {@code AuthorizingRealm} base on libpam4j.
+ * An {@code AuthorizingRealm} based on libpam4j.
  */
 public class PamRealm extends AuthorizingRealm {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRealm.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PamRealm.class);
 
   private String service;
 
@@ -62,8 +57,7 @@ public class PamRealm extends AuthorizingRealm {
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
-      throws AuthenticationException {
-
+          throws AuthenticationException {
     UsernamePasswordToken userToken = (UsernamePasswordToken) token;
     UnixUser user;
 
@@ -87,5 +81,4 @@ public class PamRealm extends AuthorizingRealm {
   public void setService(String service) {
     this.service = service;
   }
-
 }

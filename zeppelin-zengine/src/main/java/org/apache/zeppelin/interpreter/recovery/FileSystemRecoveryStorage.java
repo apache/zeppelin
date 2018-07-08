@@ -18,31 +18,19 @@
 package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.notebook.FileSystemStorage;
-import org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,11 +113,6 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
               interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
           // interpreterSettingManager may be null when this class is used when it is used
           // stop-interpreter.sh
-          if (interpreterSettingManager != null) {
-            client.setRemoteInterpreterEventPoller(new RemoteInterpreterEventPoller(
-                interpreterSettingManager.getRemoteInterpreterProcessListener(),
-                interpreterSettingManager.getAppEventListener()));
-          }
           clients.put(groupId, client);
           LOGGER.info("Recovering Interpreter Process: " + hostPort[0] + ":" + hostPort[1]);
         }

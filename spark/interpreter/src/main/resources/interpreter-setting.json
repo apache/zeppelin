@@ -78,7 +78,7 @@
       "zeppelin.spark.useNew": {
         "envName": null,
         "propertyName": "zeppelin.spark.useNew",
-        "defaultValue": "false",
+        "defaultValue": true,
         "description": "Whether use new spark interpreter implementation",
         "type": "checkbox"
       }
@@ -86,7 +86,8 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -108,6 +109,13 @@
         "description": "Show full exception stacktrace for SQL queries if set to true.",
         "type": "checkbox"
       },
+      "zeppelin.spark.sql.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
       "zeppelin.spark.maxResult": {
         "envName": "ZEPPELIN_SPARK_MAXRESULT",
         "propertyName": "zeppelin.spark.maxResult",
@@ -126,7 +134,8 @@
     "editor": {
       "language": "sql",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -152,7 +161,8 @@
     "editor": {
       "language": "scala",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -160,9 +170,16 @@
     "name": "pyspark",
     "className": "org.apache.zeppelin.spark.PySparkInterpreter",
     "properties": {
-      "zeppelin.pyspark.python": {
+      "PYSPARK_PYTHON": {
         "envName": "PYSPARK_PYTHON",
-        "propertyName": null,
+        "propertyName": "PYSPARK_PYTHON",
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with",
+        "type": "string"
+      },
+      "PYSPARK_DRIVER_PYTHON": {
+        "envName": "PYSPARK_DRIVER_PYTHON",
+        "propertyName": "PYSPARK_DRIVER_PYTHON",
         "defaultValue": "python",
         "description": "Python command to run pyspark with",
         "type": "string"
@@ -178,7 +195,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -188,7 +206,8 @@
     "properties": {},
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   },
   {
@@ -227,7 +246,8 @@
     },
     "editor": {
       "language": "r",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

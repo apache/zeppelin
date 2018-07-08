@@ -20,6 +20,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
@@ -29,7 +30,8 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+//import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -44,12 +46,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implements JobListenerFactory {
 
   private SchedulerFactory schedulerFactory;
-  private VFSNotebookRepo notebookRepo;
+  private NotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
   private AuthenticationInfo anonymous;
@@ -67,7 +70,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     }
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = mock(NotebookRepo.class);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
     notebook = new Notebook(
         conf,
@@ -229,8 +232,13 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%fake ");
 
     // make sure that p1's repl is null
-    Interpreter intp = p1.getBindedInterpreter();
-    assertEquals(intp, null);
+    Interpreter intp = null;
+    try {
+      intp = p1.getBindedInterpreter();
+      fail("Should throw InterpreterNotFoundException");
+    } catch (InterpreterNotFoundException e) {
+
+    }
 
     // Unbind all interpreter from note
     // NullPointerException shouldn't occur here
@@ -315,12 +323,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
       }
 
       @Override
-      public void beforeStatusChange(Job job, Job.Status before, Job.Status after) {
-
-      }
-
-      @Override
-      public void afterStatusChange(Job job, Job.Status before, Job.Status after) {
+      public void onStatusChange(Job job, Job.Status before, Job.Status after) {
 
       }
     };

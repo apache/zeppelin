@@ -17,22 +17,25 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.util.Map;
+
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.hamcrest.CoreMatchers;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KnoxRestApiTest extends AbstractTestRestApi {
+import java.io.IOException;
+import java.util.Map;
 
-  private String KNOX_COOKIE = "hadoop-jwt=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlzcyI6IktOT1hTU08iLCJleHAiOjE1MTM3NDU1MDd9.E2cWQo2sq75h0G_9fc9nWkL0SFMI5x_-Z0Zzr0NzQ86X4jfxliWYjr0M17Bm9GfPHRRR66s7YuYXa6DLbB4fHE0cyOoQnkfJFpU_vr1xhy0_0URc5v-Gb829b9rxuQfjKe-37hqbUdkwww2q6QQETVMvzp0rQKprUClZujyDvh0;";
+public class KnoxRestApiTest extends AbstractTestRestApi {
+  private final String knoxCookie = "hadoop-jwt=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlzcyI" +
+          "6IktOT1hTU08iLCJleHAiOjE1MTM3NDU1MDd9.E2cWQo2sq75h0G_9fc9nWkL0SFMI5x_-Z0Zzr0NzQ86X4jfx" +
+          "liWYjr0M17Bm9GfPHRRR66s7YuYXa6DLbB4fHE0cyOoQnkfJFpU_vr1xhy0_0URc5v-Gb829b9rxuQfjKe-37h" +
+          "qbUdkwww2q6QQETVMvzp0rQKprUClZujyDvh0;";
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
@@ -55,8 +58,7 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
   public void setUp() {
   }
 
-
-  @Test
+  //  @Test
   public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
     GetMethod loginWithoutCookie = httpGet("/api/security/ticket");
     Map result = gson.fromJson(loginWithoutCookie.getResponseBodyAsString(), Map.class);
@@ -70,7 +72,7 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
         ((Map) result.get("body")).get("redirectURL").toString(), CoreMatchers.equalTo(
             "https://domain.example.com/gateway/knoxsso/knoxauth/login.html?originalUrl="));
 
-    GetMethod loginWithCookie = httpGet("/api/security/ticket", "", "", KNOX_COOKIE);
+    GetMethod loginWithCookie = httpGet("/api/security/ticket", "", "", knoxCookie);
     result = gson.fromJson(loginWithCookie.getResponseBodyAsString(), Map.class);
 
     collector.checkThat("User logged in as admin",
@@ -78,5 +80,4 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
 
     System.out.println(result);
   }
-
 }

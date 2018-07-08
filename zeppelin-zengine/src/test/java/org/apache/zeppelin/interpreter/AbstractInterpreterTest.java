@@ -15,7 +15,6 @@ import java.io.File;
 
 import static org.mockito.Mockito.mock;
 
-
 /**
  * This class will load configuration files under
  *   src/test/resources/interpreter
@@ -73,5 +72,12 @@ public abstract class AbstractInterpreterTest {
 
   protected Note createNote() {
     return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
+  }
+
+  protected InterpreterContext createDummyInterpreterContext() {
+    return InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
   }
 }

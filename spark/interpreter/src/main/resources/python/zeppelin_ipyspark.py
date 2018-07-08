@@ -24,8 +24,13 @@ from pyspark.context import SparkContext
 from pyspark.sql import SQLContext
 
 # start JVM gateway
-client = GatewayClient(port=${JVM_GATEWAY_PORT})
-gateway = JavaGateway(client, auto_convert=True)
+if "PY4J_GATEWAY_SECRET" in os.environ:
+    from py4j.java_gateway import GatewayParameters
+    gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
+    gateway = JavaGateway(gateway_parameters=GatewayParameters(address="${JVM_GATEWAY_ADDRESS}",
+        port=${JVM_GATEWAY_PORT}, auth_token=gateway_secret, auto_convert=True))
+else:
+    gateway = JavaGateway(GatewayClient(address="${JVM_GATEWAY_ADDRESS}", port=${JVM_GATEWAY_PORT}), auto_convert=True)
 
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")
@@ -51,3 +56,17 @@ if intp.isSpark2():
     sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 else:
     sqlContext = sqlc = __zSqlc__ = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
+
+class IPySparkZeppelinContext(PyZeppelinContext):
+
+    def __init__(self, z, gateway):
+        super(IPySparkZeppelinContext, self).__init__(z, gateway)
+
+    def show(self, obj):
+        from pyspark.sql import DataFrame
+        if isinstance(obj, DataFrame):
+            print(self.z.showData(obj._jdf))
+        else:
+            super(IPySparkZeppelinContext, self).show(obj)
+
+z = __zeppelin__ = IPySparkZeppelinContext(intp.getZeppelinContext(), gateway)

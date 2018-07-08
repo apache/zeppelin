@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -43,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -73,7 +75,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN =
+      Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -84,6 +87,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private String title;
   private String text;  // text is composed of intpText and scriptText.
   private transient String intpText;
+  private transient Map<String, String> localProperties = new HashMap<>();
   private transient String scriptText;
   private String user;
   private Date dateUpdated;
@@ -187,11 +191,36 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
+      // clean localProperties, otherwise previous localProperties will be used for the next run
+      this.localProperties.clear();
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
         this.intpText = matcher.group(2);
-        this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+
+        if (matcher.groupCount() == 3 && matcher.group(3) != null) {
+          String localPropertiesText = matcher.group(3);
+          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() -1)
+              .split(",");
+          for (String split : splits) {
+            String[] kv = split.split("=");
+            if (StringUtils.isBlank(split) || kv.length == 0) {
+              continue;
+            }
+            if (kv.length > 2) {
+              throw new RuntimeException("Invalid paragraph properties format: " + split);
+            }
+            if (kv.length == 1) {
+              localProperties.put(kv[0].trim(), kv[0].trim());
+            } else {
+              localProperties.put(kv[0].trim(), kv[1].trim());
+            }
+          }
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() +
+              localPropertiesText.length() + 1).trim();
+        } else {
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+        }
       } else {
         this.intpText = "";
         this.scriptText = this.text.trim();
@@ -232,12 +261,16 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return note;
   }
 
+  public Map<String, String> getLocalProperties() {
+    return localProperties;
+  }
+
   public boolean isEnabled() {
     Boolean enabled = (Boolean) config.get("enabled");
     return enabled == null || enabled.booleanValue();
   }
 
-  public Interpreter getBindedInterpreter() {
+  public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
     return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
   }
 
@@ -253,8 +286,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
         return note.getInterpreterCompletion();
       }
     }
-    this.interpreter = getBindedInterpreter();
-
+    try {
+      this.interpreter = getBindedInterpreter();
+    } catch (InterpreterNotFoundException e) {
+      return null;
+    }
     setText(buffer);
 
     cursor = calculateCursorPosition(buffer, cursor);
@@ -342,35 +378,32 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     clearRuntimeInfo(null);
-    this.interpreter = getBindedInterpreter();
-
-    if (interpreter == null) {
-      String intpExceptionMsg =
-          getJobName() + "'s Interpreter " + getIntpText() + " not found";
-      RuntimeException intpException = new RuntimeException(intpExceptionMsg);
-      InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR, intpException.getMessage());
-      setReturn(intpResult, intpException);
-      setStatus(Job.Status.ERROR);
-      throw intpException;
-    }
-    setStatus(Status.READY);
-    if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
-      setAuthenticationInfo(getAuthenticationInfo());
-      interpreter.getScheduler().submit(this);
-    }
-
-    if (blocking) {
-      while (!getStatus().isCompleted()) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
+    try {
+      this.interpreter = getBindedInterpreter();
+      setStatus(Status.READY);
+      if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
+        setAuthenticationInfo(getAuthenticationInfo());
+        interpreter.getScheduler().submit(this);
       }
-      return getStatus() == Status.FINISHED;
-    } else {
-      return true;
+
+      if (blocking) {
+        while (!getStatus().isCompleted()) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return getStatus() == Status.FINISHED;
+      } else {
+        return true;
+      }
+    } catch (InterpreterNotFoundException e) {
+      InterpreterResult intpResult =
+          new InterpreterResult(InterpreterResult.Code.ERROR);
+      setReturn(intpResult, e);
+      setStatus(Job.Status.ERROR);
+      throw new RuntimeException(e);
     }
   }
 
@@ -561,9 +594,22 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
-            getNoteGui(), registry, resourcePool, runners, output);
+        InterpreterContext.builder()
+            .setNoteId(note.getId())
+            .setParagraphId(getId())
+            .setReplName(intpText)
+            .setParagraphTitle(title)
+            .setParagraphText(text)
+            .setLocalProperties(localProperties)
+            .setAuthenticationInfo(authenticationInfo)
+            .setConfig(config)
+            .setGUI(settings)
+            .setNoteGUI(getNoteGui())
+            .setAngularObjectRegistry(registry)
+            .setResourcePool(resourcePool)
+            .setInterpreterOut(output)
+            .build();
+
     return interpreterContext;
   }
 
@@ -591,9 +637,21 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }
 
     InterpreterContext interpreterContext =
-        new InterpreterContext(note.getId(), getId(), intpText, this.getTitle(),
-            this.getText(), this.getAuthenticationInfo(), this.getConfig(), this.settings,
-            getNoteGui(), registry, resourcePool, runners, output);
+        InterpreterContext.builder()
+            .setNoteId(note.getId())
+            .setParagraphId(getId())
+            .setReplName(intpText)
+            .setParagraphTitle(title)
+            .setParagraphText(text)
+            .setAuthenticationInfo(authenticationInfo)
+            .setLocalProperties(localProperties)
+            .setConfig(config)
+            .setGUI(settings)
+            .setNoteGUI(getNoteGui())
+            .setAngularObjectRegistry(registry)
+            .setResourcePool(resourcePool)
+            .setInterpreterOut(output)
+            .build();
     return interpreterContext;
   }
 
@@ -702,7 +760,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public boolean isValidInterpreter(String replName) {
-    return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+    try {
+      return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+    } catch (InterpreterNotFoundException e) {
+      return false;
+    }
   }
 
   public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,
@@ -728,7 +790,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
    * @param settingId
    */
   public void clearRuntimeInfo(String settingId) {
-    if (settingId != null) {
+    if (settingId != null && runtimeInfos != null) {
       Set<String> keys = runtimeInfos.keySet();
       if (keys.size() > 0) {
         List<String> infosToRemove = new ArrayList<>();

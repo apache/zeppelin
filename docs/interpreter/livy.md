@@ -177,7 +177,7 @@ Basically, you can use
 
 **spark**
 
-```
+```scala
 %livy.spark
 sc.version
 ```
@@ -185,14 +185,14 @@ sc.version
 
 **pyspark**
 
-```
+```python
 %livy.pyspark
 print "1"
 ```
 
 **sparkR**
 
-```
+```r
 %livy.sparkr
 hello <- function( name ) {
     sprintf( "Hello, %s", name );
@@ -209,12 +209,17 @@ This is particularly useful when multi users are sharing a Notebook server.
 
 ## Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html). Form templates is only avalible for livy sql interpreter.
-```
+
+```sql
 %livy.sql
 select * from products where ${product_id=1}
 ```
 
 And creating dynamic formst programmatically is not feasible in livy interpreter, because ZeppelinContext is not available in livy interpreter.
+
+## Shared SparkContext
+Starting from livy 0.5 which is supported by Zeppelin 0.8.0, SparkContext is shared between scala, python, r and sql.
+That means you can query the table via `%livy.sql` when this table is registered in `%livy.spark`, `%livy.pyspark`, `$livy.sparkr`.
 
 ## FAQ
 

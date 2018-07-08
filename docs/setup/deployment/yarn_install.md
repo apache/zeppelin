@@ -45,7 +45,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
 ### List of Prerequisites
 
  * CentOS 6.x, Mac OSX, Ubuntu 14.X
- * Java 1.7
+ * Java 1.8
  * Hadoop client
  * Spark
  * Internet connection is required.
@@ -89,7 +89,7 @@ cp /home/zeppelin/zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/zeppelin
 Set the following properties
 
 ```bash
-export JAVA_HOME="/usr/java/jdk1.7.0_79"
+export JAVA_HOME="/usr/java/jdk1.8.0_171"
 export HADOOP_CONF_DIR="/etc/hadoop/conf"
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
 export SPARK_HOME="/usr/lib/spark"
@@ -105,7 +105,7 @@ hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 ## Start/Stop
 ### Start Zeppelin
 
-```
+```bash
 cd /home/zeppelin/zeppelin
 bin/zeppelin-daemon.sh start
 ```
@@ -113,7 +113,7 @@ After successful start, visit http://[zeppelin-server-host-name]:8080 with your 
 
 ### Stop Zeppelin
 
-```
+```bash
 bin/zeppelin-daemon.sh stop
 ```
 

@@ -119,7 +119,7 @@ This kind of graph can be easily *flatten* in order to support other visualizati
 
 An example of a simple graph
 
-```
+```scala
 %spark
 print(s"""
 %network {
@@ -146,7 +146,7 @@ that will look like:
 
 A little more complex graph:
 
-```
+```scala
 %spark
 print(s"""
 %network {

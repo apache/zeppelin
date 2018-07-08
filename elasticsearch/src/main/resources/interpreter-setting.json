@@ -55,7 +55,8 @@
       }
     },
     "editor": {
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   }
 ]

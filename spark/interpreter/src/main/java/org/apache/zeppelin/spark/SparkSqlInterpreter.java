@@ -96,7 +96,6 @@ public class SparkSqlInterpreter extends Interpreter {
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
 
-    sparkInterpreter.populateSparkWebUrl(context);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
     sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
@@ -115,7 +114,9 @@ public class SparkSqlInterpreter extends Interpreter {
       // to    def sql(sqlText: String): DataFrame (1.3 and later).
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      rdd = sqlMethod.invoke(sqlc, st);
+      String effectiveString = Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation")) ?
+              interpolate(st, context.getResourcePool()) : st;
+      rdd = sqlMethod.invoke(sqlc, effectiveString);
     } catch (InvocationTargetException ite) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
         throw new InterpreterException(ite);

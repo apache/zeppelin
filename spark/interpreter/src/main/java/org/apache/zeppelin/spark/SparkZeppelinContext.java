@@ -177,7 +177,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
 
   @ZeppelinApi
   public Object select(String name, scala.collection.Iterable<Tuple2<Object, String>> options) {
-    return select(name, "", options);
+    return select(name, null, options);
   }
 
   @ZeppelinApi

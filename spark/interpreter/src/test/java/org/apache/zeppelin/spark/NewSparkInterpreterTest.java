@@ -17,11 +17,13 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.common.io.Files;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -29,9 +31,10 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -40,24 +43,30 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 
 public class NewSparkInterpreterTest {
 
   private SparkInterpreter interpreter;
+  private DepInterpreter depInterpreter;
 
   // catch the streaming output in onAppend
   private volatile String output = "";
   // catch the interpreter output in onUpdate
   private InterpreterResultMessageOutput messageOutput;
+
+  private RemoteInterpreterEventClient mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
 
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -67,6 +76,14 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
+
+    InterpreterContext context = InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mockRemoteEventClient)
+        .setAngularObjectRegistry(new AngularObjectRegistry("spark", null))
+        .build();
+    InterpreterContext.set(context);
+
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
@@ -124,6 +141,8 @@ public class NewSparkInterpreterTest {
     result = interpreter.interpret("sc.range(1, 10).sum", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(output.contains("45"));
+    // spark job url is sent
+    verify(mockRemoteEventClient).onParaInfosReceived(any(Map.class));
 
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
@@ -188,7 +207,7 @@ public class NewSparkInterpreterTest {
     messageOutput.flush();
     assertEquals("_1\t_2\n1\ta\n2\tb\n", messageOutput.toInterpreterResultMessage().getData());
 
-    InterpreterContext context = getInterpreterContext();
+    context = getInterpreterContext();
     result = interpreter.interpret("z.input(\"name\", \"default_name\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());
@@ -196,6 +215,14 @@ public class NewSparkInterpreterTest {
     TextBox textBox = (TextBox) context.getGui().getForms().get("name");
     assertEquals("name", textBox.getName());
     assertEquals("default_name", textBox.getDefaultValue());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.password(\"pwd\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(1, context.getGui().getForms().size());
+    assertTrue(context.getGui().getForms().get("pwd") instanceof Password);
+    Password pwd = (Password) context.getGui().getForms().get("pwd");
+    assertEquals("pwd", pwd.getName());
 
     context = getInterpreterContext();
     result = interpreter.interpret("z.checkbox(\"checkbox_1\", Seq(\"value_2\"), Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")))", context);
@@ -340,28 +367,80 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
+  //TODO(zjffdu) This unit test will fail due to classpath issue, should enable it after the classpath issue is fixed.
+  @Ignore
+  public void testDepInterpreter() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    interpreter = new SparkInterpreter(properties);
+    depInterpreter = new DepInterpreter(properties);
+    interpreter.setInterpreterGroup(intpGroup);
+    depInterpreter.setInterpreterGroup(intpGroup);
+    intpGroup.put("session_1", new ArrayList<Interpreter>());
+    intpGroup.get("session_1").add(interpreter);
+    intpGroup.get("session_1").add(depInterpreter);
+
+    depInterpreter.open();
+    InterpreterResult result =
+        depInterpreter.interpret("z.load(\"com.databricks:spark-avro_2.11:3.2.0\")", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    interpreter.open();
+    result = interpreter.interpret("import com.databricks.spark.avro._", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
+  @Test
+  public void testDisableReplOutput() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.printREPLOutput", "false");
+
+    interpreter = new SparkInterpreter(properties);
+    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    interpreter.open();
+
+    InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // no output for define new variable
+    assertEquals("", output);
+
+    result = interpreter.interpret("print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    // output from print statement will still be displayed
+    assertEquals("hello world", output);
+  }
+
   @After
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {
       this.interpreter.close();
     }
+    if (this.depInterpreter != null) {
+      this.depInterpreter.close();
+    }
   }
 
   private InterpreterContext getInterpreterContext() {
     output = "";
-    return new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        "replName",
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new GUI(),
-        new AngularObjectRegistry("spark", null),
-        null,
-        null,
+    InterpreterContext context = InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mockRemoteEventClient)
+        .setAngularObjectRegistry(new AngularObjectRegistry("spark", null))
+        .build();
+    context.out =
         new InterpreterOutput(
 
             new InterpreterOutputListener() {
@@ -383,7 +462,7 @@ public class NewSparkInterpreterTest {
               public void onUpdate(int index, InterpreterResultMessageOutput out) {
                 messageOutput = out;
               }
-            })
-    );
+            });
+    return context;
   }
 }

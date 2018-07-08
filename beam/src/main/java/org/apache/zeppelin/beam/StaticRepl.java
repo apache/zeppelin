@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.beam;
 
+import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -24,14 +30,6 @@ import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thoughtworks.qdox.JavaProjectBuilder;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaSource;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -44,9 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 
  * StaticRepl for compling the java code in memory
- * 
  */
 public class StaticRepl {
   static Logger logger = LoggerFactory.getLogger(StaticRepl.class);
@@ -70,7 +66,7 @@ public class StaticRepl {
 
       for (int j = 0; j < classes.get(i).getMethods().size(); j++) {
         if (classes.get(i).getMethods().get(j).getName().equals("main") && classes.get(i)
-            .getMethods().get(j).isStatic()) {          
+            .getMethods().get(j).isStatic()) {
           mainClassName = classes.get(i).getName();
           hasMain = true;
           break;
@@ -133,12 +129,12 @@ public class StaticRepl {
       try {
 
         // creating new class loader
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { new File("").toURI()
-            .toURL() });
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{new File("").toURI()
+            .toURL()});
         // execute the Main method
         Class.forName(generatedClassName, true, classLoader)
-            .getDeclaredMethod("main", new Class[] { String[].class })
-            .invoke(null, new Object[] { null });
+            .getDeclaredMethod("main", new Class[]{String[].class})
+            .invoke(null, new Object[]{null});
 
         System.out.flush();
         System.err.flush();

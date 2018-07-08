@@ -23,6 +23,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -73,7 +74,7 @@ public class NoteTest {
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
   @Test
-  public void runNormalTest() {
+  public void runNormalTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 
@@ -101,7 +102,7 @@ public class NoteTest {
   }
 
   @Test
-  public void addParagraphWithLastReplNameTest() {
+  public void addParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
@@ -113,7 +114,7 @@ public class NoteTest {
   }
 
   @Test
-  public void insertParagraphWithLastReplNameTest() {
+  public void insertParagraphWithLastReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("spark"))).thenReturn(interpreter);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
@@ -125,7 +126,7 @@ public class NoteTest {
   }
 
   @Test
-  public void insertParagraphWithInvalidReplNameTest() {
+  public void insertParagraphWithInvalidReplNameTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("invalid"))).thenReturn(null);
 
     Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
@@ -144,7 +145,7 @@ public class NoteTest {
   }
 
   @Test
-  public void clearAllParagraphOutputTest() {
+  public void clearAllParagraphOutputTest() throws InterpreterNotFoundException {
     when(interpreterFactory.getInterpreter(anyString(), anyString(), eq("md"))).thenReturn(interpreter);
     when(interpreter.getScheduler()).thenReturn(scheduler);
 

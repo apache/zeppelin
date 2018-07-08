@@ -19,12 +19,15 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
+import org.apache.zeppelin.python.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,17 +50,22 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    setProperty("zeppelin.python",
-        PySparkInterpreter.getPythonExec(getProperties()));
+    PySparkInterpreter pySparkInterpreter = getPySparkInterpreter();
+    setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getSparkInterpreter();
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
-    // only set PYTHONPATH in local or yarn-client mode.
+    // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
-    if (!conf.get("spark.submit.deployMode").equals("cluster")) {
+    if (!conf.contains("spark.submit.deployMode") ||
+        !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
-      setAddBulitinPy4j(false);
     }
+    setAddBulitinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 
@@ -91,6 +99,34 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return spark;
   }
 
+  private PySparkInterpreter getPySparkInterpreter() throws InterpreterException {
+    PySparkInterpreter pySpark = null;
+    Interpreter p = getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class.getName());
+    while (p instanceof WrappedInterpreter) {
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    pySpark = (PySparkInterpreter) p;
+    return pySpark;
+  }
+
+  @Override
+  public BaseZeppelinContext buildZeppelinContext() {
+    return sparkInterpreter.getZeppelinContext();
+  }
+
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    InterpreterContext.set(context);
+    String jobGroupId = Utils.buildJobGroupId(context);
+    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
+    InterpreterResult result = super.interpret(setJobGroupStmt, context);
+    if (result.code().equals(InterpreterResult.Code.ERROR)) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    }
+    return super.interpret(st, context);
+  }
+
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
     super.cancel(context);
@@ -99,6 +135,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void close() throws InterpreterException {
+    LOGGER.info("Close IPySparkInterpreter");
     super.close();
     if (sparkInterpreter != null) {
       sparkInterpreter.close();

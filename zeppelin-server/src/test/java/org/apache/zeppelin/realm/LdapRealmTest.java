@@ -18,11 +18,23 @@
  */
 package org.apache.zeppelin.realm;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.apache.shiro.realm.ldap.LdapContextFactory;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
@@ -30,45 +42,24 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.shiro.realm.ldap.LdapContextFactory;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-
-
 public class LdapRealmTest {
-
   @Test
   public void testGetUserDn() {
     LdapRealm realm = new LdapRealm();
 
     // without a user search filter
     realm.setUserSearchFilter(null);
-    assertEquals(
-      "foo ",
-      realm.getUserDn("foo ")
-    );
+    assertEquals("foo ", realm.getUserDn("foo "));
 
     // with a user search filter
     realm.setUserSearchFilter("memberUid={0}");
-    assertEquals(
-      "foo",
-      realm.getUserDn("foo")
-    );
+    assertEquals("foo", realm.getUserDn("foo"));
   }
 
   @Test
   public void testExpandTemplate() {
-    assertEquals(
-      "uid=foo,cn=users,dc=ods,dc=foo",
-      LdapRealm.expandTemplate("uid={0},cn=users,dc=ods,dc=foo", "foo")
-    );
+    assertEquals("uid=foo,cn=users,dc=ods,dc=foo",
+            LdapRealm.expandTemplate("uid={0},cn=users,dc=ods,dc=foo", "foo"));
   }
 
   @Test
@@ -76,18 +67,13 @@ public class LdapRealmTest {
     LdapRealm realm = new LdapRealm();
 
     realm.setUserSearchAttributeName("uid");
-    assertEquals(
-      "foo",
-      realm.getUserDnForSearch("foo")
-    );
+    assertEquals("foo", realm.getUserDnForSearch("foo"));
 
     // using a template
     realm.setUserSearchAttributeName(null);
     realm.setMemberAttributeValueTemplate("cn={0},ou=people,dc=hadoop,dc=apache");
-    assertEquals(
-      "cn=foo,ou=people,dc=hadoop,dc=apache",
-      realm.getUserDnForSearch("foo")
-    );
+    assertEquals("cn=foo,ou=people,dc=hadoop,dc=apache",
+            realm.getUserDnForSearch("foo"));
   }
 
   @Test
@@ -103,7 +89,6 @@ public class LdapRealmTest {
     LdapContextFactory ldapContextFactory = mock(LdapContextFactory.class);
     LdapContext ldapCtx = mock(LdapContext.class);
     Session session = mock(Session.class);
-
 
     // expected search results
     BasicAttributes group1 = new BasicAttributes();
@@ -121,27 +106,17 @@ public class LdapRealmTest {
     group3.put(realm.getMemberAttribute(), "principal");
 
     NamingEnumeration<SearchResult> results = enumerationOf(group1, group2, group3);
-    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class))).thenReturn(results);
-
+    when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
+            .thenReturn(results);
 
     Set<String> roles = realm.rolesFor(
-      new SimplePrincipalCollection("principal", "ldapRealm"),
-      "principal",
-      ldapCtx,
-      ldapContextFactory,
-      session
-    );
+            new SimplePrincipalCollection("principal", "ldapRealm"),
+            "principal", ldapCtx, ldapContextFactory, session);
 
-    verify(ldapCtx).search(
-      "cn=groups,dc=apache",
-      "(objectclass=posixGroup)",
-      realm.getGroupSearchControls()
-    );
+    verify(ldapCtx).search("cn=groups,dc=apache", "(objectclass=posixGroup)",
+            realm.getGroupSearchControls());
 
-    assertEquals(
-      new HashSet(Arrays.asList("group-one", "zeppelin-role")),
-      roles
-    );
+    assertEquals(new HashSet(Arrays.asList("group-one", "zeppelin-role")), roles);
   }
 
   private NamingEnumeration<SearchResult> enumerationOf(BasicAttributes... attrs) {

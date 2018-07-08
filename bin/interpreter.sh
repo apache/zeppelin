@@ -24,7 +24,7 @@ function usage() {
     echo "usage) $0 -p <port> -r <intp_port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
-while getopts "hc:p:r:d:l:v:u:g:" o; do
+while getopts "hc:p:r:i:d:l:v:u:g:" o; do
     case ${o} in
         h)
             usage
@@ -41,6 +41,9 @@ while getopts "hc:p:r:d:l:v:u:g:" o; do
             ;;
         r)
             INTP_PORT=${OPTARG} # This will be used for interpreter process port
+            ;;
+        i)
+            INTP_GROUP_ID=${OPTARG} # This will be used for interpreter group id
             ;;
         l)
             LOCAL_INTERPRETER_REPO=${OPTARG}
@@ -89,7 +92,7 @@ HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
-ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
+ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_SETTING_NAME}-"
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
@@ -205,7 +208,8 @@ fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
 
-if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" && "${INTERPRETER_ID}" != "spark" ]]; then
+if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
+  if [[ "${INTERPRETER_ID}" != "spark" || "$ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER" == "false" ]]; then
     suid="$(id -u ${ZEPPELIN_IMPERSONATE_USER})"
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
        INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
@@ -213,12 +217,13 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" && "${INTERPRETER_ID}" != "spark" ]]; th
            INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
        fi
     fi
+  fi
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} ${INTP_PORT}`
+    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
 else
-    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_PORT}`
+    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
 fi
 
 
@@ -246,14 +251,14 @@ function shutdown_hook() {
       sleep 3
       let "count+=1"
     else
-      rm -f "${ZEPPELIN_PID}"
       break
     fi
   if [[ "${count}" == "5" ]]; then
     $(kill -9 ${pid} > /dev/null 2> /dev/null)
-    rm -f "${ZEPPELIN_PID}"
   fi
   done
 }
 
 wait
+
+rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null

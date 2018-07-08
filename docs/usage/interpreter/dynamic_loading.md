@@ -55,7 +55,7 @@ For example, if you want to load `markdown` interpreter to your Zeppelin, the pa
 http://127.0.0.1:8080/api/interpreter/load/md/markdown
 ```
 
-```
+```json
 {
   "artifact": "org.apache.zeppelin:zeppelin-markdown:0.6.0-SNAPSHOT",
   "className": "org.apache.zeppelin.markdown.Markdown",
