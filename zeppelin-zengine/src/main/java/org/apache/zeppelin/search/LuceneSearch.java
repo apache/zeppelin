@@ -64,10 +64,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Search (both, indexing and query) the notebooks using Lucene.
- *
- * <p>Query is thread-safe, as creates new IndexReader every time. Index is thread-safe, as re-uses
- * single IndexWriter, which is thread-safe.
+ * Search (both, indexing and query) the notebooks using Lucene. Query is thread-safe, as creates
+ * new IndexReader every time. Index is thread-safe, as re-uses single IndexWriter, which is
+ * thread-safe.
  */
 public class LuceneSearch implements SearchService {
   private static final Logger logger = LoggerFactory.getLogger(LuceneSearch.class);
@@ -124,7 +123,6 @@ public class LuceneSearch implements SearchService {
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
 
       result = doSearch(indexSearcher, query, analyzer, highlighter);
-      indexReader.close();
     } catch (IOException e) {
       logger.error("Failed to open index dir {}, make sure indexing finished OK", directory, e);
     } catch (ParseException e) {
