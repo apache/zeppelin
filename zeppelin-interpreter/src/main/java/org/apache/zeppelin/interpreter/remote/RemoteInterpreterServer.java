@@ -53,6 +53,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.MessageColumnTypes;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
@@ -656,12 +657,14 @@ public class RemoteInterpreterServer extends Thread
                 context.getNoteId(),
                 context.getParagraphId(),
                 WellKnownResourceName.ZeppelinTableResult.toString(),
-                lastMessage);
+                lastMessage
+            );
             context.getResourcePool().put(
                 context.getNoteId(),
                 context.getParagraphId(),
                 WellKnownResourceName.ZeppelinTableType.toString(),
-                lastMessage.getMessageColumnTypes());
+                new MessageColumnTypes(lastMessage.getColumnTypes())
+            );
           }
         }
         return new InterpreterResult(result.code(), resultMessages);

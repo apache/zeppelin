@@ -652,7 +652,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
-        interpreterResult.message().get(0).getListOfColumnTypes());
+        interpreterResult.message().get(0).getColumnTypes());
   }
 
   @Test
@@ -673,6 +673,6 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(Arrays.asList(ColumnDef.TYPE.NUMBER, ColumnDef.TYPE.STRING, ColumnDef.TYPE.DATE),
-        interpreterResult.message().get(0).getListOfColumnTypes());
+        interpreterResult.message().get(0).getColumnTypes());
   }
 }

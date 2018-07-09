@@ -28,7 +28,7 @@ import java.util.List;
 public class InterpreterResultMessage implements Serializable {
   InterpreterResult.Type type;
   String data;
-  MessageColumnTypes msgColumnTypes;
+  List<ColumnDef.TYPE> columnTypes;
 
   public InterpreterResultMessage(InterpreterResult.Type type, String data) {
     this(type, data, new ArrayList<>());
@@ -38,7 +38,7 @@ public class InterpreterResultMessage implements Serializable {
                                   List<ColumnDef.TYPE> columnTypes) {
     this.type = type;
     this.data = data;
-    this.msgColumnTypes = new MessageColumnTypes(columnTypes);
+    this.columnTypes = columnTypes;
   }
 
   public InterpreterResult.Type getType() {
@@ -49,12 +49,8 @@ public class InterpreterResultMessage implements Serializable {
     return data;
   }
 
-  public List<ColumnDef.TYPE> getListOfColumnTypes() {
-    return msgColumnTypes.getListOfColumnTypes();
-  }
-
-  public MessageColumnTypes getMessageColumnTypes() {
-    return msgColumnTypes;
+  public List<ColumnDef.TYPE> getColumnTypes() {
+    return columnTypes;
   }
 
   public String toString() {

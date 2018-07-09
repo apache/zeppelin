@@ -34,10 +34,6 @@ public class MessageColumnTypes implements Serializable {
     columnTypes.addAll(types);
   }
 
-  public List<ColumnDef.TYPE> getListOfColumnTypes() {
-    return columnTypes;
-  }
-
   public String toString() {
     if (columnTypes.isEmpty()) {
       return "Type is unknown";
