@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter;
 import org.apache.zeppelin.tabledata.ColumnDef;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,9 +31,7 @@ public class InterpreterResultMessage implements Serializable {
   MessageColumnTypes msgColumnTypes;
 
   public InterpreterResultMessage(InterpreterResult.Type type, String data) {
-    this.type = type;
-    this.data = data;
-    this.msgColumnTypes = new MessageColumnTypes();
+    this(type, data, new ArrayList<>());
   }
 
   public InterpreterResultMessage(InterpreterResult.Type type, String data,

@@ -30,10 +30,6 @@ import java.util.List;
 public class MessageColumnTypes implements Serializable {
   List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
 
-  public MessageColumnTypes() {
-
-  }
-
   public MessageColumnTypes(Collection<ColumnDef.TYPE> types) {
     columnTypes.addAll(types);
   }
