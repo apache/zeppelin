@@ -473,7 +473,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     String defaultInterpreterId = "";
     List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
     if (settings.size() > 1) {
-      defaultInterpreterId = settings.get(1).getId();
+      defaultInterpreterId = settings.get(0).getId();
     }
     // create note from sock1
     notebookServer.onMessage(sock1,

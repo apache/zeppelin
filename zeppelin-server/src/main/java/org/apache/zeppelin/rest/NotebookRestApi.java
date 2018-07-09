@@ -39,9 +39,7 @@ import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -272,38 +270,6 @@ public class NotebookRestApi {
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, userAndRoles);
     return new JsonResponse<>(Status.OK).build();
-  }
-
-  /**
-   * Bind a setting to note.
-   *
-   * @throws IOException
-   */
-  @PUT
-  @Path("interpreter/bind/{noteId}")
-  @ZeppelinApi
-  public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
-    checkIfUserCanWrite(noteId,
-        "Insufficient privileges you cannot bind any interpreters to this note");
-
-    List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>() {}.getType());
-    notebook.bindInterpretersToNote(SecurityUtils.getPrincipal(), noteId, settingIdList);
-    return new JsonResponse<>(Status.OK).build();
-  }
-
-  /**
-   * list bound setting.
-   */
-  @GET
-  @Path("interpreter/bind/{noteId}")
-  @ZeppelinApi
-  public Response bind(@PathParam("noteId") String noteId) {
-    checkIfUserCanRead(noteId, "Insufficient privileges you cannot get any interpreters settings");
-
-    List<InterpreterSettingsList> settingList =
-        InterpreterBindingUtils.getInterpreterBindings(notebook, noteId);
-    notebookServer.broadcastInterpreterBindings(noteId, settingList);
-    return new JsonResponse<>(Status.OK, "", settingList).build();
   }
 
   @GET

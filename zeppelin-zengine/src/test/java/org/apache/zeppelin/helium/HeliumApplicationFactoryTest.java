@@ -108,7 +108,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note1.getId(),interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -154,7 +153,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -194,7 +192,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -210,9 +207,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     while (app.getStatus() != ApplicationState.Status.LOADED) {
       Thread.yield();
     }
-
-    // when unbind interpreter
-    notebook.bindInterpretersToNote("user", note1.getId(), new LinkedList<String>());
 
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
@@ -239,10 +233,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
 
     }
 
-    // Unbind all interpreter from note
-    // NullPointerException shouldn't occur here
-    notebook.bindInterpretersToNote("user", note1.getId(), new LinkedList<String>());
-
     // remove note
     notebook.removeNote(note1.getId(), anonymous);
   }
@@ -260,7 +250,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         "", "");
 
     Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {

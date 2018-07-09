@@ -89,6 +89,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private String name = "";
   private String id;
+  private String defaultInterpreterGroup;
   private Map<String, Object> noteParams = new HashMap<>();
   private LinkedHashMap<String, Input> noteForms = new LinkedHashMap<>();
 
@@ -125,9 +126,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     generateId();
   }
 
-  public Note(NotebookRepo repo, InterpreterFactory factory,
+  public Note(String defaultInterpreterGroup, NotebookRepo repo, InterpreterFactory factory,
       InterpreterSettingManager interpreterSettingManager, JobListenerFactory jlFactory,
       SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
+    this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.repo = repo;
     this.factory = factory;
     this.interpreterSettingManager = interpreterSettingManager;
@@ -180,6 +182,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
       name = getId();
     }
     return name;
+  }
+
+  public String getDefaultInterpreterGroup() {
+    return defaultInterpreterGroup;
   }
 
   public Map<String, Object> getNoteParams() {
