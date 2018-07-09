@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -77,16 +78,17 @@ public class LuceneSearch implements SearchService {
   private static final String ID_FIELD = "id";
 
   private Directory directory;
+  private Path directoryPath;
   private Analyzer analyzer;
   private IndexWriterConfig indexWriterConfig;
   private IndexWriter indexWriter;
 
   public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
     try {
-      Path tempDirectory =
+      this.directoryPath =
           Files.createTempDirectory(
               Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
-      this.directory = new MMapDirectory(tempDirectory);
+      this.directory = new MMapDirectory(directoryPath);
     } catch (IOException e) {
       logger.error("Failed to create temporary directory for search service", e);
     }
@@ -389,6 +391,7 @@ public class LuceneSearch implements SearchService {
   public void close() {
     try {
       indexWriter.close();
+      FileUtils.deleteDirectory(directoryPath.toFile());
     } catch (IOException e) {
       logger.error("Failed to .close() the notebook index", e);
     }
