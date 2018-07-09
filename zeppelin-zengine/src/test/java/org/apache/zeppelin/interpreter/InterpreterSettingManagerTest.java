@@ -73,12 +73,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(2, repositories.size());
     assertEquals("central", repositories.get(0).getId());
 
-    // verify interpreter binding
-    List<String> interpreterSettingIds = interpreterSettingManager.getInterpreterBinding("2C6793KRV");
-    assertEquals(2, interpreterSettingIds.size());
-    assertEquals("test", interpreterSettingIds.get(0));
-    assertEquals("test2", interpreterSettingIds.get(1));
-
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
@@ -174,9 +168,6 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
 
     // restart in note page
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    interpreterSettingManager.setInterpreterBinding("user2", "note2", interpreterSettingManager.getSettingIds());
-    interpreterSettingManager.setInterpreterBinding("user3", "note3", interpreterSettingManager.getSettingIds());
     // create 3 sessions as it is scoped mode
     interpreterSetting.getOption().setPerUser("scoped");
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -200,88 +191,14 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testInterpreterBinding() throws IOException {
-    assertNull(interpreterSettingManager.getInterpreterBinding("note1"));
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    assertEquals(interpreterSettingManager.getInterpreterSettingIds(), interpreterSettingManager.getInterpreterBinding("note1"));
-  }
-
-  @Test
-  public void testUpdateInterpreterBinding_PerNoteShared() throws IOException, InterpreterNotFoundException {
-    InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
-    defaultInterpreterSetting.getOption().setPerNote("shared");
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    // create interpreter of the first binded interpreter setting
-    interpreterFactory.getInterpreter("user1", "note1", "");
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
-
-    // choose the first setting
-    List<String> newSettingIds = new ArrayList<>();
-    newSettingIds.add(interpreterSettingManager.getInterpreterSettingIds().get(1));
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", newSettingIds);
-    assertEquals(newSettingIds, interpreterSettingManager.getInterpreterBinding("note1"));
-    // InterpreterGroup will still be alive as it is shared
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
-  }
-
-  @Test
-  public void testUpdateInterpreterBinding_PerNoteIsolated() throws IOException, InterpreterNotFoundException {
-    InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
-    defaultInterpreterSetting.getOption().setPerNote("isolated");
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    // create interpreter of the first binded interpreter setting
-    interpreterFactory.getInterpreter("user1", "note1", "");
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
-
-    // choose the first setting
-    List<String> newSettingIds = new ArrayList<>();
-    newSettingIds.add(interpreterSettingManager.getInterpreterSettingIds().get(1));
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", newSettingIds);
-    assertEquals(newSettingIds, interpreterSettingManager.getInterpreterBinding("note1"));
-    // InterpreterGroup will be closed as it is only belong to this note
-    assertEquals(0, defaultInterpreterSetting.getAllInterpreterGroups().size());
-
-  }
-
-  @Test
-  public void testUpdateInterpreterBinding_PerNoteScoped() throws IOException, InterpreterNotFoundException {
-    InterpreterSetting defaultInterpreterSetting = interpreterSettingManager.get().get(0);
-    defaultInterpreterSetting.getOption().setPerNote("scoped");
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    interpreterSettingManager.setInterpreterBinding("user1", "note2", interpreterSettingManager.getInterpreterSettingIds());
-    // create 2 interpreter of the first binded interpreter setting for note1 and note2
-    interpreterFactory.getInterpreter("user1", "note1", "");
-    interpreterFactory.getInterpreter("user1", "note2", "");
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(2, defaultInterpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
-
-    // choose the first setting
-    List<String> newSettingIds = new ArrayList<>();
-    newSettingIds.add(interpreterSettingManager.getInterpreterSettingIds().get(1));
-
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", newSettingIds);
-    assertEquals(newSettingIds, interpreterSettingManager.getInterpreterBinding("note1"));
-    // InterpreterGroup will be still alive but session belong to note1 will be closed
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().size());
-    assertEquals(1, defaultInterpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
-
-  }
-
-  @Test
   public void testGetEditor() throws IOException, InterpreterNotFoundException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo");
+    Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
     // get editor setting from interpreter-setting.json
     Map<String, Object> editor = interpreterSettingManager.getEditorSetting(echoInterpreter, "user1", "note1", "test.echo");
     assertEquals("java", editor.get("language"));
 
     // when editor setting doesn't exit, return the default editor
-    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1");
+    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1", "test");
     editor = interpreterSettingManager.getEditorSetting(mock1Interpreter,"user1", "note1", "mock1");
     assertEquals("text", editor.get("language"));
   }

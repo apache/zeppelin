@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,12 +38,15 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
@@ -136,15 +140,7 @@ public class Notebook implements NoteEventListener {
    * @throws IOException
    */
   public Note createNote(AuthenticationInfo subject) throws IOException {
-    Preconditions.checkNotNull(subject, "AuthenticationInfo should not be null");
-    Note note;
-    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      note = createNote(interpreterSettingManager.getInterpreterSettingIds(), subject);
-    } else {
-      note = createNote(null, subject);
-    }
-    noteSearchService.addIndexDoc(note);
-    return note;
+    return createNote(interpreterSettingManager.getDefaultInterpreterSetting().getName(), subject);
   }
 
   /**
@@ -152,20 +148,16 @@ public class Notebook implements NoteEventListener {
    *
    * @throws IOException
    */
-  public Note createNote(List<String> interpreterIds, AuthenticationInfo subject)
+  public Note createNote(String defaultInterpreterSetting, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(notebookRepo, replFactory, interpreterSettingManager, jobListenerFactory,
-                noteSearchService, credentials, this);
+        new Note(defaultInterpreterSetting, notebookRepo, replFactory, interpreterSettingManager,
+            jobListenerFactory, noteSearchService, credentials, this);
     note.setNoteNameListener(folders);
 
     synchronized (notes) {
       notes.put(note.getId(), note);
     }
-    if (interpreterIds != null) {
-      bindInterpretersToNote(subject.getUser(), note.getId(), interpreterIds);
-    }
-
     notebookAuthorization.setNewNotePermissions(note.getId(), subject);
     noteSearchService.addIndexDoc(note);
     note.persist(subject);
@@ -246,9 +238,6 @@ public class Notebook implements NoteEventListener {
       newNote.setName("Note " + newNote.getId());
     }
     newNote.setCronSupported(getConf());
-    // Copy the interpreter bindings
-    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.getId());
-    bindInterpretersToNote(subject.getUser(), newNote.getId(), boundInterpreterSettingsIds);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
@@ -260,37 +249,22 @@ public class Notebook implements NoteEventListener {
     return newNote;
   }
 
-  public void bindInterpretersToNote(String user, String id, List<String> interpreterSettingIds)
-      throws IOException {
-    Note note = getNote(id);
+  public List<InterpreterSetting> getBindedInterpreterSettings(String noteId) {
+    Note note = getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> currentBindings =
-          interpreterSettingManager.getInterpreterSettings(id);
-      for (InterpreterSetting setting : currentBindings) {
-        if (!interpreterSettingIds.contains(setting.getId())) {
-          fireUnbindInterpreter(note, setting);
+      Set<InterpreterSetting> settings = new HashSet<>();
+      for (Paragraph p : note.getParagraphs()) {
+        try {
+          Interpreter intp = p.getBindedInterpreter();
+          settings.add((
+              (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+        } catch (InterpreterNotFoundException e) {
+          // ignore this
         }
       }
-
-      interpreterSettingManager.setInterpreterBinding(user, note.getId(), interpreterSettingIds);
-      // comment out while note.getNoteReplLoader().setInterpreterBinding(...) do the same
-      // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
-    }
-  }
-
-  List<String> getBindedInterpreterSettingsIds(String id) {
-    Note note = getNote(id);
-    if (note != null) {
-      return interpreterSettingManager.getInterpreterBinding(note.getId());
-    } else {
-      return new LinkedList<>();
-    }
-  }
-
-  public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
-    Note note = getNote(id);
-    if (note != null) {
-      return interpreterSettingManager.getInterpreterSettings(note.getId());
+      // add the default interpreter group
+      settings.add(interpreterSettingManager.getByName(note.getDefaultInterpreterGroup()));
+      return new ArrayList<>(settings);
     } else {
       return new LinkedList<>();
     }
@@ -315,11 +289,11 @@ public class Notebook implements NoteEventListener {
   }
 
   public void moveNoteToTrash(String noteId) {
-    try {
-      interpreterSettingManager.setInterpreterBinding("", noteId, new ArrayList<String>());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+//    try {
+////      interpreterSettingManager.setInterpreterBinding("", noteId, new ArrayList<String>());
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
   }
 
   public void removeNote(String id, AuthenticationInfo subject) {
@@ -331,11 +305,7 @@ public class Notebook implements NoteEventListener {
       note = notes.remove(id);
       folders.removeNote(note);
     }
-    try {
-      interpreterSettingManager.removeNoteInterpreterSettingBinding(subject.getUser(), id);
-    } catch (IOException e) {
-      logger.error(e.toString(), e);
-    }
+
     noteSearchService.deleteIndexDocs(note);
     notebookAuthorization.removeNote(id);
 

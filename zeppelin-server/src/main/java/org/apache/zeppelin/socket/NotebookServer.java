@@ -367,9 +367,6 @@ public class NotebookServer extends WebSocketServlet
         case GET_INTERPRETER_BINDINGS:
           getInterpreterBindings(conn, messagereceived);
           break;
-        case SAVE_INTERPRETER_BINDINGS:
-          saveInterpreterBindings(conn, messagereceived);
-          break;
         case EDITOR_SETTING:
           getEditorSetting(conn, messagereceived);
           break;
@@ -511,20 +508,6 @@ public class NotebookServer extends WebSocketServlet
     return id;
   }
 
-  private void broadcastToNoteBindedInterpreter(String interpreterGroupId, Message m) {
-    Notebook notebook = notebook();
-    List<Note> notes = notebook.getAllNotes();
-    for (Note note : notes) {
-      List<String> ids = notebook.getInterpreterSettingManager()
-          .getInterpreterBinding(note.getId());
-      for (String id : ids) {
-        if (id.equals(interpreterGroupId)) {
-          broadcast(note.getId(), m);
-        }
-      }
-    }
-  }
-
   public void broadcast(Message m) {
     synchronized (connectedSockets) {
       for (NotebookSocket ns : connectedSockets) {
@@ -634,21 +617,6 @@ public class NotebookServer extends WebSocketServlet
     removeConnectionFromNote(JobManagerService.JOB_MANAGER_PAGE.getKey(), conn);
   }
 
-  public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) {
-    String noteId = (String) fromMessage.data.get("noteId");
-    try {
-      List<String> settingIdList =
-          gson.fromJson(String.valueOf(fromMessage.data.get("selectedSettingIds")),
-              new TypeToken<ArrayList<String>>() {}.getType());
-      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      notebook().bindInterpretersToNote(subject.getUser(), noteId, settingIdList);
-      broadcastInterpreterBindings(noteId,
-          InterpreterBindingUtils.getInterpreterBindings(notebook(), noteId));
-    } catch (Exception e) {
-      LOG.error("Error while saving interpreter bindings", e);
-    }
-  }
-
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.data.get("noteId");
     List<InterpreterSettingsList> settingList =
@@ -693,10 +661,6 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastNote(Note note) {
     broadcast(note.getId(), new Message(OP.NOTE).put("note", note));
-  }
-
-  public void broadcastInterpreterBindings(String noteId, List settingList) {
-    broadcast(noteId, new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList));
   }
 
   public void unicastParagraph(Note note, Paragraph p, String user) {
@@ -1068,19 +1032,10 @@ public class NotebookServer extends WebSocketServlet
     AuthenticationInfo subject = new AuthenticationInfo(message.principal);
 
     try {
-      Note note;
-
-      String defaultInterpreterId = (String) message.get("defaultInterpreterId");
-      if (!StringUtils.isEmpty(defaultInterpreterId)) {
-        List<String> interpreterSettingIds = new LinkedList<>();
-        interpreterSettingIds.add(defaultInterpreterId);
-        for (String interpreterSettingId : notebook.getInterpreterSettingManager().
-            getInterpreterSettingIds()) {
-          if (!interpreterSettingId.equals(defaultInterpreterId)) {
-            interpreterSettingIds.add(interpreterSettingId);
-          }
-        }
-        note = notebook.createNote(interpreterSettingIds, subject);
+      Note note = null;
+      String defaultInterpreterSettingId = (String) message.get("defaultInterpreterGroup");
+      if (defaultInterpreterSettingId != null) {
+        note = notebook.createNote(defaultInterpreterSettingId, subject);
       } else {
         note = notebook.createNote(subject);
       }
@@ -2326,14 +2281,14 @@ public class NotebookServer extends WebSocketServlet
 
     @Override
     public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
-      Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(note.getId());
-      Map<String, Object> response = new HashMap<>();
-      response.put("lastResponseUnixTime", System.currentTimeMillis());
-      response.put("jobs", notebookJobs);
-
-      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+//      Notebook notebook = notebookServer.notebook();
+//      List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(note.getId());
+//      Map<String, Object> response = new HashMap<>();
+//      response.put("lastResponseUnixTime", System.currentTimeMillis());
+//      response.put("jobs", notebookJobs);
+//
+//      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
+//          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
     }
   }
 
@@ -2495,7 +2450,7 @@ public class NotebookServer extends WebSocketServlet
       }
 
       List<String> settingIds =
-          notebook.getInterpreterSettingManager().getInterpreterBinding(note.getId());
+          notebook.getInterpreterSettingManager().getSettingIds();
       for (String id : settingIds) {
         if (interpreterGroupId.contains(id)) {
           broadcast(note.getId(),
@@ -2517,7 +2472,8 @@ public class NotebookServer extends WebSocketServlet
     Interpreter interpreter;
 
     try {
-      interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+      interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName,
+          notebook().getNote(noteId).getDefaultInterpreterGroup());
       LOG.debug("getEditorSetting for interpreter: {} for paragraph {}", replName, paragraphId);
       resp.put("editor", notebook().getInterpreterSettingManager().
           getEditorSetting(interpreter, user, noteId, replName));

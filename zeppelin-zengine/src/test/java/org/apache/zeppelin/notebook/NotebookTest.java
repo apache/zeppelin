@@ -238,7 +238,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testSelectingReplImplementation() throws IOException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     // run with default repl
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -410,7 +409,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testRunAll() throws IOException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     // p1
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -444,7 +442,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testSchedule() throws InterruptedException, IOException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = new HashMap<>();
@@ -477,8 +474,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testScheduleAgainstRunningAndPendingParagraph() throws InterruptedException, IOException {
     // create a note
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note.getId(),
-        interpreterSettingManager.getInterpreterSettingIds());
 
     // append running and pending paragraphs to the note
     for (Status status : new Status[]{Status.RUNNING, Status.PENDING}) {
@@ -637,7 +632,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException, InterpreterNotFoundException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = new HashMap<>();
@@ -657,9 +651,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notebook.refreshCron(note.getId());
 
 
-    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock1");
+    RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock1", "test");
 
-    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock2");
+    RemoteInterpreter mock2 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock2", "test");
 
     // wait until interpreters are started
     while (!mock1.isOpened() || !mock2.isOpened()) {
@@ -687,8 +681,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       throws IOException, InterruptedException, InterpreterNotFoundException {
     // create a cron scheduled note.
     Note cronNote = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), cronNote.getId(),
-        Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock1").getId()));
     cronNote.setConfig(new HashMap() {
       {
         put("cron", "1/5 * * * * ?");
@@ -698,7 +690,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     });
     RemoteInterpreter cronNoteInterpreter =
         (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-            cronNote.getId(), "mock1");
+            cronNote.getId(), "mock1", "test");
 
     // create a paragraph of the cron scheduled note.
     Paragraph cronNoteParagraph = cronNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -711,11 +703,10 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // create another note
     Note anotherNote = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), anotherNote.getId(),
-        Arrays.asList(interpreterSettingManager.getInterpreterSettingByName("mock2").getId()));
+    interpreterSettingManager.getByName("mock2").getOption().setPerNote("scoped");
     RemoteInterpreter anotherNoteInterpreter =
         (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(),
-            anotherNote.getId(), "mock2");
+            anotherNote.getId(), "mock2", "test");
 
     // create a paragraph of another note
     Paragraph anotherNoteParagraph = anotherNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -749,7 +740,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     // wait for a few seconds
     Thread.sleep(5 * 1000);
-
     // test that anotherNoteInterpreter is still opened
     assertTrue(anotherNoteInterpreter.isOpened());
 
@@ -772,7 +762,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
       InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     String simpleText = "hello world";
@@ -808,7 +797,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testCloneNote() throws IOException, CloneNotSupportedException,
       InterruptedException, InterpreterException, SchedulerException, RepositoryException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
@@ -841,7 +829,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testCloneNoteWithNoName() throws IOException, CloneNotSupportedException,
       InterruptedException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Note cloneNote = notebook.cloneNote(note.getId(), null, anonymous);
     assertEquals(cloneNote.getName(), "Note " + cloneNote.getId());
@@ -853,7 +840,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testCloneNoteWithExceptionResult() throws IOException, CloneNotSupportedException,
       InterruptedException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
@@ -876,7 +862,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   @Test
   public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p1.setText("%mock1 hello");
@@ -903,7 +888,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       IOException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     AngularObjectRegistry registry = interpreterSettingManager
         .getInterpreterSettings(note.getId()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
@@ -936,7 +920,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       IOException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     AngularObjectRegistry registry = interpreterSettingManager
         .getInterpreterSettings(note.getId()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
@@ -970,7 +953,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       IOException, InterpreterException {
     // create a note and a paragraph
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     AngularObjectRegistry registry = interpreterSettingManager
         .getInterpreterSettings(note.getId()).get(0).getOrCreateInterpreterGroup(anonymous.getUser(), "sharedProcess")
@@ -1097,7 +1079,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
       IOException, InterpreterException {
     Note note = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding(anonymous.getUser(), note.getId(), interpreterSettingManager.getInterpreterSettingIds());
 
     // create three paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
@@ -1262,38 +1243,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
   }
 
   @Test
-  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException, InterpreterException {
-    // create a notes
-    Note note1 = notebook.createNote(anonymous);
-    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p1.setAuthenticationInfo(anonymous);
-    p1.setText("%mock1 getId");
-
-    // restart interpreter with per note session enabled
-    for (InterpreterSetting setting : interpreterSettingManager.getInterpreterSettings(note1.getId())) {
-      setting.getOption().setPerNote(InterpreterOption.SCOPED);
-      notebook.getInterpreterSettingManager().restart(setting.getId());
-    }
-
-    note1.run(p1.getId());
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
-    InterpreterResult result = p1.getResult();
-
-
-    // unbind, and rebind setting. that result interpreter instance close
-    List<String> bindedSettings = notebook.getBindedInterpreterSettingsIds(note1.getId());
-    notebook.bindInterpretersToNote(anonymous.getUser(), note1.getId(), new LinkedList<String>());
-    notebook.bindInterpretersToNote(anonymous.getUser(), note1.getId(), bindedSettings);
-
-    note1.run(p1.getId());
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
-
-    assertNotEquals(result.message().get(0).getData(), p1.getResult().message().get(0).getData());
-
-    notebook.removeNote(note1.getId(), anonymous);
-  }
-
-  @Test
   public void testNotebookEventListener() throws IOException {
     final AtomicInteger onNoteRemove = new AtomicInteger(0);
     final AtomicInteger onNoteCreate = new AtomicInteger(0);
@@ -1343,10 +1292,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     note1.removeParagraph(anonymous.getUser(), p1.getId());
     assertEquals(1, onParagraphRemove.get());
-
-    List<String> settings = notebook.getBindedInterpreterSettingsIds(note1.getId());
-    notebook.bindInterpretersToNote(anonymous.getUser(), note1.getId(), new LinkedList<String>());
-    assertEquals(settings.size(), unbindInterpreter.get());
 
     notebook.removeNote(note1.getId(), anonymous);
     assertEquals(1, onNoteRemove.get());
