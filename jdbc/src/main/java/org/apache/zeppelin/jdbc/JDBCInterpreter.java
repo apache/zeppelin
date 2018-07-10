@@ -32,13 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.resource.WellKnownResourceName;
-import org.apache.zeppelin.tabledata.ColumnDef;
-import org.apache.zeppelin.tabledata.InterpreterResultTableData;
-import org.apache.zeppelin.tabledata.Row;
-import org.apache.zeppelin.tabledata.TableData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -62,7 +54,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -705,7 +696,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         if (sqlToExecute.contains("{ResourcePool")) {
-          sqlToExecute = preparePoolData(sqlToExecute, statement, interpreterContext);
+          sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
+              interpreterContext);
         }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
@@ -784,66 +776,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
       getJDBCConfiguration(user).removeStatement(paragraphId);
     }
     return interpreterResult;
-  }
-
-  private String preparePoolData(String sqlReq, Statement statement, InterpreterContext context) {
-    // todo: smart parsing
-    final int poolReqBegIndex = sqlReq.indexOf("{ResourcePool");
-    final int poolReqEndIndex = sqlReq.indexOf("}", poolReqBegIndex);
-    final String poolReq = sqlReq.substring(poolReqBegIndex, poolReqEndIndex + 1);
-
-    final String paragraphIdKey = "paragraph_id=";
-    final String nodeIdKey = "note_id=";
-
-    final int pIdIndex = poolReq.indexOf(paragraphIdKey);
-    final String paragraphId = poolReq.substring(pIdIndex + paragraphIdKey.length(),
-        poolReq.length() - 1);
-    // '-' is not allowed in sql table names
-    // the table name must begin with a letter
-    final String paragraphIdSql = "p" + paragraphId.replaceAll("-", "");
-
-    final int nIdBegIndex = poolReq.indexOf(nodeIdKey);
-    final int nIdEndIndex = poolReq.indexOf(".", nIdBegIndex);
-    final String noteId = poolReq.substring(nIdBegIndex + nodeIdKey.length(), nIdEndIndex);
-
-    ResourcePool resourcePool = context.getResourcePool();
-    final String str = "" + resourcePool.get(noteId, paragraphId,
-        WellKnownResourceName.ZeppelinTableResult.toString()).get();
-
-    InterpreterResultMessage msg = new InterpreterResultMessage(InterpreterResult.Type.TABLE, str);
-    TableData tableData = new InterpreterResultTableData(msg);
-
-    final ColumnDef[] columns = tableData.columns();
-    List<String> columDefs = new ArrayList<>();
-    for (final ColumnDef column : columns) {
-      columDefs.add(column.name().replace("%table", "") + " varchar(100)");
-    }
-
-    try {
-      statement.addBatch("DROP TABLE IF EXISTS " + paragraphIdSql);
-
-      final String sqlCreateTable = "CREATE TABLE " + paragraphIdSql + " ("
-                                    + StringUtils.join(columDefs, ", ") + ");";
-      logger.info("POOL: " + sqlCreateTable);
-      statement.addBatch(sqlCreateTable);
-      for (Iterator<Row> iterator = tableData.rows(); iterator.hasNext(); ) {
-        Row row = iterator.next();
-        final String sqlInsert = "INSERT INTO " + paragraphIdSql + " VALUES ("
-            + StringUtils.join(
-                Arrays.stream(row.get())
-                .map(x -> "'" + x + "'")
-                .collect(Collectors.toList()),
-            ", ")
-            + ");";
-        logger.info("POOL: " + sqlInsert);
-        statement.addBatch(sqlInsert);
-      }
-      statement.executeBatch();
-    } catch (SQLException e)  {
-      logger.error("POOL: SQL Exception" + e.getMessage());
-    }
-
-    return sqlReq.replace(poolReq, paragraphIdSql);
   }
 
   /**
