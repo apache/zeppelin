@@ -59,7 +59,8 @@ public class AdminService {
     try {
       Class.forName(loggerRequest.getName());
     } catch (Throwable ignore) {
-      throw new BadRequestException("The name of the logger is incorrect class name");
+      throw new BadRequestException(
+          "The class of '" + loggerRequest.getName() + "' doesn't exists");
     }
 
     org.apache.log4j.Logger logger = LogManager.getLogger(loggerRequest.getName());
