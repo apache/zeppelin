@@ -698,8 +698,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
 
+        final String stringType = getProperty(DEFAULT_STRING_TYPE);
         while (sqlToExecute.contains(POOL_REQ_PREFIX)) {
-          final String stringType = getProperty(DEFAULT_STRING_TYPE);
           sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
               interpreterContext, stringType);
         }
