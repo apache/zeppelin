@@ -392,7 +392,9 @@ public class LuceneSearch implements SearchService {
   public void close() {
     try {
       indexWriter.close();
-      FileUtils.deleteDirectory(directoryPath.toFile());
+      if (null != directoryPath) {
+        FileUtils.deleteDirectory(directoryPath.toFile());
+      }
     } catch (IOException e) {
       logger.error("Failed to .close() the notebook index", e);
     }
