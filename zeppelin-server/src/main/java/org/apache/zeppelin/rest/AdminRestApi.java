@@ -17,9 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -67,10 +67,12 @@ public class AdminRestApi {
   @POST
   @ZeppelinApi
   public List<org.apache.log4j.Logger> setLoggerLevel(LoggerRequest loggerRequest) {
-    Preconditions.checkArgument(
-        null != loggerRequest
-            && StringUtils.isNotEmpty(loggerRequest.getName())
-            && StringUtils.isNotEmpty(loggerRequest.getLevel()));
+    if (null == loggerRequest
+        || StringUtils.isEmpty(loggerRequest.getName())
+        || StringUtils.isEmpty(loggerRequest.getLevel())) {
+      logger.trace("loggerRequest: {}", loggerRequest);
+      throw new BadRequestException("Wrong request body");
+    }
     logger.debug("loggerRequest: {}", loggerRequest);
 
     adminService.setLoggerLevel(loggerRequest);

@@ -32,6 +32,7 @@ import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.rest.AdminRestApi;
+import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.service.AdminService;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -433,6 +434,8 @@ public class ZeppelinServer extends Application {
     Set<Class<?>> classes = new HashSet<>();
 
     classes.add(GsonProvider.class);
+
+    classes.add(WebApplicationExceptionMapper.class);
 
     return classes;
   }
