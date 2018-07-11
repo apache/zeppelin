@@ -45,10 +45,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.editor = null;
   $scope.cursorPosition = null;
   $scope.diffMatchPatch = new DiffMatchPatch();
-  $scope.modalAttr={
-    showmodal: false,
-    path: '',
-  };
+
 
   // transactional info for spell execution
   $scope.spellTransaction = {
@@ -190,20 +187,20 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     } else if (config.editorSetting.editOnDblClick) {
       editorSetting.isOutputHidden = config.editorSetting.editOnDblClick;
     }
-    if($scope.paragraph.runtimeInfos) {
-      const sparkInterpreterObj = $scope.$parent.interpreterSettings.find(function(inter) {
-        return inter.name.includes('spark');
-      });
-      if(sparkInterpreterObj.properties.hasOwnProperty(Utils.Constants['X-Frame-Params'])) {
-        $scope.paragraph.hasXframe = true;
-      }
-    }
+  };
+
+  const fetchXframeSupport = function() {
+    Utils.checkXframeSupport($scope, $scope.$parent.interpreterSettings);
   };
 
   const isTabCompletion = function() {
     const completionKey = $scope.paragraph.config.editorSetting.completionKey;
     return completionKey === 'TAB';
   };
+
+  $scope.$on('interpreterSettingChange', function() {
+    fetchXframeSupport();
+  });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
@@ -1920,13 +1917,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.showInterpreterWebViewInline = function(url) {
-    $scope.modalAttr.showmodal = true;
-    $scope.modalAttr.path = url;
-    Utils.triggerClick('#modalLink');
-  };
-
-  $scope.showInterpreterWebViewNewTab= function(url) {
-    window.open(url);
+  $scope.showInterpreterWebView = function(url, type) {
+    const label = $scope.paragraph.runtimeInfos.jobUrl.label;
+    type ? Utils.showWebViewInIframe(url, label) : window.open(url);
   };
 }

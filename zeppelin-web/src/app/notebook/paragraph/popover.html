@@ -13,7 +13,7 @@ limitations under the License.
 -->
 
 <div class="webview-poptext">
-    <span ng-if="paragraph.hasXframe" class="link" ng-click="showInterpreterWebViewInline(url)">Inline</span>
-    <span ng-if="paragraph.hasXframe">|</span>
-    <span class="link" ng-click="showInterpreterWebViewNewTab(url)">New Window</span>
+    <span ng-if="paragraph.hasXframe || setting.hasXframe" class="link" ng-click="showInterpreterWebView(url, 'inline')">Inline</span>
+    <span ng-if="paragraph.hasXframe || setting.hasXframe">|</span>
+    <span class="link" ng-click="showInterpreterWebView(url)">New Window</span>
 </div>

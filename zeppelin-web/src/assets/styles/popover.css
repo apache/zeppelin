@@ -78,4 +78,5 @@
 .webview-poptext{
         display: block;
         white-space: nowrap;
+        text-align: center;
   }

@@ -123,10 +123,11 @@ limitations under the License.
           </small>
 
         </h3>
-        <span style="float:right" ng-show="!valueform.$visible" >
+        <span style="float:right" ng-show="!valueform.$visible" ng-init="url=setting.id">
           <button class="btn btn-default btn-xs"
-                  ng-click="showInterpreterWebUI(setting.id)"
-                  ng-show="setting.group == 'spark'">
+                  ng-show="setting.group == 'spark'"
+                  angular-popover direction="bottom" template-url="app/notebook/paragraph/popover.html"
+                  style="position: relative;height:20px;">
             <span class="fa fa-external-link"></span> spark ui</button>
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
@@ -141,12 +142,6 @@ limitations under the License.
         </span>
       </div>
     </div>
-
-    <!-- web-ui modal for spark -->
-    <span ng-controller="Modalcontroller" ng-if="modalAttr.showmodal">
-      <modal id="modal1"  iframe-url="iframeUrl" modal-close="modalClose"></modal>
-      <a href="" id="modalLink"  ng-hide="true" data-target="#{{modal1}}" data-toggle="modal"></a>
-    </span>
 
     <div class="row interpreter">
       <div class="col-md-12">

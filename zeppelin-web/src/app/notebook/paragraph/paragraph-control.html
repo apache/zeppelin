@@ -29,7 +29,7 @@ limitations under the License.
       <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
         <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values" custom-stop-event>
           <span class="link" angular-popover direction="bottom" template-url="app/notebook/paragraph/popover.html" style="position: relative;">
-            <span class="fa fa-external-link-square"></span> Jobs #{{$index}}</span>
+            <span class="fa fa-external-link-square"></span> Jobs #{{$index}}
           </span>
         </li>
       </ul>
@@ -37,12 +37,6 @@ limitations under the License.
   </span>
   <span>
     {{paragraph.status}}
-  </span>
-
-  <!-- web-ui modal for spark and livy  -->
-  <span ng-controller="Modalcontroller" ng-if="modalAttr.showmodal">
-    <modal id="modal1" iframe-url="iframeUrl" modal-close="modalClose()"></modal>
-    <a href="" id="modalLink"  ng-hide="true" data-target="#{{modal1}}"  data-toggle="modal"></a>
   </span>
 
   <span ng-if="paragraph.status === 'RUNNING' && paragraph.executor !== 'SPELL'">

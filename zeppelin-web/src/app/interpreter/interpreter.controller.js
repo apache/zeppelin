@@ -25,10 +25,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showAddNewSetting = false;
   $scope.showRepositoryInfo = false;
   $scope.searchInterpreter = '';
-  $scope.modalAttr = {
-    showmodal: false,
-    path: '',
-  };
   $scope._ = _;
   $scope.interpreterPropertyTypes = [];
   ngToast.dismiss();
@@ -112,26 +108,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   });
 
-  let getInterpreterSettings = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
-      .then(function(res) {
-        $scope.interpreterSettings = res.data.body;
-        checkDownloadingDependencies();
-      }).catch(function(res) {
-        if (res.status === 401) {
-          ngToast.danger({
-            content: 'You don\'t have permission on this page',
-            verticalPosition: 'bottom',
-            timeout: '3000',
-          });
-          setTimeout(function() {
-            window.location = baseUrlSrv.getBase();
-          }, 3000);
-        }
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
-      });
-  };
-
   const checkDownloadingDependencies = function() {
     let isDownloading = false;
     for (let index = 0; index < $scope.interpreterSettings.length; index++) {
@@ -152,7 +128,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (isDownloading) {
       $timeout(function() {
         if ($route.current.$$route.originalPath === '/interpreter') {
-          getInterpreterSettings();
+          Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
         }
       }, 2000);
     }
@@ -549,9 +525,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
       .then(function(res) {
         $scope.resetNewInterpreterSetting();
-        getInterpreterSettings();
         $scope.showAddNewSetting = false;
-        checkDownloadingDependencies();
+        Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
       }).catch(function(res) {
         const errorMsg = res.data ? res.data.message : 'Could not connect to server.';
         console.log('Error %o %o', res.status, errorMsg);
@@ -761,12 +736,16 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 
-    getInterpreterSettings();
+    Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
     getAvailableInterpreters();
     getRepositories();
   };
 
-  $scope.showInterpreterWebUI = function(settingId) {
+  $scope.$on('interpreterSettingChange', function() {
+    Utils.checkXframeSupport($scope, $scope.interpreterSettings, 'interpreter');
+  });
+
+  $scope.showInterpreterWebView = function(settingId, type) {
     $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
       .then(function(res) {
         if (res.data.body === undefined) {
@@ -776,9 +755,10 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
           return;
         }
         if (res.data.body.url) {
-          $scope.modalAttr.showmodal = true;
-          $scope.modalAttr.path = res.data.body.url;
-          Utils.triggerClick('#modalLink');
+          const url = res.data.body.url;
+          type
+            ? Utils.showWebViewInIframe(url, settingId)
+            : window.open(url);
         } else {
           BootstrapDialog.alert({
             message: _.escape(res.data.body.message),

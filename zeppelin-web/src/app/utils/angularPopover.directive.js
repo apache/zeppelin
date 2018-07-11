@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('angularPopover', function($window) {
+angular.module('zeppelinWebApp').directive('angularPopover', function($window, $compile) {
   return {
     restrict: 'A',
     transclude: true,
@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').directive('angularPopover', function($window) {
     template: '<div class="angular-popover-container">'
                 +'<div class="angular-popover hide-popover-element">'
                 +'<div ng-if="isTemplateUrl()" ng-include="getContentPopover()" class="angular-popover-template"></div>'
-                +'<div ng-if="!isTemplateUrl()" class="angular-popover-template"></div>'
+                +'<div ng-if="!isTemplateUrl()" class="angular-popover-template template"></div>'
                 +'</div>'
                 +'<div class="angular-popover-triangle hide-popover-element" ng-class="getTriangleClass()"></div>'
                 +'</div><ng-transclude></ng-transclude>',
@@ -97,8 +97,9 @@ angular.module('zeppelinWebApp').directive('angularPopover', function($window) {
 
       const createPopover = function() {
         if(attrs.template) {
-          const templateElement = element[0].querySelector('.angular-popover-template');
-          templateElement.innerHTML = attrs.template;
+          const markup = $compile(attrs.template)(scope);
+          const temp = angular.element('.template');
+          temp.html(markup);
         }
 
         if(attrs.backgroundColor) {
