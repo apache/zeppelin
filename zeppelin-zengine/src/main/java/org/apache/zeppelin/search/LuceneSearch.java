@@ -57,6 +57,7 @@ import org.apache.lucene.search.highlight.TextFragment;
 import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -89,7 +90,9 @@ public class LuceneSearch implements SearchService {
               Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
       this.directory = new MMapDirectory(directoryPath);
     } catch (IOException e) {
-      logger.error("Failed to create temporary directory for search service", e);
+      logger.error(
+          "Failed to create temporary directory for search service. Use memory instead", e);
+      this.directory = new RAMDirectory();
     }
     this.analyzer = new StandardAnalyzer();
     this.indexWriterConfig = new IndexWriterConfig(analyzer);
