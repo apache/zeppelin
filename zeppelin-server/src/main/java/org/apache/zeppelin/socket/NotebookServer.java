@@ -2462,12 +2462,14 @@ public class NotebookServer extends WebSocketServlet
         null;
     try {
       interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+      LOG.debug("getEditorSetting for interpreter: {} for paragraph {}", replName, paragraphId);
+      resp.put("editor", notebook().getInterpreterSettingManager().
+          getEditorSetting(interpreter, user, noteId, replName));
+      conn.send(serializeMessage(resp));
     } catch (InterpreterNotFoundException e) {
-      throw new IOException("Fail to get interpreter: " + replName, e);
+      LOG.warn("Fail to get interpreter: " + replName);
+      return;
     }
-    resp.put("editor", notebook().getInterpreterSettingManager().
-        getEditorSetting(interpreter, user, noteId, replName));
-    conn.send(serializeMessage(resp));
   }
 
   private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject)
