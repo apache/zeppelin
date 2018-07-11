@@ -84,17 +84,20 @@ public class InterpreterResult implements Serializable, JsonSerializable {
    * Automatically detect %[display_system] directives
    * @param msg
    */
-  public void add(String msg) {
+  public static List<InterpreterResultMessage> getMsgsFromString(String msg) {
     InterpreterOutput out = new InterpreterOutput(null);
+    List<InterpreterResultMessage> interpreterResultMessages = null;
     try {
       out.write(msg);
       out.flush();
-      this.msg.addAll(out.toInterpreterResultMessage());
+      interpreterResultMessages = out.toInterpreterResultMessage();
       out.close();
-    } catch (IOException e) {
-      logger.error(e.getMessage(), e);
-    }
+    } catch (IOException e) { /*ignored*/ }
+    return interpreterResultMessages;
+  }
 
+  public void add(String msg) {
+    this.msg.addAll(getMsgsFromString(msg));
   }
 
   public void add(Type type, String data) {

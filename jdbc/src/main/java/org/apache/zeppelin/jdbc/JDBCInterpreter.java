@@ -104,6 +104,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String STRING_TYPE = "stringType";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
@@ -120,6 +121,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
+  private static final String POOL_REQ_PREFIX = "{ResourcePool";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -129,6 +131,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
   static final String DEFAULT_STATEMENT_PRECODE = DEFAULT_KEY + DOT + STATEMENT_PRECODE_KEY;
+  static final String DEFAULT_STRING_TYPE = DEFAULT_KEY + DOT + STRING_TYPE;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -695,9 +698,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
 
-        if (sqlToExecute.contains("{ResourcePool")) {
+        while (sqlToExecute.contains(POOL_REQ_PREFIX)) {
+          final String stringType = getProperty(DEFAULT_STRING_TYPE);
           sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
-              interpreterContext);
+              interpreterContext, stringType);
         }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)

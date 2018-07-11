@@ -16,7 +16,7 @@ package org.apache.zeppelin.jdbc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.WellKnownResourceName;
@@ -25,7 +25,6 @@ import org.apache.zeppelin.tabledata.InterpreterResultTableData;
 import org.apache.zeppelin.tabledata.Row;
 import org.apache.zeppelin.tabledata.TableData;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -35,10 +34,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JDBCPoolManager {
-  private static final String paragraphIdKey = "paragraph_id=";
-  private static final String noteIdKey = "note_id=";
+  private static final String PARAGRAPH_ID_KEY = "paragraph_id=";
+  private static final String NOTE_ID_KEY = "note_id=";
+  // the table name must begin with a letter
+  private static final String SQL_NAME_PREFIX = "p";
 
-  // todo: smarter parser
   private static String getPoolExpression(String sqlReq) {
     final int poolReqBegIndex = sqlReq.indexOf("{ResourcePool");
     final int poolReqEndIndex = sqlReq.indexOf("}", poolReqBegIndex);
@@ -46,30 +46,33 @@ public class JDBCPoolManager {
   }
 
   private static String getParagraphId(String poolExp) {
-    final int pIdIndex = poolExp.indexOf(paragraphIdKey);
-    return poolExp.substring(pIdIndex + paragraphIdKey.length(), poolExp.length() - 1);
+    final int pIdIndex = poolExp.indexOf(PARAGRAPH_ID_KEY);
+    return poolExp.substring(pIdIndex + PARAGRAPH_ID_KEY.length(), poolExp.length() - 1);
   }
 
-  private static String getNoteId(String poolExp) {
-    final int nIdBegIndex = poolExp.indexOf(noteIdKey);
-    final int nIdEndIndex = poolExp.indexOf(".", nIdBegIndex);
-    return poolExp.substring(nIdBegIndex + noteIdKey.length(), nIdEndIndex);
+  private static String getNoteId(String poolExp, InterpreterContext context) {
+    if (poolExp.contains(NOTE_ID_KEY)) {
+      final int nIdBegIndex = poolExp.indexOf(NOTE_ID_KEY);
+      final int nIdEndIndex = poolExp.indexOf(".", nIdBegIndex);
+      return poolExp.substring(nIdBegIndex + NOTE_ID_KEY.length(), nIdEndIndex);
+    } else {
+      return context.getNoteId();
+    }
   }
 
   private static TableData getTableDataFromResourcePool(ResourcePool resourcePool,
                                                         String noteId, String paragraphId) {
     final String str = "" + resourcePool.get(noteId, paragraphId,
         WellKnownResourceName.ZeppelinTableResult.toString()).get();
-    InterpreterResultMessage msg = getMsgFromString(str);
+    InterpreterResultMessage msg = InterpreterResult.getMsgsFromString(str).get(0);
     return new InterpreterResultTableData(msg);
   }
 
-  private static List<String> getColumnNamesWithTypes(TableData tableData) {
+  private static List<String> getColumnNamesWithTypes(TableData tableData, String stringType) {
     final ColumnDef[] columns = tableData.columns();
     List<String> columDefs = new LinkedList<>();
     for (final ColumnDef column : columns) {
-      // todo: get type from properties
-      columDefs.add(column.name() + " varchar(100)");
+      columDefs.add(column.name() + " " + stringType);
     }
     return columDefs;
   }
@@ -97,31 +100,19 @@ public class JDBCPoolManager {
     return reqs;
   }
 
-  private static InterpreterResultMessage getMsgFromString (String msg) {
-    InterpreterOutput out = new InterpreterOutput(null);
-    InterpreterResultMessage interpreterResultMessage = null;
-    try {
-      out.write(msg);
-      out.flush();
-      interpreterResultMessage = out.toInterpreterResultMessage().get(0);
-      out.close();
-    } catch (IOException e) { /*ignored*/ }
-    return interpreterResultMessage;
-  }
-
 
   public static String preparePoolData(String sqlReq, Statement statement,
-                                       InterpreterContext context) {
+                                       InterpreterContext context, String stringType) {
     final String poolExp = getPoolExpression(sqlReq);
     final String paragraphId = getParagraphId(poolExp);
-    final String noteId = getNoteId(poolExp);
+    final String noteId = getNoteId(poolExp, context);
 
     ResourcePool resourcePool = context.getResourcePool();
     TableData tableData = getTableDataFromResourcePool(resourcePool, noteId, paragraphId);
 
-    List<String> columDefs = getColumnNamesWithTypes(tableData);
-    // '-' is not allowed in sql table names, the table name must begin with a letter
-    final String pIdSqlName = "p" + paragraphId.replace("-", "");
+    List<String> columDefs = getColumnNamesWithTypes(tableData, stringType);
+    // '-' is not allowed in sql table names
+    final String pIdSqlName = SQL_NAME_PREFIX + paragraphId.replace("-", "");
 
     try {
       final String sqlDrop = getSqlDropTableReq(pIdSqlName);
