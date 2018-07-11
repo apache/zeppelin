@@ -167,8 +167,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
 
     if (rows.length > maxResult) {
       msg.append("\n");
-      msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult,
-          SparkSqlInterpreter.MAX_RESULTS));
+      msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
     }
 
     sc.clearJobGroup();
