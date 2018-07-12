@@ -56,6 +56,8 @@ public class DistributedResourcePool extends LocalResourcePool {
       if (resources.isEmpty()) {
         return null;
       } else {
+        // TODO(zjffdu) just assume there's no dupicated resources with the same name, but
+        // this assumption is false
         return resources.get(0);
       }
     } else {

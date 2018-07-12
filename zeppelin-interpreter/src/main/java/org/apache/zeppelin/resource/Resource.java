@@ -17,10 +17,10 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import com.google.gson.internal.Primitives;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +92,10 @@ public class Resource implements JsonSerializable, Serializable {
     } else {
       return null;
     }
+  }
+
+  public <T> T get(Class<T> clazz) {
+    return Primitives.wrap(clazz).cast(r);
   }
 
   public boolean isSerializable() {

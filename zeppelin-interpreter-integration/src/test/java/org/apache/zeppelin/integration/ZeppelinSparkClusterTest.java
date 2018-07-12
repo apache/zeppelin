@@ -279,8 +279,15 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       // test basic dataframe api
       Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-              "df.collect()");
+      if (isSpark2()) {
+        p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.collect()");
+      } else {
+        p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.collect()");
+      }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertTrue(p.getReturn().message().get(0).getData().contains(
@@ -288,12 +295,62 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // test display DataFrame
       p = note.addNewParagraph(anonymous);
-      p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-          "z.show(df)");
+      if (isSpark2()) {
+        p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.createOrReplaceTempView(\"test_table\")\n" +
+                "z.show(df)");
+      } else {
+        p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.registerTempTable(\"test_table\")\n" +
+                "z.show(df)");
+      }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
-      assertEquals("_1\t_2\nhello\t20\n", p.getReturn().message().get(0).getData());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // run sql and save it into resource pool
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.sql(saveAs=table_result) select * from test_table");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from spark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark val df=z.getAsDataFrame(\"table_result\")\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from pyspark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.pyspark df=z.getAsDataFrame('table_result')\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from ipyspark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.ipyspark df=z.getAsDataFrame('table_result')\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from sparkr
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.r df=z.getAsDataFrame('table_result')\ndf");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TEXT, p.getReturn().message().get(0).getType());
+      assertTrue(p.getReturn().toString(),
+              p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"));
 
       // test display DataSet
       if (isSpark2()) {
@@ -592,6 +649,13 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       waitForFinish(p);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals(sparkVersion, p.getReturn().message().get(0).getData());
+
+      p.setText("%spark.pyspark sc.version");
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertTrue(p.getReturn().toString(),
+              p.getReturn().message().get(0).getData().contains(sparkVersion));
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);

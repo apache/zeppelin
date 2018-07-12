@@ -559,6 +559,8 @@ public class PythonInterpreter extends Interpreter {
           InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
         throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+      } else {
+        LOGGER.debug("Bootstrap python successfully.");
       }
     } catch (InterpreterException e) {
       throw new IOException(e);

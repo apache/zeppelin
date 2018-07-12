@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark
 import java.util
 
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.DataFrame
 import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
@@ -145,5 +146,9 @@ class SparkZeppelinContext(val sc: SparkContext,
       }
     }
     angularWatch(name, noteId, w)
+  }
+
+  def getAsDataFrame(name: String): Object = {
+    sparkShims.getAsDataFrame(get(name).toString)
   }
 }
