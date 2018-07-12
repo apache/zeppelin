@@ -61,6 +61,14 @@ class PyZeppelinContext(object):
     def get(self, key):
         return self.__getitem__(key)
 
+    def getAsDataFrame(self, key):
+        value = self.get(key)
+        try:
+            import pandas as pd
+        except ImportError:
+            print("fail to call getAsDataFrame as pandas is not installed")
+        return pd.read_csv(StringIO(value), sep="\t")
+
     def angular(self, key, noteId = None, paragraphId = None):
         return self.z.angular(key, noteId, paragraphId)
 
@@ -158,6 +166,7 @@ class PyZeppelinContext(object):
 
         body_buf = StringIO("")
         rows = df.head(self.max_result).values if exceed_limit else df.values
+        rowNumber = len(rows)
         index = df.index.values
         for idx, row in zip(index, rows):
             if show_index:
@@ -167,13 +176,16 @@ class PyZeppelinContext(object):
             for cell in row[1:]:
                 body_buf.write("\t")
                 body_buf.write(str(cell))
-            body_buf.write("\n")
+            # don't print '\n' after the last row
+            if idx != (rowNumber - 1):
+                body_buf.write("\n")
         body_buf.seek(0)
         header_buf.seek(0)
         print("%table " + header_buf.read() + body_buf.read())
-        body_buf.close(); header_buf.close()
+        body_buf.close()
+        header_buf.close()
         if exceed_limit:
-            print("%html <font color=red>Results are limited by {}.</font>".format(self.max_result))
+            print("\n%html <font color=red>Results are limited by {}.</font>".format(self.max_result))
 
     def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
                         **kwargs):

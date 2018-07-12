@@ -303,7 +303,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def createZeppelinContext(): Unit = {
-    val sparkShims = SparkShims.getInstance(sc.version, properties)
+
+    var sparkShims: SparkShims = null
+    if (isSparkSessionPresent()) {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sparkSession)
+    } else {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sc)
+    }
     var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
     if (StringUtils.isBlank(webUiUrl)) {
       webUiUrl = sparkUrl;

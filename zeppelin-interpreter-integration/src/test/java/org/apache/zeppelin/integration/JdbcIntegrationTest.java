@@ -64,6 +64,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setProperty("default.driver", "com.mysql.jdbc.Driver");
     interpreterSetting.setProperty("default.url", "jdbc:mysql://localhost:3306/");
     interpreterSetting.setProperty("default.user", "root");
+
     Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.46");
     interpreterSetting.setDependencies(Lists.newArrayList(dependency));
     interpreterSettingManager.restart(interpreterSetting.getId());
@@ -78,5 +79,27 @@ public class JdbcIntegrationTest {
             .build();
     InterpreterResult interpreterResult = jdbcInterpreter.interpret("show databases;", context);
     assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+
+    context.getLocalProperties().put("saveAs", "table_1");
+    interpreterResult = jdbcInterpreter.interpret("SELECT 1 as c1, 2 as c2;", context);
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(1, interpreterResult.message().size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
+
+    // read table_1 from python interpreter
+    Interpreter pythonInterpreter = interpreterFactory.getInterpreter("user1", "note1", "python", "test");
+    assertNotNull("PythonInterpreter is null", pythonInterpreter);
+
+    context = new InterpreterContext.Builder()
+            .setNoteId("note1")
+            .setParagraphId("paragraph_1")
+            .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
+            .build();
+    interpreterResult = pythonInterpreter.interpret("df=z.getAsDataFrame('table_1')\nz.show(df)", context);
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(1, interpreterResult.message().size());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("c1\tc2\n1\t2\n", interpreterResult.message().get(0).getData());
   }
 }

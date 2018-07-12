@@ -66,6 +66,12 @@ z.put <- function(name, object) {
 z.get <- function(name) {
   SparkR:::callJMethod(.zeppelinContext, "get", name)
 }
+
+z.getAsDataFrame <- function(name) {
+  stringValue <- z.get(name)
+  read.table(text=stringValue, header=TRUE, sep="\t")
+}
+
 z.angular <- function(name, noteId=NULL, paragraphId=NULL) {
   SparkR:::callJMethod(.zeppelinContext, "angular", name, noteId, paragraphId)
 }
