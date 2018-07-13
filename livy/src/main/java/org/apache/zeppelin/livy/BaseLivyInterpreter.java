@@ -77,8 +77,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
@@ -159,7 +157,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     try {
       this.livyVersion = getLivyVersion();
       if (this.livyVersion.isSharedSupported()) {
-        sharedInterpreter = getLivySharedInterpreter();
+        sharedInterpreter = getInterpreterInTheSameSessionByClassName(LivySharedInterpreter.class);
       }
       if (sharedInterpreter == null || !sharedInterpreter.isSupported()) {
         initLivySession();
@@ -169,26 +167,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
           "livy server log";
       throw new InterpreterException(msg, e);
     }
-  }
-
-  protected LivySharedInterpreter getLivySharedInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    LivySharedInterpreter sharedInterpreter = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(
-        LivySharedInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    sharedInterpreter = (LivySharedInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return sharedInterpreter;
   }
 
   @Override

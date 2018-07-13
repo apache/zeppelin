@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
 
   }
 
@@ -142,7 +141,6 @@ public class PythonCondaInterpreter extends Interpreter {
 
   private void changePythonEnvironment(String envName)
       throws IOException, InterruptedException, InterpreterException {
-    PythonInterpreter python = getPythonInterpreter();
     String binPath = null;
     if (envName == null) {
       binPath = getProperty(ZEPPELIN_PYTHON);
@@ -159,22 +157,17 @@ public class PythonCondaInterpreter extends Interpreter {
       }
     }
     setCurrentCondaEnvName(envName);
-    python.setPythonExec(binPath);
+    getInterpreterInTheSameSessionByClassName(PythonInterpreter.class, false)
+        .setPythonExec(binPath);
   }
 
   private void restartPythonProcess() throws InterpreterException {
     logger.debug("Restarting PythonInterpreter");
-    Interpreter python =
-        getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
-    python.close();
-    python.open();
-  }
+    PythonInterpreter pythonInterpreter =
+        getInterpreterInTheSameSessionByClassName(PythonInterpreter.class, false);
+    pythonInterpreter.close();
+    pythonInterpreter.open();
 
-  protected PythonInterpreter getPythonInterpreter() throws InterpreterException {
-    PythonInterpreter python = null;
-    Interpreter p =
-        getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
-    return (PythonInterpreter) ((LazyOpenInterpreter) p).getInnerInterpreter();
   }
 
   public static String runCondaCommandForTextOutput(String title, List<String> commands)
@@ -379,16 +372,11 @@ public class PythonCondaInterpreter extends Interpreter {
    */
   @Override
   public Scheduler getScheduler() {
-    PythonInterpreter pythonInterpreter = null;
     try {
-      pythonInterpreter = getPythonInterpreter();
-      if (pythonInterpreter != null) {
-        return pythonInterpreter.getScheduler();
-      } else {
-        return null;
-      }
+      PythonInterpreter pythonInterpreter =
+          getInterpreterInTheSameSessionByClassName(PythonInterpreter.class, false);
+      return pythonInterpreter.getScheduler();
     } catch (InterpreterException e) {
-      e.printStackTrace();
       return null;
     }
   }

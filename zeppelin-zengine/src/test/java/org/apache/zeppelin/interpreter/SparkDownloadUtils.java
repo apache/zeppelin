@@ -47,7 +47,6 @@ public class SparkDownloadUtils {
         LOGGER.warn("Failed to download Spark", e);
       }
     }
-
     // fallback to use apache archive
     // https://archive.apache.org/dist/spark/spark-1.6.3/spark-1.6.3-bin-hadoop2.6.tgz
     if (!downloaded) {

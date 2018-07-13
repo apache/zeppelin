@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -30,13 +24,16 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Spark SQL interpreter for Zeppelin.
@@ -44,32 +41,15 @@ import org.slf4j.LoggerFactory;
 public class SparkSqlInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
 
+  private SparkInterpreter sparkInterpreter;
+
   public SparkSqlInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() {
-
-  }
-
-  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    SparkInterpreter spark = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    spark = (SparkInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return spark;
+  public void open() throws InterpreterException {
+    this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
   }
 
   public boolean concurrentSQL() {
@@ -82,7 +62,6 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
@@ -123,7 +102,6 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     SparkContext sc = sparkInterpreter.getSparkContext();
     sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
@@ -136,7 +114,6 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
   }
 
@@ -153,13 +130,11 @@ public class SparkSqlInterpreter extends Interpreter {
       // It's because of scheduler is not created yet, and scheduler is created by this function.
       // Therefore, we can still use getSparkInterpreter() here, but it's better and safe
       // to getSparkInterpreter without opening it.
-
-      Interpreter intp =
-          getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
-      if (intp != null) {
-        return intp.getScheduler();
-      } else {
-        return null;
+      try {
+        return getInterpreterInTheSameSessionByClassName(SparkInterpreter.class, false)
+            .getScheduler();
+      } catch (InterpreterException e) {
+        throw new RuntimeException("Fail to getScheduler", e);
       }
     }
   }
