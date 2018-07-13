@@ -198,7 +198,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
       assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
       assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-      assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message().get(0).getData());
+      assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
+          interpreterResult.message().get(0).getData());
     } finally {
       t.close();
     }
@@ -390,7 +391,8 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
       List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3,
           interpreterContext);
 
-      InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select", "select",
+      InterpreterCompletion correctCompletionKeyword =
+          new InterpreterCompletion("select", "select",
           CompletionType.keyword.name());
 
       assertEquals(1, completionList.size());
