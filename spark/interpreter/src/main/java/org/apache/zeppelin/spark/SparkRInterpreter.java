@@ -127,22 +127,8 @@ public class SparkRInterpreter extends Interpreter {
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
 
     String imageWidth = getProperty("zeppelin.R.image.width", "100%");
-
-    String[] sl = lines.split("\n");
-    if (sl[0].contains("{") && sl[0].contains("}")) {
-      String jsonConfig = sl[0].substring(sl[0].indexOf("{"), sl[0].indexOf("}") + 1);
-      ObjectMapper m = new ObjectMapper();
-      try {
-        JsonNode rootNode = m.readTree(jsonConfig);
-        JsonNode imageWidthNode = rootNode.path("imageWidth");
-        if (!imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
-      }
-      catch (Exception e) {
-        logger.warn("Can not parse json config: " + jsonConfig, e);
-      }
-      finally {
-        lines = lines.replace(jsonConfig, "");
-      }
+    if (interpreterContext.getLocalProperties().containsKey("imageWidth")) {
+      imageWidth = interpreterContext.getLocalProperties().get("imageWidth");
     }
 
     String setJobGroup = "";
