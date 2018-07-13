@@ -338,13 +338,14 @@ public abstract class Interpreter {
   }
 
   @ZeppelinApi
-  public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
+  public <T> T getInterpreterInTheSameSessionByClassName(Class<T> interpreterClass, boolean open)
+      throws InterpreterException {
     synchronized (interpreterGroup) {
       for (List<Interpreter> interpreters : interpreterGroup.values()) {
         boolean belongsToSameNoteGroup = false;
         Interpreter interpreterFound = null;
         for (Interpreter intp : interpreters) {
-          if (intp.getClassName().equals(className)) {
+          if (intp.getClassName().equals(interpreterClass.getName())) {
             interpreterFound = intp;
           }
 
@@ -357,12 +358,30 @@ public abstract class Interpreter {
           }
         }
 
-        if (belongsToSameNoteGroup) {
-          return interpreterFound;
+        if (belongsToSameNoteGroup && interpreterFound != null) {
+          LazyOpenInterpreter lazy = null;
+          T innerInterpreter = null;
+          while (interpreterFound instanceof WrappedInterpreter) {
+            if (interpreterFound instanceof LazyOpenInterpreter) {
+              lazy = (LazyOpenInterpreter) interpreterFound;
+            }
+            interpreterFound = ((WrappedInterpreter) interpreterFound).getInnerInterpreter();
+          }
+          innerInterpreter = (T) interpreterFound;
+
+          if (lazy != null && open) {
+            lazy.open();
+          }
+          return innerInterpreter;
         }
       }
     }
     return null;
+  }
+
+  public <T> T getInterpreterInTheSameSessionByClassName(Class<T> interpreterClass)
+      throws InterpreterException {
+    return getInterpreterInTheSameSessionByClassName(interpreterClass, true);
   }
 
   /**
