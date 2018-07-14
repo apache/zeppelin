@@ -140,6 +140,10 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-codec</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
