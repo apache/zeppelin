@@ -45,7 +45,6 @@
     <wagon.version>1.0</wagon.version>
     <jline.version>2.12.1</jline.version>
     <copycat.version>1.2.9-SNAPSHOT</copycat.version>
-    <netty-all.version>4.0.23.Final</netty-all.version>
     <catalyst-netty.version>1.2.1</catalyst-netty.version>
 
     <!--plugin versions-->
@@ -111,11 +110,6 @@
       <groupId>io.atomix.copycat</groupId>
       <artifactId>copycat-client</artifactId>
       <version>${copycat.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>${netty-all.version}</version>
     </dependency>
     <dependency>
       <groupId>io.atomix.catalyst</groupId>
