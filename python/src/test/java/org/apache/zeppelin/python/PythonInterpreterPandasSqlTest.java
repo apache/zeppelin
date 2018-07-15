@@ -86,7 +86,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
 
     // to make sure python is running.
-    InterpreterResult ret = python.interpret("\n", context);
+    InterpreterResult ret = python.interpret("print(\"python initialized\")\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     sql.open();
