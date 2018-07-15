@@ -55,8 +55,8 @@ limitations under the License.
   </tr>
   <tr>
     <td>zeppelin.bigquery.interpolation</td>
-    <td></td>
-    <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
+    <td>false</td>
+    <td>Enables ZeppelinContext variable interpolation into paragraph text.</td>
   </tr>
 </table>
 
@@ -143,8 +143,7 @@ z.put("country_code", "KR")
 
 Object interpolation is disabled by default, and can be enabled  by 
 setting the value of the property `zeppelin.bigquery.interpolation` to `true` (see _More Properties_ above). 
-More details of this feature can be found in the Spark interpreter documentation under 
-[Object Interpolation](spark.html#object-interpolation)
+More details of this feature can be found under _Usage_/_Other Features_/[Zeppelin-Context](../usage/other_features/zeppelin_context.html)
 
 ## Technical description
 
