@@ -143,6 +143,32 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
   }
 
   @Test
+  public void sqlCountOverTestDataFrame() throws IOException, InterpreterException {
+    InterpreterResult ret;
+    // given
+    // DataFrame df3 \w generated 200 test rows
+    ret = python.interpret("import pandas as pd\n"
+        + "import numpy as np\n"
+        + "df3 = pd.DataFrame(\n"
+        + "    np.array([\n"
+        + "        np.arange(0, 200),\n"
+        + "        np.random.randn(200).cumsum(),\n"
+        + "        np.random.randn(200).cumsum(),\n"
+        + "        np.random.randint(1, 3, 200)\n"
+        + "    ]).transpose(),\n"
+        + "    columns=[\"X\", \"Y\", \"Z\", \"Group\"])", context);
+    assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
+
+    //when
+    ret = sql.interpret("select count(*) from df3", context);
+
+    //then
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(Type.TABLE, out.getOutputAt(1).getType());
+    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("200"));
+  }
+
+  @Test
   public void badSqlSyntaxFails() throws IOException, InterpreterException {
     //when
     InterpreterResult ret = sql.interpret("select wrong syntax", context);
