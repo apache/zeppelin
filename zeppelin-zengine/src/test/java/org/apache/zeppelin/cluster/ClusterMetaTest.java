@@ -29,6 +29,8 @@ import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -44,12 +46,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class ClusterMetaTest {
+  private static Logger logger = LoggerFactory.getLogger(ClusterMetaTest.class);
+
   static CopycatServer copycatServer = null;
   static CopycatClient copycatClient = null;
 
   @BeforeClass
   public static void initClusterEnv() throws IOException, InterruptedException {
-    System.out.println("initClusterEnv >>>");
+    logger.info("initClusterEnv >>>");
 
     // Set the cluster IP and port
     String zServerHost = RemoteInterpreterUtils.findAvailableHostAddress();
@@ -76,26 +80,26 @@ public class ClusterMetaTest {
 
     copycatServer.onStateChange(state -> {
       if (state == CopycatServer.State.CANDIDATE) {
-        System.out.println("CopycatServer.State CANDIDATE!");
+        logger.info("CopycatServer.State CANDIDATE!");
       } else if (state == CopycatServer.State.FOLLOWER) {
-        System.out.println("CopycatServer.State FOLLOWER!");
+        logger.info("CopycatServer.State FOLLOWER!");
       } else if (state == CopycatServer.State.INACTIVE) {
-        System.out.println("CopycatServer.State INACTIVE!");
+        logger.info("CopycatServer.State INACTIVE!");
       } else if (state == CopycatServer.State.LEADER) {
-        System.out.println("CopycatServer.State LEADER!");
+        logger.info("CopycatServer.State LEADER!");
       } else if (state == CopycatServer.State.PASSIVE) {
-        System.out.println("CopycatServer.State PASSIVE!");
+        logger.info("CopycatServer.State PASSIVE!");
       } else {
-        System.out.println("unknown CopycatServer.State!");
+        logger.info("unknown CopycatServer.State!");
       }
     });
 
     copycatServer.cluster().onJoin(member -> {
-      System.out.println(member.address() + " joined the cluster.");
+      logger.info(member.address() + " joined the cluster.");
     });
 
     copycatServer.cluster().onLeave(member -> {
-      System.out.println(member.address() + " left the cluster.");
+      logger.info(member.address() + " left the cluster.");
     });
 
     copycatServer.bootstrap().join();
@@ -111,13 +115,13 @@ public class ClusterMetaTest {
 
     copycatClient.onStateChange(state -> {
       if (state == CopycatClient.State.CONNECTED) {
-        System.out.println("CopycatClient.State CONNECTED!");
+        logger.info("CopycatClient.State CONNECTED!");
       } else if (state == CopycatClient.State.CLOSED) {
-        System.out.println("CopycatClient.State CLOSED!");
+        logger.info("CopycatClient.State CLOSED!");
       } else if (state == CopycatClient.State.SUSPENDED) {
-        System.out.println("CopycatClient.State SUSPENDED!");
+        logger.info("CopycatClient.State SUSPENDED!");
       } else {
-        System.out.println("unknown CopycatClient.State " + state);
+        logger.info("unknown CopycatClient.State " + state);
       }
     });
 
@@ -152,7 +156,7 @@ public class ClusterMetaTest {
     try {
       Object verifyMeta = copycatClient.submit(new GetQuery(IntpProcessMeta, "test"))
           .get(3, TimeUnit.SECONDS);
-      System.out.println("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
+      logger.info("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
       assertEquals(verifyMeta, meta);
     } catch (TimeoutException e) {
       e.printStackTrace();
@@ -161,18 +165,18 @@ public class ClusterMetaTest {
 
   @Test
   public void deleteClusterMeta() throws InterruptedException, ExecutionException {
-    System.out.println("test deleteClusterMeta");
+    logger.info("test deleteClusterMeta");
     putClusterMeta();
 
     DeleteCommand deleteCommand = new DeleteCommand(IntpProcessMeta, "test");
     CompletableFuture futures = copycatClient.submit(deleteCommand);
     CompletableFuture.allOf(futures)
-        .thenRun(() -> System.out.println("deleteClusterMeta completed!"));
+        .thenRun(() -> logger.info("deleteClusterMeta completed!"));
 
     try {
       Object verifyMeta = copycatClient.submit(new GetQuery(IntpProcessMeta, "test"))
           .get(3, TimeUnit.SECONDS);
-      System.out.println("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
+      logger.info("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
       assertNull(verifyMeta);
     } catch (InterruptedException e) {
       e.printStackTrace();
