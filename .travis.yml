@@ -17,6 +17,10 @@ language: java
 
 sudo: false
 
+
+before_cache:
+    - sudo chown -R travis:travis $HOME/.m2
+    
 cache:
   apt: true
   directories:
