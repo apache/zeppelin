@@ -674,7 +674,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //@Test Flaky test
   public void testNoteDynamicFormTextInput() throws Exception {
     try {
       createNewNote();
@@ -757,7 +757,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //@Test Flaky test
   public void testDynamicNoteFormCheckbox() throws Exception {
     try {
       createNewNote();
@@ -801,7 +801,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //@Test Flaky test
   public void testWithNoteAndParagraphDynamicFormTextInput() throws Exception {
     try {
       createNewNote();
