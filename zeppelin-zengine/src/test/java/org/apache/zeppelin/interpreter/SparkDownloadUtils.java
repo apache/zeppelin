@@ -36,11 +36,9 @@ public class SparkDownloadUtils {
     boolean downloaded = false;
     for (int i = 0; i < 3; i++) {
       try {
-        // removed Spark 1.6.x from CDN
         String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
         File downloadFile = new File(downloadFolder + "/spark-" + version + "-bin-hadoop2.6.tgz");
         String downloadURL = preferredMirror + "/spark/spark-" + version + "/spark-" + version + "-bin-hadoop2.6.tgz";
-
         runShellCommand(new String[] {"wget", downloadURL, "-P", downloadFolder});
         runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
         downloaded = true;
