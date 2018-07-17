@@ -1,17 +1,16 @@
 package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparkDownloadUtils {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkDownloadUtils.class);
@@ -36,7 +35,11 @@ public class SparkDownloadUtils {
     // Try mirrors a few times until one succeeds
     for (int i = 0; i < 3; i++) {
       try {
-        String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
+        // removed Spark 1.6.x from CDN
+        String preferredMirror =
+            (version.startsWith("2."))
+                ? IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"))
+                : "https://archive.apache.org/dist/";
         File downloadFile = new File(downloadFolder + "/spark-" + version + "-bin-hadoop2.6.tgz");
         String downloadURL = preferredMirror + "/spark/spark-" + version + "/spark-" + version + "-bin-hadoop2.6.tgz";;
         runShellCommand(new String[] {"wget", downloadURL, "-P", downloadFolder});
