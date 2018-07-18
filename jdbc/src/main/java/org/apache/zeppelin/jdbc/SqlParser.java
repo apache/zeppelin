@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 
 public class SqlParser {
-  private ArrayList<String> res;
+  private ArrayList<String> statement;
   private StringBuilder builder;
 
   private Boolean multiLineComment;
@@ -35,7 +35,7 @@ public class SqlParser {
   }
 
   private void initialize() {
-    res = new ArrayList<>();
+    statement = new ArrayList<>();
     builder = new StringBuilder();
     multiLineComment = false;
     singleLineComment = false;
@@ -44,7 +44,7 @@ public class SqlParser {
     currIndex = 0;
   }
 
-  private void checkCommentsAndQuetes() {
+  private void checkCommentsAndQuotes() {
     if (singleLineComment && (currChar == '\n' || currIndex == sql.length() - 1)) {
       singleLineComment = false;
     }
@@ -84,21 +84,21 @@ public class SqlParser {
 
     for (currIndex = 0; currIndex < sql.length(); currIndex++) {
       currChar = sql.charAt(currIndex);
-      checkCommentsAndQuetes();
+      checkCommentsAndQuotes();
 
       if (currChar == ';' && !quoteString && !doubleQuoteString && !multiLineComment
           && !singleLineComment) {
-        res.add(StringUtils.trim(builder.toString()));
+        statement.add(StringUtils.trim(builder.toString()));
         builder = new StringBuilder();
       } else if (currIndex == sql.length() - 1) {
         builder.append(currChar);
-        res.add(StringUtils.trim(builder.toString()));
+        statement.add(StringUtils.trim(builder.toString()));
       } else {
         builder.append(currChar);
       }
     }
 
-    return res;
+    return statement;
   }
 
   public ArrayList<String> resourcePoolReqs() {
@@ -107,7 +107,7 @@ public class SqlParser {
 
     for (currIndex = 0; currIndex < sql.length(); currIndex++) {
       currChar = sql.charAt(currIndex);
-      checkCommentsAndQuetes();
+      checkCommentsAndQuotes();
 
       if (currChar == '{' && sql.indexOf(JDBCInterpreter.POOL_REQ_PREFIX, currIndex) == currIndex &&
           !quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment) {
@@ -121,12 +121,12 @@ public class SqlParser {
       if (currChar == '}' && formingReq && !quoteString && !doubleQuoteString && !multiLineComment
           && !singleLineComment) {
         formingReq = false;
-        res.add(builder.toString());
+        statement.add(builder.toString());
         builder = new StringBuilder();
       }
     }
 
-    return res;
+    return statement;
   }
 
 }
