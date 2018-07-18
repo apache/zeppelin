@@ -183,7 +183,8 @@ public class JDBCPoolManager {
 
 
   static String preparePoolData(String sqlReq, Statement statement,
-                                       InterpreterContext context, String stringType) {
+                                InterpreterContext context, String stringType,
+                                Integer insertRowNumber) {
     final List<String> poolReqs = recourcePoolReqs(sqlReq);
     final Set<String> handledTables = new HashSet<>();
     String newSqlReq = sqlReq;
@@ -211,8 +212,14 @@ public class JDBCPoolManager {
           statement.addBatch(sqlCreate);
 
           final List<String> sqlInserts = getSqlInsertReqs(tableData, sqlTableName);
+          int counter = 0;
           for (final String sqlInsert : sqlInserts) {
+            if (counter > insertRowNumber) {
+              statement.executeBatch();
+              counter = 0;
+            }
             statement.addBatch(sqlInsert);
+            counter++;
           }
 
           statement.executeBatch();

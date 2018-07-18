@@ -114,6 +114,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
   static final String STATEMENT_PRECODE_KEY_TEMPLATE = "%s.statementPrecode";
+  static final String RESOURCE_POOL_INSERT_ROW_NUMBER = "resourcePoolInsertRowNumber";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -700,8 +701,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         final String stringType = getProperty(DEFAULT_STRING_TYPE);
+        final Integer insertRowNumber =
+            Integer.parseInt(getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER));
         sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
-              interpreterContext, stringType);
+              interpreterContext, stringType, insertRowNumber);
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());
