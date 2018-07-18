@@ -97,6 +97,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final int MAX_LINE_DEFAULT = 1000;
+  static final int RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT = 10000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -701,10 +702,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         final String stringType = getProperty(DEFAULT_STRING_TYPE);
-        final Integer insertRowNumber =
-            Integer.parseInt(getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER));
+        final String insertRowNumber = getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER);
+
         sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
-              interpreterContext, stringType, insertRowNumber);
+              interpreterContext, stringType, insertRowNumber == null ?
+                RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT : Integer.parseInt(insertRowNumber));
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());
