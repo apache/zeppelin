@@ -33,7 +33,7 @@ public class ClusterStateMachine extends StateMachine implements Snapshottable {
   @Override
   protected void configure(StateMachineExecutor executor) {
     executor.register(PutCommand.class, this::put);
-    executor.register(GetQuery.class, this::get);
+    executor.register(GetCommand.class, this::get);
     executor.register(DeleteCommand.class, this::delete);
   }
 
@@ -48,7 +48,7 @@ public class ClusterStateMachine extends StateMachine implements Snapshottable {
     return null;
   }
 
-  public Object get(Commit<GetQuery> commit) {
+  public Object get(Commit<GetCommand> commit) {
     try {
       return clusterMeta.get(commit.operation().type(), commit.operation().key());
     } finally {

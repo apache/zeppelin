@@ -73,9 +73,9 @@ public class ClusterMetaTest {
             .build())
         .build();
 
-    // Registering the putCommand and GetQuery command classes
+    // Registering the putCommand and GetCommand command classes
     copycatServer.serializer().register(PutCommand.class, 1);
-    copycatServer.serializer().register(GetQuery.class, 2);
+    copycatServer.serializer().register(GetCommand.class, 2);
     copycatServer.serializer().register(DeleteCommand.class, 3);
 
     copycatServer.onStateChange(state -> {
@@ -126,7 +126,7 @@ public class ClusterMetaTest {
     });
 
     copycatClient.serializer().register(PutCommand.class, 1);
-    copycatClient.serializer().register(GetQuery.class, 2);
+    copycatClient.serializer().register(GetCommand.class, 2);
     copycatClient.serializer().register(DeleteCommand.class, 3);
 
     copycatClient.connect(clusterMembers).join();
@@ -154,7 +154,7 @@ public class ClusterMetaTest {
     copycatClient.submit(putCommand);
 
     try {
-      Object verifyMeta = copycatClient.submit(new GetQuery(IntpProcessMeta, "test"))
+      Object verifyMeta = copycatClient.submit(new GetCommand(IntpProcessMeta, "test"))
           .get(3, TimeUnit.SECONDS);
       logger.info("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
       assertEquals(verifyMeta, meta);
@@ -174,7 +174,7 @@ public class ClusterMetaTest {
         .thenRun(() -> logger.info("deleteClusterMeta completed!"));
 
     try {
-      Object verifyMeta = copycatClient.submit(new GetQuery(IntpProcessMeta, "test"))
+      Object verifyMeta = copycatClient.submit(new GetCommand(IntpProcessMeta, "test"))
           .get(3, TimeUnit.SECONDS);
       logger.info("Cluster meta[" + IntpProcessMeta + "] : " + verifyMeta);
       assertNull(verifyMeta);

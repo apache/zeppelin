@@ -21,11 +21,11 @@ import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 /**
  * Command to query a variable in cluster state machine
  */
-public class GetQuery implements Query<Object> {
+public class GetCommand implements Query<Object> {
   private final ClusterMetaType type;
   private final String key;
 
-  public GetQuery(ClusterMetaType type, String key){
+  public GetCommand(ClusterMetaType type, String key){
     this.type = type;
     this.key = key;
   }
