@@ -45,14 +45,14 @@ public class JDBCPoolManager {
 
   private static final String PARAGRAPH_ID_KEY = "paragraph_id=";
   private static final String NOTE_ID_KEY = "note_id=";
-  private static final Pattern PARAGRAPH_ID_PATTERT = Pattern.compile("(\\d|_|-)+");
-  private static final Pattern NOTE_ID_PATTERT = Pattern.compile("(\\d|_|-|[a-zA-Z])+");
+  private static final Pattern PARAGRAPH_ID_PATTERN = Pattern.compile("(\\d|_|-)+");
+  private static final Pattern NOTE_ID_PATTERN = Pattern.compile("(\\d|_|-|[a-zA-Z])+");
   // the table name must begin with a letter
   private static final String SQL_NAME_PREFIX = "p";
 
   static String getParagraphId(String poolReq) {
     final int pIdIndex = poolReq.indexOf(PARAGRAPH_ID_KEY);
-    Matcher m = PARAGRAPH_ID_PATTERT.matcher(
+    Matcher m = PARAGRAPH_ID_PATTERN.matcher(
         poolReq.substring(pIdIndex + PARAGRAPH_ID_KEY.length()));
     if (!m.find()) {
       logger.error("Can't eject paragraph_id from pool request {}", poolReq);
@@ -63,7 +63,7 @@ public class JDBCPoolManager {
   static String getNoteId(String poolReq, InterpreterContext context) {
     if (poolReq.contains(NOTE_ID_KEY)) {
       final int nIdIndex = poolReq.indexOf(NOTE_ID_KEY);
-      Matcher m = NOTE_ID_PATTERT.matcher(
+      Matcher m = NOTE_ID_PATTERN.matcher(
           poolReq.substring(nIdIndex + NOTE_ID_KEY.length()));
       if (!m.find()) {
         logger.error("Can't eject note_id from pool request {}", poolReq);
