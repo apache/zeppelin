@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -88,4 +90,57 @@ public class JDBCPoolManagerTest extends JDBCAbstractTest{
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals(RESP_STR, interpreterResult.message().get(0).getData());
   }
+
+  @Test
+  public void testResourcePoolReqs() {
+    final String sql =
+        "SELECT * FROM {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID};";
+    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    assertEquals(Collections.singletonList(
+        "{ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID}"), reqs);
+  }
+
+
+  @Test
+  public void testResourcePoolReqsWithReqInQuotes() {
+    final String sql =
+        "SELECT * FROM some_table " +
+            "'{ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID}';";
+    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    assertEquals(Collections.emptyList(), reqs);
+  }
+
+  @Test
+  public void testResourcePoolReqsWithiIncompleteReq() {
+    final String sql =
+        "SELECT * FROM {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID " +
+            "oops someone miss close figure bracket;";
+    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    assertEquals(Collections.emptyList(), reqs);
+  }
+
+  @Test
+  public void testResourcePoolReqsWithReqInComment() {
+    final String sql =
+        "SELECT * FROM some_table " +
+            "/* {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID} */; and  " +
+            "\n-- {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID} ";
+    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    assertEquals(Collections.emptyList(), reqs);
+  }
+
+  @Test
+  public void testGetParagraphId() {
+    final String pId = JDBCPoolManager.getParagraphId(
+        "{ResourcePool.paragraph_id=01234_56-789}");
+    assertEquals("01234_56-789", pId);
+  }
+
+  @Test
+  public void testGetNoteId() {
+    final String pId = JDBCPoolManager.getNoteId(
+        "{ResourcePool.note_id=AAAABCD123}", null);
+    assertEquals("AAAABCD123", pId);
+  }
+
 }

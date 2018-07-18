@@ -121,7 +121,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
-  private static final String POOL_REQ_PREFIX = "{ResourcePool";
+  static final String POOL_REQ_PREFIX = "{ResourcePool";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -579,6 +579,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
     pgadmin/dlg/dlgProperty.cpp#L999-L1045
    */
+
   protected ArrayList<String> splitSqlQueries(String sql) {
     ArrayList<String> queries = new ArrayList<>();
     StringBuilder query = new StringBuilder();
@@ -699,10 +700,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         final String stringType = getProperty(DEFAULT_STRING_TYPE);
-        while (sqlToExecute.contains(POOL_REQ_PREFIX)) {
-          sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
+        sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
               interpreterContext, stringType);
-        }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());

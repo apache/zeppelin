@@ -24,37 +24,51 @@ import org.apache.zeppelin.tabledata.ColumnDef;
 import org.apache.zeppelin.tabledata.InterpreterResultTableData;
 import org.apache.zeppelin.tabledata.Row;
 import org.apache.zeppelin.tabledata.TableData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class JDBCPoolManager {
+  private static Logger logger = LoggerFactory.getLogger(JDBCPoolManager.class);
+
   private static final String PARAGRAPH_ID_KEY = "paragraph_id=";
   private static final String NOTE_ID_KEY = "note_id=";
+  private static final Pattern PARAGRAPH_ID_PATTERT = Pattern.compile("(\\d|_|-)+");
+  private static final Pattern NOTE_ID_PATTERT = Pattern.compile("(\\d|_|-|[a-zA-Z])+");
   // the table name must begin with a letter
   private static final String SQL_NAME_PREFIX = "p";
 
-  private static String getPoolExpression(String sqlReq) {
-    final int poolReqBegIndex = sqlReq.indexOf("{ResourcePool");
-    final int poolReqEndIndex = sqlReq.indexOf("}", poolReqBegIndex);
-    return sqlReq.substring(poolReqBegIndex, poolReqEndIndex + 1);
+  static String getParagraphId(String poolReq) {
+    final int pIdIndex = poolReq.indexOf(PARAGRAPH_ID_KEY);
+    Matcher m = PARAGRAPH_ID_PATTERT.matcher(
+        poolReq.substring(pIdIndex + PARAGRAPH_ID_KEY.length()));
+    if (!m.find()) {
+      logger.error("Can't eject paragraph_id from pool request {}", poolReq);
+    }
+    return m.group();
   }
 
-  private static String getParagraphId(String poolExp) {
-    final int pIdIndex = poolExp.indexOf(PARAGRAPH_ID_KEY);
-    return poolExp.substring(pIdIndex + PARAGRAPH_ID_KEY.length(), poolExp.length() - 1);
-  }
-
-  private static String getNoteId(String poolExp, InterpreterContext context) {
-    if (poolExp.contains(NOTE_ID_KEY)) {
-      final int nIdBegIndex = poolExp.indexOf(NOTE_ID_KEY);
-      final int nIdEndIndex = poolExp.indexOf(".", nIdBegIndex);
-      return poolExp.substring(nIdBegIndex + NOTE_ID_KEY.length(), nIdEndIndex);
+  static String getNoteId(String poolReq, InterpreterContext context) {
+    if (poolReq.contains(NOTE_ID_KEY)) {
+      final int nIdIndex = poolReq.indexOf(NOTE_ID_KEY);
+      Matcher m = NOTE_ID_PATTERT.matcher(
+          poolReq.substring(nIdIndex + NOTE_ID_KEY.length()));
+      if (!m.find()) {
+        logger.error("Can't eject note_id from pool request {}", poolReq);
+      }
+      return m.group();
     } else {
       return context.getNoteId();
     }
@@ -100,36 +114,116 @@ public class JDBCPoolManager {
     return reqs;
   }
 
+  static ArrayList<String> recourcePoolReqs(String sql) {
+    ArrayList<String> reqs = new ArrayList<>();
+    StringBuilder req = new StringBuilder();
+    char character;
 
-  public static String preparePoolData(String sqlReq, Statement statement,
-                                       InterpreterContext context, String stringType) {
-    final String poolExp = getPoolExpression(sqlReq);
-    final String paragraphId = getParagraphId(poolExp);
-    final String noteId = getNoteId(poolExp, context);
+    Boolean multiLineComment = false;
+    Boolean singleLineComment = false;
+    Boolean quoteString = false;
+    Boolean doubleQuoteString = false;
+    Boolean formingReq = false;
 
-    ResourcePool resourcePool = context.getResourcePool();
-    TableData tableData = getTableDataFromResourcePool(resourcePool, noteId, paragraphId);
+    for (int item = 0; item < sql.length(); item++) {
+      character = sql.charAt(item);
 
-    List<String> columDefs = getColumnNamesWithTypes(tableData, stringType);
-    // '-' is not allowed in sql table names
-    final String pIdSqlName = SQL_NAME_PREFIX + paragraphId.replace("-", "");
-
-    try {
-      final String sqlDrop = getSqlDropTableReq(pIdSqlName);
-      statement.addBatch(sqlDrop);
-
-      final String sqlCreate = getSqlCreateTableReq(columDefs, pIdSqlName);
-      statement.addBatch(sqlCreate);
-
-      final List<String> sqlInserts = getSqlInsertReqs(tableData, pIdSqlName);
-      for (final String sqlInsert : sqlInserts) {
-        statement.addBatch(sqlInsert);
+      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
+        singleLineComment = false;
       }
 
-      statement.executeBatch();
-    } catch (SQLException e) { /*ignored*/ }
+      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
+        multiLineComment = false;
+      }
 
-    // replace resource pool expression with real table
-    return sqlReq.replace(poolExp, pIdSqlName);
+      if (character == '\'') {
+        if (quoteString) {
+          quoteString = false;
+        } else if (!doubleQuoteString) {
+          quoteString = true;
+        }
+      }
+
+      if (character == '"') {
+        if (doubleQuoteString && item > 0) {
+          doubleQuoteString = false;
+        } else if (!quoteString) {
+          doubleQuoteString = true;
+        }
+      }
+
+      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
+          && sql.length() > item + 1) {
+        if (character == '-' && sql.charAt(item + 1) == '-') {
+          singleLineComment = true;
+        } else if (character == '/' && sql.charAt(item + 1) == '*') {
+          multiLineComment = true;
+        }
+      }
+
+      if (character == '{' && sql.indexOf(JDBCInterpreter.POOL_REQ_PREFIX, item) == item &&
+          !quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment) {
+        formingReq = true;
+      }
+
+      if (formingReq) {
+        req.append(character);
+      }
+
+      if (character == '}' && formingReq && !quoteString && !doubleQuoteString && !multiLineComment
+          && !singleLineComment) {
+        formingReq = false;
+        reqs.add(req.toString());
+        req = new StringBuilder();
+      }
+    }
+
+    return reqs;
+  }
+
+
+  static String preparePoolData(String sqlReq, Statement statement,
+                                       InterpreterContext context, String stringType) {
+    final List<String> poolReqs = recourcePoolReqs(sqlReq);
+    final Set<String> handledTables = new HashSet<>();
+    String newSqlReq = sqlReq;
+
+    for (final String poolReq : poolReqs) {
+      final String poolReqWithoutWhitespaces = poolReq.replaceAll("\\s", "");
+      final String paragraphId = getParagraphId(poolReqWithoutWhitespaces);
+      final String noteId = getNoteId(poolReqWithoutWhitespaces, context);
+
+      ResourcePool resourcePool = context.getResourcePool();
+      TableData tableData = getTableDataFromResourcePool(resourcePool, noteId, paragraphId);
+
+      List<String> columDefs = getColumnNamesWithTypes(tableData, stringType);
+      // '-' is not allowed in sql table names
+      final String sqlTableName = SQL_NAME_PREFIX +
+          paragraphId.replace("-", "");
+
+      final boolean isTableAlreadyHandled = handledTables.contains(sqlTableName);
+      if (!isTableAlreadyHandled) {
+        try {
+          final String sqlDrop = getSqlDropTableReq(sqlTableName);
+          statement.addBatch(sqlDrop);
+
+          final String sqlCreate = getSqlCreateTableReq(columDefs, sqlTableName);
+          statement.addBatch(sqlCreate);
+
+          final List<String> sqlInserts = getSqlInsertReqs(tableData, sqlTableName);
+          for (final String sqlInsert : sqlInserts) {
+            statement.addBatch(sqlInsert);
+          }
+
+          statement.executeBatch();
+        } catch (SQLException e) { /*ignored*/ }
+
+        // replace resource pool expression with real table\
+        handledTables.add(sqlTableName);
+        newSqlReq = newSqlReq.replace(poolReq, sqlTableName);
+      }
+    }
+
+    return newSqlReq;
   }
 }
