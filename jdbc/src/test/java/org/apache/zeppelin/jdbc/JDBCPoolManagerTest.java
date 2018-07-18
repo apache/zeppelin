@@ -95,7 +95,7 @@ public class JDBCPoolManagerTest extends JDBCAbstractTest{
   public void testResourcePoolReqs() {
     final String sql =
         "SELECT * FROM {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID};";
-    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    List <String> reqs = new SqlParser(sql).recourcePoolReqs();
     assertEquals(Collections.singletonList(
         "{ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID}"), reqs);
   }
@@ -106,7 +106,7 @@ public class JDBCPoolManagerTest extends JDBCAbstractTest{
     final String sql =
         "SELECT * FROM some_table " +
             "'{ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID}';";
-    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    List <String> reqs = new SqlParser(sql).recourcePoolReqs();
     assertEquals(Collections.emptyList(), reqs);
   }
 
@@ -115,7 +115,7 @@ public class JDBCPoolManagerTest extends JDBCAbstractTest{
     final String sql =
         "SELECT * FROM {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID " +
             "oops someone miss close figure bracket;";
-    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    List <String> reqs = new SqlParser(sql).recourcePoolReqs();
     assertEquals(Collections.emptyList(), reqs);
   }
 
@@ -125,7 +125,7 @@ public class JDBCPoolManagerTest extends JDBCAbstractTest{
         "SELECT * FROM some_table " +
             "/* {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID} */; and  " +
             "\n-- {ResourcePool.note_id=SOME_NOTE_ID.paragraph_id=SOME_PARAGRAPH_ID} ";
-    List <String> reqs = JDBCPoolManager.recourcePoolReqs(sql);
+    List <String> reqs = new SqlParser(sql).recourcePoolReqs();
     assertEquals(Collections.emptyList(), reqs);
   }
 

@@ -582,67 +582,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
     pgadmin/dlg/dlgProperty.cpp#L999-L1045
    */
 
-  protected ArrayList<String> splitSqlQueries(String sql) {
-    ArrayList<String> queries = new ArrayList<>();
-    StringBuilder query = new StringBuilder();
-    char character;
-
-    Boolean multiLineComment = false;
-    Boolean singleLineComment = false;
-    Boolean quoteString = false;
-    Boolean doubleQuoteString = false;
-
-    for (int item = 0; item < sql.length(); item++) {
-      character = sql.charAt(item);
-
-      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
-        singleLineComment = false;
-      }
-
-      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
-        multiLineComment = false;
-      }
-
-      if (character == '\'') {
-        if (quoteString) {
-          quoteString = false;
-        } else if (!doubleQuoteString) {
-          quoteString = true;
-        }
-      }
-
-      if (character == '"') {
-        if (doubleQuoteString && item > 0) {
-          doubleQuoteString = false;
-        } else if (!quoteString) {
-          doubleQuoteString = true;
-        }
-      }
-
-      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
-          && sql.length() > item + 1) {
-        if (character == '-' && sql.charAt(item + 1) == '-') {
-          singleLineComment = true;
-        } else if (character == '/' && sql.charAt(item + 1) == '*') {
-          multiLineComment = true;
-        }
-      }
-
-      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
-          && !singleLineComment) {
-        queries.add(StringUtils.trim(query.toString()));
-        query = new StringBuilder();
-      } else if (item == sql.length() - 1) {
-        query.append(character);
-        queries.add(StringUtils.trim(query.toString()));
-      } else {
-        query.append(character);
-      }
-    }
-
-    return queries;
-  }
-
   public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
     InterpreterResult interpreterResult = null;
     for (String propertyKey : basePropretiesMap.keySet()) {
@@ -691,8 +630,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     try {
       List<String> sqlArray;
+      SqlParser parser = null;
       if (splitQuery) {
-        sqlArray = splitSqlQueries(sql);
+        parser = new SqlParser(sql);
+        sqlArray = parser.splitSqlQueries();
       } else {
         sqlArray = Arrays.asList(sql);
       }
@@ -701,12 +642,19 @@ public class JDBCInterpreter extends KerberosInterpreter {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
 
-        final String stringType = getProperty(DEFAULT_STRING_TYPE);
-        final String insertRowNumber = getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER);
+        if (parser == null) {
+          parser = new SqlParser(sql);
+        }
+        List <String> poolReqs = parser.recourcePoolReqs();
 
-        sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
+        if (!poolReqs.isEmpty()) {
+          final String stringType = getProperty(DEFAULT_STRING_TYPE);
+          final String insertRowNumber = getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER);
+          sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
               interpreterContext, stringType, insertRowNumber == null ?
-                RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT : Integer.parseInt(insertRowNumber));
+                  RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT : Integer.parseInt(insertRowNumber),
+              poolReqs);
+        }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());

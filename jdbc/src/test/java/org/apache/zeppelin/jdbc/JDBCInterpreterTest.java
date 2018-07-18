@@ -154,7 +154,7 @@ public class JDBCInterpreterTest extends JDBCAbstractTest {
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    List<String> multipleSqlArray = new SqlParser(sqlQuery).splitSqlQueries();
     assertEquals(10, multipleSqlArray.size());
     assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
     assertEquals("select * from test_table", multipleSqlArray.get(1));

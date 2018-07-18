@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -114,78 +113,9 @@ public class JDBCPoolManager {
     return reqs;
   }
 
-  static ArrayList<String> recourcePoolReqs(String sql) {
-    ArrayList<String> reqs = new ArrayList<>();
-    StringBuilder req = new StringBuilder();
-    char character;
-
-    Boolean multiLineComment = false;
-    Boolean singleLineComment = false;
-    Boolean quoteString = false;
-    Boolean doubleQuoteString = false;
-    Boolean formingReq = false;
-
-    for (int item = 0; item < sql.length(); item++) {
-      character = sql.charAt(item);
-
-      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
-        singleLineComment = false;
-      }
-
-      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
-        multiLineComment = false;
-      }
-
-      if (character == '\'') {
-        if (quoteString) {
-          quoteString = false;
-        } else if (!doubleQuoteString) {
-          quoteString = true;
-        }
-      }
-
-      if (character == '"') {
-        if (doubleQuoteString && item > 0) {
-          doubleQuoteString = false;
-        } else if (!quoteString) {
-          doubleQuoteString = true;
-        }
-      }
-
-      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
-          && sql.length() > item + 1) {
-        if (character == '-' && sql.charAt(item + 1) == '-') {
-          singleLineComment = true;
-        } else if (character == '/' && sql.charAt(item + 1) == '*') {
-          multiLineComment = true;
-        }
-      }
-
-      if (character == '{' && sql.indexOf(JDBCInterpreter.POOL_REQ_PREFIX, item) == item &&
-          !quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment) {
-        formingReq = true;
-      }
-
-      if (formingReq) {
-        req.append(character);
-      }
-
-      if (character == '}' && formingReq && !quoteString && !doubleQuoteString && !multiLineComment
-          && !singleLineComment) {
-        formingReq = false;
-        reqs.add(req.toString());
-        req = new StringBuilder();
-      }
-    }
-
-    return reqs;
-  }
-
-
   static String preparePoolData(String sqlReq, Statement statement,
                                 InterpreterContext context, String stringType,
-                                Integer insertRowNumber) {
-    final List<String> poolReqs = recourcePoolReqs(sqlReq);
+                                Integer insertRowNumber, List<String> poolReqs) {
     final Set<String> handledTables = new HashSet<>();
     String newSqlReq = sqlReq;
 
@@ -197,7 +127,7 @@ public class JDBCPoolManager {
       ResourcePool resourcePool = context.getResourcePool();
       TableData tableData = getTableDataFromResourcePool(resourcePool, noteId, paragraphId);
 
-      List<String> columDefs = getColumnNamesWithTypes(tableData, stringType);
+      List<String> columnDefs = getColumnNamesWithTypes(tableData, stringType);
       // '-' is not allowed in sql table names
       final String sqlTableName = SQL_NAME_PREFIX +
           paragraphId.replace("-", "");
@@ -208,7 +138,7 @@ public class JDBCPoolManager {
           final String sqlDrop = getSqlDropTableReq(sqlTableName);
           statement.addBatch(sqlDrop);
 
-          final String sqlCreate = getSqlCreateTableReq(columDefs, sqlTableName);
+          final String sqlCreate = getSqlCreateTableReq(columnDefs, sqlTableName);
           statement.addBatch(sqlCreate);
 
           final List<String> sqlInserts = getSqlInsertReqs(tableData, sqlTableName);
