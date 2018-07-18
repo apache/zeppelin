@@ -101,7 +101,7 @@ public class SqlParser {
     return res;
   }
 
-  public ArrayList<String> recourcePoolReqs() {
+  public ArrayList<String> resourcePoolReqs() {
     initialize();
     Boolean formingReq = false;
 

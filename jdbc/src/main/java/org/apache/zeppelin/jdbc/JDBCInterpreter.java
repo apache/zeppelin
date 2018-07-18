@@ -645,7 +645,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
         if (parser == null) {
           parser = new SqlParser(sql);
         }
-        List <String> poolReqs = parser.recourcePoolReqs();
+        List <String> poolReqs = parser.resourcePoolReqs();
 
         if (!poolReqs.isEmpty()) {
           final String stringType = getProperty(DEFAULT_STRING_TYPE);
