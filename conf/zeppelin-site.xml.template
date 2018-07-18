@@ -113,10 +113,17 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.s3.timeout</name>
+  <value>120000</value>
+  <description>s3 bucket endpoint request timeout in msec.</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
+
 -->
 
 <!-- Additionally, encryption is supported for notebook data stored in S3 -->
