@@ -136,7 +136,7 @@ public class SparkRInterpreter extends Interpreter {
     if (isSpark2) {
       setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
           "\", \" +" + jobDesc + "\", TRUE)";
-    } else if (getSparkInterpreter().getSparkVersion().newerThanEquals(SparkVersion.SPARK_1_5_0)) {
+    } else {
       setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
           "\", \"" + jobDesc + "\", TRUE)";
     }
