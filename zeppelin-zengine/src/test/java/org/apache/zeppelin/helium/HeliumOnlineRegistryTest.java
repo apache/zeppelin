@@ -32,9 +32,8 @@ public class HeliumOnlineRegistryTest {
     FileUtils.deleteDirectory(tmpDir);
   }
 
-  // [ZEPPELIN-3618] - check connection timeout property
   @Test
-  public void getAllTest() throws IOException {
+  public void zeppelinNotebookS3TimeoutPropertyTest() throws IOException {
     System.setProperty(
             ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_S3_TIMEOUT.getVarName(),
             TIMEOUT
@@ -58,7 +57,7 @@ public class HeliumOnlineRegistryTest {
     );
     assertTrue(
             String.format(
-                    "Wrong timeout during connection: expected %s, actual %d",
+                    "Wrong timeout during connection: expected %s, actual is about %d",
                     TIMEOUT,
                     processTime
             ),
