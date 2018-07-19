@@ -31,7 +31,13 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,6 +87,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
           int timeout = Integer.valueOf(cfg.getS3Timeout());
           RequestConfig requestCfg = RequestConfig.custom()
                   .setConnectTimeout(timeout)
+                  .setSocketTimeout(timeout)
                   .build();
           get.setConfig(requestCfg);
         }
