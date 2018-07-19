@@ -204,6 +204,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Endpoint for the bucket</td>
   </tr>
   <tr>
+    <td>N/A</td>
+    <td><h6 class="properties">zeppelin.notebook.s3.timeout</h6></td>
+    <td>120000</td>
+    <td>Bucket endpoint request timeout in msec</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</h6></td>
     <td><h6 class="properties">zeppelin.notebook.s3.kmsKeyID</h6></td>
     <td></td>
