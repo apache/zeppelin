@@ -55,7 +55,6 @@
     <akka.version>2.3.4-spark</akka.version>
 
     <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencyManagement>
