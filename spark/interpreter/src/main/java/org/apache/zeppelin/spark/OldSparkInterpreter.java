@@ -1041,8 +1041,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       z.setNoteGui(context.getNoteGui());
-      String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
-      sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
+      sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;

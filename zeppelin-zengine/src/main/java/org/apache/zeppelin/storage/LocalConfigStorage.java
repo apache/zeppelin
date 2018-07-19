@@ -28,7 +28,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.FileSystems;
+import java.nio.file.FileSystem;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Storing config in local file system
@@ -51,7 +55,7 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void save(InterpreterInfoSaving settingInfos) throws IOException {
     LOGGER.info("Save Interpreter Setting to " + interpreterSettingPath.getAbsolutePath());
-    writeToFile(settingInfos.toJson(), interpreterSettingPath);
+    atomicWriteToFile(settingInfos.toJson(), interpreterSettingPath);
   }
 
   @Override
@@ -68,7 +72,7 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void save(NotebookAuthorizationInfoSaving authorizationInfoSaving) throws IOException {
     LOGGER.info("Save notebook authorization to file: " + authorizationPath);
-    writeToFile(authorizationInfoSaving.toJson(), authorizationPath);
+    atomicWriteToFile(authorizationInfoSaving.toJson(), authorizationPath);
   }
 
   @Override
@@ -95,17 +99,37 @@ public class LocalConfigStorage extends ConfigStorage {
   @Override
   public void saveCredentials(String credentials) throws IOException {
     LOGGER.info("Save Credentials to file: " + credentialPath);
-    writeToFile(credentials, credentialPath);
+    atomicWriteToFile(credentials, credentialPath);
   }
 
   private String readFromFile(File file) throws IOException {
     return IOUtils.toString(new FileInputStream(file));
   }
 
-  private void writeToFile(String content, File file) throws IOException {
-    FileOutputStream out = new FileOutputStream(file);
-    IOUtils.write(content, out);
+  private void atomicWriteToFile(String content, File file) throws IOException {
+    File directory = file.getParentFile();
+    File tempFile = File.createTempFile(file.getName(), null, directory);
+    FileOutputStream out = new FileOutputStream(tempFile);
+    try {
+      IOUtils.write(content, out);
+    } catch (IOException iox) {
+      if (!tempFile.delete()) {
+        tempFile.deleteOnExit();
+      }
+      throw iox;
+    }
     out.close();
+    FileSystem defaultFileSystem = FileSystems.getDefault();
+    Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
+    Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
+    try {
+      Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
+    } catch (IOException iox) {
+      if (!tempFile.delete()) {
+        tempFile.deleteOnExit();
+      }
+      throw iox;
+    }
   }
 
 }

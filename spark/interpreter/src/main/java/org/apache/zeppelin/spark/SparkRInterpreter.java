@@ -123,8 +123,7 @@ public class SparkRInterpreter extends Interpreter {
       throws InterpreterException {
 
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
-    String jobDesc = "Started by: " +
-       Utils.getUserName(interpreterContext.getAuthenticationInfo());
+    String jobDesc = Utils.buildJobDesc(interpreterContext);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
 
     String imageWidth = getProperty("zeppelin.R.image.width", "100%");
@@ -156,7 +155,15 @@ public class SparkRInterpreter extends Interpreter {
           "\", \"" + jobDesc + "\", TRUE)";
     }
     lines = setJobGroup + "\n" + lines;
-
+    if (sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_3_0)) {
+      // setLocalProperty is only available from spark 2.3.0
+      String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
+      if (interpreterContext.getLocalProperties().containsKey("pool")) {
+        setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
+            interpreterContext.getLocalProperties().get("pool") + "')";
+      }
+      lines = setPoolStmt + "\n" + lines;
+    }
     try {
       // render output with knitr
       if (rbackendDead.get()) {

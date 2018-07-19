@@ -118,11 +118,20 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterContext.set(context);
     String jobGroupId = Utils.buildJobGroupId(context);
-    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String jobDesc = Utils.buildJobDesc(context);
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
     InterpreterResult result = super.interpret(setJobGroupStmt, context);
     if (result.code().equals(InterpreterResult.Code.ERROR)) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    }
+    String pool = "None";
+    if (context.getLocalProperties().containsKey("pool")) {
+      pool = "'" + context.getLocalProperties().get("pool") + "'";
+    }
+    String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
+    result = super.interpret(setPoolStmt, context);
+    if (result.code().equals(InterpreterResult.Code.ERROR)) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setPool");
     }
     return super.interpret(st, context);
   }

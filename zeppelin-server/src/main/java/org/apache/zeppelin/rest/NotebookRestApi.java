@@ -59,6 +59,11 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NotFoundException;
+import org.apache.zeppelin.rest.message.CronRequest;
+import org.apache.zeppelin.rest.message.NewNoteRequest;
+import org.apache.zeppelin.rest.message.NewParagraphRequest;
+import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
+import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -277,7 +282,6 @@ public class NotebookRestApi {
   }
 
   /**
-   *
    * Bind a setting to note.
    *
    * @throws IOException
@@ -499,7 +503,7 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph")
   @ZeppelinApi
   public Response insertParagraph(@PathParam("noteId") String noteId, String message)
-      throws IOException {
+          throws IOException {
     String user = SecurityUtils.getPrincipal();
     LOG.info("insert paragraph {} {}", noteId, message);
 
@@ -550,6 +554,7 @@ public class NotebookRestApi {
    *
    * @param message json containing the "text" and optionally the "title" of the paragraph, e.g.
    *                {"text" : "updated text", "title" : "Updated title" }
+   *
    */
   @PUT
   @Path("{noteId}/paragraph/{paragraphId}")
@@ -699,16 +704,18 @@ public class NotebookRestApi {
   @POST
   @Path("job/{noteId}")
   @ZeppelinApi
-  public Response runNoteJobs(@PathParam("noteId") String noteId)
-      throws IOException, IllegalArgumentException {
-    LOG.info("run note jobs {} ", noteId);
+  public Response runNoteJobs(@PathParam("noteId") String noteId,
+                              @QueryParam("waitToFinish") Boolean waitToFinish)
+          throws IOException, IllegalArgumentException {
+    boolean blocking = waitToFinish == null ? true : waitToFinish.booleanValue();
+    LOG.info("run note jobs {} waitToFinish: {}", noteId, blocking);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
     try {
-      note.runAll(subject, true);
+      note.runAll(subject, blocking);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       return new JsonResponse<>(Status.PRECONDITION_FAILED,
@@ -944,9 +951,9 @@ public class NotebookRestApi {
   @Path("cron/{noteId}")
   @ZeppelinApi
   public Response removeCronJob(@PathParam("noteId") String noteId)
-      throws IOException, IllegalArgumentException {
+          throws IOException, IllegalArgumentException {
     LOG.info("Remove cron job note {}", noteId);
-
+    
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
     checkIfUserIsOwner(noteId,
@@ -973,7 +980,7 @@ public class NotebookRestApi {
   @Path("cron/{noteId}")
   @ZeppelinApi
   public Response getCronJob(@PathParam("noteId") String noteId)
-      throws IOException, IllegalArgumentException {
+          throws IOException, IllegalArgumentException {
     LOG.info("Get cron job note {}", noteId);
 
     Note note = notebook.getNote(noteId);
@@ -1010,7 +1017,7 @@ public class NotebookRestApi {
 
   /**
    * Get updated note jobs for job manager
-   * <p>
+   *
    * Return the `Note` change information within the post unix timestamp.
    *
    * @return JSON with status.OK
