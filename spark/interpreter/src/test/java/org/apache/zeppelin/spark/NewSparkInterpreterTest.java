@@ -77,13 +77,24 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
+
+    mockRemoteEventClient = mock(RemoteEventClient.class);
+    InterpreterContext context = InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .build();
+    InterpreterContext.set(context);
+
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
 
-    mockRemoteEventClient = mock(RemoteEventClient.class);
     interpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
+
+
+    assertEquals("fake_spark_weburl", interpreter.getSparkUIUrl());
+
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("a: String = hello world\n", output);
@@ -204,7 +215,7 @@ public class NewSparkInterpreterTest {
     messageOutput.flush();
     assertEquals("_1\t_2\n1\ta\n2\tb\n", messageOutput.toInterpreterResultMessage().getData());
 
-    InterpreterContext context = getInterpreterContext();
+    context = getInterpreterContext();
     result = interpreter.interpret("z.input(\"name\", \"default_name\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());

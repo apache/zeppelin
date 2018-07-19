@@ -98,6 +98,11 @@ public class InterpreterContext {
       return this;
     }
 
+    public Builder setInterpreterOut(InterpreterOutput out) {
+      context.out = out;
+      return this;
+    }
+
     public InterpreterContext build() {
       return context;
     }

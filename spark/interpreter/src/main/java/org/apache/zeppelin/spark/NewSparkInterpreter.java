@@ -112,6 +112,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
       sparkUrl = this.innerInterpreter.sparkUrl();
+      String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
+      if (!StringUtils.isBlank(sparkUrlProp)) {
+        sparkUrl = sparkUrlProp;
+      }
       sparkShims = SparkShims.getInstance(sc.version());
       sparkShims.setupSparkListener(sc.master(), sparkUrl);
 
