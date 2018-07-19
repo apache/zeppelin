@@ -37,7 +37,7 @@ import java.util.Properties;
 public class PythonInterpreterPandasSql extends Interpreter {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
 
-  private String SQL_BOOTSTRAP_FILE_PY = "/python/bootstrap_sql.py";
+  private String SQL_BOOTSTRAP_FILE_PY = "python/bootstrap_sql.py";
 
   public PythonInterpreterPandasSql(Properties property) {
     super(property);
