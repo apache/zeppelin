@@ -81,7 +81,6 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
           int timeout = Integer.valueOf(cfg.getS3Timeout());
           RequestConfig requestCfg = RequestConfig.custom()
                   .setConnectTimeout(timeout)
-                  .setSocketTimeout(timeout)
                   .build();
           get.setConfig(requestCfg);
         }
