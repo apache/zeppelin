@@ -208,6 +208,24 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testRenameNote() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    String noteId = note.getId();
+
+    final String newName = "testName";
+    String jsonRequest = "{\"name\": " + newName + "}";
+
+    PutMethod put = httpPut("/notebook/" + noteId + "/rename/", jsonRequest);
+    assertThat("test testRenameNote:", put, isAllowed());
+    put.releaseConnection();
+
+    assertEquals(note.getName(), newName);
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(noteId, anonymous);
+  }
+
+  @Test
   public void testUpdateParagraphConfig() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     String noteId = note.getId();
