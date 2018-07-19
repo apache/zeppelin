@@ -554,7 +554,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     try {
-      interpret(bootstrapCode, context);
+      interpret(bootstrapCode, InterpreterContext.get());
     } catch (InterpreterException e) {
       throw new IOException(e);
     }
