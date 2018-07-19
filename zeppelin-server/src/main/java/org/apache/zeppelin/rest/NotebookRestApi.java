@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Sets;
@@ -21,6 +22,12 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.rest.message.CronRequest;
+import org.apache.zeppelin.rest.message.NewNoteRequest;
+import org.apache.zeppelin.rest.message.NewParagraphRequest;
+import org.apache.zeppelin.rest.message.RenameNoteRequest;
+import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
+import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +122,7 @@ public class NotebookRestApi {
   }
 
   private String getBlockNotAuthenticatedUserErrorMsg() {
-    return  "Only authenticated user can set the permission.";
+    return "Only authenticated user can set the permission.";
   }
 
   /*
@@ -209,7 +216,7 @@ public class NotebookRestApi {
   @Path("{noteId}/permissions")
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
-          throws IOException {
+      throws IOException {
     String principal = SecurityUtils.getPrincipal();
     HashSet<String> roles = SecurityUtils.getRoles();
     HashSet<String> userAndRoles = new HashSet<>();
@@ -221,11 +228,12 @@ public class NotebookRestApi {
         ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
 
     HashMap<String, HashSet<String>> permMap =
-        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {}.getType());
+        gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
+        }.getType());
     Note note = notebook.getNote(noteId);
 
     LOG.info("Set permissions {} {} {} {} {} {}", noteId, principal, permMap.get("owners"),
-            permMap.get("readers"), permMap.get("runners"), permMap.get("writers"));
+        permMap.get("readers"), permMap.get("runners"), permMap.get("writers"));
 
     HashSet<String> readers = permMap.get("readers");
     HashSet<String> runners = permMap.get("runners");
@@ -264,8 +272,8 @@ public class NotebookRestApi {
     notebookAuthorization.setWriters(noteId, writers);
     notebookAuthorization.setOwners(noteId, owners);
     LOG.debug("After set permissions {} {} {} {}", notebookAuthorization.getOwners(noteId),
-            notebookAuthorization.getReaders(noteId), notebookAuthorization.getRunners(noteId),
-            notebookAuthorization.getWriters(noteId));
+        notebookAuthorization.getReaders(noteId), notebookAuthorization.getRunners(noteId),
+        notebookAuthorization.getWriters(noteId));
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.persist(subject);
     notebookServer.broadcastNote(note);
@@ -437,7 +445,7 @@ public class NotebookRestApi {
   @Path("{noteId}")
   @ZeppelinApi
   public Response cloneNote(@PathParam("noteId") String noteId, String message)
-          throws IOException, CloneNotSupportedException, IllegalArgumentException {
+      throws IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone note by JSON {}", message);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = NewNoteRequest.fromJson(message);
@@ -450,6 +458,38 @@ public class NotebookRestApi {
     notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
     return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
+  }
+
+  /**
+   * Rename note REST API
+   *
+   * @param message - JSON containing new name
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @PUT
+  @Path("{noteId}/rename")
+  @ZeppelinApi
+  public Response renameNote(@PathParam("noteId") String noteId,
+                             String message) throws IOException {
+    LOG.info("rename note by JSON {}", message);
+    RenameNoteRequest request = gson.fromJson(message, RenameNoteRequest.class);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+
+    checkIfUserCanWrite(noteId, "Insufficient privileges you cannot rename this note");
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+
+    String newName = request.getName();
+    if (newName.isEmpty()) {
+      LOG.warn("Trying to rename notebook {} with empty name parameter", noteId);
+      throw new BadRequestException("name can not be empty");
+    }
+    note.setName(newName);
+
+    notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
+    return new JsonResponse(Status.OK, "").build();
   }
 
   /**
@@ -497,7 +537,7 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}")
   @ZeppelinApi
   public Response getParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId) throws IOException {
+                               @PathParam("paragraphId") String paragraphId) throws IOException {
     LOG.info("get paragraph {} {}", noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
@@ -520,7 +560,8 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}")
   @ZeppelinApi
   public Response updateParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId, String message) throws IOException {
+                                  @PathParam("paragraphId") String paragraphId,
+                                  String message) throws IOException {
     String user = SecurityUtils.getPrincipal();
     LOG.info("{} will update paragraph {} {}", user, noteId, paragraphId);
 
@@ -547,7 +588,8 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}/config")
   @ZeppelinApi
   public Response updateParagraphConfig(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId, String message) throws IOException {
+                                        @PathParam("paragraphId") String paragraphId,
+                                        String message) throws IOException {
     String user = SecurityUtils.getPrincipal();
     LOG.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
 
@@ -575,8 +617,9 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}/move/{newIndex}")
   @ZeppelinApi
   public Response moveParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId, @PathParam("newIndex") String newIndex)
-          throws IOException {
+                                @PathParam("paragraphId") String paragraphId,
+                                @PathParam("newIndex") String newIndex)
+      throws IOException {
     LOG.info("move paragraph {} {} {}", noteId, paragraphId, newIndex);
 
     Note note = notebook.getNote(noteId);
@@ -610,7 +653,7 @@ public class NotebookRestApi {
   @Path("{noteId}/paragraph/{paragraphId}")
   @ZeppelinApi
   public Response deleteParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId) throws IOException {
+                                  @PathParam("paragraphId") String paragraphId) throws IOException {
     LOG.info("delete paragraph {} {}", noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
@@ -639,7 +682,7 @@ public class NotebookRestApi {
   @Path("{noteId}/clear")
   @ZeppelinApi
   public Response clearAllParagraphOutput(@PathParam("noteId") String noteId)
-          throws IOException {
+      throws IOException {
     LOG.info("clear all paragraph output of note {}", noteId);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clear this note");
 
@@ -693,7 +736,7 @@ public class NotebookRestApi {
   @Path("job/{noteId}")
   @ZeppelinApi
   public Response stopNoteJobs(@PathParam("noteId") String noteId)
-          throws IOException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     LOG.info("stop note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
@@ -719,7 +762,7 @@ public class NotebookRestApi {
   @Path("job/{noteId}")
   @ZeppelinApi
   public Response getNoteJobStatus(@PathParam("noteId") String noteId)
-          throws IOException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     LOG.info("get note job status.");
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
@@ -731,7 +774,7 @@ public class NotebookRestApi {
   /**
    * Get note paragraph job status REST API.
    *
-   * @param noteId ID of Note
+   * @param noteId      ID of Note
    * @param paragraphId ID of Paragraph
    * @return JSON with status.OK
    * @throws IOException
@@ -741,8 +784,8 @@ public class NotebookRestApi {
   @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response getNoteParagraphJobStatus(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId)
-          throws IOException, IllegalArgumentException {
+                                            @PathParam("paragraphId") String paragraphId)
+      throws IOException, IllegalArgumentException {
     LOG.info("get note paragraph job status.");
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
@@ -752,7 +795,7 @@ public class NotebookRestApi {
     checkIfParagraphIsNotNull(paragraph);
 
     return new JsonResponse<>(Status.OK, null, note.generateSingleParagraphInfo(paragraphId)).
-      build();
+        build();
   }
 
   /**
@@ -768,8 +811,8 @@ public class NotebookRestApi {
   @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response runParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId, String message)
-          throws IOException, IllegalArgumentException {
+                               @PathParam("paragraphId") String paragraphId, String message)
+      throws IOException, IllegalArgumentException {
     LOG.info("run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
     Note note = notebook.getNote(noteId);
@@ -793,11 +836,10 @@ public class NotebookRestApi {
   /**
    * Run synchronously a paragraph REST API.
    *
-   * @param noteId - noteId
+   * @param noteId      - noteId
    * @param paragraphId - paragraphId
-   * @param message - JSON with params if user wants to update dynamic form's value
-   *                null, empty string, empty json if user doesn't want to update
-   *
+   * @param message     - JSON with params if user wants to update dynamic form's value
+   *                    null, empty string, empty json if user doesn't want to update
    * @return JSON with status.OK
    * @throws IOException
    * @throws IllegalArgumentException
@@ -806,8 +848,9 @@ public class NotebookRestApi {
   @Path("run/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response runParagraphSynchronously(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId, String message)
-          throws IOException, IllegalArgumentException {
+                                            @PathParam("paragraphId") String paragraphId,
+                                            String message)
+      throws IOException, IllegalArgumentException {
     LOG.info("run paragraph synchronously {} {} {}", noteId, paragraphId, message);
 
     Note note = notebook.getNote(noteId);
@@ -840,7 +883,7 @@ public class NotebookRestApi {
   /**
    * Stop(delete) paragraph job REST API.
    *
-   * @param noteId  ID of Note
+   * @param noteId      ID of Note
    * @param paragraphId ID of Paragraph
    * @return JSON with status.OK
    * @throws IOException
@@ -850,8 +893,8 @@ public class NotebookRestApi {
   @Path("job/{noteId}/{paragraphId}")
   @ZeppelinApi
   public Response stopParagraph(@PathParam("noteId") String noteId,
-          @PathParam("paragraphId") String paragraphId)
-          throws IOException, IllegalArgumentException {
+                                @PathParam("paragraphId") String paragraphId)
+      throws IOException, IllegalArgumentException {
     LOG.info("stop paragraph job {} ", noteId);
     Note note = notebook.getNote(noteId);
     checkIfNoteIsNotNull(note);
@@ -874,7 +917,7 @@ public class NotebookRestApi {
   @Path("cron/{noteId}")
   @ZeppelinApi
   public Response registerCronJob(@PathParam("noteId") String noteId, String message)
-          throws IOException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     LOG.info("Register cron job note={} request cron msg={}", noteId, message);
 
     CronRequest request = CronRequest.fromJson(message);
@@ -985,7 +1028,7 @@ public class NotebookRestApi {
   @Path("jobmanager/{lastUpdateUnixtime}/")
   @ZeppelinApi
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
-          throws IOException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     LOG.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
 
     List<Map<String, Object>> noteJobs;
@@ -1019,7 +1062,7 @@ public class NotebookRestApi {
       if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
           !notebookAuthorization.isReader(noteId, userAndRoles) &&
           !notebookAuthorization.isWriter(noteId, userAndRoles) &&
-              !notebookAuthorization.isRunner(noteId, userAndRoles)) {
+          !notebookAuthorization.isRunner(noteId, userAndRoles)) {
         notesFound.remove(i);
         i--;
       }
