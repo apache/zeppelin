@@ -258,8 +258,9 @@ IPython is more powerful than the default python interpreter with extra function
    
     - Jupyter `pip install jupyter`
     - grpcio `pip install grpcio`
+    - protobuf `pip install protobuf`
 
-If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda.
+If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda. For grpcio version >= 1.12.0 you'll also need to install protobuf separately.
 
 In addition to all basic functions of the python interpreter, you can use all the IPython advanced features as you use it in Jupyter Notebook.
 
