@@ -186,6 +186,9 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       if (!freezeOutput.contains("grpcio=")) {
         return "grpcio is not installed";
       }
+      if (!freezeOutput.contains("protobuf=")) {
+        return "protobuf is not installed";
+      }
       LOGGER.info("IPython prerequisite is met");
     } catch (Exception e) {
       LOGGER.warn("Fail to checkIPythonPrerequisite", e);
