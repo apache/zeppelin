@@ -20,25 +20,12 @@ package org.apache.zeppelin.rest;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.rest.message.CronRequest;
-import org.apache.zeppelin.rest.message.NewNoteRequest;
-import org.apache.zeppelin.rest.message.NewParagraphRequest;
-import org.apache.zeppelin.rest.message.RenameNoteRequest;
-import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
-import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
-import org.quartz.CronExpression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -49,7 +36,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
@@ -62,6 +49,7 @@ import org.apache.zeppelin.rest.exception.NotFoundException;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.NewNoteRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
+import org.apache.zeppelin.rest.message.RenameNoteRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
@@ -71,6 +59,9 @@ import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Rest api endpoint for the notebook.
