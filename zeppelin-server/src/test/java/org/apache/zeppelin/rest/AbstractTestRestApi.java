@@ -168,6 +168,9 @@ public abstract class AbstractTestRestApi {
 
   private static void start(boolean withAuth, String testClassName, boolean withKnox)
           throws Exception {
+    LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
+        withAuth, testClassName, withKnox);
+    
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");

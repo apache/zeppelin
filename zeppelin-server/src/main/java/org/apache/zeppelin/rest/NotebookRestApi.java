@@ -20,22 +20,6 @@ package org.apache.zeppelin.rest;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -62,6 +46,23 @@ import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Rest api endpoint for the notebook.
@@ -139,7 +140,7 @@ public class NotebookRestApi {
   private void checkIfUserIsOwner(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
+    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
     if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
@@ -151,7 +152,7 @@ public class NotebookRestApi {
   private void checkIfUserCanWrite(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
+    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
     if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
@@ -163,7 +164,7 @@ public class NotebookRestApi {
   private void checkIfUserCanRead(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
+    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
     if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
@@ -175,7 +176,7 @@ public class NotebookRestApi {
   private void checkIfUserCanRun(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getRoles());
+    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
     if (!notebookAuthorization.hasRunAuthorization(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
@@ -209,7 +210,7 @@ public class NotebookRestApi {
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
     String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> roles = SecurityUtils.getAssociatedRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
@@ -309,7 +310,7 @@ public class NotebookRestApi {
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    HashSet<String> userAndRoles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = SecurityUtils.getAssociatedRoles();
     userAndRoles.add(subject.getUser());
     List<Map<String, String>> notesInfo = notebookServer.generateNotesInfo(false, subject,
         userAndRoles);
@@ -394,7 +395,7 @@ public class NotebookRestApi {
     note.persist(subject);
     note.setCronSupported(notebook.getConf());
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getAssociatedRoles());
     return new JsonResponse<>(Status.OK, "", note.getId()).build();
   }
 
@@ -419,7 +420,7 @@ public class NotebookRestApi {
       }
     }
 
-    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getAssociatedRoles());
     return new JsonResponse<>(Status.OK, "").build();
   }
 
@@ -447,7 +448,7 @@ public class NotebookRestApi {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     Note newNote = notebook.cloneNote(noteId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getAssociatedRoles());
     return new JsonResponse<>(Status.OK, "", newNote.getId()).build();
   }
 
@@ -479,7 +480,7 @@ public class NotebookRestApi {
     note.setName(newName);
 
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList(subject, SecurityUtils.getRoles());
+    notebookServer.broadcastNoteList(subject, SecurityUtils.getAssociatedRoles());
     return new JsonResponse(Status.OK, "").build();
   }
 
@@ -1042,7 +1043,7 @@ public class NotebookRestApi {
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notes for: {}", queryTerm);
     String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getRoles();
+    HashSet<String> roles = SecurityUtils.getAssociatedRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
