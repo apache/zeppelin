@@ -28,6 +28,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.completer.LSPUtils;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -64,6 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
   private static final int MAX_TIMEOUT_SEC = 30;
+  private static final String LSP_LANG_ID = "python";
 
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
@@ -79,6 +81,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private BaseZeppelinContext zeppelinContext;
   private String condaPythonExec;  // set by PythonCondaInterpreter
   private boolean usePy4jAuth = false;
+
 
   public PythonInterpreter(Properties property) {
     super(property);
@@ -464,12 +467,23 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext)
       throws InterpreterException {
+
+    final List <InterpreterCompletion> completions = LSPUtils.
+        getLspServerComplitions(buf, cursor,
+            getProperty("zeppelin.python.lspHost", "localhost"),
+            Integer.parseInt(getProperty("zeppelin.python.lspPort", "2087")),
+            LSP_LANG_ID);
+    if (!completions.isEmpty()) {
+      return completions;
+    }
+
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.completion(buf, cursor, interpreterContext);
     }
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
+
     String completionString = getCompletionTargetString(buf, cursor);
     String completionCommand = "__zeppelin_completion__.getCompletion('" + completionString + "')";
     LOGGER.debug("completionCommand: " + completionCommand);
