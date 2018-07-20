@@ -1181,7 +1181,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     bodyEl.finish();
 
     // scroll to scrollTargetPos
-    bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration: 100});
+    if (scrollTargetPos) {
+      bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration: 100});
+    }
   };
 
   $scope.getEditorValue = function() {
