@@ -1,0 +1,14 @@
+[
+  {
+    "group": "java",
+    "name": "java",
+    "className": "org.apache.zeppelin.java.JavaInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  }
+]

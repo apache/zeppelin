@@ -29,6 +29,7 @@ hbase           org.apache.zeppelin:zeppelin-hbase:0.7.0                Hbase in
 ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.7.0          Ignite interpreter built with Scala 2.11
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.7.0                 Jdbc interpreter
 kylin           org.apache.zeppelin:zeppelin-kylin:0.7.0                Kylin interpreter
+java            org.apache.zeppelin:zeppelin-java:0.7.0                 Java interpreter
 lens            org.apache.zeppelin:zeppelin-lens:0.7.0                 Lens interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.7.0                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.7.0             Markdown support
