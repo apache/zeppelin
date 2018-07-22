@@ -47,6 +47,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
+//TODO(JL): [ZEPPELIN-3647] Implement InterpreterModeActionsIT again not to use IntegrationTest
 public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterModeActionsIT.class);
 
@@ -166,7 +167,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testGloballyAction() throws Exception {
     try {
       //step 1: (admin) login, set 'globally in shared' mode of python interpreter, logout
@@ -315,7 +316,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testPerUserScopedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in scoped' mode of python interpreter, logout
@@ -597,7 +598,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  // @Test
   public void testPerUserIsolatedAction() throws Exception {
     try {
       //step 1: (admin) login, set 'Per user in isolated' mode of python interpreter, logout
