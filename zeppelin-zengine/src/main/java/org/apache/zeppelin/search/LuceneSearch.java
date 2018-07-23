@@ -84,7 +84,7 @@ public class LuceneSearch implements SearchService {
   private IndexWriterConfig indexWriterConfig;
   private IndexWriter indexWriter;
 
-  public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) throws IOException{
+  public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
     this.zeppelinConfiguration = zeppelinConfiguration;
     if (zeppelinConfiguration.isZeppelinSearchUseDisk()) {
       try {
