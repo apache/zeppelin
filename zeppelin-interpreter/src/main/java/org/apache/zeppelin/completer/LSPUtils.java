@@ -58,13 +58,13 @@ public class LSPUtils {
    * @param cursor cursor position in statements
    * @param host LSP Server's host
    * @param port LSP Server's port
-   * @param lang_id language id
+   * @param langId language id
    *
    * @return list of possible completion.
    * Return empty list if there're nothing to return or exception occurred.
    */
   public static List<InterpreterCompletion> getLspServerComplitions(String buf, int cursor,
-        String host, int port, String lang_id) {
+        String host, int port, String langId) {
     Logger.info("Trying to complete on {} with cursor {}", buf, cursor);
 
     List<InterpreterCompletion> list = Collections.emptyList();
@@ -73,7 +73,7 @@ public class LSPUtils {
       server.initialize(new InitializeParams());
 
       server.getTextDocumentService().didOpen(new DidOpenTextDocumentParams(
-          new TextDocumentItem(ANY_URI, lang_id, ANY_VERSION, buf)
+          new TextDocumentItem(ANY_URI, langId, ANY_VERSION, buf)
       ));
 
       CompletableFuture future =
