@@ -76,6 +76,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
 
     InterpreterContext context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
@@ -88,6 +89,8 @@ public class NewSparkInterpreterTest {
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
+
+    assertEquals("fake_spark_weburl", interpreter.getSparkUIUrl());
 
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
