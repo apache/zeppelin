@@ -65,6 +65,7 @@ public class JavaInterpreterTest {
     InterpreterResult res = java.interpret(writer.toString(), context);
 
     assertEquals(InterpreterResult.Code.SUCCESS, res.code());
+    assertEquals(InterpreterResult.Type.TEXT, res.message().get(0).getType());
   }
 
   @Test

@@ -15,7 +15,7 @@ mvn clean package -Pjava -DskipTests -Pscala-2.10
 
  * Upon starting an interpreter, an instance of `JavaCompiler` is created. 
 
- * When the user runs commands with beam, the `JavaParser` go through the code to get a class that contains the main method.
+ * When the user runs commands with java, the `JavaParser` go through the code to get a class that contains the main method.
  
  * Then it replaces the class name with random class name to avoid overriding while compilation. It creates new out & err stream to get the data in new stream instead of the console, to redirect output to zeppelin.
  
