@@ -93,7 +93,7 @@ public class LuceneSearch implements SearchService {
                 Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
         this.directory = new MMapDirectory(directoryPath);
       } catch (IOException e) {
-        throw new IOException(
+        throw new RuntimeException(
             "Failed to create temporary directory for search service. Use memory instead", e);
       }
     } else {
