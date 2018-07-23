@@ -314,6 +314,18 @@ z.show(df)
 By default, we would use IPython in `%python.python` if IPython is available. Otherwise it would fall back to the original Python implementation.
 If you don't want to use IPython, then you can set `zeppelin.python.useIPython` as `false` in interpreter setting.
 
+### Use Python Language Server for better autocomplete
+You can change embedded method for autocomplete to complete from [python-language-server](https://github.com/palantir/python-language-server).
+For doing this you need to install **Python language server** by typing `pip install pyls` in console. 
+After that you need to start language server:
+- `pyls --tcp -v` for active mode;
+- `(pyls --tcp &) &` for background mode.
+
+So now you can restart python interpreter and pyls autocomplete will be automatically used.
+
+If you want to change default host and port of LSP server you can specify `zeppelin.python.lspHost` and `zeppelin.python.lspPort` properties.
+
+
 ## Technical description
 
 For in-depth technical details on current implementation please refer to [python/README.md](https://github.com/apache/zeppelin/blob/master/python/README.md).
