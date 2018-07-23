@@ -77,21 +77,26 @@ public class LuceneSearch implements SearchService {
   private static final String PARAGRAPH = "paragraph";
   private static final String ID_FIELD = "id";
 
+  private final ZeppelinConfiguration zeppelinConfiguration;
   private Directory directory;
   private Path directoryPath;
   private Analyzer analyzer;
   private IndexWriterConfig indexWriterConfig;
   private IndexWriter indexWriter;
 
-  public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
-    try {
-      this.directoryPath =
-          Files.createTempDirectory(
-              Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
-      this.directory = new MMapDirectory(directoryPath);
-    } catch (IOException e) {
-      logger.error(
-          "Failed to create temporary directory for search service. Use memory instead", e);
+  public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) throws IOException{
+    this.zeppelinConfiguration = zeppelinConfiguration;
+    if (zeppelinConfiguration.isZeppelinSearchUseDisk()) {
+      try {
+        this.directoryPath =
+            Files.createTempDirectory(
+                Paths.get(zeppelinConfiguration.getZeppelinSearchTempPath()), "zeppelin-search-");
+        this.directory = new MMapDirectory(directoryPath);
+      } catch (IOException e) {
+        throw new IOException(
+            "Failed to create temporary directory for search service. Use memory instead", e);
+      }
+    } else {
       this.directory = new RAMDirectory();
     }
     this.analyzer = new StandardAnalyzer();
@@ -392,7 +397,7 @@ public class LuceneSearch implements SearchService {
   public void close() {
     try {
       indexWriter.close();
-      if (null != directoryPath) {
+      if (zeppelinConfiguration.isZeppelinNotebookCronEnable() && null != directoryPath) {
         FileUtils.deleteDirectory(directoryPath.toFile());
       }
     } catch (IOException e) {

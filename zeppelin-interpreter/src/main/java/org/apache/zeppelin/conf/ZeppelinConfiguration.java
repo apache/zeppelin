@@ -626,6 +626,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
   }
 
+  public Boolean isZeppelinSearchUseDisk() {
+    return getBoolean(ConfVars.ZEPPELIN_SEARCH_USE_DISK);
+  }
+
   public String getZeppelinSearchTempPath() {
     return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_TEMP_PATH);
   }
@@ -832,6 +836,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
     ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
+    ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", false),
     ZEPPELIN_SEARCH_TEMP_PATH("zeppelin.search.temp.path", System.getProperty("java.io.tmpdir"));
 
     private String varName;
