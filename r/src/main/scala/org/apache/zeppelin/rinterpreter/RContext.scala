@@ -106,7 +106,6 @@ private[rinterpreter] class RContext(private val sockets: ScalaSockets,
         }
     testRPackage("SparkR", fail = true, path = sparkHome)
     if (startSpark.getSparkVersion() == null) throw new RuntimeException("No spark version")
-    if (!startSpark.getSparkVersion().isSparkRSupported) throw new RuntimeException("SparkR requires Spark 1.4 or later")
     sc = Some(startSpark.getSparkContext())
     sql = Some(startSpark.getSQLContext())
     z = Some(startSpark.getZeppelinContext())

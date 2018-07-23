@@ -765,13 +765,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           interpret("import spark.sql");
           interpret("import org.apache.spark.sql.functions._");
         } else {
-          if (sparkVersion.oldSqlContextImplicits()) {
-            interpret("import sqlContext._");
-          } else {
-            interpret("import sqlContext.implicits._");
-            interpret("import sqlContext.sql");
-            interpret("import org.apache.spark.sql.functions._");
-          }
+          interpret("import sqlContext.implicits._");
+          interpret("import sqlContext.sql");
+          interpret("import org.apache.spark.sql.functions._");
         }
       }
     }
@@ -789,14 +785,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
     if (Utils.isScala2_10()) {
       try {
-        if (sparkVersion.oldLoadFilesMethodName()) {
-          Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        } else {
-          Method loadFiles = this.interpreter.getClass().getMethod(
-              "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        }
+        Method loadFiles = this.interpreter.getClass().getMethod(
+            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         throw new InterpreterException(e);
