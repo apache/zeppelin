@@ -168,7 +168,7 @@ public class ZeppelinServer extends Application {
         notebookWsServer, notebookWsServer);
     this.replFactory = new InterpreterFactory(interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch();
+    this.noteSearchService = new LuceneSearch(conf);
     this.notebookAuthorization = NotebookAuthorization.getInstance();
     this.credentials = new Credentials(
         conf.credentialsPersist(),

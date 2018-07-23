@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.conf;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -24,13 +30,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Zeppelin configuration.
@@ -498,10 +497,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getRelativeDir(String path) {
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith(File.separator) || isWindowsPath(path)) {
       return path;
     } else {
-      return getString(ConfVars.ZEPPELIN_HOME) + "/" + path;
+      return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
     }
   }
 
@@ -625,6 +624,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getZeppelinProxyPassword() {
     return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
+  }
+
+  public Boolean isZeppelinSearchUseDisk() {
+    return getBoolean(ConfVars.ZEPPELIN_SEARCH_USE_DISK);
+  }
+
+  public String getZeppelinSearchTempPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_TEMP_PATH);
   }
 
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
@@ -828,7 +835,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
-    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null);
+    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
+    ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", false),
+    ZEPPELIN_SEARCH_TEMP_PATH("zeppelin.search.temp.path", System.getProperty("java.io.tmpdir"));
 
     private String varName;
     @SuppressWarnings("rawtypes")
