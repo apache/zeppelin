@@ -297,7 +297,12 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public void write(String string) throws IOException {
-    write(string.getBytes());
+    if (string.startsWith("%") && !startOfTheNewLine) {
+      // prepend "\n" if it starts with another type of output and startOfTheNewLine is false
+      write(("\n" + string).getBytes());
+    } else {
+      write(string.getBytes());
+    }
   }
 
   /**

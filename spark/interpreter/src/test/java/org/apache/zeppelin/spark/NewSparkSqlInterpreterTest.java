@@ -64,9 +64,6 @@ public class NewSparkSqlInterpreterTest {
     intpGroup.get("session_1").add(sparkInterpreter);
     intpGroup.get("session_1").add(sqlInterpreter);
 
-    sparkInterpreter.open();
-    sqlInterpreter.open();
-
     context = InterpreterContext.builder()
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
@@ -76,6 +73,10 @@ public class NewSparkSqlInterpreterTest {
         .setInterpreterOut(new InterpreterOutput(null))
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
+    InterpreterContext.set(context);
+
+    sparkInterpreter.open();
+    sqlInterpreter.open();
   }
 
   @AfterClass

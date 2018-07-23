@@ -245,7 +245,6 @@ public abstract class BaseZeppelinContext {
    * @param o         object
    * @param maxResult maximum number of rows to display
    */
-
   @ZeppelinApi
   public void show(Object o, int maxResult) {
     try {
@@ -261,7 +260,7 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private boolean isSupportedObject(Object obj) {
+  protected boolean isSupportedObject(Object obj) {
     for (Class supportedClass : getSupportedClasses()) {
       if (supportedClass.isInstance(obj)) {
         return true;
