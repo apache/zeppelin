@@ -184,31 +184,31 @@ public class NewSparkInterpreterTest {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
       result = interpreter.interpret(
-          "val df = sqlContext.createDataFrame(Seq((1,\"a\"),(2,\"b\")))\n" +
+          "val df = sqlContext.createDataFrame(Seq((1,\"a\"),(2, null)))\n" +
               "df.show()", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertTrue(output.contains(
-              "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+"));
+              "+---+----+\n" +
+              "| _1|  _2|\n" +
+              "+---+----+\n" +
+              "|  1|   a|\n" +
+              "|  2|null|\n" +
+              "+---+----+"));
     } else if (version.contains("String = 2.")) {
       result = interpreter.interpret("spark", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
       result = interpreter.interpret(
-          "val df = spark.createDataFrame(Seq((1,\"a\"),(2,\"b\")))\n" +
+          "val df = spark.createDataFrame(Seq((1,\"a\"),(2, null)))\n" +
               "df.show()", getInterpreterContext());
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertTrue(output.contains(
-              "+---+---+\n" +
-              "| _1| _2|\n" +
-              "+---+---+\n" +
-              "|  1|  a|\n" +
-              "|  2|  b|\n" +
-              "+---+---+"));
+              "+---+----+\n" +
+              "| _1|  _2|\n" +
+              "+---+----+\n" +
+              "|  1|   a|\n" +
+              "|  2|null|\n" +
+              "+---+----+"));
     }
 
     // ZeppelinContext
@@ -216,7 +216,7 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, messageOutput.getType());
     messageOutput.flush();
-    assertEquals("_1\t_2\n1\ta\n2\tb\n", messageOutput.toInterpreterResultMessage().getData());
+    assertEquals("_1\t_2\n1\ta\n2\tnull\n", messageOutput.toInterpreterResultMessage().getData());
 
     context = getInterpreterContext();
     result = interpreter.interpret("z.input(\"name\", \"default_name\")", context);

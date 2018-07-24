@@ -94,6 +94,11 @@ public class SparkShimsTest {
             public void setupSparkListener(String master,
                                            String sparkWebUrl,
                                            InterpreterContext context) {}
+
+            @Override
+            public String showDataFrame(Object obj, int maxResult) {
+              return null;
+            }
           };
       assertEquals(expected, sparkShims.supportYarn6615(version));
     }
