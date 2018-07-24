@@ -703,14 +703,15 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
 
       sparkVersion = SparkVersion.fromVersionString(sc.version());
-
       sqlc = getSQLContext();
-
       dep = getDependencyResolver();
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
+      sparkUrl = getSparkUIUrl();
+      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+      numReferenceOfSparkContext.incrementAndGet();
 
-      z = new SparkZeppelinContext(sc, hooks,
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -817,10 +818,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
     }
 
-    sparkUrl = getSparkUIUrl();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
-    numReferenceOfSparkContext.incrementAndGet();
   }
 
   public String getSparkUIUrl() {

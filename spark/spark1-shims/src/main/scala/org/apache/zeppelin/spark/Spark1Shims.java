@@ -18,10 +18,16 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListenerJobStart;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Row;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.ResultMessages;
+
+import java.util.List;
 
 public class Spark1Shims extends SparkShims {
 
@@ -35,5 +41,38 @@ public class Spark1Shims extends SparkShims {
         buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
       }
     });
+  }
+
+  @Override
+  public String showDataFrame(Object obj, int maxResult) {
+    if (obj instanceof DataFrame) {
+      DataFrame df = (DataFrame) obj;
+      String[] columns = df.columns();
+      List<Row> rows = df.takeAsList(maxResult + 1);
+
+      StringBuilder msg = new StringBuilder();
+      msg.append("%table ");
+      msg.append(StringUtils.join(columns, "\t"));
+      msg.append("\n");
+      for (Row row : rows) {
+        for (int i = 0; i < row.size(); ++i) {
+          msg.append(row.get(i));
+          if (i != row.size() -1) {
+            msg.append("\t");
+          }
+        }
+        msg.append("\n");
+      }
+
+      if (rows.size() > maxResult) {
+        msg.append("\n");
+        msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
+      }
+      // append %text at the end, otherwise the following output will be put in table as well.
+      msg.append("\n%text ");
+      return msg.toString();
+    } else {
+      return obj.toString();
+    }
   }
 }

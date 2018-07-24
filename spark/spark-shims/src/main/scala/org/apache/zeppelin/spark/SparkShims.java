@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.ResultMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +85,9 @@ public abstract class SparkShims {
   public abstract void setupSparkListener(String master,
                                           String sparkWebUrl,
                                           InterpreterContext context);
+
+  public abstract String showDataFrame(Object obj, int maxResult);
+
 
   protected String getNoteId(String jobgroupId) {
     int indexOf = jobgroupId.indexOf("-");

@@ -19,23 +19,27 @@ package org.apache.zeppelin.spark;
 
 import com.google.common.collect.Lists;
 import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObjectWatcher;
-import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.display.ui.OptionInput;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import scala.Tuple2;
 import scala.Unit;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
 import static scala.collection.JavaConversions.collectionAsScalaIterable;
+
 
 /**
  * ZeppelinContext for Spark
@@ -45,14 +49,16 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
   private SparkContext sc;
   private List<Class> supportedClasses;
   private Map<String, String> interpreterClassMap;
+  private SparkShims sparkShims;
 
   public SparkZeppelinContext(
       SparkContext sc,
+      SparkShims sparkShims,
       InterpreterHookRegistry hooks,
       int maxResult) {
     super(hooks, maxResult);
     this.sc = sc;
-
+    this.sparkShims = sparkShims;
     interpreterClassMap = new HashMap();
     interpreterClassMap.put("spark", "org.apache.zeppelin.spark.SparkInterpreter");
     interpreterClassMap.put("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter");
@@ -70,13 +76,8 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
     } catch (ClassNotFoundException e) {
     }
 
-    try {
-      supportedClasses.add(this.getClass().forName("org.apache.spark.sql.SchemaRDD"));
-    } catch (ClassNotFoundException e) {
-    }
-
     if (supportedClasses.isEmpty()) {
-      throw new RuntimeException("Can not load Dataset/DataFrame/SchemaRDD class");
+      throw new RuntimeException("Can not load Dataset/DataFrame class");
     }
   }
 
@@ -91,88 +92,8 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
   }
 
   @Override
-  public String showData(Object df) {
-    Object[] rows = null;
-    Method take;
-    String jobGroup = Utils.buildJobGroupId(interpreterContext);
-    sc.setJobGroup(jobGroup, "Zeppelin", false);
-
-    try {
-      // convert it to DataFrame if it is Dataset, as we will iterate all the records
-      // and assume it is type Row.
-      if (df.getClass().getCanonicalName().equals("org.apache.spark.sql.Dataset")) {
-        Method convertToDFMethod = df.getClass().getMethod("toDF");
-        df = convertToDFMethod.invoke(df);
-      }
-      take = df.getClass().getMethod("take", int.class);
-      rows = (Object[]) take.invoke(df, maxResult + 1);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
-      sc.clearJobGroup();
-      throw new RuntimeException(e);
-    }
-
-    List<Attribute> columns = null;
-    // get field names
-    try {
-      // Use reflection because of classname returned by queryExecution changes from
-      // Spark <1.5.2 org.apache.spark.sql.SQLContext$QueryExecution
-      // Spark 1.6.0> org.apache.spark.sql.hive.HiveContext$QueryExecution
-      Object qe = df.getClass().getMethod("queryExecution").invoke(df);
-      Object a = qe.getClass().getMethod("analyzed").invoke(qe);
-      scala.collection.Seq seq = (scala.collection.Seq) a.getClass().getMethod("output").invoke(a);
-
-      columns = (List<Attribute>) scala.collection.JavaConverters.seqAsJavaListConverter(seq)
-          .asJava();
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-
-    StringBuilder msg = new StringBuilder();
-    msg.append("%table ");
-    for (Attribute col : columns) {
-      msg.append(col.name() + "\t");
-    }
-    String trim = msg.toString().trim();
-    msg = new StringBuilder(trim);
-    msg.append("\n");
-
-    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
-    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
-    // NullType, NumericType, ShortType, StringType, StructType
-
-    try {
-      for (int r = 0; r < maxResult && r < rows.length; r++) {
-        Object row = rows[r];
-        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
-        Method apply = row.getClass().getMethod("apply", int.class);
-
-        for (int i = 0; i < columns.size(); i++) {
-          if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg.append(apply.invoke(row, i).toString());
-          } else {
-            msg.append("null");
-          }
-          if (i != columns.size() - 1) {
-            msg.append("\t");
-          }
-        }
-        msg.append("\n");
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new RuntimeException(e);
-    }
-
-    if (rows.length > maxResult) {
-      msg.append("\n");
-      msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
-    }
-    // append %text at the end, otherwise the following output will be put in table as well.
-    msg.append("\n%text ");
-    sc.clearJobGroup();
-    return msg.toString();
+  public String showData(Object obj) {
+    return sparkShims.showDataFrame(obj, maxResult);
   }
 
   @ZeppelinApi
@@ -215,7 +136,7 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
 
   @ZeppelinApi
   public Object noteSelect(String name, Object defaultValue,
-                       scala.collection.Iterable<Tuple2<Object, String>> options) {
+                           scala.collection.Iterable<Tuple2<Object, String>> options) {
     return noteSelect(name, defaultValue, tuplesToParamOptions(options));
   }
 
