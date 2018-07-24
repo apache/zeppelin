@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Java interpreter in Apache Zeppelin
-description: Run Java code and any distributed java computation engine by importing the dependencies in the interpreter configuration.
+description: Run Java code and any distributed java computation library by importing the dependencies in the interpreter configuration.
 group: interpreter
 ---
 <!--
@@ -27,87 +27,28 @@ limitations under the License.
 ## How to use
 Basically, you can write normal java code. You should write the main method inside a class because the interpreter invoke this main to execute the code. Unlike Zeppelin normal pattern, each paragraph is considered as a separate job, there isn't any relation to any other paragraph.
 
-TODO: UPDATE EXAMPLE BELOW WITH A JAVA ONE... TRY IT IN THE INTERPRETER FIRST
-The following is a demonstration of a word count example with data represented in array of strings
-But it can read data from files by replacing `Create.of(SENTENCES).withCoder(StringUtf8Coder.of())` with `TextIO.Read.from("path/to/filename.txt")`
+
+The following is a demonstration of a word count example with data represented as a java Map and displayed leveraging Zeppelin's built in visualization using the utility method `JavaInterpreterUtils.displayTableFromSimpleMap`.
+
 
 ```java
 %java
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.zeppelin.java.JavaInterpreterUtils;
 
-// most used imports
-import org.apache.beam.sdk.coders.StringUtf8Coder;
-import org.apache.beam.sdk.transforms.Create;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import org.apache.beam.runners.direct.*;
-import org.apache.beam.sdk.runners.*;
-import org.apache.beam.sdk.options.*;
-import org.apache.beam.runners.flink.*;
-import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.TextIO;
-import org.apache.beam.sdk.options.PipelineOptionsFactory;
-import org.apache.beam.sdk.transforms.Count;
-import org.apache.beam.sdk.transforms.DoFn;
-import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.SimpleFunction;
-import org.apache.beam.sdk.values.KV;
-import org.apache.beam.sdk.options.PipelineOptions;
+public class HelloWorld {
 
-public class MinimalWordCount {
-  static List<String> s = new ArrayList<>();
-  
-  static final String[] SENTENCES_ARRAY = new String[] {
-    "Hadoop is the Elephant King!",
-    "A yellow and elegant thing.",
-    "He never forgets",
-    "Useful data, or lets",
-    "An extraneous element cling!",
-    "A wonderful king is Hadoop.",
-    "The elephant plays well with Sqoop.",
-    "But what helps him to thrive",
-    "Are Impala, and Hive,",
-    "And HDFS in the group.",
-    "Hadoop is an elegant fellow.",
-    "An elephant gentle and mellow.",
-    "He never gets mad,",
-    "Or does anything bad,",
-    "Because, at his core, he is yellow",
-	};  
-  static final List<String> SENTENCES = Arrays.asList(SENTENCES_ARRAY);
-  public static void main(String[] args) {
-    PipelineOptions options = PipelineOptionsFactory.create().as(PipelineOptions.class);
-    options.setRunner(FlinkRunner.class);
-    Pipeline p = Pipeline.create(options);
-    p.apply(Create.of(SENTENCES).withCoder(StringUtf8Coder.of()))
-         .apply("ExtractWords", ParDo.of(new DoFn<String, String>() {
-           @ProcessElement
-           public void processElement(ProcessContext c) {
-             for (String word : c.element().split("[^a-zA-Z']+")) {
-               if (!word.isEmpty()) {
-                 c.output(word);
-               }
-             }
-           }
-         }))
-        .apply(Count.<String> perElement())
-        .apply("FormatResults", ParDo.of(new DoFn<KV<String, Long>, String>() {
-          @ProcessElement
-          public void processElement(DoFn<KV<String, Long>, String>.ProcessContext arg0)
-            throws Exception {
-            s.add("\n" + arg0.element().getKey() + "\t" + arg0.element().getValue());
-          	}
-        }));
-    p.run();
-    System.out.println("%table word\tcount");
-    for (int i = 0; i < s.size(); i++) {
-      System.out.print(s.get(i));
+    public static void main(String[] args) {
+    
+        Map<String, Long> counts = new HashMap<>();
+        counts.put("hello",4L);
+        counts.put("world",5L);
+
+        System.out.println(JavaInterpreterUtils.displayTableFromSimpleMap("Word","Count", counts));
+        
     }
 
-  }
 }
-
 ```
 

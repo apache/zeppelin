@@ -8,7 +8,7 @@ Current interpreter implementation supports the static repl. It compiles the cod
 You have to first build the Java interpreter by enable the **java** profile as follows:
 
 ```
-mvn clean package -Pjava -DskipTests -Pscala-2.10
+mvn clean package -Pjava -DskipTests
 ```
 
 ### Technical overview
@@ -20,3 +20,5 @@ mvn clean package -Pjava -DskipTests -Pscala-2.10
  * Then it replaces the class name with random class name to avoid overriding while compilation. It creates new out & err stream to get the data in new stream instead of the console, to redirect output to zeppelin.
  
  * If there is any error during compilation, it can catch and redirect to zeppelin.
+ 
+ * `JavaInterpreterUtils` contains useful methods to print out Java collections and leverage Zeppelin's built in visualization. 
