@@ -64,7 +64,7 @@ public class LSPUtils {
    * Return empty list if there're nothing to return or exception occurred.
    */
   public static List<InterpreterCompletion> getLspServerCompletion(String buf, int cursor,
-                                                                   String host, int port, String langId) {
+                                                          String host, int port, String langId) {
     Logger.info("Trying to complete on {} with cursor {}", buf, cursor);
 
     List<InterpreterCompletion> list = Collections.emptyList();
@@ -111,18 +111,18 @@ public class LSPUtils {
         new Position(line, character));
   }
 
-  private static InterpreterCompletion castCompletionItemToInterpreterCompletion(
+  static InterpreterCompletion castCompletionItemToInterpreterCompletion(
       CompletionItem item) {
     return new InterpreterCompletion(item.getLabel(), item.getLabel(), "");
   }
 
-  private static List<InterpreterCompletion> castList(List<CompletionItem> items) {
+  static List<InterpreterCompletion> castList(List<CompletionItem> items) {
     return items.stream()
         .map(LSPUtils::castCompletionItemToInterpreterCompletion)
         .collect(Collectors.toList());
   }
 
-  private static List<InterpreterCompletion> eitherToCompletionList(
+  static List<InterpreterCompletion> eitherToCompletionList(
       Either<List<CompletionItem>, CompletionList> either) {
     if (either.isLeft()) {
       return castList(either.getLeft());

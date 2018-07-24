@@ -45,6 +45,7 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
     <jline.version>2.12.1</jline.version>
+    <powermock.version>1.7.4</powermock.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -252,9 +253,35 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+       <groupId>org.powermock</groupId>
+       <artifactId>powermock-module-junit4</artifactId>
+       <version>${powermock.version}</version>
+       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+       <groupId>org.powermock</groupId>
+       <artifactId>powermock-api-mockito</artifactId>
+       <version>${powermock.version}</version>
+       <exclusions>
+          <exclusion>
+             <artifactId>hamcrest-core</artifactId>
+             <groupId>org.hamcrest</groupId>
+          </exclusion>
+          <exclusion>
+             <artifactId>objenesis</artifactId>
+             <groupId>org.objenesis</groupId>
+          </exclusion>
+        </exclusions>
+       <scope>test</scope>
+    </dependency>
+
+
   </dependencies>
 
-  <build>
+    <build>
     <resources>
       <resource>
         <directory>src/main/resources</directory>

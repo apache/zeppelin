@@ -18,55 +18,52 @@
 package org.apache.zeppelin.completer;
 
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.eclipse.lsp4j.services.LanguageClient;
-import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
-import static org.eclipse.lsp4j.jsonrpc.Launcher.createLauncher;
-
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 
-public class LSPUtilsTest{
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(LSPUtils.class)
+public class LSPUtilsTest {
   private static final String HOST = "localhost";
+  private static final int PORT = 2087;
   private static final String BUF = "p";
   private static final String LANG_ID = "python";
   private static final int CURSOR = 0;
 
   @Test
-  public void getLspServerComplitionsTest() throws Exception{
+  public void getLspServerCompletionTest() throws Exception {
 
-    try (ServerSocket serverSocket = new ServerSocket(0)) {
-      final int port = serverSocket.getLocalPort();
+    PowerMockito.mockStatic(LSPUtils.class);
+    PowerMockito.whenNew(Socket.class).withAnyArguments().thenReturn(null);
+    PowerMockito.when(LSPUtils.connectToLanguageServer(any(Socket.class)))
+        .thenReturn(new MockLanguageServer());
 
-      Thread t = new Thread(() -> {
-        Socket socket;
-        try {
-          while (!Thread.currentThread().isInterrupted()) {
-            socket = serverSocket.accept();
-            Launcher<LanguageClient> launcher = createLauncher(
-                new MockLanguageServer(),
-                LanguageClient.class,
-                socket.getInputStream(),
-                socket.getOutputStream());
-            launcher.startListening();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      });
-      t.start();
+    PowerMockito.when(LSPUtils.castCompletionItemToInterpreterCompletion(any()))
+        .thenCallRealMethod();
+    PowerMockito.when(LSPUtils.castList(any())).thenCallRealMethod();
+    PowerMockito.when(LSPUtils.eitherToCompletionList(any())).thenCallRealMethod();
+    PowerMockito.when(LSPUtils.getLspServerCompletion(anyString(), anyInt(), anyString(), anyInt(),
+        anyString())).thenCallRealMethod();
 
-      List<InterpreterCompletion> res = LSPUtils
-          .getLspServerCompletion(BUF, CURSOR, HOST, port, LANG_ID);
+    List<InterpreterCompletion> res = LSPUtils
+        .getLspServerCompletion(BUF, CURSOR, HOST, PORT, LANG_ID);
 
-      assertTrue(res.size() > 0);
-      assertEquals("print", res.get(0).name);
-    }
+    System.out.println(res);
+
+    assertTrue(res.size() > 0);
+    assertEquals("print", res.get(0).name);
   }
 }
