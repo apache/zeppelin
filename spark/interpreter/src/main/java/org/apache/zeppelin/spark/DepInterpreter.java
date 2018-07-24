@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -226,12 +227,14 @@ public class DepInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     PrintStream printStream = new PrintStream(out);
     Console.setOut(printStream);
     out.reset();
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    SparkInterpreter sparkInterpreter =
+        getInterpreterInTheSameSessionByClassName(SparkInterpreter.class, false);
 
     if (sparkInterpreter != null && sparkInterpreter.getDelegation().isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
@@ -334,29 +337,17 @@ public class DepInterpreter extends Interpreter {
     return paths;
   }
 
-  private SparkInterpreter getSparkInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    if (intpGroup == null) {
-      return null;
-    }
-
-    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
-    if (p == null) {
-      return null;
-    }
-
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    return (SparkInterpreter) p;
-  }
-
   @Override
   public Scheduler getScheduler() {
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    if (sparkInterpreter != null) {
-      return getSparkInterpreter().getScheduler();
-    } else {
+    try {
+      SparkInterpreter sparkInterpreter =
+          getInterpreterInTheSameSessionByClassName(SparkInterpreter.class, false);
+      if (sparkInterpreter != null) {
+        return sparkInterpreter.getScheduler();
+      } else {
+        return null;
+      }
+    } catch (InterpreterException e) {
       return null;
     }
   }

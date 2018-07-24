@@ -66,8 +66,14 @@ abstract class RInterpreter(properties : Properties, startSpark : Boolean = true
         | license so it can be used with this project.""".stripMargin)
   }
 
-  def getSparkInterpreter() : Option[SparkInterpreter] =
-    getSparkInterpreter(getInterpreterInTheSameSessionByClassName(classOf[SparkInterpreter].getName))
+  def getSparkInterpreter() : Option[SparkInterpreter] = {
+    val sparkInterpreter = getInterpreterInTheSameSessionByClassName(classOf[SparkInterpreter])
+    if (sparkInterpreter == null) {
+      None
+    } else {
+      Some(sparkInterpreter)
+    }
+  }
 
   def getSparkInterpreter(p1 : Interpreter) : Option[SparkInterpreter] = p1 match {
     case s : SparkInterpreter => Some[SparkInterpreter](s)
