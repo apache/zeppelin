@@ -817,9 +817,8 @@ public class LivyInterpreterIT {
 
       // test code completion
       List<InterpreterCompletion> completionResult = sparkInterpreter
-          .completion("spark.sparkC", 14, context);
-      assertEquals(completionResult.size(), 1);
-      assertEquals(completionResult.get(0).value, "sparkContext");
+          .completion("nothing", 7, context);
+      assertEquals(completionResult.size(), 0);
 
     } finally {
       sparkInterpreter.close();
