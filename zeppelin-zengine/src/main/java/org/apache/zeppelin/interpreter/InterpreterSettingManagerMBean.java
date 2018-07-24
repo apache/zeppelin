@@ -17,8 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.Set;
+import java.util.Map;
+import java.util.List;
 
 public interface InterpreterSettingManagerMBean {
-  Set<String> getRunningInterpreters();
+  List<Map<String, String>> getRunningInterpreters();
 }
