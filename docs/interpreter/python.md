@@ -316,14 +316,16 @@ If you don't want to use IPython, then you can set `zeppelin.python.useIPython` 
 
 ### Use Python Language Server for better autocomplete
 You can change embedded method for autocomplete to complete from [python-language-server](https://github.com/palantir/python-language-server).
-For doing this you need to install **Python language server** by typing `pip install pyls` in console. 
+For doing this you need to install **Python language server** by typing `pip install python-language-server` in console. 
 After that you need to start language server:
 - `pyls --tcp -v` for active mode;
 - `(pyls --tcp &) &` for background mode.
 
-So now you can restart python interpreter and pyls autocomplete will be automatically used.
+So now you can enable this feature by change `zeppelin.python.useLsp` property for `true`.
 
 If you want to change default host and port of LSP server you can specify `zeppelin.python.lspHost` and `zeppelin.python.lspPort` properties.
+
+If you get an error similar to `'install_requires' must be a string or list of strings` while `python-language-server` installation then please upgrade setuptools before trying again: `pip install -U setuptools`.
 
 
 ## Technical description

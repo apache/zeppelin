@@ -468,13 +468,15 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
                                                 InterpreterContext interpreterContext)
       throws InterpreterException {
 
-    final List <InterpreterCompletion> completions = LSPUtils.
-        getLspServerComplitions(buf, cursor,
-            getProperty("zeppelin.python.lspHost", "localhost"),
-            Integer.parseInt(getProperty("zeppelin.python.lspPort", "2087")),
-            LSP_LANG_ID);
-    if (!completions.isEmpty()) {
-      return completions;
+    if (Boolean.parseBoolean(getProperty("zeppelin.python.useLsp", "false"))) {
+      final List<InterpreterCompletion> completions = LSPUtils
+          .getLspServerCompletion(buf, cursor,
+              getProperty("zeppelin.python.lspHost", "localhost"),
+              Integer.parseInt(getProperty("zeppelin.python.lspPort", "2087")),
+              LSP_LANG_ID);
+      if (!completions.isEmpty()) {
+        return completions;
+      }
     }
 
     if (iPythonInterpreter != null) {

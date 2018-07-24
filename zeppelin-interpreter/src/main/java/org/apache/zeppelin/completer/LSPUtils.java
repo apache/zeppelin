@@ -63,8 +63,8 @@ public class LSPUtils {
    * @return list of possible completion.
    * Return empty list if there're nothing to return or exception occurred.
    */
-  public static List<InterpreterCompletion> getLspServerComplitions(String buf, int cursor,
-        String host, int port, String langId) {
+  public static List<InterpreterCompletion> getLspServerCompletion(String buf, int cursor,
+                                                                   String host, int port, String langId) {
     Logger.info("Trying to complete on {} with cursor {}", buf, cursor);
 
     List<InterpreterCompletion> list = Collections.emptyList();
@@ -104,7 +104,7 @@ public class LSPUtils {
     final String beforeCursor = buf.substring(0, actualCursor);
     final int line = countLines(beforeCursor) - 1;
     final int character = beforeCursor.length() - beforeCursor.lastIndexOf("\n") - 1;
-    Logger.info("Line: {}, character: {} from actual cursor: ", line, character, cursor);
+    Logger.debug("Line: {}, character: {} from actual cursor: ", line, character, cursor);
 
     return new CompletionParams(
         new TextDocumentIdentifier(ANY_URI),

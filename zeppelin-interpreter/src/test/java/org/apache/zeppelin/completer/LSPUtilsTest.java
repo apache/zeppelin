@@ -63,7 +63,7 @@ public class LSPUtilsTest{
       t.start();
 
       List<InterpreterCompletion> res = LSPUtils
-          .getLspServerComplitions(BUF, CURSOR, HOST, port, LANG_ID);
+          .getLspServerCompletion(BUF, CURSOR, HOST, port, LANG_ID);
 
       assertTrue(res.size() > 0);
       assertEquals("print", res.get(0).name);
