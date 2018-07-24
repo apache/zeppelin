@@ -259,7 +259,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     try {
       CompletionResponse resp = CompletionResponse.fromJson(
-          callRestAPI("/sessions/" + sessionInfo.id + "/completion", "POST", req.toJson()));
+          callRestAPI("/sessions/" + getSessionInfo().id + "/completion", "POST", req.toJson()));
       for (String candidate : resp.candidates) {
         candidates.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
       }
