@@ -271,7 +271,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
     } catch (SessionNotFoundException e) {
       LOGGER.warn("Livy session {} is expired. Will return empty list of candidates.",
-          sessionInfo.id);
+          getSessionInfo().id);
     } catch (LivyException le) {
       logger.error("Failed to call code completions. Will return empty list of candidates", le);
     }
@@ -282,7 +282,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     try {
       CompletionResponse resp = CompletionResponse.fromJson(
-          callRestAPI("/sessions/" + sessionInfo.id + "/completion", "POST", req.toJson()));
+          callRestAPI("/sessions/" + getSessionInfo().id + "/completion", "POST", req.toJson()));
       for (String candidate : resp.candidates) {
         candidates.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
       }
