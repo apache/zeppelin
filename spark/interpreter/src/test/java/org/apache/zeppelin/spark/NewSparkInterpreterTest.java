@@ -96,67 +96,67 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("a: String = hello world\n", output);
 
-//    result = interpreter.interpret("print(a)", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//    assertEquals("hello world", output);
-//
-//    // incomplete
-//    result = interpreter.interpret("println(a", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.INCOMPLETE, result.code());
-//
-//    // syntax error
-//    result = interpreter.interpret("println(b)", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.ERROR, result.code());
-//    assertTrue(output.contains("not found: value b"));
-//
-//    // multiple line
-//    result = interpreter.interpret("\"123\".\ntoInt", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    // single line comment
-//    result = interpreter.interpret("print(\"hello world\")/*comment here*/", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//    assertEquals("hello world", output);
-//
-//    result = interpreter.interpret("/*comment here*/\nprint(\"hello world\")", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    // multiple line comment
-//    result = interpreter.interpret("/*line 1 \n line 2*/", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    // test function
-//    result = interpreter.interpret("def add(x:Int, y:Int)\n{ return x+y }", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    result = interpreter.interpret("print(add(1,2))", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    result = interpreter.interpret("/*line 1 \n line 2*/print(\"hello world\")", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//
-//    // Companion object with case class
-//    result = interpreter.interpret("import scala.math._\n" +
-//        "object Circle {\n" +
-//        "  private def calculateArea(radius: Double): Double = Pi * pow(radius, 2.0)\n" +
-//        "}\n" +
-//        "case class Circle(radius: Double) {\n" +
-//        "  import Circle._\n" +
-//        "  def area: Double = calculateArea(radius)\n" +
-//        "}\n" +
-//        "\n" +
-//        "val circle1 = new Circle(5.0)", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//
-//    // spark rdd operation
-//    result = interpreter.interpret("sc\n.range(1, 10)\n.sum", getInterpreterContext());
-//    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-//    assertTrue(output.contains("45"));
-//
-//    // spark job url is sent
-//    verify(mockRemoteEventClient).onParaInfosReceived(any(Map.class));
-//
+    result = interpreter.interpret("print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("hello world", output);
+
+    // incomplete
+    result = interpreter.interpret("println(a", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.INCOMPLETE, result.code());
+
+    // syntax error
+    result = interpreter.interpret("println(b)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    assertTrue(output.contains("not found: value b"));
+
+    // multiple line
+    result = interpreter.interpret("\"123\".\ntoInt", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // single line comment
+    result = interpreter.interpret("print(\"hello world\")/*comment here*/", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("hello world", output);
+
+    result = interpreter.interpret("/*comment here*/\nprint(\"hello world\")", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // multiple line comment
+    result = interpreter.interpret("/*line 1 \n line 2*/", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // test function
+    result = interpreter.interpret("def add(x:Int, y:Int)\n{ return x+y }", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("print(add(1,2))", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("/*line 1 \n line 2*/print(\"hello world\")", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+
+    // Companion object with case class
+    result = interpreter.interpret("import scala.math._\n" +
+        "object Circle {\n" +
+        "  private def calculateArea(radius: Double): Double = Pi * pow(radius, 2.0)\n" +
+        "}\n" +
+        "case class Circle(radius: Double) {\n" +
+        "  import Circle._\n" +
+        "  def area: Double = calculateArea(radius)\n" +
+        "}\n" +
+        "\n" +
+        "val circle1 = new Circle(5.0)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // spark rdd operation
+    result = interpreter.interpret("sc\n.range(1, 10)\n.sum", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(output.contains("45"));
+
+    // spark job url is sent
+    verify(mockRemoteEventClient).onParaInfosReceived(any(Map.class));
+
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
