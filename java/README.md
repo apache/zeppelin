@@ -4,13 +4,6 @@ Java interpreter for Apache Zeppelin
 # Architecture
 Current interpreter implementation supports the static repl. It compiles the code in memory, execute it and redirect the output to zeppelin.
 
-## Building the Java Interpreter
-You have to first build the Java interpreter by enable the **java** profile as follows:
-
-```
-mvn clean package -Pjava -DskipTests
-```
-
 ### Technical overview
 
  * Upon starting an interpreter, an instance of `JavaCompiler` is created. 

@@ -80,6 +80,7 @@
     <module>sap</module>
     <module>r</module>
     <module>scalding</module>
+    <module>java</module>
     <module>beam</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
