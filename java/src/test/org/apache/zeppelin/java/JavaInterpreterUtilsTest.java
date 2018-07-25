@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 
 public class JavaInterpreterUtilsTest {
 
-    private final static String TABLE_RESULT_1 = "%table\n" +
+    private static final String TABLE_RESULT_1 = "%table\n" +
             "Word\tCount\n" +
             "world\t5\n" +
             "hello\t4";

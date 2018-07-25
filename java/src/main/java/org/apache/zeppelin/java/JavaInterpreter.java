@@ -35,7 +35,7 @@ import java.util.UUID;
  */
 public class JavaInterpreter extends Interpreter {
 
-  private final static Logger logger = LoggerFactory.getLogger(JavaInterpreter.class);
+  private static final Logger logger = LoggerFactory.getLogger(JavaInterpreter.class);
 
   public JavaInterpreter(Properties property) {
     super(property);
