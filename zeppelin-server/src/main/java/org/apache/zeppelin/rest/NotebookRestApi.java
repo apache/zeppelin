@@ -819,6 +819,7 @@ public class NotebookRestApi {
     handleParagraphParams(message, note, paragraph);
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getAssociatedRoles()));
 
     paragraph.setAuthenticationInfo(subject);
     note.persist(subject);
@@ -861,6 +862,7 @@ public class NotebookRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getAssociatedRoles()));
     paragraph.setAuthenticationInfo(subject);
 
     paragraph.run();
