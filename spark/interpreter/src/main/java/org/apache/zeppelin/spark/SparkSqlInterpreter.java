@@ -30,7 +30,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
@@ -72,32 +71,24 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkContext sc = sqlc.sparkContext();
     sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
-    Object rdd = null;
+
     try {
-      // method signature of sqlc.sql() is changed
-      // from  def sql(sqlText: String): SchemaRDD (1.2 and prior)
-      // to    def sql(sqlText: String): DataFrame (1.3 and later).
-      // Therefore need to use reflection to keep binary compatibility for all spark versions.
-      Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
-      String effectiveString = Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation")) ?
-              interpolate(st, context.getResourcePool()) : st;
-      rdd = sqlMethod.invoke(sqlc, effectiveString);
-    } catch (InvocationTargetException ite) {
+      String effectiveSQL = Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation")) ?
+          interpolate(st, context.getResourcePool()) : st;
+      Method method = sqlc.getClass().getMethod("sql", String.class);
+      String msg = sparkInterpreter.getZeppelinContext().showData(
+          method.invoke(sqlc, effectiveSQL));
+      sc.clearJobGroup();
+      return new InterpreterResult(Code.SUCCESS, msg);
+    } catch (Exception e) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
-        throw new InterpreterException(ite);
+        throw new InterpreterException(e);
       }
-      logger.error("Invocation target exception", ite);
-      String msg = ite.getTargetException().getMessage()
+      logger.error("Invocation target exception", e);
+      String msg = e.getMessage()
               + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
       return new InterpreterResult(Code.ERROR, msg);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException e) {
-      throw new InterpreterException(e);
     }
-
-    String msg = sparkInterpreter.getZeppelinContext().showData(rdd);
-    sc.clearJobGroup();
-    return new InterpreterResult(Code.SUCCESS, msg);
   }
 
   @Override

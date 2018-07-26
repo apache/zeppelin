@@ -115,11 +115,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
-      z = new SparkZeppelinContext(sc, hooks,
-          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
-      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
-          Lists.newArrayList("@transient"));
-
       sparkUrl = this.innerInterpreter.sparkUrl();
       String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
       if (!StringUtils.isBlank(sparkUrlProp)) {
@@ -127,6 +122,11 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       }
       sparkShims = SparkShims.getInstance(sc.version());
       sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
+          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
+          Lists.newArrayList("@transient"));
     } catch (Exception e) {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
