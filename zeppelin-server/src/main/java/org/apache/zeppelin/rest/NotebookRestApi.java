@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -699,10 +700,11 @@ public class NotebookRestApi {
   public Response runNoteJobs(@PathParam("noteId") String noteId,
                               @QueryParam("waitToFinish") Boolean waitToFinish)
           throws IOException, IllegalArgumentException {
-    boolean blocking = waitToFinish == null ? true : waitToFinish.booleanValue();
+    boolean blocking = waitToFinish == null || waitToFinish;
     LOG.info("run note jobs {} waitToFinish: {}", noteId, blocking);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getAssociatedRoles()));
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
@@ -817,6 +819,7 @@ public class NotebookRestApi {
     handleParagraphParams(message, note, paragraph);
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getAssociatedRoles()));
 
     paragraph.setAuthenticationInfo(subject);
     note.persist(subject);
@@ -859,6 +862,7 @@ public class NotebookRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getAssociatedRoles()));
     paragraph.setAuthenticationInfo(subject);
 
     paragraph.run();
