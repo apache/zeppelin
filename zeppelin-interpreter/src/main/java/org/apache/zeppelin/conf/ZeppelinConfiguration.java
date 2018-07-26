@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.conf;
 
+import java.io.File;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -24,13 +30,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Zeppelin configuration.
@@ -498,10 +497,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getRelativeDir(String path) {
-    if (path != null && path.startsWith("/") || isWindowsPath(path)) {
+    if (path != null && path.startsWith(File.separator) || isWindowsPath(path)) {
       return path;
     } else {
-      return getString(ConfVars.ZEPPELIN_HOME) + "/" + path;
+      return getString(ConfVars.ZEPPELIN_HOME) + File.separator + path;
     }
   }
 
@@ -627,6 +626,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_PROXY_PASSWORD);
   }
 
+  public Boolean isZeppelinSearchUseDisk() {
+    return getBoolean(ConfVars.ZEPPELIN_SEARCH_USE_DISK);
+  }
+
+  public String getZeppelinSearchTempPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_TEMP_PATH);
+  }
+
   public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
                                                 ConfigurationKeyPredicate predicate) {
     Map<String, String> configurations = new HashMap<>();
@@ -686,47 +693,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
-    ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
-        + "org.apache.zeppelin.spark.PySparkInterpreter,"
-        + "org.apache.zeppelin.rinterpreter.RRepl,"
-        + "org.apache.zeppelin.rinterpreter.KnitR,"
-        + "org.apache.zeppelin.spark.SparkRInterpreter,"
-        + "org.apache.zeppelin.spark.SparkSqlInterpreter,"
-        + "org.apache.zeppelin.spark.DepInterpreter,"
-        + "org.apache.zeppelin.markdown.Markdown,"
-        + "org.apache.zeppelin.angular.AngularInterpreter,"
-        + "org.apache.zeppelin.shell.ShellInterpreter,"
-        + "org.apache.zeppelin.livy.LivySparkInterpreter,"
-        + "org.apache.zeppelin.livy.LivySparkSQLInterpreter,"
-        + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
-        + "org.apache.zeppelin.livy.LivyPySpark3Interpreter,"
-        + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
-        + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
-        + "org.apache.zeppelin.file.HDFSFileInterpreter,"
-        + "org.apache.zeppelin.pig.PigInterpreter,"
-        + "org.apache.zeppelin.pig.PigQueryInterpreter,"
-        + "org.apache.zeppelin.flink.FlinkInterpreter,"
-        + "org.apache.zeppelin.python.PythonInterpreter,"
-        + "org.apache.zeppelin.python.PythonInterpreterPandasSql,"
-        + "org.apache.zeppelin.python.PythonCondaInterpreter,"
-        + "org.apache.zeppelin.python.PythonDockerInterpreter,"
-        + "org.apache.zeppelin.ignite.IgniteInterpreter,"
-        + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
-        + "org.apache.zeppelin.lens.LensInterpreter,"
-        + "org.apache.zeppelin.cassandra.CassandraInterpreter,"
-        + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
-        + "org.apache.zeppelin.kylin.KylinInterpreter,"
-        + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
-        + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
-        + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
-        + "org.apache.zeppelin.hbase.HbaseInterpreter,"
-        + "org.apache.zeppelin.bigquery.BigQueryInterpreter,"
-        + "org.apache.zeppelin.beam.BeamInterpreter,"
-        + "org.apache.zeppelin.scio.ScioInterpreter,"
-        + "org.apache.zeppelin.groovy.GroovyInterpreter,"
-        + "org.apache.zeppelin.neo4j.Neo4jCypherInterpreter,"
-        + "org.apache.zeppelin.sap.UniverseInterpreter"
-        ),
+
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
@@ -828,7 +795,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
     ZEPPELIN_PROXY_USER("zeppelin.proxy.user", null),
-    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null);
+    ZEPPELIN_PROXY_PASSWORD("zeppelin.proxy.password", null),
+    ZEPPELIN_SEARCH_USE_DISK("zeppelin.search.use.disk", false),
+    ZEPPELIN_SEARCH_TEMP_PATH("zeppelin.search.temp.path", System.getProperty("java.io.tmpdir"));
 
     private String varName;
     @SuppressWarnings("rawtypes")

@@ -236,22 +236,6 @@
                 <py4j.version>0.9</py4j.version>
             </properties>
         </profile>
-
-        <profile>
-            <id>spark-1.5</id>
-            <properties>
-                <spark.version>1.5.2</spark.version>
-                <py4j.version>0.8.2.1</py4j.version>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>spark-1.4</id>
-            <properties>
-                <spark.version>1.4.1</spark.version>
-                <py4j.version>0.8.2.1</py4j.version>
-            </properties>
-        </profile>
-
+        
     </profiles>
 </project>

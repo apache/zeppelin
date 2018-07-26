@@ -24,13 +24,10 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -118,11 +115,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
-      z = new SparkZeppelinContext(sc, hooks,
-          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
-      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
-          Lists.newArrayList("@transient"));
-
       sparkUrl = this.innerInterpreter.sparkUrl();
       String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
       if (!StringUtils.isBlank(sparkUrlProp)) {
@@ -130,6 +122,11 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       }
       sparkShims = SparkShims.getInstance(sc.version());
       sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
+          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
+          Lists.newArrayList("@transient"));
     } catch (Exception e) {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
@@ -207,19 +204,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     return sparkVersion;
   }
 
-  private DepInterpreter getDepInterpreter() {
-    Interpreter p = getParentSparkInterpreter()
-        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
-    if (p == null) {
-      return null;
-    }
-
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    return (DepInterpreter) p;
-  }
-
   private String extractScalaVersion() throws IOException, InterruptedException {
     String scalaVersionString = scala.util.Properties.versionString();
     if (scalaVersionString.contains("version 2.10")) {
@@ -233,10 +217,11 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     return this.sc != null;
   }
 
-  private List<String> getDependencyFiles() {
+  private List<String> getDependencyFiles() throws InterpreterException {
     List<String> depFiles = new ArrayList<>();
     // add jar from DepInterpreter
-    DepInterpreter depInterpreter = getDepInterpreter();
+    DepInterpreter depInterpreter = getParentSparkInterpreter().
+        getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {

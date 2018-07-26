@@ -77,8 +77,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
@@ -159,7 +157,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     try {
       this.livyVersion = getLivyVersion();
       if (this.livyVersion.isSharedSupported()) {
-        sharedInterpreter = getLivySharedInterpreter();
+        sharedInterpreter = getInterpreterInTheSameSessionByClassName(LivySharedInterpreter.class);
       }
       if (sharedInterpreter == null || !sharedInterpreter.isSupported()) {
         initLivySession();
@@ -169,26 +167,6 @@ public abstract class BaseLivyInterpreter extends Interpreter {
           "livy server log";
       throw new InterpreterException(msg, e);
     }
-  }
-
-  protected LivySharedInterpreter getLivySharedInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    LivySharedInterpreter sharedInterpreter = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(
-        LivySharedInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    sharedInterpreter = (LivySharedInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return sharedInterpreter;
   }
 
   @Override
@@ -270,7 +248,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       candidates = callCompletion(new CompletionRequest(buf, getSessionKind(), cursor));
     } catch (SessionNotFoundException e) {
       LOGGER.warn("Livy session {} is expired. Will return empty list of candidates.",
-          sessionInfo.id);
+          getSessionInfo().id);
     } catch (LivyException le) {
       logger.error("Failed to call code completions. Will return empty list of candidates", le);
     }
@@ -281,7 +259,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     List<InterpreterCompletion> candidates = new ArrayList<>();
     try {
       CompletionResponse resp = CompletionResponse.fromJson(
-          callRestAPI("/sessions/" + sessionInfo.id + "/completion", "POST", req.toJson()));
+          callRestAPI("/sessions/" + getSessionInfo().id + "/completion", "POST", req.toJson()));
       for (String candidate : resp.candidates) {
         candidates.add(new InterpreterCompletion(candidate, candidate, StringUtils.EMPTY));
       }

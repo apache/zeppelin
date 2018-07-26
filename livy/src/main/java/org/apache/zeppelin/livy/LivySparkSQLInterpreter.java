@@ -18,16 +18,13 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.ResultMessages;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
@@ -70,7 +67,7 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    this.sparkInterpreter = getSparkInterpreter();
+    this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class);
     // As we don't know whether livyserver use spark2 or spark1, so we will detect SparkSession
     // to judge whether it is using spark2.
     try {
@@ -104,25 +101,6 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
     } catch (LivyException e) {
       throw new RuntimeException("Fail to Detect SparkVersion", e);
     }
-  }
-
-  private LivySparkInterpreter getSparkInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    LivySparkInterpreter spark = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    spark = (LivySparkInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return spark;
   }
 
   @Override
@@ -248,10 +226,8 @@ public class LivySparkSQLInterpreter extends BaseLivyInterpreter {
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
           LivySparkInterpreter.class.getName() + this.hashCode(), maxConcurrency);
     } else {
-      Interpreter intp =
-          getInterpreterInTheSameSessionByClassName(LivySparkInterpreter.class.getName());
-      if (intp != null) {
-        return intp.getScheduler();
+      if (sparkInterpreter != null) {
+        return sparkInterpreter.getScheduler();
       } else {
         return null;
       }
