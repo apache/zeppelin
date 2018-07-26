@@ -33,12 +33,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -197,24 +195,7 @@ public abstract class Interpreter {
   public Properties getProperties() {
     Properties p = new Properties();
     p.putAll(properties);
-
-    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
-        getClassName());
-    if (null != registeredInterpreter) {
-      Map<String, DefaultInterpreterProperty> defaultProperties =
-          registeredInterpreter.getProperties();
-      for (String k : defaultProperties.keySet()) {
-        if (!p.containsKey(k)) {
-          Object value = defaultProperties.get(k).getValue();
-          if (value != null) {
-            p.put(k, defaultProperties.get(k).getValue().toString());
-          }
-        }
-      }
-    }
-
     replaceContextParameters(p);
-
     return p;
   }
 
@@ -514,43 +495,4 @@ public abstract class Interpreter {
     FIFO, PARALLEL
   }
 
-  public static Map<String, RegisteredInterpreter> registeredInterpreters = Collections
-      .synchronizedMap(new HashMap<String, RegisteredInterpreter>());
-
-  @Deprecated
-  public static void register(String name, String group, String className,
-      Map<String, DefaultInterpreterProperty> properties) {
-    register(name, group, className, false, properties);
-  }
-
-  @Deprecated
-  public static void register(String name, String group, String className,
-      boolean defaultInterpreter, Map<String, DefaultInterpreterProperty> properties) {
-    logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
-        "to use interpreter-setting.json in your jar or " +
-        "interpreter/{interpreter}/interpreter-setting.json", name);
-    register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
-  }
-
-  @Deprecated
-  public static void register(RegisteredInterpreter registeredInterpreter) {
-    String interpreterKey = registeredInterpreter.getInterpreterKey();
-    if (!registeredInterpreters.containsKey(interpreterKey)) {
-      registeredInterpreters.put(interpreterKey, registeredInterpreter);
-    } else {
-      RegisteredInterpreter existInterpreter = registeredInterpreters.get(interpreterKey);
-      if (!existInterpreter.getProperties().equals(registeredInterpreter.getProperties())) {
-        logger.error("exist registeredInterpreter with the same key but has different settings.");
-      }
-    }
-  }
-
-  public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
-    for (RegisteredInterpreter ri : registeredInterpreters.values()) {
-      if (ri.getClassName().equals(className)) {
-        return ri;
-      }
-    }
-    return null;
-  }
 }
