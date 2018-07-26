@@ -196,23 +196,9 @@ Once you have built your interpreter, you can place it under the interpreter dir
 
 To configure your interpreter you need to follow these steps:
 
-1. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
+1. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
-  Property value is comma separated [INTERPRETER\_CLASS\_NAME].
-  For example,
-
-  ```xml
-  <property>
-    <name>zeppelin.interpreters</name>
-    <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
-  </property>
-  ```
-
-2. Add your interpreter to the [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
-
-3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
-
-4. In the interpreter page, click the `+Create` button and configure your interpreter properties.
+2. In the interpreter page, click the `+Create` button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
 > **Note :** Interpreters released with zeppelin have a [default configuration](https://github.com/apache/zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.
