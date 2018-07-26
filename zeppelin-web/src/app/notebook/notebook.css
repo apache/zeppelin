@@ -184,7 +184,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  direction: rtl;
+  direction: ltr;
   text-align: left;
   font-size: 29px;
   padding-top: 7px;
