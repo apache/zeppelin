@@ -41,7 +41,8 @@ function saveAsService(browserDetectService) {
       content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content);
       angular.element('body').append('<a id="SaveAsId"></a>');
       var saveAsElement = angular.element('body > a#SaveAsId');
-      saveAsElement.attr('href', content);
+      var url = window.URL.createObjectURL(new Blob([content], {type: 'image/svg;charset=utf-8'}));
+      saveAsElement.attr('href', url);
       saveAsElement.attr('download', filename + '.' + extension);
       saveAsElement.attr('target', '_blank');
       saveAsElement[0].click();
