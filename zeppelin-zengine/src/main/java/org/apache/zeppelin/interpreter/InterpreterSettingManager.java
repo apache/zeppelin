@@ -65,7 +65,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -113,7 +112,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
 
   private final List<RemoteRepository> interpreterRepositories;
   private InterpreterOption defaultOption;
-  private List<String> interpreterGroupOrderList;
+  private String defaultInterpreterGroup;
   private final Gson gson;
 
   private AngularObjectRegistryListener angularObjectRegistryListener;
@@ -152,8 +151,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     this.dependencyResolver =
         new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO));
     this.interpreterRepositories = dependencyResolver.getRepos();
-    this.interpreterGroupOrderList =
-        Arrays.asList(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER).split(","));
+    this.defaultInterpreterGroup = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     this.gson = new GsonBuilder().setPrettyPrinting().create();
 
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -899,23 +897,9 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     Collections.sort(orderedSettings, new Comparator<InterpreterSetting>() {
       @Override
       public int compare(InterpreterSetting o1, InterpreterSetting o2) {
-        int i = interpreterGroupOrderList.indexOf(o1.getGroup());
-        int j = interpreterGroupOrderList.indexOf(o2.getGroup());
-        if (i < 0) {
-          LOGGER.warn("InterpreterGroup " + o1.getGroup()
-              + " is not specified in " + ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName());
-          // move the unknown interpreter to last
-          i = Integer.MAX_VALUE;
-        }
-        if (j < 0) {
-          LOGGER.warn("InterpreterGroup " + o2.getGroup()
-              + " is not specified in " + ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName());
-          // move the unknown interpreter to last
-          j = Integer.MAX_VALUE;
-        }
-        if (i < j) {
+        if (o1.getGroup().equals(defaultInterpreterGroup)) {
           return -1;
-        } else if (i > j) {
+        } else if (o2.getGroup().equals(defaultInterpreterGroup)) {
           return 1;
         } else {
           return o1.getName().compareTo(o2.getName());

@@ -30,6 +30,7 @@ import static org.junit.Assert.fail;
 
 public class InterpreterFactoryTest extends AbstractInterpreterTest {
 
+
   @Test
   public void testGetFactory() throws IOException, InterpreterException {
     // no default interpreter because there's no interpreter setting binded to this note
@@ -42,8 +43,7 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "") instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "");
-    // EchoInterpreter is the default interpreter because mock1 is the default interpreter group
-
+    // EchoInterpreter is the default interpreter because test is the default interpreter group
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
     assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test") instanceof RemoteInterpreter);

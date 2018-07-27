@@ -179,11 +179,13 @@ public abstract class AbstractTestRestApi {
       confDir.mkdirs();
 
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
-              zeppelinHome.getAbsolutePath());
+          zeppelinHome.getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
-              new File("../zeppelin-web/dist").getAbsolutePath());
+          new File("../zeppelin-web/dist").getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
-              confDir.getAbsolutePath());
+          confDir.getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+          "spark");
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory

@@ -59,7 +59,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "mock1,mock2");
     super.setUp();
 
     this.schedulerFactory = SchedulerFactory.singleton();
