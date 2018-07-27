@@ -2,7 +2,7 @@
 Java interpreter for Apache Zeppelin
 
 # Architecture
-Current interpreter implementation supports the static repl. It compiles the code in memory, execute it and redirect the output to zeppelin.
+Current interpreter implementation supports the static REPL. It compiles the code in memory, execute it and redirect the output to zeppelin.
 
 ### Technical overview
 

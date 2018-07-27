@@ -49,9 +49,10 @@ public class JavaInterpreter extends Interpreter {
   @Override
   public void close() {
     File dir = new File(".");
+    File[] dirFiles = dir.listFiles();
     // delete all .class files created while compilation process
     for (int i = 0; i < dir.list().length; i++) {
-      File f = dir.listFiles()[i];
+      File f = dirFiles[i];
       if (f.getAbsolutePath().endsWith(".class")) {
         f.delete();
       }
