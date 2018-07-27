@@ -2719,7 +2719,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   /**
-   * Extract running paragraphs info grouped by running interpreters
+   * Extract running paragraphs info grouped by running interpreters.
    */
   @Override
   public Map<String, Object> getRunningParagraphsGroupedByInterpreters() {
@@ -2735,7 +2735,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   /**
-   * Update running interpreter info with paragraph data
+   * Update running interpreter info with paragraph data.
    */
   private void updateRunningInterpreterInfo(Map<String, Object> runningInterpretersInfo,
                                             Paragraph paragraph) {
@@ -2768,24 +2768,30 @@ public class NotebookServer extends WebSocketServlet
   }
 
   /**
-   * Extract interpreter name from paragraph's intpText if it contains "."
+   * Extract interpreter name from paragraph's binded interpreter group if it contains ":".
    */
   private String getParagraphInterpreterName(Paragraph p) {
-    String paragraphInterpreterText = p.getIntpText();
-    if (p.getIntpText().contains(".")) {
-      paragraphInterpreterText = paragraphInterpreterText.split("\\.")[0];
+    String intpGroupName = "";
+    try {
+      intpGroupName = p.getBindedInterpreter().getInterpreterGroup().getId();
+      if (intpGroupName.contains(":")) {
+        intpGroupName = intpGroupName.split(":")[0];
+      }
+    } catch (InterpreterNotFoundException exp) {
+      intpGroupName = exp.getMessage();
     }
-    return paragraphInterpreterText;
+    return intpGroupName;
   }
 
   /**
-   * Add paragraph info to interpreter paragraph info list
+   * Add paragraph info to interpreter paragraph info list.
    */
   private void addParagraphInfo(List<Map<String, String>> paragraphsInfoBeforeUpdate,
                                 Paragraph paragraph) {
     Note parentNote = paragraph.getNote();
     Map<String, String> newParagraphInfo = new HashMap<>();
 
+    newParagraphInfo.put("interpreterText", paragraph.getIntpText());
     newParagraphInfo.put("noteName", parentNote.getName());
     newParagraphInfo.put("noteId", parentNote.getId());
     newParagraphInfo.put("id", paragraph.getId());
