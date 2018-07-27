@@ -38,7 +38,6 @@ function saveAsService(browserDetectService) {
       }
       angular.element('body > iframe#SaveAsId').remove();
     } else {
-      content = 'data:image/svg;charset=utf-8,' + BOM + encodeURIComponent(content);
       angular.element('body').append('<a id="SaveAsId"></a>');
       var saveAsElement = angular.element('body > a#SaveAsId');
       var url = window.URL.createObjectURL(new Blob([content], {type: 'image/svg;charset=utf-8'}));
