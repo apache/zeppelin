@@ -36,7 +36,6 @@
     <interpreter.name>python</interpreter.name>
     <python.py4j.version>0.10.7</python.py4j.version>
     <grpc.version>1.4.0</grpc.version>
-    <plugin.shade.version>2.4.1</plugin.shade.version>
   </properties>
 
   <dependencies>
