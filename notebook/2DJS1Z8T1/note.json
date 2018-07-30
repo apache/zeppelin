@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "%markdown\n### Description\nThis notebook contains infinite loops for python and spark interpreters, so if `Per note` mode enabled in interpreters, this processes will be displayed in `System/Admin` notebook.",
+      "text": "%md\n### Description\nThis notebook contains infinite loops for python and spark interpreters, so if `Per note` mode enabled in interpreters, this processes will be displayed in `System/Admin` notebook.",
       "user": "anonymous",
-      "dateUpdated": "2018-07-30 14:16:45.704",
+      "dateUpdated": "2018-07-30 16:12:25.674",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -35,8 +35,8 @@
       "jobName": "paragraph_1532683553929_1591426843",
       "id": "20180727-122553_367471644",
       "dateCreated": "2018-07-27 12:25:53.929",
-      "dateStarted": "2018-07-30 14:16:45.706",
-      "dateFinished": "2018-07-30 14:16:46.648",
+      "dateStarted": "2018-07-30 16:12:25.718",
+      "dateFinished": "2018-07-30 16:12:25.733",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -44,7 +44,7 @@
       "title": "Python interpreter infinite loop ",
       "text": "%python\ni \u003d 1\nwhile True:\n    i +\u003d 1",
       "user": "anonymous",
-      "dateUpdated": "2018-07-30 14:16:49.608",
+      "dateUpdated": "2018-07-30 16:14:10.091",
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -62,29 +62,21 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "ERROR",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "java.lang.IllegalMonitorStateException\n\tat java.lang.Object.wait(Native Method)\n\tat org.apache.zeppelin.python.PythonInterpreter.callPython(PythonInterpreter.java:353)\n\tat org.apache.zeppelin.python.PythonInterpreter.interpret(PythonInterpreter.java:410)\n\tat org.apache.zeppelin.interpreter.LazyOpenInterpreter.interpret(LazyOpenInterpreter.java:103)\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer$InterpretJob.jobRun(RemoteInterpreterServer.java:635)\n\tat org.apache.zeppelin.scheduler.Job.run(Job.java:185)\n\tat org.apache.zeppelin.scheduler.FIFOScheduler$1.run(FIFOScheduler.java:140)\n\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)\n\tat java.util.concurrent.FutureTask.run(FutureTask.java:266)\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$201(ScheduledThreadPoolExecutor.java:180)\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n\tat java.lang.Thread.run(Thread.java:748)\n"
-          }
-        ]
-      },
       "apps": [],
       "jobName": "paragraph_1532525530105_-1009999233",
       "id": "20180725-163210_814222372",
       "dateCreated": "2018-07-25 16:32:10.105",
-      "dateStarted": "2018-07-30 14:16:49.636",
-      "dateFinished": "2018-07-30 14:18:49.738",
-      "status": "ABORT",
+      "dateStarted": "2018-07-30 16:14:10.181",
+      "dateFinished": "2018-07-30 16:09:41.887",
+      "status": "RUNNING",
+      "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
     {
       "title": "Spark interpreter infinite loop ",
       "text": "%spark.pyspark\ni \u003d 1\nwhile True:\n  i +\u003d 1 ",
       "user": "anonymous",
-      "dateUpdated": "2018-07-30 14:18:56.250",
+      "dateUpdated": "2018-07-30 16:14:11.952",
       "config": {
         "colWidth": 6.0,
         "fontSize": 9.0,
@@ -107,9 +99,9 @@
       "jobName": "paragraph_1532602497481_1964032153",
       "id": "20180726-135457_1727027836",
       "dateCreated": "2018-07-26 13:54:57.481",
-      "dateStarted": "2018-07-30 14:17:16.167",
-      "dateFinished": "2018-07-30 14:18:27.673",
-      "status": "ABORT",
+      "dateStarted": "2018-07-30 16:14:11.993",
+      "dateFinished": "2018-07-30 16:10:35.852",
+      "status": "RUNNING",
       "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
@@ -117,7 +109,7 @@
       "title": "Sh Interpreter infinite loop",
       "text": "%sh\nwhile true\ndo\n  sleep 100\ndone",
       "user": "anonymous",
-      "dateUpdated": "2018-07-30 14:17:18.171",
+      "dateUpdated": "2018-07-30 16:14:15.044",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -135,18 +127,28 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "INCOMPLETE",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Paragraph received a SIGTERM\nExitValue: 143"
+          }
+        ]
+      },
       "apps": [],
       "jobName": "paragraph_1532683080019_1016095259",
       "id": "20180727-121800_617175178",
       "dateCreated": "2018-07-27 12:18:00.019",
-      "dateStarted": "2018-07-30 14:17:18.199",
-      "dateFinished": "2018-07-30 14:18:59.048",
-      "status": "ABORT",
-      "errorMessage": "",
+      "dateStarted": "2018-07-30 16:14:15.128",
+      "dateFinished": "2018-07-30 16:15:56.052",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
+      "text": "",
       "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:05:15.764",
       "config": {},
       "settings": {
         "params": {},
@@ -160,14 +162,14 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "System/RemoteProcesses1",
+  "name": "System/Run Interpreters",
   "id": "2DJS1Z8T1",
   "noteParams": {},
   "noteForms": {},
   "angularObjects": {
+    "md:shared_process": [],
     "python:shared_process": [],
     "sh:shared_process": [],
-    "markdown:shared_process": [],
     "spark:shared_process": []
   },
   "config": {
