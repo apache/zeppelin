@@ -37,7 +37,7 @@
     "editor": {
       "editOnDblClick": false,
       "completionKey": "TAB",
-      "completionSupport": true
+      "completionSupport": false
     }
   }
 ]
