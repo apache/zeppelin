@@ -43,9 +43,9 @@
     },
     {
       "title": "Set your Zeppelin Info",
-      "text": "%python\nhost \u003d z.input(\"Zeppelin host:post\", \"localhost:8080\")",
+      "text": "%python\nhost \u003d z.input(\"Zeppelin host:port\", \"localhost:8080\")",
       "user": "anonymous",
-      "dateUpdated": "2018-07-30 14:17:08.732",
+      "dateUpdated": "2018-07-30 15:07:07.409",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -67,10 +67,10 @@
           "Zeppelin host:post": "localhost:8080"
         },
         "forms": {
-          "Zeppelin host:post": {
+          "Zeppelin host:port": {
             "type": "TextBox",
-            "name": "Zeppelin host:post",
-            "displayName": "Zeppelin host:post",
+            "name": "Zeppelin host:port",
+            "displayName": "Zeppelin host:port",
             "defaultValue": "localhost:8080",
             "hidden": false
           }
@@ -84,8 +84,8 @@
       "jobName": "paragraph_1532946307648_1410322628",
       "id": "20180730-132507_1546153473",
       "dateCreated": "2018-07-30 13:25:07.648",
-      "dateStarted": "2018-07-30 14:17:08.790",
-      "dateFinished": "2018-07-30 14:17:41.224",
+      "dateStarted": "2018-07-30 15:07:07.436",
+      "dateFinished": "2018-07-30 15:07:07.451",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
