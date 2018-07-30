@@ -2707,7 +2707,7 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public List<Map<String, String>> getNotes() {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    HashSet<String> userAndRoles = SecurityUtils.getRoles();
+    HashSet<String> userAndRoles = SecurityUtils.getAssociatedRoles();
     userAndRoles.add(subject.getUser());
     return generateNotesInfo(false, subject, userAndRoles);
   }

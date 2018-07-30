@@ -110,6 +110,55 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+### List of running interpreters
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns all the running interpreters available on the server.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/running```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": [
+   {
+     "name": "python",
+     "pid": "23103"
+   },
+   {
+     "name": "spark",
+     "pid": "23205"
+   },
+   {
+     "name": "sh",
+     "pid": "23262"
+   }
+  ]
+}
+        </pre>
+      </td>
+    </tr>
+  </table>
+
+<br/>
+
 ### List of registered interpreter settings
 
   <table class="table-configuration">
