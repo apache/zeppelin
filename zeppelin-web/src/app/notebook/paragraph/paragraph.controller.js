@@ -818,6 +818,17 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
               }
               return value;
             };
+            let computeScore = function(meta) {
+              if (meta === 'column') {
+                return 900;
+              } else if (meta === 'table') {
+                return 700;
+              } else if (meta === 'schema') {
+                return 500;
+              } else {
+                return 300;
+              }
+            };
             if (data.completions) {
               let completions = [];
               for (let c in data.completions) {
@@ -831,7 +842,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
                     value: v.value,
                     meta: v.meta,
                     caption: computeCaption(v.name, v.meta),
-                    score: 300,
+                    score: computeScore(v.meta),
                   });
                 }
               }
