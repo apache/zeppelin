@@ -99,7 +99,6 @@ public abstract class SparkShims {
   protected void buildSparkJobUrl(
       String master, String sparkWebUrl, int jobId, Properties jobProperties) {
     String jobGroupId = jobProperties.getProperty("spark.jobGroup.id");
-    String uiEnabled = jobProperties.getProperty("spark.ui.enabled");
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
 
     String version = VersionInfo.getVersion();
@@ -109,18 +108,15 @@ public abstract class SparkShims {
 
     String noteId = getNoteId(jobGroupId);
     String paragraphId = getParagraphId(jobGroupId);
-    // Button visible if Spark UI property not set, set as invalid boolean or true
-    boolean showSparkUI = uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
-    if (showSparkUI) {
-      RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
-      Map<String, String> infos = new java.util.HashMap<>();
-      infos.put("jobUrl", jobUrl);
-      infos.put("label", "SPARK JOB");
-      infos.put("tooltip", "View in Spark web UI");
-      if (eventClient != null) {
-        eventClient.onParaInfosReceived(noteId, paragraphId, infos);
-      }
+    RemoteEventClientWrapper eventClient = BaseZeppelinContext.getEventClient();
+    Map<String, String> infos = new java.util.HashMap<>();
+    infos.put("jobUrl", jobUrl);
+    infos.put("label", "SPARK JOB");
+    infos.put("tooltip", "View in Spark web UI");
+    if (eventClient != null) {
+      eventClient.onParaInfosReceived(noteId, paragraphId, infos);
     }
+
   }
 
   /**

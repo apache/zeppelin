@@ -54,6 +54,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 
@@ -67,7 +68,7 @@ public class NewSparkInterpreterTest {
   // catch the interpreter output in onUpdate
   private InterpreterResultMessageOutput messageOutput;
 
-  private RemoteEventClient mockRemoteEventClient;
+  private RemoteEventClient mockRemoteEventClient = mock(RemoteEventClient.class);
 
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -158,7 +159,7 @@ public class NewSparkInterpreterTest {
 
     result = interpreter.interpret(
         "case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)\n" +
-        "val bank = bankText.map(s=>s.split(\";\")).filter(s => s(0)!=\"\\\"age\\\"\").map(\n" +
+            "val bank = bankText.map(s=>s.split(\";\")).filter(s => s(0)!=\"\\\"age\\\"\").map(\n" +
             "    s => Bank(s(0).toInt, \n" +
             "            s(1).replaceAll(\"\\\"\", \"\"),\n" +
             "            s(2).replaceAll(\"\\\"\", \"\"),\n" +
@@ -305,7 +306,7 @@ public class NewSparkInterpreterTest {
     interpretThread.start();
     boolean nonZeroProgress = false;
     int progress = 0;
-    while(interpretThread.isAlive()) {
+    while (interpretThread.isAlive()) {
       progress = interpreter.getProgress(context2);
       assertTrue(progress >= 0);
       if (progress != 0 && progress != 100) {
@@ -420,6 +421,31 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     // output from print statement will still be displayed
     assertEquals("hello world", output);
+  }
+
+  @Test
+  public void testDisableSparkUI() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("spark.ui.enabled", "false");
+
+    interpreter = new SparkInterpreter(properties);
+    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    InterpreterContext.set(getInterpreterContext());
+    interpreter.open();
+
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // spark job url is not sent
+    verify(mockRemoteEventClient, never()).onParaInfosReceived(any(String.class),
+        any(String.class), any(Map.class));
   }
 
   @After

@@ -28,11 +28,13 @@ import org.apache.spark.scheduler.SparkListenerJobStart;
 public class Spark2Shims extends SparkShims {
 
   public void setupSparkListener(final String master, final String sparkWebUrl) {
-    SparkContext sc = SparkContext.getOrCreate();
+    final SparkContext sc = SparkContext.getOrCreate();
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties());
+        if (sc.getConf().getBoolean("spark.ui.enabled", true)) {
+          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties());
+        }
       }
     });
   }
