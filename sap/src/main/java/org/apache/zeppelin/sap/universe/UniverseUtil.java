@@ -100,6 +100,9 @@ public class UniverseUtil {
     boolean operatorPosition = false;
     Map<String, UniverseNodeInfo> nodeInfos = null;
 
+    if (!text.substring(text.length() - 1).equals(";")) {
+      text += ";";
+    }
     char[] array = text.toCharArray();
     for (int i = 0; i < array.length; i++) {
       char c = array[i];

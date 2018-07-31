@@ -39,6 +39,13 @@
         "defaultValue": "7200000",
         "description": "Query timeout for API of Universe",
         "type": "number"
+      },
+      "universe.interpolation": {
+        "envName": null,
+        "propertyName": "universe.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
       }
     },
     "editor": {

@@ -49,7 +49,7 @@ public class UniverseInterpreter extends Interpreter {
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
-  private static final String EMPTY_DATA_MESSAGE = "%html" +
+  private static final String EMPTY_DATA_MESSAGE = "%html\n" +
       "<h4><center><b>No Data Available</b></center></h4>";
 
   @Override
@@ -74,8 +74,10 @@ public class UniverseInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context)
+  public InterpreterResult interpret(String originalSt, InterpreterContext context)
       throws InterpreterException {
+    final String st = Boolean.parseBoolean(getProperty("universe.interpolation")) ?
+        interpolate(originalSt, context.getResourcePool()) : originalSt;
     try {
       InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
       String paragraphId = context.getParagraphId();
