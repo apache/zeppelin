@@ -49,6 +49,8 @@ public class UniverseInterpreter extends Interpreter {
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
+  private static final String EMPTY_DATA_MESSAGE = "%html" +
+      "<h4><center><b>No Data Available</b></center></h4>";
 
   @Override
   public void open() throws InterpreterException {
@@ -161,6 +163,9 @@ public class UniverseInterpreter extends Interpreter {
   private String formatResults(List<List<String>> results) {
     StringBuilder msg = new StringBuilder();
     if (results != null) {
+      if (results.isEmpty()) {
+        return EMPTY_DATA_MESSAGE;
+      }
       msg.append(TABLE_MAGIC_TAG);
       for (int i = 0; i < results.size(); i++) {
         List<String> items = results.get(i);
