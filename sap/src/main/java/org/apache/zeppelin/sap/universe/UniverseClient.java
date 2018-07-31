@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
@@ -101,7 +100,7 @@ public class UniverseClient {
           "     %s\n" +
           "</queryData>\n" +
           "</querySpecification>\n" +
-      "</query>\n";
+          "</query>\n";
   private final String filterPartTemplate = "<filterPart>%s\n</filterPart>";
   private final String errorMessageTemplate = "%s\n\n%s";
   private final String parameterTemplate = "<parameter type=\"prompt\">\n" +
@@ -320,7 +319,7 @@ public class UniverseClient {
             }
           } catch (Exception e) {
             throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
-                + "(get universe nodes info): Response processing failed",
+                    + "(get universe nodes info): Response processing failed",
                 ExceptionUtils.getStackTrace(e)));
           }
         }
@@ -501,7 +500,7 @@ public class UniverseClient {
         }
       } catch (IOException e) {
         throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
-                + "(get universes): Response processing failed", ExceptionUtils.getStackTrace(e)));
+            + "(get universes): Response processing failed", ExceptionUtils.getStackTrace(e)));
       } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
         throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
             + "(get universes): Response processing failed", ExceptionUtils.getStackTrace(e)));
@@ -649,6 +648,63 @@ public class UniverseClient {
     return results;
   }
 
+  private void addAttributesToDimension(Node universeNode, Map<String, UniverseNodeInfo> nodes) {
+    final NodeList attributeNodes = universeNode.getChildNodes();
+    final int attributeNodesCount = attributeNodes.getLength();
+
+    for (int i = 0; i < attributeNodesCount; ++i) {
+      final Node attributeNode = attributeNodes.item(i);
+
+      if (attributeNode.getNodeName().equalsIgnoreCase(EL_ITEM)) {
+        final NodeList childNodes = attributeNode.getChildNodes();
+        final int childNodesCount = childNodes.getLength();
+
+        String nodeId = null;
+        String nodeName = null;
+        String nodePath = null;
+        for (int j = 0; j < childNodesCount; j++) {
+          Node childNode = childNodes.item(j);
+          if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+            switch (childNode.getNodeName().toLowerCase()) {
+              case EL_NAME:
+                nodeName = childNode.getTextContent();
+                break;
+              case EL_ID:
+                nodeId = childNode.getTextContent();
+                break;
+              case EL_PATH:
+                nodePath = childNode.getTextContent();
+                break;
+            }
+          }
+        }
+        StringBuilder key = new StringBuilder();
+        if (StringUtils.isNotBlank(nodeName)) {
+          String nodeType = null;
+          String[] parts = nodePath.split("\\\\");
+          List<String> path = new ArrayList();
+          for (String part : parts) {
+            String[] p = part.split("\\|");
+            if (p.length == 2) {
+              if (p[1].equalsIgnoreCase("folder") || p[1].equalsIgnoreCase("dimension")) {
+                path.add(p[0]);
+              } else {
+                nodeName = p[0];
+                nodeType = p[1];
+              }
+            }
+          }
+          final String folder = StringUtils.join(path, "\\");
+          key.append("[");
+          key.append(StringUtils.join(path, "].["));
+          key.append(String.format("].[%s]", nodeName));
+          nodes.put(key.toString(),
+              new UniverseNodeInfo(nodeId, nodeName, nodeType, folder, nodePath));
+        }
+      }
+    }
+  }
+
   private void parseUniverseInfo(NodeList universeInfoNodes, Map<String, UniverseNodeInfo> nodes) {
     if (universeInfoNodes != null) {
       int count = universeInfoNodes.getLength();
@@ -710,6 +766,9 @@ public class UniverseClient {
                     } else {
                       nodeName = p[0];
                       nodeType = p[1];
+                      if (p[1].equalsIgnoreCase("dimension")) {
+                        addAttributesToDimension(node, nodes);
+                      }
                     }
                   }
                 }
