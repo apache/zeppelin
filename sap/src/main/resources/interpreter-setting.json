@@ -46,6 +46,20 @@
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"
+      },
+      "universe.concurrent.use": {
+        "envName": null,
+        "propertyName": "universe.concurrent.use",
+        "defaultValue": true,
+        "description": "Use parallel scheduler",
+        "type": "checkbox"
+      },
+      "universe.concurrent.maxConnection": {
+        "envName": null,
+        "propertyName": "universe.concurrent.maxConnection",
+        "defaultValue": "10",
+        "description": "Number of concurrent execution",
+        "type": "number"
       }
     },
     "editor": {

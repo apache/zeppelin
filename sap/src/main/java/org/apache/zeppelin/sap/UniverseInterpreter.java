@@ -24,6 +24,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.sap.universe.*;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 
 import java.util.*;
@@ -51,6 +53,9 @@ public class UniverseInterpreter extends Interpreter {
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EMPTY_DATA_MESSAGE = "%html\n" +
       "<h4><center><b>No Data Available</b></center></h4>";
+
+  private final String CONCURRENT_EXECUTION_KEY = "universe.concurrent.use";
+  private final String CONCURRENT_EXECUTION_COUNT = "universe.concurrent.maxConnection";
 
   @Override
   public void open() throws InterpreterException {
@@ -157,6 +162,23 @@ public class UniverseInterpreter extends Interpreter {
     }
 
     return candidates;
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    String schedulerName = UniverseInterpreter.class.getName() + this.hashCode();
+    return isConcurrentExecution() ?
+        SchedulerFactory.singleton().createOrGetParallelScheduler(schedulerName,
+            getMaxConcurrentConnection())
+        : SchedulerFactory.singleton().createOrGetFIFOScheduler(schedulerName);
+  }
+
+  private boolean isConcurrentExecution() {
+    return Boolean.valueOf(getProperty(CONCURRENT_EXECUTION_KEY));
+  }
+
+  private int getMaxConcurrentConnection() {
+    return Integer.valueOf(getProperty(CONCURRENT_EXECUTION_COUNT, "10"));
   }
 
   private String formatResults(List<List<String>> results) {
