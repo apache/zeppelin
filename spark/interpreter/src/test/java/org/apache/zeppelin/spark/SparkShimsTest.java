@@ -108,7 +108,6 @@ public class SparkShimsTest {
   @PrepareForTest({BaseZeppelinContext.class, VersionInfo.class})
   @PowerMockIgnore({"javax.net.*", "javax.security.*"})
   public static class SingleTests {
-    @Mock Properties mockProperties;
     @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;
 
     SparkShims sparkShims;
@@ -130,7 +129,7 @@ public class SparkShimsTest {
 
     @Test
     public void runUnderLocalTest() {
-      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockProperties, mockContext);
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
@@ -140,7 +139,7 @@ public class SparkShimsTest {
     @Test
     public void runUnderYarnTest() {
 
-      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockProperties, mockContext);
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));

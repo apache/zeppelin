@@ -104,26 +104,20 @@ public abstract class SparkShims {
   protected void buildSparkJobUrl(String master,
                                   String sparkWebUrl,
                                   int jobId,
-                                  Properties jobProperties,
                                   InterpreterContext context) {
-    String uiEnabled = jobProperties.getProperty("spark.ui.enabled");
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
-    // Button visible if Spark UI property not set, set as invalid boolean or true
-    boolean showSparkUI =
-        uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
     String version = VersionInfo.getVersion();
     if (master.toLowerCase().contains("yarn") && !supportYarn6615(version)) {
       jobUrl = sparkWebUrl + "/jobs";
     }
-    if (showSparkUI && jobUrl != null) {
-      Map<String, String> infos = new java.util.HashMap<String, String>();
-      infos.put("jobUrl", jobUrl);
-      infos.put("label", "SPARK JOB");
-      infos.put("tooltip", "View in Spark web UI");
-      infos.put("noteId", context.getNoteId());
-      infos.put("paraId", context.getParagraphId());
-      context.getIntpEventClient().onParaInfosReceived(infos);
-    }
+
+    Map<String, String> infos = new java.util.HashMap<String, String>();
+    infos.put("jobUrl", jobUrl);
+    infos.put("label", "SPARK JOB");
+    infos.put("tooltip", "View in Spark web UI");
+    infos.put("noteId", context.getNoteId());
+    infos.put("paraId", context.getParagraphId());
+    context.getIntpEventClient().onParaInfosReceived(infos);
   }
 
   /**
