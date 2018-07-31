@@ -39,7 +39,9 @@ public class Spark2Shims extends SparkShims {
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
+        if (sc.getConf().getBoolean("spark.ui.enabled", true)) {
+          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
+        }
       }
     });
   }
