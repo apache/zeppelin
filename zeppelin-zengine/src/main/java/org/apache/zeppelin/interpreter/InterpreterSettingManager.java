@@ -987,10 +987,22 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
         if (null != mig.getRemoteInterpreterProcess()) {
           String interpreterType = entry.getValue().getGroup();
           String port = String.valueOf(interpreterEventServer.getPort());
+          LOGGER.info(
+                  String.format(
+                          "Process dir %s",
+                          pidDir.getAbsolutePath()
+                  )
+          );
           for (File file : pidDir.listFiles()) {
             if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
               try {
-                Integer pid = extractPid(pidDir + File.separator + file.getName());
+                LOGGER.info(
+                        String.format(
+                                "Process file: %s",
+                                file.getAbsolutePath()
+                        )
+                );
+                Integer pid = extractPid(file.getAbsolutePath());
                 interpreterInfo.put("pid", pid.toString());
               } catch (FileNotFoundException err) {
                 interpreterInfo.put("pid", err.getMessage());

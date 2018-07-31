@@ -124,11 +124,11 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when
     GetMethod get = httpGet("/interpreter/running");
+    assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
             new TypeToken<Map<String, Object>>() {}.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
     // then
-    assertThat(get, isAllowed());
     boolean containsPython = false;
     boolean containsSpark = false;
     for (Map<String, String> intp : body) {

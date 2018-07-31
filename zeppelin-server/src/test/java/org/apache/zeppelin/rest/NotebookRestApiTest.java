@@ -194,6 +194,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
                     pythonParagraph.getId()
             ),
             "");
+    assertThat(pythonPost, isAllowed());
+
     PostMethod sparkPost = httpPost(
             String.format(
                     "/notebook/job/%s/%s",
@@ -201,6 +203,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
                     sparkParagraph.getId()
             ),
             "");
+    assertThat(sparkPost, isAllowed());
+
     Map<String, Object> runningInterpreters = waitForInterpretersSetUp();
     pythonPost.releaseConnection();
     sparkPost.releaseConnection();
