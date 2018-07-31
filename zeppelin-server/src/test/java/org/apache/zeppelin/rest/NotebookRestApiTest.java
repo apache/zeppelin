@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -32,12 +33,19 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
@@ -87,6 +95,158 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(paragraphStatus.get("status"), "READY");
 
     //cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  @Rule
+  public final EnvironmentVariables environmentVariables
+          = new EnvironmentVariables();
+
+  private Map<String, String> getPids() throws IOException {
+    Map<String, String> result = new HashMap<>();
+    GetMethod get = httpGet("/interpreter/running");
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+
+    assertThat(get, isAllowed());
+    for (Map<String, String> intp : body) {
+      result.put(intp.get("name"), intp.get("pid"));
+    }
+    get.releaseConnection();
+    return result;
+  }
+
+  private Map<String, Object> waitForInterpretersSetUp() throws IOException, InterruptedException {
+    long startTimeInMins = (System.currentTimeMillis() / (1000 * 60)) % 60;
+    Map<String, Object> runningInterpreters = new HashMap<>();
+    while (!(runningInterpreters.containsKey("python")
+            && runningInterpreters.containsKey("spark"))) {
+      GetMethod get = httpGet("/notebook/jobmanager/running");
+      assertThat(get, isAllowed());
+
+      Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+              new TypeToken<Map<String, Object>>() {}.getType());
+      runningInterpreters =
+              (Map<String, Object>) resp.get("body");
+      runningInterpreters =
+              (Map<String, Object>) runningInterpreters.get("runningInterpreters");
+      get.releaseConnection();
+      long currentTimeInMins = (System.currentTimeMillis() / (1000 * 60)) % 60;
+      if (currentTimeInMins - startTimeInMins > 1) {
+        // lasts too long
+        return null;
+      }
+      TimeUnit.SECONDS.sleep(10);
+    }
+    return runningInterpreters;
+  }
+
+  private boolean checkParagraph(Map<String, String> response, Paragraph p) {
+    return response.get("interpreterText").equals(p.getIntpText()) &&
+            response.get("noteName").equals(p.getNote().getName()) &&
+            response.get("noteId").equals(p.getNote().getId()) &&
+            response.get("id").equals(p.getId()) &&
+            response.get("user").equals(anonymous.getUser());
+  }
+
+  private void addData(List<Map<String, Object>> list, String groupName, Paragraph paragraph) {
+    Map<String, Object> data = new HashMap<>();
+    data.put("groupName", groupName);
+    data.put("paragraph", paragraph);
+    list.add(data);
+  }
+
+  @Test
+  public void testGetRunningParagraphsGroupedByInterpreters()
+          throws IOException, InterruptedException {
+    // Needed to extract pids
+    File zeppelinPidDir = new File(System.getProperty("user.dir")).getParentFile();
+    environmentVariables.set(
+            "ZEPPELIN_PID_DIR",
+            zeppelinPidDir.getAbsolutePath() + File.separator +  "run"
+    );
+
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
+    // 2 paragraphs
+    // P1:
+    //    %python
+    //    import time
+    //    time.sleep(120)
+    // P2:
+    //    %spark.pyspark
+    //    import time
+    //    time.sleep(120)
+    //
+    Paragraph pythonParagraph = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph sparkParagraph = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    pythonParagraph.setText("%python\nimport time\ntime.sleep(120)\n");
+    sparkParagraph.setText("%spark.pyspark\nimport time\ntime.sleep(120)");
+
+    List<Map<String, Object>> expectedData = new LinkedList<>();
+    addData(expectedData, "python", pythonParagraph);
+    addData(expectedData, "spark", sparkParagraph);
+
+    PostMethod pythonPost = httpPost(
+            String.format(
+                    "/notebook/job/%s/%s",
+                    note1.getId(),
+                    pythonParagraph.getId()
+            ),
+            "");
+    PostMethod sparkPost = httpPost(
+            String.format(
+                    "/notebook/job/%s/%s",
+                    note1.getId(),
+                    sparkParagraph.getId()
+            ),
+            "");
+    Map<String, Object> runningInterpreters = waitForInterpretersSetUp();
+    pythonPost.releaseConnection();
+    sparkPost.releaseConnection();
+    assertNotNull(
+            "Interpreters setup lasts too long",
+            runningInterpreters
+    );
+    Map<String, String> pids = getPids();
+    assertNotNull(
+            "There is no running interpreters",
+            pids
+    );
+
+    for (Map<String, Object> expectedInterpreterInfo : expectedData) {
+      String groupName = (String) expectedInterpreterInfo.get("groupName");
+      Paragraph paragraph = (Paragraph) expectedInterpreterInfo.get("paragraph");
+      Map<String, Object> interpreterInfo =
+              (Map<String, Object>) runningInterpreters.get(groupName);
+      assertNotNull(
+              String.format(
+                      "%s interpreter isn't running",
+                      groupName
+              ),
+              interpreterInfo
+      );
+      assertEquals(
+              pids.get(groupName),
+              interpreterInfo.get("pid")
+      );
+      Map<String, String> interpreterParagraphInfo =
+              ((List<Map<String, String>>) interpreterInfo.get("paragraphs")).get(0);
+      assertNotNull(
+              String.format(
+                      "%s paragraph isn't running",
+                      groupName
+              ),
+              interpreterParagraphInfo
+      );
+      assertTrue(
+              String.format(
+                      "%s running paragraph info is incorrect",
+                      groupName
+              ),
+              checkParagraph(interpreterParagraphInfo, paragraph));
+    }
+    // cleanup
     ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
   }
 
