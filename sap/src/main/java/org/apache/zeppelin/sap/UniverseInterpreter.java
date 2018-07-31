@@ -58,10 +58,8 @@ public class UniverseInterpreter extends Interpreter {
     String password = getProperty("universe.password");
     String apiUrl = getProperty("universe.api.url");
     String authType = getProperty("universe.authType");
-    final int connectTimeout = Integer.parseInt(
-        getProperty("universe.connectTimeout", "1200000"));
-    final int socketTimeout = Integer.parseInt(
-        getProperty("universe.socketTimeout", "1200000"));
+    final int connectTimeout = Integer.parseInt(getProperty("universe.connectTimeout"));
+    final int socketTimeout = Integer.parseInt(getProperty("universe.socketTimeout"));
     this.client =
         new UniverseClient(user, password, apiUrl, authType, connectTimeout, socketTimeout);
     this.universeUtil = new UniverseUtil();
