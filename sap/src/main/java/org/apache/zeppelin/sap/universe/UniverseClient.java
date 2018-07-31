@@ -117,10 +117,10 @@ public class UniverseClient {
       "        </answer>\n";
 
   public UniverseClient(String user, String password, String apiUrl, String authType,
-                        int connectionTimeout, int socketTimeout) {
+                        int queryTimeout) {
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectTimeout(connectionTimeout)
-        .setSocketTimeout(socketTimeout)
+        .setConnectTimeout(queryTimeout)
+        .setSocketTimeout(queryTimeout)
         .build();
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(100);

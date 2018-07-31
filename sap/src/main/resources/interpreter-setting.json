@@ -33,18 +33,11 @@
         "description": "Type of authentication for API of Universe. Available values: secEnterprise, secLDAP, secWinAD, secSAPR3",
         "type": "string"
       },
-      "universe.connectTimeout": {
+      "universe.queryTimeout": {
         "envName": null,
-        "propertyName": "universe.connectTimeout",
+        "propertyName": "universe.queryTimeout",
         "defaultValue": "7200000",
-        "description": "Connection timeout for API of Universe",
-        "type": "number"
-      },
-      "universe.socketTimeout": {
-        "envName": null,
-        "propertyName": "universe.socketTimeout",
-        "defaultValue": "7200000",
-        "description": "Socket timeout for API of Universe",
+        "description": "Query timeout for API of Universe",
         "type": "number"
       }
     },
