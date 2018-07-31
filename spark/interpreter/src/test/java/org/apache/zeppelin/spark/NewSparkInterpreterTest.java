@@ -106,6 +106,11 @@ public class NewSparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals("hello world", output);
 
+    // java stdout
+    result = interpreter.interpret("System.out.print(a)", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals("hello world", output);
+
     // incomplete
     result = interpreter.interpret("println(a", getInterpreterContext());
     assertEquals(InterpreterResult.Code.INCOMPLETE, result.code());

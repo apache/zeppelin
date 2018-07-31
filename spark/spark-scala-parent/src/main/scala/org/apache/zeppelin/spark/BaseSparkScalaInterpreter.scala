@@ -81,8 +81,10 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
+    val originalOut = System.out
     def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
       Console.withOut(interpreterOutput) {
+        System.setOut(Console.out)
         interpreterOutput.setInterpreterOutput(context.out)
         interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
         context.out.clear()
@@ -108,6 +110,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         status
       }
     }
+    // reset the java stdout
+    System.setOut(originalOut)
 
     val lastStatus = _interpret(code) match {
       case scala.tools.nsc.interpreter.IR.Success =>
