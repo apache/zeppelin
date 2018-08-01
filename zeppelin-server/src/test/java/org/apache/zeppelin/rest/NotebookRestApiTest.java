@@ -161,11 +161,13 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   public void testGetRunningParagraphsGroupedByInterpreters()
           throws IOException, InterruptedException {
     // Needed to extract pids
-    File zeppelinPidDir = new File(System.getProperty("user.dir")).getParentFile();
-    environmentVariables.set(
-            "ZEPPELIN_PID_DIR",
-            zeppelinPidDir.getAbsolutePath() + File.separator +  "run"
-    );
+    if (System.getenv("ZEPPELIN_PID_DIR") == null) {
+      File zeppelinPidDir = new File(System.getProperty("user.dir")).getParentFile();
+      environmentVariables.set(
+              "ZEPPELIN_PID_DIR",
+              zeppelinPidDir.getAbsolutePath() + File.separator + "run"
+      );
+    }
 
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
     // 2 paragraphs
