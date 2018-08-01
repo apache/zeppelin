@@ -54,8 +54,8 @@ public class UniverseInterpreter extends Interpreter {
   private static final String EMPTY_DATA_MESSAGE = "%html\n" +
       "<h4><center><b>No Data Available</b></center></h4>";
 
-  private final String CONCURRENT_EXECUTION_KEY = "universe.concurrent.use";
-  private final String CONCURRENT_EXECUTION_COUNT = "universe.concurrent.maxConnection";
+  private static final String CONCURRENT_EXECUTION_KEY = "universe.concurrent.use";
+  private static final String CONCURRENT_EXECUTION_COUNT = "universe.concurrent.maxConnection";
 
   @Override
   public void open() throws InterpreterException {

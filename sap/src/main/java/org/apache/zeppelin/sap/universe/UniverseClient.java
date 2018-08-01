@@ -96,9 +96,13 @@ public class UniverseClient {
       "<query xmlns=\"http://www.sap.com/rws/sl/universe\" dataSourceType=\"%s\" " +
           "dataSourceId=\"%s\">\n" +
           "<querySpecification version=\"1.0\">\n" +
+          "   <queryOptions>\n" +
+          "            <queryOption name=\"duplicatedRows\" value=\"%s\"/>\n" +
+          "            <queryOption name=\"maxRowsRetrieved\" activated=\"%s\" value=\"%d\"/>\n" +
+          "  </queryOptions>" +
           "  <queryData>\n%s\n" +
           "     %s\n" +
-          "</queryData>\n" +
+          "  </queryData>\n" +
           "</querySpecification>\n" +
           "</query>\n";
   private final String filterPartTemplate = "<filterPart>%s\n</filterPart>";
@@ -160,7 +164,9 @@ public class UniverseClient {
           String.format(filterPartTemplate, query.getWhere()) : StringUtils.EMPTY;
       httpPost.setEntity(new StringEntity(
           String.format(createQueryRequestTemplate, query.getUniverseInfo().getType(),
-              query.getUniverseInfo().getId(), query.getSelect(), where), "UTF-8"));
+              query.getUniverseInfo().getId(), query.getDuplicatedRows(),
+              query.getMaxRowsRetrieved().isPresent(), query.getMaxRowsRetrieved().orElse(0),
+              query.getSelect(), where), "UTF-8"));
       HttpResponse response = httpClient.execute(httpPost);
 
       if (response.getStatusLine().getStatusCode() == 200) {

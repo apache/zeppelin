@@ -19,6 +19,8 @@ package org.apache.zeppelin.sap.universe;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.util.OptionalInt;
+
 /**
  * Data of universe query
  */
@@ -26,11 +28,16 @@ public class UniverseQuery {
   private String select;
   private String where;
   private UniverseInfo universeInfo;
+  private boolean duplicatedRows = false;
+  private OptionalInt maxRowsRetrieved;
 
-  public UniverseQuery(String select, String where, UniverseInfo universeInfo) {
+  public UniverseQuery(String select, String where, UniverseInfo universeInfo,
+                       boolean duplicatedRows, OptionalInt maxRowsRetrieved) {
     this.select = select;
     this.where = where;
     this.universeInfo = universeInfo;
+    this.duplicatedRows = duplicatedRows;
+    this.maxRowsRetrieved = maxRowsRetrieved;
   }
 
   public boolean isCorrect() {
@@ -49,5 +56,13 @@ public class UniverseQuery {
 
   public UniverseInfo getUniverseInfo() {
     return universeInfo;
+  }
+
+  public boolean getDuplicatedRows() {
+    return duplicatedRows;
+  }
+
+  public OptionalInt getMaxRowsRetrieved() {
+    return maxRowsRetrieved;
   }
 }
