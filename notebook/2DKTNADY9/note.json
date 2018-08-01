@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "%md\n### Intro\nThis notebook update **note permissions** for each note:\n\n* Adds all `writers` to `runners` if `runners` is empty.\n",
+      "text": "%md\n### Description\nNew type of permission appeared in version 0.8 - [Runners](http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting)\nRunners are between Writers and Readers.\nAs Runners list is empty in note so everybody can view note although Readers list is not empty.\n\nThe code below will fill Runners as Writes for each note.",
       "user": "admin",
-      "dateUpdated": "2018-08-01 18:02:36.251",
+      "dateUpdated": "2018-08-01 19:31:24.657",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -28,7 +28,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eIntro\u003c/h3\u003e\n\u003cp\u003eThis notebook update \u003cstrong\u003enote permissions\u003c/strong\u003e for each note:\u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003eAdds all \u003ccode\u003ewriters\u003c/code\u003e to \u003ccode\u003erunners\u003c/code\u003e if \u003ccode\u003erunners\u003c/code\u003e is empty.\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eDescription\u003c/h3\u003e\n\u003cp\u003eNew type of permission appeared in version 0.8 - \u003ca href\u003d\"http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting\"\u003eRunners\u003c/a\u003e\u003cbr/\u003eRunners are between Writers and Readers.\u003cbr/\u003eAs Runners list is empty in note so everybody can view note although Readers list is not empty.\u003c/p\u003e\n\u003cp\u003eThe code below will fill Runners as Writes for each note.\u003c/p\u003e\n\u003c/div\u003e"
           }
         ]
       },
@@ -36,8 +36,8 @@
       "jobName": "paragraph_1533132991280_-82433086",
       "id": "20180801-171631_359485954",
       "dateCreated": "2018-08-01 17:16:31.280",
-      "dateStarted": "2018-08-01 18:02:36.275",
-      "dateFinished": "2018-08-01 18:02:36.282",
+      "dateStarted": "2018-08-01 19:31:24.756",
+      "dateFinished": "2018-08-01 19:31:26.947",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -45,7 +45,7 @@
       "title": "Zeppelin Config",
       "text": "%spark.pyspark\n\nzeppelin_host \u003d z.input(\"Zeppelin host\", \"localhost\")\nzeppelin_port \u003d z.input(\"Zeppelin port\", \"8080\")\nzeppelin_user \u003d z.input(\"User\", \"admin\")\nzeppelin_password \u003d z.input(\"Password\", \"\")",
       "user": "admin",
-      "dateUpdated": "2018-08-01 18:02:36.374",
+      "dateUpdated": "2018-08-01 19:31:26.954",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -116,8 +116,8 @@
       "jobName": "paragraph_1533118971566_949439379",
       "id": "20180801-132251_306203866",
       "dateCreated": "2018-08-01 13:22:51.566",
-      "dateStarted": "2018-08-01 18:02:36.397",
-      "dateFinished": "2018-08-01 18:03:21.811",
+      "dateStarted": "2018-08-01 19:31:27.023",
+      "dateFinished": "2018-08-01 19:32:11.266",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -125,7 +125,7 @@
       "title": "Update permissions",
       "text": "%spark.pyspark\n\nimport requests\nimport json\n\n\nclass Izpepelin:\n    def __init__(self):\n        self.session \u003d requests.Session()\n        self.session.auth \u003d (zeppelin_user, zeppelin_password)\n        self.base_url \u003d \u0027http://\u0027 + zeppelin_host + \u0027:\u0027 + str(zeppelin_port)\n\n    def get_notes(self):\n        url \u003d self.base_url + \u0027/api/notebook\u0027\n        response \u003d self.session.get(url).json()\n        if \u0027exception\u0027 in response:\n            raise requests.exceptions.RequestException(url)\n        return response\n\n    def get_note_permission(self, note_id):\n        url \u003d self.base_url + \u0027/api/notebook/{}/permissions\u0027.format(note_id)\n        response \u003d self.session.get(url).json()\n        if \u0027exception\u0027 in response:\n            raise requests.exceptions.RequestException(url)\n        return response\n\n    def set_note_permission(self, note_id, data):\n        json_data \u003d json.dumps(data)\n        url \u003d self.base_url + \u0027/api/notebook/{}/permissions\u0027.format(note_id)\n        response \u003d self.session.put(url, data\u003djson_data).json()\n        if \u0027exception\u0027 in response:\n            raise requests.exceptions.RequestException(url)\n        return response\n\ntry:\n    zepp \u003d Izpepelin()\n    response \u003d zepp.get_notes()[\u0027body\u0027]\n    for note in response:\n        auth_info \u003d zepp.get_note_permission(note[\u0027id\u0027])[\u0027body\u0027]\n        if auth_info[\u0027writers\u0027] and not auth_info[\u0027runners\u0027]:\n            print(\"Processing note: name - {}, id - {}\"\n                  .format(note[\u0027id\u0027], note[\u0027name\u0027]))\n            print(\"Before:\")\n            print(auth_info)\n            auth_info[\u0027runners\u0027] \u003d auth_info[\u0027writers\u0027]\n            _ \u003d zepp.set_note_permission(note[\u0027id\u0027], auth_info)\n            new_auth_info \u003d zepp.get_note_permission(note[\u0027id\u0027])[\u0027body\u0027]\n            assert auth_info \u003d\u003d new_auth_info\n            print(\"After:\")\n            print(new_auth_info)\n            print(\"------------\")\nexcept requests.exceptions.RequestException as e:\n    print(\" \".join([\n        \"%html\", \"\u003ccenter\u003e\u003ch4\u003e\u003cp\u003e\u003cb\u003eRequest Failed\u003c/b\u003e\u003c/p\u003e\",\n        \"\u003cp\u003e\u003ccode\u003e{}\u003c/code\u003e\u003c/p\u003e\u003c/h4\u003e\u003c/center\u003e\".format(str(e))\n        ]))\n",
       "user": "admin",
-      "dateUpdated": "2018-08-01 18:03:21.850",
+      "dateUpdated": "2018-08-01 19:32:11.281",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -150,7 +150,7 @@
         "msg": [
           {
             "type": "TEXT",
-            "data": "Processing note: name - 2DP5BDJ55, id - 2DP5BDJ55\nBefore:\n{\u0027readers\u0027: [\u0027user2\u0027], \u0027owners\u0027: [\u0027user1\u0027], \u0027writers\u0027: [\u0027user2\u0027], \u0027runners\u0027: []}\nAfter:\n{\u0027readers\u0027: [\u0027user2\u0027], \u0027owners\u0027: [\u0027user1\u0027], \u0027writers\u0027: [\u0027user2\u0027], \u0027runners\u0027: [\u0027user2\u0027]}\n------------\nProcessing note: name - 2DMNT7WWR, id - Untitled Note 1\nBefore:\n{\u0027readers\u0027: [\u0027admin\u0027], \u0027owners\u0027: [\u0027admin\u0027], \u0027writers\u0027: [\u0027admin\u0027], \u0027runners\u0027: []}\nAfter:\n{\u0027readers\u0027: [\u0027admin\u0027], \u0027owners\u0027: [\u0027admin\u0027], \u0027writers\u0027: [\u0027admin\u0027], \u0027runners\u0027: [\u0027admin\u0027]}\n------------\n"
+            "data": "Processing note: name - 2DKAF1WNV, id - 2DKAF1WNV\nBefore:\n{\u0027readers\u0027: [\u0027user1\u0027], \u0027owners\u0027: [\u0027user1\u0027], \u0027writers\u0027: [\u0027user1\u0027], \u0027runners\u0027: []}\nAfter:\n{\u0027readers\u0027: [\u0027user1\u0027], \u0027owners\u0027: [\u0027user1\u0027], \u0027writers\u0027: [\u0027user1\u0027], \u0027runners\u0027: [\u0027user1\u0027]}\n------------\nProcessing note: name - 2DKUA35W5, id - 2DKUA35W5\nBefore:\n{\u0027readers\u0027: [], \u0027owners\u0027: [\u0027user2\u0027], \u0027writers\u0027: [\u0027user2\u0027], \u0027runners\u0027: []}\nAfter:\n{\u0027readers\u0027: [], \u0027owners\u0027: [\u0027user2\u0027], \u0027writers\u0027: [\u0027user2\u0027], \u0027runners\u0027: [\u0027user2\u0027]}\n------------\nProcessing note: name - 2DP6AMY7K, id - Angular\nBefore:\n{\u0027readers\u0027: [], \u0027owners\u0027: [\u0027user3\u0027], \u0027writers\u0027: [\u0027user3\u0027], \u0027runners\u0027: []}\nAfter:\n{\u0027readers\u0027: [], \u0027owners\u0027: [\u0027user3\u0027], \u0027writers\u0027: [\u0027user3\u0027], \u0027runners\u0027: [\u0027user3\u0027]}\n------------\n"
           }
         ]
       },
@@ -158,15 +158,15 @@
       "jobName": "paragraph_1533118760432_702537472",
       "id": "20180801-131920_952360200",
       "dateCreated": "2018-08-01 13:19:20.432",
-      "dateStarted": "2018-08-01 18:03:21.874",
-      "dateFinished": "2018-08-01 18:03:22.525",
+      "dateStarted": "2018-08-01 19:32:11.316",
+      "dateFinished": "2018-08-01 19:32:11.875",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark.pyspark\n",
       "user": "admin",
-      "dateUpdated": "2018-08-01 18:03:22.573",
+      "dateUpdated": "2018-08-01 19:32:11.916",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
