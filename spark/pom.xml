@@ -42,7 +42,6 @@
         <datanucleus.core.version>3.2.10</datanucleus.core.version>
 
         <!--plugin versions-->
-        <plugin.shade.version>2.4.1</plugin.shade.version>
         <plugin.scala.version>2.15.2</plugin.scala.version>
         <!-- spark versions -->
         <spark.version>2.2.0</spark.version>
