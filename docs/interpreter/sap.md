@@ -123,7 +123,7 @@ where
 ```
 
 ## Object Interpolation
-The JDBC interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+The SAP interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
 To enable this feature set `universe.interpolation` to `true`. The following example shows one use of this facility:
 
 ####In Scala cell:
