@@ -218,7 +218,8 @@ public class UniverseUtil {
         }
         if (buf.toString().toLowerCase().endsWith("where") || i == array.length - 1) {
           selectPart = false;
-          select.append(parseResultObj(resultObj.toString().replaceAll("(?i)wher$", ""),
+          select.append(parseResultObj(resultObj.toString()
+                  .replaceAll("(?i)wher$", "").replaceAll("(?i)distinc", ""),
               nodeInfos));
           select.append(RESULT_END_TEMPLATE);
           continue;
