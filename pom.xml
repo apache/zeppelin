@@ -791,13 +791,6 @@
     </profile>
 
     <profile>
-      <id>java</id>
-      <modules>
-        <module>java</module>
-      </modules>
-    </profile>
-
-    <profile>
       <id>examples</id>
       <modules>
         <module>zeppelin-examples</module>
