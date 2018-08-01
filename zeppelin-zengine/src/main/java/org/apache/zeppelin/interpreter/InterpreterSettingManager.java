@@ -984,34 +984,35 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
       LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
       File pidDir = new File(pidDirPath);
+      if (pidDir.listFiles() != null) {
+        LOGGER.info("ZEPPELIN_PID_DIR contains {}", Arrays.asList(pidDir.listFiles()));
+      }
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
         if (null != mig.getRemoteInterpreterProcess()) {
           String interpreterType = entry.getValue().getGroup();
           String port = String.valueOf(interpreterEventServer.getPort());
           LOGGER.info("Process dir {}", pidDir.getAbsolutePath());
-          File[] list = {};
-          if (pidDir != null) {
-            list = pidDir.listFiles();
-          }
-          for (File file : list) {
-            LOGGER.info("File {} in dir", file.getAbsolutePath());
-            if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
-              try {
-                LOGGER.info(
-                        String.format(
-                                "Process file: %s",
-                                file.getAbsolutePath()
-                        )
-                );
-                Integer pid = extractPid(file.getAbsolutePath());
-                interpreterInfo.put("pid", pid.toString());
-              } catch (FileNotFoundException err) {
-                interpreterInfo.put("pid", err.getMessage());
+          if (pidDir.listFiles() != null) {
+            for (File file : pidDir.listFiles()) {
+              LOGGER.info("File {} in dir", file.getAbsolutePath());
+              if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
+                try {
+                  LOGGER.info(
+                          String.format(
+                                  "Process file: %s",
+                                  file.getAbsolutePath()
+                          )
+                  );
+                  Integer pid = extractPid(file.getAbsolutePath());
+                  interpreterInfo.put("pid", pid.toString());
+                } catch (FileNotFoundException err) {
+                  interpreterInfo.put("pid", err.getMessage());
+                }
               }
             }
+            interpreterInfo.put("name", interpreterType);
+            runningInterpreters.add(interpreterInfo);
           }
-          interpreterInfo.put("name", interpreterType);
-          runningInterpreters.add(interpreterInfo);
         }
       }
     }
