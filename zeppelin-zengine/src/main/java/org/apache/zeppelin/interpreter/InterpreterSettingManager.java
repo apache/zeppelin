@@ -982,18 +982,19 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
       Map<String, String> interpreterInfo = new HashMap<>();
       String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
+      LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
       File pidDir = new File(pidDirPath);
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
         if (null != mig.getRemoteInterpreterProcess()) {
           String interpreterType = entry.getValue().getGroup();
           String port = String.valueOf(interpreterEventServer.getPort());
-          LOGGER.info(
-                  String.format(
-                          "Process dir %s",
-                          pidDir.getAbsolutePath()
-                  )
-          );
-          for (File file : pidDir.listFiles()) {
+          LOGGER.info("Process dir {}", pidDir.getAbsolutePath());
+          File[] list = {};
+          if (pidDir != null) {
+            list = pidDir.listFiles();
+          }
+          for (File file : list) {
+            LOGGER.info("File {} in dir", file.getAbsolutePath());
             if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
               try {
                 LOGGER.info(
