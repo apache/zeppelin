@@ -53,6 +53,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 
@@ -468,8 +469,9 @@ public class NewSparkInterpreterTest {
     assertEquals(null, interpreter.getSparkContext().getLocalProperty("spark.scheduler.pool"));
   }
 
+  // spark.ui.enabled: false
   @Test
-  public void testDisableSparkUI() throws InterpreterException {
+  public void testDisableSparkUI_1() throws InterpreterException {
     Properties properties = new Properties();
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
@@ -477,6 +479,31 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.ui.enabled", "false");
+
+    interpreter = new SparkInterpreter(properties);
+    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
+    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
+    InterpreterContext.set(getInterpreterContext());
+    interpreter.open();
+
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    // spark job url is not sent
+    verify(mockRemoteEventClient, never()).onParaInfosReceived(any(Map.class));
+  }
+
+  // zeppelin.spark.ui.hidden: true
+  @Test
+  public void testDisableSparkUI_2() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+    properties.setProperty("zeppelin.spark.ui.hidden", "true");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -500,6 +527,7 @@ public class NewSparkInterpreterTest {
     if (this.depInterpreter != null) {
       this.depInterpreter.close();
     }
+    SparkShims.reset();
   }
 
   private InterpreterContext getInterpreterContext() {
