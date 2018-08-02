@@ -15,13 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.socket;
 
-/** This will be used by some services to pass messages to frontend via WebSocket */
-public interface ServiceCallback {
-  void onStart(String message);
+package org.apache.zeppelin.service;
 
-  void onSuccess(String message);
+import org.apache.zeppelin.user.AuthenticationInfo;
 
-  void onFailure(String message);
+import java.util.Set;
+
+/**
+ * Context info for Service call
+ */
+public class ServiceContext {
+
+  private AuthenticationInfo autheInfo;
+  private Set<String> userAndRoles;
+
+  public ServiceContext(AuthenticationInfo authInfo, Set<String> userAndRoles) {
+    this.autheInfo = authInfo;
+    this.userAndRoles = userAndRoles;
+  }
+
+  public AuthenticationInfo getAutheInfo() {
+    return autheInfo;
+  }
+
+  public Set<String> getUserAndRoles() {
+    return userAndRoles;
+  }
 }
