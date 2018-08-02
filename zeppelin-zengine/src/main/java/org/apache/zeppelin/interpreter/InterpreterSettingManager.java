@@ -984,6 +984,10 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
       LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
       File pidDir = new File(pidDirPath);
+      LOGGER.info("ZEPPELIN_PID_DIR is folder? {}", String.valueOf(pidDir.isDirectory()));
+      if(!pidDir.isDirectory()) {
+        pidDir = new File(pidDirPath + File.separator);
+      }
       if (pidDir.listFiles() != null) {
         LOGGER.info("ZEPPELIN_PID_DIR contains {}", Arrays.asList(pidDir.listFiles()));
       }
