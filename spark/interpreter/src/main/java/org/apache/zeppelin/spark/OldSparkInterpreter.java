@@ -707,7 +707,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       dep = getDependencyResolver();
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       sparkUrl = getSparkUIUrl();
-      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
       sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
       numReferenceOfSparkContext.incrementAndGet();
 

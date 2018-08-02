@@ -120,7 +120,7 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       if (!StringUtils.isBlank(sparkUrlProp)) {
         sparkUrl = sparkUrlProp;
       }
-      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
       sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
 
       z = new SparkZeppelinContext(sc, sparkShims, hooks,

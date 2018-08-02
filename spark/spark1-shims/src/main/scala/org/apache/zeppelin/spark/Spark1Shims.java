@@ -28,8 +28,13 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
 
 import java.util.List;
+import java.util.Properties;
 
 public class Spark1Shims extends SparkShims {
+
+  public Spark1Shims(Properties properties) {
+    super(properties);
+  }
 
   public void setupSparkListener(final String master,
                                  final String sparkWebUrl,
@@ -38,7 +43,8 @@ public class Spark1Shims extends SparkShims {
     sc.addSparkListener(new JobProgressListener(sc.getConf()) {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        if (sc.getConf().getBoolean("spark.ui.enabled", true)) {
+        if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
+            !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
           buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
         }
       }
@@ -59,7 +65,7 @@ public class Spark1Shims extends SparkShims {
       for (Row row : rows) {
         for (int i = 0; i < row.size(); ++i) {
           msg.append(row.get(i));
-          if (i != row.size() -1) {
+          if (i != row.size() - 1) {
             msg.append("\t");
           }
         }
