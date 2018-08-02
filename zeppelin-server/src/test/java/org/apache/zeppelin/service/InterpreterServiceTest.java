@@ -33,7 +33,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.socket.ServiceCallback;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,19 +119,19 @@ public class InterpreterServiceTest {
         new InterpreterInstallationRequest(interpreterName, artifactName),
         dependencyResolver,
         specificInterpreterPath,
-        new ServiceCallback() {
+        new SimpleServiceCallback<String>() {
           @Override
-          public void onStart(String message) {
+          public void onStart(String message, ServiceContext context) {
             assertEquals("Starting to download " + interpreterName + " interpreter", message);
           }
 
           @Override
-          public void onSuccess(String message) {
+          public void onSuccess(String message, ServiceContext context) {
             assertEquals(interpreterName + " downloaded", message);
           }
 
           @Override
-          public void onFailure(String message) {
+          public void onFailure(Exception ex, ServiceContext context) {
             fail();
           }
         });

@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.rest.exception;
-
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 import org.apache.zeppelin.utils.ExceptionUtils;
 
-/**
- * UnauthorizedException handler for WebApplicationException.
- */
-public class ForbiddenException extends WebApplicationException {
-  private static Response forbiddenJson(String message) {
-    return ExceptionUtils.jsonResponseContent(FORBIDDEN, message);
-  }
+import javax.ws.rs.WebApplicationException;
 
-  public ForbiddenException(String message) {
-    super(forbiddenJson(message));
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
+public class ParagraphNotFoundException extends WebApplicationException {
+
+  public ParagraphNotFoundException(String paragraphId) {
+    super(ExceptionUtils.jsonResponseContent(NOT_FOUND, "No such paragraph: " + paragraphId));
   }
 }

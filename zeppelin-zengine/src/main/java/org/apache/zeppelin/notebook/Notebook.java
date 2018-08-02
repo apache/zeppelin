@@ -263,7 +263,11 @@ public class Notebook implements NoteEventListener {
         }
       }
       // add the default interpreter group
-      settings.add(interpreterSettingManager.getByName(note.getDefaultInterpreterGroup()));
+      InterpreterSetting defaultIntpSetting =
+          interpreterSettingManager.getByName(note.getDefaultInterpreterGroup());
+      if (defaultIntpSetting != null) {
+        settings.add(defaultIntpSetting);
+      }
       return new ArrayList<>(settings);
     } else {
       return new LinkedList<>();

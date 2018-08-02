@@ -14,24 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.exception;
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+package org.apache.zeppelin.service;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import org.apache.zeppelin.utils.ExceptionUtils;
+import java.io.IOException;
 
 /**
- * UnauthorizedException handler for WebApplicationException.
+ * This will be used by service classes as callback mechanism.
  */
-public class ForbiddenException extends WebApplicationException {
-  private static Response forbiddenJson(String message) {
-    return ExceptionUtils.jsonResponseContent(FORBIDDEN, message);
-  }
+public interface ServiceCallback<T> {
 
-  public ForbiddenException(String message) {
-    super(forbiddenJson(message));
-  }
+  /**
+   * Called when this service call is starting
+   * @param message
+   * @param context
+   * @throws IOException
+   */
+  void onStart(String message, ServiceContext context) throws IOException;
+
+  /**
+   * Called when this service call is succeed
+   * @param result
+   * @param context
+   * @throws IOException
+   */
+  void onSuccess(T result, ServiceContext context) throws IOException;
+
+  /**
+   * Called when this service call is failed 
+   * @param ex
+   * @param context
+   * @throws IOException
+   */
+  void onFailure(Exception ex, ServiceContext context) throws IOException;
+
 }
