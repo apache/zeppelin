@@ -24,13 +24,17 @@ import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
 
 import java.util.List;
+import java.util.Properties;
 
 public class Spark2Shims extends SparkShims {
+
+  public Spark2Shims(Properties properties) {
+    super(properties);
+  }
 
   public void setupSparkListener(final String master,
                                  final String sparkWebUrl,
@@ -39,7 +43,9 @@ public class Spark2Shims extends SparkShims {
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        if (sc.getConf().getBoolean("spark.ui.enabled", true)) {
+
+        if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
+            !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
           buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
         }
       }

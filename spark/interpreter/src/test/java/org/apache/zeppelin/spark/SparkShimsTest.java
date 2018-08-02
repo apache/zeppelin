@@ -89,7 +89,7 @@ public class SparkShimsTest {
     @Test
     public void checkYarnVersionTest() {
       SparkShims sparkShims =
-          new SparkShims() {
+          new SparkShims(new Properties()) {
             @Override
             public void setupSparkListener(String master,
                                            String sparkWebUrl,
@@ -121,9 +121,9 @@ public class SparkShimsTest {
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
       doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
       try {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties());
       } catch (Throwable ignore) {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties());
       }
     }
 
