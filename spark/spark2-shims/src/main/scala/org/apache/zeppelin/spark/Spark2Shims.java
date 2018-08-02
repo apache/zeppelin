@@ -22,17 +22,25 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 
+import java.util.Properties;
+
+
 /**
  * Shims for Spark 2.x
  */
 public class Spark2Shims extends SparkShims {
+
+  public Spark2Shims(Properties properties) {
+    super(properties);
+  }
 
   public void setupSparkListener(final String master, final String sparkWebUrl) {
     final SparkContext sc = SparkContext.getOrCreate();
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        if (sc.getConf().getBoolean("spark.ui.enabled", true)) {
+        if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
+            !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
           buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties());
         }
       }

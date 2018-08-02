@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
@@ -48,7 +49,14 @@ public abstract class SparkShims {
 
   private static SparkShims sparkShims;
 
-  private static SparkShims loadShims(String sparkVersion) throws ReflectiveOperationException {
+  protected Properties properties;
+
+  public SparkShims(Properties properties) {
+    this.properties = properties;
+  }
+
+  private static SparkShims loadShims(String sparkVersion, Properties properties)
+      throws ReflectiveOperationException {
     Class<?> sparkShimsClass;
     if ("2".equals(sparkVersion)) {
       LOGGER.info("Initializing shims for Spark 2.x");
@@ -58,15 +66,15 @@ public abstract class SparkShims {
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark1Shims");
     }
 
-    Constructor c = sparkShimsClass.getConstructor();
-    return (SparkShims) c.newInstance();
+    Constructor c = sparkShimsClass.getConstructor(Properties.class);
+    return (SparkShims) c.newInstance(properties);
   }
 
-  public static SparkShims getInstance(String sparkVersion) {
+  public static SparkShims getInstance(String sparkVersion, Properties properties) {
     if (sparkShims == null) {
       String sparkMajorVersion = getSparkMajorVersion(sparkVersion);
       try {
-        sparkShims = loadShims(sparkMajorVersion);
+        sparkShims = loadShims(sparkMajorVersion, properties);
       } catch (ReflectiveOperationException e) {
         throw new RuntimeException(e);
       }
@@ -135,5 +143,10 @@ public abstract class SparkShims {
             && VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) > 0)
         || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0_ALPHA4, version) <= 0)
         || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) <= 0);
+  }
+
+  @VisibleForTesting
+  public static void reset() {
+    sparkShims = null;
   }
 }

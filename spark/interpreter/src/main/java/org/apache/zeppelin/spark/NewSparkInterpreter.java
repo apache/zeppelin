@@ -116,9 +116,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       if (!StringUtils.isBlank(sparkUrlProp)) {
         sparkUrl = sparkUrlProp;
       }
-      sparkShims = SparkShims.getInstance(sc.version());
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
       sparkShims.setupSparkListener(sc.master(), sparkUrl);
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
