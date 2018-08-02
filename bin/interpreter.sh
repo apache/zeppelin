@@ -235,6 +235,8 @@ if [[ -z "${pid}" ]]; then
   exit 1;
 else
   echo ${pid} > ${ZEPPELIN_PID}
+  echo "ZEPPELIN_PID_DIR is ${ZEPPELIN_PID_DIR}"
+  echo "${ZEPPELIN_PID} contains ${pid}"
 fi
 
 
