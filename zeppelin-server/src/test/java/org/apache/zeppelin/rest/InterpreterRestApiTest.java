@@ -26,17 +26,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +89,89 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
                     .getInterpreterSettingTemplates().size(), body.entrySet().size());
     get.releaseConnection();
   }
+
+  @Rule
+  public final EnvironmentVariables environmentVariables
+            = new EnvironmentVariables();
+
+  @Test
+  public void getRunningInterpreters() throws IOException {
+    // Needed to extract pids
+    if (System.getenv("ZEPPELIN_PID_DIR") == null) {
+      LOG.info("Environment Variable created!");
+      String zeppelinPidPath = new File(System.getProperty("user.dir"))
+              .getParentFile()
+              .getAbsolutePath() + File.separator + "run";
+
+      environmentVariables.set(
+              "ZEPPELIN_PID_DIR",
+              zeppelinPidPath
+      );
+      File zeppelinPidDir = new File(zeppelinPidPath);
+      LOG.info("Run folder created: {}", zeppelinPidDir.mkdirs());
+    }
+
+    Note note1 = ZeppelinServer.notebook.createNote(anonymous);
+    // 2 paragraphs
+    // P1:
+    //    %python
+    //    print("python")
+    // P2:
+    //    %spark.pyspark
+    //    print("spark")
+    //
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%python\nprint(\"python\")");
+    p2.setText("%spark.pyspark\nprint(\"spark\")");
+
+    // start new note
+    PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
+    Assert.assertThat(post, isAllowed());
+    post.releaseConnection();
+
+    // when
+    GetMethod get = httpGet("/interpreter/running");
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+    // then
+    boolean containsPython = false;
+    boolean containsSpark = false;
+    for (Map<String, String> intp : body) {
+      switch (intp.get("name")) {
+        case "python":
+          containsPython = true;
+          assertTrue(!intp.get("pid").isEmpty());
+          break;
+        case "spark":
+          containsSpark = true;
+          assertTrue(!intp.get("pid").isEmpty());
+          break;
+        default:
+          assertTrue(
+                  String.format(
+                          "Result is incorrect: %s",
+                          intp.toString()
+                  ),
+                  false
+          );
+      }
+    }
+    assertTrue(
+            String.format(
+                    "Not all interpreters info presence:\n\tpythom - %b\n\tspark - %b",
+                    containsPython,
+                    containsSpark
+            ),
+            containsPython && containsSpark
+    );
+    get.releaseConnection();
+    // cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
+  }
+
 
   @Test
   public void getSettings() throws IOException {

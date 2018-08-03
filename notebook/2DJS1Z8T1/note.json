@@ -1,0 +1,179 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n### Description\nThis notebook contains infinite loops for python and spark interpreters, so if `Per note` mode enabled in interpreters, this processes will be displayed in `System/Admin` notebook.",
+      "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:12:25.674",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eDescription\u003c/h3\u003e\n\u003cp\u003eThis notebook contains infinite loops for python and spark interpreters, so if \u003ccode\u003ePer note\u003c/code\u003e mode enabled in interpreters, this processes will be displayed in \u003ccode\u003eSystem/Admin\u003c/code\u003e notebook.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1532683553929_1591426843",
+      "id": "20180727-122553_367471644",
+      "dateCreated": "2018-07-27 12:25:53.929",
+      "dateStarted": "2018-07-30 16:12:25.718",
+      "dateFinished": "2018-07-30 16:12:25.733",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Python interpreter infinite loop ",
+      "text": "%python\ni \u003d 1\nwhile True:\n    i +\u003d 1",
+      "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:14:10.091",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1532525530105_-1009999233",
+      "id": "20180725-163210_814222372",
+      "dateCreated": "2018-07-25 16:32:10.105",
+      "dateStarted": "2018-07-30 16:14:10.181",
+      "dateFinished": "2018-07-30 16:09:41.887",
+      "status": "RUNNING",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Spark interpreter infinite loop ",
+      "text": "%spark.pyspark\ni \u003d 1\nwhile True:\n  i +\u003d 1 ",
+      "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:14:11.952",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true,
+          "completionKey": "TAB"
+        },
+        "editorMode": "ace/mode/python",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1532602497481_1964032153",
+      "id": "20180726-135457_1727027836",
+      "dateCreated": "2018-07-26 13:54:57.481",
+      "dateStarted": "2018-07-30 16:14:11.993",
+      "dateFinished": "2018-07-30 16:10:35.852",
+      "status": "RUNNING",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Sh Interpreter infinite loop",
+      "text": "%sh\nwhile true\ndo\n  sleep 100\ndone",
+      "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:14:15.044",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/sh",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "INCOMPLETE",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Paragraph received a SIGTERM\nExitValue: 143"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1532683080019_1016095259",
+      "id": "20180727-121800_617175178",
+      "dateCreated": "2018-07-27 12:18:00.019",
+      "dateStarted": "2018-07-30 16:14:15.128",
+      "dateFinished": "2018-07-30 16:15:56.052",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "",
+      "user": "anonymous",
+      "dateUpdated": "2018-07-30 16:05:15.764",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1532950556804_-693392382",
+      "id": "20180730-143556_600647597",
+      "dateCreated": "2018-07-30 14:35:56.804",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "System/Run Interpreters",
+  "id": "2DJS1Z8T1",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "python:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

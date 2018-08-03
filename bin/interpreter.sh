@@ -235,6 +235,8 @@ if [[ -z "${pid}" ]]; then
   exit 1;
 else
   echo ${pid} > ${ZEPPELIN_PID}
+  echo "ZEPPELIN_PID_DIR is ${ZEPPELIN_PID_DIR}"
+  echo "${ZEPPELIN_PID} contains ${pid}"
 fi
 
 
@@ -259,3 +261,4 @@ function shutdown_hook() {
 wait
 
 rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null
+echo "${ZEPPELIN_PID} DELETED"
