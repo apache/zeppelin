@@ -524,7 +524,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("null", result[1]);
     assertEquals("1", result[2]);
     assertEquals("2", result[3]);
-    assertEquals("items: Seq[Object] = Buffer(2)", result[4]);
+    assertEquals("items: Seq[Any] = Buffer(2)", result[4]);
   }
 
   @Test
