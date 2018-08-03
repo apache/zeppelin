@@ -15,19 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.beam;
+package org.apache.zeppelin.java;
 
-import org.apache.zeppelin.java.JavaInterpreter;
-
-import java.util.Properties;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Beam interpreter
+ * Java interpreter utility methods
  */
-public class BeamInterpreter extends JavaInterpreter {
+public class JavaInterpreterUtils {
 
-  public BeamInterpreter(Properties property) {
-    super(property);
+  /**
+   * Convert a map to %table display system to leverage Zeppelin's built in visualization
+   * @param keyName Key column name
+   * @param valueName Value column name
+   * @param rows Map of keys and values
+   * @return Zeppelin %table
+   */
+  public static String displayTableFromSimpleMap(String keyName, String valueName, Map<?, ?> rows){
+    String table = "%table\n";
+    table += keyName + "\t" + valueName + "\n";
+    table += rows.entrySet().stream()
+            .map(e -> e.getKey() + "\t" + e.getValue())
+            .collect(Collectors.joining("\n"));
+    return table;
   }
 
 }
