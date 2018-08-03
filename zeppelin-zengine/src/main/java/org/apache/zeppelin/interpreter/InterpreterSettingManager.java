@@ -978,35 +978,36 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
 
   @Override
   public List<Map<String, String>> getRunningInterpreters() {
+    String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
+    LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
+    File pidDir = new File(pidDirPath);
+    LOGGER.info("ZEPPELIN_PID_DIR exists - {}", String.valueOf(pidDir.exists()));
+    LOGGER.info("ZEPPELIN_PID_DIR is folder? {}", String.valueOf(pidDir.isDirectory()));
+    if (pidDir.listFiles() != null) {
+      LOGGER.info("ZEPPELIN_PID_DIR contains {}", Arrays.asList(pidDir.listFiles()));
+    } else {
+      LOGGER.info("ZEPPELIN_PID_DIR is empty");
+    }
+
     List<Map<String, String>> runningInterpreters = new LinkedList<>();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
       Map<String, String> interpreterInfo = new HashMap<>();
-      String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
-      LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
-      File pidDir = new File(pidDirPath);
-      LOGGER.info("ZEPPELIN_PID_DIR is folder? {}", String.valueOf(pidDir.isDirectory()));
-      if(!pidDir.isDirectory()) {
-        pidDir = new File(pidDirPath + File.separator);
-      }
-      if (pidDir.listFiles() != null) {
-        LOGGER.info("ZEPPELIN_PID_DIR contains {}", Arrays.asList(pidDir.listFiles()));
-      }
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
         if (null != mig.getRemoteInterpreterProcess()) {
           String interpreterType = entry.getValue().getGroup();
           String port = String.valueOf(interpreterEventServer.getPort());
+          LOGGER.info("Investigate Interpreter Process:\n\tdir {}\n\tgroup {}\n\tport {}",
+                  entry.getValue().getInterpreterDir(),
+                  interpreterType,
+                  port
+          );
           LOGGER.info("Process dir {}", pidDir.getAbsolutePath());
           if (pidDir.listFiles() != null) {
             for (File file : pidDir.listFiles()) {
-              LOGGER.info("File {} in dir", file.getAbsolutePath());
+              LOGGER.info("Investigate file {}", file.getAbsolutePath());
               if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
                 try {
-                  LOGGER.info(
-                          String.format(
-                                  "Process file: %s",
-                                  file.getAbsolutePath()
-                          )
-                  );
+                  LOGGER.info("Process file: {}", file.getAbsolutePath());
                   Integer pid = extractPid(file.getAbsolutePath());
                   interpreterInfo.put("pid", pid.toString());
                 } catch (FileNotFoundException err) {

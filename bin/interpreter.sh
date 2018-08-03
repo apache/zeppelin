@@ -261,4 +261,4 @@ function shutdown_hook() {
 wait
 
 rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null
-echo "${ZEPPELIN_PID} deleted"
+echo "${ZEPPELIN_PID} DELETED"
