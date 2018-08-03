@@ -34,6 +34,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
+import org.apache.zeppelin.scheduler.dynamic_pool.DynamicThreadPool;
+import org.apache.zeppelin.scheduler.dynamic_pool.DynamicThreadPoolRepository;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -639,11 +641,50 @@ public class Notebook {
 
   }
 
+  public Map<String, String> getSchedulerInfo() throws SchedulerException {
+    Map<String, String> info = new HashMap<>();
+    info.put("name", getSchedulerName());
+    info.put("id", getSchedulerId());
+    info.put("poolSize", String.valueOf(getSchedulerPoolSize()));
+    info.put("poolClass", getSchedulerThreadPoolClass());
+    info.put("storeClass", getSchedulerJobStoreClass());
+    return info;
+  }
+
+  public void setSchedulerThreadPoolSize(Integer size) throws SchedulerException {
+    DynamicThreadPool threadPool =
+        DynamicThreadPoolRepository.getInstance().lookup(getSchedulerName());
+    if (threadPool == null) {
+      throw new SchedulerException("Thread pool size is constant.");
+    }
+    threadPool.doResize(size);
+  }
+
+  public String getSchedulerName() throws SchedulerException {
+    return quartzSched.getSchedulerName();
+  }
+
+  public String getSchedulerId() throws SchedulerException {
+    return quartzSched.getSchedulerInstanceId();
+  }
+
+  public Integer getSchedulerPoolSize() throws SchedulerException {
+    return quartzSched.getMetaData().getThreadPoolSize();
+  }
+
+  public String getSchedulerThreadPoolClass() throws SchedulerException {
+    return quartzSched.getMetaData().getThreadPoolClass().getName();
+  }
+
+  public String getSchedulerJobStoreClass() throws SchedulerException {
+    return quartzSched.getMetaData().getJobStoreClass().getName();
+  }
+
   public void removeCron(String id) {
     try {
       quartzSched.deleteJob(new JobKey(id, "note"));
     } catch (SchedulerException e) {
-      LOGGER.error("Can't remove quertz " + id, e);
+      LOGGER.error("Can't remove quartz " + id, e);
     }
   }
 

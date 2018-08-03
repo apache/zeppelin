@@ -110,6 +110,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+
 ### List of registered interpreter settings
 
   <table class="table-configuration">
@@ -193,6 +194,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
   
 <br/>
+
 ### Get a registered interpreter setting by the setting id 
 
   <table class="table-configuration">
@@ -256,6 +258,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+
 ### Create a new interpreter setting  
 
   <table class="table-configuration">
@@ -349,6 +352,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+
 ### Update an interpreter setting
   <table class="table-configuration">
     <col width="200">
@@ -438,6 +442,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+
 ### Delete an interpreter setting
 
   <table class="table-configuration">

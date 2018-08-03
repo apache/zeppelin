@@ -14,37 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.message;
+package org.apache.zeppelin.scheduler.dynamic_pool.job;
 
-import com.google.gson.Gson;
+import org.quartz.Job;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
-import org.apache.zeppelin.common.JsonSerializable;
-
-/**
- *  CronRequest rest api request message.
- */
-public class CronRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
-
-  String cron;
-  Integer poolSize;
-
-  public CronRequest (){
-  }
-
-  public String getCronString() {
-    return cron;
-  }
-
-  public Integer getPoolSize() {
-    return poolSize;
-  }
-
-  public String toJson() {
-    return gson.toJson(this);
-  }
-
-  public static CronRequest fromJson(String json) {
-    return gson.fromJson(json, CronRequest.class);
+public class DummyJob implements Job {
+  public void execute(JobExecutionContext context) throws JobExecutionException {
+    try {
+      Thread.sleep(200L);
+    } catch (InterruptedException e) {
+      throw new JobExecutionException(e);
+    }
   }
 }

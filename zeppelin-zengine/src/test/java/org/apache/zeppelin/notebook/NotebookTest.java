@@ -85,6 +85,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   @Before
   public void setUp() throws Exception {
+    System.setProperty("org.quartz.properties", "./quartz.properties");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
     super.setUp();
@@ -305,6 +306,27 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       fail("Should throw InterpreterNotFoundException");
     } catch (InterpreterNotFoundException e) {
 
+    }
+  }
+
+  @Test
+  public void testChangeThreadPoolSize() throws SchedulerException {
+    try {
+      Integer newPoolSize = notebook.getSchedulerPoolSize() + 1;
+      notebook.setSchedulerThreadPoolSize(newPoolSize);
+      assertEquals(newPoolSize, notebook.getSchedulerPoolSize());
+      assertEquals(
+          "org.apache.zeppelin.scheduler.dynamic_pool.impl.ExecutorServiceThreadPool",
+          notebook.getSchedulerThreadPoolClass());
+      notebook.setSchedulerThreadPoolSize(newPoolSize - 1);
+    } catch (SchedulerException e) {
+      assertFalse(
+          notebook
+              .getSchedulerThreadPoolClass()
+              .equals(
+                  "org.apache.zeppelin.scheduler."
+                      + "dynamic_pool.impl.ExecutorServiceThreadPool"));
+      assertEquals("Thread pool size is constant.", e.getMessage());
     }
   }
 
