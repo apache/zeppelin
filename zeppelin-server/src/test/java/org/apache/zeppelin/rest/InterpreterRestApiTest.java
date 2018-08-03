@@ -96,14 +96,21 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void getRunningInterpreters() throws IOException {
-    // before
+    // Needed to extract pids
     if (System.getenv("ZEPPELIN_PID_DIR") == null) {
-      File zeppelinPidDir = new File(System.getProperty("user.dir")).getParentFile();
+      LOG.info("Environment Variable created!");
+      String zeppelinPidPath = new File(System.getProperty("user.dir"))
+              .getParentFile()
+              .getAbsolutePath() + File.separator + "run";
+
       environmentVariables.set(
               "ZEPPELIN_PID_DIR",
-              zeppelinPidDir.getAbsolutePath() + File.separator + "run"
+              zeppelinPidPath
       );
+      File zeppelinPidDir = new File(zeppelinPidPath);
+      LOG.info("Run folder created: {}", zeppelinPidDir.mkdirs());
     }
+
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
     // 2 paragraphs
     // P1:
@@ -115,7 +122,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     //
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p2 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p1.setText("%python\nprint(\"pyhton\")");
+    p1.setText("%python\nprint(\"python\")");
     p2.setText("%spark.pyspark\nprint(\"spark\")");
 
     // start new note
