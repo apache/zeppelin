@@ -29,6 +29,8 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,7 +41,9 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runners.MethodSorters;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +65,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 public class NotebookRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
   AuthenticationInfo anonymous;
+
+  public NotebookRestApiTest() throws IOException, InterruptedException {
+  }
 
   @BeforeClass
   public static void init() throws Exception {
@@ -161,6 +168,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
           throws IOException, InterruptedException {
     // Needed to extract pids
     if (System.getenv("ZEPPELIN_PID_DIR") == null) {
+      LOG.info("Environment Variable created!");
       File zeppelinPidDir = new File(System.getProperty("user.dir")).getParentFile();
       environmentVariables.set(
               "ZEPPELIN_PID_DIR",
@@ -175,10 +183,8 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     //
     Paragraph sparkParagraph = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     sparkParagraph.setText("%spark.pyspark\ni = 1\nwhile True:\n  i += 1\n");
-
     List<Map<String, Object>> expectedData = new LinkedList<>();
     addData(expectedData, "spark", sparkParagraph);
-
     PostMethod sparkPost = httpPost(
             String.format(
                     "/notebook/job/%s/%s",
@@ -188,6 +194,40 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
             "");
     assertThat(sparkPost, isAllowed());
 
+    File zeppelinPidDir = new File(System.getenv("ZEPPELIN_PID_DIR"));
+    LOG.info("Run folder exist? {}", !zeppelinPidDir.mkdirs());
+    if (zeppelinPidDir.listFiles() != null) {
+      LOG.info("Run folder contains {}", Arrays.asList(zeppelinPidDir.listFiles()));
+    } else {
+      LOG.info("Run folder is empty");
+      LOG.info("Create fake .pid files");
+      for (InterpreterSetting entry : ZeppelinServer
+              .notebook
+              .getInterpreterSettingManager()
+              .getInterpreterSettings(note1.getId())) {
+        for (ManagedInterpreterGroup mig : entry.getAllInterpreterGroups()) {
+          if (null != mig.getRemoteInterpreterProcess()) {
+            String interpreterType = entry.getGroup();
+            String port = String.valueOf(
+                    entry.getInterpreterSettingManager().getIntpEventServer().getPort()
+            );
+            File fakePid = new File(zeppelinPidDir.getAbsolutePath()
+                    + File.separator
+                    + interpreterType
+                    + ":" + port + ".pid"
+            );
+            if (fakePid.createNewFile()) {
+              LOG.info("File {} is created!", fakePid.getName());
+              FileWriter write = new FileWriter(fakePid);
+              write.write("239");
+            } else {
+              LOG.info("File {} already exists.", fakePid.getName());
+            }
+          }
+        }
+      }
+      new File(zeppelinPidDir.getAbsolutePath() + File.separator + "spark:");
+    }
     Map<String, Object> runningInterpreters = waitForInterpretersSetUp();
     sparkPost.releaseConnection();
     assertNotNull(

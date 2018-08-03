@@ -322,6 +322,10 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
+  public RemoteInterpreterEventServer getIntpEventServer() {
+    return interpreterEventServer;
+  }
+
   public void saveToFile() throws IOException {
     InterpreterInfoSaving info = new InterpreterInfoSaving();
     info.interpreterBindings = interpreterBindings;
@@ -981,13 +985,6 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
     LOGGER.info("ZEPPELIN_PID_DIR is {}", pidDirPath);
     File pidDir = new File(pidDirPath);
-    LOGGER.info("ZEPPELIN_PID_DIR exists - {}", String.valueOf(pidDir.exists()));
-    LOGGER.info("ZEPPELIN_PID_DIR is folder? {}", String.valueOf(pidDir.isDirectory()));
-    if (pidDir.listFiles() != null) {
-      LOGGER.info("ZEPPELIN_PID_DIR contains {}", Arrays.asList(pidDir.listFiles()));
-    } else {
-      LOGGER.info("ZEPPELIN_PID_DIR is empty");
-    }
 
     List<Map<String, String>> runningInterpreters = new LinkedList<>();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
