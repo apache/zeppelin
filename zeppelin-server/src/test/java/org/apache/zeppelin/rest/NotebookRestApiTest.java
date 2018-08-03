@@ -120,8 +120,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   private Map<String, Object> waitForInterpretersSetUp() throws IOException, InterruptedException {
     long startTimeInMins = (System.currentTimeMillis() / (1000 * 60)) % 60;
     Map<String, Object> runningInterpreters = new HashMap<>();
-    while (!(runningInterpreters.containsKey("python")
-            && runningInterpreters.containsKey("spark"))) {
+    while (!runningInterpreters.containsKey("spark")) {
       GetMethod get = httpGet("/notebook/jobmanager/running");
       assertThat(get, isAllowed());
 
@@ -170,33 +169,15 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     }
 
     Note note1 = ZeppelinServer.notebook.createNote(anonymous);
-    // 2 paragraphs
-    // P1:
-    //    %python
-    //    import time
-    //    time.sleep(120)
-    // P2:
     //    %spark.pyspark
     //    import time
     //    time.sleep(120)
     //
-    Paragraph pythonParagraph = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph sparkParagraph = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    pythonParagraph.setText("%python\nimport time\ntime.sleep(120)\n");
-    sparkParagraph.setText("%spark.pyspark\nimport time\ntime.sleep(120)");
+    sparkParagraph.setText("%spark.pyspark\ni = 1\nwhile True:\n  i += 1\n");
 
     List<Map<String, Object>> expectedData = new LinkedList<>();
-    addData(expectedData, "python", pythonParagraph);
     addData(expectedData, "spark", sparkParagraph);
-
-    PostMethod pythonPost = httpPost(
-            String.format(
-                    "/notebook/job/%s/%s",
-                    note1.getId(),
-                    pythonParagraph.getId()
-            ),
-            "");
-    assertThat(pythonPost, isAllowed());
 
     PostMethod sparkPost = httpPost(
             String.format(
@@ -208,7 +189,6 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertThat(sparkPost, isAllowed());
 
     Map<String, Object> runningInterpreters = waitForInterpretersSetUp();
-    pythonPost.releaseConnection();
     sparkPost.releaseConnection();
     assertNotNull(
             "Interpreters setup lasts too long",
