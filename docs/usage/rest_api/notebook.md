@@ -1270,9 +1270,128 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
   </table>
 
+### Get scheduler settings
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets scheduler settings.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/settings```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+          400 if scheduler settings do not exist <br/>
+          500 for any other errors
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+      <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": 
+    {
+      "storeClass": "org.quartz.simpl.RAMJobStore",
+      "poolSize": "10",
+      "name": "DefaultQuartzScheduler",
+      "poolClass": "org.quartz.simpl.SimpleThreadPool",
+      "id": "NON_CLUSTERED"
+    }
+}</pre>
+      </td>
+    </tr>
+  </table>
+
+### Get scheduler setting by the setting id
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method gets scheduler setting by it's id.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/settings/[setting ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+          400 if such scheduler setting id does not exist <br/>
+          500 for any other errors
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+      <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": "org.quartz.simpl.RAMJobStore"
+}      </pre>
+      </td>
+    </tr>
+  </table>
+
+### Change quartz thread pool size
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>
+      This ```PUT``` method update scheduler pool size. 
+      Available only if scheduler configured with dynamic thread pool.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/cron/settings/update/poolSize```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+          400 if new pool size is not valid or dynamic thread pool is not configured <br/>
+          500 for any other errors
+    </tr>
+    <tr>
+      <td> sample JSON input</td>
+      <td>
+      <pre>
+{
+  "poolSize": "10"
+}</pre>
+      </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td>
+      <pre>
+{
+  "status": "OK"
+}</pre>
+      </td>
+    </tr>
+      </td>
+    </tr>
+  </table>
+
+
 ## Permission
-
-
 
 ### Get a note permission information
 

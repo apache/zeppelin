@@ -26,6 +26,12 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -38,12 +44,7 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import org.quartz.SchedulerException;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -51,9 +52,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
-/**
- * BASIC Zeppelin rest api tests.
- */
+/** BASIC Zeppelin rest api tests. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ZeppelinRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -61,7 +60,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    AbstractTestRestApi.startUp(ZeppelinRestApiTest.class.getSimpleName());
+    AbstractTestRestApi.startUpWithDynamicPoolEnable(ZeppelinRestApiTest.class.getSimpleName());
   }
 
   @AfterClass
@@ -596,6 +595,69 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
+  public void testGetSchedulerSettings() throws IOException, SchedulerException {
+    Map<String, String> defaultSettings = new HashMap<>();
+    defaultSettings.put("storeClass", ZeppelinServer.notebook.getSchedulerJobStoreClass());
+    defaultSettings.put("poolSize", String.valueOf(ZeppelinServer.notebook.getSchedulerPoolSize()));
+    defaultSettings.put("name", ZeppelinServer.notebook.getSchedulerName());
+    defaultSettings.put("poolClass", ZeppelinServer.notebook.getSchedulerThreadPoolClass());
+    defaultSettings.put("id", ZeppelinServer.notebook.getSchedulerId());
+
+    GetMethod getSchedulerSettings = httpGet("/notebook/cron/settings");
+    assertThat(getSchedulerSettings, isAllowed());
+    Map<String, Object> resp =
+        gson.fromJson(
+            getSchedulerSettings.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    System.out.println(resp.toString());
+    Map<String, String> body = (Map<String, String>) resp.get("body");
+    assertEquals(body, defaultSettings);
+    getSchedulerSettings.releaseConnection();
+
+    // incorrect
+    GetMethod getSchedulerSetting = httpGet("/notebook/cron/settings/wrongId");
+    assertThat(getSchedulerSetting, isNotFound());
+    getSchedulerSetting.releaseConnection();
+
+    // correct
+    getSchedulerSetting = httpGet("/notebook/cron/settings/poolSize");
+    assertThat(getSchedulerSetting, isAllowed());
+
+    resp =
+        gson.fromJson(
+            getSchedulerSettings.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    body = (Map<String, String>) resp.get("body");
+    assertEquals(body.get("poolSize"), defaultSettings.get("poolSize"));
+    getSchedulerSetting.releaseConnection();
+  }
+
+  @Test
+  public void testUpdateThreadPoolSize() throws SchedulerException, IOException {
+    Integer newPoolSize = ZeppelinServer.notebook.getSchedulerPoolSize() - 1;
+    String updateRequest = String.format("{\"poolSize\": \"%d\"}", newPoolSize);
+    PutMethod put = httpPut("/notebook/cron/settings/update/poolSize", updateRequest);
+    if (ZeppelinServer.notebook
+        .getSchedulerThreadPoolClass()
+        .equals("org.apache.zeppelin.scheduler.dynamic_pool.impl.ExecutorServiceThreadPool")) {
+      assertThat("Test update method:", put, isAllowed());
+      put.releaseConnection();
+      assertEquals(newPoolSize, ZeppelinServer.notebook.getSchedulerPoolSize());
+      // set pool size to start state
+      ZeppelinServer.notebook.setSchedulerThreadPoolSize(newPoolSize + 1);
+
+      // poolSize should be > 0
+      updateRequest = "{\"poolSize\": \"0\"}";
+      put = httpPut("/notebook/cron/settings/update/poolSize", updateRequest);
+      assertThat("Test update method:", put, isBadRequest());
+      put.releaseConnection();
+    } else {
+      assertThat(put, isBadRequest());
+      put.releaseConnection();
+    }
   }
 
   @Test

@@ -58,3 +58,11 @@ Set property **zeppelin.notebook.cron.enable** to **true** in `$ZEPPELIN_HOME/co
 ### Run cron selectively on folders
 
 In `$ZEPPELIN_HOME/conf/zeppelin-site.xml` make sure the property **zeppelin.notebook.cron.enable** is set to **true**, and then set property **zeppelin.notebook.cron.folders** to the desired folder as comma-separated values, e.g. `*yst*, Sys?em, System`. This property accepts wildcard and joker.
+
+### Enable dynamic pool size for Quartz
+By default the number of threads available for concurrent execution of jobs is set to 10.
+
+In order to change it dynamically using REST API or `Notebook.setSchedulerThreadPoolSize()` you need to set **org.quartz.threadPool.class** property to **org.apache.zeppelin.scheduler.dynamic_pool.impl.ExecutorServiceThreadPool** in `quartz.properties` file. 
+Notice, that **org.quartz.threadPool.threadPriority** and **org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread** are not implemented in **ExecutorServiceThreadPool**
+
+*In case you didn't configure quartz.properties: create file `quartz.properties` from default properties located in `org.quartz`, delete org.quartz.threadPool.threadPriority and org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread options and add it to `conf` directory.*

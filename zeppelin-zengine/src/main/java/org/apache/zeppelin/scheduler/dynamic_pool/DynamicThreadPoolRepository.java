@@ -14,45 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.message;
+package org.apache.zeppelin.scheduler.dynamic_pool;
 
-import com.google.gson.Gson;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.zeppelin.common.JsonSerializable;
+public class DynamicThreadPoolRepository {
 
-/**
- *  CronRequest rest api request message.
- */
-public class CronRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
+  private static final Map<String, DynamicThreadPool> INSTANCES = new ConcurrentHashMap<>();
 
-  private String cron;
-  private Boolean releaseResource;
-  private Integer poolSize;
+  private static DynamicThreadPoolRepository instance = new DynamicThreadPoolRepository();
 
-  public CronRequest (){
+  public static DynamicThreadPoolRepository getInstance() {
+    return instance;
   }
 
-  public String getCronString() {
-    return cron;
+  public void bind(String schedulerName, DynamicThreadPool threadPool) {
+    INSTANCES.put(schedulerName, threadPool);
   }
 
-  public Integer getPoolSize() {
-    return poolSize;
-  }
-
-  public Boolean getReleaseResource() {
-    if (releaseResource == null) {
-      return Boolean.FALSE;
-    }
-    return releaseResource;
-  }
-
-  public String toJson() {
-    return gson.toJson(this);
-  }
-
-  public static CronRequest fromJson(String json) {
-    return gson.fromJson(json, CronRequest.class);
+  public DynamicThreadPool lookup(String schedulerName) {
+    return INSTANCES.get(schedulerName);
   }
 }
