@@ -37,7 +37,13 @@ public class KsqlQuery {
     SHOW_PROPS,
     SHOW_TOPICS,
     SHOW_QUERIES,
+    SHOW_FUNCTIONS,
+    DESCRIBE_FUNCTION,
+    CREATE_TABLE_STREAM,
+    TERMINATE,
+    INSERT_INTO,
     SELECT,
+    DROP_TABLE,
     UNSUPPORTED
   }
 
@@ -49,24 +55,42 @@ public class KsqlQuery {
 
   private static final String END_STATEMENT = "\\s*;\\s*$";
   private static final String TABLE_NAME_PATTERN = "[_a-zA-Z0-9][-a-zA-Z0-9._]*";
+  
+  private static final int DEFAULT_PATTERN_OPTIONS = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
 
   static {
     PATTERNS = new ArrayList<>();
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+streams" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SHOW_STREAMS));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_STREAMS));
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+tables" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SHOW_TABLES));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_TABLES));
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+properties" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SHOW_PROPS));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_PROPS));
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+topics" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SHOW_TOPICS));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_TOPICS));
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+queries" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SHOW_QUERIES));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_QUERIES));
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+functions" + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.SHOW_FUNCTIONS));
+    PATTERNS.add(Pair.of(Pattern.compile("^drop\\s+(?:table|stream)\\s+(?:if\\s+exists\\s+)?" +
+        TABLE_NAME_PATTERN + "(?:\\s+delete\\s+topic)?" + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.DROP_TABLE));
+    PATTERNS.add(Pair.of(Pattern.compile("^create\\s+(?:table|stream)\\s" +
+        TABLE_NAME_PATTERN + "\\s+.+" + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.CREATE_TABLE_STREAM));
+    PATTERNS.add(Pair.of(Pattern.compile("^terminate\\s+" + TABLE_NAME_PATTERN + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.TERMINATE));
+    PATTERNS.add(Pair.of(Pattern.compile("^describe\\s+function\\s*"
+        + TABLE_NAME_PATTERN + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.DESCRIBE_FUNCTION));
     PATTERNS.add(Pair.of(Pattern.compile("^describe\\s+(extended)?\\s*"
         + TABLE_NAME_PATTERN + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.DESCRIBE));
+        DEFAULT_PATTERN_OPTIONS), QueryType.DESCRIBE));
     PATTERNS.add(Pair.of(Pattern.compile("^select\\s+.*" + END_STATEMENT,
-        Pattern.CASE_INSENSITIVE), QueryType.SELECT));
+        DEFAULT_PATTERN_OPTIONS), QueryType.SELECT));
+    PATTERNS.add(Pair.of(Pattern.compile("^insert\\s+into\\s" +
+        TABLE_NAME_PATTERN + "\\s+.+" + END_STATEMENT,
+        DEFAULT_PATTERN_OPTIONS), QueryType.INSERT_INTO));
   }
 
   KsqlQuery() {
@@ -74,7 +98,7 @@ public class KsqlQuery {
   }
 
   KsqlQuery(final String q) {
-    query = q.trim();
+    query = q.trim().replace('\n', ' ').replace('\r', ' ');
     type = analyzeQuery(query);
     LOGGER.debug("Initializing KsqlQuery: {}, type: {}", query, type.name());
   }

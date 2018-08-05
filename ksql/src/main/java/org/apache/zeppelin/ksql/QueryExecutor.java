@@ -19,6 +19,7 @@ package org.apache.zeppelin.ksql;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -72,10 +73,19 @@ public class QueryExecutor {
     HANDLERS.put(KsqlQuery.QueryType.SHOW_TOPICS, func);
     func = QueryExecutor::formatQueries;
     HANDLERS.put(KsqlQuery.QueryType.SHOW_QUERIES, func);
+    func = QueryExecutor::formatFunctions;
+    HANDLERS.put(KsqlQuery.QueryType.SHOW_FUNCTIONS, func);
     func = QueryExecutor::formatDescribe;
     HANDLERS.put(KsqlQuery.QueryType.DESCRIBE, func);
+    func = QueryExecutor::formatDescribeFunction;
+    HANDLERS.put(KsqlQuery.QueryType.DESCRIBE_FUNCTION, func);
     func = QueryExecutor::formatSelect;
     HANDLERS.put(KsqlQuery.QueryType.SELECT, func);
+    func = QueryExecutor::formatStatus;
+    HANDLERS.put(KsqlQuery.QueryType.DROP_TABLE, func);
+    HANDLERS.put(KsqlQuery.QueryType.CREATE_TABLE_STREAM, func);
+    HANDLERS.put(KsqlQuery.QueryType.TERMINATE, func);
+    HANDLERS.put(KsqlQuery.QueryType.INSERT_INTO, func);
   }
 
   QueryExecutor(final String url, String fetchSize) {
@@ -120,14 +130,35 @@ public class QueryExecutor {
       String body = "{}";
       try {
         StatusLine status = response.getStatusLine();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        if (response.getEntity() != null) {
+          response.getEntity().writeTo(os);
+          body = os.toString("UTF-8");
+        }
+        os.close();
         if (status.getStatusCode() != 200) {
+          try {
+            Map<String, Object> m = OBJECT_MAPPER.readValue(body,
+                new TypeReference<Map<String, Object>>() { });
+
+            StringBuilder sb = new StringBuilder(HTML_MAGIC);
+            sb.append("<span style=\"font-weight:bold;color:red;\">ERROR!</span> ")
+              .append("<span style=\"font-weight:bold;\">HTTP Status</span>: ")
+              .append(status.getStatusCode())
+              .append(", <span style=\"font-weight:bold;\">Error code</span>: ")
+              .append(m.getOrDefault("error_code", "Unknown error code"))
+              .append(", <span style=\"font-weight:bold;\">Message</span>: ")
+              .append(escapeHTML(m.getOrDefault("message", "").toString()));
+
+            return new InterpreterResult(InterpreterResult.Code.ERROR, sb.toString());
+          } catch (Exception ex) {
+            LOGGER.warn("Exception: " + ex.getMessage());
+          }
+
           return new InterpreterResult(InterpreterResult.Code.ERROR,
             "Non-200 Answer from KSQL server: " + status.getStatusCode() +
               ". " + status.getReasonPhrase());
         }
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        response.getEntity().writeTo(os);
-        body = os.toString("UTF-8");
       } finally {
         response.close();
       }
@@ -240,6 +271,28 @@ public class QueryExecutor {
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
 
+  public static InterpreterResult formatFunctions(final String payload) {
+    List<Object> values = null;
+    try {
+      values = getListFromSection(payload, "function_names", "functions");
+    } catch (ParsingException ex) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
+    }
+
+    StringBuilder sb = new StringBuilder(TABLE_MAGIC);
+    sb.append("Name\tType\n");
+    for (Object obj : values) {
+      Map<String, Object> entry = (Map<String, Object>) obj;
+      sb.append(entry.getOrDefault("name", ""));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("type", ""));
+      sb.append('\n');
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+  }
+
+
   private static String formatSchema(Map<String, Object> m) {
     if (m == null) {
       return "UNKNOWN_TYPE";
@@ -296,16 +349,11 @@ public class QueryExecutor {
   public static InterpreterResult formatDescribe(final String payload) {
     Map<String, Object> m = null;
     try {
-      m = getSection(payload, "sourceDescription");
+      m = getObjectFromSection(payload, "sourceDescription", "sourceDescription");
     } catch (ParsingException ex) {
       LOGGER.error("Exception: ", ex);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
         "Exception: " + ex.getMessage());
-    }
-    m = (Map<String, Object>) m.get("sourceDescription");
-    if (m == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "No sourceDescription section in answer...");
     }
 
     StringBuilder sb = new StringBuilder(HTML_MAGIC);
@@ -500,6 +548,19 @@ public class QueryExecutor {
     return values;
   }
 
+  private static Map<String, Object> getObjectFromSection(final String payload,
+                                                          final String requiredType,
+                                                          final String section) {
+    Map<String, Object> m = getSection(payload, requiredType);
+    Map<String, Object> values = (Map<String, Object>) (m.get(section));
+    if (values == null) {
+      throw new ParsingException("No " + section + " section in result!");
+    }
+
+    return values;
+  }
+
+
   public static InterpreterResult formatQueries(final String payload) {
     List<Object> values = null;
     try {
@@ -514,15 +575,102 @@ public class QueryExecutor {
       Map<String, Object> entry = (Map<String, Object>) obj;
       sb.append(entry.getOrDefault("id", ""));
       sb.append('\t');
-      sb.append(entry.getOrDefault("sinks", ""));
+      List<String> sinks = (List<String>) entry.get("sinks");
+      if (sinks != null) {
+        sb.append(StringUtils.join(sinks, ", "));
+      }
       sb.append('\t');
       sb.append(entry.getOrDefault("queryString", ""));
-      sb.append(entry.getOrDefault("consumerGroupCount", ""));
       sb.append('\n');
     }
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
+
+  public static InterpreterResult formatStatus(final String payload) {
+    Map<String, Object> m = null;
+    try {
+      m = getObjectFromSection(payload, "currentStatus", "commandStatus");
+    } catch (ParsingException ex) {
+      LOGGER.error("Exception: ", ex);
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "Exception: " + ex.getMessage());
+    }
+
+    String status = m.getOrDefault("status", "UNKNOWN_STATUS").toString();
+    String color = "green";
+    InterpreterResult.Code code = InterpreterResult.Code.SUCCESS;
+    if ("ERROR".equalsIgnoreCase(status) || "TERMINATED".equalsIgnoreCase(status)) {
+      code = InterpreterResult.Code.ERROR;
+      color = "red";
+    }
+    // TODO(alex): Should I set incomplete code for PARSING/... statuses?
+
+    StringBuilder sb = new StringBuilder(HTML_MAGIC);
+    sb.append("<span style=\"font-weight:bold;color:")
+      .append(color).append(";\">").append(escapeHTML(status)).append("</span>: ")
+      .append(escapeHTML(m.getOrDefault("message", "").toString()));
+
+    return new InterpreterResult(code, sb.toString());
+  }
+
+  public static InterpreterResult formatDescribeFunction(final String payload) {
+    Map<String, Object> m = null;
+    try {
+      m = getSection(payload, "describe_function");
+    } catch (ParsingException ex) {
+      LOGGER.error("Exception: ", ex);
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "Exception: " + ex.getMessage());
+    }
+
+    StringBuilder sb = new StringBuilder(HTML_MAGIC);
+    // TODO(alex): Use templates!
+    sb.append("<style>table, th, td {border: 1px solid gray;}\n")
+      .append("table { border-collapse: collapse; }")
+      .append("th, td { padding: 3px; }</style>")
+      .append("<table>");
+    sb.append("<tr><td width=\"20%\">Name:</td><th colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("name", "UNKNOWN FUNCTION").toString()));
+    sb.append("</th>").append("</tr>");
+    sb.append("<tr><td>Type:</td><td colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("type", "scalar").toString()));
+    sb.append("</td>").append("</tr>");
+    sb.append("<tr><td>Description:</td><td colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("description", "").toString()));
+    sb.append("</td>").append("</tr>");
+    sb.append("<tr><td>Author:</td><td colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("format", "Unknown").toString()));
+    sb.append("</td>").append("</tr>");
+    sb.append("<tr><td>Version:</td><td colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("version", "Unknown").toString()));
+    sb.append("</td>").append("</tr>");
+    sb.append("<tr><td>Path:</td><td colspan=\"2\">");
+    sb.append(escapeHTML(m.getOrDefault("path", "Unknown").toString()));
+    sb.append("</td>").append("</tr>");
+
+    List<Object> values = (List<Object>) (m.get("functions"));
+    if (values != null) {
+      sb.append("<tr><td colspan=\"3\">&nbsp;</td></tr>");
+      sb.append("<tr><th>Argument types</th><th>Return type</th><th>Description</th></tr>");
+      for (Object obj: values) {
+        Map<String, Object> entry = (Map<String, Object>) obj;
+        sb.append("<tr><td>");
+        List<String> types = (List<String>) entry.get("argumentTypes");
+        if (types != null) {
+          sb.append(escapeHTML(StringUtils.join(types, ", ")));
+        }
+        sb.append("</td><td>");
+        sb.append(escapeHTML(entry.getOrDefault("returnType", "").toString()));
+        sb.append("</td><td>");
+        sb.append(escapeHTML(entry.getOrDefault("description", "").toString()));
+        sb.append("</td></tr>");
+      }
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+  }
+
 
   // TODO(alex): very primitive, rewrite to something more advanced, or find available
   private static String escapeHTML(final String input) {

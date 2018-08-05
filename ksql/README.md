@@ -33,20 +33,20 @@ Supported functionality:
 * Show system information: `show properties`, `list properties`;
 * Show information about individual tables/streams: `describe [extended] name`;
 * Show information about existing queries: `show queries`, `list queries`;
+* Show information about existing functions: `show functions`, `list functions`;
+* Show information about existing function: `describe function ...`;
 * Selecting data from given table/stream: `select ... from name ... limit N`.  If `limit
   N` isn't provided, it's injected into query with `N` equal to value of configuration
   parameter `ksql.fetchSize` (default: 10);
+* Dropping objects: `drop stream`, `drop table`;
+* Creating objects: `create (table|stream) ... [as select]`;
+* Terminating query: `terminate ..`;
+* Inserting data into other stream via `insert into...`;
+
 
 Not implemented yet:
-* DROP STREAM
-* DROP TABLE
-* CREATE STREAM
-* CREATE TABLE
-* CREATE STREAM AS SELECT
-* CREATE TABLE AS SELECT
 * EXPLAIN
 * PRINT (`PRINT 'source_topic_name' FROM BEGINNING;`)
-* TERMINATE 
 
 
 
