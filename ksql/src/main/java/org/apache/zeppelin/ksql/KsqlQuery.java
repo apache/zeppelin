@@ -36,6 +36,7 @@ public class KsqlQuery {
     EXPLAIN,
     SHOW_PROPS,
     SHOW_TOPICS,
+    SHOW_QUERIES,
     SELECT,
     UNSUPPORTED
   }
@@ -59,6 +60,8 @@ public class KsqlQuery {
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_PROPS));
     PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+topics" + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.SHOW_TOPICS));
+    PATTERNS.add(Pair.of(Pattern.compile("^(?:show|list)\\s+queries" + END_STATEMENT,
+        Pattern.CASE_INSENSITIVE), QueryType.SHOW_QUERIES));
     PATTERNS.add(Pair.of(Pattern.compile("^describe\\s+(extended)?\\s*"
         + TABLE_NAME_PATTERN + END_STATEMENT,
         Pattern.CASE_INSENSITIVE), QueryType.DESCRIBE));

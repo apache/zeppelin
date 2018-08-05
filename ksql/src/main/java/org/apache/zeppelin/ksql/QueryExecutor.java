@@ -70,6 +70,8 @@ public class QueryExecutor {
     HANDLERS.put(KsqlQuery.QueryType.SHOW_PROPS, func);
     func = QueryExecutor::formatTopics;
     HANDLERS.put(KsqlQuery.QueryType.SHOW_TOPICS, func);
+    func = QueryExecutor::formatQueries;
+    HANDLERS.put(KsqlQuery.QueryType.SHOW_QUERIES, func);
     func = QueryExecutor::formatDescribe;
     HANDLERS.put(KsqlQuery.QueryType.DESCRIBE, func);
     func = QueryExecutor::formatSelect;
@@ -148,32 +150,14 @@ public class QueryExecutor {
   }
 
   public static InterpreterResult formatTables(final String type, final String payload) {
-    Map<String, Object> m;
+    List<Object> values = null;
     try {
-      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
-      });
-      if (results.size() < 1) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, "No data returned!");
-      }
-      m = (Map<String, Object>) (results.get(0));
-      m = (Map<String, Object>) (m.get(type));
-      if (m == null) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "No " + type + " section in result!");
-      }
-    } catch (IOException ex) {
-      LOGGER.error("Exception: ", ex);
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "Exception: " + ex.getMessage());
+      values = getListFromSection(payload, type, type);
+    } catch (ParsingException ex) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
     }
 
     boolean isTables = "tables".equalsIgnoreCase(type);
-
-    List<Object> values = (List<Object>) (m.get(type));
-    if (values == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "No " + type + " section in result!");
-    }
 
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
     sb.append("Name\tStream\tFormat");
@@ -199,20 +183,10 @@ public class QueryExecutor {
   }
 
   public static InterpreterResult formatProperties(final String payload) {
-    Map<String, Object> m;
+    Map<String, Object> m = null;
     try {
-      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
-      });
-      if (results.size() < 1) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, "No data returned!");
-      }
-      m = (Map<String, Object>) (results.get(0));
-      m = (Map<String, Object>) (m.get("properties"));
-      if (m == null) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "No 'properties' section in result!");
-      }
-    } catch (IOException ex) {
+      m = getSection(payload, "properties");
+    } catch (ParsingException ex) {
       LOGGER.error("Exception: ", ex);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
         "Exception: " + ex.getMessage());
@@ -237,29 +211,11 @@ public class QueryExecutor {
   }
 
   public static InterpreterResult formatTopics(final String payload) {
-    Map<String, Object> m;
+    List<Object> values = null;
     try {
-      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
-      });
-      if (results.size() < 1) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, "No data returned!");
-      }
-      m = (Map<String, Object>) (results.get(0));
-      m = (Map<String, Object>) (m.get("kafka_topics"));
-      if (m == null) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "No kafka_topics section in result!");
-      }
-    } catch (IOException ex) {
-      LOGGER.error("Exception: ", ex);
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "Exception: " + ex.getMessage());
-    }
-
-    List<Object> values = (List<Object>) (m.get("topics"));
-    if (values == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "No topics section in result!");
+      values = getListFromSection(payload, "kafka_topics", "topics");
+    } catch (ParsingException ex) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
     }
 
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
@@ -284,24 +240,72 @@ public class QueryExecutor {
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
 
+  private static String formatSchema(Map<String, Object> m) {
+    if (m == null) {
+      return "UNKNOWN_TYPE";
+    }
+
+    String type = (String) m.getOrDefault("type", "UNKNOWN_TYPE");
+    StringBuilder sb = new StringBuilder();
+    sb.append(type);
+    type.toUpperCase();
+    // LOGGER.info("type='" + type + "'");
+    if ("STRUCT".equals(type)) {
+      sb.append('<');
+      List<Object> schema = (List<Object>) m.get("fields");
+      // LOGGER.info("Handling struct. Schema= " + schema);
+      if (schema != null) {
+        int cnt = 0;
+        for (Object obj: schema) {
+          Map<String, Object> entry = (Map<String, Object> ) obj;
+          if (cnt > 0) {
+            sb.append(", ");
+          }
+          String name = (String) entry.getOrDefault("name", "UNKNOWNO_NAME");
+          sb.append(name);
+          sb.append(' ');
+          String tp = formatSchema((Map<String, Object> ) entry.get("schema"));
+          sb.append(tp);
+          // LOGGER.info("subtype. name=" + name + ", type=" + tp);
+          cnt++;
+        }
+      } else {
+        sb.append("Error getting schema for Struct!");
+      }
+      sb.append('>');
+    } else if ("ARRAY".equals(type) || "MAP".equals(type)) {
+      sb.append('<');
+      sb.append('>');
+    }
+
+    return sb.toString();
+  }
+
+  private static void formatQueriesInDescribe(StringBuilder sb, String name, List<Object> objects) {
+    sb.append("<tr><td colspan=\"2\">Read queries:</td></tr>\n");
+    for (Object obj : objects) {
+      Map<String, Object> m = (Map<String, Object>) obj;
+      sb.append("<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+      sb.append(escapeHTML(m.getOrDefault("id", "UNKNOWN_ID").toString()));
+      sb.append("</td><td>");
+      sb.append(escapeHTML(m.getOrDefault("queryString", "UNKNOWN_QUERY").toString()));
+      sb.append("</td></tr>\n");
+    }
+  }
+
   public static InterpreterResult formatDescribe(final String payload) {
-    Map<String, Object> m;
+    Map<String, Object> m = null;
     try {
-      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
-      });
-      if (results.size() < 1) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR, "No data returned!");
-      }
-      m = (Map<String, Object>) (results.get(0));
-      m = (Map<String, Object>) (m.get("description"));
-      if (m == null) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "No kafka_topics section in result!");
-      }
-    } catch (IOException ex) {
+      m = getSection(payload, "sourceDescription");
+    } catch (ParsingException ex) {
       LOGGER.error("Exception: ", ex);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
         "Exception: " + ex.getMessage());
+    }
+    m = (Map<String, Object>) m.get("sourceDescription");
+    if (m == null) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "No sourceDescription section in answer...");
     }
 
     StringBuilder sb = new StringBuilder(HTML_MAGIC);
@@ -311,59 +315,48 @@ public class QueryExecutor {
       .append("th, td { padding: 3px; }</style>")
       .append("<table>");
     sb.append("<tr><td width=\"20%\">Name:</td><th>");
-    sb.append(m.getOrDefault("name", "UNKNOWN NAME"));
+    sb.append(escapeHTML(m.getOrDefault("name", "UNKNOWN NAME").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Type:</td><th>");
-    sb.append(m.getOrDefault("type", "STREAM"));
+    sb.append(escapeHTML(m.getOrDefault("type", "STREAM").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Topic:</td><th>");
-    sb.append(m.getOrDefault("kafkaTopic", "UNKNOWN TOPIC"));
+    sb.append(escapeHTML(m.getOrDefault("topic", "UNKNOWN TOPIC").toString()));
     sb.append("</th>").append("</tr>");
+    sb.append("<tr><td>Format:</td><td>");
+    sb.append(escapeHTML(m.getOrDefault("format", "UNKNOWN FORMAT").toString()));
+    sb.append("</td>").append("</tr>");
 
-    List<Object> schemaList = (List<Object>) (m.get("schema"));
+    List<Object> schemaList = (List<Object>) (m.get("fields"));
     if (schemaList != null) {
       sb.append("<tr><th colspan=\"2\"><br>Schema</th></tr>\n");
       sb.append("<tr><th>Name</th><th>Type</th></tr>\n");
       for (Object obj : schemaList) {
         Map<String, Object> entry = (Map<String, Object>) obj;
         sb.append("<tr><td>");
-        sb.append(entry.getOrDefault("name", ""));
+        sb.append(escapeHTML(entry.getOrDefault("name", "").toString()));
         sb.append("</td><td>");
-        sb.append(entry.getOrDefault("type", ""));
+        sb.append(escapeHTML(formatSchema((Map<String, Object>) entry.get("schema"))));
         sb.append("</td></tr>\n");
       }
       sb.append("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
     }
 
-    sb.append("<tr><td>Serde:</td><td>");
-    sb.append(m.getOrDefault("serdes", "UNKNOWN TOPIC"));
-    sb.append("</td>").append("</tr>");
-
-    List<String> queries = (List<String>) (m.get("readQueries"));
+    List<Object> queries = (List<Object>) (m.get("readQueries"));
     if (!CollectionUtils.isEmpty(queries)) {
-      sb.append("<tr><td colspan=\"2\">Read queries:</td></tr>\n");
-      for (String query : queries) {
-        sb.append("<tr><td colspan=\"2\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-        sb.append(query);
-        sb.append("</td></tr>\n");
-      }
+      formatQueriesInDescribe(sb, "Read queries", queries);
     }
 
-    queries = (List<String>) (m.get("writeQueries"));
+    queries = (List<Object>) (m.get("writeQueries"));
     if (!CollectionUtils.isEmpty(queries)) {
-      sb.append("<tr><td colspan=\"2\">Write queries:</td></tr>\n");
-      for (String query : queries) {
-        sb.append("<tr><td colspan=\"2\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-        sb.append(query);
-        sb.append("</td></tr>\n");
-      }
+      formatQueriesInDescribe(sb, "Write queries", queries);
     }
 
     sb.append("<tr><td>Key column:</td><td>");
-    sb.append(m.getOrDefault("key", ""));
+    sb.append(escapeHTML(m.getOrDefault("key", "").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Timestamp column:</td><td>");
-    sb.append(m.getOrDefault("timestamp", ""));
+    sb.append(escapeHTML(m.getOrDefault("timestamp", "").toString()));
     sb.append("</td>").append("</tr>");
 
     // output extended data
@@ -377,17 +370,17 @@ public class QueryExecutor {
       sb.append("</td></tr>");
 
       sb.append("<tr><td>Statistics:</td><td>");
-      sb.append(m.getOrDefault("statistics", ""));
+      sb.append(escapeHTML(m.getOrDefault("statistics", "").toString()));
       sb.append("</td></tr>");
       sb.append("<tr><td>Error statistics:</td><td>");
-      sb.append(m.getOrDefault("errorStats", ""));
+      sb.append(escapeHTML(m.getOrDefault("errorStats", "").toString()));
       sb.append("</td></tr>");
 
       sb.append("<tr><td>Topology:</td><td>");
-      sb.append(m.getOrDefault("topology", ""));
+      sb.append(escapeHTML(m.getOrDefault("topology", "").toString()));
       sb.append("</td></tr>");
       sb.append("<tr><td>Execution plan:</td><td>");
-      sb.append(m.getOrDefault("executionPlan", ""));
+      sb.append(escapeHTML(m.getOrDefault("executionPlan", "").toString()));
       sb.append("</td></tr>");
     }
 
@@ -413,12 +406,13 @@ public class QueryExecutor {
         Map<String, Object> row = (Map<String, Object>) m.get("row");
         LOGGER.info("row=" + row);
         if (row == null) {
+          String finalMessage = (String) m.get("finalMessage");
+          if (finalMessage != null) {
+            break;
+          }
           Map<String, Object> errorMessage = (Map<String, Object>) m.get("errorMessage");
           if (errorMessage != null) {
             String message = (String) errorMessage.getOrDefault("message", "");
-            if (message.equalsIgnoreCase(LIMIT_ERROR_MESSAGE)) {
-              break;
-            }
             if (i == 0) {
               return new InterpreterResult(InterpreterResult.Code.ERROR,
                 "Error executing query: " + message);
@@ -473,4 +467,68 @@ public class QueryExecutor {
     LOGGER.info("Result='" + result + "'");
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, result.toString());
   }
+
+  private static Map<String, Object> getSection(final String payload, final String requiredType) {
+    Map<String, Object> m;
+    try {
+      List<Object> results = OBJECT_MAPPER.readValue(payload, new TypeReference<List<Object>>() {
+      });
+      if (results.size() < 1) {
+        throw new ParsingException("No data returned!");
+      }
+      m = (Map<String, Object>) (results.get(0));
+      String type = (String) m.get("@type");
+      if (!requiredType.equals(type)) {
+        throw new ParsingException("Section type doesn't match! @type value is '" + type
+          + "' instead of '" + requiredType + "'");
+      }
+    } catch (IOException ex) {
+      LOGGER.error("Exception: ", ex);
+      throw new ParsingException("Exception: " + ex.getMessage());
+    }
+    return m;
+  }
+
+  private static List<Object> getListFromSection(final String payload, final String requiredType,
+                                                 final String section) {
+    Map<String, Object> m = getSection(payload, requiredType);
+    List<Object> values = (List<Object>) (m.get(section));
+    if (values == null) {
+      throw new ParsingException("No " + section + " section in result!");
+    }
+
+    return values;
+  }
+
+  public static InterpreterResult formatQueries(final String payload) {
+    List<Object> values = null;
+    try {
+      values = getListFromSection(payload, "queries", "queries");
+    } catch (ParsingException ex) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
+    }
+
+    StringBuilder sb = new StringBuilder(TABLE_MAGIC);
+    sb.append("ID\tSink\tQuery\n");
+    for (Object obj : values) {
+      Map<String, Object> entry = (Map<String, Object>) obj;
+      sb.append(entry.getOrDefault("id", ""));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("sinks", ""));
+      sb.append('\t');
+      sb.append(entry.getOrDefault("queryString", ""));
+      sb.append(entry.getOrDefault("consumerGroupCount", ""));
+      sb.append('\n');
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+  }
+
+  // TODO(alex): very primitive, rewrite to something more advanced, or find available
+  private static String escapeHTML(final String input) {
+    return input.replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+  }
+
 }
