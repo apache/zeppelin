@@ -755,9 +755,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       }
 
       autoAdjustEditorHeight(_editor);
-      angular.element(window).resize(function() {
-        autoAdjustEditorHeight(_editor);
-      });
+
+      let adjustEditorListener = () => autoAdjustEditorHeight(_editor);
+      angular.element(window).resize(adjustEditorListener);
+      $scope.$on('$destroy', () => angular.element(window).unbind('resize', adjustEditorListener));
 
       if (navigator.appVersion.indexOf('Mac') !== -1) {
         $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
