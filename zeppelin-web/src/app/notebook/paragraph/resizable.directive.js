@@ -24,6 +24,23 @@ function ResizableDirective() {
     },
   };
 
+  let addEvent = function(config) {
+    let removeEventByID = function(id) {
+      let events = jQuery._data(config.element, 'events')[config.eventType];
+      for (let i=0; i < events.length; i++) {
+        if (events[i].data && events[i].data.eventID === id) {
+          events.splice(i, 1);
+          i--;
+        }
+      }
+    };
+    removeEventByID(config.eventID);
+    angular.element(config.element).bind(config.eventType, {eventID: config.eventID}, config.handler);
+    angular.element(config.onDestroyElement).scope().$on('$destroy', () => {
+      removeEventByID(config.eventID);
+    });
+  };
+
   return {
     restrict: 'A',
     scope: {
@@ -59,8 +76,13 @@ function ResizableDirective() {
         resize = JSON.parse(resize);
         if (resize.allowresize === 'true') {
           resetResize(elem, resize);
-          angular.element(window).resize(function() {
-            resetResize(elem, resize);
+
+          addEvent({
+            eventID: elem[0].id,
+            eventType: 'resize',
+            element: window,
+            onDestroyElement: elem[0],
+            handler: () => resetResize(elem, resize),
           });
         }
       });

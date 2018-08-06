@@ -103,6 +103,27 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     connectedOnce = true;
   });
 
+  $scope.addEvent = function(config) {
+    let removeEventByID = function(id) {
+      let events = jQuery._data(config.element, 'events')[config.eventType];
+      if (!events) {
+        return;
+      }
+      for (let i=0; i < events.length; i++) {
+        if (events[i].data && events[i].data.eventID === id) {
+          events.splice(i, 1);
+          i--;
+        }
+      }
+    };
+
+    removeEventByID(config.eventID);
+    angular.element(config.element).bind(config.eventType, {eventID: config.eventID}, config.handler);
+    angular.element(config.onDestroyElement).scope().$on('$destroy', () => {
+      removeEventByID(config.eventID);
+    });
+  };
+
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
       return '';
@@ -1564,8 +1585,15 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     document.removeEventListener('keydown', $scope.keyboardShortcut);
   });
 
-  angular.element(window).bind('resize', function() {
-    const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
-    angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
+  let content = document.getElementById('content');
+  $scope.addEvent({
+    eventID: content.id,
+    eventType: 'resize',
+    element: window,
+    onDestroyElement: content,
+    handler: () => {
+      const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
+      angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
+    },
   });
 }
