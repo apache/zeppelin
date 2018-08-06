@@ -256,6 +256,15 @@ export default class TableVisualization extends Visualization {
             return this.context.col.colDef.type === TableColumnType.DATE;
           },
         },
+        {
+          title: 'Copy Column Name',
+          action: function() {
+            self.copyStringToClipboard(this.context.col.displayName);
+          },
+          active: function() {
+            self.copyStringToClipboard(this.context.col.displayName);
+          },
+        },
       ];
     });
   }
@@ -514,5 +523,15 @@ export default class TableVisualization extends Visualization {
         },
       },
     };
+  }
+
+  copyStringToClipboard(copyString) {
+    const strToClipboard = document.createElement('textarea');
+    strToClipboard.value = copyString;
+    document.body.appendChild(strToClipboard);
+    strToClipboard.select();
+    document.execCommand('copy');
+    document.body.removeChild(strToClipboard);
+    return;
   }
 }
