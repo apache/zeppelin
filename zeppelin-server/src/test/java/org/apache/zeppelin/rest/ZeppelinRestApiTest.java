@@ -582,6 +582,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     postCron.releaseConnection();
     Thread.sleep(1000);
 
+    // remove cron job.
+    DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
+    assertThat("", deleteCron, isAllowed());
+    deleteCron.releaseConnection();
+    Thread.sleep(1000);
+
     System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
