@@ -1,9 +1,9 @@
 {
   "paragraphs": [
     {
-      "text": "%md\n### Description\nNew type of permission appeared in version 0.8 - [Runners](http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting)\nRunners are between Writers and Readers.\nAs Runners list is empty in note so everybody can view note although Readers list is not empty.\n\nThe code below will fill Runners as Writes for each note.",
+      "text": "%md\n### Description\nNew type of permission appeared in version 0.8 - [Runners](http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting)\nRunners are between Writers and Readers.\nAs Runners list is empty in note so everybody can view note although Readers list is not empty.\n\nThe code below will fill Runners as Writes for each note.\n\n**You must be owner of all notes or have role `zeppelin.notebook.default.owner.username` defined in zeppelin-site.xml**",
       "user": "admin",
-      "dateUpdated": "2018-08-01 19:31:24.657",
+      "dateUpdated": "2018-08-06 19:19:29.675",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -28,7 +28,7 @@
         "msg": [
           {
             "type": "HTML",
-            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eDescription\u003c/h3\u003e\n\u003cp\u003eNew type of permission appeared in version 0.8 - \u003ca href\u003d\"http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting\"\u003eRunners\u003c/a\u003e\u003cbr/\u003eRunners are between Writers and Readers.\u003cbr/\u003eAs Runners list is empty in note so everybody can view note although Readers list is not empty.\u003c/p\u003e\n\u003cp\u003eThe code below will fill Runners as Writes for each note.\u003c/p\u003e\n\u003c/div\u003e"
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eDescription\u003c/h3\u003e\n\u003cp\u003eNew type of permission appeared in version 0.8 - \u003ca href\u003d\"http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting\"\u003eRunners\u003c/a\u003e\u003cbr/\u003eRunners are between Writers and Readers.\u003cbr/\u003eAs Runners list is empty in note so everybody can view note although Readers list is not empty.\u003c/p\u003e\n\u003cp\u003eThe code below will fill Runners as Writes for each note.\u003c/p\u003e\n\u003cp\u003e\u003cstrong\u003eYou must be owner of all notes or have role \u003ccode\u003ezeppelin.notebook.default.owner.username\u003c/code\u003e defined in zeppelin-site.xml\u003c/strong\u003e\u003c/p\u003e\n\u003c/div\u003e"
           }
         ]
       },
@@ -36,8 +36,8 @@
       "jobName": "paragraph_1533132991280_-82433086",
       "id": "20180801-171631_359485954",
       "dateCreated": "2018-08-01 17:16:31.280",
-      "dateStarted": "2018-08-01 19:31:24.756",
-      "dateFinished": "2018-08-01 19:31:26.947",
+      "dateStarted": "2018-08-06 19:19:29.678",
+      "dateFinished": "2018-08-06 19:19:32.163",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -198,10 +198,11 @@
   "noteForms": {},
   "angularObjects": {
     "md:shared_process": [],
+    "python:shared_process": [],
     "spark:shared_process": []
   },
   "config": {
-    "isZeppelinNotebookCronEnable": false,
+    "isZeppelinNotebookCronEnable": true,
     "looknfeel": "default",
     "personalizedMode": "false"
   },
