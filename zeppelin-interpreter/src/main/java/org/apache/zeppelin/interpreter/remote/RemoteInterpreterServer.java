@@ -751,6 +751,7 @@ public class RemoteInterpreterServer extends Thread
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
     return InterpreterContext.builder()
         .setNoteId(ric.getNoteId())
+        .setNoteName(ric.getNoteName())
         .setParagraphId(ric.getParagraphId())
         .setReplName(ric.getReplName())
         .setParagraphTitle(ric.getParagraphTitle())
@@ -758,6 +759,8 @@ public class RemoteInterpreterServer extends Thread
         .setLocalProperties(ric.getLocalProperties())
         .setAuthenticationInfo(AuthenticationInfo.fromJson(ric.getAuthenticationInfo()))
         .setGUI(GUI.fromJson(ric.getGui()))
+        .setConfig(gson.fromJson(ric.getConfig(),
+                   new TypeToken<Map<String, Object>>() {}.getType()))
         .setNoteGUI(GUI.fromJson(ric.getNoteGui()))
         .setAngularObjectRegistry(interpreterGroup.getAngularObjectRegistry())
         .setResourcePool(interpreterGroup.getResourcePool())

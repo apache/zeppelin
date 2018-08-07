@@ -116,14 +116,24 @@ export default class TableVisualization extends Visualization {
           type: DefaultTableColumnType,
           cellTemplate: `
             <div ng-if="!grid.getCellValue(row, col).startsWith('%html')"
-                 class="ui-grid-cell-contents">
-              {{grid.getCellValue(row, col)}}
-            </div>
+                 class="ui-grid-cell-contents"><span>{{grid.getCellValue(row, col)}}</span></div>
             <div ng-if="grid.getCellValue(row, col).startsWith('%html')"
                  ng-bind-html="grid.getCellValue(row, col).split('%html')[1]"
                  class="ui-grid-cell-contents">
-            </div>
-          `,
+            </div>`,
+          editableCellTemplate:
+            `<div>
+               <form
+                 name="inputForm">
+                 <textarea
+                   class="ui-grid-zeppelin-special-textarea"
+                   type="INPUT_TYPE"
+                   ng-class="'colt' + col.uid"
+                   ui-grid-editor
+                   ng-model="MODEL_COL_FIELD" />
+               </form>
+             </div>
+             `,
           minWidth: this.getColumnMinWidth(colName),
           width: '*',
           sortingAlgorithm: function(a, b, row1, row2, sortType, gridCol) {
@@ -343,6 +353,17 @@ export default class TableVisualization extends Visualization {
       });
       gridApi.colResizable.on.columnSizeChanged(scope, () => {
         self.persistConfigWithGridState(self.config);
+      });
+      gridApi.edit.on.beginCellEdit(scope, function(rowEntity, colDef, triggerEvent) {
+        let textArea = triggerEvent.currentTarget.children[1].children[0].children[0];
+        textArea.style.height = textArea.scrollHeight + 'px';
+        textArea.addEventListener('keydown', function() {
+          let elem = this;
+          setTimeout(function() {
+            elem.style.height = 'auto';
+            elem.style.height = elem.scrollHeight + 'px';
+          });
+        }, 0);
       });
 
       // pagination doesn't follow usual life-cycle in ui-grid v4.0.4

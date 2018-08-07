@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -117,12 +116,12 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
-  public Collection<Object> checkbox(String name, ParamOption[] options) {
+  public List<Object> checkbox(String name, ParamOption[] options) {
     return checkbox(name, options, false);
   }
 
   @ZeppelinApi
-  public Collection<Object> checkbox(String name, List<Object> defaultChecked,
+  public List<Object> checkbox(String name, List<Object> defaultChecked,
                                      ParamOption[] options) {
     return checkbox(name, defaultChecked, options, false);
   }
@@ -143,12 +142,12 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
-  public Collection<Object> noteCheckbox(String name, ParamOption[] options) {
+  public List<Object> noteCheckbox(String name, ParamOption[] options) {
     return checkbox(name, options, true);
   }
 
   @ZeppelinApi
-  public Collection<Object> noteCheckbox(String name, List<Object> defaultChecked,
+  public List<Object> noteCheckbox(String name, List<Object> defaultChecked,
                                          ParamOption[] options) {
     return checkbox(name, defaultChecked, options, true);
   }
@@ -176,7 +175,7 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private Collection<Object> checkbox(String name, ParamOption[] options,
+  private List<Object> checkbox(String name, ParamOption[] options,
                                       boolean noteForm) {
     List<Object> defaultValues = new LinkedList<>();
     for (ParamOption option : options) {
@@ -189,7 +188,7 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private Collection<Object> checkbox(String name, List<Object> defaultChecked,
+  private List<Object> checkbox(String name, List<Object> defaultChecked,
                                       ParamOption[] options, boolean noteForm) {
     if (noteForm) {
       return noteGui.checkbox(name, defaultChecked, options);
@@ -226,7 +225,7 @@ public abstract class BaseZeppelinContext {
   public void setMaxResult(int maxResult) {
     this.maxResult = maxResult;
   }
-
+  
   /**
    * display special types of objects for interpreter.
    * Each interpreter can has its own supported classes.
@@ -245,7 +244,6 @@ public abstract class BaseZeppelinContext {
    * @param o         object
    * @param maxResult maximum number of rows to display
    */
-
   @ZeppelinApi
   public void show(Object o, int maxResult) {
     try {
@@ -261,7 +259,7 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private boolean isSupportedObject(Object obj) {
+  protected boolean isSupportedObject(Object obj) {
     for (Class supportedClass : getSupportedClasses()) {
       if (supportedClass.isInstance(obj)) {
         return true;

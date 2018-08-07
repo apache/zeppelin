@@ -51,9 +51,9 @@ public class PythonDockerInterpreterTest {
     docker.setInterpreterGroup(group);
 
     doReturn(true).when(docker).pull(any(InterpreterOutput.class), anyString());
-    doReturn(python).when(docker).getPythonInterpreter();
     doReturn(new File("/scriptpath")).when(python).getPythonWorkDir();
-
+    doReturn(PythonDockerInterpreter.class.getName()).when(docker).getClassName();
+    doReturn(PythonInterpreter.class.getName()).when(python).getClassName();
     docker.open();
   }
 

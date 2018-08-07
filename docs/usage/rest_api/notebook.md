@@ -351,6 +351,42 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
   </table>
 
+<br/>
+### Rename a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method renames a note by the given id using the given name.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/rename```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+       <td>Bad Request code</td>
+       <td>400</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input </td>
+      <td><pre>{"name": "new name of a note"}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status":"OK"}</pre></td>
+    </tr>
+  </table>
+
+
 <br />
 ### Export a note
   <table class="table-configuration">

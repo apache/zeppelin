@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -32,7 +37,7 @@ import java.util.Properties;
 /**
  * Spark specific launcher.
  */
-public class SparkInterpreterLauncher extends ShellScriptLauncher {
+public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
 
@@ -75,6 +80,25 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
     if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
         !useProxyUserEnv.equals("false"))) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
+    }
+    Path localRepoPath =
+        Paths.get(zConf.getInterpreterLocalRepoPath(), context.getInterpreterSettingId());
+    if (isYarnMode()
+        && getDeployMode().equals("cluster")
+        && Files.exists(localRepoPath)
+        && Files.isDirectory(localRepoPath)) {
+      try {
+        StreamSupport.stream(
+                Files.newDirectoryStream(localRepoPath, entry -> Files.isRegularFile(entry))
+                    .spliterator(),
+                false)
+            .map(jar -> jar.toAbsolutePath().toString())
+            .reduce((x, y) -> x.concat(",").concat(y))
+            .ifPresent(extraJars -> sparkConfBuilder.append(" --jars ").append(extraJars));
+      } catch (IOException e) {
+        LOGGER.error("Cannot make a list of additional jars from localRepo: {}", localRepoPath, e);
+      }
+
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());

@@ -35,13 +35,7 @@
   <properties>
     <interpreter.name>python</interpreter.name>
     <python.py4j.version>0.10.7</python.py4j.version>
-    <python.test.exclude>
-        **/PythonInterpreterWithPythonInstalledTest.java,
-        **/PythonInterpreterPandasSqlTest.java,
-        **/PythonInterpreterMatplotlibTest.java
-    </python.test.exclude>
     <grpc.version>1.4.0</grpc.version>
-    <plugin.shade.version>2.4.1</plugin.shade.version>
   </properties>
 
   <dependencies>

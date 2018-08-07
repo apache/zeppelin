@@ -89,11 +89,16 @@ public class SparkShimsTest {
     @Test
     public void checkYarnVersionTest() {
       SparkShims sparkShims =
-          new SparkShims() {
+          new SparkShims(new Properties()) {
             @Override
             public void setupSparkListener(String master,
                                            String sparkWebUrl,
                                            InterpreterContext context) {}
+
+            @Override
+            public String showDataFrame(Object obj, int maxResult) {
+              return null;
+            }
           };
       assertEquals(expected, sparkShims.supportYarn6615(version));
     }
@@ -103,7 +108,6 @@ public class SparkShimsTest {
   @PrepareForTest({BaseZeppelinContext.class, VersionInfo.class})
   @PowerMockIgnore({"javax.net.*", "javax.security.*"})
   public static class SingleTests {
-    @Mock Properties mockProperties;
     @Captor ArgumentCaptor<Map<String, String>> argumentCaptor;
 
     SparkShims sparkShims;
@@ -117,15 +121,15 @@ public class SparkShimsTest {
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
       doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
       try {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties());
       } catch (Throwable ignore) {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties());
       }
     }
 
     @Test
     public void runUnderLocalTest() {
-      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockProperties, mockContext);
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
@@ -135,7 +139,7 @@ public class SparkShimsTest {
     @Test
     public void runUnderYarnTest() {
 
-      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockProperties, mockContext);
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));

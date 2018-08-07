@@ -20,14 +20,10 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.python.IPythonInterpreter;
-import org.apache.zeppelin.python.PythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +46,10 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    PySparkInterpreter pySparkInterpreter = getPySparkInterpreter();
+    PySparkInterpreter pySparkInterpreter =
+        getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
-    sparkInterpreter = getSparkInterpreter();
+    sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     setProperty("zeppelin.py4j.useAuth",
         sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
@@ -80,35 +77,6 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return env;
   }
 
-  private SparkInterpreter getSparkInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    SparkInterpreter spark = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    spark = (SparkInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return spark;
-  }
-
-  private PySparkInterpreter getPySparkInterpreter() throws InterpreterException {
-    PySparkInterpreter pySpark = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class.getName());
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    pySpark = (PySparkInterpreter) p;
-    return pySpark;
-  }
-
   @Override
   public BaseZeppelinContext buildZeppelinContext() {
     return sparkInterpreter.getZeppelinContext();
@@ -118,11 +86,20 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     InterpreterContext.set(context);
     String jobGroupId = Utils.buildJobGroupId(context);
-    String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
+    String jobDesc = Utils.buildJobDesc(context);
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
     InterpreterResult result = super.interpret(setJobGroupStmt, context);
     if (result.code().equals(InterpreterResult.Code.ERROR)) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    }
+    String pool = "None";
+    if (context.getLocalProperties().containsKey("pool")) {
+      pool = "'" + context.getLocalProperties().get("pool") + "'";
+    }
+    String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
+    result = super.interpret(setPoolStmt, context);
+    if (result.code().equals(InterpreterResult.Code.ERROR)) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setPool");
     }
     return super.interpret(st, context);
   }

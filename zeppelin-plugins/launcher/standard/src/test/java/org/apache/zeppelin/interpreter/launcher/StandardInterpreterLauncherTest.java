@@ -29,7 +29,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ShellScriptLauncherTest {
+public class StandardInterpreterLauncherTest {
   @Before
   public void setUp() {
     for (final ZeppelinConfiguration.ConfVars confVar : ZeppelinConfiguration.ConfVars.values()) {
@@ -40,7 +40,7 @@ public class ShellScriptLauncherTest {
   @Test
   public void testLauncher() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    ShellScriptLauncher launcher = new ShellScriptLauncher(zConf, null);
+    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -64,7 +64,7 @@ public class ShellScriptLauncherTest {
   @Test
   public void testConnectTimeOut() throws IOException {
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    ShellScriptLauncher launcher = new ShellScriptLauncher(zConf, null);
+    StandardInterpreterLauncher launcher = new StandardInterpreterLauncher(zConf, null);
     Properties properties = new Properties();
     properties.setProperty(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");

@@ -29,8 +29,8 @@ public class SparkVersionTest {
 
   @Test
   public void testUnsupportedVersion() {
-    assertTrue(SparkVersion.fromVersionString("9.9.9").isUnsupportedVersion());
-    assertFalse(SparkVersion.fromVersionString("1.5.9").isUnsupportedVersion());
+    assertTrue(SparkVersion.fromVersionString("1.4.2").isUnsupportedVersion());
+    assertFalse(SparkVersion.fromVersionString("2.3.0").isUnsupportedVersion());
     assertTrue(SparkVersion.fromVersionString("0.9.0").isUnsupportedVersion());
     assertTrue(SparkVersion.UNSUPPORTED_FUTURE_VERSION.isUnsupportedVersion());
     // should support spark2 version of HDP 2.5
@@ -40,32 +40,23 @@ public class SparkVersionTest {
   @Test
   public void testSparkVersion() {
     // test equals
-    assertEquals(SparkVersion.SPARK_1_2_0, SparkVersion.fromVersionString("1.2.0"));
-    assertEquals(SparkVersion.SPARK_1_5_0, SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
-    assertEquals(SparkVersion.SPARK_1_5_0, SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
+    assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0"));
+    assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0-SNAPSHOT"));
     // test spark2 version of HDP 2.5
     assertEquals(SparkVersion.SPARK_2_0_0, SparkVersion.fromVersionString("2.0.0.2.5.0.0-1245"));
 
     // test newer than
-    assertFalse(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_2_0));
-    assertFalse(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_3_0));
-    assertTrue(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_1_0));
-
-    assertTrue(SparkVersion.SPARK_1_2_0.newerThanEquals(SparkVersion.SPARK_1_2_0));
-    assertFalse(SparkVersion.SPARK_1_2_0.newerThanEquals(SparkVersion.SPARK_1_3_0));
-    assertTrue(SparkVersion.SPARK_1_2_0.newerThanEquals(SparkVersion.SPARK_1_1_0));
+    assertTrue(SparkVersion.SPARK_2_3_0.newerThan(SparkVersion.SPARK_2_0_0));
+    assertTrue(SparkVersion.SPARK_2_3_0.newerThanEquals(SparkVersion.SPARK_2_3_0));
+    assertFalse(SparkVersion.SPARK_2_0_0.newerThan(SparkVersion.SPARK_2_3_0));
 
     // test older than
-    assertFalse(SparkVersion.SPARK_1_2_0.olderThan(SparkVersion.SPARK_1_2_0));
-    assertFalse(SparkVersion.SPARK_1_2_0.olderThan(SparkVersion.SPARK_1_1_0));
-    assertTrue(SparkVersion.SPARK_1_2_0.olderThan(SparkVersion.SPARK_1_3_0));
-
-    assertTrue(SparkVersion.SPARK_1_2_0.olderThanEquals(SparkVersion.SPARK_1_2_0));
-    assertFalse(SparkVersion.SPARK_1_2_0.olderThanEquals(SparkVersion.SPARK_1_1_0));
-    assertTrue(SparkVersion.SPARK_1_2_0.olderThanEquals(SparkVersion.SPARK_1_3_0));
+    assertTrue(SparkVersion.SPARK_2_0_0.olderThan(SparkVersion.SPARK_2_3_0));
+    assertTrue(SparkVersion.SPARK_2_0_0.olderThanEquals(SparkVersion.SPARK_2_0_0));
+    assertFalse(SparkVersion.SPARK_2_3_0.olderThan(SparkVersion.SPARK_2_0_0));
 
     // conversion
-    assertEquals(10200, SparkVersion.SPARK_1_2_0.toNumber());
-    assertEquals("1.2.0", SparkVersion.SPARK_1_2_0.toString());
+    assertEquals(20300, SparkVersion.SPARK_2_3_0.toNumber());
+    assertEquals("2.3.0", SparkVersion.SPARK_2_3_0.toString());
   }
 }

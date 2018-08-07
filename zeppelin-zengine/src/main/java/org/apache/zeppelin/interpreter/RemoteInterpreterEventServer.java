@@ -234,9 +234,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     appListener.onStatusChange(event.noteId, event.paragraphId, event.appId, event.status);
   }
 
-
   @Override
-  public void runParagraphs(RunParagraphsEvent event) {
+  public void runParagraphs(RunParagraphsEvent event) throws TException {
     try {
       listener.runParagraphs(event.getNoteId(), event.getParagraphIndices(),
           event.getParagraphIds(), event.getCurParagraphId());
@@ -247,7 +246,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.info("complete runParagraphs." + event);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new TException(e);
     }
   }
 

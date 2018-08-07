@@ -204,6 +204,7 @@ Or using the following setting in **zeppelin-site.xml**:
 ```
 
 </br>
+
 ## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
@@ -265,7 +266,8 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
-## Notebook Storage in Google Cloud Storage<a name="GCS"></a>
+
+## Notebook Storage in Google Cloud Storage <a name="GCS"></a>
 
 Using `GCSNotebookRepo` you can connect Zeppelin with Google Cloud Storage using [Application Default Credentials](https://cloud.google.com/docs/authentication/production).
 

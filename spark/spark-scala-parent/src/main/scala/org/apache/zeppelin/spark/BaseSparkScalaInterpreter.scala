@@ -79,9 +79,54 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     System.setProperty("scala.repl.name.line", ("$line" + this.hashCode).replace('-', '0'))
   }
 
-  protected def interpret(code: String, context: InterpreterContext): InterpreterResult
+  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
-  protected def interpret(code: String): InterpreterResult = interpret(code, null)
+    val originalOut = System.out
+    def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
+      Console.withOut(interpreterOutput) {
+        System.setOut(Console.out)
+        interpreterOutput.setInterpreterOutput(context.out)
+        interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
+        context.out.clear()
+
+        val status = scalaInterpret(code) match {
+          case success@scala.tools.nsc.interpreter.IR.Success =>
+            success
+          case scala.tools.nsc.interpreter.IR.Error =>
+            val errorMsg = new String(interpreterOutput.getInterpreterOutput.toByteArray)
+            if (errorMsg.contains("value toDF is not a member of org.apache.spark.rdd.RDD") ||
+              errorMsg.contains("value toDS is not a member of org.apache.spark.rdd.RDD")) {
+              // prepend "import sqlContext.implicits._" due to
+              // https://issues.scala-lang.org/browse/SI-6649
+              scalaInterpret("import sqlContext.implicits._\n" + code)
+            } else {
+              scala.tools.nsc.interpreter.IR.Error
+            }
+          case scala.tools.nsc.interpreter.IR.Incomplete =>
+            // add print("") at the end in case the last line is comment which lead to INCOMPLETE
+            scalaInterpret(code + "\nprint(\"\")")
+        }
+        context.out.flush()
+        status
+      }
+    }
+    // reset the java stdout
+    System.setOut(originalOut)
+
+    val lastStatus = _interpret(code) match {
+      case scala.tools.nsc.interpreter.IR.Success =>
+        InterpreterResult.Code.SUCCESS
+      case scala.tools.nsc.interpreter.IR.Error =>
+        InterpreterResult.Code.ERROR
+      case scala.tools.nsc.interpreter.IR.Incomplete =>
+        InterpreterResult.Code.INCOMPLETE
+    }
+
+    new InterpreterResult(lastStatus)
+  }
+
+  protected def interpret(code: String): InterpreterResult =
+    interpret(code, InterpreterContext.get())
 
   protected def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result
 
@@ -171,6 +216,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     interpret("import sqlContext.implicits._")
     interpret("import sqlContext.sql")
     interpret("import org.apache.spark.sql.functions._")
+    // print empty string otherwise the last statement's output of this method
+    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
+    interpret("print(\"\")")
   }
 
   private def spark2CreateContext(): Unit = {
@@ -232,6 +280,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     interpret("import spark.implicits._")
     interpret("import spark.sql")
     interpret("import org.apache.spark.sql.functions._")
+    // print empty string otherwise the last statement's output of this method
+    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
+    interpret("print(\"\")")
   }
 
   private def isSparkSessionPresent(): Boolean = {

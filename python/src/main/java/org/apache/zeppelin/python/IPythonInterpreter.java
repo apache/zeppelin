@@ -178,7 +178,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         return "jupyter-client is not installed.";
       }
       if (!freezeOutput.contains("ipykernel=")) {
-        return "ipkernel is not installed";
+        return "ipykernel is not installed";
       }
       if (!freezeOutput.contains("ipython=")) {
         return "ipython is not installed";
@@ -186,7 +186,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
       if (!freezeOutput.contains("grpcio=")) {
         return "grpcio is not installed";
       }
-      LOGGER.info("IPython prerequisite is meet");
+      if (!freezeOutput.contains("protobuf=")) {
+        return "protobuf is not installed";
+      }
+      LOGGER.info("IPython prerequisite is met");
     } catch (Exception e) {
       LOGGER.warn("Fail to checkIPythonPrerequisite", e);
       return "Fail to checkIPythonPrerequisite: " + ExceptionUtils.getStackTrace(e);

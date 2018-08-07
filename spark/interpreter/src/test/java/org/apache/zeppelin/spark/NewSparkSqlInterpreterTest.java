@@ -48,10 +48,10 @@ public class NewSparkSqlInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     Properties p = new Properties();
-    p.setProperty("spark.master", "local");
+    p.setProperty("spark.master", "local[4]");
     p.setProperty("spark.app.name", "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
-    p.setProperty("zeppelin.spark.concurrentSQL", "false");
+    p.setProperty("zeppelin.spark.concurrentSQL", "true");
     p.setProperty("zeppelin.spark.sqlInterpreter.stacktrace", "false");
     p.setProperty("zeppelin.spark.useNew", "true");
     intpGroup = new InterpreterGroup();
@@ -64,9 +64,6 @@ public class NewSparkSqlInterpreterTest {
     intpGroup.get("session_1").add(sparkInterpreter);
     intpGroup.get("session_1").add(sqlInterpreter);
 
-    sparkInterpreter.open();
-    sqlInterpreter.open();
-
     context = InterpreterContext.builder()
         .setNoteId("noteId")
         .setParagraphId("paragraphId")
@@ -76,6 +73,10 @@ public class NewSparkSqlInterpreterTest {
         .setInterpreterOut(new InterpreterOutput(null))
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
+    InterpreterContext.set(context);
+
+    sparkInterpreter.open();
+    sqlInterpreter.open();
   }
 
   @AfterClass
@@ -84,19 +85,11 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.close();
   }
 
-  boolean isDataFrameSupported() {
-    return sparkInterpreter.getSparkVersion().hasDataFrame();
-  }
-
   @Test
   public void test() throws InterpreterException {
     sparkInterpreter.interpret("case class Test(name:String, age:Int)", context);
     sparkInterpreter.interpret("val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))", context);
-    if (isDataFrameSupported()) {
-      sparkInterpreter.interpret("test.toDF.registerTempTable(\"test\")", context);
-    } else {
-      sparkInterpreter.interpret("test.registerTempTable(\"test\")", context);
-    }
+    sparkInterpreter.interpret("test.toDF.registerTempTable(\"test\")", context);
 
     InterpreterResult ret = sqlInterpreter.interpret("select name, age from test where age < 40", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
@@ -117,11 +110,7 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.interpret(
         "val gr = sc.parallelize(Seq(People(\"g1\", Person(\"moon\",33)), People(\"g2\", Person(\"sun\",11))))",
         context);
-    if (isDataFrameSupported()) {
-      sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
-    } else {
-      sparkInterpreter.interpret("gr.registerTempTable(\"gr\")", context);
-    }
+    sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
@@ -129,11 +118,10 @@ public class NewSparkSqlInterpreterTest {
 
   public void test_null_value_in_row() throws InterpreterException {
     sparkInterpreter.interpret("import org.apache.spark.sql._", context);
-    if (isDataFrameSupported()) {
-      sparkInterpreter.interpret(
-          "import org.apache.spark.sql.types.{StructType,StructField,StringType,IntegerType}",
-          context);
-    }
+    sparkInterpreter.interpret(
+        "import org.apache.spark.sql.types.{StructType,StructField,StringType,IntegerType}",
+        context);
+
     sparkInterpreter.interpret(
         "def toInt(s:String): Any = {try { s.trim().toInt} catch {case e:Exception => null}}",
         context);
@@ -146,15 +134,9 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.interpret(
         "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
         context);
-    if (isDataFrameSupported()) {
-      sparkInterpreter.interpret("val people = sqlContext.createDataFrame(raw, schema)",
-          context);
-      sparkInterpreter.interpret("people.toDF.registerTempTable(\"people\")", context);
-    } else {
-      sparkInterpreter.interpret("val people = sqlContext.applySchema(raw, schema)",
-          context);
-      sparkInterpreter.interpret("people.registerTempTable(\"people\")", context);
-    }
+    sparkInterpreter.interpret("val people = sqlContext.createDataFrame(raw, schema)",
+        context);
+    sparkInterpreter.interpret("people.toDF.registerTempTable(\"people\")", context);
 
     InterpreterResult ret = sqlInterpreter.interpret(
         "select name, age from people where name = 'gates'", context);
@@ -169,14 +151,55 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.interpret(
         "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10),P(11)))",
         context);
-    if (isDataFrameSupported()) {
-      sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
-    } else {
-      sparkInterpreter.interpret("gr.registerTempTable(\"gr\")", context);
-    }
+    sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
   }
+
+  @Test
+  public void testConcurrentSQL() throws InterpreterException, InterruptedException {
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+    } else {
+      sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+    }
+
+    Thread thread1 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    Thread thread2 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    // start running 2 spark sql, each would sleep 10 seconds, the totally running time should
+    // be less than 20 seconds, which means they run concurrently.
+    long start = System.currentTimeMillis();
+    thread1.start();
+    thread2.start();
+    thread1.join();
+    thread2.join();
+    long end = System.currentTimeMillis();
+    assertTrue("running time must be less than 20 seconds", ((end - start)/1000) < 20);
+
+  }
+
 }

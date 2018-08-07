@@ -596,6 +596,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     InterpreterContext interpreterContext =
         InterpreterContext.builder()
             .setNoteId(note.getId())
+            .setNoteName(note.getName())
             .setParagraphId(getId())
             .setReplName(intpText)
             .setParagraphTitle(title)
@@ -639,6 +640,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     InterpreterContext interpreterContext =
         InterpreterContext.builder()
             .setNoteId(note.getId())
+            .setNoteName(note.getName())
             .setParagraphId(getId())
             .setReplName(intpText)
             .setParagraphTitle(title)
@@ -670,7 +672,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     private transient Note note;
 
-    public ParagraphRunner(Note note, String noteId, String paragraphId) {
+    ParagraphRunner(Note note, String noteId, String paragraphId) {
       super(noteId, paragraphId);
       this.note = note;
     }

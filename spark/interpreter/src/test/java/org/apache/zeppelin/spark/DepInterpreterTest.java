@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -72,7 +73,7 @@ public class DepInterpreterTest {
   }
 
   @Test
-  public void testDefault() {
+  public void testDefault() throws InterpreterException {
     dep.getDependencyContext().reset();
     InterpreterResult ret = dep.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(Code.SUCCESS, ret.code());

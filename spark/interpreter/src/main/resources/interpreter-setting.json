@@ -81,6 +81,13 @@
         "defaultValue": true,
         "description": "Whether use new spark interpreter implementation",
         "type": "checkbox"
+      },
+      "zeppelin.spark.ui.hidden": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.ui.hidden",
+        "defaultValue": false,
+        "description": "Whether to hide spark ui in zeppelin ui",
+        "type": "checkbox"
       }
     },
     "editor": {
@@ -101,6 +108,13 @@
         "defaultValue": false,
         "description": "Execute multiple SQL concurrently if set true.",
         "type": "checkbox"
+      },
+      "zeppelin.spark.concurrentSQL.max": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL_MAX",
+        "propertyName": "zeppelin.spark.concurrentSQL.max",
+        "defaultValue": 10,
+        "description": "Max number of SQL concurrently executed",
+        "type": "number"
       },
       "zeppelin.spark.sql.stacktrace": {
         "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",

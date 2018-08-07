@@ -23,21 +23,16 @@ import org.slf4j.LoggerFactory;
  * Provide reading comparing capability of spark version returned from SparkContext.version()
  */
 public class SparkVersion {
-  Logger logger = LoggerFactory.getLogger(SparkVersion.class);
+  private static final Logger logger = LoggerFactory.getLogger(SparkVersion.class);
 
-  public static final SparkVersion SPARK_1_0_0 = SparkVersion.fromVersionString("1.0.0");
-  public static final SparkVersion SPARK_1_1_0 = SparkVersion.fromVersionString("1.1.0");
-  public static final SparkVersion SPARK_1_2_0 = SparkVersion.fromVersionString("1.2.0");
-  public static final SparkVersion SPARK_1_3_0 = SparkVersion.fromVersionString("1.3.0");
-  public static final SparkVersion SPARK_1_4_0 = SparkVersion.fromVersionString("1.4.0");
-  public static final SparkVersion SPARK_1_5_0 = SparkVersion.fromVersionString("1.5.0");
   public static final SparkVersion SPARK_1_6_0 = SparkVersion.fromVersionString("1.6.0");
 
   public static final SparkVersion SPARK_2_0_0 = SparkVersion.fromVersionString("2.0.0");
+  public static final SparkVersion SPARK_2_3_0 = SparkVersion.fromVersionString("2.3.0");
   public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
   public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
 
-  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_0_0;
+  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_6_0;
   public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_2_4_0;
 
   private int version;
@@ -85,33 +80,14 @@ public class SparkVersion {
     return new SparkVersion(versionString);
   }
 
-  public boolean isPysparkSupported() {
-    return this.newerThanEquals(SPARK_1_2_0);
-  }
-
-  public boolean isSparkRSupported() {
-    return this.newerThanEquals(SPARK_1_4_0);
-  }
-
-  public boolean hasDataFrame() {
-    return this.newerThanEquals(SPARK_1_4_0);
-  }
-
-  public boolean getProgress1_0() {
-    return this.olderThan(SPARK_1_1_0);
-  }
-
-  public boolean oldLoadFilesMethodName() {
-    return this.olderThan(SPARK_1_3_0);
-  }
-
-  public boolean oldSqlContextImplicits() {
-    return this.olderThan(SPARK_1_3_0);
+  public boolean isSpark2() {
+    return this.newerThanEquals(SPARK_2_0_0);
   }
 
   public boolean isSecretSocketSupported() {
     return this.newerThanEquals(SPARK_2_3_1);
   }
+
   public boolean equals(Object versionToCompare) {
     return version == ((SparkVersion) versionToCompare).version;
   }

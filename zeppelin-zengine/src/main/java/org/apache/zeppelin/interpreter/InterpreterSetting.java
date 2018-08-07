@@ -26,7 +26,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -35,8 +34,6 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
-import org.apache.zeppelin.interpreter.launcher.ShellScriptLauncher;
-import org.apache.zeppelin.interpreter.launcher.SparkInterpreterLauncher;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
 import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
@@ -44,6 +41,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -293,12 +291,9 @@ public class InterpreterSetting {
     this.conf = o.getConf();
   }
 
-  private void createLauncher() {
-    if (group.equals("spark")) {
-      this.launcher = new SparkInterpreterLauncher(this.conf, this.recoveryStorage);
-    } else {
-      this.launcher = new ShellScriptLauncher(this.conf, this.recoveryStorage);
-    }
+  private void createLauncher() throws IOException {
+    this.launcher = PluginManager.get().loadInterpreterLauncher(
+        getLauncherPlugin(), recoveryStorage);
   }
 
   public AngularObjectRegistryListener getAngularObjectRegistryListener() {
@@ -665,6 +660,13 @@ public class InterpreterSetting {
     runtimeInfosToBeCleared = null;
   }
 
+  public String getLauncherPlugin() {
+    if (group.equals("spark")) {
+      return "SparkInterpreterLauncher";
+    } else {
+      return "StandardInterpreterLauncher";
+    }
+  }
 
   //////////////////////////// IMPORTANT ////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////

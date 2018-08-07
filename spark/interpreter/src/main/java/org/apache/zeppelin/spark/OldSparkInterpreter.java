@@ -17,21 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.JobProgressUtil;
@@ -42,17 +27,15 @@ import org.apache.spark.SparkEnv;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.scheduler.Pool;
+import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.SparkUI;
-import org.apache.spark.scheduler.SparkListener;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -63,7 +46,6 @@ import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import scala.Console;
 import scala.Enumeration.Value;
 import scala.None;
@@ -81,6 +63,21 @@ import scala.tools.nsc.interpreter.Results;
 import scala.tools.nsc.settings.MutableSettings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Spark interpreter for Zeppelin.
@@ -248,19 +245,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           getProperty("zeppelin.dep.additionalRemoteRepository"));
     }
     return dep;
-  }
-
-  private DepInterpreter getDepInterpreter() {
-    Interpreter p = getParentSparkInterpreter()
-        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
-    if (p == null) {
-      return null;
-    }
-
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    return (DepInterpreter) p;
   }
 
   public boolean isYarnMode() {
@@ -505,7 +489,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       argList.add(arg);
     }
 
-    DepInterpreter depInterpreter = getDepInterpreter();
+    DepInterpreter depInterpreter = getParentSparkInterpreter().
+        getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
     String depInterpreterClasspath = "";
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
@@ -718,14 +703,15 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
 
       sparkVersion = SparkVersion.fromVersionString(sc.version());
-
       sqlc = getSQLContext();
-
       dep = getDependencyResolver();
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
+      sparkUrl = getSparkUIUrl();
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+      numReferenceOfSparkContext.incrementAndGet();
 
-      z = new SparkZeppelinContext(sc, hooks,
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -765,13 +751,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           interpret("import spark.sql");
           interpret("import org.apache.spark.sql.functions._");
         } else {
-          if (sparkVersion.oldSqlContextImplicits()) {
-            interpret("import sqlContext._");
-          } else {
-            interpret("import sqlContext.implicits._");
-            interpret("import sqlContext.sql");
-            interpret("import org.apache.spark.sql.functions._");
-          }
+          interpret("import sqlContext.implicits._");
+          interpret("import sqlContext.sql");
+          interpret("import org.apache.spark.sql.functions._");
         }
       }
     }
@@ -789,14 +771,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
     if (Utils.isScala2_10()) {
       try {
-        if (sparkVersion.oldLoadFilesMethodName()) {
-          Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        } else {
-          Method loadFiles = this.interpreter.getClass().getMethod(
-              "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        }
+        Method loadFiles = this.interpreter.getClass().getMethod(
+            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         throw new InterpreterException(e);
@@ -841,10 +818,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
     }
 
-    sparkUrl = getSparkUIUrl();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
-    numReferenceOfSparkContext.incrementAndGet();
   }
 
   public String getSparkUIUrl() {
@@ -1041,8 +1014,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       z.setNoteGui(context.getNoteGui());
-      String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
-      sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
+      sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;

@@ -38,8 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InvalidHookException;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
@@ -554,19 +552,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return resultCompletionText;
   }
 
-  protected IPythonInterpreter getIPythonInterpreter() {
-    LazyOpenInterpreter lazy = null;
-    IPythonInterpreter iPython = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    iPython = (IPythonInterpreter) p;
-    return iPython;
+  protected IPythonInterpreter getIPythonInterpreter() throws InterpreterException {
+    return getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class, false);
   }
 
   protected BaseZeppelinContext createZeppelinContext() {

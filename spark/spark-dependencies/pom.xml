@@ -44,7 +44,7 @@
          instead of changing spark.version in this section.
     -->
 
-    <hadoop.version>2.3.0</hadoop.version>
+    <hadoop.version>2.7.3</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
     <avro.mapred.classifier/>
@@ -55,7 +55,6 @@
     <akka.version>2.3.4-spark</akka.version>
 
     <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencyManagement>

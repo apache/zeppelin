@@ -31,6 +31,9 @@ import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
+import org.apache.zeppelin.rest.AdminRestApi;
+import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
+import org.apache.zeppelin.service.AdminService;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -165,7 +168,7 @@ public class ZeppelinServer extends Application {
         notebookWsServer, notebookWsServer);
     this.replFactory = new InterpreterFactory(interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch();
+    this.noteSearchService = new LuceneSearch(conf);
     this.notebookAuthorization = NotebookAuthorization.getInstance();
     this.credentials = new Credentials(
         conf.credentialsPersist(),
@@ -429,6 +432,11 @@ public class ZeppelinServer extends Application {
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> classes = new HashSet<>();
+
+    classes.add(GsonProvider.class);
+
+    classes.add(WebApplicationExceptionMapper.class);
+
     return classes;
   }
 
@@ -465,6 +473,11 @@ public class ZeppelinServer extends Application {
 
     ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(notebook);
     singletons.add(settingsApi);
+
+    AdminService adminService = new AdminService();
+
+    AdminRestApi adminRestApi = new AdminRestApi(adminService);
+    singletons.add(adminRestApi);
 
     return singletons;
   }
