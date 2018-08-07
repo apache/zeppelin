@@ -37,7 +37,6 @@
     <description>NotebookRepo implementation based on Zeppelin Hub</description>
 
     <properties>
-        <jetty.version>9.2.15.v20160210</jetty.version>
         <google.truth.version>0.27</google.truth.version>
         <plugin.name>NotebookRepo/ZeppelinHubRepo</plugin.name>
     </properties>
