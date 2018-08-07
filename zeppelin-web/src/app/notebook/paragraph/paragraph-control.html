@@ -72,11 +72,6 @@ limitations under the License.
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
           uib-tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
           ng-click="toggleOutput(paragraph)"></span>
-    <span class="{{selectedParagraphsIds.has(paragraph.id) ? 'icon-check checked-paragraph-check-button' : 'icon-plus'}}"
-          tooltip-placement="top"
-          style="cursor:pointer"
-          uib-tooltip="{{selectedParagraphsIds.has(paragraph.id) ?  'Remove this paragraph from selection' : 'Add this paragraph to selection'}}"
-          ng-click="toggleSelection(paragraph)"></span>
 
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"

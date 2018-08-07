@@ -1260,12 +1260,12 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.toggleSelection = function(paragraph) {
+  $scope.toggleSelection = function(paragraphId) {
     let paragraphs = $scope.selectedParagraphsIds;
-    if (paragraphs.has(paragraph.id)) {
-      paragraphs.delete(paragraph.id);
+    if (paragraphs.has(paragraphId)) {
+      paragraphs.delete(paragraphId);
     } else {
-      paragraphs.add(paragraph.id);
+      paragraphs.add(paragraphId);
     }
   };
 

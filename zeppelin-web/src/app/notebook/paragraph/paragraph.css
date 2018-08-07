@@ -176,7 +176,8 @@
 .paragraph .control {
   position: absolute;
   float: right;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0);
+  cursor:pointer;
   color: #999;
   margin-top: 1px;
   margin-right: 5px;
@@ -197,6 +198,18 @@
 
 .paragraph .control .tooltip {
   z-index: 10003;
+}
+
+.paragraph .check-button {
+  position: absolute;
+  cursor: pointer;
+  right: 6px;
+  top: 1px;
+  font-size: 17px;
+  opacity: 0.25;
+  width: 22px;
+  height: 22px;
+  padding-left: 8px;
 }
 
 /*
@@ -268,11 +281,6 @@ table.table-shortcut {
 .kbd-default {
   border: 1;
   font-size: 10px !important;
-}
-
-.checked-paragraph-check-button {
-  background-color: #00ff70;
-  border-radius: 100%;
 }
 
 /*

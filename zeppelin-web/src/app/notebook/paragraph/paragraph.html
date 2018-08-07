@@ -75,6 +75,11 @@ limitations under the License.
 
   <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
 
+  <span class="check-button"
+        tooltip-placement="bottom-right"
+        uib-tooltip="{{selectedParagraphsIds.has(paragraph.id) ?  'Remove this paragraph from selection (Ctrl + Shift + S)' : 'Add this paragraph to selection (Ctrl + Shift + S)'}}"
+        ng-click="toggleSelection(paragraph.id)"><i class="fa {{selectedParagraphsIds.has(paragraph.id) ? 'fa-check-circle-o' : 'fa-circle-o'}}" aria-hidden="true"></i></span>
+
   <div ng-if="!asIframe" class="paragraphFooter">
     <div ng-show="!paragraph.config.tableHide && !viewOnly"
          id="{{paragraph.id}}_executionTime"

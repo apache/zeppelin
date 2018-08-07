@@ -172,7 +172,8 @@ limitations under the License.
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused,
-                    'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
+                    'lastEmptyParagraph': !paragraph.text && !paragraph.result,
+                    'selected-paragraph': selectedParagraphsIds.has(currentParagraph.id)}"
          ng-hide="currentParagraph.config.tableHide && viewOnly"
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>

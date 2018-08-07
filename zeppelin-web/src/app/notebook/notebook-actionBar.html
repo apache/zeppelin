@@ -31,7 +31,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="runParagraphs(note.id)"
-              ng-class="{'disabled':isNoteRunning()}"
+              ng-class="{'disabled':isNoteRunning(), 'select-mode-background': isSelectionMode()}"
               tooltip-placement="bottom"
               uib-tooltip="{{isSelectionMode() ? 'Run selected paragraphs' : 'Run all paragraphs'}}"
               ng-disabled="revisionView">
@@ -39,6 +39,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-click="toggleParagraphsEditor()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Show/hide the code"
@@ -46,6 +47,7 @@ limitations under the License.
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-click="toggleParagraphsTable()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Show/hide the output"
@@ -55,6 +57,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-if="isSelectionMode()"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-click="toggleToRunParagraphs()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Enable/Disable for running"
@@ -65,13 +68,14 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="clearParagraphsOutput(note.id)"
               ng-hide="viewOnly"
-              ng-class="{'disabled':isNoteRunning()}"
+              ng-class="{'disabled':isNoteRunning(), 'select-mode-background': isSelectionMode()}"
               tooltip-placement="bottom" uib-tooltip="Clear output"
               ng-disabled="revisionView">
         <i class="fa fa-eraser"></i>
       </button>
       <button type="button"
                class="btn btn-default btn-xs"
+               ng-class="{'select-mode-background': isSelectionMode()}"
                ng-if="isSelectionMode()"
                ng-click="moveToTop()"
                tooltip-placement="bottom" uib-tooltip="Move to top">
@@ -79,6 +83,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-if="isSelectionMode()"
               ng-click="moveToBottom()"
               tooltip-placement="bottom" uib-tooltip="Move to bottom">
@@ -86,6 +91,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-if="!isSelectionMode()"
               ng-hide="viewOnly"
               tooltip-placement="bottom" uib-tooltip="Clone this note" data-source-note-name="{{note.name}}"
@@ -95,6 +101,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-if="isSelectionMode()"
               data-source-note-name="{{note.name}}"
               data-toggle="modal" data-target="#noteCreateModal" data-clone-note="true"
@@ -107,6 +114,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
+              ng-if="!isSelectionMode()"
               ng-click="exportNote()"
               tooltip-placement="bottom" uib-tooltip="Export this note"
               ng-disabled="revisionView">
@@ -136,6 +144,7 @@ limitations under the License.
 
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-if="isSelectionMode()"
               ng-click="removeSelectedParagraph(note.id)"
               tooltip-placement="bottom" uib-tooltip="Delete selected paragraphs">
@@ -143,6 +152,7 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-class="{'select-mode-background': isSelectionMode()}"
               ng-hide="viewOnly"
               ng-if="isSelectionMode()"
               ng-click="clearSelection()"

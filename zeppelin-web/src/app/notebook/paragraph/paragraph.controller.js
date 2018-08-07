@@ -1674,6 +1674,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1));
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1));
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 83) { // Ctrl + Shift + S
+        $scope.toggleSelection(paragraphId);
+        $scope.$apply();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
           $scope.hideTitle($scope.paragraph);

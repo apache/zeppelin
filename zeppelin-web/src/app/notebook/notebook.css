@@ -449,3 +449,11 @@
 .tooltip-inner {
   max-width: none !important;
 }
+
+.select-mode-background {
+  background-color: #b9f1ff;;
+}
+
+.selected-paragraph {
+  background-image: radial-gradient(circle farthest-corner at right top,rgba(0, 196, 243, 0.53), rgba(75, 212, 246, 0.24) 100px);
+}
