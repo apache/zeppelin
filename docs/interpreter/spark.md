@@ -389,10 +389,10 @@ This is to make the server communicate with KDC.
 
 4. That's it. Play with Zeppelin!
 
-### Shows the Spark Web UI Inline in zeppelin context (Secure/Non-Secure)
+### Shows the Spark Web UI Inline in Zeppelin Notebook (Secure/Non-Secure)
 
 #### Short Description
-After running a paragraph via Spark interpreter, we will be showing a **Spark UI** link. On clicking it, we show the Spark UI with the respective running job  inside the modal.
+After running a paragraph via Spark interpreter, we will be showing a **Spark UI** link. On clicking it, we show the Spark UI with the respective running job inside the modal.
 
 #### Paragraph Code
 ##### Zeppelin UI -> Create Notebook -> Paragraph
@@ -434,4 +434,4 @@ To fix the following add the **X-FRAME-OPTIONS** in YARN configuration
 
 
 #### Results
-Now clicking the Spark Web UI link on the paragraph we can see the Spark job running **'Spark Web UI'** inside the modal in zeppelin context.
+Now clicking the Spark Web UI link on the paragraph we can see the Spark job running **'Spark Web UI'** inside the modal in Zeppelin Notebook.
