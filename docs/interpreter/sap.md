@@ -121,3 +121,21 @@ where
 
   and [Folder1].[Dimension5] in ('Value1', 'Value2');
 ```
+
+## Object Interpolation
+The SAP interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+To enable this feature set `universe.interpolation` to `true`. The following example shows one use of this facility:
+
+####In Scala cell:
+
+```scala
+z.put("curr_date", "2018-01-01 00:00:00")
+```
+
+####In later SAP cell:
+
+```sql
+where
+   [Filter1]
+   and [Date] > '{curr_date}'
+```

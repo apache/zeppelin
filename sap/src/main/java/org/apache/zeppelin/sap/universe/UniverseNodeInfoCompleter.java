@@ -161,23 +161,27 @@ public class UniverseNodeInfoCompleter implements Completer {
     }
 
     public void putInfo(UniverseNodeInfo info) {
-      children.put(info.getName(), info);
+      children.put(info.getId(), info);
     }
 
-    public List<UniverseNodeInfo> getNodesInfo() {
-      List<UniverseNodeInfo> list = new ArrayList<>();
+    public Collection<UniverseNodeInfo> getNodesInfo() {
+      HashMap<String, UniverseNodeInfo> map = new HashMap<>();
       if (children != null) {
         for (Object o : children.values()) {
           if (o instanceof UniverseNodeInfo) {
-            list.add((UniverseNodeInfo) o);
+            final UniverseNodeInfo nodeInfo = (UniverseNodeInfo) o;
+            map.put(nodeInfo.getName(), nodeInfo);
           } else {
-            UniverseInfoTreeNode treeNode = (UniverseInfoTreeNode) o;
-            list.add(new UniverseNodeInfo(treeNode.getName(), UniverseCompleter.TYPE_FOLDER));
+            final UniverseInfoTreeNode treeNode = (UniverseInfoTreeNode) o;
+            final UniverseNodeInfo nodeInfo =
+                new UniverseNodeInfo(treeNode.getName(), UniverseCompleter.TYPE_FOLDER);
+            if (!map.containsKey(nodeInfo.getName())) {
+              map.put(nodeInfo.getName(), nodeInfo);
+            }
           }
         }
       }
-
-      return list;
+      return map.values();
     }
   }
 }

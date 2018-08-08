@@ -32,12 +32,40 @@
         "defaultValue": "secEnterprise",
         "description": "Type of authentication for API of Universe. Available values: secEnterprise, secLDAP, secWinAD, secSAPR3",
         "type": "string"
+      },
+      "universe.queryTimeout": {
+        "envName": null,
+        "propertyName": "universe.queryTimeout",
+        "defaultValue": "7200000",
+        "description": "Query timeout for API of Universe",
+        "type": "number"
+      },
+      "universe.interpolation": {
+        "envName": null,
+        "propertyName": "universe.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
+      "universe.concurrent.use": {
+        "envName": null,
+        "propertyName": "universe.concurrent.use",
+        "defaultValue": true,
+        "description": "Use parallel scheduler",
+        "type": "checkbox"
+      },
+      "universe.concurrent.maxConnection": {
+        "envName": null,
+        "propertyName": "universe.concurrent.maxConnection",
+        "defaultValue": "10",
+        "description": "Number of concurrent execution",
+        "type": "number"
       }
     },
     "editor": {
       "editOnDblClick": false,
       "completionKey": "TAB",
-      "completionSupport": true
+      "completionSupport": false
     }
   }
 ]
