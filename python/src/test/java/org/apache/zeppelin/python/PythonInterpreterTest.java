@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -104,5 +105,15 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
     assertTrue(t.isAlive());
     t.join(2000);
     assertFalse(t.isAlive());
+  }
+
+  @Test
+  public void testOnlyCommentsJob() throws InterpreterException {
+    final String code = "# print('hello')";
+    InterpreterResult ret = interpreter.interpret(code, getInterpreterContext());
+
+    assertNotNull(ret);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(Collections.emptyList(), ret.message());
   }
 }
