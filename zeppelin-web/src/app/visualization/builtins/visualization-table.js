@@ -92,7 +92,7 @@ export default class TableVisualization extends Visualization {
 
     const gridData = rows.map((r) => {
       return columnNames.reduce((acc, colName, index) => {
-        acc[colName] = r[index];
+        acc[colName + index] = r[index];
         return acc;
       }, {});
     });
@@ -108,11 +108,11 @@ export default class TableVisualization extends Visualization {
       treeRowHeaderAlwaysVisible: false,
       exporterExcelFilename: 'myFile.xlsx',
 
-      columnDefs: columnNames.map((colName) => {
+      columnDefs: columnNames.map((colName, index) => {
         const self = this;
         return {
           displayName: colName,
-          name: colName,
+          name: colName + index,
           type: DefaultTableColumnType,
           cellTemplate: `
             <div ng-if="!grid.getCellValue(row, col).startsWith('%html')"
