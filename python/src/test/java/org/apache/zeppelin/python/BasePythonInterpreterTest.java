@@ -185,6 +185,22 @@ public abstract class BasePythonInterpreterTest {
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("there is no Error: ok\n", interpreterResultMessages.get(0).getData());
+
+    // ZEPPELIN-3687
+    context = getInterpreterContext();
+    result = interpreter.interpret("# print('Hello')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(0, interpreterResultMessages.size());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret(
+        "# print('Hello')\n# print('How are u?')\n# time.sleep(1)", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(0, interpreterResultMessages.size());
   }
 
   @Test
