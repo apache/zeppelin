@@ -967,7 +967,7 @@ public class Notebook implements NoteEventListener {
     synchronized (notes) {
 
       Note note = notes.get(id);
-      if (note == null) {
+      if (note == null || note.isTrash()) {
         return;
       }
       Map<String, Object> config = note.getConfig();
