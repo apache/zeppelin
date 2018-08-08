@@ -122,6 +122,7 @@ where
   and [Folder1].[Dimension5] in ('Value1', 'Value2');
 ```
 
+<<<<<<< HEAD
 ### `distinct` keyword
 You can write keyword `distinct` after keyword `select` to return only distinct (different) values.
 
@@ -168,3 +169,4 @@ where
    [Filter1]
    and [Date] > '{curr_date}'
 ```
+
