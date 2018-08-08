@@ -13,7 +13,7 @@ limitations under the License.
 -->
 
 <div>
-  <div ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
+  <div ng-show="!paragraph.config.chartSettingsHide" ng-include src="'app/notebook/paragraph/result/result-chart-selector.html'"></div>
   <div
     ng-mouseout="onMouseOut()"
     ng-mouseover="onMouseOver()"
@@ -27,7 +27,7 @@ limitations under the License.
          ng-style="getPointerEvent()">
       <!-- setting -->
       <div class="option lightBold" style="overflow: visible;"
-           ng-show="config.graph.optionOpen && !asIframe && !viewOnly">
+           ng-show="config.graph.optionOpen && !paragraph.config.chartSettingsHide && !asIframe && !viewOnly">
         <div ng-repeat="viz in builtInTableDataVisualizationList track by $index"
              id="trsetting{{id}}_{{viz.id}}"
              ng-show="graphMode == viz.id"></div>

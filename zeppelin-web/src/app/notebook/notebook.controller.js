@@ -32,6 +32,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
+  $scope.chartSettingsToggled = false;
   $scope.viewOnly = false;
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
@@ -420,6 +421,15 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   $scope.hideAllTable = function() {
     $scope.$broadcast('closeTable');
+  };
+
+  $scope.toggleAllChartSettings = function() {
+    if ($scope.chartSettingsToggled) {
+      $scope.$broadcast('openChartSettings');
+    } else {
+      $scope.$broadcast('closeChartSettings');
+    }
+    $scope.chartSettingsToggled = !$scope.chartSettingsToggled;
   };
 
   /**
