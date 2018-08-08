@@ -32,7 +32,6 @@ export default class TableData extends Dataset {
 
     let columnNames = [];
     let rows = [];
-    let array = [];
     let textRows = paragraphResult.msg.split('\n');
     let comment = '';
     let commentRow = false;
@@ -54,7 +53,6 @@ export default class TableData extends Dataset {
       }
       let textCols = textRow.split('\t');
       let cols = [];
-      let cols2 = [];
       for (let j = 0; j < textCols.length; j++) {
         let col = textCols[j];
         if (i === 0) {
@@ -67,12 +65,10 @@ export default class TableData extends Dataset {
             }
           }
           cols.push(col);
-          cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
         }
       }
       if (i !== 0) {
         rows.push(cols);
-        array.push(cols2);
       }
     }
     this.comment = comment;
