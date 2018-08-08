@@ -63,7 +63,8 @@ public class UniverseInterpreter extends Interpreter {
     String password = getProperty("universe.password");
     String apiUrl = getProperty("universe.api.url");
     String authType = getProperty("universe.authType");
-    final int queryTimeout = Integer.parseInt(getProperty("universe.queryTimeout"));
+    final int queryTimeout = Integer.parseInt(
+        StringUtils.defaultIfEmpty(getProperty("universe.queryTimeout"), "7200000"));
     this.client =
         new UniverseClient(user, password, apiUrl, authType, queryTimeout);
     this.universeUtil = new UniverseUtil();
@@ -81,7 +82,7 @@ public class UniverseInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String originalSt, InterpreterContext context)
       throws InterpreterException {
-    final String st = Boolean.parseBoolean(getProperty("universe.interpolation")) ?
+    final String st = Boolean.parseBoolean(getProperty("universe.interpolation", "false")) ?
         interpolate(originalSt, context.getResourcePool()) : originalSt;
     try {
       InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
@@ -174,11 +175,12 @@ public class UniverseInterpreter extends Interpreter {
   }
 
   private boolean isConcurrentExecution() {
-    return Boolean.valueOf(getProperty(CONCURRENT_EXECUTION_KEY));
+    return Boolean.valueOf(getProperty(CONCURRENT_EXECUTION_KEY, "true"));
   }
 
   private int getMaxConcurrentConnection() {
-    return Integer.valueOf(getProperty(CONCURRENT_EXECUTION_COUNT, "10"));
+    return Integer.valueOf(
+        StringUtils.defaultIfEmpty(getProperty(CONCURRENT_EXECUTION_COUNT), "10"));
   }
 
   private String formatResults(List<List<String>> results) {
