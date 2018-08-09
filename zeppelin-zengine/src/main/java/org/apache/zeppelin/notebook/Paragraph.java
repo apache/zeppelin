@@ -41,7 +41,6 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -296,7 +295,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     cursor = calculateCursorPosition(buffer, cursor);
 
-    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+    InterpreterContext interpreterContext = getInterpreterContext(null);
 
     try {
       if (this.interpreter != null) {
@@ -525,7 +524,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       job.setStatus(Status.ABORT);
     } else {
       try {
-        interpreter.cancel(getInterpreterContextWithoutRunner(null));
+        interpreter.cancel(getInterpreterContext(null));
       } catch (InterpreterException e) {
         throw new RuntimeException(e);
       }
@@ -572,49 +571,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }));
   }
 
-  private InterpreterContext getInterpreterContextWithoutRunner(InterpreterOutput output) {
-    AngularObjectRegistry registry = null;
-    ResourcePool resourcePool = null;
-
-    if (this.interpreter != null) {
-      registry = this.interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
-    }
-
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-
-    final Paragraph self = this;
-
-    Credentials credentials = note.getCredentials();
-    setAuthenticationInfo(new AuthenticationInfo(getUser()));
-
-    if (authenticationInfo.getUser() != null) {
-      UserCredentials userCredentials =
-          credentials.getUserCredentials(authenticationInfo.getUser());
-      authenticationInfo.setUserCredentials(userCredentials);
-    }
-
-    InterpreterContext interpreterContext =
-        InterpreterContext.builder()
-            .setNoteId(note.getId())
-            .setNoteName(note.getName())
-            .setParagraphId(getId())
-            .setReplName(intpText)
-            .setParagraphTitle(title)
-            .setParagraphText(text)
-            .setLocalProperties(localProperties)
-            .setAuthenticationInfo(authenticationInfo)
-            .setConfig(config)
-            .setGUI(settings)
-            .setNoteGUI(getNoteGui())
-            .setAngularObjectRegistry(registry)
-            .setResourcePool(resourcePool)
-            .setInterpreterOut(output)
-            .build();
-
-    return interpreterContext;
-  }
-
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
@@ -624,12 +580,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-    for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
-    }
-
-    final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
@@ -658,29 +608,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return interpreterContext;
   }
 
-  public InterpreterContextRunner getInterpreterContextRunner() {
-    return new ParagraphRunner(note, note.getId(), getId());
-  }
-
   public void setStatusToUserParagraph(Status status) {
     String user = getUser();
     if (null != user) {
       getUserParagraph(getUser()).setStatus(status);
-    }
-  }
-
-  static class ParagraphRunner extends InterpreterContextRunner {
-
-    private transient Note note;
-
-    ParagraphRunner(Note note, String noteId, String paragraphId) {
-      super(noteId, paragraphId);
-      this.note = note;
-    }
-
-    @Override
-    public void run() {
-      note.run(getParagraphId(), false);
     }
   }
 

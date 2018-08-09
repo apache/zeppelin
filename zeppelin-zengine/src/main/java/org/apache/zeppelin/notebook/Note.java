@@ -17,25 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
-import static java.lang.String.format;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.completer.CompletionType;
@@ -53,8 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -63,6 +46,20 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.String.format;
 
 /**
  * Binded interpreters for a note
@@ -90,12 +87,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   private String name = "";
   private String id;
   private String defaultInterpreterGroup;
-  private Map<String, Object> noteParams = new HashMap<>();
-  private LinkedHashMap<String, Input> noteForms = new LinkedHashMap<>();
-
-
-  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
+  private Map<String, Object> noteParams = new LinkedHashMap<>();
+  private Map<String, Input> noteForms = new LinkedHashMap<>();
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
@@ -196,11 +189,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.noteParams = noteParams;
   }
 
-  public LinkedHashMap<String, Input> getNoteForms() {
+  public Map<String, Input> getNoteForms() {
     return noteForms;
   }
 
-  public void setNoteForms(LinkedHashMap<String, Input> noteForms) {
+  public void setNoteForms(Map<String, Input> noteForms) {
     this.noteForms = noteForms;
   }
 
@@ -372,7 +365,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = srcParagraph.settings.getParams();
-    LinkedHashMap<String, Input> form = srcParagraph.settings.getForms();
+    Map<String, Input> form = srcParagraph.settings.getForms();
 
     logger.debug("srcParagraph user: " + srcParagraph.getUser());
     
@@ -696,21 +689,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     Paragraph p = getParagraph(paragraphId);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     return p.execute(blocking);
-  }
-
-  /**
-   * Check whether all paragraphs belongs to this note has terminated
-   */
-  boolean isTerminated() {
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (!p.isTerminated()) {
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   /**

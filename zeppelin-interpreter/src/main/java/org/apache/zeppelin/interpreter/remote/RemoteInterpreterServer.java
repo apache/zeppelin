@@ -40,7 +40,6 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterHookListener;
@@ -53,7 +52,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
@@ -473,42 +471,7 @@ public class RemoteInterpreterServer extends Thread
         context.getGui(),
         context.getNoteGui());
   }
-
-  @Override
-  public void onReceivedZeppelinResource(String responseJson) throws TException {
-    RemoteZeppelinServerResource response = RemoteZeppelinServerResource.fromJson(responseJson);
-    if (response == null) {
-      throw new TException("Bad response for remote resource");
-    }
-
-    try {
-      if (response.getResourceType() == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
-        List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
-        List<Map<String, Object>> remoteRunnersMap =
-            (List<Map<String, Object>>) response.getData();
-
-        String noteId = null;
-        String paragraphId = null;
-
-        for (Map<String, Object> runnerItem : remoteRunnersMap) {
-          noteId = (String) runnerItem.get("noteId");
-          paragraphId = (String) runnerItem.get("paragraphId");
-          intpContextRunners.add(
-              new ParagraphRunner(this, noteId, paragraphId)
-          );
-        }
-
-        synchronized (this.remoteWorksResponsePool) {
-          this.remoteWorksResponsePool.put(
-              response.getOwnerKey(),
-              intpContextRunners);
-        }
-      }
-    } catch (Exception e) {
-      throw e;
-    }
-  }
-
+  
   class InterpretJobListener implements JobListener {
 
     @Override
@@ -805,22 +768,6 @@ public class RemoteInterpreterServer extends Thread
         }
       }
     });
-  }
-
-
-  static class ParagraphRunner extends InterpreterContextRunner {
-    Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
-    private transient RemoteInterpreterServer server;
-
-    ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
-      super(noteId, paragraphId);
-      this.server = server;
-    }
-
-    @Override
-    public void run() {
-//      server.eventClient.run(this);
-    }
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,
