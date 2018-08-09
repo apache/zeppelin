@@ -280,13 +280,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
-    String lines[] = buffer.split(System.getProperty("line.separator"));
-    if (lines.length > 0 && lines[0].startsWith("%") && cursor <= lines[0].trim().length()) {
-      int idx = lines[0].indexOf(' ');
-      if (idx < 0 || (idx > 0 && cursor <= idx)) {
-        return note.getInterpreterCompletion();
-      }
-    }
     try {
       this.interpreter = getBindedInterpreter();
     } catch (InterpreterNotFoundException e) {
@@ -422,7 +415,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (interpreterSetting != null) {
       interpreterSetting.waitForReady();
     }
-    if (this.hasUser() && this.note.hasInterpreterBinded()) {
+    if (this.hasUser()) {
       if (interpreterSetting != null && interpreterHasUser(interpreterSetting)
           && isUserAuthorizedToAccessInterpreter(interpreterSetting.getOption()) == false) {
         logger.error("{} has no permission for {} ", authenticationInfo.getUser(), intpText);
