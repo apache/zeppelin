@@ -186,6 +186,68 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   </table>
 
 <br/>
+###  Get running paragraphs grouped by interpreters
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method lists the running paragraphs grouped by interpreters. 
+          The body field of the returned JSON contain information about paragraphs.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/jobmanager/running```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "lastResponseUnixTime":1532964692910,
+    "runningInterpreters": {
+      "python": {
+        "pid": "23103",
+        "paragraphs": [
+          {
+            "interpreterText": "python",
+            "noteName": "System/Run Interpreters",
+            "noteId": "2DJS1Z8T1",
+            "id": "20180725-163210_814222372",
+            "user": "anonymous"
+          }
+        ]
+      },
+      "spark": {
+        "pid": "23205",
+        "paragraphs": [
+          {
+            "interpreterText": "spark.pyspark",
+            "noteName": "System/Run Interpreters",
+            "noteId": "2DJS1Z8T1",
+            "id": "20180726-135457_1727027836",
+            "user": "anonymous"
+          }
+        ]
+      }
+    }
+  }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
+
 ### Get an existing note information
   <table class="table-configuration">
     <col width="200">

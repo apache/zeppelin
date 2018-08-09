@@ -2506,6 +2506,102 @@ public class NotebookServer extends WebSocketServlet
     return connectionList;
   }
 
+
+  @Override
+  public List<Map<String, String>> getNotes() {
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    HashSet<String> userAndRoles = SecurityUtils.getAssociatedRoles();
+    userAndRoles.add(subject.getUser());
+    return generateNotesInfo(false, subject, userAndRoles);
+  }
+
+  @Override
+  public List<Map<String, String>> getParagraphsInfo(String noteId) {
+    Note note = notebook().getNote(noteId);
+    return note.generateParagraphsInfo();
+  }
+
+  /**
+   * Extract running paragraphs info grouped by running interpreters.
+   */
+  @Override
+  public Map<String, Object> getRunningParagraphsGroupedByInterpreters() {
+    Map<String, Object> runningInterpretersInfo = new HashMap<>();
+    for (Note currentNote : notebook().getAllNotes()) {
+      for (Paragraph currentParagraph : currentNote.getParagraphs()) {
+        if (currentParagraph.isRunning()) {
+          updateRunningInterpreterInfo(runningInterpretersInfo, currentParagraph);
+        }
+      }
+    }
+    return runningInterpretersInfo;
+  }
+
+  /**
+   * Update running interpreter info with paragraph data.
+   */
+  private void updateRunningInterpreterInfo(Map<String, Object> runningInterpretersInfo,
+                                            Paragraph paragraph) {
+    List<Map<String, String>> runningInterpreters = notebook().
+            getInterpreterSettingManager().
+            getRunningInterpreters();
+
+    for (Map<String, String> baseRunningInterpreterInfo : runningInterpreters) {
+      String paragraphInterpreterName = getParagraphInterpreterName(paragraph);
+      String runningInterpreterName = baseRunningInterpreterInfo.get("name");
+      if (runningInterpreterName.equals(paragraphInterpreterName)) {
+        Map<String, Object> interpreterInfoBeforeUpdate =
+                (Map<String, Object>) runningInterpretersInfo.get(paragraphInterpreterName);
+        if (interpreterInfoBeforeUpdate == null) {
+          // create interpreter info
+          interpreterInfoBeforeUpdate = new HashMap<>();
+          // set running interpreter pid
+          interpreterInfoBeforeUpdate.put("pid", baseRunningInterpreterInfo.get("pid"));
+          // set running interpreter paragraphs
+          List<Map<String, String>> paragraphsInfo = new LinkedList<>();
+          interpreterInfoBeforeUpdate.put("paragraphs", paragraphsInfo);
+        }
+        // update interpreter info
+        List<Map<String, String>> paragraphsInfoBeforeUpdate =
+                (List<Map<String, String>>) interpreterInfoBeforeUpdate.get("paragraphs");
+        addParagraphInfo(paragraphsInfoBeforeUpdate, paragraph);
+        runningInterpretersInfo.put(paragraphInterpreterName, interpreterInfoBeforeUpdate);
+      }
+    }
+  }
+
+  /**
+   * Extract interpreter name from paragraph's binded interpreter group if it contains ":".
+   */
+  private String getParagraphInterpreterName(Paragraph p) {
+    String intpGroupName = "";
+    try {
+      intpGroupName = p.getBindedInterpreter().getInterpreterGroup().getId();
+      if (intpGroupName.contains(":")) {
+        intpGroupName = intpGroupName.split(":")[0];
+      }
+    } catch (InterpreterNotFoundException exp) {
+      intpGroupName = exp.getMessage();
+    }
+    return intpGroupName;
+  }
+
+  /**
+   * Add paragraph info to interpreter paragraph info list.
+   */
+  private void addParagraphInfo(List<Map<String, String>> paragraphsInfoBeforeUpdate,
+                                Paragraph paragraph) {
+    Note parentNote = paragraph.getNote();
+    Map<String, String> newParagraphInfo = new HashMap<>();
+
+    newParagraphInfo.put("interpreterText", paragraph.getIntpText());
+    newParagraphInfo.put("noteName", parentNote.getName());
+    newParagraphInfo.put("noteId", parentNote.getId());
+    newParagraphInfo.put("id", paragraph.getId());
+    newParagraphInfo.put("user", paragraph.getUser());
+    paragraphsInfoBeforeUpdate.add(newParagraphInfo);
+  }
+
   @Override
   public void sendMessage(String message) {
     Message m = new Message(OP.NOTICE);
