@@ -12,6 +12,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class for downloading spark. This is used for spark integration test.
+ *
+ */
 public class SparkDownloadUtils {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkDownloadUtils.class);
 
@@ -66,6 +70,28 @@ public class SparkDownloadUtils {
       }
     }
     return targetSparkHomeFolder.getAbsolutePath();
+  }
+
+  public static String downloadFlink(String version) {
+    File targetFlinkHomeFolder = new File(downloadFolder + "/flink-" + version);
+    if (targetFlinkHomeFolder.exists()) {
+      LOGGER.info("Skip to download flink as it is already downloaded.");
+      return targetFlinkHomeFolder.getAbsolutePath();
+    }
+    // Try mirrors a few times until one succeeds
+    for (int i = 0; i < 3; i++) {
+      try {
+        String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
+        File downloadFile = new File(downloadFolder + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz");
+        String downloadURL = preferredMirror + "/flink/flink-" + version + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz";
+        runShellCommand(new String[] {"wget", downloadURL, "-P", downloadFolder});
+        runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
+        break;
+      } catch (Exception e) {
+        LOGGER.warn("Failed to download Flink", e);
+      }
+    }
+    return targetFlinkHomeFolder.getAbsolutePath();
   }
 
   private static void runShellCommand(String[] commands) throws IOException, InterruptedException {
