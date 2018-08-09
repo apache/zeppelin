@@ -271,7 +271,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
+    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText,
+        note.getDefaultInterpreterGroup());
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -763,7 +764,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+      return interpreterFactory.getInterpreter(user, note.getId(), replName,
+          note.getDefaultInterpreterGroup()) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }

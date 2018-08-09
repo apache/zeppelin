@@ -50,7 +50,6 @@ public class InterpreterInfoSaving implements JsonSerializable {
   private static final Gson gson =  new GsonBuilder().setPrettyPrinting().create();
 
   public Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
-  public Map<String, List<String>> interpreterBindings = new HashMap<>();
   public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
 
   public static InterpreterInfoSaving loadFromFile(Path file) throws IOException {

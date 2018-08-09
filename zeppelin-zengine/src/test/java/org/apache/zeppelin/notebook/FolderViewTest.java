@@ -89,7 +89,7 @@ public class FolderViewTest {
   Note abNote2;
 
   private Note createNote() {
-    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note("test", repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
     note.setNoteNameListener(folderView);
     return note;
   }

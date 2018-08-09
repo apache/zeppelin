@@ -23,12 +23,12 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
     },
 
-    createNotebook: function(noteName, defaultInterpreterId) {
+    createNotebook: function(noteName, defaultInterpreterGroup) {
       websocketEvents.sendNewEvent({
         op: 'NEW_NOTE',
         data: {
           name: noteName,
-          defaultInterpreterId: defaultInterpreterId,
+          defaultInterpreterGroup: defaultInterpreterGroup,
         },
       });
     },
@@ -353,8 +353,8 @@ function WebsocketMessageService($rootScope, websocketEvents) {
     },
 
     saveInterpreterBindings: function(noteId, selectedSettingIds) {
-      websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-        data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
+      // websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
+      //   data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
     },
 
     listConfigurations: function() {

@@ -27,7 +27,8 @@ import java.util.List;
 /**
  * //TODO(zjffdu) considering to move to InterpreterSettingManager
  *
- * Manage interpreters.
+ * Factory class for creating interpreters.
+ *
  */
 public class InterpreterFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterFactory.class);
@@ -38,72 +39,49 @@ public class InterpreterFactory {
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
-  private InterpreterSetting getInterpreterSettingByGroup(List<InterpreterSetting> settings,
-      String group) {
-
-    Preconditions.checkNotNull(group, "group should be not null");
-    for (InterpreterSetting setting : settings) {
-      if (group.equals(setting.getName())) {
-        return setting;
-      }
-    }
-    return null;
-  }
-
-  public Interpreter getInterpreter(String user, String noteId, String replName)
+  public Interpreter getInterpreter(String user,
+                                    String noteId,
+                                    String replName,
+                                    String defaultInterpreterSetting)
       throws InterpreterNotFoundException {
-    List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(noteId);
-    InterpreterSetting setting;
-    Interpreter interpreter;
-
-    if (settings == null || settings.size() == 0) {
-      throw new InterpreterNotFoundException("No interpreter is binded to this note: " + noteId);
-    }
 
     if (StringUtils.isBlank(replName)) {
-      // Get the default interpreter of the first interpreter binding
-      InterpreterSetting defaultSetting = settings.get(0);
+      // Get the default interpreter of the defaultInterpreterSetting
+      InterpreterSetting defaultSetting =
+          interpreterSettingManager.getByName(defaultInterpreterSetting);
       return defaultSetting.getDefaultInterpreter(user, noteId);
     }
 
-    String[] replNameSplit = replName.split("\\.");
-    if (replNameSplit.length == 2) {
-      String group = replNameSplit[0];
-      String name = replNameSplit[1];
-      setting = getInterpreterSettingByGroup(settings, group);
+    String[] replNameSplits = replName.split("\\.");
+    if (replNameSplits.length == 2) {
+      String group = replNameSplits[0];
+      String name = replNameSplits[1];
+      InterpreterSetting setting = interpreterSettingManager.getByName(group);
       if (null != setting) {
-        interpreter = setting.getInterpreter(user, noteId, name);
+        Interpreter interpreter = setting.getInterpreter(user, noteId, name);
         if (null != interpreter) {
           return interpreter;
         }
         throw new InterpreterNotFoundException("No such interpreter: " + replName);
       }
-      throw new InterpreterNotFoundException("Interpreter " + group +
-          " is not binded to this note");
-    } else if (replNameSplit.length == 1){
-      // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
-      // search 'name' from first (default) interpreter group
-      // TODO(jl): Handle with noteId to support defaultInterpreter per note.
-      setting = settings.get(0);
-      interpreter = setting.getInterpreter(user, noteId, replName);
+      throw new InterpreterNotFoundException("No interpreter setting named: " + group);
 
+    } else if (replNameSplits.length == 1){
+      // first assume group is omitted
+      InterpreterSetting setting =
+          interpreterSettingManager.getByName(defaultInterpreterSetting);
+      Interpreter interpreter = setting.getInterpreter(user, noteId, replName);
       if (null != interpreter) {
         return interpreter;
       }
 
-      // next, assume replName is 'group' of interpreter ('name' is omitted)
-      // search interpreter group and return first interpreter.
-      setting = getInterpreterSettingByGroup(settings, replName);
-
+      // then assume interpreter name is omitted
+      setting = interpreterSettingManager.getByName(replName);
       if (null != setting) {
         return setting.getDefaultInterpreter(user, noteId);
-      } else {
-        throw new InterpreterNotFoundException("Either no interpreter named " + replName +
-            " or it is not binded to this note");
       }
     }
 
-    throw new InterpreterNotFoundException("No such interpreter " + replName + " for note "
-        + noteId);
+    throw new InterpreterNotFoundException("No such interpreter: " + replName);
   }
 }
