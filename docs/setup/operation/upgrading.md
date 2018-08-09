@@ -35,11 +35,21 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ## Migration Guide
 
+### Breaking changes in 0.8.x
+
+From 0.8, Zeppelin has a new type of permission - [Runners](http://zeppelin.apache.org/docs/0.8.0/setup/security/notebook_authorization.html#authorization-setting)
+
+As Runners list is empty in note so everybody can view note although Readers list is not empty. 
+To set all your "writers" to "runners":
+1. Copy `motebook` and `conf` directories to 0.8.0,
+2. Move directory **docs/assets/themes/zeppelin/note/FixReaders** to new `notebook` directory,
+3. Start the new Zeppelin and run note **System/Migrate from 0.7**.
+
+
 ### Upgrading from Zeppelin 0.7 to 0.8
 
  - From 0.8, we recommend to use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` instead of `zeppelin.pyspark.python` as `zeppelin.pyspark.python` only effects driver. You can use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` as using them in spark.
  - From 0.8, depending on your device, the keyboard shortcut `Ctrl-L` or `Command-L` which goes to the line somewhere user wants is not supported. 
- - From 0.8, Zeppelin has a new type of permission - "Runners". To set all your "writers" to "runners" run note "System/Migrate from 0.7".
  
 ### Upgrading from Zeppelin 0.6 to 0.7
 
