@@ -70,8 +70,7 @@ public class FlinkIntegrationTest {
 
   private void testInterpreterBasics() throws IOException, InterpreterException {
     // test FlinkInterpreter
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "flink");
+    Interpreter flinkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "flink", "flink");
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = flinkInterpreter.interpret("1+1", context);
