@@ -27,8 +27,8 @@ public class ColumnDef implements Serializable {
    */
   public enum TYPE {
     STRING,
-    LONG,
-    INT
+    NUMBER,
+    DATE
   }
 
   private String name;

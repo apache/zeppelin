@@ -53,6 +53,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.MessageColumnTypes;
 import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
@@ -649,13 +650,21 @@ public class RemoteInterpreterServer extends Thread
         }
         // put result into resource pool
         if (resultMessages.size() > 0) {
-          int lastMessageIndex = resultMessages.size() - 1;
-          if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
+          final int lastMessageIndex = resultMessages.size() - 1;
+          final InterpreterResultMessage lastMessage = resultMessages.get(lastMessageIndex);
+          if (lastMessage.getType() == InterpreterResult.Type.TABLE) {
             context.getResourcePool().put(
                 context.getNoteId(),
                 context.getParagraphId(),
                 WellKnownResourceName.ZeppelinTableResult.toString(),
-                resultMessages.get(lastMessageIndex));
+                lastMessage
+            );
+            context.getResourcePool().put(
+                context.getNoteId(),
+                context.getParagraphId(),
+                WellKnownResourceName.ZeppelinTableType.toString(),
+                new MessageColumnTypes(lastMessage.getColumnTypes())
+            );
           }
         }
         return new InterpreterResult(result.code(), resultMessages);

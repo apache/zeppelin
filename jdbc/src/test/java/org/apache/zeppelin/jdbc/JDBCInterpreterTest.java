@@ -30,6 +30,7 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 
+import org.apache.zeppelin.tabledata.ColumnDef;
 import org.junit.Before;
 import org.junit.Test;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
@@ -43,6 +44,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +99,10 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Statement statement = connection.createStatement();
     statement.execute(
         "DROP TABLE IF EXISTS test_table; " +
-        "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+        "CREATE TABLE test_table(id varchar(255), name varchar(255));" +
+        "DROP TABLE IF EXISTS test_table_types;" +
+        "CREATE TABLE test_table_types(id integer, name varchar(255), test_date date);"
+    );
 
     PreparedStatement insertStatement = connection.prepareStatement(
             "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
@@ -142,20 +148,24 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    String sqlQuery = "select * from test_table";
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "fake");
-    InterpreterContext context = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setLocalProperties(localProperties)
-        .build();
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
+      String sqlQuery = "select * from test_table";
+      Map<String, String> localProperties = new HashMap<>();
+      localProperties.put("db", "fake");
+      InterpreterContext context = InterpreterContext.builder()
+          .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+          .setLocalProperties(localProperties)
+          .build();
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, context);
 
-    // if prefix not found return ERROR and Prefix not found.
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
+      // if prefix not found return ERROR and Prefix not found.
+      assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+      assertEquals("Prefix not found.", interpreterResult.message().get(0).getData());
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -179,46 +189,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    String sqlQuery = "select * from test_table WHERE ID in ('a', 'b')";
+      String sqlQuery = "select * from test_table WHERE ID in ('a', 'b')";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message().get(0).getData());
-  }
-
-  @Test
-  public void testSplitSqlQuery() throws SQLException, IOException {
-    String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
-        "select * from test_table;" +
-        "select * from test_table WHERE ID = \";'\";" +
-        "select * from test_table WHERE ID = ';';" +
-        "select '\n', ';';" +
-        "select replace('A\\;B', '\\', 'text');" +
-        "select '\\', ';';" +
-        "select '''', ';';" +
-        "select /*+ scan */ * from test_table;" +
-        "--singleLineComment\nselect * from test_table";
-
-
-    Properties properties = new Properties();
-    JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
-    List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
-    assertEquals(10, multipleSqlArray.size());
-    assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
-    assertEquals("select * from test_table", multipleSqlArray.get(1));
-    assertEquals("select * from test_table WHERE ID = \";'\"", multipleSqlArray.get(2));
-    assertEquals("select * from test_table WHERE ID = ';'", multipleSqlArray.get(3));
-    assertEquals("select '\n', ';'", multipleSqlArray.get(4));
-    assertEquals("select replace('A\\;B', '\\', 'text')", multipleSqlArray.get(5));
-    assertEquals("select '\\', ';'", multipleSqlArray.get(6));
-    assertEquals("select '''', ';'", multipleSqlArray.get(7));
-    assertEquals("select /*+ scan */ * from test_table", multipleSqlArray.get(8));
-    assertEquals("--singleLineComment\nselect * from test_table", multipleSqlArray.get(9));
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
+          interpreterResult.message().get(0).getData());
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -237,19 +221,23 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.password", "");
     properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(2).getType());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(3).getType());
-    assertEquals("'\\n'\t';'\n\\n\t;\n", interpreterResult.message().get(0).getData());
-    assertEquals("'Atext;B'\nAtext;B\n", interpreterResult.message().get(1).getData());
-    assertEquals("'\\'\t';'\n\\\t;\n", interpreterResult.message().get(2).getData());
-    assertEquals("''''\t';'\n'\t;\n", interpreterResult.message().get(3).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(2).getType());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(3).getType());
+      assertEquals("'\\n'\t';'\n\\n\t;\n", interpreterResult.message().get(0).getData());
+      assertEquals("'Atext;B'\nAtext;B\n", interpreterResult.message().get(1).getData());
+      assertEquals("'\\'\t';'\n\\\t;\n", interpreterResult.message().get(2).getData());
+      assertEquals("''''\t';'\n'\t;\n", interpreterResult.message().get(3).getData());
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -263,20 +251,24 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.password", "");
     properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    String sqlQuery = "select * from test_table;" +
-        "select * from test_table WHERE ID = ';';";
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(2, interpreterResult.message().size());
+      String sqlQuery = "select * from test_table;" +
+          "select * from test_table WHERE ID = ';';";
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(2, interpreterResult.message().size());
 
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
-            interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
+          interpreterResult.message().get(0).getData());
 
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
-    assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(1).getType());
+      assertEquals("ID\tNAME\n", interpreterResult.message().get(1).getData());
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -289,17 +281,21 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    String sqlQuery = "select * from test_table;" +
-        "select * from test_table WHERE ID = ';';";
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(1, interpreterResult.message().size());
+      String sqlQuery = "select * from test_table;" +
+          "select * from test_table WHERE ID = ';';";
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(1, interpreterResult.message().size());
 
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
-            interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\tNAME\na\ta_name\nb\tb_name\nc\tnull\n",
+          interpreterResult.message().get(0).getData());
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -312,15 +308,19 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
 
-    String sqlQuery = "select * from test_table WHERE ID = 'c'";
+      String sqlQuery = "select * from test_table WHERE ID = 'c'";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\tNAME\nc\tnull\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\tNAME\nc\tnull\n", interpreterResult.message().get(0).getData());
+    } finally {
+      t.close();
+    }
   }
 
 
@@ -334,17 +334,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
+      String sqlQuery = "select * from test_table";
 
-    String sqlQuery = "select * from test_table";
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
-    assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResult.message().get(1).getType());
+      assertTrue(interpreterResult.message().get(1).getData().contains("alert-warning"));
+    } finally {
+      t.close();
+    }
   }
 
   @Test
@@ -380,18 +383,23 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.user", "");
     properties.setProperty("default.password", "");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
+    try {
+      jdbcInterpreter.open();
 
-    jdbcInterpreter.interpret("", interpreterContext);
+      jdbcInterpreter.interpret("", interpreterContext);
 
-    List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3,
-            interpreterContext);
+      List<InterpreterCompletion> completionList = jdbcInterpreter.completion("sel", 3,
+          interpreterContext);
 
-    InterpreterCompletion correctCompletionKeyword = new InterpreterCompletion("select", "select",
-            CompletionType.keyword.name());
+      InterpreterCompletion correctCompletionKeyword =
+          new InterpreterCompletion("select", "select",
+          CompletionType.keyword.name());
 
-    assertEquals(1, completionList.size());
-    assertEquals(true, completionList.contains(correctCompletionKeyword));
+      assertEquals(1, completionList.size());
+      assertTrue(completionList.contains(correctCompletionKeyword));
+    } finally {
+      jdbcInterpreter.open();
+    }
   }
 
   private Properties getDBProperty(String dbUser, String dbPassowrd) throws IOException {
@@ -439,56 +447,68 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     AuthenticationInfo user2Credential = getUserAuth("user2", "jdbc.jdbc2", "user2Id", "user2Pw");
 
     // user1 runs jdbc1
-    jdbc1.open();
-    InterpreterContext ctx1 = InterpreterContext.builder()
-        .setAuthenticationInfo(user1Credential)
-        .setReplName("jdbc1")
-        .build();
-    jdbc1.interpret("", ctx1);
+    try {
+      jdbc1.open();
+      InterpreterContext ctx1 = InterpreterContext.builder()
+          .setAuthenticationInfo(user1Credential)
+          .setReplName("jdbc1")
+          .build();
+      jdbc1.interpret("", ctx1);
 
-    JDBCUserConfigurations user1JDBC1Conf = jdbc1.getJDBCConfiguration("user1");
-    assertEquals("dbuser", user1JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("dbpassword", user1JDBC1Conf.getPropertyMap("default").get("password"));
-    jdbc1.close();
+      JDBCUserConfigurations user1JDBC1Conf = jdbc1.getJDBCConfiguration("user1");
+      assertEquals("dbuser", user1JDBC1Conf.getPropertyMap("default").get("user"));
+      assertEquals("dbpassword", user1JDBC1Conf.getPropertyMap("default").get("password"));
+    } finally {
+      jdbc1.close();
+    }
 
     // user1 runs jdbc2
-    jdbc2.open();
-    InterpreterContext ctx2 = InterpreterContext.builder()
-        .setAuthenticationInfo(user1Credential)
-        .setReplName("jdbc2")
-        .build();
-    jdbc2.interpret("", ctx2);
+    try {
+      jdbc2.open();
+      InterpreterContext ctx2 = InterpreterContext.builder()
+          .setAuthenticationInfo(user1Credential)
+          .setReplName("jdbc2")
+          .build();
+      jdbc2.interpret("", ctx2);
 
-    JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("user"));
-    assertNull(user1JDBC2Conf.getPropertyMap("default").get("password"));
-    jdbc2.close();
+      JDBCUserConfigurations user1JDBC2Conf = jdbc2.getJDBCConfiguration("user1");
+      assertNull(user1JDBC2Conf.getPropertyMap("default").get("user"));
+      assertNull(user1JDBC2Conf.getPropertyMap("default").get("password"));
+    } finally {
+      jdbc2.close();
+    }
 
     // user2 runs jdbc1
-    jdbc1.open();
-    InterpreterContext ctx3 = InterpreterContext.builder()
-        .setAuthenticationInfo(user2Credential)
-        .setReplName("jdbc1")
-        .build();
-    jdbc1.interpret("", ctx3);
+    try {
+      jdbc1.open();
+      InterpreterContext ctx3 = InterpreterContext.builder()
+          .setAuthenticationInfo(user2Credential)
+          .setReplName("jdbc1")
+          .build();
+      jdbc1.interpret("", ctx3);
 
-    JDBCUserConfigurations user2JDBC1Conf = jdbc1.getJDBCConfiguration("user2");
-    assertEquals("dbuser", user2JDBC1Conf.getPropertyMap("default").get("user"));
-    assertEquals("dbpassword", user2JDBC1Conf.getPropertyMap("default").get("password"));
-    jdbc1.close();
+      JDBCUserConfigurations user2JDBC1Conf = jdbc1.getJDBCConfiguration("user2");
+      assertEquals("dbuser", user2JDBC1Conf.getPropertyMap("default").get("user"));
+      assertEquals("dbpassword", user2JDBC1Conf.getPropertyMap("default").get("password"));
+    } finally {
+      jdbc1.close();
+    }
 
     // user2 runs jdbc2
-    jdbc2.open();
-    InterpreterContext ctx4 = InterpreterContext.builder()
-        .setAuthenticationInfo(user2Credential)
-        .setReplName("jdbc2")
-        .build();
-    jdbc2.interpret("", ctx4);
+    try {
+      jdbc2.open();
+      InterpreterContext ctx4 = InterpreterContext.builder()
+          .setAuthenticationInfo(user2Credential)
+          .setReplName("jdbc2")
+          .build();
+      jdbc2.interpret("", ctx4);
 
-    JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
-    assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
-    assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
-    jdbc2.close();
+      JDBCUserConfigurations user2JDBC2Conf = jdbc2.getJDBCConfiguration("user2");
+      assertEquals("user2Id", user2JDBC2Conf.getPropertyMap("default").get("user"));
+      assertEquals("user2Pw", user2JDBC2Conf.getPropertyMap("default").get("password"));
+    } finally {
+      jdbc2.close();
+    }
   }
 
   @Test
@@ -501,16 +521,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty(DEFAULT_PRECODE,
             "create table test_precode (id int); insert into test_precode values (1);");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    jdbcInterpreter.executePrecode(interpreterContext);
+    try {
+      jdbcInterpreter.open();
+      jdbcInterpreter.executePrecode(interpreterContext);
 
-    String sqlQuery = "select *from test_precode";
+      String sqlQuery = "select *from test_precode";
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
+      InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\n1\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\n1\n", interpreterResult.message().get(0).getData());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -527,11 +551,15 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("incorrect.password", "");
     properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "incorrect"), "incorrect command");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
-    InterpreterResult interpreterResult = jdbcInterpreter.executePrecode(interpreterContext);
+    try {
+      jdbcInterpreter.open();
+      InterpreterResult interpreterResult = jdbcInterpreter.executePrecode(interpreterContext);
 
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+      assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -544,23 +572,27 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty(String.format(PRECODE_KEY_TEMPLATE, "anotherPrefix"),
             "create table test_precode_2 (id int); insert into test_precode_2 values (2);");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
+    try {
+      jdbcInterpreter.open();
 
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "anotherPrefix");
-    InterpreterContext context = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setLocalProperties(localProperties)
-        .build();
-    jdbcInterpreter.executePrecode(context);
+      Map<String, String> localProperties = new HashMap<>();
+      localProperties.put("db", "anotherPrefix");
+      InterpreterContext context = InterpreterContext.builder()
+          .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+          .setLocalProperties(localProperties)
+          .build();
+      jdbcInterpreter.executePrecode(context);
 
-    String sqlQuery = "select * from test_precode_2";
+      String sqlQuery = "select * from test_precode_2";
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
+      InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("ID\n2\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("ID\n2\n", interpreterResult.message().get(0).getData());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -572,15 +604,18 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.password", "");
     properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set @v='statement'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
+    try {
+      jdbcInterpreter.open();
+      String sqlQuery = "select @v";
 
-    String sqlQuery = "select @v";
+      InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@V\nstatement\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("@V\nstatement\n", interpreterResult.message().get(0).getData());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -592,14 +627,17 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.password", "");
     properties.setProperty(DEFAULT_STATEMENT_PRECODE, "set incorrect");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
+    try {
+      jdbcInterpreter.open();
+      String sqlQuery = "select 1";
 
-    String sqlQuery = "select 1";
+      InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, interpreterContext);
-
-    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+      assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -612,22 +650,26 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, "anotherPrefix"),
             "set @v='statementAnotherPrefix'");
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(properties);
-    jdbcInterpreter.open();
+    try {
+      jdbcInterpreter.open();
 
-    Map<String, String> localProperties = new HashMap<>();
-    localProperties.put("db", "anotherPrefix");
-    InterpreterContext context = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .setLocalProperties(localProperties)
-        .build();
+      Map<String, String> localProperties = new HashMap<>();
+      localProperties.put("db", "anotherPrefix");
+      InterpreterContext context = InterpreterContext.builder()
+          .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+          .setLocalProperties(localProperties)
+          .build();
 
-    String sqlQuery = "select @v";
+      String sqlQuery = "select @v";
 
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
+      InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, context);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
-    assertEquals("@V\nstatementAnotherPrefix\n", interpreterResult.message().get(0).getData());
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+      assertEquals("@V\nstatementAnotherPrefix\n", interpreterResult.message().get(0).getData());
+    } finally {
+      jdbcInterpreter.close();
+    }
   }
 
   @Test
@@ -641,21 +683,72 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     properties.setProperty("default.password", "");
     properties.setProperty("default.splitQueries", "true");
     JDBCInterpreter t = new JDBCInterpreter(properties);
-    t.open();
+    try {
+      t.open();
+      String sqlQuery = "/* ; */\n" +
+          "-- /* comment\n" +
+          "--select * from test_table\n" +
+          "select * from test_table; /* some comment ; */\n" +
+          "/*\n" +
+          "select * from test_table;\n" +
+          "*/\n" +
+          "-- a ; b\n" +
+          "select * from test_table WHERE ID = ';--';\n" +
+          "select * from test_table WHERE ID = '/*' -- test";
 
-    String sqlQuery = "/* ; */\n" +
-        "-- /* comment\n" +
-        "--select * from test_table\n" +
-        "select * from test_table; /* some comment ; */\n" +
-        "/*\n" +
-        "select * from test_table;\n" +
-        "*/\n" +
-        "-- a ; b\n" +
-        "select * from test_table WHERE ID = ';--';\n" +
-        "select * from test_table WHERE ID = '/*' -- test";
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(3, interpreterResult.message().size());
+    } finally {
+      t.close();
+    }
+  }
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(3, interpreterResult.message().size());
+  @Test
+  public void testSelectQueryTypes() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    try {
+      t.open();
+      String sqlQuery = "select * from test_table";
+
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(Collections.nCopies(2, ColumnDef.TYPE.STRING),
+          interpreterResult.message().get(0).getColumnTypes());
+    } finally {
+      t.close();
+    }
+  }
+
+  @Test
+  public void testSelectQueryWithAllTypes() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    try {
+      t.open();
+      String sqlQuery = "select * from test_table_types";
+
+      InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+      assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+      assertEquals(Arrays.asList(ColumnDef.TYPE.NUMBER, ColumnDef.TYPE.STRING, ColumnDef.TYPE.DATE),
+          interpreterResult.message().get(0).getColumnTypes());
+    } finally {
+      t.close();
+    }
   }
 }

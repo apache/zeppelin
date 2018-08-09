@@ -40,8 +40,16 @@ public class InterpreterResultTableData implements TableData, Serializable {
     } else {
       String[] headerRow = lines[0].split("\t");
       columnDef = new ColumnDef[headerRow.length];
-      for (int i = 0; i < headerRow.length; i++) {
-        columnDef[i] = new ColumnDef(headerRow[i], ColumnDef.TYPE.STRING);
+
+      List<ColumnDef.TYPE> columnTypes = msg.getColumnTypes();
+      if (columnTypes.isEmpty()) {
+        for (int i = 0; i < headerRow.length; i++) {
+          columnDef[i] = new ColumnDef(headerRow[i], ColumnDef.TYPE.STRING);
+        }
+      } else {
+        for (int i = 0; i < headerRow.length; i++) {
+          columnDef[i] = new ColumnDef(headerRow[i], columnTypes.get(i));
+        }
       }
 
       for (int r = 1; r < lines.length; r++) {

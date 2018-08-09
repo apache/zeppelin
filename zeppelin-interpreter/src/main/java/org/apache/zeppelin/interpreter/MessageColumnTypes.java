@@ -14,22 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resource;
+package org.apache.zeppelin.interpreter;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.tabledata.ColumnDef;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Well known resource names in ResourcePool
+ * Type of interpreter result message
  */
-public enum WellKnownResourceName {
-  ZeppelinReplResult("zeppelin.repl.result"),                 // last object of repl
-  ZeppelinTableResult("zeppelin.paragraph.result.table"),     // paragraph run result
-  ZeppelinTableType("zeppelin.paragraph.result.table.type");  // paragraph run result's type
+public class MessageColumnTypes implements Serializable {
+  List<ColumnDef.TYPE> columnTypes = new ArrayList<>();
 
-  String name;
-  WellKnownResourceName(String name) {
-    this.name = name;
+  public MessageColumnTypes(Collection<ColumnDef.TYPE> types) {
+    columnTypes.addAll(types);
   }
 
   public String toString() {
-    return name;
+    if (columnTypes.isEmpty()) {
+      return "Type is unknown";
+    } else {
+      return StringUtils.join(columnTypes, ", ");
+    }
   }
 }
