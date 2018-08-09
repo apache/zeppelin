@@ -41,7 +41,7 @@ From 0.8, Zeppelin has a new type of permission - [Runners](http://zeppelin.apac
 
 As Runners list is empty in note so everybody can view note although Readers list is not empty. 
 To set all your "writers" to "runners":
-1. Copy `motebook` and `conf` directories to 0.8.0,
+1. Copy `notebook` and `conf` directories to 0.8.0,
 2. Move directory **docs/assets/themes/zeppelin/note/FixReaders** to new `notebook` directory,
 3. Start the new Zeppelin and run note **System/Migrate from 0.7**.
 
