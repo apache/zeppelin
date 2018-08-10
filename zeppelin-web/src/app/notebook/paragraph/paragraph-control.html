@@ -72,6 +72,9 @@ limitations under the License.
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer" tooltip-placement="top"
           uib-tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide')}} output (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+O)"
           ng-click="toggleOutput(paragraph)"></span>
+    <span class="{{paragraph.config.chartSettingsHide ? 'icon-pie-chart' : 'icon-bar-chart'}}" style="cursor:pointer" tooltip-placement="top"
+          uib-tooltip="{{(paragraph.config.chartSettingsHide ? 'Show' : 'Hide')}} chart settings (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+S)"
+          ng-click="toggleChartSettings(paragraph)"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"

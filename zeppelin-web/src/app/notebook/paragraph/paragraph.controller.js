@@ -620,6 +620,24 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     commitParagraph(paragraph);
   };
 
+  $scope.toggleChartSettings = function(paragraph) {
+    if (paragraph.config.chartSettingsHide) {
+      $scope.openChartSettings(paragraph);
+    } else {
+      $scope.closeChartSettings(paragraph);
+    }
+  };
+
+  $scope.closeChartSettings = function(paragraph) {
+    paragraph.config.chartSettingsHide = true;
+    commitParagraph(paragraph);
+  };
+
+  $scope.openChartSettings = function(paragraph) {
+    paragraph.config.chartSettingsHide = false;
+    commitParagraph(paragraph);
+  };
+
   let openEditorAndCloseTable = function(paragraph) {
     manageEditorAndTableState(paragraph, false, true);
   };
@@ -1660,6 +1678,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput($scope.paragraph);
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 83) { // Ctrl + Alt + s
+        $scope.toggleChartSettings($scope.paragraph);
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
         $scope.toggleEnableDisable($scope.paragraph);
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
@@ -1770,6 +1790,14 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.$on('closeTable', function(event) {
     $scope.closeTable($scope.paragraph);
+  });
+
+  $scope.$on('openChartSettings', function(event) {
+    $scope.openChartSettings($scope.paragraph);
+  });
+
+  $scope.$on('closeChartSettings', function(event) {
+    $scope.closeChartSettings($scope.paragraph);
   });
 
   $scope.$on('resultRendered', function(event, paragraphId) {

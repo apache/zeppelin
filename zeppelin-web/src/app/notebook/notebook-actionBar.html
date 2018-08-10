@@ -53,6 +53,14 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-click="toggleAllChartSettings()"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" uib-tooltip="Show/hide the chart settings"
+              ng-disabled="revisionView">
+        <i ng-class="chartSettingsToggled ? 'fa icon-pie-chart' : 'fa icon-bar-chart'"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
               ng-click="clearAllParagraphOutput(note.id)"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"

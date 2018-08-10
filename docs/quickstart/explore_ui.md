@@ -107,6 +107,7 @@ On the top-right corner of each paragraph there are some commands to:
 * execute the paragraph code
 * hide/show `code section`
 * hide/show `result section`
+* hide/show `chart settings section`
 * configure the paragraph
 
 To configure the paragraph, just click on the gear icon:
@@ -140,6 +141,7 @@ In the middle of the toolbar you can find the command buttons:
 * execute all the paragraphs **sequentially**, in their display order
 * hide/show `code section` of all paragraphs
 * hide/show `result section` of all paragraphs
+* hide/show `chart settings section` of all paragraphs
 * clear the `result section` of all paragraphs
 * clone the current note
 * export the current note to a JSON file. _Please note that the `code section` and `result section` of all paragraphs will be exported. If you have heavy data in the `result section` of some paragraphs, it is recommended to clean them before exporting
