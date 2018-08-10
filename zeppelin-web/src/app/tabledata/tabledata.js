@@ -60,8 +60,10 @@ export default class TableData extends Dataset {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
           let valueOfCol;
-          if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
-            col = valueOfCol;
+          if (!(col[0] === '0' || col.length >= 7)) {
+            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col) && canTransfer) {
+              col = valueOfCol;
+            }
           }
           cols.push(col);
           cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
