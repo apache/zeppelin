@@ -34,6 +34,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,8 +225,13 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     /* TODO(xxx): add proper roles */
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(username);
-    ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(
+    ServiceContext context = new ServiceContext(
         new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
+    try {
+      ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(null, context);
+    } catch (IOException e) {
+      LOG.error("Fail to broadcastReloadedNoteList", e);
+    }
 
     ZeppelinhubUtils.userLoginRoutine(username);
   }

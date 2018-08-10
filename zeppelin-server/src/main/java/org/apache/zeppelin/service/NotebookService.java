@@ -17,7 +17,10 @@
 
 package org.apache.zeppelin.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Folder;
@@ -72,8 +75,6 @@ public class NotebookService {
             callback)) {
           return null;
         }
-      } else {
-        callback.onFailure(new Exception("configured HomePage is not existed"), context);
       }
     }
     callback.onSuccess(note, context);
@@ -101,19 +102,19 @@ public class NotebookService {
   }
 
 
-  public Note createNote(String defaultInterpreterGroup,
-                         String noteName,
+  public Note createNote(String noteName,
+                         String defaultInterpreterGroup,
                          ServiceContext context,
                          ServiceCallback<Note> callback) throws IOException {
     if (defaultInterpreterGroup == null) {
       defaultInterpreterGroup = zConf.getString(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
     }
-    if (noteName == null) {
+    if (StringUtils.isBlank(noteName)) {
       noteName = "Untitled Note";
     }
     try {
-      Note note = notebook.createNote(defaultInterpreterGroup, context.getAutheInfo());
+      Note note = notebook.createNote(noteName, defaultInterpreterGroup, context.getAutheInfo());
       note.addNewParagraph(context.getAutheInfo()); // it's an empty note. so add one paragraph
       note.setName(noteName);
       note.setCronSupported(notebook.getConf());
@@ -219,7 +220,8 @@ public class NotebookService {
                               String text,
                               Map<String, Object> params,
                               Map<String, Object> config,
-                              boolean isRunAll,
+                              boolean failIfDisabled,
+                              boolean blocking,
                               ServiceContext context,
                               ServiceCallback<Paragraph> callback) throws IOException {
 
@@ -237,10 +239,8 @@ public class NotebookService {
       callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
       return false;
     }
-    if (!p.isEnabled()) {
-      if (!isRunAll) {
-        callback.onFailure(new IOException("paragraph is disabled."), context);
-      }
+    if (failIfDisabled && !p.isEnabled()) {
+      callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
     p.setText(text);
@@ -260,7 +260,7 @@ public class NotebookService {
 
     try {
       note.persist(p.getAuthenticationInfo());
-      boolean result = note.run(p.getId(), false);
+      boolean result = note.run(p.getId(), blocking);
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {
@@ -297,7 +297,8 @@ public class NotebookService {
       Map<String, Object> params = (Map<String, Object>) raw.get("params");
       Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-      if (runParagraph(noteId, paragraphId, title, text, params, config, true, context, callback)) {
+      if (runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+          context, callback)) {
         // stop execution when one paragraph fails.
         break;
       }
@@ -735,7 +736,28 @@ public class NotebookService {
     }
   }
 
+  public void getEditorSetting(String noteId,
+                               String replName,
+                               ServiceContext context,
+                               ServiceCallback<Map<String, Object>> callback) throws IOException {
 
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return;
+    }
+    try {
+      Interpreter intp = notebook.getInterpreterFactory().getInterpreter(
+          context.getAutheInfo().getUser(), noteId, replName,
+          notebook.getNote(noteId).getDefaultInterpreterGroup());
+      Map<String, Object> settings = notebook.getInterpreterSettingManager().
+          getEditorSetting(intp, context.getAutheInfo().getUser(), noteId, replName);
+      callback.onSuccess(settings, context);
+    } catch (InterpreterNotFoundException e) {
+      callback.onFailure(new IOException("Fail to find interpreter", e), context);
+      return;
+    }
+  }
 
 
   enum Permission {
