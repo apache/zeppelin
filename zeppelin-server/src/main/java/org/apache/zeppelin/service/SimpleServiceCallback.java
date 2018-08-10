@@ -14,24 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.exception;
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+package org.apache.zeppelin.service;
 
-import org.apache.zeppelin.utils.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
- * UnauthorizedException handler for WebApplicationException.
+ *
+ * @param <T>
  */
-public class ForbiddenException extends WebApplicationException {
-  private static Response forbiddenJson(String message) {
-    return ExceptionUtils.jsonResponseContent(FORBIDDEN, message);
+public class SimpleServiceCallback<T> implements ServiceCallback<T> {
+
+  private static Logger LOGGER = LoggerFactory.getLogger(SimpleServiceCallback.class);
+
+  @Override
+  public void onStart(String message, ServiceContext context) throws IOException {
+    LOGGER.debug(message);
   }
 
-  public ForbiddenException(String message) {
-    super(forbiddenJson(message));
+  @Override
+  public void onSuccess(T result, ServiceContext context) throws IOException {
+    LOGGER.debug("OP is succeeded");
   }
+
+  @Override
+  public void onFailure(Exception ex, ServiceContext context) throws IOException {
+    LOGGER.warn(ex.getMessage());
+  }
+
 }

@@ -16,37 +16,6 @@
  */
 package org.apache.zeppelin.socket;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import static java.util.Arrays.asList;
-
-import com.google.gson.Gson;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -63,6 +32,31 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Basic REST API tests for notebookServer.
@@ -70,14 +64,12 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
-  private static Gson gson;
   private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
-    gson = new Gson();
     notebook = ZeppelinServer.notebook;
     notebookServer = ZeppelinServer.notebookWsServer;
   }
@@ -254,7 +246,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;
     try {
-      note = notebookServer.importNote(null, null, notebook, messageReceived);
+      note = notebookServer.importNote(null, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
       LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +

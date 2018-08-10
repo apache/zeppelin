@@ -70,9 +70,11 @@ public class InterpreterFactory {
       // first assume group is omitted
       InterpreterSetting setting =
           interpreterSettingManager.getByName(defaultInterpreterSetting);
-      Interpreter interpreter = setting.getInterpreter(user, noteId, replName);
-      if (null != interpreter) {
-        return interpreter;
+      if (setting != null) {
+        Interpreter interpreter = setting.getInterpreter(user, noteId, replName);
+        if (null != interpreter) {
+          return interpreter;
+        }
       }
 
       // then assume interpreter name is omitted

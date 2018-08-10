@@ -77,4 +77,9 @@ public class NotebookSocket extends WebSocketAdapter {
   public void setUser(String user) {
     this.user = user;
   }
+
+  @Override
+  public String toString() {
+    return request.getRemoteHost() + ":" + request.getRemotePort();
+  }
 }
