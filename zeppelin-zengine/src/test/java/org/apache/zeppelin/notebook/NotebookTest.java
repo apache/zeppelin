@@ -835,30 +835,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
   }
-
-  @Test
-  public void testCloneNoteWithExceptionResult() throws IOException, CloneNotSupportedException,
-      InterruptedException {
-    Note note = notebook.createNote(anonymous);
-
-    final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p.setText("hello world");
-    note.runAll();
-
-    // Force paragraph to have String type object
-    p.setResult("Exception");
-
-    Note cloneNote = notebook.cloneNote(note.getId(), "clone note with Exception result", anonymous);
-    Paragraph cp = cloneNote.paragraphs.get(0);
-
-    // Keep same ParagraphId
-    assertEquals(cp.getId(), p.getId());
-    assertEquals(cp.getText(), p.getText());
-    assertNull(cp.getResult());
-    notebook.removeNote(note.getId(), anonymous);
-    notebook.removeNote(cloneNote.getId(), anonymous);
-  }
-
+  
   @Test
   public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
     Note note = notebook.createNote(anonymous);

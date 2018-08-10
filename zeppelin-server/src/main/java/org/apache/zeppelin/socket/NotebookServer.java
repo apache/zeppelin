@@ -1660,7 +1660,7 @@ public class NotebookServer extends WebSocketServlet
     final Note note = notebook.getNote(noteId);
     Paragraph p = setParagraphUsingMessage(note, fromMessage, paragraphId,
         text, title, params, config);
-    p.setResult(fromMessage.get("results"));
+    p.setResult((InterpreterResult) fromMessage.get("results"));
     p.setErrorMessage((String) fromMessage.get("errorMessage"));
     p.setStatusWithoutNotification(status);
 

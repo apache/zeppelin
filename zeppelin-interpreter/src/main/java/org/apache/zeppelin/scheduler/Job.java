@@ -38,7 +38,6 @@ import java.util.Map;
  * Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job<T> {
-
   private static Logger LOGGER = LoggerFactory.getLogger(Job.class);
   private static SimpleDateFormat JOB_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd-HHmmss");
 

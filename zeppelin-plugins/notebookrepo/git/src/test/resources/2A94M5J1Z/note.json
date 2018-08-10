@@ -21,10 +21,14 @@
       },
       "jobName": "paragraph_1423836981412_-1007008116",
       "id": "20150213-231621_168813393",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003ch2\u003eWelcome to Zeppelin.\u003c/h2\u003e\n\u003ch5\u003eThis is a live tutorial, you can run the code yourself. (Shift-Enter to Run)\u003c/h5\u003e\n"
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003eWelcome to Zeppelin.\u003c/h2\u003e\n\u003ch5\u003eThis is a live tutorial, you can run the code yourself. (Shift-Enter to Run)\u003c/h5\u003e\n"
+          }
+        ]
       },
       "dateCreated": "Feb 13, 2015 11:16:21 PM",
       "dateStarted": "Apr 1, 2015 9:11:09 PM",
@@ -54,10 +58,14 @@
       },
       "jobName": "paragraph_1423500779206_-1502780787",
       "id": "20150210-015259_1403135953",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "TEXT",
-        "msg": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nbankText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[32] at parallelize at \u003cconsole\u003e:65\ndefined class Bank\nbank: org.apache.spark.sql.DataFrame \u003d [age: int, job: string, marital: string, education: string, balance: int]\n"
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nbankText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[32] at parallelize at \u003cconsole\u003e:65\ndefined class Bank\nbank: org.apache.spark.sql.DataFrame \u003d [age: int, job: string, marital: string, education: string, balance: int]\n"
+          }
+        ]
       },
       "dateCreated": "Feb 10, 2015 1:52:59 AM",
       "dateStarted": "Jul 3, 2015 1:43:40 PM",
@@ -108,10 +116,14 @@
       },
       "jobName": "paragraph_1423500782552_-1439281894",
       "id": "20150210-015302_1492795503",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "TABLE",
-        "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          }
+        ]
       },
       "dateCreated": "Feb 10, 2015 1:53:02 AM",
       "dateStarted": "Jul 3, 2015 1:43:17 PM",
@@ -170,10 +182,14 @@
       },
       "jobName": "paragraph_1423720444030_-1424110477",
       "id": "20150212-145404_867439529",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "TABLE",
-        "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n"
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n"
+          }
+        ]
       },
       "dateCreated": "Feb 12, 2015 2:54:04 PM",
       "dateStarted": "Jul 3, 2015 1:43:28 PM",
@@ -243,10 +259,14 @@
       },
       "jobName": "paragraph_1423836262027_-210588283",
       "id": "20150213-230422_1600658137",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "TABLE",
-        "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t17\n24\t13\n25\t33\n26\t56\n27\t64\n28\t78\n29\t56\n30\t92\n31\t86\n32\t105\n33\t61\n34\t75\n35\t46\n36\t50\n37\t43\n38\t44\n39\t30\n40\t25\n41\t19\n42\t23\n43\t21\n44\t20\n45\t15\n46\t14\n47\t12\n48\t12\n49\t11\n50\t8\n51\t6\n52\t9\n53\t4\n55\t3\n56\t3\n57\t2\n58\t7\n59\t2\n60\t5\n66\t2\n69\t1\n"
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t17\n24\t13\n25\t33\n26\t56\n27\t64\n28\t78\n29\t56\n30\t92\n31\t86\n32\t105\n33\t61\n34\t75\n35\t46\n36\t50\n37\t43\n38\t44\n39\t30\n40\t25\n41\t19\n42\t23\n43\t21\n44\t20\n45\t15\n46\t14\n47\t12\n48\t12\n49\t11\n50\t8\n51\t6\n52\t9\n53\t4\n55\t3\n56\t3\n57\t2\n58\t7\n59\t2\n60\t5\n66\t2\n69\t1\n"
+          }
+        ]
       },
       "dateCreated": "Feb 13, 2015 11:04:22 PM",
       "dateStarted": "Jul 3, 2015 1:43:33 PM",
@@ -275,10 +295,14 @@
       },
       "jobName": "paragraph_1423836268492_216498320",
       "id": "20150213-230428_1231780373",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003ch2\u003eCongratulations, it\u0027s done.\u003c/h2\u003e\n\u003ch5\u003eYou can create your own notebook in \u0027Notebook\u0027 menu. Good luck!\u003c/h5\u003e\n"
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003eCongratulations, it\u0027s done.\u003c/h2\u003e\n\u003ch5\u003eYou can create your own notebook in \u0027Notebook\u0027 menu. Good luck!\u003c/h5\u003e\n"
+          }
+        ]
       },
       "dateCreated": "Feb 13, 2015 11:04:28 PM",
       "dateStarted": "Apr 1, 2015 9:12:18 PM",
@@ -307,10 +331,14 @@
       },
       "jobName": "paragraph_1427420818407_872443482",
       "id": "20150326-214658_12335843",
-      "result": {
+      "results": {
         "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003cp\u003eAbout bank data\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eCitation Request:\n  This dataset is public available for research. The details are described in [Moro et al., 2011]. \n  Please include this citation if you plan to use this database:\n\n  [Moro et al., 2011] S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. \n  In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM\u00272011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.\n\n  Available at: [pdf] http://hdl.handle.net/1822/14838\n                [bib] http://www3.dsi.uminho.pt/pcortez/bib/2011-esm-1.txt\n\u003c/code\u003e\u003c/pre\u003e\n"
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eAbout bank data\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eCitation Request:\n  This dataset is public available for research. The details are described in [Moro et al., 2011]. \n  Please include this citation if you plan to use this database:\n\n  [Moro et al., 2011] S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. \n  In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM\u00272011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.\n\n  Available at: [pdf] http://hdl.handle.net/1822/14838\n                [bib] http://www3.dsi.uminho.pt/pcortez/bib/2011-esm-1.txt\n\u003c/code\u003e\u003c/pre\u003e\n"
+          }
+        ]
       },
       "dateCreated": "Mar 26, 2015 9:46:58 PM",
       "dateStarted": "Jul 3, 2015 1:44:56 PM",
