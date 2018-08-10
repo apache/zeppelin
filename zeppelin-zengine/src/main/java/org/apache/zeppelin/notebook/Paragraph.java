@@ -72,7 +72,8 @@ import com.google.common.collect.Maps;
 /**
  * Paragraph is a representation of an execution unit.
  */
-public class Paragraph extends JobWithProgressPoller<Object> implements Cloneable, JsonSerializable {
+public class Paragraph extends JobWithProgressPoller<InterpreterResult> implements Cloneable,
+    JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private static Pattern REPL_PATTERN =
@@ -82,10 +83,12 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
   private transient Interpreter interpreter;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
+  // personalized
+  private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap();
 
   private String title;
-  private String text;  // text is composed of intpText and scriptText.
+  // text is composed of intpText and scriptText.
+  private String text;
   private transient String intpText;
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient String scriptText;
@@ -93,14 +96,10 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
   private Date dateUpdated;
   // paragraph configs like isOpen, colWidth, etc
   private Map<String, Object> config = new HashMap<>();
-  public GUI settings = new GUI();          // form and parameter settings
+  // form and parameter settings
+  public GUI settings = new GUI();
 
-  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
-  // see ZEPPELIN-212
-  volatile Object results;
-
-  // For backward compatibility of note.json format after ZEPPELIN-212
-  volatile Object result;
+  private InterpreterResult results;
   private Map<String, ParagraphRuntimeInfo> runtimeInfos;
 
   /**
@@ -142,8 +141,8 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
   }
 
   @Override
-  public synchronized void setResult(Object results) {
-    this.results = results;
+  public synchronized void setResult(InterpreterResult result) {
+    this.results = result;
   }
 
   public Paragraph cloneParagraphForUser(String user) {
@@ -321,16 +320,12 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
   }
 
   public InterpreterResult getResult() {
-    return (InterpreterResult) getReturn();
+    return getReturn();
   }
 
   @Override
-  public synchronized Object getReturn() {
+  public synchronized InterpreterResult getReturn() {
     return results;
-  }
-
-  public Object getPreviousResultFormat() {
-    return result;
   }
 
   @Override
@@ -402,7 +397,7 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
   }
 
   @Override
-  protected Object jobRun() throws Throwable {
+  protected InterpreterResult jobRun() throws Throwable {
     logger.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
             getId(), intpText, note.getId(), authenticationInfo.getUser());
     this.interpreter = getBindedInterpreter();
@@ -558,7 +553,7 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
       }
 
       private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
-        // update paragraph result
+        // update paragraph results
         InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
         setReturn(result, null);
       }
@@ -793,9 +788,6 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
     if (results != null ? !results.equals(paragraph.results) : paragraph.results != null) {
       return false;
     }
-    if (result != null ? !result.equals(paragraph.result) : paragraph.result != null) {
-      return false;
-    }
     return runtimeInfos != null ?
         runtimeInfos.equals(paragraph.runtimeInfos) : paragraph.runtimeInfos == null;
 
@@ -811,7 +803,6 @@ public class Paragraph extends JobWithProgressPoller<Object> implements Cloneabl
     result1 = 31 * result1 + (config != null ? config.hashCode() : 0);
     result1 = 31 * result1 + (settings != null ? settings.hashCode() : 0);
     result1 = 31 * result1 + (results != null ? results.hashCode() : 0);
-    result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
     result1 = 31 * result1 + (runtimeInfos != null ? runtimeInfos.hashCode() : 0);
     return result1;
   }

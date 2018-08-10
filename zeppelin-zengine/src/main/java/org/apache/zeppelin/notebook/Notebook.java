@@ -193,7 +193,6 @@ public class Notebook implements NoteEventListener {
     Note newNote;
     try {
       Note oldNote = Note.fromJson(sourceJson);
-      convertFromSingleResultToMultipleResultsFormat(oldNote);
       newNote = createNote(subject);
       if (noteName != null) {
         newNote.setName(noteName);
@@ -402,76 +401,6 @@ public class Notebook implements NoteEventListener {
     }
   }
 
-  public void convertFromSingleResultToMultipleResultsFormat(Note note) {
-    for (Paragraph p : note.paragraphs) {
-      Object ret = p.getPreviousResultFormat();
-      if (ret != null && p.results != null) {
-        continue; // already converted
-      }
-
-      try {
-        if (ret != null && ret instanceof Map) {
-          Map r = ((Map) ret);
-          if (r.containsKey("code") &&
-              r.containsKey("msg") &&
-              r.containsKey("type")) { // all three fields exists in sinle result format
-
-            InterpreterResult.Code code = InterpreterResult.Code.valueOf((String) r.get("code"));
-            InterpreterResult.Type type = InterpreterResult.Type.valueOf((String) r.get("type"));
-            String msg = (String) r.get("msg");
-            InterpreterResult result = new InterpreterResult(code, msg);
-            if (result.message().size() == 1) {
-              result = new InterpreterResult(code);
-              result.add(type, msg);
-            }
-            p.setResult(result);
-
-            // convert config
-            Map<String, Object> config = p.getConfig();
-            Object graph = config.remove("graph");
-            Object apps = config.remove("apps");
-            Object helium = config.remove("helium");
-
-            List<Object> results = new LinkedList<>();
-            for (int i = 0; i < result.message().size(); i++) {
-              if (i == result.message().size() - 1) {
-                HashMap<Object, Object> res = new HashMap<>();
-                res.put("graph", graph);
-                res.put("apps", apps);
-                res.put("helium", helium);
-                results.add(res);
-              } else {
-                results.add(new HashMap<>());
-              }
-            }
-            config.put("results", results);
-          }
-        } else if (ret == null && p.getConfig() != null) {
-          //ZEPPELIN-3063 Notebook loses formatting when importing from 0.6.x
-          if (p.getConfig().get("graph") != null && p.getConfig().get("graph") instanceof Map
-            && !((Map) p.getConfig().get("graph")).get("mode").equals("table")) {
-            Map<String, Object> config = p.getConfig();
-            Object graph = config.remove("graph");
-            Object apps = config.remove("apps");
-            Object helium = config.remove("helium");
-
-            List<Object> results = new LinkedList<>();
-
-            HashMap<Object, Object> res = new HashMap<>();
-            res.put("graph", graph);
-            res.put("apps", apps);
-            res.put("helium", helium);
-            results.add(res);
-
-            config.put("results", results);
-          }
-        }
-      } catch (Exception e) {
-        logger.error("Conversion failure", e);
-      }
-    }
-  }
-
   @SuppressWarnings("rawtypes")
   public Note loadNoteFromRepo(String id, AuthenticationInfo subject) {
     Note note = null;
@@ -483,8 +412,6 @@ public class Notebook implements NoteEventListener {
     if (note == null) {
       return null;
     }
-
-    convertFromSingleResultToMultipleResultsFormat(note);
 
     //Manually inject ALL dependencies, as DI constructor was NOT used
     note.setIndex(this.noteSearchService);
