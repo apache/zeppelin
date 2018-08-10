@@ -299,6 +299,9 @@ public class NotebookServer extends WebSocketServlet
         case MOVE_PARAGRAPH:
           moveParagraph(conn, userAndRoles, notebook, messagereceived);
           break;
+        case MOVE_PARAGRAPHS:
+          moveParagraphs(conn, userAndRoles, notebook, messagereceived);
+          break;
         case INSERT_PARAGRAPH:
           insertParagraph(conn, userAndRoles, notebook, messagereceived);
           break;
@@ -384,6 +387,12 @@ public class NotebookServer extends WebSocketServlet
           break;
         case PATCH_PARAGRAPH:
           patchParagraph(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case REMOVE_SELECTED_PARAGRAPHS:
+          removeSelectedParagraphs(conn, userAndRoles, notebook, messagereceived);
+          break;
+        case CLEAR_SELECTED_PARAGRAPHS_OUTPUT:
+          clearSelectedParagraphOutput(conn, userAndRoles, notebook, messagereceived);
           break;
         default:
           break;
@@ -675,6 +684,29 @@ public class NotebookServer extends WebSocketServlet
 
     for (NotebookSocket conn : userConnectedSockets.get(user)) {
       Message m = new Message(OP.PARAGRAPH).put("paragraph", p);
+      unicast(m, conn);
+    }
+  }
+
+  public void unicastSelectedParagraphs(Note note, ArrayList<Paragraph> paragraphsList,
+      String user) {
+    if (!note.isPersonalizedMode() || user == null) {
+      return;
+    }
+
+    for (Paragraph p : paragraphsList) {
+      if (p == null) {
+        paragraphsList.remove(p);
+      }
+    }
+
+    if (!userConnectedSockets.containsKey(user)) {
+      LOG.warn("Failed to send unicast. user {} that is not in connections map", user);
+      return;
+    }
+
+    for (NotebookSocket conn : userConnectedSockets.get(user)) {
+      Message m = new Message(OP.SELECTED_PARAGRAPHS).put("paragraphs", paragraphsList);
       unicast(m, conn);
     }
   }
@@ -1335,7 +1367,20 @@ public class NotebookServer extends WebSocketServlet
           Message fromMessage) throws IOException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
-    Note newNote = notebook.cloneNote(noteId, name, new AuthenticationInfo(fromMessage.principal));
+
+    List<Map<String, Object>> paragraphs = getParagraphsFromMessage(fromMessage);
+    Note newNote;
+    if (paragraphs != null) {
+      List<String> paragraphsId = new LinkedList<>();
+      for (Map<String, Object> parag : paragraphs) {
+        paragraphsId.add((String) parag.get("id"));
+      }
+      newNote = notebook.cloneNote(noteId, name, paragraphsId,
+          new AuthenticationInfo(fromMessage.principal));
+    } else {
+      newNote = notebook.cloneNote(noteId, name, new AuthenticationInfo(fromMessage.principal));
+    }
+
     AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
     addConnectionToNote(newNote.getId(), (NotebookSocket) conn);
     conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
@@ -1688,6 +1733,35 @@ public class NotebookServer extends WebSocketServlet
         new Message(OP.PARAGRAPH_MOVED).put("id", paragraphId).put("index", newIndex));
   }
 
+  private void moveParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+      Notebook notebook, Message fromMessage) throws IOException {
+    final ArrayList<String> idList = (ArrayList<String>) fromMessage.get("ids");
+    final ArrayList<Double> indexList = (ArrayList<Double>) fromMessage.get("index");
+
+    if (idList.size() == 0 || indexList.size() == 0) {
+      return;
+    }
+    if (idList.size() != indexList.size()) {
+      return;
+    }
+
+    String noteId = getOpenNoteId(conn);
+    final Note note = notebook.getNote(noteId);
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    for (int i = 0; i < idList.size(); i++) {
+      note.moveParagraph(idList.get(i), indexList.get(i).intValue());
+    }
+    note.persist(subject);
+    broadcast(note.getId(),
+        new Message(OP.PARAGRAPHS_MOVED).put("id", idList).put("index", indexList));
+  }
+
   private String insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
           Notebook notebook, Message fromMessage) throws IOException {
     final int index = (int) Double.parseDouble(fromMessage.get("index").toString());
@@ -1782,6 +1856,91 @@ public class NotebookServer extends WebSocketServlet
       }
     }
   }
+
+  private List<Map<String, Object>> getParagraphsFromMessage(Message message) {
+    return gson.fromJson(String.valueOf(message.data.get("paragraphs")),
+        new TypeToken<List<Map<String, Object>>>() {
+        }.getType());
+  }
+
+
+  private void removeSelectedParagraphs(NotebookSocket conn, HashSet<String> userAndRoles,
+          Notebook notebook, Message fromMessage) throws IOException {
+    String noteId = getOpenNoteId(conn);
+
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+
+    List<Map<String, Object>> paragraphs = getParagraphsFromMessage(fromMessage);
+
+    final Note note = notebook.getNote(noteId);
+
+    /** Don't delete the selected paragraphs if, after removal, remains less than one paragraph */
+    if (paragraphs.size() < note.getParagraphCount()) {
+      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+
+      ArrayList<String> idList = new ArrayList<>();
+
+      for (Map<String, Object> raw : paragraphs) {
+        String paragraphId = (String) raw.get("id");
+        if (paragraphId == null) {
+          continue;
+        }
+
+        Paragraph para = note.removeParagraph(subject.getUser(), paragraphId);
+
+        if (para != null) {
+          idList.add(para.getId());
+        }
+      }
+
+      note.persist(subject);
+      if (!idList.isEmpty()) {
+        broadcast(note.getId(), new Message(OP.SELECTED_PARAGRAPHS_REMOVED).
+            put("idList", idList));
+      }
+    }
+
+  }
+
+
+  private void clearSelectedParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
+      Notebook notebook, Message fromMessage) throws IOException {
+    String noteId = getOpenNoteId(conn);
+    if (!hasParagraphWriterPermission(conn, notebook, noteId,
+        userAndRoles, fromMessage.principal, "write")) {
+      return;
+    }
+
+    List<Map<String, Object>> paragraphs = getParagraphsFromMessage(fromMessage);
+
+    final Note note = notebook.getNote(noteId);
+
+    if (note.isPersonalizedMode()) {
+      String user = fromMessage.principal;
+      ArrayList<Paragraph> paragraphsList = new ArrayList<>();
+
+      for (Map<String, Object> paragraph : paragraphs) {
+        Paragraph p = note.clearPersonalizedParagraphOutput(
+            (String) paragraph.get("id"), user);
+        paragraphsList.add(p);
+      }
+      unicastSelectedParagraphs(note, paragraphsList, user);
+
+    } else {
+      ArrayList<Paragraph> paragraphsList = new ArrayList<>();
+      for (Map<String, Object> paragraph : paragraphs) {
+        note.clearParagraphOutput((String) paragraph.get("id"));
+        Paragraph p = note.getParagraph((String) paragraph.get("id"));
+        paragraphsList.add(p);
+      }
+      broadcast(note.getId(),
+          new Message(OP.SELECTED_PARAGRAPHS).put("paragraphs", paragraphsList));
+    }
+  }
+
 
   private void broadcastSpellExecution(NotebookSocket conn, HashSet<String> userAndRoles,
           Notebook notebook, Message fromMessage) throws IOException {

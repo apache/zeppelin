@@ -36,7 +36,7 @@ describe('Controller: NotebookCtrl', function() {
     scope.note = noteMock;
   });
 
-  let functions = ['getCronOptionNameFromValue', 'removeNote', 'runAllParagraphs', 'saveNote', 'toggleAllEditor',
+  let functions = ['getCronOptionNameFromValue', 'removeNote', 'runParagraphs', 'saveNote', 'toggleAllEditor',
     'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
     'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'updateNoteName',
     'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];

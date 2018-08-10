@@ -188,7 +188,13 @@ public class Message implements JsonSerializable {
     INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
     COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
     PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
-    NOTICE                        // [s-c] Notice
+    NOTICE,                       // [s-c] Notice
+    REMOVE_SELECTED_PARAGRAPHS,   // [c-s] remove selected paragraphs
+    SELECTED_PARAGRAPHS_REMOVED,  // [s-c] selected paragraphs removed
+    CLEAR_SELECTED_PARAGRAPHS_OUTPUT,   // [c-s] clear output selected paragraphs
+    SELECTED_PARAGRAPHS,                // [s-c] selected paragraph info
+    MOVE_PARAGRAPHS,            // [c-s] move paragraphs on new index
+    PARAGRAPHS_MOVED            // [s-c] several paragraph moved
   }
 
   private static final Gson gson = new Gson();

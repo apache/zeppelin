@@ -1674,6 +1674,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1));
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1));
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 83) { // Ctrl + Shift + S
+        $scope.toggleSelection(paragraphId);
+        $scope.$apply();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
           $scope.hideTitle($scope.paragraph);
@@ -1764,12 +1767,50 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.closeEditor($scope.paragraph);
   });
 
+  $scope.$on('openEditorById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.openEditor($scope.paragraph);
+    }
+  });
+
+  $scope.$on('closeEditorById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.closeEditor($scope.paragraph);
+    }
+  });
+
   $scope.$on('openTable', function(event) {
     $scope.openTable($scope.paragraph);
   });
 
   $scope.$on('closeTable', function(event) {
     $scope.closeTable($scope.paragraph);
+  });
+
+  $scope.$on('openTableById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.openTable($scope.paragraph);
+    }
+  });
+
+  $scope.$on('closeTableById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.closeTable($scope.paragraph);
+    }
+  });
+
+  $scope.$on('enableForRunById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.enabled === false) {
+      $scope.paragraph.config.enabled = true;
+      commitParagraph($scope.paragraph);
+    }
+  });
+
+  $scope.$on('disableForRunById', function(event, paragraphId) {
+    if ($scope.paragraph.id === paragraphId && $scope.paragraph.config.enabled === true) {
+      $scope.paragraph.config.enabled = false;
+      commitParagraph($scope.paragraph);
+    }
   });
 
   $scope.$on('resultRendered', function(event, paragraphId) {

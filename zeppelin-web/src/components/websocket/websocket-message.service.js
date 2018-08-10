@@ -65,8 +65,15 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
     },
 
-    cloneNote: function(noteIdToClone, newNoteName) {
-      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
+    cloneNote: function(noteIdToClone, newNoteName, paragraphs) {
+      websocketEvents.sendNewEvent({
+        op: 'CLONE_NOTE',
+        data: {
+          noteId: noteIdToClone,
+          name: newNoteName,
+          paragraphs: JSON.stringify(paragraphs),
+        },
+      });
     },
 
     getNoteList: function() {
@@ -99,6 +106,10 @@ function WebsocketMessageService($rootScope, websocketEvents) {
 
     moveParagraph: function(paragraphId, newIndex) {
       websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
+    },
+
+    moveSeveralParagraphs: function(paragraphsIds, newIndex) {
+      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPHS', data: {ids: paragraphsIds, index: newIndex}});
     },
 
     insertParagraph: function(newIndex) {
@@ -214,12 +225,32 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
 
+    removeSelectedParagraph: function(noteId, paragraphs) {
+      websocketEvents.sendNewEvent({
+        op: 'REMOVE_SELECTED_PARAGRAPHS',
+        data: {
+          noteId: noteId,
+          paragraphs: JSON.stringify(paragraphs),
+        },
+      });
+    },
+
     clearParagraphOutput: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
     },
 
     clearAllParagraphOutput: function(noteId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
+    },
+
+    clearSelectedParagraphsOutput: function(noteId, paragraphs) {
+      websocketEvents.sendNewEvent({
+        op: 'CLEAR_SELECTED_PARAGRAPHS_OUTPUT',
+        data: {
+          noteId: noteId,
+          paragraphs: JSON.stringify(paragraphs),
+        },
+      });
     },
 
     completion: function(paragraphId, buf, cursor) {

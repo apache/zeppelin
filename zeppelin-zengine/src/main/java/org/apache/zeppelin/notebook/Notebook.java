@@ -222,9 +222,25 @@ public class Notebook implements NoteEventListener {
    * @param sourceNoteId - the note ID to clone
    * @param newNoteName  - the name of the new note
    * @return noteId
-   * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   * @throws IOException, IllegalArgumentException
    */
   public Note cloneNote(String sourceNoteId, String newNoteName, AuthenticationInfo subject)
+          throws IOException, IllegalArgumentException {
+      return cloneNote(sourceNoteId, newNoteName, null, subject);
+  }
+
+
+    /**
+   * Clone existing note.
+   *
+   * @param sourceNoteId - the note ID to clone
+   * @param newNoteName  - the name of the new note
+   * @param paragraphsId - a list of paragraphs from which the new note will consist
+   * @return noteId
+   * @throws IOException, IllegalArgumentException
+   */
+  public Note cloneNote(String sourceNoteId, String newNoteName,
+      List<String> paragraphsId, AuthenticationInfo subject)
       throws IOException, IllegalArgumentException {
 
     Note sourceNote = getNote(sourceNoteId);
@@ -241,7 +257,9 @@ public class Notebook implements NoteEventListener {
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph p : paragraphs) {
-      newNote.addCloneParagraph(p, subject);
+      if (paragraphsId == null || paragraphsId.contains(p.getId())) {
+        newNote.addCloneParagraph(p, subject);
+      }
     }
 
     noteSearchService.addIndexDoc(newNote);
