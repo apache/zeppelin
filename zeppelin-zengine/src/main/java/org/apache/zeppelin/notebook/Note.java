@@ -722,23 +722,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return p.completion(buffer, cursor);
   }
 
-  public List<InterpreterCompletion> getInterpreterCompletion() {
-    List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp : interpreterSettingManager.getInterpreterSettings(getId())) {
-      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
-      if (intInfo.size() > 1) {
-        for (InterpreterInfo info : intInfo) {
-          String name = intp.getName() + "." + info.getName();
-          completion.add(new InterpreterCompletion(name, name, CompletionType.setting.name()));
-        }
-      } else {
-        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(),
-            CompletionType.setting.name()));
-      }
-    }
-    return completion;
-  }
-
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
       return new LinkedList<>(paragraphs);
@@ -752,7 +735,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     if (settings == null || settings.size() == 0) {
       return;
     }
-
+    
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       if (intpGroup != null) {
@@ -956,10 +939,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setNoteEventListener(NoteEventListener noteEventListener) {
     this.noteEventListener = noteEventListener;
-  }
-
-  boolean hasInterpreterBinded() {
-    return !interpreterSettingManager.getInterpreterSettings(getId()).isEmpty();
   }
 
   @Override
