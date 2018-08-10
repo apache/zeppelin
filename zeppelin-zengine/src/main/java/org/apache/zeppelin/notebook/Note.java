@@ -17,25 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
-import static java.lang.String.format;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.completer.CompletionType;
@@ -53,8 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
-import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -63,6 +46,20 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.String.format;
 
 /**
  * Binded interpreters for a note
@@ -89,12 +86,9 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private String name = "";
   private String id;
-  private Map<String, Object> noteParams = new HashMap<>();
-  private LinkedHashMap<String, Input> noteForms = new LinkedHashMap<>();
-
-
-  private transient ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
+  private String defaultInterpreterGroup;
+  private Map<String, Object> noteParams = new LinkedHashMap<>();
+  private Map<String, Input> noteForms = new LinkedHashMap<>();
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient InterpreterFactory factory;
@@ -125,9 +119,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     generateId();
   }
 
-  public Note(NotebookRepo repo, InterpreterFactory factory,
+  public Note(String defaultInterpreterGroup, NotebookRepo repo, InterpreterFactory factory,
       InterpreterSettingManager interpreterSettingManager, JobListenerFactory jlFactory,
       SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
+    this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.repo = repo;
     this.factory = factory;
     this.interpreterSettingManager = interpreterSettingManager;
@@ -182,6 +177,10 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return name;
   }
 
+  public String getDefaultInterpreterGroup() {
+    return defaultInterpreterGroup;
+  }
+
   public Map<String, Object> getNoteParams() {
     return noteParams;
   }
@@ -190,11 +189,11 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     this.noteParams = noteParams;
   }
 
-  public LinkedHashMap<String, Input> getNoteForms() {
+  public Map<String, Input> getNoteForms() {
     return noteForms;
   }
 
-  public void setNoteForms(LinkedHashMap<String, Input> noteForms) {
+  public void setNoteForms(Map<String, Input> noteForms) {
     this.noteForms = noteForms;
   }
 
@@ -366,7 +365,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = srcParagraph.settings.getParams();
-    LinkedHashMap<String, Input> form = srcParagraph.settings.getForms();
+    Map<String, Input> form = srcParagraph.settings.getForms();
 
     logger.debug("srcParagraph user: " + srcParagraph.getUser());
     
@@ -693,21 +692,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   /**
-   * Check whether all paragraphs belongs to this note has terminated
-   */
-  boolean isTerminated() {
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        if (!p.isTerminated()) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  /**
    * Return true if there is a running or pending paragraph
    */
   boolean isRunningOrPending() {
@@ -738,23 +722,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     return p.completion(buffer, cursor);
   }
 
-  public List<InterpreterCompletion> getInterpreterCompletion() {
-    List<InterpreterCompletion> completion = new LinkedList();
-    for (InterpreterSetting intp : interpreterSettingManager.getInterpreterSettings(getId())) {
-      List<InterpreterInfo> intInfo = intp.getInterpreterInfos();
-      if (intInfo.size() > 1) {
-        for (InterpreterInfo info : intInfo) {
-          String name = intp.getName() + "." + info.getName();
-          completion.add(new InterpreterCompletion(name, name, CompletionType.setting.name()));
-        }
-      } else {
-        completion.add(new InterpreterCompletion(intp.getName(), intp.getName(),
-            CompletionType.setting.name()));
-      }
-    }
-    return completion;
-  }
-
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
       return new LinkedList<>(paragraphs);
@@ -768,7 +735,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     if (settings == null || settings.size() == 0) {
       return;
     }
-
+    
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       if (intpGroup != null) {
@@ -972,10 +939,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   void setNoteEventListener(NoteEventListener noteEventListener) {
     this.noteEventListener = noteEventListener;
-  }
-
-  boolean hasInterpreterBinded() {
-    return !interpreterSettingManager.getInterpreterSettings(getId()).isEmpty();
   }
 
   @Override

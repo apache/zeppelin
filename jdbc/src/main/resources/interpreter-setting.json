@@ -57,7 +57,8 @@
         "envName": null,
         "propertyName": "default.statementPrecode",
         "defaultValue": "",
-        "description": "Runs before each run of the paragraph, in the same connection"
+        "description": "Runs before each run of the paragraph, in the same connection",
+        "type": "textarea"
       },
       "default.splitQueries": {
         "envName": null,

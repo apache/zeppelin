@@ -18,12 +18,23 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.ResultMessages;
+
+import java.util.List;
+import java.util.Properties;
 
 public class Spark2Shims extends SparkShims {
+
+  public Spark2Shims(Properties properties) {
+    super(properties);
+  }
 
   public void setupSparkListener(final String master,
                                  final String sparkWebUrl,
@@ -32,8 +43,46 @@ public class Spark2Shims extends SparkShims {
     sc.addSparkListener(new SparkListener() {
       @Override
       public void onJobStart(SparkListenerJobStart jobStart) {
-        buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
+
+        if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
+            !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
+          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
+        }
       }
     });
   }
+
+  @Override
+  public String showDataFrame(Object obj, int maxResult) {
+    if (obj instanceof Dataset) {
+      Dataset<Row> df = ((Dataset) obj).toDF();
+      String[] columns = df.columns();
+      List<Row> rows = df.takeAsList(maxResult + 1);
+
+      StringBuilder msg = new StringBuilder();
+      msg.append("%table ");
+      msg.append(StringUtils.join(columns, "\t"));
+      msg.append("\n");
+      for (Row row : rows) {
+        for (int i = 0; i < row.size(); ++i) {
+          msg.append(row.get(i));
+          if (i != row.size() -1) {
+            msg.append("\t");
+          }
+        }
+        msg.append("\n");
+      }
+
+      if (rows.size() > maxResult) {
+        msg.append("\n");
+        msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
+      }
+      // append %text at the end, otherwise the following output will be put in table as well.
+      msg.append("\n%text ");
+      return msg.toString();
+    } else {
+      return obj.toString();
+    }
+  }
+
 }

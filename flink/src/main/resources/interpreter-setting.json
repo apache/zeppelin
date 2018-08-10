@@ -23,5 +23,24 @@
       "language": "scala",
       "editOnDblClick": false
     }
+  },
+
+  {
+    "group": "flink",
+    "name": "sql",
+    "className": "org.apache.zeppelin.flink.FlinkSQLInterpreter",
+    "properties": {
+      "zeppelin.flink.maxResult": {
+        "envName": "zeppelin.flink.maxResult",
+        "propertyName": "zeppelin.flink.maxResult",
+        "defaultValue": "1000",
+        "description": "max number of row returned by sql interpreter.",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
   }
 ]

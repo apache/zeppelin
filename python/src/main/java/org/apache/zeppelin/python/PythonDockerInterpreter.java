@@ -21,8 +21,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,18 +44,20 @@ public class PythonDockerInterpreter extends Interpreter {
   Pattern deactivatePattern = Pattern.compile("deactivate");
   Pattern helpPattern = Pattern.compile("help");
   private File zeppelinHome;
+  private PythonInterpreter pythonInterpreter;
 
   public PythonDockerInterpreter(Properties property) {
     super(property);
   }
 
   @Override
-  public void open() {
+  public void open() throws InterpreterException {
     if (System.getenv("ZEPPELIN_HOME") != null) {
       zeppelinHome = new File(System.getenv("ZEPPELIN_HOME"));
     } else {
       zeppelinHome = Paths.get("..").toAbsolutePath().toFile();
     }
+    this.pythonInterpreter = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class);
   }
 
   @Override
@@ -68,7 +68,7 @@ public class PythonDockerInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    File pythonWorkDir = getPythonInterpreter().getPythonWorkDir();
+    File pythonWorkDir = pythonInterpreter.getPythonWorkDir();
     InterpreterOutput out = context.out;
 
     Matcher activateMatcher = activatePattern.matcher(st);
@@ -91,14 +91,14 @@ public class PythonDockerInterpreter extends Interpreter {
           ":/_zeppelin ";
 
       // set PYTHONPATH
-      String pythonPath = ".:/_python_workdir/py4j-src-0.9.2.zip:/_python_workdir";
+      String pythonPath = ".:/_python_workdir/py4j-src-0.10.7.zip:/_python_workdir";
 
       setPythonCommand("docker run -i --rm " +
           mountPythonScript +
           mountPy4j +
           "-e PYTHONPATH=\"" + pythonPath + "\" " +
           image + " " +
-          getPythonInterpreter().getPythonExec() + " " +
+          pythonInterpreter.getPythonExec() + " " +
           "/_python_workdir/zeppelin_python.py");
       restartPythonProcess();
       out.clear();
@@ -114,8 +114,7 @@ public class PythonDockerInterpreter extends Interpreter {
 
 
   public void setPythonCommand(String cmd) throws InterpreterException {
-    PythonInterpreter python = getPythonInterpreter();
-    python.setPythonExec(cmd);
+    pythonInterpreter.setPythonExec(cmd);
   }
 
   private void printUsage(InterpreterOutput out) {
@@ -148,43 +147,18 @@ public class PythonDockerInterpreter extends Interpreter {
    */
   @Override
   public Scheduler getScheduler() {
-    PythonInterpreter pythonInterpreter = null;
-    try {
-      pythonInterpreter = getPythonInterpreter();
-      if (pythonInterpreter != null) {
-        return pythonInterpreter.getScheduler();
-      } else {
-        return null;
-      }
-    } catch (InterpreterException e) {
-      e.printStackTrace();
+    if (pythonInterpreter != null) {
+      return pythonInterpreter.getScheduler();
+    } else {
       return null;
     }
   }
 
   private void restartPythonProcess() throws InterpreterException {
-    PythonInterpreter python = getPythonInterpreter();
-    python.close();
-    python.open();
-  }
-
-  protected PythonInterpreter getPythonInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    PythonInterpreter python = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    if (pythonInterpreter != null) {
+      pythonInterpreter.close();
+      pythonInterpreter.open();
     }
-    python = (PythonInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return python;
   }
 
   public boolean pull(InterpreterOutput out, String image) throws InterpreterException {

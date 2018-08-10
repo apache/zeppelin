@@ -72,8 +72,7 @@ public class SparkIntegrationTest {
 
   private void testInterpreterBasics() throws IOException, InterpreterException {
     // test SparkInterpreter
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
-    Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark");
+    Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark", "test");
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
@@ -85,24 +84,24 @@ public class SparkIntegrationTest {
     assertTrue(interpreterResult.msg.get(0).getData().contains("45"));
 
     // test PySparkInterpreter
-    Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.pyspark");
+    Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.pyspark", "test");
     interpreterResult = pySparkInterpreter.interpret("sqlContext.createDataFrame([(1,'a'),(2,'b')], ['id','name']).registerTempTable('test')", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
 
     // test IPySparkInterpreter
-    Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.ipyspark");
+    Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.ipyspark", "test");
     interpreterResult = ipySparkInterpreter.interpret("sqlContext.table('test').show()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
 
     // test SparkSQLInterpreter
-    Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql");
+    Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql", "test");
     interpreterResult = sqlInterpreter.interpret("select count(1) as c from test", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("c\n2\n", interpreterResult.message().get(0).getData());
 
     // test SparkRInterpreter
-    Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.r");
+    Interpreter sparkrInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.r", "test");
     if (isSpark2()) {
       interpreterResult = sparkrInterpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
     } else {
@@ -163,7 +162,7 @@ public class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
-    sparkInterpreterSetting.setProperty("spark.pyspark.python", getPythonExec());
+    sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
 
     testInterpreterBasics();

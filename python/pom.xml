@@ -34,14 +34,8 @@
 
   <properties>
     <interpreter.name>python</interpreter.name>
-    <python.py4j.version>0.9.2</python.py4j.version>
-    <python.test.exclude>
-        **/PythonInterpreterWithPythonInstalledTest.java,
-        **/PythonInterpreterPandasSqlTest.java,
-        **/PythonInterpreterMatplotlibTest.java
-    </python.test.exclude>
+    <python.py4j.version>0.10.7</python.py4j.version>
     <grpc.version>1.4.0</grpc.version>
-    <plugin.shade.version>2.4.1</plugin.shade.version>
   </properties>
 
   <dependencies>
@@ -171,39 +165,7 @@
           </excludes>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${plugin.shade.version}</version>
-        <configuration>
-          <transformers>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-              <resource>reference.conf</resource>
-            </transformer>
-          </transformers>
-          <relocations>
-            <relocation>
-              <pattern>com.google.common</pattern>
-              <shadedPattern>org.apache.zeppelin.com.google.common</shadedPattern>
-            </relocation>
-            <relocation>
-              <pattern>py4j</pattern>
-              <shadedPattern>org.apache.zeppelin.py4j</shadedPattern>
-            </relocation>
-          </relocations>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
+      
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>

@@ -34,7 +34,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.socket.ServiceCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -124,11 +123,11 @@ public class InterpreterService {
       InterpreterInstallationRequest request,
       DependencyResolver dependencyResolver,
       Path interpreterDir,
-      ServiceCallback serviceCallback) {
+      ServiceCallback<String> serviceCallback) {
     try {
       logger.info("Start to download a dependency: {}", request.getName());
       if (null != serviceCallback) {
-        serviceCallback.onStart("Starting to download " + request.getName() + " interpreter");
+        serviceCallback.onStart("Starting to download " + request.getName() + " interpreter", null);
       }
 
       dependencyResolver.load(request.getArtifact(), interpreterDir.toFile());
@@ -138,7 +137,7 @@ public class InterpreterService {
           request.getName(),
           interpreterDir.toString());
       if (null != serviceCallback) {
-        serviceCallback.onSuccess(request.getName() + " downloaded");
+        serviceCallback.onSuccess(request.getName() + " downloaded", null);
       }
     } catch (RepositoryException | IOException e) {
       logger.error("Error while downloading dependencies", e);
@@ -151,8 +150,13 @@ public class InterpreterService {
             e1);
       }
       if (null != serviceCallback) {
-        serviceCallback.onFailure(
-            "Error while downloading " + request.getName() + " as " + e.getMessage());
+        try {
+          serviceCallback.onFailure(
+              new Exception("Error while downloading " + request.getName() + " as " +
+                  e.getMessage()), null);
+        } catch (IOException e1) {
+          logger.error("ServiceCallback failure", e1);
+        }
       }
     }
   }

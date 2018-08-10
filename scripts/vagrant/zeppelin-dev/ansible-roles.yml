@@ -13,13 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-- name: Run Ansible
+- name: Install Python2 for Ansible
   hosts: all
-  sudo: yes
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  pre_tasks:
+    - raw: sudo apt-get -y install python-minimal
+
+- name: Run Ansible
+  hosts: all 
+  become: true
+  become_user: root
+  become_method: sudo
+  pre_tasks:
+    - name: 'install python2'
+      raw: sudo apt-get -y install python-simplejson
   roles:
     - common
     - ruby
-    - java7jdk
+    - java8jdk
     - nodejs
     - maven
     - python-addons

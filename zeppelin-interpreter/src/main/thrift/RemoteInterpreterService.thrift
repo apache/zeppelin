@@ -20,14 +20,16 @@ namespace java org.apache.zeppelin.interpreter.thrift
 
 struct RemoteInterpreterContext {
   1: string noteId,
-  2: string paragraphId,
-  3: string replName,
-  4: string paragraphTitle,
-  5: string paragraphText,
-  6: string authenticationInfo,
-  7: string config,   // json serialized config
-  8: string gui,      // json serialized gui
-  9: string noteGui,      // json serialized note gui
+  2: string noteName,
+  3: string paragraphId,
+  4: string replName,
+  5: string paragraphTitle,
+  6: string paragraphText,
+  7: string authenticationInfo,
+  8: string config,   // json serialized config
+  9: string gui,      // json serialized gui
+  10: string noteGui,      // json serialized note gui
+  11: map<string, string> localProperties
 }
 
 struct RemoteInterpreterResultMessage {
@@ -70,11 +72,6 @@ struct RemoteInterpreterEvent {
 struct RemoteApplicationResult {
   1: bool success,
   2: string msg
-}
-
-struct ZeppelinServerResourceParagraphRunner {
-  1: string noteId,
-  2: string paragraphId
 }
 
 /*
@@ -122,7 +119,6 @@ service RemoteInterpreterService {
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
-  void onReceivedZeppelinResource(1: string object);
 }
 
 

@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.LinkedHashMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -76,10 +77,10 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap;
+  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
-    this.groupRolesMap = groupRolesMap;
+    this.groupRolesMap.putAll(groupRolesMap);
   }
 
   LdapContextFactory ldapContextFactory;
@@ -237,12 +238,14 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return new SimpleAuthorizationInfo(roleNames);
   }
 
-  public List<String> searchForUserName(String containString, LdapContext ldapContext)
+  public List<String> searchForUserName(String containString, LdapContext ldapContext,
+      int numUsersToFetch)
           throws NamingException {
     List<String> userNameList = new ArrayList<>();
 
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    searchCtls.setCountLimit(numUsersToFetch);
 
     String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + containString + "*))";
     Object[] searchArguments = new Object[]{containString};

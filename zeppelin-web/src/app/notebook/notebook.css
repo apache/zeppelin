@@ -185,6 +185,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   direction: rtl;
+  unicode-bidi: plaintext;
   text-align: left;
   font-size: 29px;
   padding-top: 7px;

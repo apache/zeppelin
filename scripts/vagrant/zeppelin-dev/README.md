@@ -63,21 +63,21 @@ By default, Vagrant will share your project directory (the directory with the Va
 
 Running the following commands in the guest machine should display these expected versions:
 
-`node --version` should report *v0.12.7*
-`mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
+`node --version` should report *v4.2.6*
+`mvn --version` should report *Apache Maven 3.3.9* and *Java version: 1.8.0_171*
 
 
 The virtual machine consists of:
 
- - Ubuntu Server 14.04 LTS
- - Node.js 0.12.7
- - npm 2.11.3
- - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
- - Maven 3.3.3
+ - Ubuntu Server 16.04 LTS
+ - Node.js 4.2.6
+ - npm 3.5.2
+ - ruby + rake, make and bundler (only required if building jekyll documentation)
+ - Maven 3.3.9
  - Git
  - Unzip
  - libfontconfig to avoid phatomJs missing dependency issues
- - openjdk-7-jdk
+ - openjdk-8-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
  - [R](https://www.r-project.org/) and R Packages required to run the R Interpreter and the related R tutorial notebook, including:  Knitr, devtools, repr, rCharts, ggplot2, googleVis, mplot, htmltools, base64enc, data.table
  

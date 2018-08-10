@@ -35,6 +35,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -167,6 +168,9 @@ public abstract class AbstractTestRestApi {
 
   private static void start(boolean withAuth, String testClassName, boolean withKnox)
           throws Exception {
+    LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
+        withAuth, testClassName, withKnox);
+    
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -175,11 +179,14 @@ public abstract class AbstractTestRestApi {
       confDir.mkdirs();
 
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
-              zeppelinHome.getAbsolutePath());
+          zeppelinHome.getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
-              new File("../zeppelin-web/dist").getAbsolutePath());
+          new File("../zeppelin-web/dist").getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
-              confDir.getAbsolutePath());
+          confDir.getAbsolutePath());
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+          "spark");
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -212,26 +219,6 @@ public abstract class AbstractTestRestApi {
         }
 
       }
-
-      // exclude org.apache.zeppelin.rinterpreter.* for scala 2.11 test
-      String interpreters = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS);
-      String interpretersCompatibleWithScala211Test = null;
-
-      for (String intp : interpreters.split(",")) {
-        if (intp.startsWith("org.apache.zeppelin.rinterpreter")) {
-          continue;
-        }
-
-        if (interpretersCompatibleWithScala211Test == null) {
-          interpretersCompatibleWithScala211Test = intp;
-        } else {
-          interpretersCompatibleWithScala211Test += "," + intp;
-        }
-      }
-
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
-          interpretersCompatibleWithScala211Test);
 
       executor = Executors.newSingleThreadExecutor();
       executor.submit(SERVER);
@@ -292,6 +279,7 @@ public abstract class AbstractTestRestApi {
       LOG.info("Terminating test Zeppelin...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
+      PluginManager.reset();
 
       long s = System.currentTimeMillis();
       boolean started = true;
@@ -307,8 +295,7 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-
-      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName());
+      
       if (isRunningWithAuth) {
         isRunningWithAuth = false;
         System

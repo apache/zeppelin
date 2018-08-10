@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -40,7 +41,6 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -74,7 +74,8 @@ import com.google.common.collect.Maps;
 public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
-  private static Pattern REPL_PATTERN = Pattern.compile("(\\s*)%([\\w\\.]+).*", Pattern.DOTALL);
+  private static Pattern REPL_PATTERN =
+      Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
 
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -85,6 +86,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private String title;
   private String text;  // text is composed of intpText and scriptText.
   private transient String intpText;
+  private transient Map<String, String> localProperties = new HashMap<>();
   private transient String scriptText;
   private String user;
   private Date dateUpdated;
@@ -188,11 +190,36 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   public void parseText() {
     // parse text to get interpreter component
     if (this.text != null) {
+      // clean localProperties, otherwise previous localProperties will be used for the next run
+      this.localProperties.clear();
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
         this.intpText = matcher.group(2);
-        this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+
+        if (matcher.groupCount() == 3 && matcher.group(3) != null) {
+          String localPropertiesText = matcher.group(3);
+          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() -1)
+              .split(",");
+          for (String split : splits) {
+            String[] kv = split.split("=");
+            if (StringUtils.isBlank(split) || kv.length == 0) {
+              continue;
+            }
+            if (kv.length > 2) {
+              throw new RuntimeException("Invalid paragraph properties format: " + split);
+            }
+            if (kv.length == 1) {
+              localProperties.put(kv[0].trim(), kv[0].trim());
+            } else {
+              localProperties.put(kv[0].trim(), kv[1].trim());
+            }
+          }
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() +
+              localPropertiesText.length() + 1).trim();
+        } else {
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+        }
       } else {
         this.intpText = "";
         this.scriptText = this.text.trim();
@@ -233,13 +260,18 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return note;
   }
 
+  public Map<String, String> getLocalProperties() {
+    return localProperties;
+  }
+
   public boolean isEnabled() {
     Boolean enabled = (Boolean) config.get("enabled");
     return enabled == null || enabled.booleanValue();
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
+    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText,
+        note.getDefaultInterpreterGroup());
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -247,13 +279,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
-    String lines[] = buffer.split(System.getProperty("line.separator"));
-    if (lines.length > 0 && lines[0].startsWith("%") && cursor <= lines[0].trim().length()) {
-      int idx = lines[0].indexOf(' ');
-      if (idx < 0 || (idx > 0 && cursor <= idx)) {
-        return note.getInterpreterCompletion();
-      }
-    }
     try {
       this.interpreter = getBindedInterpreter();
     } catch (InterpreterNotFoundException e) {
@@ -263,7 +288,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     cursor = calculateCursorPosition(buffer, cursor);
 
-    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+    InterpreterContext interpreterContext = getInterpreterContext(null);
 
     try {
       if (this.interpreter != null) {
@@ -389,7 +414,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (interpreterSetting != null) {
       interpreterSetting.waitForReady();
     }
-    if (this.hasUser() && this.note.hasInterpreterBinded()) {
+    if (this.hasUser()) {
       if (interpreterSetting != null && interpreterHasUser(interpreterSetting)
           && isUserAuthorizedToAccessInterpreter(interpreterSetting.getOption()) == false) {
         logger.error("{} has no permission for {} ", authenticationInfo.getUser(), intpText);
@@ -492,7 +517,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       job.setStatus(Status.ABORT);
     } else {
       try {
-        interpreter.cancel(getInterpreterContextWithoutRunner(null));
+        interpreter.cancel(getInterpreterContext(null));
       } catch (InterpreterException e) {
         throw new RuntimeException(e);
       }
@@ -539,47 +564,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     }));
   }
 
-  private InterpreterContext getInterpreterContextWithoutRunner(InterpreterOutput output) {
-    AngularObjectRegistry registry = null;
-    ResourcePool resourcePool = null;
-
-    if (this.interpreter != null) {
-      registry = this.interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
-    }
-
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-
-    final Paragraph self = this;
-
-    Credentials credentials = note.getCredentials();
-    setAuthenticationInfo(new AuthenticationInfo(getUser()));
-
-    if (authenticationInfo.getUser() != null) {
-      UserCredentials userCredentials =
-          credentials.getUserCredentials(authenticationInfo.getUser());
-      authenticationInfo.setUserCredentials(userCredentials);
-    }
-
-    InterpreterContext interpreterContext =
-        InterpreterContext.builder()
-            .setNoteId(note.getId())
-            .setParagraphId(getId())
-            .setReplName(intpText)
-            .setParagraphTitle(title)
-            .setParagraphText(text)
-            .setAuthenticationInfo(authenticationInfo)
-            .setConfig(config)
-            .setGUI(settings)
-            .setNoteGUI(getNoteGui())
-            .setAngularObjectRegistry(registry)
-            .setResourcePool(resourcePool)
-            .setInterpreterOut(output)
-            .build();
-
-    return interpreterContext;
-  }
-
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
@@ -589,12 +573,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-    for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
-    }
-
-    final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
@@ -606,11 +584,13 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     InterpreterContext interpreterContext =
         InterpreterContext.builder()
             .setNoteId(note.getId())
+            .setNoteName(note.getName())
             .setParagraphId(getId())
             .setReplName(intpText)
             .setParagraphTitle(title)
             .setParagraphText(text)
             .setAuthenticationInfo(authenticationInfo)
+            .setLocalProperties(localProperties)
             .setConfig(config)
             .setGUI(settings)
             .setNoteGUI(getNoteGui())
@@ -621,29 +601,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return interpreterContext;
   }
 
-  public InterpreterContextRunner getInterpreterContextRunner() {
-    return new ParagraphRunner(note, note.getId(), getId());
-  }
-
   public void setStatusToUserParagraph(Status status) {
     String user = getUser();
     if (null != user) {
       getUserParagraph(getUser()).setStatus(status);
-    }
-  }
-
-  static class ParagraphRunner extends InterpreterContextRunner {
-
-    private transient Note note;
-
-    public ParagraphRunner(Note note, String noteId, String paragraphId) {
-      super(noteId, paragraphId);
-      this.note = note;
-    }
-
-    @Override
-    public void run() {
-      note.run(getParagraphId(), false);
     }
   }
 
@@ -727,7 +688,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+      return interpreterFactory.getInterpreter(user, note.getId(), replName,
+          note.getDefaultInterpreterGroup()) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }

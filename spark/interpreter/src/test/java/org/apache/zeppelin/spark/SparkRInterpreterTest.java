@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
@@ -27,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -81,8 +83,6 @@ public class SparkRInterpreterTest {
     InterpreterResult result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("2"));
-    // spark web url is sent
-    verify(mockRemoteIntpEventClient).onMetaInfosReceived(any(Map.class));
 
     result = sparkRInterpreter.interpret("sparkR.version()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -127,11 +127,14 @@ public class SparkRInterpreterTest {
     }
 
     // plotting
-    result = sparkRInterpreter.interpret("hist(mtcars$mpg)", getInterpreterContext());
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("imageWidth", "100");
+    result = sparkRInterpreter.interpret("hist(mtcars$mpg)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, result.message().size());
     assertEquals(InterpreterResult.Type.HTML, result.message().get(0).getType());
     assertTrue(result.message().get(0).getData().contains("<img src="));
+    assertTrue(result.message().get(0).getData().contains("width=\"100\""));
 
     result = sparkRInterpreter.interpret("library(ggplot2)\n" +
         "ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()", getInterpreterContext());
@@ -152,6 +155,8 @@ public class SparkRInterpreterTest {
         .setNoteId("note_1")
         .setParagraphId("paragraph_1")
         .setIntpEventClient(mockRemoteIntpEventClient)
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setLocalProperties(new HashMap<>())
         .build();
     return context;
   }

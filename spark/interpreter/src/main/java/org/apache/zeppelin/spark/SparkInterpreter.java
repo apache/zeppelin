@@ -132,11 +132,6 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    delegation.populateSparkWebUrl(ctx);
-  }
-
-  @Override
   public SparkZeppelinContext getZeppelinContext() {
     return delegation.getZeppelinContext();
   }

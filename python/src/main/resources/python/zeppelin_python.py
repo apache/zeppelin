@@ -80,14 +80,15 @@ class PythonCompletion:
 host = sys.argv[1]
 port = int(sys.argv[2])
 
-client = GatewayClient(address=host, port=port)
-gateway = JavaGateway(client, auto_convert = True)
-intp = gateway.entry_point
-# redirect stdout/stderr to java side so that PythonInterpreter can capture the python execution result
-output = Logger()
-sys.stdout = output
-sys.stderr = output
+if "PY4J_GATEWAY_SECRET" in os.environ:
+  from py4j.java_gateway import GatewayParameters
+  gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
+  gateway = JavaGateway(gateway_parameters=GatewayParameters(
+    address=host, port=port, auth_token=gateway_secret, auto_convert=True))
+else:
+  gateway = JavaGateway(GatewayClient(address=host, port=port), auto_convert=True)
 
+intp = gateway.entry_point
 _zcUserQueryNameSpace = {}
 
 completion = PythonCompletion(intp, _zcUserQueryNameSpace)
@@ -102,6 +103,10 @@ if intp.getZeppelinContext():
   _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
 
 intp.onPythonScriptInitialized(os.getpid())
+# redirect stdout/stderr to java side so that PythonInterpreter can capture the python execution result
+output = Logger()
+sys.stdout = output
+sys.stderr = output
 
 while True :
   req = intp.getStatements()

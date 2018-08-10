@@ -44,6 +44,15 @@ Also you can provide default value, using `${formName=defaultValue}`.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
+### Password form
+
+To create password form, use `${password:formName}` templates.
+
+for example
+
+<img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_password.png" />
+
+
 ### Select form
 
 To create select form, use `${formName=defaultValue,option1|option2...}`
@@ -133,6 +142,27 @@ print("Hello "+z.textbox("name", "sun"))
     </div>
 </div>
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+
+### Password form
+<div class="codetabs">
+    <div data-lang="scala" markdown="1">
+
+{% highlight scala %}
+%spark
+print("Password is "+ z.password("my_password"))
+{% endhighlight %}
+
+    </div>
+    <div data-lang="python" markdown="1">
+
+{% highlight python %}
+%pyspark
+print("Password is "+ z.password("my_password"))
+{% endhighlight %}
+
+    </div>
+</div>
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_password_prog.png" />
 
 ### Select form
 <div class="codetabs">

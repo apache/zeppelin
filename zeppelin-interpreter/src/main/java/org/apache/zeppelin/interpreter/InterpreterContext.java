@@ -47,6 +47,7 @@ public class InterpreterContext {
   }
 
   private String noteId;
+  private String noteName;
   private String replName;
   private String paragraphTitle;
   private String paragraphId;
@@ -59,6 +60,7 @@ public class InterpreterContext {
   private ResourcePool resourcePool;
   private String interpreterClassName;
   private Map<String, Integer> progressMap;
+  private Map<String, String> localProperties = new HashMap<>();
   private RemoteInterpreterEventClient intpEventClient;
 
   /**
@@ -73,6 +75,11 @@ public class InterpreterContext {
 
     public Builder setNoteId(String noteId) {
       context.noteId = noteId;
+      return this;
+    }
+
+    public Builder setNoteName(String noteName) {
+      context.noteName = noteName;
       return this;
     }
 
@@ -146,6 +153,10 @@ public class InterpreterContext {
       return this;
     }
 
+    public Builder setLocalProperties(Map<String, String> localProperties) {
+      context.localProperties = localProperties;
+      return this;
+    }
 
     public InterpreterContext build() {
       InterpreterContext.set(context);
@@ -166,6 +177,10 @@ public class InterpreterContext {
     return noteId;
   }
 
+  public String getNoteName() {
+    return noteName;
+  }
+
   public String getReplName() {
     return replName;
   }
@@ -180,6 +195,10 @@ public class InterpreterContext {
 
   public String getParagraphTitle() {
     return paragraphTitle;
+  }
+
+  public Map<String, String> getLocalProperties() {
+    return localProperties;
   }
 
   public AuthenticationInfo getAuthenticationInfo() {

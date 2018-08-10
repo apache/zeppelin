@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -14,11 +14,13 @@
  */
 package org.apache.zeppelin.geode;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.commons.lang.StringUtils;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -29,16 +31,13 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.pdx.PdxInstance;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Apache Geode OQL Interpreter (http://geode.apache.org)
- * 
+ *
  * <ul>
  * <li>{@code geode.locator.host} - The Geode Locator {@code <HOST>} to connect to.</li>
  * <li>{@code geode.locator.port} - The Geode Locator {@code <PORT>} to connect to.</li>
@@ -49,12 +48,12 @@ import org.apache.geode.pdx.PdxInstance;
  * {@code %geode.oql} <br/>
  * {@code SELECT * FROM /regionEmployee e WHERE e.companyId > 95} <br/>
  * {@code SELECT * FROM /regionEmployee ORDER BY employeeId} <br/>
- * {@code 
- * SELECT * FROM /regionEmployee 
+ * {@code
+ * SELECT * FROM /regionEmployee
  * WHERE companyId IN SET(1, 3, 7) OR lastName IN SET('NameA', 'NameB')
  * } <br/>
- * {@code 
- * SELECT e.employeeId, c.id as companyId FROM /regionEmployee e, /regionCompany c 
+ * {@code
+ * SELECT e.employeeId, c.id as companyId FROM /regionEmployee e, /regionCompany c
  * WHERE e.companyId = c.id
  * }
  * </p>
@@ -65,7 +64,7 @@ import org.apache.geode.pdx.PdxInstance;
  * <p>
  * When the Zeppelin server is collocated with Geode Shell (gfsh) one can use the %sh interpreter to
  * run Geode shell commands: <br/>
- * {@code 
+ * {@code
  * %sh
  *  source /etc/geode/conf/geode-env.sh
  *  gfsh << EOF
@@ -283,7 +282,7 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     return null;
   }
 

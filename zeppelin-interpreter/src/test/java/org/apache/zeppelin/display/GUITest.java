@@ -47,6 +47,22 @@ public class GUITest {
   }
 
   @Test
+  public void testSelect() {
+    GUI gui = new GUI();
+    Object selected = gui.select("list_1", null, options);
+    // use the first one as the default value
+    assertEquals("1", selected);
+
+    gui = new GUI();
+    selected = gui.select("list_1", "2", options);
+    assertEquals("2", selected);
+    // "2" is selected by above statement, so even this default value is "1", the selected value is
+    // still "2"
+    selected = gui.select("list_1", "1", options);
+    assertEquals("2", selected);
+  }
+
+  @Test
   public void testGson() {
     GUI gui = new GUI();
     gui.textbox("textbox_1", "default_text_1");

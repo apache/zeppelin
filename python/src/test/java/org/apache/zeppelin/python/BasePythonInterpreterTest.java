@@ -18,6 +18,7 @@
 package org.apache.zeppelin.python;
 
 import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -239,6 +240,16 @@ public abstract class BasePythonInterpreterTest {
     TextBox textbox = (TextBox) context.getGui().getForms().get("text_1");
     assertEquals("text_1", textbox.getName());
     assertEquals("value_1", textbox.getDefaultValue());
+
+    // Password
+    context = getInterpreterContext();
+    result =
+        interpreter.interpret("z.password(name='pwd_1')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(context.getGui().getForms().get("pwd_1") instanceof Password);
+    Password password = (Password) context.getGui().getForms().get("pwd_1");
+    assertEquals("pwd_1", password.getName());
 
     // Select
     context = getInterpreterContext();

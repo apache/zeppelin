@@ -40,7 +40,6 @@
     <guava.version>14.0.1</guava.version> <!-- update needed -->
 
     <!--plugin versions-->
-    <plugin.shade.version>2.3</plugin.shade.version>
     <plugin.scala.version>2.15.2</plugin.scala.version>
     <plugin.avro.version>1.7.7</plugin.avro.version>
 

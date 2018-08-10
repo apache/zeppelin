@@ -77,9 +77,6 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
 fi
 
 # add test classes for unittest
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/test-classes" ]]; then
-  ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/test-classes"
-fi
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
   ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
 fi
@@ -92,7 +89,7 @@ HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
-ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
+ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_SETTING_NAME}-"
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
@@ -204,6 +201,21 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
   else
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
+elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
+  else
+    # autodetect HADOOP_CONF_HOME by heuristic
+    if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+      if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+        export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+      elif [[ -d "/etc/hadoop/conf" ]]; then
+        export HADOOP_CONF_DIR="/etc/hadoop/conf"
+      fi
+    fi
+  fi
+
 fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
@@ -251,14 +263,14 @@ function shutdown_hook() {
       sleep 3
       let "count+=1"
     else
-      rm -f "${ZEPPELIN_PID}"
       break
     fi
   if [[ "${count}" == "5" ]]; then
     $(kill -9 ${pid} > /dev/null 2> /dev/null)
-    rm -f "${ZEPPELIN_PID}"
   fi
   done
 }
 
 wait
+
+rm -f "${ZEPPELIN_PID}" > /dev/null 2> /dev/null

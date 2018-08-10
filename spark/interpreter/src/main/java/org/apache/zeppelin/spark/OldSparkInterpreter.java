@@ -17,6 +17,53 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.spark.JobProgressUtil;
+import org.apache.spark.SecurityManager;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.SparkEnv;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.repl.SparkILoop;
+import org.apache.spark.scheduler.Pool;
+import org.apache.spark.scheduler.SparkListener;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.ui.SparkUI;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.WellKnownResourceName;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import scala.Console;
+import scala.Enumeration.Value;
+import scala.None;
+import scala.Option;
+import scala.Some;
+import scala.collection.JavaConversions;
+import scala.collection.convert.WrapAsJava$;
+import scala.reflect.io.AbstractFile;
+import scala.tools.nsc.Global;
+import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.Completion.Candidates;
+import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
+import scala.tools.nsc.interpreter.IMain;
+import scala.tools.nsc.interpreter.Results;
+import scala.tools.nsc.settings.MutableSettings;
+import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
+import scala.tools.nsc.settings.MutableSettings.PathSetting;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,85 +77,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.spark.JobProgressUtil;
-import org.apache.spark.SecurityManager;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.SparkEnv;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.repl.SparkILoop;
-import org.apache.spark.scheduler.ActiveJob;
-import org.apache.spark.scheduler.DAGScheduler;
-import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.SparkListenerApplicationEnd;
-import org.apache.spark.scheduler.SparkListenerApplicationStart;
-import org.apache.spark.scheduler.SparkListenerBlockManagerAdded;
-import org.apache.spark.scheduler.SparkListenerBlockManagerRemoved;
-import org.apache.spark.scheduler.SparkListenerBlockUpdated;
-import org.apache.spark.scheduler.SparkListenerEnvironmentUpdate;
-import org.apache.spark.scheduler.SparkListenerExecutorAdded;
-import org.apache.spark.scheduler.SparkListenerExecutorMetricsUpdate;
-import org.apache.spark.scheduler.SparkListenerExecutorRemoved;
-import org.apache.spark.scheduler.SparkListenerJobEnd;
-import org.apache.spark.scheduler.SparkListenerJobStart;
-import org.apache.spark.scheduler.SparkListenerStageCompleted;
-import org.apache.spark.scheduler.SparkListenerStageSubmitted;
-import org.apache.spark.scheduler.SparkListenerTaskEnd;
-import org.apache.spark.scheduler.SparkListenerTaskGettingResult;
-import org.apache.spark.scheduler.SparkListenerTaskStart;
-import org.apache.spark.scheduler.SparkListenerUnpersistRDD;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.ui.SparkUI;
-import org.apache.spark.scheduler.SparkListener;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.resource.WellKnownResourceName;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.spark.dep.SparkDependencyContext;
-import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import scala.Console;
-import scala.Enumeration.Value;
-import scala.None;
-import scala.Option;
-import scala.Some;
-import scala.Tuple2;
-import scala.collection.Iterator;
-import scala.collection.JavaConversions;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
-import scala.collection.convert.WrapAsJava$;
-import scala.collection.mutable.HashMap;
-import scala.collection.mutable.HashSet;
-import scala.reflect.io.AbstractFile;
-import scala.tools.nsc.Global;
-import scala.tools.nsc.Settings;
-import scala.tools.nsc.interpreter.Completion.Candidates;
-import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
-import scala.tools.nsc.interpreter.IMain;
-import scala.tools.nsc.interpreter.Results;
-import scala.tools.nsc.settings.MutableSettings;
-import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
-import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 /**
  * Spark interpreter for Zeppelin.
@@ -276,19 +245,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           getProperty("zeppelin.dep.additionalRemoteRepository"));
     }
     return dep;
-  }
-
-  private DepInterpreter getDepInterpreter() {
-    Interpreter p = getParentSparkInterpreter()
-        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
-    if (p == null) {
-      return null;
-    }
-
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    return (DepInterpreter) p;
   }
 
   public boolean isYarnMode() {
@@ -533,7 +489,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       argList.add(arg);
     }
 
-    DepInterpreter depInterpreter = getDepInterpreter();
+    DepInterpreter depInterpreter = getParentSparkInterpreter().
+        getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
     String depInterpreterClasspath = "";
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
@@ -746,14 +703,15 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
 
       sparkVersion = SparkVersion.fromVersionString(sc.version());
-
       sqlc = getSQLContext();
-
       dep = getDependencyResolver();
-
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
+      sparkUrl = getSparkUIUrl();
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+      numReferenceOfSparkContext.incrementAndGet();
 
-      z = new SparkZeppelinContext(sc, hooks,
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
       interpret("@transient val _binder = new java.util.HashMap[String, Object]()");
@@ -793,13 +751,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
           interpret("import spark.sql");
           interpret("import org.apache.spark.sql.functions._");
         } else {
-          if (sparkVersion.oldSqlContextImplicits()) {
-            interpret("import sqlContext._");
-          } else {
-            interpret("import sqlContext.implicits._");
-            interpret("import sqlContext.sql");
-            interpret("import org.apache.spark.sql.functions._");
-          }
+          interpret("import sqlContext.implicits._");
+          interpret("import sqlContext.sql");
+          interpret("import org.apache.spark.sql.functions._");
         }
       }
     }
@@ -817,14 +771,9 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
 
     if (Utils.isScala2_10()) {
       try {
-        if (sparkVersion.oldLoadFilesMethodName()) {
-          Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        } else {
-          Method loadFiles = this.interpreter.getClass().getMethod(
-              "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-          loadFiles.invoke(this.interpreter, settings);
-        }
+        Method loadFiles = this.interpreter.getClass().getMethod(
+            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
       } catch (NoSuchMethodException | SecurityException | IllegalAccessException
           | IllegalArgumentException | InvocationTargetException e) {
         throw new InterpreterException(e);
@@ -869,10 +818,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       }
     }
 
-    sparkUrl = getSparkUIUrl();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
-    numReferenceOfSparkContext.incrementAndGet();
   }
 
   public String getSparkUIUrl() {
@@ -906,28 +851,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
         "interpret",
         new Class[] {String.class},
         new Object[] {line});
-  }
-
-  public void populateSparkWebUrl(InterpreterContext ctx) {
-    sparkUrl = getSparkUIUrl();
-    Map<String, String> infos = new java.util.HashMap<>();
-    infos.put("url", sparkUrl);
-    String uiEnabledProp = getProperty("spark.ui.enabled", "true");
-    java.lang.Boolean uiEnabled = java.lang.Boolean.parseBoolean(
-        uiEnabledProp.trim());
-    if (!uiEnabled) {
-      infos.put("message", "Spark UI disabled");
-    } else {
-      if (StringUtils.isNotBlank(sparkUrl)) {
-        infos.put("message", "Spark UI enabled");
-      } else {
-        infos.put("message", "No spark url defined");
-      }
-    }
-    if (ctx != null) {
-      logger.info("Sending metadata to Zeppelin server: {}", infos.toString());
-      ctx.getIntpEventClient().onMetaInfosReceived(infos);
-    }
   }
 
   private List<File> currentClassPath() {
@@ -1080,7 +1003,6 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
-    populateSparkWebUrl(context);
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -1092,8 +1014,7 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       z.setNoteGui(context.getNoteGui());
-      String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
-      sc.setJobGroup(Utils.buildJobGroupId(context), jobDesc, false);
+      sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;

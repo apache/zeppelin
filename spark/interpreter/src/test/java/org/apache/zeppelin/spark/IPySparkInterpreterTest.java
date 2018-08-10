@@ -115,8 +115,6 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     String sparkVersion = context.out.toInterpreterResultMessage().get(0).getData();
-    // spark url is sent
-    verify(mockIntpEventClient).onMetaInfosReceived(any(Map.class));
 
     context = createInterpreterContext(mockIntpEventClient);
     result = interpreter.interpret("sc.range(1,10).sum()", context);

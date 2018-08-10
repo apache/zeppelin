@@ -70,6 +70,9 @@ class PyZeppelinContext(object):
     def textbox(self, name, defaultValue=""):
         return self.z.textbox(name, defaultValue)
 
+    def password(self, name):
+        return self.z.password(name)
+
     def noteTextbox(self, name, defaultValue=""):
         return self.z.noteTextbox(name, defaultValue)
 

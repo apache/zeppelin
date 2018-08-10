@@ -29,11 +29,11 @@ function NoteCreateCtrl($scope, noteListFactory, $routeParams, websocketMsgSrv) 
 
   vm.createNote = function() {
     if (!vm.clone) {
-      let defaultInterpreterId = '';
+      let defaultInterpreterGroup = '';
       if ($scope.note.defaultInterpreter !== null) {
-        defaultInterpreterId = $scope.note.defaultInterpreter.id;
+        defaultInterpreterGroup = $scope.note.defaultInterpreter.name;
       }
-      vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterId);
+      vm.websocketMsgSrv.createNotebook($scope.note.notename, defaultInterpreterGroup);
       $scope.note.defaultInterpreter = $scope.interpreterSettings[0];
     } else {
       let noteId = $routeParams.noteId;

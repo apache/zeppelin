@@ -204,6 +204,12 @@ If both are defined, then the **environment variables** will take priority.
     <td>Endpoint for the bucket</td>
   </tr>
   <tr>
+    <td>N/A</td>
+    <td><h6 class="properties">zeppelin.notebook.s3.timeout</h6></td>
+    <td>120000</td>
+    <td>Bucket endpoint request timeout in msec</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID</h6></td>
     <td><h6 class="properties">zeppelin.notebook.s3.kmsKeyID</h6></td>
     <td></td>
@@ -262,18 +268,6 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.notebook.public</h6></td>
     <td>true</td>
     <td>Make notebook public (set only <code>owners</code>) by default when created/imported. If set to <code>false</code> will add <code>user</code> to <code>readers</code> and <code>writers</code> as well, making it private and invisible to other users unless permissions are granted.</td>
-  </tr>
-  <tr>
-    <td><h6 class="properties">ZEPPELIN_INTERPRETERS</h6></td>
-    <td><h6 class="properties">zeppelin.interpreters</h6></td>
-  <description></description>
-    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />
-    ...
-    </td>
-    <td>
-      Comma separated interpreter configurations [Class] <br/><br />
-      <span style="font-style:italic; color: gray">NOTE: This property is deprecated since Zeppelin-0.6.0 and will not be supported from Zeppelin-0.7.0.</span>
-    </td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_INTERPRETER_DIR</h6></td>

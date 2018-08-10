@@ -46,9 +46,8 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
   @Test
   public void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.echo") instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test") instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
     assertFalse(remoteInterpreter.isOpened());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
@@ -71,9 +70,8 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
   @Test
   public void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.sleep") instanceof RemoteInterpreter);
-    final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.sleep");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.sleep", "test") instanceof RemoteInterpreter);
+    final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.sleep", "test");
 
     // simulate how zeppelin submit paragraph
     remoteInterpreter.getScheduler().submit(new Job("test-job", null) {

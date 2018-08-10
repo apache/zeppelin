@@ -41,7 +41,7 @@ You are free to use whatever IDE you prefer, or your favorite command line edito
 
 To build the code, install
 
-  * Oracle Java 7
+  * Oracle Java 8
   * Apache Maven
 
 ## Getting the source code

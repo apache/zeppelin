@@ -234,9 +234,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     appListener.onStatusChange(event.noteId, event.paragraphId, event.appId, event.status);
   }
 
-
   @Override
-  public void runParagraphs(RunParagraphsEvent event) {
+  public void runParagraphs(RunParagraphsEvent event) throws TException {
     try {
       listener.runParagraphs(event.getNoteId(), event.getParagraphIndices(),
           event.getParagraphIds(), event.getCurParagraphId());
@@ -247,7 +246,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.info("complete runParagraphs." + event);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new TException(e);
     }
   }
 
@@ -293,22 +292,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
     }
     interpreterGroup.getAngularObjectRegistry().remove(name, noteId, paragraphId);
-  }
-
-  @Override
-  public void sendMetaInfo(String intpGroupId, String json) throws TException {
-    InterpreterGroup interpreterGroup =
-        interpreterSettingManager.getInterpreterGroupById(intpGroupId);
-    if (interpreterGroup == null) {
-      throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
-    }
-
-    Map<String, String> metaInfos = gson.fromJson(json,
-        new TypeToken<Map<String, String>>() {
-        }.getType());
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
-    listener.onMetaInfosReceived(settingId, metaInfos);
   }
 
   @Override

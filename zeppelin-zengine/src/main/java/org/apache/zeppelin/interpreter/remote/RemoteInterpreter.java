@@ -225,7 +225,9 @@ public class RemoteInterpreter extends Interpreter {
                 remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
                 }.getType());
             context.getConfig().clear();
-            context.getConfig().putAll(remoteConfig);
+            if (remoteConfig != null) {
+              context.getConfig().putAll(remoteConfig);
+            }
             GUI currentGUI = context.getGui();
             GUI currentNoteGUI = context.getNoteGui();
             if (form == FormType.NATIVE) {
@@ -395,9 +397,11 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
-    return new RemoteInterpreterContext(ic.getNoteId(), ic.getParagraphId(), ic.getReplName(),
-        ic.getParagraphTitle(), ic.getParagraphText(), gson.toJson(ic.getAuthenticationInfo()),
-        gson.toJson(ic.getConfig()), ic.getGui().toJson(), gson.toJson(ic.getNoteGui()));
+    return new RemoteInterpreterContext(ic.getNoteId(), ic.getNoteName(), ic.getParagraphId(),
+        ic.getReplName(), ic.getParagraphTitle(), ic.getParagraphText(),
+        gson.toJson(ic.getAuthenticationInfo()), gson.toJson(ic.getConfig()), ic.getGui().toJson(),
+        gson.toJson(ic.getNoteGui()),
+        ic.getLocalProperties());
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {

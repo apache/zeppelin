@@ -34,11 +34,20 @@ public class BaseZeppelinContextTest {
     TestZeppelinContext z = new TestZeppelinContext(hookRegistry, 10);
     InterpreterContext context = InterpreterContext.builder()
         .setNoteId("note_1")
+        .setNoteName("note_name_1")
         .setParagraphId("paragraph_1")
         .setInterpreterClassName("Test1Interpreter")
         .setReplName("test1")
         .build();
     z.setInterpreterContext(context);
+
+    // get note name via InterpreterContext
+    String note_name = z.getInterpreterContext().getNoteName();
+    assertEquals(
+            String.format("Actual note name: %s, but expected %s", note_name, "note_name_1"),
+            "note_name_1",
+            note_name
+    );
 
     // register global hook for current interpreter
     z.registerHook(InterpreterHookRegistry.HookType.PRE_EXEC.getName(), "pre_cmd");

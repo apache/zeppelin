@@ -51,10 +51,13 @@ import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 public class ParagraphTest extends AbstractInterpreterTest {
@@ -97,6 +100,45 @@ public class ParagraphTest extends AbstractInterpreterTest {
     paragraph.setText("%r a");
     assertEquals("r", paragraph.getIntpText());
     assertEquals("a", paragraph.getScriptText());
+  }
+
+  @Test
+  public void testParagraphProperties() {
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%test(p1=v1,p2=v2) a");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("a", paragraph.getScriptText());
+    assertEquals(2, paragraph.getLocalProperties().size());
+    assertEquals("v1", paragraph.getLocalProperties().get("p1"));
+    assertEquals("v2", paragraph.getLocalProperties().get("p2"));
+
+    // properties with space
+    paragraph.setText("%test(p1=v1,  p2=v2) a");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("a", paragraph.getScriptText());
+    assertEquals(2, paragraph.getLocalProperties().size());
+    assertEquals("v1", paragraph.getLocalProperties().get("p1"));
+    assertEquals("v2", paragraph.getLocalProperties().get("p2"));
+
+    // empty properties
+    paragraph.setText("%test() a");
+    assertEquals("test", paragraph.getIntpText());
+    assertEquals("a", paragraph.getScriptText());
+    assertEquals(0, paragraph.getLocalProperties().size());
+  }
+
+  @Rule
+  public ExpectedException expectedEx = ExpectedException.none();
+
+  @Test
+  public void testInvalidProperties() {
+    expectedEx.expect(RuntimeException.class);
+    expectedEx.expectMessage("Invalid paragraph properties format");
+
+    Note note = createNote();
+    Paragraph paragraph = new Paragraph(note, null, interpreterFactory);
+    paragraph.setText("%test(p1=v1=v2) a");
   }
 
   @Test
