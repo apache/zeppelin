@@ -139,7 +139,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
     /* create note */
-    Note note = notebookSync.createNote("test", anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -156,7 +156,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
-    Note note = notebookSync.createNote("test", anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -176,7 +176,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncUpdateMain() throws IOException {
 
     /* create note */
-    Note note = notebookSync.createNote("test", anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -305,7 +305,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     // no notes
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote("test", anonymous);
+    Note note = vNotebookSync.createNote("test", "", anonymous);
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
 
     String noteId = vRepoSync.list(anonymous).get(0).getId();
@@ -331,7 +331,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncWithAcl() throws IOException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    Note note = notebookSync.createNote("test", user1);
+    Note note = notebookSync.createNote("test", "", user1);
     assertEquals(0, note.getParagraphs().size());
 
     // saved on both storages

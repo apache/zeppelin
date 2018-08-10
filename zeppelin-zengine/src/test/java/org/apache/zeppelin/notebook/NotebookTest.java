@@ -1248,7 +1248,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     final AtomicInteger onNoteCreate = new AtomicInteger(0);
     final AtomicInteger onParagraphRemove = new AtomicInteger(0);
     final AtomicInteger onParagraphCreate = new AtomicInteger(0);
-    final AtomicInteger unbindInterpreter = new AtomicInteger(0);
 
     notebook.addNotebookEventListener(new NotebookEventListener() {
       @Override
@@ -1259,11 +1258,6 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
       @Override
       public void onNoteCreate(Note note) {
         onNoteCreate.incrementAndGet();
-      }
-
-      @Override
-      public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
-        unbindInterpreter.incrementAndGet();
       }
 
       @Override

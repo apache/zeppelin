@@ -419,27 +419,6 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   }
 
   @Override
-  public void onUnbindInterpreter(Note note, InterpreterSetting setting) {
-    for (Paragraph p : note.getParagraphs()) {
-      Interpreter currentInterpreter = null;
-      try {
-        currentInterpreter = p.getBindedInterpreter();
-      } catch (InterpreterNotFoundException e) {
-        logger.warn("Not interpreter found", e);
-        return;
-      }
-      List<InterpreterInfo> infos = setting.getInterpreterInfos();
-      for (InterpreterInfo info : infos) {
-        if (currentInterpreter != null &&
-            info.getClassName().equals(currentInterpreter.getClassName())) {
-          onParagraphRemove(p);
-          break;
-        }
-      }
-    }
-  }
-
-  @Override
   public void onParagraphRemove(Paragraph paragraph) {
     List<ApplicationState> appStates = paragraph.getAllApplicationStates();
     for (ApplicationState app : appStates) {

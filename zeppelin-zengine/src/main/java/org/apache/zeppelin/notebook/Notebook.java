@@ -140,7 +140,7 @@ public class Notebook implements NoteEventListener {
    * @throws IOException
    */
   public Note createNote(AuthenticationInfo subject) throws IOException {
-    return createNote(interpreterSettingManager.getDefaultInterpreterSetting().getName(), subject);
+    return createNote("", interpreterSettingManager.getDefaultInterpreterSetting().getName(), subject);
   }
 
   /**
@@ -148,10 +148,10 @@ public class Notebook implements NoteEventListener {
    *
    * @throws IOException
    */
-  public Note createNote(String defaultInterpreterSetting, AuthenticationInfo subject)
+  public Note createNote(String name, String defaultInterpreterGroup, AuthenticationInfo subject)
       throws IOException {
     Note note =
-        new Note(defaultInterpreterSetting, notebookRepo, replFactory, interpreterSettingManager,
+        new Note(name, defaultInterpreterGroup, notebookRepo, replFactory, interpreterSettingManager,
             jobListenerFactory, noteSearchService, credentials, this);
     note.setNoteNameListener(folders);
 
@@ -496,6 +496,10 @@ public class Notebook implements NoteEventListener {
     note.setJobListenerFactory(jobListenerFactory);
     note.setNotebookRepo(notebookRepo);
     note.setCronSupported(getConf());
+
+    if (note.getDefaultInterpreterGroup() == null) {
+      note.setDefaultInterpreterGroup(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT));
+    }
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
@@ -1030,12 +1034,6 @@ public class Notebook implements NoteEventListener {
   private void fireNoteRemoveEvent(Note note) {
     for (NotebookEventListener listener : notebookEventListeners) {
       listener.onNoteRemove(note);
-    }
-  }
-
-  private void fireUnbindInterpreter(Note note, InterpreterSetting setting) {
-    for (NotebookEventListener listener : notebookEventListeners) {
-      listener.onUnbindInterpreter(note, setting);
     }
   }
 

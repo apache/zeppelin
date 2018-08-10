@@ -199,11 +199,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // This is partial test as newNote is in memory but is not persistent
     String newNoteName = newNote.getName();
     LOG.info("new note name is: " + newNoteName);
-    String expectedNoteName = noteName;
-    if (noteName.isEmpty()) {
-      expectedNoteName = "Note " + newNoteId;
+    if (StringUtils.isBlank(noteName)) {
+      noteName = "Untitled Note";
     }
-    assertEquals("compare note name", expectedNoteName, newNoteName);
+    assertEquals("compare note name", noteName, newNoteName);
     // cleanup
     ZeppelinServer.notebook.removeNote(newNoteId, anonymous);
     post.releaseConnection();

@@ -17,14 +17,18 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -82,8 +86,20 @@ public class NotebookRepoRestApi {
   public Response refreshRepo(){
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     LOG.info("Reloading notebook repository for user {}", subject.getUser());
-    notebookWsServer.broadcastReloadedNoteList(subject, null);
+    try {
+      notebookWsServer.broadcastReloadedNoteList(null, getServiceContext());
+    } catch (IOException e) {
+      LOG.error("Fail to refresh repo", e);
+    }
     return new JsonResponse<>(Status.OK, "", null).build();
+  }
+
+  private ServiceContext getServiceContext() {
+    AuthenticationInfo authInfo = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Set<String> userAndRoles = Sets.newHashSet();
+    userAndRoles.add(SecurityUtils.getPrincipal());
+    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
+    return new ServiceContext(authInfo, userAndRoles);
   }
 
   /**
@@ -118,7 +134,11 @@ public class NotebookRepoRestApi {
         noteRepos.updateNotebookRepo(newSettings.name, newSettings.settings, subject);
     if (!updatedSettings.isEmpty()) {
       LOG.info("Broadcasting note list to user {}", subject.getUser());
-      notebookWsServer.broadcastReloadedNoteList(subject, null);
+      try {
+        notebookWsServer.broadcastReloadedNoteList(null, getServiceContext());
+      } catch (IOException e) {
+        LOG.error("Fail to refresh repo.", e);
+      }
     }
     return new JsonResponse<>(Status.OK, "", updatedSettings).build();
   }

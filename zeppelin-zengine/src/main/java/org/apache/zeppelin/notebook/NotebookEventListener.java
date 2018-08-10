@@ -24,6 +24,4 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 public interface NotebookEventListener extends NoteEventListener {
   public void onNoteRemove(Note note);
   public void onNoteCreate(Note note);
-
-  public void onUnbindInterpreter(Note note, InterpreterSetting setting);
 }
