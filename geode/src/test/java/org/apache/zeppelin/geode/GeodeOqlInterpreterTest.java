@@ -100,8 +100,8 @@ public class GeodeOqlInterpreterTest {
     PdxInstance pdx1 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
     PdxInstance pdx2 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
 
-    testOql(asIterator(pdx1, pdx2), "\n\n\n", 10);
-    testOql(asIterator(pdx1, pdx2), "\n\n", 1);
+    testOql(asIterator(pdx1, pdx2), "\n", 10);
+    testOql(asIterator(pdx1, pdx2), "\n", 1);
   }
 
   private static class DummyUnspportedType {

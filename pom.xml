@@ -82,6 +82,7 @@
     <module>scalding</module>
     <module>java</module>
     <module>beam</module>
+    <module>geode</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
