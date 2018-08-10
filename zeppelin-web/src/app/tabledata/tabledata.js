@@ -61,7 +61,7 @@ export default class TableData extends Dataset {
         } else {
           let valueOfCol;
           if (!(col[0] === '0' || col.length >= 7)) {
-            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col) && canTransfer) {
+            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
               col = valueOfCol;
             }
           }
