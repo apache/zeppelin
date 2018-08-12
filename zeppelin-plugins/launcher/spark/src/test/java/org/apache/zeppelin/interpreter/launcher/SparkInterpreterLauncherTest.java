@@ -163,7 +163,7 @@ public class SparkInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
-    assertEquals(" --master yarn-cluster --files .//conf/log4j_yarn_cluster.properties --conf spark.files='file_1' --conf spark.jars='jar_1' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    assertEquals(" --master yarn-cluster --conf spark.files='file_1',.//conf/log4j_yarn_cluster.properties --conf spark.jars='jar_1' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
   }
 
   @Test
@@ -196,7 +196,7 @@ public class SparkInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
-    assertEquals(" --master yarn --files .//conf/log4j_yarn_cluster.properties --conf spark.files='file_1' --conf spark.jars='jar_1' --conf spark.submit.deployMode='cluster' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1 --jars " + Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString(), interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    assertEquals(" --master yarn --conf spark.files='file_1',.//conf/log4j_yarn_cluster.properties --conf spark.jars='jar_1' --conf spark.submit.deployMode='cluster' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1 --jars " + Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar").toString(), interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     Files.deleteIfExists(Paths.get(localRepoPath.toAbsolutePath().toString(), "test.jar"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
@@ -230,7 +230,7 @@ public class SparkInterpreterLauncherTest {
     assertTrue(interpreterProcess.getEnv().size() >= 3);
     assertEquals("/user/spark", interpreterProcess.getEnv().get("SPARK_HOME"));
     assertEquals("true", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_YARN_CLUSTER"));
-    assertEquals(" --master yarn --files .//conf/log4j_yarn_cluster.properties --conf spark.files='file_1' --conf spark.jars='jar_1' --conf spark.submit.deployMode='cluster' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
+    assertEquals(" --master yarn --conf spark.files='file_1',.//conf/log4j_yarn_cluster.properties --conf spark.jars='jar_1' --conf spark.submit.deployMode='cluster' --conf spark.yarn.isPython=true --conf spark.yarn.submit.waitAppCompletion=false --proxy-user user1", interpreterProcess.getEnv().get("ZEPPELIN_SPARK_CONF"));
     FileUtils.deleteDirectory(localRepoPath.toFile());
   }
 }
