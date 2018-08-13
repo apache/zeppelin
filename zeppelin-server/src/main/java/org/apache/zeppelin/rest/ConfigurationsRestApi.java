@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.rest;
 
-import java.util.Map;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.ConfigurationService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,68 +26,45 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.server.JsonResponse;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Configurations Rest API Endpoint.
  */
 @Path("/configurations")
 @Produces("application/json")
-public class ConfigurationsRestApi {
-  private Notebook notebook;
+public class ConfigurationsRestApi extends AbstractRestApi {
 
-  public ConfigurationsRestApi() {}
+  private ConfigurationService configurationService;
 
-  public ConfigurationsRestApi(Notebook notebook) {
-    this.notebook = notebook;
+  public ConfigurationsRestApi(ConfigurationService configurationService) {
+    this.configurationService = configurationService;
   }
 
   @GET
   @Path("all")
   @ZeppelinApi
   public Response getAll() {
-    ZeppelinConfiguration conf = notebook.getConf();
-
-    Map<String, String> configurations = conf.dumpConfigurations(conf,
-        new ZeppelinConfiguration.ConfigurationKeyPredicate() {
-        @Override
-        public boolean apply(String key) {
-          return !key.contains("password") &&
-              !key.equals(ZeppelinConfiguration
-                  .ConfVars
-                  .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
-                  .getVarName());
-        }
-      }
-    );
-
-    return new JsonResponse(Status.OK, "", configurations).build();
+    try {
+      Map<String, String> properties = configurationService.getAllProperties(getServiceContext(),
+          new RestServiceCallback<>());
+      return new JsonResponse(Status.OK, "", properties).build();
+    } catch (IOException e) {
+      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
+    }
   }
 
   @GET
   @Path("prefix/{prefix}")
   @ZeppelinApi
   public Response getByPrefix(@PathParam("prefix") final String prefix) {
-    ZeppelinConfiguration conf = notebook.getConf();
-
-    Map<String, String> configurations = conf.dumpConfigurations(conf,
-        new ZeppelinConfiguration.ConfigurationKeyPredicate() {
-        @Override
-        public boolean apply(String key) {
-          return !key.contains("password") &&
-              !key.equals(ZeppelinConfiguration
-                  .ConfVars
-                  .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
-                  .getVarName()) &&
-              key.startsWith(prefix);
-        }
-      }
-    );
-
-    return new JsonResponse(Status.OK, "", configurations).build();
+    try {
+      Map<String, String> properties = configurationService.getPropertiesWithPrefix(prefix,
+          getServiceContext(), new RestServiceCallback<>());
+      return new JsonResponse(Status.OK, "", properties).build();
+    } catch (IOException e) {
+      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, "Fail to get configuration", e).build();
+    }
   }
 }
