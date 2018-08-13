@@ -36,6 +36,7 @@ export default class TableData extends Dataset {
     let textRows = paragraphResult.msg.split('\n');
     let comment = '';
     let commentRow = false;
+    const float64MaxDigits = 16;
 
     for (let i = 0; i < textRows.length; i++) {
       let textRow = textRows[i];
@@ -60,7 +61,7 @@ export default class TableData extends Dataset {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
           let valueOfCol;
-          if (!(col[0] === '0' || col.length >= 7)) {
+          if (!(col[0] === '0' || col.length > float64MaxDigits)) {
             if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
               col = valueOfCol;
             }
