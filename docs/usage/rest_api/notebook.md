@@ -1180,7 +1180,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given note id.
+      <td>This ```POST``` method adds cron job by the given note id. 
+          Default value of ```releaseResource``` is ```false```.
       </td>
     </tr>
     <tr>
@@ -1197,7 +1198,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"cron": "cron expression of note"}</pre></td>
+      <td><pre>{"cron": "cron expression of note", "releaseResource": "false"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
@@ -1241,7 +1242,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <tr>
       <td>Description</td>
       <td>This ```GET``` method gets cron job expression of given note id.
-          The body field of the returned JSON contains the cron expression.
+          The body field of the returned JSON contains the cron expression and ```releaseResource``` flag.
       </td>
     </tr>
     <tr>
@@ -1258,7 +1259,14 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK", "body": "* * * * * ?"}</pre></td>
+      <td><pre>
+{
+   "status": "OK", 
+   "body": {
+      "cron": "0 0/1 * * * ?", 
+      "releaseResource": true
+   }
+}</pre></td>
     </tr>
   </table>
 

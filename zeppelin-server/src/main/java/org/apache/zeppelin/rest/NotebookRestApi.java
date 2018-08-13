@@ -865,6 +865,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
     Map<String, Object> config = note.getConfig();
     config.put("cron", request.getCronString());
+    config.put("releaseresource", request.getReleaseResource());
     note.setConfig(config);
     notebook.refreshCron(note.getId());
 
@@ -893,7 +894,8 @@ public class NotebookRestApi extends AbstractRestApi {
     checkIfNoteSupportsCron(note);
 
     Map<String, Object> config = note.getConfig();
-    config.put("cron", null);
+    config.remove("cron");
+    config.remove("releaseresource");
     note.setConfig(config);
     notebook.refreshCron(note.getId());
 
@@ -919,8 +921,11 @@ public class NotebookRestApi extends AbstractRestApi {
     checkIfNoteIsNotNull(note);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
     checkIfNoteSupportsCron(note);
+    Map<String, Object> response = new HashMap<>();
+    response.put("cron", note.getConfig().get("cron"));
+    response.put("releaseResource", note.getConfig().get("releaseresource"));
 
-    return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
+    return new JsonResponse<>(Status.OK, response).build();
   }
 
   /**
