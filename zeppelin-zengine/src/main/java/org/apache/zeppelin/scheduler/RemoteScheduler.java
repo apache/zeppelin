@@ -132,7 +132,15 @@ public class RemoteScheduler implements Scheduler {
     List<Job> ret = new LinkedList<>();
     synchronized (queue) {
       for (Job job : running) {
-        ret.add(job);
+        if (job.getStatus() == Status.RUNNING) {
+          ret.add(job);
+        } else {
+          logger.error(
+                  "Tried to add {} to list of running jobs, but job status is {}",
+                  job.getJobName(),
+                  job.getStatus().toString()
+          );
+        }
       }
     }
     return ret;
