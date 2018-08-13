@@ -34,6 +34,7 @@ import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.rest.AdminRestApi;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.service.AdminService;
+import org.apache.zeppelin.service.ConfigurationService;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -471,7 +472,8 @@ public class ZeppelinServer extends Application {
     LoginRestApi loginRestApi = new LoginRestApi();
     singletons.add(loginRestApi);
 
-    ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(notebook);
+    ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(
+        new ConfigurationService(notebook.getConf()));
     singletons.add(settingsApi);
 
     AdminService adminService = new AdminService();

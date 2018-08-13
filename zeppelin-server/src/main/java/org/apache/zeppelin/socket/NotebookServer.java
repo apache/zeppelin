@@ -57,6 +57,7 @@ import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
@@ -145,6 +146,7 @@ public class NotebookServer extends WebSocketServlet
   final Map<String, Queue<NotebookSocket>> userConnectedSockets = new ConcurrentHashMap<>();
 
   private NotebookService notebookService;
+  private ConfigurationService configurationService;
 
   private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -165,6 +167,13 @@ public class NotebookServer extends WebSocketServlet
       this.notebookService = new NotebookService(notebook());
     }
     return this.notebookService;
+  }
+
+  public synchronized ConfigurationService getConfigurationService() {
+    if (this.configurationService == null) {
+      this.configurationService = new ConfigurationService(notebook().getConf());
+    }
+    return this.configurationService;
   }
 
   @Override
@@ -354,7 +363,7 @@ public class NotebookServer extends WebSocketServlet
           angularObjectClientUnbind(conn, userAndRoles, notebook, messagereceived);
           break;
         case LIST_CONFIGURATIONS:
-          sendAllConfigurations(conn, userAndRoles, notebook);
+          sendAllConfigurations(conn, messagereceived);
           break;
         case CHECKPOINT_NOTE:
           checkpointNote(conn, messagereceived);
@@ -1776,22 +1785,20 @@ public class NotebookServer extends WebSocketServlet
     return p;
   }
 
-  private void sendAllConfigurations(NotebookSocket conn, HashSet<String> userAndRoles,
-                                     Notebook notebook) throws IOException {
-    ZeppelinConfiguration conf = notebook.getConf();
+  private void sendAllConfigurations(NotebookSocket conn,
+                                     Message message ) throws IOException {
 
-    Map<String, String> configurations =
-        conf.dumpConfigurations(conf, new ZeppelinConfiguration.ConfigurationKeyPredicate() {
+    configurationService.getAllProperties(getServiceContext(message),
+        new WebSocketServiceCallback<Map<String, String>>(conn) {
           @Override
-          public boolean apply(String key) {
-            return !key.contains("password") && !key.equals(
-                ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
-                    .getVarName());
+          public void onSuccess(Map<String, String> properties,
+                                ServiceContext context) throws IOException {
+            super.onSuccess(properties, context);
+            properties.put("isRevisionSupported", String.valueOf(notebook().isRevisionSupported()));
+            conn.send(serializeMessage(
+                new Message(OP.CONFIGURATIONS_INFO).put("configurations", properties)));
           }
         });
-    configurations.put("isRevisionSupported", String.valueOf(notebook.isRevisionSupported()));
-    conn.send(serializeMessage(
-        new Message(OP.CONFIGURATIONS_INFO).put("configurations", configurations)));
   }
 
   private void checkpointNote(NotebookSocket conn, Message fromMessage)

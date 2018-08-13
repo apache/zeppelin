@@ -42,7 +42,6 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
-import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
@@ -58,7 +57,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
@@ -74,7 +72,7 @@ import java.util.Set;
  */
 @Path("/notebook")
 @Produces("application/json")
-public class NotebookRestApi {
+public class NotebookRestApi extends AbstractRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   private static Gson gson = new Gson();
 
@@ -1032,26 +1030,5 @@ public class NotebookRestApi {
     }
 
     p.setConfig(origConfig);
-  }
-
-  private ServiceContext getServiceContext() {
-    AuthenticationInfo authInfo = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
-    return new ServiceContext(authInfo, userAndRoles);
-  }
-
-  private static class RestServiceCallback<T> extends SimpleServiceCallback<T> {
-
-    @Override
-    public void onFailure(Exception ex, ServiceContext context) throws IOException {
-      super.onFailure(ex, context);
-      if (ex instanceof WebApplicationException) {
-        throw (WebApplicationException) ex;
-      } else {
-        throw new IOException(ex);
-      }
-    }
   }
 }
