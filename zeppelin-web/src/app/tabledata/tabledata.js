@@ -61,7 +61,7 @@ export default class TableData extends Dataset {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
           let valueOfCol;
-          if (!(col[0] === '0' || col.length > float64MaxDigits)) {
+          if (!(col[0] === '0' || col[0] === '+' || col.length > float64MaxDigits)) {
             if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
               col = valueOfCol;
             }
