@@ -215,8 +215,6 @@ public class NotebookService {
 
   public boolean runParagraph(String noteId,
                               String paragraphId,
-                              String title,
-                              String text,
                               Map<String, Object> params,
                               Map<String, Object> config,
                               boolean isRunAll,
@@ -243,16 +241,12 @@ public class NotebookService {
       }
       return false;
     }
-    p.setText(text);
-    p.setTitle(title);
     p.setAuthenticationInfo(context.getAutheInfo());
     p.settings.setParams(params);
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
       p = note.getParagraph(paragraphId);
-      p.setText(text);
-      p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
       p.settings.setParams(params);
       p.setConfig(config);
@@ -292,12 +286,10 @@ public class NotebookService {
       if (paragraphId == null) {
         continue;
       }
-      String text = (String) raw.get("paragraph");
-      String title = (String) raw.get("title");
       Map<String, Object> params = (Map<String, Object>) raw.get("params");
       Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-      if (runParagraph(noteId, paragraphId, title, text, params, config, true, context, callback)) {
+      if (runParagraph(noteId, paragraphId, params, config, true, context, callback)) {
         // stop execution when one paragraph fails.
         break;
       }
