@@ -111,7 +111,7 @@ You can choose from an appropriate value below:
 
 * `frame-ancestors 'none'`
 * `frame-ancestors 'self'`
-* `frame-ancestors 'https://example.com:8443' 'http://example.com'`
+* `frame-ancestors https://example.com:8443 http://example.com`
 
 Additional documentation can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors).
 
