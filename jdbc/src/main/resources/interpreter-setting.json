@@ -114,6 +114,13 @@
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"
+      },
+      "zeppelin.jdbc.maxConnLifetime": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.maxConnLifetime",
+        "defaultValue": "-1",
+        "description": "Maximum of connection lifetime in milliseconds. A value of zero or less means the connection has an infinite lifetime.",
+        "type": "number"
       }
     },
     "editor": {
