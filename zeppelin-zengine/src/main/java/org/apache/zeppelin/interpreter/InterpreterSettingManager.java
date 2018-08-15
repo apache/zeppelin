@@ -518,8 +518,10 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
                 return client.resourcePoolGetAll();
               }
             });
-        for (String res : resourceList) {
-          resourceSet.add(Resource.fromJson(res));
+        if (resourceList != null) {
+          for (String res : resourceList) {
+            resourceSet.add(Resource.fromJson(res));
+          }
         }
       }
     }
