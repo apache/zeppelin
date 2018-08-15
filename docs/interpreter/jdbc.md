@@ -201,6 +201,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>zeppelin.jdbc.interpolation</td>
     <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.maxConnLifetime</td>
+    <td>Maximum of connection lifetime in milliseconds. A value of zero or less means the connection has an infinite lifetime.</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
