@@ -776,7 +776,7 @@ public class NotebookRestApi {
           RunParagraphWithParametersRequest.fromJson(message);
       params = request.getParams();
     }
-    notebookService.runParagraph(noteId, paragraphId, "", "", params,
+    notebookService.runParagraph(noteId, paragraphId, params,
         new HashMap<String, Object>(), false, getServiceContext(), new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK).build();
   }
