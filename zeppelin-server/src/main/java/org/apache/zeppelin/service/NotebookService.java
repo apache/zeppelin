@@ -297,7 +297,8 @@ public class NotebookService {
       Map<String, Object> params = (Map<String, Object>) raw.get("params");
       Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-      if (!runParagraph(noteId, paragraphId, title, text, params, config, true, context, callback)) {
+      if (!runParagraph(noteId, paragraphId, title, text,
+              params, config, true, context, callback)) {
         // stop execution when one paragraph fails.
         break;
       }
