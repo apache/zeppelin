@@ -78,7 +78,6 @@
     <module>scio</module>
     <module>neo4j</module>
     <module>sap</module>
-    <module>r</module>
     <module>scalding</module>
     <module>java</module>
     <module>beam</module>
@@ -768,6 +767,13 @@
         <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>
+    </profile>
+
+    <profile>
+      <id>r</id>
+      <modules>
+        <module>r</module>
+      </modules>
     </profile>
 
     <profile>
