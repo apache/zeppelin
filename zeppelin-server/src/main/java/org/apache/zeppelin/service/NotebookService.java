@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -65,7 +66,7 @@ public class NotebookService {
                           ServiceCallback<Note> callback) throws IOException {
     String noteId = notebook.getConf().getString(ZEPPELIN_NOTEBOOK_HOMESCREEN);
     Note note = null;
-    if (noteId != null) {
+    if (!StringUtils.isBlank(noteId)) {
       note = notebook.getNote(noteId);
       if (note != null) {
         if (!checkPermission(noteId, Permission.READER, Message.OP.GET_HOME_NOTE, context,
@@ -73,7 +74,7 @@ public class NotebookService {
           return null;
         }
       } else {
-        callback.onFailure(new Exception("configured HomePage is not existed"), context);
+        callback.onFailure(new Exception("The configured home screen does not exist."), context);
       }
     }
     callback.onSuccess(note, context);
