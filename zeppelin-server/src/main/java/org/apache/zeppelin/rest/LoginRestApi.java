@@ -63,13 +63,6 @@ public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
   private static final Gson gson = new Gson();
 
-  /**
-   * Required by Swagger.
-   */
-  public LoginRestApi() {
-    super();
-  }
-
   @GET
   @ZeppelinApi
   public Response getLogin(@Context HttpHeaders headers) {

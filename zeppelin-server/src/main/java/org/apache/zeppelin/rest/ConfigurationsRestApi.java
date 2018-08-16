@@ -20,6 +20,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.ConfigurationService;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -38,6 +39,7 @@ public class ConfigurationsRestApi extends AbstractRestApi {
 
   private ConfigurationService configurationService;
 
+  @Inject
   public ConfigurationsRestApi(ConfigurationService configurationService) {
     this.configurationService = configurationService;
   }

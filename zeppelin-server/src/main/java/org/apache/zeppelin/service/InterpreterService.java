@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.inject.Inject;
 import jline.internal.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -54,6 +55,7 @@ public class InterpreterService {
   private final ZeppelinConfiguration conf;
   private final InterpreterSettingManager interpreterSettingManager;
 
+  @Inject
   public InterpreterService(
       ZeppelinConfiguration conf, InterpreterSettingManager interpreterSettingManager) {
     this.conf = conf;

@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
@@ -58,8 +59,7 @@ public class NotebookRepoRestApi {
   private NotebookRepoSync noteRepos;
   private NotebookServer notebookWsServer;
 
-  public NotebookRepoRestApi() {}
-
+  @Inject
   public NotebookRepoRestApi(NotebookRepoSync noteRepos, NotebookServer notebookWsServer) {
     this.noteRepos = noteRepos;
     this.notebookWsServer = notebookWsServer;

@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.util.Map;
+import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -46,6 +47,7 @@ public class CredentialRestApi {
   private Credentials credentials;
   private Gson gson = new Gson();
 
+  @Inject
   public CredentialRestApi(Credentials credentials) {
     this.credentials = credentials;
   }
