@@ -32,6 +32,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.disableForms = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
+  $scope.isEnableRunToggled = true;
   $scope.viewOnly = false;
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
@@ -39,6 +40,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.collaborativeModeUsers = [];
   $scope.looknfeelOption = ['default', 'simple', 'report'];
   $scope.noteFormTitle = null;
+  $scope.selectedParagraphsIds = new Set();
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -578,6 +580,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     if ($scope.paragraphUrl || $scope.revisionView === true) {
       return;
     }
+    $scope.selectedParagraphsIds.delete(paragraphId);
     removePara(paragraphId);
   });
 
@@ -604,6 +607,120 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
 
   let getInterpreterBindings = function() {
     websocketMsgSrv.getInterpreterBindings($scope.note.id);
+  };
+
+  $scope.toggleSelection = function(paragraphId) {
+    let paragraphs = $scope.selectedParagraphsIds;
+    if (paragraphs.has(paragraphId)) {
+      paragraphs.delete(paragraphId);
+    } else {
+      paragraphs.add(paragraphId);
+    }
+  };
+
+  $scope.clearSelection = function() {
+    if ($scope.selectedParagraphsIds !== null) {
+      $scope.selectedParagraphsIds.clear();
+    }
+  };
+
+  $scope.isSelectionMode = function() {
+    if ($scope.selectedParagraphsIds === null || $scope.selectedParagraphsIds.size === 0) {
+      return false;
+    }
+    return true;
+  };
+
+  $scope.showConfirmDialog = function(dialogMessage, action) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: dialogMessage,
+      callback: function(result) {
+        if (result) {
+          action();
+        }
+      },
+    });
+  };
+
+  $scope.selectedParagraphsAction = function(type, requestConfirm) {
+    let noteId = $scope.note.id;
+    let action;
+    let broadcastAction = function(data) {
+      return () => $scope.$broadcast('multipleAction', type, $scope.selectedParagraphsIds, data);
+    };
+
+    switch (type) {
+      case 'clearOutput':
+        action = broadcastAction();
+        break;
+
+      case 'toggleTable':
+        $scope.tableToggled = !$scope.tableToggled;
+        action = broadcastAction({toggleTableStatus: $scope.tableToggled});
+        break;
+
+      case 'toggleEditor':
+        $scope.editorToggled = !$scope.editorToggled;
+        action = broadcastAction({toggleEditorStatus: $scope.editorToggled});
+        break;
+
+      case 'toggleEnableRun':
+        $scope.isEnableRunToggled = !$scope.isEnableRunToggled;
+        action = broadcastAction({toggleEnableRunStatus: $scope.isEnableRunToggled});
+        break;
+
+      case 'delete':
+        if ($scope.note.paragraphs.length <= $scope.selectedParagraphsIds.size) {
+          BootstrapDialog.alert({
+            closable: true,
+            message: 'All the paragraphs can\'t be deleted.',
+          });
+          return;
+        } else {
+          action = broadcastAction();
+        }
+        break;
+
+      case 'run':
+        action = () => {
+          let paragraphs = $scope.note.paragraphs
+            .filter((p) => $scope.selectedParagraphsIds.has(p.id))
+            .map((p) => {
+              return {
+                id: p.id,
+                title: p.title,
+                paragraph: p.text,
+                config: p.config,
+                params: p.settings.params,
+              };
+            });
+          websocketMsgSrv.runAllParagraphs(noteId, paragraphs);
+        };
+        break;
+    }
+
+    if (requestConfirm) {
+      let messageToConfirm;
+      switch (type) {
+        case 'clearOutput':
+          messageToConfirm = 'Clear output ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+          break;
+        case 'run':
+          messageToConfirm = 'Run ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+          break;
+        case 'delete':
+          messageToConfirm = 'Delete ' + $scope.selectedParagraphsIds.size + ' selected paragraph(s)?';
+          break;
+        default:
+          messageToConfirm = 'Do \'' + type + '\'?';
+      }
+
+      $scope.showConfirmDialog(messageToConfirm, action);
+    } else {
+      action();
+    }
   };
 
   $scope.$on('interpreterBindings', function(event, data) {

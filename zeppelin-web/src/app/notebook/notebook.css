@@ -445,3 +445,29 @@
 .tooltip-inner {
   max-width: none !important;
 }
+
+.select-mode-background {
+  background-color: #b9f1ff;
+}
+
+.select-mode-background.disabled{
+  background-color: rgba(185, 241, 255, 0.65);
+}
+
+.select-mode-background:hover,
+.select-mode-background:focus {
+  background-color: #9bd0ff;
+}
+
+.selected-paragraph {
+  background-image: radial-gradient(circle farthest-corner at right top,rgba(0, 196, 243, 0.53), rgba(75, 212, 246, 0.17) 100px);
+}
+
+.selected-paragraph .highcharts-background,
+.selected-paragraph .highcharts-button-box{
+  fill: none;
+}
+
+.selected-paragraph.focused {
+  border-color: #a3dbfb !important;
+}
