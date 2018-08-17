@@ -21,6 +21,7 @@ package org.apache.zeppelin.alluxio;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -34,15 +35,16 @@ import java.util.Properties;
 
 import alluxio.AlluxioURI;
 import alluxio.Constants;
-import alluxio.client.FileSystemTestUtils;
 import alluxio.client.WriteType;
 import alluxio.client.file.FileInStream;
+import alluxio.client.file.FileOutStream;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.URIStatus;
+import alluxio.client.file.options.CreateFileOptions;
 import alluxio.exception.AlluxioException;
 import alluxio.exception.ExceptionMessage;
 import alluxio.master.LocalAlluxioCluster;
-import alluxio.shell.command.CommandUtils;
+import alluxio.util.CommonUtils;
 import alluxio.util.FormatUtils;
 import alluxio.util.io.BufferUtils;
 import alluxio.util.io.PathUtils;
@@ -52,11 +54,49 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
+@Ignore("https://alluxio.atlassian.net/browse/ALLUXIO-3142")
 public class AlluxioInterpreterTest {
   private AlluxioInterpreter alluxioInterpreter;
   private static final int SIZE_BYTES = Constants.MB * 10;
   private LocalAlluxioCluster mLocalAlluxioCluster = null;
   private FileSystem fs = null;
+
+  /**
+   * Creates a simple file with {@code len} bytes.
+   *
+   * @param fs a {@link FileSystem} handler
+   * @param fileURI URI of the file
+   * @param options client options to create the file with
+   * @param len file size
+   */
+  public static void createByteFile(FileSystem fs, AlluxioURI fileURI, CreateFileOptions options,
+                                    int len) {
+    try (FileOutStream os = fs.createFile(fileURI, options)) {
+      byte[] arr = new byte[len];
+      for (int k = 0; k < len; k++) {
+        arr[k] = (byte) k;
+      }
+      os.write(arr);
+    } catch (IOException | AlluxioException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Creates a simple file with {@code len} bytes.
+   *
+   * @param fs a {@link FileSystem} handler
+   * @param fileName the name of the file to be created
+   * @param writeType {@link WriteType} used to create the file
+   * @param len file size
+   * @param blockCapacityByte block size of the file
+   */
+  public static void createByteFile(FileSystem fs, String fileName, WriteType writeType, int len,
+                                    long blockCapacityByte) {
+    CreateFileOptions options =
+        CreateFileOptions.defaults().setWriteType(writeType).setBlockSizeBytes(blockCapacityByte);
+    createByteFile(fs, new AlluxioURI(fileName), options, len);
+  }
 
   @After
   public final void after() throws Exception {
@@ -68,13 +108,14 @@ public class AlluxioInterpreterTest {
 
   @Before
   public final void before() throws Exception {
-    mLocalAlluxioCluster = new LocalAlluxioCluster(SIZE_BYTES, 1000);
+    mLocalAlluxioCluster = new LocalAlluxioCluster();
+    mLocalAlluxioCluster.initConfiguration();
     mLocalAlluxioCluster.start();
     fs = mLocalAlluxioCluster.getClient();
 
     final Properties props = new Properties();
-    props.put(AlluxioInterpreter.ALLUXIO_MASTER_HOSTNAME, mLocalAlluxioCluster.getMasterHostname());
-    props.put(AlluxioInterpreter.ALLUXIO_MASTER_PORT, mLocalAlluxioCluster.getMasterPort() + "");
+    props.put(AlluxioInterpreter.ALLUXIO_MASTER_HOSTNAME, mLocalAlluxioCluster.getHostname());
+    props.put(AlluxioInterpreter.ALLUXIO_MASTER_PORT, mLocalAlluxioCluster.getMasterRpcPort() + "");
     alluxioInterpreter = new AlluxioInterpreter(props);
     alluxioInterpreter.open();
   }
@@ -141,8 +182,7 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void catTest() throws IOException {
-    FileSystemTestUtils.createByteFile(fs, "/testFile", WriteType.MUST_CACHE,
-            10, 10);
+    createByteFile(fs, "/testFile", WriteType.MUST_CACHE, 10, 10);
     InterpreterResult output = alluxioInterpreter.interpret("cat /testFile", null);
 
     byte[] expected = BufferUtils.getIncreasingByteArray(10);
@@ -179,7 +219,7 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void loadFileTest() throws IOException, AlluxioException {
-    FileSystemTestUtils.createByteFile(fs, "/testFile", WriteType.CACHE_THROUGH, 10, 10);
+    createByteFile(fs, "/testFile", WriteType.CACHE_THROUGH, 10, 10);
 
     int memPercentage = fs.getStatus(new AlluxioURI("/testFile")).getInMemoryPercentage();
     Assert.assertFalse(memPercentage == 0);
@@ -192,8 +232,8 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void loadDirTest() throws IOException, AlluxioException {
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA", WriteType.CACHE_THROUGH, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileB", WriteType.MUST_CACHE, 10, 10);
+    createByteFile(fs, "/testRoot/testFileA", WriteType.CACHE_THROUGH, 10, 10);
+    createByteFile(fs, "/testRoot/testFileB", WriteType.MUST_CACHE, 10, 10);
 
     int memPercentageA = fs.getStatus(
             new AlluxioURI("/testRoot/testFileA")).getInMemoryPercentage();
@@ -246,8 +286,8 @@ public class AlluxioInterpreterTest {
   @Test
   public void copyFromLocalTestWithFullURI() throws IOException, AlluxioException {
     File testFile = generateFileContent("/srcFileURI", BufferUtils.getIncreasingByteArray(10));
-    String uri = "tachyon://" + mLocalAlluxioCluster.getMasterHostname() + ":"
-            + mLocalAlluxioCluster.getMasterPort() + "/destFileURI";
+    String uri = "tachyon://" + mLocalAlluxioCluster.getHostname() + ":"
+            + mLocalAlluxioCluster.getMasterRpcPort() + "/destFileURI";
 
     InterpreterResult output = alluxioInterpreter.interpret("copyFromLocal " +
             testFile.getPath() + " " + uri, null);
@@ -294,7 +334,7 @@ public class AlluxioInterpreterTest {
   }
 
   private void copyToLocalWithBytes(int bytes) throws IOException {
-    FileSystemTestUtils.createByteFile(fs, "/testFile", WriteType.MUST_CACHE, 10, 10);
+    createByteFile(fs, "/testFile", WriteType.MUST_CACHE, bytes, bytes);
 
     InterpreterResult output = alluxioInterpreter.interpret("copyToLocal /testFile " +
             mLocalAlluxioCluster.getAlluxioHome() + "/testFile", null);
@@ -302,7 +342,7 @@ public class AlluxioInterpreterTest {
     Assert.assertEquals(
             "Copied /testFile to " + mLocalAlluxioCluster.getAlluxioHome() + "/testFile\n\n",
             output.message().get(0).getData());
-    fileReadTest("/testFile", 10);
+    fileReadTest("/testFile", bytes);
   }
 
   @Test
@@ -315,12 +355,9 @@ public class AlluxioInterpreterTest {
 
   @Test
   public void countTest() throws IOException {
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA",
-            WriteType.CACHE_THROUGH, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testDir/testFileB",
-            WriteType.CACHE_THROUGH, 20, 20);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileB",
-            WriteType.CACHE_THROUGH, 30, 30);
+    createByteFile(fs, "/testRoot/testFileA", WriteType.CACHE_THROUGH, 10, 10);
+    createByteFile(fs, "/testRoot/testDir/testFileB", WriteType.CACHE_THROUGH, 20, 20);
+    createByteFile(fs, "/testRoot/testFileB", WriteType.CACHE_THROUGH, 30, 30);
 
     InterpreterResult output = alluxioInterpreter.interpret("count /testRoot", null);
 
@@ -352,12 +389,9 @@ public class AlluxioInterpreterTest {
   public void lsTest() throws IOException, AlluxioException {
     URIStatus[] files = new URIStatus[3];
 
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA",
-            WriteType.MUST_CACHE, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testDir/testFileB",
-            WriteType.MUST_CACHE, 20, 20);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileC",
-            WriteType.THROUGH, 30, 30);
+    createByteFile(fs, "/testRoot/testFileA", WriteType.MUST_CACHE, 10, 10);
+    createByteFile(fs, "/testRoot/testDir/testFileB", WriteType.MUST_CACHE, 20, 20);
+    createByteFile(fs, "/testRoot/testFileC", WriteType.THROUGH, 30, 30);
 
     files[0] = fs.getStatus(new AlluxioURI("/testRoot/testFileA"));
     files[1] = fs.getStatus(new AlluxioURI("/testRoot/testDir"));
@@ -368,12 +402,12 @@ public class AlluxioInterpreterTest {
     String expected = "";
     String format = "%-10s%-25s%-15s%-5s\n";
     expected += String.format(format, FormatUtils.getSizeFromBytes(10),
-            CommandUtils.convertMsToDate(files[0].getCreationTimeMs()), "In Memory",
+            CommonUtils.convertMsToDate(files[0].getCreationTimeMs()), "In Memory",
             "/testRoot/testFileA");
     expected += String.format(format, FormatUtils.getSizeFromBytes(0),
-            CommandUtils.convertMsToDate(files[1].getCreationTimeMs()), "", "/testRoot/testDir");
+            CommonUtils.convertMsToDate(files[1].getCreationTimeMs()), "", "/testRoot/testDir");
     expected += String.format(format, FormatUtils.getSizeFromBytes(30),
-            CommandUtils.convertMsToDate(files[2].getCreationTimeMs()), "Not In Memory",
+            CommonUtils.convertMsToDate(files[2].getCreationTimeMs()), "Not In Memory",
             "/testRoot/testFileC");
     expected += "\n";
 
@@ -385,12 +419,9 @@ public class AlluxioInterpreterTest {
   public void lsRecursiveTest() throws IOException, AlluxioException {
     URIStatus[] files = new URIStatus[4];
 
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileA",
-            WriteType.MUST_CACHE, 10, 10);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testDir/testFileB",
-            WriteType.MUST_CACHE, 20, 20);
-    FileSystemTestUtils.createByteFile(fs, "/testRoot/testFileC",
-            WriteType.THROUGH, 30, 30);
+    createByteFile(fs, "/testRoot/testFileA", WriteType.MUST_CACHE, 10, 10);
+    createByteFile(fs, "/testRoot/testDir/testFileB", WriteType.MUST_CACHE, 20, 20);
+    createByteFile(fs, "/testRoot/testFileC", WriteType.THROUGH, 30, 30);
 
     files[0] = fs.getStatus(new AlluxioURI("/testRoot/testFileA"));
     files[1] = fs.getStatus(new AlluxioURI("/testRoot/testDir"));
@@ -403,19 +434,19 @@ public class AlluxioInterpreterTest {
     String format = "%-10s%-25s%-15s%-5s\n";
     expected +=
             String.format(format, FormatUtils.getSizeFromBytes(10),
-                    CommandUtils.convertMsToDate(files[0].getCreationTimeMs()), "In Memory",
+                    CommonUtils.convertMsToDate(files[0].getCreationTimeMs()), "In Memory",
                     "/testRoot/testFileA");
     expected +=
             String.format(format, FormatUtils.getSizeFromBytes(0),
-                    CommandUtils.convertMsToDate(files[1].getCreationTimeMs()), "",
+                    CommonUtils.convertMsToDate(files[1].getCreationTimeMs()), "",
                     "/testRoot/testDir");
     expected +=
             String.format(format, FormatUtils.getSizeFromBytes(20),
-                    CommandUtils.convertMsToDate(files[2].getCreationTimeMs()), "In Memory",
+                    CommonUtils.convertMsToDate(files[2].getCreationTimeMs()), "In Memory",
                     "/testRoot/testDir/testFileB");
     expected +=
             String.format(format, FormatUtils.getSizeFromBytes(30),
-                    CommandUtils.convertMsToDate(files[3].getCreationTimeMs()), "Not In Memory",
+                    CommonUtils.convertMsToDate(files[3].getCreationTimeMs()), "Not In Memory",
                     "/testRoot/testFileC");
     expected += "\n";
 
@@ -461,8 +492,8 @@ public class AlluxioInterpreterTest {
   @Test
   public void mkdirTest() throws IOException, AlluxioException {
     String qualifiedPath =
-            "tachyon://" + mLocalAlluxioCluster.getMasterHostname() + ":"
-                    + mLocalAlluxioCluster.getMasterPort() + "/root/testFile1";
+            "tachyon://" + mLocalAlluxioCluster.getHostname() + ":"
+                    + mLocalAlluxioCluster.getMasterRpcPort() + "/root/testFile1";
     InterpreterResult output = alluxioInterpreter.interpret("mkdir " + qualifiedPath, null);
     boolean existsDir = fs.exists(new AlluxioURI("/root/testFile1"));
     Assert.assertEquals(

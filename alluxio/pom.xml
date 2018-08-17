@@ -33,7 +33,7 @@
     <name>Zeppelin: Alluxio interpreter</name>
 
     <properties>
-        <alluxio.version>1.0.0</alluxio.version>
+        <alluxio.version>1.7.1</alluxio.version>
         <interpreter.name>alluxio</interpreter.name>
     </properties>
 
@@ -44,7 +44,7 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
               <groupId>com.google.guava</groupId>
               <artifactId>guava</artifactId>
@@ -106,7 +106,15 @@
 
         <dependency>
             <groupId>org.alluxio</groupId>
-            <artifactId>alluxio-core-server</artifactId>
+            <artifactId>alluxio-core-common</artifactId>
+            <version>${alluxio.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-minicluster</artifactId>
             <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
