@@ -242,7 +242,7 @@ public class NoteTest {
     String pText = "%spark sc.version";
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText(pText);
-    p.setResult("1.6.2");
+    p.setResult(new InterpreterResult(InterpreterResult.Code.SUCCESS, "1.6.2"));
     p.settings.getForms().put("textbox_1", new TextBox("name", "default_name"));
     p.settings.getParams().put("textbox_1", "my_name");
     note.getAngularObjects().put("ao_1", Lists.newArrayList(new AngularObject("name_1", "value_1", note.getId(), p.getId(), null)));
