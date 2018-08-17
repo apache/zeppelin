@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -634,43 +636,35 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_SEARCH_TEMP_PATH);
   }
 
-  public Map<String, String> dumpConfigurations(ZeppelinConfiguration conf,
-                                                ConfigurationKeyPredicate predicate) {
-    Map<String, String> configurations = new HashMap<>();
+  public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
+    Map<String, String> properties = new HashMap<>();
 
     for (ConfVars v : ConfVars.values()) {
       String key = v.getVarName();
 
-      if (!predicate.apply(key)) {
+      if (!predicate.test(key)) {
         continue;
       }
 
       ConfVars.VarType type = v.getType();
       Object value = null;
       if (type == ConfVars.VarType.BOOLEAN) {
-        value = conf.getBoolean(v);
+        value = getBoolean(v);
       } else if (type == ConfVars.VarType.LONG) {
-        value = conf.getLong(v);
+        value = getLong(v);
       } else if (type == ConfVars.VarType.INT) {
-        value = conf.getInt(v);
+        value = getInt(v);
       } else if (type == ConfVars.VarType.FLOAT) {
-        value = conf.getFloat(v);
+        value = getFloat(v);
       } else if (type == ConfVars.VarType.STRING) {
-        value = conf.getString(v);
+        value = getString(v);
       }
 
       if (value != null) {
-        configurations.put(key, value.toString());
+        properties.put(key, value.toString());
       }
     }
-    return configurations;
-  }
-
-  /**
-   * Predication whether key/value pair should be included or not
-   */
-  public interface ConfigurationKeyPredicate {
-    boolean apply(String key);
+    return properties;
   }
 
   /**
