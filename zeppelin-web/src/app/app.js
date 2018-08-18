@@ -173,6 +173,7 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
 function auth() {
   let $http = angular.injector(['ng']).get('$http');
   let baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+  angular.injector(['zeppelinWebApp']).get('loaderSrv').hideLoader();
   // withCredentials when running locally via grunt
   $http.defaults.withCredentials = true;
   jQuery.ajaxSetup({
