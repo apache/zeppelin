@@ -48,14 +48,6 @@ public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
   private static final Gson gson = new Gson();
 
-
-  /**
-   * Required by Swagger.
-   */
-  public SecurityRestApi() {
-    super();
-  }
-
   /**
    * Get ticket
    * Returns username & ticket
