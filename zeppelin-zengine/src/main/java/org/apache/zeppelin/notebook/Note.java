@@ -64,7 +64,7 @@ import static java.lang.String.format;
 /**
  * Binded interpreters for a note
  */
-public class Note implements ParagraphJobListener, JsonSerializable {
+public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
   private static Gson gson = new GsonBuilder()
@@ -93,7 +93,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   private transient InterpreterFactory factory;
   private transient InterpreterSettingManager interpreterSettingManager;
-  private transient JobListenerFactory jobListenerFactory;
+  private transient ParagraphJobListener paragraphJobListener;
   private transient NotebookRepo repo;
   private transient SearchService index;
   private transient ScheduledFuture delayedPersist;
@@ -120,14 +120,14 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   public Note(String name, String defaultInterpreterGroup, NotebookRepo repo, InterpreterFactory factory,
-      InterpreterSettingManager interpreterSettingManager, JobListenerFactory jlFactory,
+      InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
       SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
     this.name = name;
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.repo = repo;
     this.factory = factory;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.jobListenerFactory = jlFactory;
+    this.paragraphJobListener = paragraphJobListener;
     this.index = noteIndex;
     this.noteEventListener = noteEventListener;
     this.credentials = credentials;
@@ -293,7 +293,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     boolean foundParagraph = false;
     for (Paragraph ownParagraph : paragraphs) {
       if (paragraph.getId().equals(ownParagraph.getId())) {
-        paragraph.setListener(this.jobListenerFactory.getParagraphJobListener(this));
+        paragraph.setListener(paragraphJobListener);
         foundParagraph = true;
       }
     }
@@ -305,8 +305,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
     }
   }
 
-  void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
-    this.jobListenerFactory = jobListenerFactory;
+  void setParagraphJobListener(ParagraphJobListener paragraphJobListener) {
+    this.paragraphJobListener = paragraphJobListener;
   }
 
   void setNotebookRepo(NotebookRepo repo) {
@@ -366,7 +366,8 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   void addCloneParagraph(Paragraph srcParagraph, AuthenticationInfo subject) {
 
     // Keep paragraph original ID
-    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this, this, factory);
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this,
+        paragraphJobListener, factory);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = srcParagraph.settings.getParams();
@@ -415,7 +416,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
   }
 
   private Paragraph createParagraph(int index, AuthenticationInfo authenticationInfo) {
-    Paragraph p = new Paragraph(this, this, factory);
+    Paragraph p = new Paragraph(this, paragraphJobListener, factory);
     p.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(p, index);
     return p;
@@ -692,7 +693,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
    */
   public boolean run(String paragraphId, boolean blocking) {
     Paragraph p = getParagraph(paragraphId);
-    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    p.setListener(this.paragraphJobListener);
     return p.execute(blocking);
   }
 
@@ -722,7 +723,7 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
-    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    p.setListener(this.paragraphJobListener);
 
     return p.completion(buffer, cursor);
   }
@@ -886,60 +887,6 @@ public class Note implements ParagraphJobListener, JsonSerializable {
 
   public void setInfo(Map<String, Object> info) {
     this.info = info;
-  }
-  
-  @Override
-  public void onStatusChange(Job job, Status before, Status after) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.onStatusChange(job, before, after);
-      }
-    }
-
-    if (noteEventListener != null) {
-      noteEventListener.onParagraphStatusChange((Paragraph) job, after);
-    }
-  }
-
-  @Override
-  public void onProgressUpdate(Job job, int progress) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.onProgressUpdate(job, progress);
-      }
-    }
-  }
-
-  @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.onOutputAppend(paragraph, idx, output);
-      }
-    }
-  }
-
-  @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.onOutputUpdate(paragraph, idx, msg);
-      }
-    }
-  }
-
-  @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-    if (jobListenerFactory != null) {
-      ParagraphJobListener listener = jobListenerFactory.getParagraphJobListener(this);
-      if (listener != null) {
-        listener.onOutputUpdateAll(paragraph, msgs);
-      }
-    }
   }
 
   void setNoteEventListener(NoteEventListener noteEventListener) {

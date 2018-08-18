@@ -41,7 +41,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Folder;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -54,7 +53,6 @@ import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
-import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.service.ConfigurationService;
@@ -107,10 +105,10 @@ import java.util.regex.Pattern;
  */
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
-    JobListenerFactory,
     AngularObjectRegistryListener,
     RemoteInterpreterProcessListener,
     ApplicationEventListener,
+    ParagraphJobListener,
     NotebookServerMBean {
 
   /**
@@ -2117,94 +2115,78 @@ public class NotebookServer extends WebSocketServlet
 
   }
 
-  /**
-   * Need description here.
-   */
-  public static class ParagraphListenerImpl implements ParagraphJobListener {
-    private NotebookServer notebookServer;
-    private Note note;
 
-    public ParagraphListenerImpl(NotebookServer notebookServer, Note note) {
-      this.notebookServer = notebookServer;
-      this.note = note;
-    }
 
-    @Override
-    public void onProgressUpdate(Job job, int progress) {
-      notebookServer.broadcast(note.getId(),
-          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", progress));
-    }
-
-    @Override
-    public void onStatusChange(Job job, Status before, Status after) {
-      if (after == Status.ERROR) {
-        if (job.getException() != null) {
-          LOG.error("Error", job.getException());
-        }
-      }
-
-      if (job.isTerminated()) {
-        if (job.getStatus() == Status.FINISHED) {
-          LOG.info("Job {} is finished successfully, status: {}", job.getId(), job.getStatus());
-        } else {
-          LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", job.getId(),
-              job.getStatus(), job.getException(), job.getReturn());
-        }
-
-        try {
-          //TODO(khalid): may change interface for JobListener and pass subject from interpreter
-          note.persist(job instanceof Paragraph ? ((Paragraph) job).getAuthenticationInfo() : null);
-        } catch (IOException e) {
-          LOG.error(e.toString(), e);
-        }
-      }
-      if (job instanceof Paragraph) {
-        Paragraph p = (Paragraph) job;
-        p.setStatusToUserParagraph(job.getStatus());
-        notebookServer.broadcastParagraph(note, p);
-      }
-      try {
-        notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
-      } catch (IOException e) {
-        LOG.error("can not broadcast for job manager {}", e);
-      }
-    }
-
-    /**
-     * This callback is for paragraph that runs on RemoteInterpreterProcess.
-     */
-    @Override
-    public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-      Message msg =
-          new Message(OP.PARAGRAPH_APPEND_OUTPUT).put("noteId", paragraph.getNote().getId())
-              .put("paragraphId", paragraph.getId()).put("data", output);
-
-      notebookServer.broadcast(paragraph.getNote().getId(), msg);
-    }
-
-    /**
-     * This callback is for paragraph that runs on RemoteInterpreterProcess.
-     */
-    @Override
-    public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
-      String output = result.getData();
-      Message msg =
-          new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", paragraph.getNote().getId())
-              .put("paragraphId", paragraph.getId()).put("data", output);
-
-      notebookServer.broadcast(paragraph.getNote().getId(), msg);
-    }
-
-    @Override
-    public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-      // TODO
-    }
+  @Override
+  public void onProgressUpdate(Paragraph p, int progress) {
+    broadcast(p.getNote().getId(),
+        new Message(OP.PROGRESS).put("id", p.getId()).put("progress", progress));
   }
 
   @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphListenerImpl(this, note);
+  public void onStatusChange(Paragraph p, Status before, Status after) {
+    if (after == Status.ERROR) {
+      if (p.getException() != null) {
+        LOG.error("Error", p.getException());
+      }
+    }
+
+    if (p.isTerminated()) {
+      if (p.getStatus() == Status.FINISHED) {
+        LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
+      } else {
+        LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
+            p.getStatus(), p.getException(), p.getReturn());
+      }
+
+      try {
+        p.getNote().persist(p.getAuthenticationInfo());
+      } catch (IOException e) {
+        LOG.error(e.toString(), e);
+      }
+    }
+
+    p.setStatusToUserParagraph(p.getStatus());
+    broadcastParagraph(p.getNote(), p);
+    for (NotebookEventListener listener : notebook().getNotebookEventListeners()) {
+      listener.onParagraphStatusChange(p, after);
+    }
+
+    try {
+      broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
+    } catch (IOException e) {
+      LOG.error("can not broadcast for job manager {}", e);
+    }
   }
+
+
+  /**
+   * This callback is for paragraph that runs on RemoteInterpreterProcess.
+   */
+  @Override
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+    Message msg =
+        new Message(OP.PARAGRAPH_APPEND_OUTPUT).put("noteId", paragraph.getNote().getId())
+            .put("paragraphId", paragraph.getId()).put("data", output);
+    broadcast(paragraph.getNote().getId(), msg);
+  }
+
+  /**
+   * This callback is for paragraph that runs on RemoteInterpreterProcess.
+   */
+  @Override
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
+    Message msg =
+        new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", paragraph.getNote().getId())
+            .put("paragraphId", paragraph.getId()).put("data", result.getData());
+    broadcast(paragraph.getNote().getId(), msg);
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+    // TODO
+  }
+
 
   public NotebookEventListener getNotebookInformationListener() {
     return new NotebookInformationListener(this);

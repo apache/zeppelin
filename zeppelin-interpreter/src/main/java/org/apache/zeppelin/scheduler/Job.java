@@ -137,7 +137,7 @@ public abstract class Job<T> {
     Status before = this.status;
     Status after = status;
     this.status = status;
-    if (listener != null && before != after) {
+    if (listener != null && before != null && before != after) {
       listener.onStatusChange(this, before, after);
     }
   }

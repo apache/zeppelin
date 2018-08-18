@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -24,13 +23,11 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
-//import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -42,14 +39,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implements JobListenerFactory {
+
+public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
+    implements ParagraphJobListener {
 
   private SchedulerFactory schedulerFactory;
   private NotebookRepo notebookRepo;
@@ -287,33 +285,29 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     notebook.removeNote(note1.getId(), anonymous);
   }
 
-  @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener() {
-      @Override
-      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
 
-      }
+    @Override
+    public void onOutputAppend(Paragraph paragraph, int idx, String output) {
 
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+    }
 
-      }
+    @Override
+    public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
 
-      @Override
-      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+    }
 
-      }
+    @Override
+    public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
 
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
+    }
 
-      }
+    @Override
+    public void onProgressUpdate(Paragraph paragraph, int progress) {
 
-      @Override
-      public void onStatusChange(Job job, Job.Status before, Job.Status after) {
+    }
 
-      }
-    };
-  }
+    @Override
+    public void onStatusChange(Paragraph paragraph, Job.Status before, Job.Status after) {
+
+    }
 }
