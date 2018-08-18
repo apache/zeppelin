@@ -20,6 +20,7 @@ package org.apache.zeppelin.rest;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -83,9 +84,7 @@ public class NotebookRestApi extends AbstractRestApi {
   private NotebookAuthorization notebookAuthorization;
   private NotebookService notebookService;
 
-  public NotebookRestApi() {
-  }
-
+  @Inject
   public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
@@ -282,7 +281,6 @@ public class NotebookRestApi extends AbstractRestApi {
   }
 
   @GET
-  @Path("/")
   @ZeppelinApi
   public Response getNoteList() throws IOException {
     List<Map<String, String>> notesInfo = notebookService.listNotes(false, getServiceContext(),
@@ -339,7 +337,6 @@ public class NotebookRestApi extends AbstractRestApi {
    * @throws IOException
    */
   @POST
-  @Path("/")
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
     String user = SecurityUtils.getPrincipal();
