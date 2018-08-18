@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import javax.inject.Inject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.ConfigurationService;

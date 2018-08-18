@@ -18,6 +18,7 @@
 
 package org.apache.zeppelin.service;
 
+import javax.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ public class ConfigurationService {
 
   private ZeppelinConfiguration zConf;
 
+  @Inject
   public ConfigurationService(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
