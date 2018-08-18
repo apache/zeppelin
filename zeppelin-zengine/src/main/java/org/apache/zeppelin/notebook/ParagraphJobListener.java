@@ -27,8 +27,8 @@ import java.util.List;
 /**
  * Listen paragraph update
  */
-public interface ParagraphJobListener extends JobListener {
-  public void onOutputAppend(Paragraph paragraph, int idx, String output);
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
+public interface ParagraphJobListener extends JobListener<Paragraph> {
+  void onOutputAppend(Paragraph paragraph, int idx, String output);
+  void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
+  void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
 }

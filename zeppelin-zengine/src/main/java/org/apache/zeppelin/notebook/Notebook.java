@@ -43,7 +43,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
@@ -89,7 +88,7 @@ public class Notebook implements NoteEventListener {
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
-  private JobListenerFactory jobListenerFactory;
+  private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
@@ -106,7 +105,7 @@ public class Notebook implements NoteEventListener {
    */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
-      InterpreterSettingManager interpreterSettingManager, JobListenerFactory jobListenerFactory,
+      InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
       SearchService noteSearchService, NotebookAuthorization notebookAuthorization,
       Credentials credentials) throws IOException, SchedulerException {
     this.conf = conf;
@@ -114,7 +113,7 @@ public class Notebook implements NoteEventListener {
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.jobListenerFactory = jobListenerFactory;
+    this.paragraphJobListener = paragraphJobListener;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
     this.credentials = credentials;
@@ -152,7 +151,7 @@ public class Notebook implements NoteEventListener {
       throws IOException {
     Note note =
         new Note(name, defaultInterpreterGroup, notebookRepo, replFactory, interpreterSettingManager,
-            jobListenerFactory, noteSearchService, credentials, this);
+            paragraphJobListener, noteSearchService, credentials, this);
     note.setNoteNameListener(folders);
 
     synchronized (notes) {
@@ -420,7 +419,7 @@ public class Notebook implements NoteEventListener {
     note.setInterpreterFactory(replFactory);
     note.setInterpreterSettingManager(interpreterSettingManager);
 
-    note.setJobListenerFactory(jobListenerFactory);
+    note.setParagraphJobListener(this.paragraphJobListener);
     note.setNotebookRepo(notebookRepo);
     note.setCronSupported(getConf());
 
@@ -550,6 +549,10 @@ public class Notebook implements NoteEventListener {
 
   public Folder renameFolder(String oldFolderId, String newFolderId) {
     return folders.renameFolder(oldFolderId, newFolderId);
+  }
+
+  public List<NotebookEventListener> getNotebookEventListeners() {
+    return notebookEventListeners;
   }
 
   public List<Note> getNotesUnderFolder(String folderId) {

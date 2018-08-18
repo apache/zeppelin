@@ -74,7 +74,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 
-public class NotebookTest extends AbstractInterpreterTest implements JobListenerFactory {
+public class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListener {
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
 
   private SchedulerFactory schedulerFactory;
@@ -1458,37 +1458,34 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     }
   }
 
+
+
   @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener() {
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
 
-      @Override
-      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-      }
-
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-      }
-
-      @Override
-      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-      }
-
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-      }
-
-      @Override
-      public void onStatusChange(Job job, Status before, Status after) {
-        if (afterStatusChangedListener != null) {
-          afterStatusChangedListener.onStatusChanged(job, before, after);
-        }
-      }
-    };
   }
+
+  @Override
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
+  }
+
+  @Override
+  public void onProgressUpdate(Paragraph paragraph, int progress) {
+  }
+
+  @Override
+  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
+    if (afterStatusChangedListener != null) {
+      afterStatusChangedListener.onStatusChanged(paragraph, before, after);
+    }
+  }
+
 
   private interface StatusChangedListener {
     void onStatusChanged(Job job, Status before, Status after);
