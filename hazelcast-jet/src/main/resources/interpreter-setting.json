@@ -1,0 +1,14 @@
+[
+  {
+    "group": "hazelcastjet",
+    "name": "hazelcastjet",
+    "className": "org.apache.zeppelin.java.HazelcastJetInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  }
+]
