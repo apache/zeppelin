@@ -90,7 +90,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
-    assertEquals("abc\n", p1.getResult().message().get(0).getData());
+    assertEquals("abc\n", p1.getReturn().message().get(0).getData());
   }
 
   @Test

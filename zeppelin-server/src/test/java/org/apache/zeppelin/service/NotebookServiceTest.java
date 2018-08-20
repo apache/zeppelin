@@ -177,7 +177,7 @@ public class NotebookServiceTest extends AbstractTestRestApi {
     // clean output
     reset(callback);
     notebookService.clearParagraphOutput(note1.getId(), p.getId(), context, callback);
-    assertNull(p.getResult());
+    assertNull(p.getReturn());
     verify(callback).onSuccess(p, context);
   }
 }
