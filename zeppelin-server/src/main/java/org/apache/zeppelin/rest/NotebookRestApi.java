@@ -394,7 +394,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @Path("{noteId}")
   @ZeppelinApi
   public Response cloneNote(@PathParam("noteId") String noteId, String message)
-      throws IOException, CloneNotSupportedException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     LOG.info("clone note by JSON {}", message);
     checkIfUserCanWrite(noteId, "Insufficient privileges you cannot clone this note");
     NewNoteRequest request = NewNoteRequest.fromJson(message);

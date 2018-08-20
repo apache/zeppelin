@@ -27,7 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -61,7 +60,7 @@ import static org.mockito.Mockito.mock;
 
 
 //TODO(zjffdu) move it to zeppelin-zengine
-public class NotebookRepoSyncTest implements JobListenerFactory {
+public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   private File mainZepDir;
   private ZeppelinConfiguration conf;
@@ -411,34 +410,31 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
       }
   }
 
+
+
   @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener(){
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
 
-      @Override
-      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-      }
-
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-      }
-
-      @Override
-      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-      }
-
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-      }
-
-      @Override
-      public void onStatusChange(Job job, Status before, Status after) {
-
-      }
-    };
   }
+
+  @Override
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
+  }
+
+  @Override
+  public void onProgressUpdate(Paragraph paragraph, int progress) {
+  }
+
+  @Override
+  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
+
+  }
+
 
 }
