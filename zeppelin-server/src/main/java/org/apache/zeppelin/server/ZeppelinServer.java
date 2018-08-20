@@ -195,7 +195,7 @@ public class ZeppelinServer extends Application {
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
 
     // Register MBean
-    if ("true".equals(System.getenv("ZEPPELIN_ENABLE_JMX"))) {
+    if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
       MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
       try {
         mBeanServer.registerMBean(
