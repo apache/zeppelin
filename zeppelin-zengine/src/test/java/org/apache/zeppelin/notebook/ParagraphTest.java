@@ -266,12 +266,14 @@ public class ParagraphTest extends AbstractInterpreterTest {
 
     List<InterpreterSetting> spyInterpreterSettingList = spy(Lists.<InterpreterSetting>newArrayList());
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     InterpreterOption mockInterpreterOption = mock(InterpreterOption.class);
     when(mockInterpreterSetting.getOption()).thenReturn(mockInterpreterOption);
     when(mockInterpreterOption.permissionIsSet()).thenReturn(false);
     when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
     when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
     when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterSetting.isUserAuthorized(any(List.class))).thenReturn(true);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
 
@@ -284,7 +286,6 @@ public class ParagraphTest extends AbstractInterpreterTest {
     InterpreterResult mockInterpreterResult = mock(InterpreterResult.class);
     when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
     when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
-
 
     // Actual test
     List<InterpreterResultMessage> result1 = Lists.newArrayList();

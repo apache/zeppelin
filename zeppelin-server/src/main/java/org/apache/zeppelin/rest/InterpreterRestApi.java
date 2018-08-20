@@ -197,7 +197,6 @@ public class InterpreterRestApi {
       } else {
         interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
       }
-      notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
