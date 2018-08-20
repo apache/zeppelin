@@ -37,7 +37,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -77,7 +76,6 @@ import static org.mockito.Mockito.mock;
 public class NotebookTest extends AbstractInterpreterTest implements ParagraphJobListener {
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
 
-  private SchedulerFactory schedulerFactory;
   private Notebook notebook;
   private NotebookRepo notebookRepo;
   private NotebookAuthorization notebookAuthorization;
@@ -91,15 +89,21 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "true");
     super.setUp();
 
-    schedulerFactory = SchedulerFactory.singleton();
-
     SearchService search = mock(SearchService.class);
     notebookRepo = new InMemoryNotebookRepo();
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
 
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory, interpreterSettingManager, this, search,
-        notebookAuthorization, credentials);
+    notebook =
+        new Notebook(
+            conf,
+            notebookRepo,
+            interpreterFactory,
+            interpreterSettingManager,
+            search,
+            notebookAuthorization,
+            credentials);
+    notebook.setParagraphJobListener(this);
   }
 
   @After
@@ -113,16 +117,29 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
-        interpreterSettingManager, this, null,
-        notebookAuthorization, credentials);
+    notebook =
+        new Notebook(
+            conf,
+            notebookRepo,
+            interpreterFactory,
+            interpreterSettingManager,
+            null,
+            notebookAuthorization,
+            credentials);
     assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, interpreterFactory,
-        interpreterSettingManager, this, null,
-        notebookAuthorization, credentials);
-    assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
+    notebook =
+        new Notebook(
+            conf,
+            notebookRepo,
+            interpreterFactory,
+            interpreterSettingManager,
+            null,
+            notebookAuthorization,
+            credentials);
+    assertTrue(
+        "Revision is supported in DummyNotebookRepoWithVersionControl",
         notebook.isRevisionSupported());
   }
 
@@ -350,10 +367,15 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p1.setText("hello world");
     note.persist(anonymous);
 
-    Notebook notebook2 = new Notebook(
-        conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(interpreterSettingManager),
-        interpreterSettingManager, null, null, null, null);
+    Notebook notebook2 =
+        new Notebook(
+            conf,
+            notebookRepo,
+            new InterpreterFactory(interpreterSettingManager),
+            interpreterSettingManager,
+            null,
+            null,
+            null);
 
     assertEquals(1, notebook2.getAllNotes().size());
     notebook.removeNote(note.getId(), anonymous);
@@ -835,7 +857,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
   }
-  
+
   @Test
   public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
     Note note = notebook.createNote(anonymous);
@@ -1422,12 +1444,12 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");
     ZeppelinConfiguration.create();
   }
-  
+
   @Test
   public void testCloneImportCheck() throws IOException {
     Note sourceNote = notebook.createNote(new AuthenticationInfo("user"));
     sourceNote.setName("TestNote");
-    
+
     assertEquals("TestNote",sourceNote.getName());
 
     Paragraph sourceParagraph = sourceNote.addNewParagraph(AuthenticationInfo.ANONYMOUS);

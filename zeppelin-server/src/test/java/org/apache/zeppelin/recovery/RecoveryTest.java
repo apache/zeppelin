@@ -55,6 +55,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
+    ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
   }
 
   @AfterClass

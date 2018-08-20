@@ -17,6 +17,16 @@
 
 package org.apache.zeppelin.service;
 
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -35,17 +45,9 @@ import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
 /**
  * Service class for Notebook related operations.
@@ -54,14 +56,64 @@ public class NotebookService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookService.class);
 
+  private static NotebookService self;
+
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
   private NotebookAuthorization notebookAuthorization;
+  private NotebookServer notebookServer;
+  private CountDownLatch notebookServerInjected;
 
+  @Inject
   public NotebookService(Notebook notebook) {
     this.notebook = notebook;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
     this.zConf = notebook.getConf();
+    NotebookService.self = this;
+    notebookServerInjected = new CountDownLatch(1);
+  }
+
+  /**
+   * This is a temporal trick to connect injected class to non-injected class like {@link
+   * org.apache.zeppelin.socket.NotebookServer}. This will be removed after refactoring of
+   * Notebook\* classes.
+   *
+   * @return NotebookService
+   */
+  public static NotebookService getInstance() {
+    if (null == NotebookService.self) {
+      throw new IllegalStateException("NotebookService should be called after injection");
+    } else {
+      return NotebookService.self;
+    }
+  }
+
+  /**
+   * Only NotebookServer will call this method to register itself. This will be
+   * changed @PostConstruct. Please see {@link NotebookServer#NotebookServer()}
+   *
+   * @param notebookServer NotebookServer instance to be injected
+   */
+  public void injectNotebookServer(NotebookServer notebookServer) {
+    this.notebookServer = notebookServer;
+    // Notebook was initialized by injection, thus it should be not null
+    notebook.setParagraphJobListener(notebookServer);
+    notebookServerInjected.countDown();
+  }
+
+  /**
+   * This is a conservative to avoid timing issue between registering it and using it.
+   *
+   * @return NotebookServer instance
+   */
+  public NotebookServer getNotebookServer() {
+    try {
+      notebookServerInjected.await();
+      return notebookServer;
+    } catch (InterruptedException e) {
+      LOGGER.info("Interrupted. getNotebookServer will return null");
+      return null;
+    }
   }
 
   public Note getHomeNote(ServiceContext context,

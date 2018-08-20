@@ -16,6 +16,27 @@
  */
 package org.apache.zeppelin.socket;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -31,36 +52,15 @@ import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.service.ConfigurationService;
+import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-/**
- * Basic REST API tests for notebookServer.
- */
+/** Basic REST API tests for notebookServer. */
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
@@ -71,7 +71,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     notebook = ZeppelinServer.notebook;
-    notebookServer = ZeppelinServer.notebookWsServer;
+    notebookServer = spy(ZeppelinServer.notebookWsServer);
+    NotebookService notebookService = new NotebookService(notebook);
+    ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
+    when(notebookServer.getNotebookService()).thenReturn(notebookService);
+    when(notebookServer.getConfigurationService()).thenReturn(configurationService);
   }
 
   @AfterClass
@@ -443,7 +447,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
-    server.angularObjectClientUnbind(conn, new HashSet<String>(), notebook, messageReceived);
+    server.angularObjectClientUnbind(conn, new HashSet<>(), notebook, messageReceived);
 
     // Then
     verify(otherConn).send(mdMsg1);
