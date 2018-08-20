@@ -86,6 +86,7 @@ public class Notebook implements NoteEventListener {
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
+
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
@@ -968,7 +969,7 @@ public class Notebook implements NoteEventListener {
     synchronized (notes) {
 
       Note note = notes.get(id);
-      if (note == null) {
+      if (note == null || note.isTrash()) {
         return;
       }
       Map<String, Object> config = note.getConfig();
