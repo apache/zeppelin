@@ -202,7 +202,7 @@ public class ZeppelinServer extends ResourceConfig {
     this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
 
     // Register MBean
-    if ("true".equals(System.getenv("ZEPPELIN_ENABLE_JMX"))) {
+    if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
       MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
       try {
         mBeanServer.registerMBean(
