@@ -56,6 +56,7 @@ import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.service.ConfigurationService;
+import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
@@ -114,11 +115,11 @@ public class NotebookServer extends WebSocketServlet
   /**
    * Job manager service type.
    */
-  protected enum JobManagerService {
+  protected enum JobManagerServiceType {
     JOB_MANAGER_PAGE("JOB_MANAGER_PAGE");
     private String serviceTypeKey;
 
-    JobManagerService(String serviceType) {
+    JobManagerServiceType(String serviceType) {
       this.serviceTypeKey = serviceType;
     }
 
@@ -145,6 +146,7 @@ public class NotebookServer extends WebSocketServlet
 
   private NotebookService notebookService;
   private ConfigurationService configurationService;
+  private JobManagerService jobManagerService;
 
   private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -172,6 +174,13 @@ public class NotebookServer extends WebSocketServlet
       this.configurationService = new ConfigurationService(notebook().getConf());
     }
     return this.configurationService;
+  }
+
+  public synchronized JobManagerService getJobManagerService() {
+    if (this.jobManagerService == null) {
+      this.jobManagerService = new JobManagerService(notebook());
+    }
+    return this.jobManagerService;
   }
 
   @Override
@@ -608,36 +617,49 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void unicastNoteJobInfo(NotebookSocket conn, Message fromMessage) throws IOException {
-    addConnectionToNote(JobManagerService.JOB_MANAGER_PAGE.getKey(), conn);
-    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-    List<Map<String, Object>> noteJobs = notebook().getJobListByUnixTime(false, 0, subject);
-    Map<String, Object> response = new HashMap<>();
+    addConnectionToNote(JobManagerServiceType.JOB_MANAGER_PAGE.getKey(), conn);
+    getJobManagerService().getNoteJobInfoByUnixTime(0, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<List<JobManagerService.NoteJobInfo>>(conn) {
+          @Override
+          public void onSuccess(List<JobManagerService.NoteJobInfo> notesJobInfo,
+                                ServiceContext context) throws IOException {
+            super.onSuccess(notesJobInfo, context);
+            Map<String, Object> response = new HashMap<>();
+            response.put("lastResponseUnixTime", System.currentTimeMillis());
+            response.put("jobs", notesJobInfo);
+            conn.send(serializeMessage(new Message(OP.LIST_NOTE_JOBS).put("noteJobs", response)));
+          }
 
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", noteJobs);
-
-    conn.send(serializeMessage(new Message(OP.LIST_NOTE_JOBS).put("noteJobs", response)));
+          @Override
+          public void onFailure(Exception ex, ServiceContext context) throws IOException {
+            LOG.warn(ex.getMessage());
+          }
+        });
   }
 
   public void broadcastUpdateNoteJobInfo(long lastUpdateUnixTime) throws IOException {
-    List<Map<String, Object>> noteJobs = new LinkedList<>();
-    Notebook notebookObject = notebook();
-    List<Map<String, Object>> jobNotes;
-    if (notebookObject != null) {
-      jobNotes = notebook().getJobListByUnixTime(false, lastUpdateUnixTime, null);
-      noteJobs = jobNotes == null ? noteJobs : jobNotes;
-    }
+    getJobManagerService().getNoteJobInfoByUnixTime(lastUpdateUnixTime, null,
+        new WebSocketServiceCallback<List<JobManagerService.NoteJobInfo>>(null) {
+          @Override
+          public void onSuccess(List<JobManagerService.NoteJobInfo> notesJobInfo,
+                                ServiceContext context) throws IOException {
+            super.onSuccess(notesJobInfo, context);
+            Map<String, Object> response = new HashMap<>();
+            response.put("lastResponseUnixTime", System.currentTimeMillis());
+            response.put("jobs", notesJobInfo);
+            broadcast(JobManagerServiceType.JOB_MANAGER_PAGE.getKey(),
+                new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+          }
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("lastResponseUnixTime", System.currentTimeMillis());
-    response.put("jobs", noteJobs != null ? noteJobs : new LinkedList<>());
-
-    broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-        new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+          @Override
+          public void onFailure(Exception ex, ServiceContext context) throws IOException {
+            LOG.warn(ex.getMessage());
+          }
+        });
   }
 
   public void unsubscribeNoteJobInfo(NotebookSocket conn) {
-    removeConnectionFromNote(JobManagerService.JOB_MANAGER_PAGE.getKey(), conn);
+    removeConnectionFromNote(JobManagerServiceType.JOB_MANAGER_PAGE.getKey(), conn);
   }
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
@@ -2031,7 +2053,7 @@ public class NotebookServer extends WebSocketServlet
   /**
    * Notebook Information Change event.
    */
-  public static class NotebookInformationListener implements NotebookEventListener {
+  public class NotebookInformationListener implements NotebookEventListener {
     private NotebookServer notebookServer;
 
     public NotebookInformationListener(NotebookServer notebookServer) {
@@ -2041,9 +2063,10 @@ public class NotebookServer extends WebSocketServlet
     @Override
     public void onParagraphRemove(Paragraph p) {
       try {
-        notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
-      } catch (IOException ioe) {
-        LOG.error("can not broadcast for job manager {}", ioe.getMessage());
+        getJobManagerService().getNoteJobInfoByUnixTime(System.currentTimeMillis() - 5000, null,
+            new JobManagerServiceCallback());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
       }
     }
 
@@ -2051,71 +2074,62 @@ public class NotebookServer extends WebSocketServlet
     public void onNoteRemove(Note note) {
       try {
         notebookServer.broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
-      } catch (IOException ioe) {
-        LOG.error("can not broadcast for job manager {}", ioe.getMessage());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
       }
 
-      List<Map<String, Object>> notesInfo = new LinkedList<>();
-      Map<String, Object> info = new HashMap<>();
-      info.put("noteId", note.getId());
-      // set paragraphs
-      List<Map<String, Object>> paragraphsInfo = new LinkedList<>();
-
-      // notebook json object root information.
-      info.put("isRunningJob", false);
-      info.put("unixTimeLastRun", 0);
-      info.put("isRemoved", true);
-      info.put("paragraphs", paragraphsInfo);
-      notesInfo.add(info);
-
-      Map<String, Object> response = new HashMap<>();
-      response.put("lastResponseUnixTime", System.currentTimeMillis());
-      response.put("jobs", notesInfo);
-
-      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+      try {
+        getJobManagerService().removeNoteJobInfo(note.getId(), null,
+            new JobManagerServiceCallback());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
+      }
     }
 
     @Override
     public void onParagraphCreate(Paragraph p) {
-      Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(p.getId());
-      Map<String, Object> response = new HashMap<>();
-      response.put("lastResponseUnixTime", System.currentTimeMillis());
-      response.put("jobs", notebookJobs);
-
-      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+      try {
+        notebookServer.getJobManagerService().getNoteJobInfo(p.getNote().getId(), null,
+            new JobManagerServiceCallback());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
+      }
     }
 
     @Override
     public void onNoteCreate(Note note) {
-      Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListByNoteId(note.getId());
-      Map<String, Object> response = new HashMap<>();
-      response.put("lastResponseUnixTime", System.currentTimeMillis());
-      response.put("jobs", notebookJobs);
-
-      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+      try {
+        notebookServer.getJobManagerService().getNoteJobInfo(note.getId(), null,
+            new JobManagerServiceCallback());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
+      }
     }
 
     @Override
     public void onParagraphStatusChange(Paragraph p, Status status) {
-      Notebook notebook = notebookServer.notebook();
-      List<Map<String, Object>> notebookJobs = notebook.getJobListByParagraphId(p.getId());
-
-      Map<String, Object> response = new HashMap<>();
-      response.put("lastResponseUnixTime", System.currentTimeMillis());
-      response.put("jobs", notebookJobs);
-
-      notebookServer.broadcast(JobManagerService.JOB_MANAGER_PAGE.getKey(),
-          new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+      try {
+        notebookServer.getJobManagerService().getNoteJobInfo(p.getNote().getId(), null,
+            new JobManagerServiceCallback());
+      } catch (IOException e) {
+        LOG.warn("can not broadcast for job manager: " + e.getMessage(), e);
+      }
     }
 
+    private class JobManagerServiceCallback
+        extends SimpleServiceCallback<List<JobManagerService.NoteJobInfo>> {
+      @Override
+      public void onSuccess(List<JobManagerService.NoteJobInfo> notesJobInfo,
+                            ServiceContext context) throws IOException {
+        super.onSuccess(notesJobInfo, context);
+        Map<String, Object> response = new HashMap<>();
+        response.put("lastResponseUnixTime", System.currentTimeMillis());
+        response.put("jobs", notesJobInfo);
+        broadcast(JobManagerServiceType.JOB_MANAGER_PAGE.getKey(),
+            new Message(OP.LIST_UPDATE_NOTE_JOBS).put("noteRunningJobs", response));
+      }
+    }
   }
-
-
 
   @Override
   public void onProgressUpdate(Paragraph p, int progress) {
@@ -2478,7 +2492,7 @@ public class NotebookServer extends WebSocketServlet
     return new ServiceContext(authInfo, userAndRoles);
   }
 
-  private class WebSocketServiceCallback<T> extends SimpleServiceCallback<T> {
+  public class WebSocketServiceCallback<T> extends SimpleServiceCallback<T> {
 
     private NotebookSocket conn;
 

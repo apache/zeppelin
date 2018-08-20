@@ -41,6 +41,7 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -83,12 +84,14 @@ public class NotebookRestApi extends AbstractRestApi {
   private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
   private NotebookService notebookService;
+  private JobManagerService jobManagerService;
 
   @Inject
   public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
     this.notebookService = new NotebookService(notebook);
+    this.jobManagerService = new JobManagerService(notebook);
     this.noteSearchService = search;
     this.notebookAuthorization = notebook.getNotebookAuthorization();
     this.zConf = notebook.getConf();
@@ -919,15 +922,11 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response getJobListforNote() throws IOException, IllegalArgumentException {
     LOG.info("Get note jobs for job manager");
-
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    List<Map<String, Object>> noteJobs = notebook
-        .getJobListByUnixTime(false, 0, subject);
+    List<JobManagerService.NoteJobInfo> noteJobs = jobManagerService
+        .getNoteJobInfoByUnixTime(0, getServiceContext(), new RestServiceCallback<>());
     Map<String, Object> response = new HashMap<>();
-
     response.put("lastResponseUnixTime", System.currentTimeMillis());
     response.put("jobs", noteJobs);
-
     return new JsonResponse<>(Status.OK, response).build();
   }
 
@@ -946,15 +945,12 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response getUpdatedJobListforNote(@PathParam("lastUpdateUnixtime") long lastUpdateUnixTime)
       throws IOException, IllegalArgumentException {
     LOG.info("Get updated note jobs lastUpdateTime {}", lastUpdateUnixTime);
-
-    List<Map<String, Object>> noteJobs;
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
-    noteJobs = notebook.getJobListByUnixTime(false, lastUpdateUnixTime, subject);
+    List<JobManagerService.NoteJobInfo> noteJobs =
+        jobManagerService.getNoteJobInfoByUnixTime(lastUpdateUnixTime, getServiceContext(),
+            new RestServiceCallback<>());
     Map<String, Object> response = new HashMap<>();
-
     response.put("lastResponseUnixTime", System.currentTimeMillis());
     response.put("jobs", noteJobs);
-
     return new JsonResponse<>(Status.OK, response).build();
   }
 
