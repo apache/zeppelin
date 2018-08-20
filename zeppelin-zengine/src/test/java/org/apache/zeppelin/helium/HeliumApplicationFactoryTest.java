@@ -113,9 +113,9 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
-    assertEquals("repl1: job", p1.getResult().message().get(0).getData());
+    assertEquals("repl1: job", p1.getReturn().message().get(0).getData());
 
     // when
     assertEquals(0, p1.getAllApplicationStates().size());
@@ -158,7 +158,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -197,7 +197,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -262,7 +262,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
     ApplicationState app = p1.getApplicationState(appId);

@@ -48,6 +48,7 @@ import org.apache.zeppelin.notebook.NotebookEventListener;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.notebook.ParagraphWithRuntimeInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -709,7 +710,8 @@ public class NotebookServer extends WebSocketServlet
     if (note.isPersonalizedMode()) {
       broadcastParagraphs(p.getUserParagraphMap(), p);
     } else {
-      broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", p));
+      broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph",
+          new ParagraphWithRuntimeInfo(p)));
     }
   }
 
@@ -2372,13 +2374,13 @@ public class NotebookServer extends WebSocketServlet
       if (paragraph != null) {
         InterpreterSetting setting = notebook().getInterpreterSettingManager()
             .get(interpreterSettingId);
-        setting.addNoteToPara(noteId, paragraphId);
         String label = metaInfos.get("label");
         String tooltip = metaInfos.get("tooltip");
         List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
         for (String removeKey : keysToRemove) {
           metaInfos.remove(removeKey);
         }
+
         paragraph
             .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
         broadcast(
@@ -2387,28 +2389,6 @@ public class NotebookServer extends WebSocketServlet
                 paragraph.getRuntimeInfos()));
       }
     }
-  }
-
-  public void clearParagraphRuntimeInfo(InterpreterSetting setting) {
-    Map<String, Set<String>> noteIdAndParaMap = setting.getNoteIdAndParaMap();
-    if (noteIdAndParaMap != null && !noteIdAndParaMap.isEmpty()) {
-      for (String noteId : noteIdAndParaMap.keySet()) {
-        Set<String> paraIdSet = noteIdAndParaMap.get(noteId);
-        if (paraIdSet != null && !paraIdSet.isEmpty()) {
-          for (String paraId : paraIdSet) {
-            Note note = notebook().getNote(noteId);
-            if (note != null) {
-              Paragraph paragraph = note.getParagraph(paraId);
-              if (paragraph != null) {
-                paragraph.clearRuntimeInfo(setting.getId());
-                broadcast(noteId, new Message(OP.PARAGRAPH).put("paragraph", paragraph));
-              }
-            }
-          }
-        }
-      }
-    }
-    setting.clearNoteIdAndParaMap();
   }
 
   private void broadcastNoteForms(Note note) {
