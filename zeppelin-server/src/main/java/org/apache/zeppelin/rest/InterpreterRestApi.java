@@ -18,19 +18,31 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Maps;
-import javax.validation.constraints.NotNull;
+import javax.inject.Inject;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.dep.Repository;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterPropertyType;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
-import org.apache.zeppelin.socket.ServiceCallback;
+import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
+import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
+import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.InterpreterService;
+import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.SimpleServiceCallback;
+import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,21 +52,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterPropertyType;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
-import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
-import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.InterpreterService;
-import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.SecurityUtils;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Interpreter Rest API.
@@ -69,6 +69,7 @@ public class InterpreterRestApi {
   private final InterpreterSettingManager interpreterSettingManager;
   private final NotebookServer notebookServer;
 
+  @Inject
   public InterpreterRestApi(
       InterpreterService interpreterService,
       InterpreterSettingManager interpreterSettingManager,
@@ -214,7 +215,7 @@ public class InterpreterRestApi {
    */
   @GET
   @ZeppelinApi
-  public Response listInterpreter(String message) {
+  public Response listInterpreter() {
     Map<String, InterpreterSetting> m = interpreterSettingManager.getInterpreterSettingTemplates();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
@@ -292,9 +293,9 @@ public class InterpreterRestApi {
     try {
       interpreterService.installInterpreter(
           request,
-          new ServiceCallback() {
+          new SimpleServiceCallback<String>() {
             @Override
-            public void onStart(String message) {
+            public void onStart(String message, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
               Map<String, Object> data = Maps.newHashMap();
               data.put("result", "Starting");
@@ -304,7 +305,7 @@ public class InterpreterRestApi {
             }
 
             @Override
-            public void onSuccess(String message) {
+            public void onSuccess(String message, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
               Map<String, Object> data = Maps.newHashMap();
               data.put("result", "Succeed");
@@ -314,11 +315,11 @@ public class InterpreterRestApi {
             }
 
             @Override
-            public void onFailure(String message) {
+            public void onFailure(Exception ex, ServiceContext context) {
               Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
               Map<String, Object> data = Maps.newHashMap();
               data.put("result", "Failed");
-              data.put("message", message);
+              data.put("message", ex.getMessage());
               m.data = data;
               notebookServer.broadcast(m);
             }

@@ -241,11 +241,11 @@ public class ParagraphTest extends AbstractInterpreterTest {
   @Test
   public void returnDefaultParagraphWithNewUser() {
     Paragraph p = new Paragraph("para_1", null, null, null);
-    Object defaultValue = "Default Value";
-    p.setResult(defaultValue);
+    String defaultValue = "Default Value";
+    p.setResult(new InterpreterResult(Code.SUCCESS, defaultValue));
     Paragraph newUserParagraph = p.getUserParagraph("new_user");
     assertNotNull(newUserParagraph);
-    assertEquals(defaultValue, newUserParagraph.getReturn());
+    assertEquals(defaultValue, newUserParagraph.getReturn().message().get(0).getData());
   }
 
   @Test

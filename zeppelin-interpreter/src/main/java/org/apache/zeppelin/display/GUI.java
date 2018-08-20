@@ -44,7 +44,7 @@ public class GUI implements Serializable {
       .create();
 
   Map<String, Object> params = new HashMap<>(); // form parameters from client
-  LinkedHashMap<String, Input> forms = new LinkedHashMap<>(); // form configuration
+  Map<String, Input> forms = new LinkedHashMap<>(); // form configuration
 
   public GUI() {
 
@@ -58,11 +58,11 @@ public class GUI implements Serializable {
     return params;
   }
 
-  public LinkedHashMap<String, Input> getForms() {
+  public Map<String, Input> getForms() {
     return forms;
   }
 
-  public void setForms(LinkedHashMap<String, Input> forms) {
+  public void setForms(Map<String, Input> forms) {
     this.forms = forms;
   }
 

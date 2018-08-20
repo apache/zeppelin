@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ public class HeliumRestApi {
   private Notebook notebook;
   private Gson gson = new Gson();
 
+  @Inject
   public HeliumRestApi(Helium helium, Notebook notebook) {
     this.helium  = helium;
     this.notebook = notebook;

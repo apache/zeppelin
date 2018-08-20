@@ -199,11 +199,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // This is partial test as newNote is in memory but is not persistent
     String newNoteName = newNote.getName();
     LOG.info("new note name is: " + newNoteName);
-    String expectedNoteName = noteName;
-    if (noteName.isEmpty()) {
-      expectedNoteName = "Note " + newNoteId;
+    if (StringUtils.isBlank(noteName)) {
+      noteName = "Untitled Note";
     }
-    assertEquals("compare note name", expectedNoteName, newNoteName);
+    assertEquals("compare note name", noteName, newNoteName);
     // cleanup
     ZeppelinServer.notebook.removeNote(newNoteId, anonymous);
     post.releaseConnection();
@@ -221,8 +220,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testDeleteNoteBadId() throws IOException {
     LOG.info("testDeleteNoteBadId");
-    testDeleteNote("2AZFXEX97");
-    testDeleteNote("bad_ID");
+    testDeleteNotExistNote("bad_ID");
   }
 
   @Test
@@ -315,6 +313,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
       assertNull("Deleted note should be null", deletedNote);
     }
+  }
+
+  private void testDeleteNotExistNote(String noteId) throws IOException {
+    DeleteMethod delete = httpDelete(("/notebook/" + noteId));
+    LOG.info("testDeleteNote delete response\n" + delete.getResponseBodyAsString());
+    assertThat("Test delete method:", delete, isNotFound());
+    delete.releaseConnection();
   }
 
   @Test
@@ -580,6 +585,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
     assertThat("", postCron, isAllowed());
     postCron.releaseConnection();
+    Thread.sleep(1000);
+
+    // remove cron job.
+    DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
+    assertThat("", deleteCron, isAllowed());
+    deleteCron.releaseConnection();
     Thread.sleep(1000);
 
     System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_FOLDERS.getVarName());

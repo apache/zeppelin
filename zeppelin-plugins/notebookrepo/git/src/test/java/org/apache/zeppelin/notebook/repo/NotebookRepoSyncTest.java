@@ -27,7 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -61,7 +60,7 @@ import static org.mockito.Mockito.mock;
 
 
 //TODO(zjffdu) move it to zeppelin-zengine
-public class NotebookRepoSyncTest implements JobListenerFactory {
+public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   private File mainZepDir;
   private ZeppelinConfiguration conf;
@@ -139,7 +138,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
     /* create note */
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -156,7 +155,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
 
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
@@ -176,7 +175,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncUpdateMain() throws IOException {
 
     /* create note */
-    Note note = notebookSync.createNote(anonymous);
+    Note note = notebookSync.createNote("test", "", anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Map config = p1.getConfig();
     config.put("enabled", true);
@@ -305,7 +304,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     // no notes
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(0);
     // create note
-    Note note = vNotebookSync.createNote(anonymous);
+    Note note = vNotebookSync.createNote("test", "", anonymous);
     assertThat(vRepoSync.list(anonymous).size()).isEqualTo(1);
 
     String noteId = vRepoSync.list(anonymous).get(0).getId();
@@ -331,7 +330,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   public void testSyncWithAcl() throws IOException {
     /* scenario 1 - note exists with acl on main storage */
     AuthenticationInfo user1 = new AuthenticationInfo("user1");
-    Note note = notebookSync.createNote(user1);
+    Note note = notebookSync.createNote("test", "", user1);
     assertEquals(0, note.getParagraphs().size());
 
     // saved on both storages
@@ -411,34 +410,31 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
       }
   }
 
+
+
   @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener(){
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
 
-      @Override
-      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-      }
-
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-      }
-
-      @Override
-      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-      }
-
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-      }
-
-      @Override
-      public void onStatusChange(Job job, Status before, Status after) {
-
-      }
-    };
   }
+
+  @Override
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+  }
+
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
+  }
+
+  @Override
+  public void onProgressUpdate(Paragraph paragraph, int progress) {
+  }
+
+  @Override
+  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
+
+  }
+
 
 }

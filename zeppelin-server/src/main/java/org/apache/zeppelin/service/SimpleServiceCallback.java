@@ -15,44 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
+
+package org.apache.zeppelin.service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
+ *
+ * @param <T>
  */
-public abstract class InterpreterContextRunner implements Runnable {
-  String noteId;
-  private String paragraphId;
+public class SimpleServiceCallback<T> implements ServiceCallback<T> {
 
-  public InterpreterContextRunner(String noteId, String paragraphId) {
-    this.noteId = noteId;
-    this.paragraphId = paragraphId;
+  private static Logger LOGGER = LoggerFactory.getLogger(SimpleServiceCallback.class);
+
+  @Override
+  public void onStart(String message, ServiceContext context) throws IOException {
+    LOGGER.debug(message);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o instanceof InterpreterContextRunner) {
-      InterpreterContextRunner io = ((InterpreterContextRunner) o);
-      if (io.getParagraphId().equals(paragraphId) &&
-          io.getNoteId().equals(noteId)) {
-        return true;
-      } else {
-        return false;
-      }
-
-    } else {
-      return false;
-    }
+  public void onSuccess(T result, ServiceContext context) throws IOException {
+    LOGGER.debug("OP is succeeded");
   }
 
   @Override
-  public abstract void run();
-
-  public String getNoteId() {
-    return noteId;
-  }
-
-  public String getParagraphId() {
-    return paragraphId;
+  public void onFailure(Exception ex, ServiceContext context) throws IOException {
+    LOGGER.warn(ex.getMessage());
   }
 
 }

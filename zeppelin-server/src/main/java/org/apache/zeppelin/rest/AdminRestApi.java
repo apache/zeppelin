@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -38,6 +39,7 @@ public class AdminRestApi {
 
   private AdminService adminService;
 
+  @Inject
   public AdminRestApi(AdminService adminService) {
     this.adminService = adminService;
   }

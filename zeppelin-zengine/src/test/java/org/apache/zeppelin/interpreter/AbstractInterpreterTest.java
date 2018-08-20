@@ -71,7 +71,7 @@ public abstract class AbstractInterpreterTest {
   }
 
   protected Note createNote() {
-    return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
+    return new Note("test", "test", null, interpreterFactory, interpreterSettingManager, null, null, null, null);
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

@@ -41,8 +41,6 @@ import org.apache.zeppelin.util.Util;
  */
 @Path("/")
 public class ZeppelinRestApi {
-  public ZeppelinRestApi() {
-  }
 
   /**
    * Get the root endpoint Return always 200.

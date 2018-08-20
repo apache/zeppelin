@@ -41,7 +41,6 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -58,6 +57,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.scheduler.JobWithProgressPoller;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -72,7 +72,8 @@ import com.google.common.collect.Maps;
 /**
  * Paragraph is a representation of an execution unit.
  */
-public class Paragraph extends Job implements Cloneable, JsonSerializable {
+public class Paragraph extends JobWithProgressPoller<InterpreterResult> implements Cloneable,
+    JsonSerializable {
 
   private static Logger logger = LoggerFactory.getLogger(Paragraph.class);
   private static Pattern REPL_PATTERN =
@@ -82,10 +83,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private transient Interpreter interpreter;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap(); // personalized
+  // personalized
+  private transient Map<String, Paragraph> userParagraphMap = Maps.newHashMap();
 
   private String title;
-  private String text;  // text is composed of intpText and scriptText.
+  // text is composed of intpText and scriptText.
+  private String text;
   private transient String intpText;
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient String scriptText;
@@ -93,14 +96,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   private Date dateUpdated;
   // paragraph configs like isOpen, colWidth, etc
   private Map<String, Object> config = new HashMap<>();
-  public GUI settings = new GUI();          // form and parameter settings
+  // form and parameter settings
+  public GUI settings = new GUI();
 
-  // since zeppelin-0.7.0, zeppelin stores multiple results of the paragraph
-  // see ZEPPELIN-212
-  volatile Object results;
-
-  // For backward compatibility of note.json format after ZEPPELIN-212
-  volatile Object result;
+  private InterpreterResult results;
   private Map<String, ParagraphRuntimeInfo> runtimeInfos;
 
   /**
@@ -142,8 +141,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   @Override
-  public synchronized void setResult(Object results) {
-    this.results = results;
+  public synchronized void setResult(InterpreterResult result) {
+    this.results = result;
   }
 
   public Paragraph cloneParagraphForUser(String user) {
@@ -271,7 +270,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText);
+    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText,
+        note.getDefaultInterpreterGroup());
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -279,13 +279,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public List<InterpreterCompletion> completion(String buffer, int cursor) {
-    String lines[] = buffer.split(System.getProperty("line.separator"));
-    if (lines.length > 0 && lines[0].startsWith("%") && cursor <= lines[0].trim().length()) {
-      int idx = lines[0].indexOf(' ');
-      if (idx < 0 || (idx > 0 && cursor <= idx)) {
-        return note.getInterpreterCompletion();
-      }
-    }
     try {
       this.interpreter = getBindedInterpreter();
     } catch (InterpreterNotFoundException e) {
@@ -295,7 +288,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
     cursor = calculateCursorPosition(buffer, cursor);
 
-    InterpreterContext interpreterContext = getInterpreterContextWithoutRunner(null);
+    InterpreterContext interpreterContext = getInterpreterContext(null);
 
     try {
       if (this.interpreter != null) {
@@ -327,16 +320,12 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   public InterpreterResult getResult() {
-    return (InterpreterResult) getReturn();
+    return getReturn();
   }
 
   @Override
-  public synchronized Object getReturn() {
+  public synchronized InterpreterResult getReturn() {
     return results;
-  }
-
-  public Object getPreviousResultFormat() {
-    return result;
   }
 
   @Override
@@ -408,7 +397,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
   }
 
   @Override
-  protected Object jobRun() throws Throwable {
+  protected InterpreterResult jobRun() throws Throwable {
     logger.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
             getId(), intpText, note.getId(), authenticationInfo.getUser());
     this.interpreter = getBindedInterpreter();
@@ -421,7 +410,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (interpreterSetting != null) {
       interpreterSetting.waitForReady();
     }
-    if (this.hasUser() && this.note.hasInterpreterBinded()) {
+    if (this.hasUser()) {
       if (interpreterSetting != null && interpreterHasUser(interpreterSetting)
           && isUserAuthorizedToAccessInterpreter(interpreterSetting.getOption()) == false) {
         logger.error("{} has no permission for {} ", authenticationInfo.getUser(), intpText);
@@ -524,7 +513,7 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       job.setStatus(Status.ABORT);
     } else {
       try {
-        interpreter.cancel(getInterpreterContextWithoutRunner(null));
+        interpreter.cancel(getInterpreterContext(null));
       } catch (InterpreterException e) {
         throw new RuntimeException(e);
       }
@@ -564,54 +553,11 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       }
 
       private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
-        // update paragraph result
+        // update paragraph results
         InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
         setReturn(result, null);
       }
     }));
-  }
-
-  private InterpreterContext getInterpreterContextWithoutRunner(InterpreterOutput output) {
-    AngularObjectRegistry registry = null;
-    ResourcePool resourcePool = null;
-
-    if (this.interpreter != null) {
-      registry = this.interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
-    }
-
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-
-    final Paragraph self = this;
-
-    Credentials credentials = note.getCredentials();
-    setAuthenticationInfo(new AuthenticationInfo(getUser()));
-
-    if (authenticationInfo.getUser() != null) {
-      UserCredentials userCredentials =
-          credentials.getUserCredentials(authenticationInfo.getUser());
-      authenticationInfo.setUserCredentials(userCredentials);
-    }
-
-    InterpreterContext interpreterContext =
-        InterpreterContext.builder()
-            .setNoteId(note.getId())
-            .setNoteName(note.getName())
-            .setParagraphId(getId())
-            .setReplName(intpText)
-            .setParagraphTitle(title)
-            .setParagraphText(text)
-            .setLocalProperties(localProperties)
-            .setAuthenticationInfo(authenticationInfo)
-            .setConfig(config)
-            .setGUI(settings)
-            .setNoteGUI(getNoteGui())
-            .setAngularObjectRegistry(registry)
-            .setResourcePool(resourcePool)
-            .setInterpreterOut(output)
-            .build();
-
-    return interpreterContext;
   }
 
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {
@@ -623,12 +569,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
       resourcePool = this.interpreter.getInterpreterGroup().getResourcePool();
     }
 
-    List<InterpreterContextRunner> runners = new LinkedList<>();
-    for (Paragraph p : note.getParagraphs()) {
-      runners.add(new ParagraphRunner(note, note.getId(), p.getId()));
-    }
-
-    final Paragraph self = this;
 
     Credentials credentials = note.getCredentials();
     if (authenticationInfo != null) {
@@ -657,29 +597,10 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     return interpreterContext;
   }
 
-  public InterpreterContextRunner getInterpreterContextRunner() {
-    return new ParagraphRunner(note, note.getId(), getId());
-  }
-
   public void setStatusToUserParagraph(Status status) {
     String user = getUser();
     if (null != user) {
       getUserParagraph(getUser()).setStatus(status);
-    }
-  }
-
-  static class ParagraphRunner extends InterpreterContextRunner {
-
-    private transient Note note;
-
-    ParagraphRunner(Note note, String noteId, String paragraphId) {
-      super(noteId, paragraphId);
-      this.note = note;
-    }
-
-    @Override
-    public void run() {
-      note.run(getParagraphId(), false);
     }
   }
 
@@ -763,7 +684,8 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return interpreterFactory.getInterpreter(user, note.getId(), replName) != null;
+      return interpreterFactory.getInterpreter(user, note.getId(), replName,
+          note.getDefaultInterpreterGroup()) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }
@@ -866,9 +788,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     if (results != null ? !results.equals(paragraph.results) : paragraph.results != null) {
       return false;
     }
-    if (result != null ? !result.equals(paragraph.result) : paragraph.result != null) {
-      return false;
-    }
     return runtimeInfos != null ?
         runtimeInfos.equals(paragraph.runtimeInfos) : paragraph.runtimeInfos == null;
 
@@ -884,7 +803,6 @@ public class Paragraph extends Job implements Cloneable, JsonSerializable {
     result1 = 31 * result1 + (config != null ? config.hashCode() : 0);
     result1 = 31 * result1 + (settings != null ? settings.hashCode() : 0);
     result1 = 31 * result1 + (results != null ? results.hashCode() : 0);
-    result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
     result1 = 31 * result1 + (runtimeInfos != null ? runtimeInfos.hashCode() : 0);
     return result1;
   }

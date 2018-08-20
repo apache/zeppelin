@@ -15,13 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.socket;
+package org.apache.zeppelin.rest.exception;
 
-/** This will be used by some services to pass messages to frontend via WebSocket */
-public interface ServiceCallback {
-  void onStart(String message);
+import org.apache.zeppelin.utils.ExceptionUtils;
 
-  void onSuccess(String message);
+import javax.ws.rs.WebApplicationException;
 
-  void onFailure(String message);
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
+public class ParagraphNotFoundException extends WebApplicationException {
+
+  public ParagraphNotFoundException(String paragraphId) {
+    super(ExceptionUtils.jsonResponseContent(NOT_FOUND, "No such paragraph: " + paragraphId));
+  }
 }

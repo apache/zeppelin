@@ -74,11 +74,6 @@ struct RemoteApplicationResult {
   2: string msg
 }
 
-struct ZeppelinServerResourceParagraphRunner {
-  1: string noteId,
-  2: string paragraphId
-}
-
 /*
  * The below variables(name, value) will be connected to getCompletions in paragraph.controller.js
  *
@@ -124,7 +119,6 @@ service RemoteInterpreterService {
   RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
   RemoteApplicationResult runApplication(1: string applicationInstanceId);
 
-  void onReceivedZeppelinResource(1: string object);
 }
 
 

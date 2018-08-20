@@ -299,6 +299,8 @@ public class LuceneSearchTest {
   private Note newNote(String name) {
     Note note =
         new Note(
+            "test",
+            "test",
             notebookRepoMock,
             interpreterFactory,
             interpreterSettingManager,

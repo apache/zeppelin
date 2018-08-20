@@ -129,6 +129,7 @@ public abstract class AbstractTestRestApi {
 
   protected static File zeppelinHome;
   protected static File confDir;
+  protected static File notebookDir;
 
   private String getUrl(String path) {
     String url;
@@ -187,6 +188,11 @@ public abstract class AbstractTestRestApi {
       System.setProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
           "spark");
+      notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+          notebookDir.getPath()
+      );
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory

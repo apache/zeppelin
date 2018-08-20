@@ -40,7 +40,7 @@ public class FolderTest {
   NotebookRepo repo;
 
   @Mock
-  JobListenerFactory jobListenerFactory;
+  ParagraphJobListener paragraphJobListener;
 
   @Mock
   SearchService index;
@@ -71,13 +71,13 @@ public class FolderTest {
 
   @Before
   public void createFolderAndNotes() {
-    note1 = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    note1 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note1.setName("this/is/a/folder/note1");
 
-    note2 = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    note2 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note2.setName("this/is/a/folder/note2");
 
-    note3 = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    note3 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note3.setName("this/is/a/folder/note3");
 
     folder = new Folder("this/is/a/folder");
@@ -118,7 +118,7 @@ public class FolderTest {
 
   @Test
   public void addNoteTest() {
-    Note note4 = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    Note note4 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note4.setName("this/is/a/folder/note4");
 
     folder.addNote(note4);

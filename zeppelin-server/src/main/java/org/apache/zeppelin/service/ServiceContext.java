@@ -15,11 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.notebook;
+
+package org.apache.zeppelin.service;
+
+import org.apache.zeppelin.user.AuthenticationInfo;
+
+import java.util.Set;
 
 /**
- * TODO(moon): provide description.
+ * Context info for Service call
  */
-public interface JobListenerFactory {
-  public ParagraphJobListener getParagraphJobListener(Note note);
+public class ServiceContext {
+
+  private AuthenticationInfo autheInfo;
+  private Set<String> userAndRoles;
+
+  public ServiceContext(AuthenticationInfo authInfo, Set<String> userAndRoles) {
+    this.autheInfo = authInfo;
+    this.userAndRoles = userAndRoles;
+  }
+
+  public AuthenticationInfo getAutheInfo() {
+    return autheInfo;
+  }
+
+  public Set<String> getUserAndRoles() {
+    return userAndRoles;
+  }
 }

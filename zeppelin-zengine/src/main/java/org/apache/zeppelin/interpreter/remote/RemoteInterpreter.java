@@ -225,7 +225,9 @@ public class RemoteInterpreter extends Interpreter {
                 remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
                 }.getType());
             context.getConfig().clear();
-            context.getConfig().putAll(remoteConfig);
+            if (remoteConfig != null) {
+              context.getConfig().putAll(remoteConfig);
+            }
             GUI currentGUI = context.getGui();
             GUI currentNoteGUI = context.getNoteGui();
             if (form == FormType.NATIVE) {

@@ -42,7 +42,7 @@ public class FolderViewTest {
   NotebookRepo repo;
 
   @Mock
-  JobListenerFactory jobListenerFactory;
+  ParagraphJobListener paragraphJobListener;
 
   @Mock
   SearchService index;
@@ -89,7 +89,7 @@ public class FolderViewTest {
   Note abNote2;
 
   private Note createNote() {
-    Note note = new Note(repo, interpreterFactory, interpreterSettingManager, jobListenerFactory, index, credentials, noteEventListener);
+    Note note = new Note("test", "test", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note.setNoteNameListener(folderView);
     return note;
   }
