@@ -300,7 +300,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientBind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -349,7 +349,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientBind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -393,7 +393,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
 
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientUnbind(conn, new HashSet<String>(), notebook, messageReceived);
@@ -440,7 +440,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("interpreterGroupId", "mdGroup")
             .put("noteId", "noteId")
             .put("paragraphId", "paragraphId"));
-    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+    server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
     server.angularObjectClientUnbind(conn, new HashSet<String>(), notebook, messageReceived);
