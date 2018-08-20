@@ -47,6 +47,7 @@
     <selenium.java.version>2.48.2</selenium.java.version>
     <xml.apis.version>1.4.01</xml.apis.version>
     <powermock.version>1.6.6</powermock.version>
+    <system.rules.version>1.18.0</system.rules.version>
 
     <!--plugin library versions-->
     <plugin.failsafe.version>2.16</plugin.failsafe.version>
@@ -272,6 +273,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <version>${system.rules.version}</version>
       <scope>test</scope>
     </dependency>
 

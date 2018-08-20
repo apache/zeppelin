@@ -25,6 +25,9 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -862,13 +865,44 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
+  private Integer extractPid(String path) throws FileNotFoundException {
+    Scanner fileScanner = new Scanner(new File(path));
+    if (fileScanner.hasNextInt()){
+      return fileScanner.nextInt();
+    }
+    throw new FileNotFoundException(
+            String.format(
+                    "File %s is empty",
+                    path
+            )
+    );
+  }
+
   @Override
-  public Set<String> getRunningInterpreters() {
-    Set<String> runningInterpreters = Sets.newHashSet();
+  public List<Map<String, String>> getRunningInterpreters() {
+    String pidDirPath = System.getenv("ZEPPELIN_PID_DIR");
+    File pidDir = new File(pidDirPath);
+    List<Map<String, String>> runningInterpreters = new LinkedList<>();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
+      Map<String, String> interpreterInfo = new HashMap<>();
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
         if (null != mig.getRemoteInterpreterProcess()) {
-          runningInterpreters.add(entry.getKey());
+          String interpreterType = entry.getValue().getGroup();
+          String port = String.valueOf(interpreterEventServer.getPort());
+          if (pidDir.listFiles() != null) {
+            for (File file : pidDir.listFiles()) {
+              if (file.getName().contains(port) && file.getName().contains(interpreterType)) {
+                try {
+                  Integer pid = extractPid(file.getAbsolutePath());
+                  interpreterInfo.put("pid", pid.toString());
+                } catch (FileNotFoundException err) {
+                  interpreterInfo.put("pid", err.getMessage());
+                }
+              }
+            }
+            interpreterInfo.put("name", interpreterType);
+            runningInterpreters.add(interpreterInfo);
+          }
         }
       }
     }

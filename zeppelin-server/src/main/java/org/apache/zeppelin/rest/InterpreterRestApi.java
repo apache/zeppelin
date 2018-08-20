@@ -330,4 +330,18 @@ public class InterpreterRestApi {
 
     return new JsonResponse<>(Status.OK).build();
   }
+
+  /**
+   * Get all running interpreters.
+   */
+  @GET
+  @Path("running")
+  @ZeppelinApi
+  public Response listRunningInterpreters() {
+    return new JsonResponse<>(
+            Status.OK,
+            "",
+            interpreterSettingManager.getRunningInterpreters()
+    ).build();
+  }
 }

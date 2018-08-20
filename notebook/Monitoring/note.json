@@ -1,0 +1,688 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n### Intro\nThis notebook is an example of how to use API functions for cpu and memory load analysis. \n\n* `/api/interpreter/running` - return running interpreters list with attr: `pid`, `name`\n* `/api/notebook/jobmanager/running` - returns running paragraphs info grouped by interpreters with attr: `interpreterText`, `noteName`, `noteId`, `id`, `user`\n\nIf there is no running paragrahs in your session you may run paragraphs in `System/RemoteProcesses`.\nIn this case your interpreters should be configured **Per Note**.",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-15 14:37:16.692",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eIntro\u003c/h3\u003e\n\u003cp\u003eThis notebook is an example of how to use API functions for cpu and memory load analysis. \u003c/p\u003e\n\u003cul\u003e\n  \u003cli\u003e\u003ccode\u003e/api/interpreter/running\u003c/code\u003e - return running interpreters list with attr: \u003ccode\u003epid\u003c/code\u003e, \u003ccode\u003ename\u003c/code\u003e\u003c/li\u003e\n  \u003cli\u003e\u003ccode\u003e/api/notebook/jobmanager/running\u003c/code\u003e - returns running paragraphs info grouped by interpreters with attr: \u003ccode\u003einterpreterText\u003c/code\u003e, \u003ccode\u003enoteName\u003c/code\u003e, \u003ccode\u003enoteId\u003c/code\u003e, \u003ccode\u003eid\u003c/code\u003e, \u003ccode\u003euser\u003c/code\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eIf there is no running paragrahs in your session you may run paragraphs in \u003ccode\u003eSystem/RemoteProcesses\u003c/code\u003e.\u003cbr/\u003eIn this case your interpreters should be configured \u003cstrong\u003ePer Note\u003c/strong\u003e.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532531348186_-1011948880",
+      "id": "20180725-180908_405285386",
+      "dateCreated": "2018-07-25 18:09:08.186",
+      "dateStarted": "2018-08-15 14:37:16.709",
+      "dateFinished": "2018-08-15 14:37:16.771",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Set your Zeppelin Info",
+      "text": "%python\nhost \u003d z.input(\"Zeppelin host:port\", \"localhost:8080\")",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-15 14:37:19.436",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "editorHide": true,
+        "tableHide": false,
+        "title": true
+      },
+      "settings": {
+        "params": {
+          "number": "1",
+          "Zeppelin host:post": "localhost:8080",
+          "Zeppelin host:port": "localhost:8080"
+        },
+        "forms": {
+          "Zeppelin host:port": {
+            "type": "TextBox",
+            "name": "Zeppelin host:port",
+            "displayName": "Zeppelin host:port",
+            "defaultValue": "localhost:8080",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532946307648_1410322628",
+      "id": "20180730-132507_1546153473",
+      "dateCreated": "2018-07-30 13:25:07.648",
+      "dateStarted": "2018-08-15 14:37:19.469",
+      "dateFinished": "2018-08-15 14:37:20.820",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Running Interpreters Info",
+      "text": "%python\n\"\"\"\n    Note for running interpreters analysis:\n        * requests to /api/interpreter/running\n        * makes table with memory and cpu load data\n\"\"\"\nimport psutil\nimport pandas as pd\nimport datetime\nimport json\nimport requests\n\n\ndef get_mem_and_cpu(process):\n    \"\"\"\n    Sum all memory and cpu of given process (including child processes)\n\n    Args:\n        process (psutil.Process): process which need to be investigated.\n\n    Returns:\n        (mem (float), cpu (float)):\n            mem - “Resident Set Size”, this is the non-swapped physical memory\n                  a process and it\u0027s child processes have used.\n            cpu - time spent by normal processes executing in user mode;\n                  on Linux this also includes guest time\n    \"\"\"\n    mem \u003d 0\n    cpu \u003d 0\n    visited \u003d set()\n    processes \u003d [process]\n    while(processes):\n        p \u003d processes.pop()\n        if p.pid not in visited:\n            cpu +\u003d p.cpu_times()[0]\n            mem +\u003d p.memory_info()[0]\n            visited.add(p.pid)\n        for child in p.children(recursive\u003dTrue):\n            processes.append(child)\n    return (mem, cpu)\n\n\ndef process_response(json_data):\n    \"\"\"\n    Make DataFrame from request result\n    \"\"\"\n    for running_interpreter in json_data[\u0027body\u0027]:\n        pid_info \u003d []\n        pid \u003d int(running_interpreter[\u0027pid\u0027])\n        assert psutil.pid_exists(pid), \"Not existed pid\"\n\n        p \u003d psutil.Process(pid)\n        cmdline \u003d p.cmdline()\n        name \u003d cmdline[-1]\n        pid_info.append(name)\n        pid_info.append(pid)\n        pid_info.append(p.ppid())\n        pid_info.append(\n            datetime.datetime\n            .fromtimestamp(p.create_time())\n            .strftime(\u0027%Y-%m-%d %H:%M:%S\u0027)\n        )\n        mem, cpu \u003d get_mem_and_cpu(p)\n        pid_info.append(mem)\n        pid_info.append(cpu)\n        port \u003d pd.np.nan\n        if \u0027-p\u0027 in cmdline:\n            port \u003d cmdline[cmdline.index(\u0027-p\u0027) + 1]\n        pid_info.append(port)\n        cmdline_str \u003d \u0027 \u0027.join(cmdline)\n        pid_info.append(cmdline_str)\n        running_interpreters_info.append(pid_info)\n\n    df \u003d pd.DataFrame(running_interpreters_info,\n                      columns\u003d[\u0027name\u0027, \u0027pid\u0027, \u0027ppid\u0027, \u0027created_dttm\u0027,\n                               \u0027memory\u0027, \u0027cpu\u0027, \u0027port\u0027, \u0027cmd\u0027])\n    z.show(df)\n\n\nurl \u003d \u0027http://{}/api/interpreter/running\u0027.format(host)\ntry:\n    response \u003d requests.get(url)\n    json_data \u003d json.loads(response.text)\n    running_interpreters_info \u003d []\n    process_response(json_data)\nexcept requests.exceptions.RequestException as e:\n    print(\" \".join([\n        \"%html\", \"\u003ccenter\u003e\u003ch4\u003e\u003cb\u003eRequest Failed\u003c/b\u003e\u003c/h4\u003e\u003c/center\u003e\"\n        ]))\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-15 14:37:23.033",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 247.067,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "name",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "pid",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "ppid",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "created_dttm",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "memory",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "cpu",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "priority": 0.0,
+                          "direction": "desc"
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "port",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "cmd",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "name": "string",
+                      "pid": "string",
+                      "ppid": "string",
+                      "created_dttm": "string",
+                      "memory": "string",
+                      "cpu": "string",
+                      "port": "string",
+                      "cmd": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "stacked": true
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "style": "expand"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "forceY": false,
+                  "isDateFormat": false
+                },
+                "pieChart": {},
+                "scatterChart": {
+                  "xAxis": {
+                    "name": "name",
+                    "index": 0.0,
+                    "aggr": "sum"
+                  },
+                  "yAxis": {
+                    "name": "memory",
+                    "index": 4.0,
+                    "aggr": "sum"
+                  }
+                }
+              },
+              "keys": [
+                {
+                  "name": "name",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "pid",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "memory",
+                  "index": 4.0,
+                  "aggr": "sum"
+                }
+              ],
+              "commonSetting": {}
+            },
+            "helium": {}
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "name": "string",
+                      "pid": "string",
+                      "ppid": "string",
+                      "created_dttm": "string",
+                      "memory": "string",
+                      "cpu": "string",
+                      "port": "string",
+                      "cmd": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": true,
+        "lineNumbers": true,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "name\tpid\tppid\tcreated_dttm\tmemory\tcpu\tport\tcmd\nsh\t7593\t7581\t2018-08-15 14:37:09\t91168768\t1.27\t41233\t/bin/bash /home/egklimov/IdeaProjects/zeppelin-current/bin/interpreter.sh -d /home/egklimov/IdeaProjects/zeppelin-current/interpreter/sh -c 172.16.230.189 -p 41233 -r : -i sh:shared_process -l /home/egklimov/IdeaProjects/zeppelin-current/local-repo/sh -g sh\nspark\t7543\t7532\t2018-08-15 14:37:07\t728891392\t34.160000000000004\t41233\t/bin/bash /home/egklimov/IdeaProjects/zeppelin-current/bin/interpreter.sh -d /home/egklimov/IdeaProjects/zeppelin-current/interpreter/spark -c 172.16.230.189 -p 41233 -r : -i spark:shared_process -l /home/egklimov/IdeaProjects/zeppelin-current/local-repo/spark -g spark\nmd\t7439\t7427\t2018-08-15 14:37:01\t138711040\t2.39\t41233\t/bin/bash /home/egklimov/IdeaProjects/zeppelin-current/bin/interpreter.sh -d /home/egklimov/IdeaProjects/zeppelin-current/interpreter/md -c 172.16.230.189 -p 41233 -r : -i md:shared_process -l /home/egklimov/IdeaProjects/zeppelin-current/local-repo/md -g md\npython\t7485\t7473\t2018-08-15 14:37:05\t260640768\t2.4699999999999998\t41233\t/bin/bash /home/egklimov/IdeaProjects/zeppelin-current/bin/interpreter.sh -d /home/egklimov/IdeaProjects/zeppelin-current/interpreter/python -c 172.16.230.189 -p 41233 -r : -i python:shared_process -l /home/egklimov/IdeaProjects/zeppelin-current/local-repo/python -g python\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532343462339_1680282920",
+      "id": "20180723-135742_1019375226",
+      "dateCreated": "2018-07-23 13:57:42.339",
+      "dateStarted": "2018-08-15 14:37:23.074",
+      "dateFinished": "2018-08-15 14:37:23.773",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Running Paragraphs info",
+      "text": "%python\n\"\"\"\n    Note for running paragraphs analysis:\n        * requests to /api/notebook/jobmanager/running\n        * makes table with paragraphs info\n\"\"\"\nimport psutil\nimport pandas as pd\nimport datetime\nimport json\nimport requests\n\n\ndef process_response(json_data):\n    \"\"\"\n    Make DataFrame from request result\n    \"\"\"\n    interpreters \u003d json_data[\u0027body\u0027][\u0027runningInterpreters\u0027]\n    for interpreter in interpreters:\n        for paragraph in interpreters[interpreter][\u0027paragraphs\u0027]:\n            par_res \u003d []\n            par_res.append(interpreter)\n            pid \u003d int(interpreters[interpreter][\u0027pid\u0027])\n            assert psutil.pid_exists(pid), \"Not existed pid\"\n            par_res.append(pid)\n            par_res.append(paragraph[\u0027noteName\u0027])\n            par_res.append(paragraph[\u0027noteId\u0027])\n            par_res.append(paragraph[\u0027id\u0027])\n            par_res.append(paragraph[\u0027user\u0027])\n            par_res.append(paragraph[\u0027interpreterText\u0027])\n            par_res.append(\u0027\u0027.join([\n                \"%html \u003ca href\u003d\\\"/#/notebook/\",\n                paragraph[\u0027noteId\u0027],\n                \"\\?paragraph\u003d\",\n                paragraph[\u0027id\u0027],\n                \"\\\"\u003eJump to paragraph\u003c/a\u003e\"\n                ]))\n            running_paragraphs_info.append(par_res)\n\n    df \u003d pd.DataFrame(running_paragraphs_info, columns\u003d[\n        \u0027interpreter_group\u0027, \u0027pid\u0027, \u0027note_name\u0027,\n        \u0027note_id\u0027, \u0027id\u0027, \u0027user\u0027, \u0027intp_text\u0027, \u0027link\u0027\n        ])\n    z.show(df)\n\nurl \u003d \u0027http://{}/api/notebook/jobmanager/running\u0027.format(host)\ntry:\n    response \u003d requests.get(url)\n    json_data \u003d json.loads(response.text)\n    running_paragraphs_info \u003d []\n    process_response(json_data)\nexcept requests.exceptions.RequestException as e:\n    print(\" \".join([\n        \"%html\", \"\u003ccenter\u003e\u003ch4\u003e\u003cb\u003eRequest Failed\u003c/b\u003e\u003c/h4\u003e\u003c/center\u003e\"\n        ]))\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-15 14:41:41.172",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "interpreter_group",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "pid",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "note_name",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "note_id",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "id",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "user",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "intp_text",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "link",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "interpreter_group": "string",
+                      "pid": "string",
+                      "note_name": "string",
+                      "note_id": "string",
+                      "id": "string",
+                      "user": "string",
+                      "intp_text": "string",
+                      "link": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "pieChart": {},
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "interpreter",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "id",
+                  "index": 4.0,
+                  "aggr": "count"
+                }
+              ]
+            },
+            "helium": {}
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "interpreter": "string",
+                      "pid": "string",
+                      "note_name": "string",
+                      "note_id": "string",
+                      "id": "string",
+                      "user": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "lineNumbers": true,
+        "editorHide": false,
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "interpreter_group\tpid\tnote_name\tnote_id\tid\tuser\tintp_text\tlink\npython\t7485\tSystem/RemoteProcesses\tRemoteProcesses\t20180725-163210_814222372\tanonymous\tpython\t%html \u003ca href\u003d\"/#/notebook/RemoteProcesses\\?paragraph\u003d20180725-163210_814222372\"\u003eJump to paragraph\u003c/a\u003e\nspark\t7543\tSystem/RemoteProcesses\tRemoteProcesses\t20180726-135457_1727027836\tanonymous\tspark.pyspark\t%html \u003ca href\u003d\"/#/notebook/RemoteProcesses\\?paragraph\u003d20180726-135457_1727027836\"\u003eJump to paragraph\u003c/a\u003e\nsh\t7593\tSystem/RemoteProcesses\tRemoteProcesses\t20180727-121800_617175178\tanonymous\tsh\t%html \u003ca href\u003d\"/#/notebook/RemoteProcesses\\?paragraph\u003d20180727-121800_617175178\"\u003eJump to paragraph\u003c/a\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532535416294_-1500024731",
+      "id": "20180725-191656_1639318001",
+      "dateCreated": "2018-07-25 19:16:56.294",
+      "dateStarted": "2018-08-15 14:37:41.613",
+      "dateFinished": "2018-08-15 14:37:41.650",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Process Tree",
+      "text": "%python\n\"\"\"\n    Note for building processes tree:\n        * extract pid of all running interpreters\n        * makes tree using html with cpu and mem data\n\"\"\"\nimport collections\nimport sys\nimport psutil\n\n# hidden text with mem and cpu info\nNESTED_TEMPLATE \u003d \"\"\"\n.nested%s{\n    position:relative;\n    display:none;\n}\n.holder%s:hover .nested%s{\n    display:block;\n}\"\"\"\n\n# text with pid info\nHOLDER_TEMPLATE \u003d \"\"\"\n.holder%s{\n    position:relative;\n     margin:0;\n}\n\"\"\"\n\nstyle_buffer \u003d [\"\"\"\u003cstyle\u003e\nul {\n   padding: 0;\n   margin-left: 20px;\n   }\"\"\"]\nbody_buffer \u003d [\"\\n\u003cdiv\u003e\u003cul\u003e\"]\n\n\ndef print_tree(parent, tree, indent\u003d0):\n    \"\"\"\n    Generate html code for given tree\n\n    Args:\n        parent (int): id of process which children will be added to html.\n        tree (dict): builded process tree\n        indent (int): indent of html text, default\u003d0\n\n    Note:\n        Modificates global variables body_buffer and style_buffer\n        with tree data\n    \"\"\"\n    try:\n        name \u003d psutil.Process(parent).name()\n    except psutil.Error:\n        name \u003d \"?\"\n    mem, cpu \u003d get_mem_and_cpu(psutil.Process(parent))\n    pid \u003d str(parent)\n    holder_class \u003d \u0027\u0027.join([\n        \"\\n\", \"\\t\" * indent, \"\u003cdiv class\u003d\\\"holder\",\n        pid, \"\\\"\u003e\\n\", \"\\t\" * indent, \"\u003cli\u003e\"\n        ])\n    nested_class \u003d \u0027\u0027.join([\"\u003cdiv class\u003d\\\"nested\", pid, \"\\\"\u003e cpu: \"])\n    global body_buffer, style_buffer\n    body_buffer.append(\u0027 \u0027.join([\n        holder_class, str(parent), name, nested_class,\n        \"{0:.1f}\".format(cpu), \"mem: \", str(mem), \"\u003c/div\u003e\u003c/div\u003e\"\n        ]))\n    style_buffer.append(HOLDER_TEMPLATE % (pid))\n    style_buffer.append(NESTED_TEMPLATE % (pid, pid, pid))\n    if parent not in tree:\n        body_buffer.append(\"\u003c/li\u003e\")\n        return\n    children \u003d tree[parent]\n    body_buffer.append(\"\".join([\"\\n\", \"\\t\" * indent, \" \u003cul\u003e\"]))\n    for child in children:\n        print_tree(child, tree, indent + 1)\n    body_buffer.append(\"\".join([\n        \"\\n\", \"\\t\" * indent, \" \u003c/ul\u003e\",\n        \"\\n\", \"\\t\" * indent, \"\u003c/li\u003e\"\n        ]))\n\n\ndef build_tree(start):\n    \u0027\u0027\u0027\n    * Construct a dict where \u0027values\u0027 are all the processes\n      having \u0027key\u0027 as their parent.\n    * Visualize it using %html\n\n    Args:\n        start (list\u003cpsutil.Process\u003e): list of processes which children\n        and parent should be added to tree\n    \u0027\u0027\u0027\n    tree \u003d collections.defaultdict(list)\n    for p in start:\n        try:\n            if p.pid not in tree[p.ppid()]:\n                tree[p.ppid()].append(p.pid)\n            if not tree[p.pid]:\n                for child in p.children(recursive\u003dTrue):\n                    if child.pid not in tree[child.ppid()]:\n                        tree[child.ppid()].append(child.pid)\n            if psutil.Process(p.ppid()).name() !\u003d \"upstart\":\n                start.append(psutil.Process(p.ppid()))\n        except (psutil.NoSuchProcess, psutil.ZombieProcess):\n            pass\n    # on systems supporting PID 0, PID 0\u0027s parent is usually 0\n    if 0 in tree and 0 in tree[0]:\n        tree[0].remove(0)\n    if tree:\n        print_tree(min(tree), tree)\n        global body_buffer, style_buffer\n        body_buffer.append(\"\\n\u003c/ul\u003e\u003c/div\u003e\")\n        style_buffer.append(\"\\n\u003c/style\u003e\")\n        print(\" \".join([\"%html\", *style_buffer, *body_buffer]))\n    else:\n        print(\" \".join([\n            \"%html\", \"\u003ccenter\u003e\u003ch4\u003e\u003cb\u003eNo Data Available\u003c/b\u003e\u003c/h4\u003e\u003c/center\u003e\"\n            ]))\n\n\ntmp \u003d []\nfor r in running_interpreters_info:\n    tmp.append(psutil.Process(r[1]))\nbuild_tree(tmp)\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-15 14:38:01.141",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionSupport": true,
+          "completionKey": "TAB"
+        },
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "lineNumbers": true,
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cstyle\u003e\nul {\n   padding: 0;\n   margin-left: 20px;\n   } \n.holder1336{\n    position:relative;\n     margin:0;\n}\n \n.nested1336{\n    position:relative;\n    display:none;\n}\n.holder1336:hover .nested1336{\n    display:block;\n} \n.holder7165{\n    position:relative;\n     margin:0;\n}\n \n.nested7165{\n    position:relative;\n    display:none;\n}\n.holder7165:hover .nested7165{\n    display:block;\n} \n.holder7581{\n    position:relative;\n     margin:0;\n}\n \n.nested7581{\n    position:relative;\n    display:none;\n}\n.holder7581:hover .nested7581{\n    display:block;\n} \n.holder7593{\n    position:relative;\n     margin:0;\n}\n \n.nested7593{\n    position:relative;\n    display:none;\n}\n.holder7593:hover .nested7593{\n    display:block;\n} \n.holder7594{\n    position:relative;\n     margin:0;\n}\n \n.nested7594{\n    position:relative;\n    display:none;\n}\n.holder7594:hover .nested7594{\n    display:block;\n} \n.holder7621{\n    position:relative;\n     margin:0;\n}\n \n.nested7621{\n    position:relative;\n    display:none;\n}\n.holder7621:hover .nested7621{\n    display:block;\n} \n.holder7532{\n    position:relative;\n     margin:0;\n}\n \n.nested7532{\n    position:relative;\n    display:none;\n}\n.holder7532:hover .nested7532{\n    display:block;\n} \n.holder7543{\n    position:relative;\n     margin:0;\n}\n \n.nested7543{\n    position:relative;\n    display:none;\n}\n.holder7543:hover .nested7543{\n    display:block;\n} \n.holder7544{\n    position:relative;\n     margin:0;\n}\n \n.nested7544{\n    position:relative;\n    display:none;\n}\n.holder7544:hover .nested7544{\n    display:block;\n} \n.holder7687{\n    position:relative;\n     margin:0;\n}\n \n.nested7687{\n    position:relative;\n    display:none;\n}\n.holder7687:hover .nested7687{\n    display:block;\n} \n.holder7427{\n    position:relative;\n     margin:0;\n}\n \n.nested7427{\n    position:relative;\n    display:none;\n}\n.holder7427:hover .nested7427{\n    display:block;\n} \n.holder7439{\n    position:relative;\n     margin:0;\n}\n \n.nested7439{\n    position:relative;\n    display:none;\n}\n.holder7439:hover .nested7439{\n    display:block;\n} \n.holder7440{\n    position:relative;\n     margin:0;\n}\n \n.nested7440{\n    position:relative;\n    display:none;\n}\n.holder7440:hover .nested7440{\n    display:block;\n} \n.holder7473{\n    position:relative;\n     margin:0;\n}\n \n.nested7473{\n    position:relative;\n    display:none;\n}\n.holder7473:hover .nested7473{\n    display:block;\n} \n.holder7485{\n    position:relative;\n     margin:0;\n}\n \n.nested7485{\n    position:relative;\n    display:none;\n}\n.holder7485:hover .nested7485{\n    display:block;\n} \n.holder7486{\n    position:relative;\n     margin:0;\n}\n \n.nested7486{\n    position:relative;\n    display:none;\n}\n.holder7486:hover .nested7486{\n    display:block;\n} \n.holder7524{\n    position:relative;\n     margin:0;\n}\n \n.nested7524{\n    position:relative;\n    display:none;\n}\n.holder7524:hover .nested7524{\n    display:block;\n} \n.holder7712{\n    position:relative;\n     margin:0;\n}\n \n.nested7712{\n    position:relative;\n    display:none;\n}\n.holder7712:hover .nested7712{\n    display:block;\n} \n\u003c/style\u003e \n\u003cdiv\u003e\u003cul\u003e \n\u003cdiv class\u003d\"holder1336\"\u003e\n\u003cli\u003e 1336 upstart \u003cdiv class\u003d\"nested1336\"\u003e cpu:  4564.6 mem:  7533690880 \u003c/div\u003e\u003c/div\u003e \n \u003cul\u003e \n\t\u003cdiv class\u003d\"holder7165\"\u003e\n\t\u003cli\u003e 7165 java \u003cdiv class\u003d\"nested7165\"\u003e cpu:  66.7 mem:  1756229632 \u003c/div\u003e\u003c/div\u003e \n\t \u003cul\u003e \n\t\t\u003cdiv class\u003d\"holder7581\"\u003e\n\t\t\u003cli\u003e 7581 interpreter.sh \u003cdiv class\u003d\"nested7581\"\u003e cpu:  1.6 mem:  96677888 \u003c/div\u003e\u003c/div\u003e \n\t\t \u003cul\u003e \n\t\t\t\u003cdiv class\u003d\"holder7593\"\u003e\n\t\t\t\u003cli\u003e 7593 interpreter.sh \u003cdiv class\u003d\"nested7593\"\u003e cpu:  1.6 mem:  93642752 \u003c/div\u003e\u003c/div\u003e \n\t\t\t \u003cul\u003e \n\t\t\t\t\u003cdiv class\u003d\"holder7594\"\u003e\n\t\t\t\t\u003cli\u003e 7594 java \u003cdiv class\u003d\"nested7594\"\u003e cpu:  1.6 mem:  91348992 \u003c/div\u003e\u003c/div\u003e \n\t\t\t\t \u003cul\u003e \n\t\t\t\t\t\u003cdiv class\u003d\"holder7621\"\u003e\n\t\t\t\t\t\u003cli\u003e 7621 sleep \u003cdiv class\u003d\"nested7621\"\u003e cpu:  0.0 mem:  819200 \u003c/div\u003e\u003c/div\u003e \u003c/li\u003e \n\t\t\t\t \u003c/ul\u003e\n\t\t\t\t\u003c/li\u003e \n\t\t\t \u003c/ul\u003e\n\t\t\t\u003c/li\u003e \n\t\t \u003c/ul\u003e\n\t\t\u003c/li\u003e \n\t\t\u003cdiv class\u003d\"holder7532\"\u003e\n\t\t\u003cli\u003e 7532 interpreter.sh \u003cdiv class\u003d\"nested7532\"\u003e cpu:  34.6 mem:  732569600 \u003c/div\u003e\u003c/div\u003e \n\t\t \u003cul\u003e \n\t\t\t\u003cdiv class\u003d\"holder7543\"\u003e\n\t\t\t\u003cli\u003e 7543 interpreter.sh \u003cdiv class\u003d\"nested7543\"\u003e cpu:  34.6 mem:  729399296 \u003c/div\u003e\u003c/div\u003e \n\t\t\t \u003cul\u003e \n\t\t\t\t\u003cdiv class\u003d\"holder7544\"\u003e\n\t\t\t\t\u003cli\u003e 7544 java \u003cdiv class\u003d\"nested7544\"\u003e cpu:  34.6 mem:  727474176 \u003c/div\u003e\u003c/div\u003e \n\t\t\t\t \u003cul\u003e \n\t\t\t\t\t\u003cdiv class\u003d\"holder7687\"\u003e\n\t\t\t\t\t\u003cli\u003e 7687 python \u003cdiv class\u003d\"nested7687\"\u003e cpu:  0.5 mem:  63221760 \u003c/div\u003e\u003c/div\u003e \u003c/li\u003e \n\t\t\t\t \u003c/ul\u003e\n\t\t\t\t\u003c/li\u003e \n\t\t\t \u003c/ul\u003e\n\t\t\t\u003c/li\u003e \n\t\t \u003c/ul\u003e\n\t\t\u003c/li\u003e \n\t\t\u003cdiv class\u003d\"holder7427\"\u003e\n\t\t\u003cli\u003e 7427 interpreter.sh \u003cdiv class\u003d\"nested7427\"\u003e cpu:  2.4 mem:  141701120 \u003c/div\u003e\u003c/div\u003e \n\t\t \u003cul\u003e \n\t\t\t\u003cdiv class\u003d\"holder7439\"\u003e\n\t\t\t\u003cli\u003e 7439 interpreter.sh \u003cdiv class\u003d\"nested7439\"\u003e cpu:  2.4 mem:  138711040 \u003c/div\u003e\u003c/div\u003e \n\t\t\t \u003cul\u003e \n\t\t\t\t\u003cdiv class\u003d\"holder7440\"\u003e\n\t\t\t\t\u003cli\u003e 7440 java \u003cdiv class\u003d\"nested7440\"\u003e cpu:  2.4 mem:  136536064 \u003c/div\u003e\u003c/div\u003e \u003c/li\u003e \n\t\t\t \u003c/ul\u003e\n\t\t\t\u003c/li\u003e \n\t\t \u003c/ul\u003e\n\t\t\u003c/li\u003e \n\t\t\u003cdiv class\u003d\"holder7473\"\u003e\n\t\t\u003cli\u003e 7473 interpreter.sh \u003cdiv class\u003d\"nested7473\"\u003e cpu:  4.3 mem:  272158720 \u003c/div\u003e\u003c/div\u003e \n\t\t \u003cul\u003e \n\t\t\t\u003cdiv class\u003d\"holder7485\"\u003e\n\t\t\t\u003cli\u003e 7485 interpreter.sh \u003cdiv class\u003d\"nested7485\"\u003e cpu:  4.3 mem:  269074432 \u003c/div\u003e\u003c/div\u003e \n\t\t\t \u003cul\u003e \n\t\t\t\t\u003cdiv class\u003d\"holder7486\"\u003e\n\t\t\t\t\u003cli\u003e 7486 java \u003cdiv class\u003d\"nested7486\"\u003e cpu:  4.4 mem:  266862592 \u003c/div\u003e\u003c/div\u003e \n\t\t\t\t \u003cul\u003e \n\t\t\t\t\t\u003cdiv class\u003d\"holder7524\"\u003e\n\t\t\t\t\t\u003cli\u003e 7524 python \u003cdiv class\u003d\"nested7524\"\u003e cpu:  0.4 mem:  58445824 \u003c/div\u003e\u003c/div\u003e \u003c/li\u003e \n\t\t\t\t\t\u003cdiv class\u003d\"holder7712\"\u003e\n\t\t\t\t\t\u003cli\u003e 7712 python \u003cdiv class\u003d\"nested7712\"\u003e cpu:  2.3 mem:  92626944 \u003c/div\u003e\u003c/div\u003e \u003c/li\u003e \n\t\t\t\t \u003c/ul\u003e\n\t\t\t\t\u003c/li\u003e \n\t\t\t \u003c/ul\u003e\n\t\t\t\u003c/li\u003e \n\t\t \u003c/ul\u003e\n\t\t\u003c/li\u003e \n\t \u003c/ul\u003e\n\t\u003c/li\u003e \n \u003c/ul\u003e\n\u003c/li\u003e \n\u003c/ul\u003e\u003c/div\u003e\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532683467073_-42415485",
+      "id": "20180727-122427_2143015301",
+      "dateCreated": "2018-07-27 12:24:27.074",
+      "dateStarted": "2018-08-15 14:38:01.182",
+      "dateFinished": "2018-08-15 14:38:03.994",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%spark\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-08-07 17:47:11.972",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1532950582925_-1246875497",
+      "id": "20180730-143622_20307223",
+      "dateCreated": "2018-07-30 14:36:22.925",
+      "status": "FINISHED"
+    }
+  ],
+  "name": "System/Admin",
+  "id": "Monitoring",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "python:shared_process": [],
+    "sh:shared_process": [],
+    "spark:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {
+    "isRunning": false
+  }
+}
