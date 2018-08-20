@@ -15,7 +15,7 @@
 import {HeliumType} from './helium-type';
 
 export default function HeliumCtrl($scope, $rootScope, $sce,
-                                   baseUrlSrv, ngToast, heliumService) {
+                                   baseUrlSrv, ngToast, heliumService, loaderSrv) {
   'ngInject';
 
   $scope.pkgSearchResults = {};
@@ -35,6 +35,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
   function init() {
     // get all package info and set config
+    loaderSrv.showLoader();
     heliumService.getAllPackageInfoAndDefaultPackages()
       .then(({pkgSearchResults, defaultPackages}) => {
         // pagination
@@ -44,6 +45,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
 
         $scope.pkgSearchResults = pkgSearchResults;
         $scope.defaultPackages = defaultPackages;
+        loaderSrv.hideLoader();
         classifyPkgType($scope.defaultPackages);
 
         return heliumService.getAllPackageConfigs();
