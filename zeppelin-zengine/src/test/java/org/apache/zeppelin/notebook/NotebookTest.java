@@ -44,6 +44,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -778,6 +779,28 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // remove notebooks
     notebook.removeNote(cronNote.getId(), anonymous);
     notebook.removeNote(anotherNote.getId(), anonymous);
+  }
+
+  @Test
+  public void testCronNoteInTrash() throws InterruptedException, IOException, SchedulerException {
+    Note note = notebook.createNote(anonymous);
+    note.setName("~Trash/NotCron");
+
+    Map<String, Object> config = note.getConfig();
+    config.put("enabled", true);
+    config.put("cron", "* * * * * ?");
+    note.setConfig(config);
+
+    final int jobsBeforeRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+    notebook.refreshCron(note.getId());
+    final int jobsAfterRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+
+    assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
+
+    // remove cron scheduler.
+    config.remove("cron");
+    notebook.refreshCron(note.getId());
+    notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test

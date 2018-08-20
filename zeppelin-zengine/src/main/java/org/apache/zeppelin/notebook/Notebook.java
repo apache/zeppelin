@@ -83,7 +83,7 @@ public class Notebook implements NoteEventListener {
   private final FolderView folders = new FolderView();
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
-  private org.quartz.Scheduler quartzSched;
+  org.quartz.Scheduler quartzSched;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
@@ -676,7 +676,7 @@ public class Notebook implements NoteEventListener {
     synchronized (notes) {
 
       Note note = notes.get(id);
-      if (note == null) {
+      if (note == null || note.isTrash()) {
         return;
       }
       Map<String, Object> config = note.getConfig();
