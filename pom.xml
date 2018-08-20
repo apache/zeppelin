@@ -1085,9 +1085,9 @@
               <exclude>**/R/rzeppelin/NAMESPACE</exclude>
 
               <exclude>python/src/main/resources/grpc/**/*</exclude>
-              
-              <!--System notes-->
-              <exclude>docs/assets/themes/zeppelin/note/**</exclude>
+
+              <!--Manual migration script in a notebook-->
+              <exclude>docs/assets/themes/zeppelin/note/**/note.json</exclude>
             </excludes>
           </configuration>
 
