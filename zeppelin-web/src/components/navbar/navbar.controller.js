@@ -91,6 +91,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     let logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
 
     $http.post(logoutURL).then(function() {}, function(response) {
+      let clearAuthorizationHeader = 'true';
       if (response.data) {
         let res = angular.fromJson(response.data).body;
         if (res['redirectURL']) {
@@ -104,44 +105,49 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
           }
           return undefined;
         }
+        if (res['clearAuthorizationHeader']) {
+          clearAuthorizationHeader = res['clearAuthorizationHeader'];
+        }
       }
 
       // force authcBasic (if configured) to logout
-      if (detectIE()) {
-        let outcome;
-        try {
-          outcome = document.execCommand('ClearAuthenticationCache');
-        } catch (e) {
-          console.log(e);
+      if (clearAuthorizationHeader === 'true') {
+        if (detectIE()) {
+          let outcome;
+          try {
+            outcome = document.execCommand('ClearAuthenticationCache');
+          } catch (e) {
+            console.log(e);
+          }
+          if (!outcome) {
+            // Let's create an xmlhttp object
+            outcome = (function(x) {
+              if (x) {
+                // the reason we use "random" value for password is
+                // that browsers cache requests. changing
+                // password effectively behaves like cache-busing.
+                x.open('HEAD', location.href, true, 'logout',
+                  (new Date()).getTime().toString());
+                x.send('');
+                // x.abort()
+                return 1; // this is **speculative** "We are done."
+              } else {
+                // eslint-disable-next-line no-useless-return
+                return;
+              }
+            })(window.XMLHttpRequest ? new window.XMLHttpRequest()
+              // eslint-disable-next-line no-undef
+              : (window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : u));
+          }
+          if (!outcome) {
+            let m = 'Your browser is too old or too weird to support log out functionality. Close all windows and ' +
+              'restart the browser.';
+            alert(m);
+          }
+        } else {
+          // for firefox and safari
+          logoutURL = logoutURL.replace('//', '//false:false@');
         }
-        if (!outcome) {
-          // Let's create an xmlhttp object
-          outcome = (function(x) {
-            if (x) {
-              // the reason we use "random" value for password is
-              // that browsers cache requests. changing
-              // password effectively behaves like cache-busing.
-              x.open('HEAD', location.href, true, 'logout',
-                (new Date()).getTime().toString());
-              x.send('');
-              // x.abort()
-              return 1; // this is **speculative** "We are done."
-            } else {
-              // eslint-disable-next-line no-useless-return
-              return;
-            }
-          })(window.XMLHttpRequest ? new window.XMLHttpRequest()
-            // eslint-disable-next-line no-undef
-            : (window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : u));
-        }
-        if (!outcome) {
-          let m = 'Your browser is too old or too weird to support log out functionality. Close all windows and ' +
-            'restart the browser.';
-          alert(m);
-        }
-      } else {
-        // for firefox and safari
-        logoutURL = logoutURL.replace('//', '//false:false@');
       }
 
       $http.post(logoutURL).error(function() {

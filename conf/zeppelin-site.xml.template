@@ -486,6 +486,14 @@
 
 <!--
 <property>
+    <name>zeppelin.server.clear.authorization.header</name>
+    <value>true</value>
+    <description>Authorization header to be cleared if server is running as authcBasic</description>
+</property>
+-->
+
+<!--
+<property>
   <name>zeppelin.server.xframe.options</name>
   <value>SAMEORIGIN</value>
   <description>The X-Frame-Options HTTP response header can be used to indicate whether or not a browser should be allowed to render a page in a frame/iframe/object.</description>
