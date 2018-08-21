@@ -18,20 +18,19 @@
 package org.apache.zeppelin.display;
 
 import com.google.gson.Gson;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-
 /**
- * AngularObject provides binding between back-end (interpreter) and front-end
- * User provided object will automatically synchronized with front-end side.
- * i.e. update from back-end will be sent to front-end, update from front-end will sent-to backend
+ * AngularObject provides binding between back-end (interpreter) and front-end User provided object
+ * will automatically synchronized with front-end side. i.e. update from back-end will be sent to
+ * front-end, update from front-end will sent-to backend
  *
  * @param <T>
  */
@@ -41,21 +40,20 @@ public class AngularObject<T> implements JsonSerializable {
 
   private String name;
   private T object;
-  
+
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers = new LinkedList<>();
-  
-  private String noteId;   // noteId belonging to. null for global scope 
+
+  private String noteId; // noteId belonging to. null for global scope
   private String paragraphId; // paragraphId belongs to. null for notebook scope
 
   /**
    * Public constructor, neccessary for the deserialization when using Thrift angularRegistryPush()
-   * Without public constructor, GSON library will instantiate the AngularObject using
-   * serialization so the <strong>watchers</strong> list won't be initialized and will throw
-   * NullPointerException the first time it is accessed
+   * Without public constructor, GSON library will instantiate the AngularObject using serialization
+   * so the <strong>watchers</strong> list won't be initialized and will throw NullPointerException
+   * the first time it is accessed
    */
-  public AngularObject() {
-  }
+  public AngularObject() {}
 
   /**
    * To create new AngularObject, use AngularObjectRegistry.add()
@@ -66,8 +64,8 @@ public class AngularObject<T> implements JsonSerializable {
    * @param paragraphId paragraphId belongs to. can be null
    * @param listener event listener
    */
-  public AngularObject(String name, T o, String noteId, String paragraphId,
-      AngularObjectListener listener) {
+  public AngularObject(
+      String name, T o, String noteId, String paragraphId, AngularObjectListener listener) {
     this.name = name;
     this.noteId = noteId;
     this.paragraphId = paragraphId;
@@ -77,6 +75,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Get name of this object
+   *
    * @return name
    */
   public String getName() {
@@ -85,6 +84,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Set noteId
+   *
    * @param noteId noteId belongs to. can be null
    */
   public void setNoteId(String noteId) {
@@ -93,6 +93,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Get noteId
+   *
    * @return noteId
    */
   public String getNoteId() {
@@ -101,6 +102,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * get ParagraphId
+   *
    * @return paragraphId
    */
   public String getParagraphId() {
@@ -109,6 +111,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Set paragraphId
+   *
    * @param paragraphId paragraphId. can be null
    */
   public void setParagraphId(String paragraphId) {
@@ -117,6 +120,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Check if it is global scope object
+   *
    * @return true it is global scope
    */
   public boolean isGlobal() {
@@ -128,9 +132,9 @@ public class AngularObject<T> implements JsonSerializable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     AngularObject<?> that = (AngularObject<?>) o;
-    return Objects.equals(name, that.name) &&
-            Objects.equals(noteId, that.noteId) &&
-            Objects.equals(paragraphId, that.paragraphId);
+    return Objects.equals(name, that.name)
+        && Objects.equals(noteId, that.noteId)
+        && Objects.equals(paragraphId, that.paragraphId);
   }
 
   @Override
@@ -140,16 +144,14 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Get value
+   *
    * @return
    */
   public Object get() {
     return object;
   }
 
-  /**
-   * fire updated() event for listener
-   * Note that it does not invoke watcher.watch()
-   */
+  /** fire updated() event for listener Note that it does not invoke watcher.watch() */
   public void emit() {
     if (listener != null) {
       listener.updated(this);
@@ -158,6 +160,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Set value
+   *
    * @param o reference to new user provided object
    */
   public void set(T o) {
@@ -166,9 +169,10 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Set value
+   *
    * @param o reference to new user provided object
    * @param emit false on skip firing event for listener. note that it does not skip invoke
-   *             watcher.watch() in any case
+   *     watcher.watch() in any case
    */
   public void set(T o, boolean emit) {
     final T before = object;
@@ -186,21 +190,23 @@ public class AngularObject<T> implements JsonSerializable {
 
     ExecutorService executor = ExecutorFactory.singleton().createOrGet("angularObjectWatcher", 50);
     for (final AngularObjectWatcher w : ws) {
-      executor.submit(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            w.watch(before, after);
-          } catch (Exception e) {
-            logger.error("Exception on watch", e);
-          }
-        }
-      });
+      executor.submit(
+          new Runnable() {
+            @Override
+            public void run() {
+              try {
+                w.watch(before, after);
+              } catch (Exception e) {
+                logger.error("Exception on watch", e);
+              }
+            }
+          });
     }
   }
 
   /**
    * Set event listener for this object
+   *
    * @param listener
    */
   public void setListener(AngularObjectListener listener) {
@@ -209,6 +215,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Get event listener of this object
+   *
    * @return event listener
    */
   public AngularObjectListener getListener() {
@@ -216,8 +223,7 @@ public class AngularObject<T> implements JsonSerializable {
   }
 
   /**
-   * Add a watcher for this object.
-   * Multiple watcher can be registered.
+   * Add a watcher for this object. Multiple watcher can be registered.
    *
    * @param watcher watcher to add
    */
@@ -229,6 +235,7 @@ public class AngularObject<T> implements JsonSerializable {
 
   /**
    * Remove a watcher from this object
+   *
    * @param watcher watcher to remove
    */
   public void removeWatcher(AngularObjectWatcher watcher) {
@@ -237,9 +244,7 @@ public class AngularObject<T> implements JsonSerializable {
     }
   }
 
-  /**
-   * Remove all watchers from this object
-   */
+  /** Remove all watchers from this object */
   public void clearAllWatchers() {
     synchronized (watchers) {
       watchers.clear();

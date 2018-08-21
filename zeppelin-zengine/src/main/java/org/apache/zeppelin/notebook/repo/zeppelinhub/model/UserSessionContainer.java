@@ -18,17 +18,13 @@ package org.apache.zeppelin.notebook.repo.zeppelinhub.model;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.lang.StringUtils;
 
-/**
- * Simple and yet dummy container for zeppelinhub session.
- * 
- */
+/** Simple and yet dummy container for zeppelinhub session. */
 public class UserSessionContainer {
   private static class Entity {
     public final String userSession;
-    
+
     Entity(String userSession) {
       this.userSession = userSession;
     }
@@ -45,7 +41,7 @@ public class UserSessionContainer {
     }
     return entry.userSession;
   }
-  
+
   public synchronized String setSession(String principal, String userSession) {
     Entity entry = new Entity(userSession);
     sessions.put(principal, entry);

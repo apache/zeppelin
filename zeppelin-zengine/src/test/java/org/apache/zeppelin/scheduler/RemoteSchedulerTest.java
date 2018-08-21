@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.scheduler;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -29,15 +37,6 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class RemoteSchedulerTest extends AbstractInterpreterTest
     implements RemoteInterpreterProcessListener {
@@ -61,50 +60,54 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
   @Test
   public void test() throws Exception {
-    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
+    final RemoteInterpreter intpA =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
 
     intpA.open();
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job = new Job("jobId", "jobName", null) {
-      Object results;
+    Job job =
+        new Job("jobId", "jobName", null) {
+          Object results;
 
-      @Override
-      public Object getReturn() {
-        return results;
-      }
+          @Override
+          public Object getReturn() {
+            return results;
+          }
 
-      @Override
-      public int progress() {
-        return 0;
-      }
+          @Override
+          public int progress() {
+            return 0;
+          }
 
-      @Override
-      public Map<String, Object> info() {
-        return null;
-      }
+          @Override
+          public Map<String, Object> info() {
+            return null;
+          }
 
-      @Override
-      protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", InterpreterContext.builder()
-                .setNoteId("noteId")
-                .setParagraphId("jobId")
-                .setResourcePool(new LocalResourcePool("pool1"))
-                .build());
-        return "1000";
-      }
+          @Override
+          protected Object jobRun() throws Throwable {
+            intpA.interpret(
+                "1000",
+                InterpreterContext.builder()
+                    .setNoteId("noteId")
+                    .setParagraphId("jobId")
+                    .setResourcePool(new LocalResourcePool("pool1"))
+                    .build());
+            return "1000";
+          }
 
-      @Override
-      protected boolean jobAbort() {
-        return false;
-      }
+          @Override
+          protected boolean jobAbort() {
+            return false;
+          }
 
-      @Override
-      public void setResult(Object results) {
-        this.results = results;
-      }
-    };
+          @Override
+          public void setResult(Object results) {
+            this.results = results;
+          }
+        };
     scheduler.submit(job);
 
     int cycles = 0;
@@ -135,110 +138,114 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
   @Test
   public void testAbortOnPending() throws Exception {
-    final RemoteInterpreter intpA = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
+    final RemoteInterpreter intpA =
+        (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock");
     intpA.open();
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job1 = new Job("jobId1", "jobName1", null) {
-      Object results;
-      InterpreterContext context = InterpreterContext.builder()
-          .setNoteId("noteId")
-          .setParagraphId("jobId1")
-          .setResourcePool(new LocalResourcePool("pool1"))
-          .build();
+    Job job1 =
+        new Job("jobId1", "jobName1", null) {
+          Object results;
+          InterpreterContext context =
+              InterpreterContext.builder()
+                  .setNoteId("noteId")
+                  .setParagraphId("jobId1")
+                  .setResourcePool(new LocalResourcePool("pool1"))
+                  .build();
 
-      @Override
-      public Object getReturn() {
-        return results;
-      }
-
-      @Override
-      public int progress() {
-        return 0;
-      }
-
-      @Override
-      public Map<String, Object> info() {
-        return null;
-      }
-
-      @Override
-      protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", context);
-        return "1000";
-      }
-
-      @Override
-      protected boolean jobAbort() {
-        if (isRunning()) {
-          try {
-            intpA.cancel(context);
-          } catch (InterpreterException e) {
-            e.printStackTrace();
+          @Override
+          public Object getReturn() {
+            return results;
           }
-        }
-        return true;
-      }
 
-      @Override
-      public void setResult(Object results) {
-        this.results = results;
-      }
-    };
-
-    Job job2 = new Job("jobId2", "jobName2", null) {
-      public Object results;
-      InterpreterContext context = InterpreterContext.builder()
-          .setNoteId("noteId")
-          .setParagraphId("jobId2")
-          .setResourcePool(new LocalResourcePool("pool1"))
-          .build();
-
-      @Override
-      public Object getReturn() {
-        return results;
-      }
-
-      @Override
-      public int progress() {
-        return 0;
-      }
-
-      @Override
-      public Map<String, Object> info() {
-        return null;
-      }
-
-      @Override
-      protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", context);
-        return "1000";
-      }
-
-      @Override
-      protected boolean jobAbort() {
-        if (isRunning()) {
-          try {
-            intpA.cancel(context);
-          } catch (InterpreterException e) {
-            e.printStackTrace();
+          @Override
+          public int progress() {
+            return 0;
           }
-        }
-        return true;
-      }
 
-      @Override
-      public void setResult(Object results) {
-        this.results = results;
-      }
-    };
+          @Override
+          public Map<String, Object> info() {
+            return null;
+          }
+
+          @Override
+          protected Object jobRun() throws Throwable {
+            intpA.interpret("1000", context);
+            return "1000";
+          }
+
+          @Override
+          protected boolean jobAbort() {
+            if (isRunning()) {
+              try {
+                intpA.cancel(context);
+              } catch (InterpreterException e) {
+                e.printStackTrace();
+              }
+            }
+            return true;
+          }
+
+          @Override
+          public void setResult(Object results) {
+            this.results = results;
+          }
+        };
+
+    Job job2 =
+        new Job("jobId2", "jobName2", null) {
+          public Object results;
+          InterpreterContext context =
+              InterpreterContext.builder()
+                  .setNoteId("noteId")
+                  .setParagraphId("jobId2")
+                  .setResourcePool(new LocalResourcePool("pool1"))
+                  .build();
+
+          @Override
+          public Object getReturn() {
+            return results;
+          }
+
+          @Override
+          public int progress() {
+            return 0;
+          }
+
+          @Override
+          public Map<String, Object> info() {
+            return null;
+          }
+
+          @Override
+          protected Object jobRun() throws Throwable {
+            intpA.interpret("1000", context);
+            return "1000";
+          }
+
+          @Override
+          protected boolean jobAbort() {
+            if (isRunning()) {
+              try {
+                intpA.cancel(context);
+              } catch (InterpreterException e) {
+                e.printStackTrace();
+              }
+            }
+            return true;
+          }
+
+          @Override
+          public void setResult(Object results) {
+            this.results = results;
+          }
+        };
 
     job2.setResult("result2");
 
     scheduler.submit(job1);
     scheduler.submit(job2);
-
 
     int cycles = 0;
     while (!job1.isRunning() && cycles < MAX_WAIT_CYCLES) {
@@ -267,28 +274,27 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Override
-  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {
-
-  }
+  public void onOutputAppend(String noteId, String paragraphId, int index, String output) {}
 
   @Override
-  public void onOutputUpdated(String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {
-
-  }
-
-  @Override
-  public void onOutputClear(String noteId, String paragraphId) {
-
-  }
+  public void onOutputUpdated(
+      String noteId, String paragraphId, int index, InterpreterResult.Type type, String output) {}
 
   @Override
-  public void runParagraphs(String noteId, List<Integer> paragraphIndices, List<String> paragraphIds, String curParagraphId) throws IOException {
-
-  }
+  public void onOutputClear(String noteId, String paragraphId) {}
 
   @Override
-  public void onParaInfosReceived(String noteId, String paragraphId,
-                                  String interpreterSettingId, Map<String, String> metaInfos) {
-  }
+  public void runParagraphs(
+      String noteId,
+      List<Integer> paragraphIndices,
+      List<String> paragraphIds,
+      String curParagraphId)
+      throws IOException {}
 
+  @Override
+  public void onParaInfosReceived(
+      String noteId,
+      String paragraphId,
+      String interpreterSettingId,
+      Map<String, String> metaInfos) {}
 }

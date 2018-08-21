@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.sap.universe;
 
-/**
- * Info about of universe item
- */
+/** Info about of universe item */
 public class UniverseNodeInfo {
   private String id;
   private String name;
@@ -27,8 +25,7 @@ public class UniverseNodeInfo {
   private String folder;
   private String nodePath;
 
-  public UniverseNodeInfo() {
-  }
+  public UniverseNodeInfo() {}
 
   public UniverseNodeInfo(String id, String name, String type, String folder, String nodePath) {
     this.id = id;

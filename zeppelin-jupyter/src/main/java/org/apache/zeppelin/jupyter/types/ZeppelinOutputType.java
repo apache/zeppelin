@@ -16,16 +16,14 @@
  */
 package org.apache.zeppelin.jupyter.types;
 
-/**
- * Zeppelin Output Types.
- */
+/** Zeppelin Output Types. */
 public enum ZeppelinOutputType {
   TEXT("TEXT"),
   HTML("HTML"),
-  TABLE("TABLE")
-  ;
+  TABLE("TABLE");
 
   private final String type;
+
   private ZeppelinOutputType(final String type) {
     this.type = type;
   }

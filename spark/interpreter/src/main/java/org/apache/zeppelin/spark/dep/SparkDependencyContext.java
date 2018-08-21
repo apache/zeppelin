@@ -21,18 +21,16 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.apache.zeppelin.dep.Booter;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.Repository;
-
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.DependencyFilter;
-import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
@@ -42,10 +40,7 @@ import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 
-
-/**
- *
- */
+/** */
 public class SparkDependencyContext {
   List<Dependency> dependencies = new LinkedList<>();
   List<Repository> repositories = new LinkedList<>();
@@ -59,7 +54,7 @@ public class SparkDependencyContext {
   private List<RemoteRepository> additionalRepos = new LinkedList<>();
 
   public SparkDependencyContext(String localRepoPath, String additionalRemoteRepository) {
-    session =  Booter.newRepositorySystemSession(system, localRepoPath);
+    session = Booter.newRepositorySystemSession(system, localRepoPath);
     addRepoFromProperty(additionalRemoteRepository);
   }
 
@@ -108,13 +103,14 @@ public class SparkDependencyContext {
 
   /**
    * fetch all artifacts
+   *
    * @return
    * @throws MalformedURLException
    * @throws ArtifactResolutionException
    * @throws DependencyResolutionException
    */
-  public List<File> fetch() throws MalformedURLException,
-      DependencyResolutionException, ArtifactResolutionException {
+  public List<File> fetch()
+      throws MalformedURLException, DependencyResolutionException, ArtifactResolutionException {
 
     for (Dependency dep : dependencies) {
       if (!dep.isLocalFsArtifact()) {
@@ -138,17 +134,17 @@ public class SparkDependencyContext {
 
   private List<ArtifactResult> fetchArtifactWithDep(Dependency dep)
       throws DependencyResolutionException, ArtifactResolutionException {
-    Artifact artifact = new DefaultArtifact(
-        SparkDependencyResolver.inferScalaVersion(dep.getGroupArtifactVersion()));
+    Artifact artifact =
+        new DefaultArtifact(
+            SparkDependencyResolver.inferScalaVersion(dep.getGroupArtifactVersion()));
 
-    DependencyFilter classpathFlter = DependencyFilterUtils
-        .classpathFilter(JavaScopes.COMPILE);
-    PatternExclusionsDependencyFilter exclusionFilter = new PatternExclusionsDependencyFilter(
-        SparkDependencyResolver.inferScalaVersion(dep.getExclusions()));
+    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
+    PatternExclusionsDependencyFilter exclusionFilter =
+        new PatternExclusionsDependencyFilter(
+            SparkDependencyResolver.inferScalaVersion(dep.getExclusions()));
 
     CollectRequest collectRequest = new CollectRequest();
-    collectRequest.setRoot(new org.sonatype.aether.graph.Dependency(artifact,
-        JavaScopes.COMPILE));
+    collectRequest.setRoot(new org.sonatype.aether.graph.Dependency(artifact, JavaScopes.COMPILE));
 
     collectRequest.addRepository(mavenCentral);
     collectRequest.addRepository(mavenLocal);
@@ -165,8 +161,9 @@ public class SparkDependencyContext {
       collectRequest.addRepository(rr);
     }
 
-    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
+    DependencyRequest dependencyRequest =
+        new DependencyRequest(
+            collectRequest, DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
 
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }

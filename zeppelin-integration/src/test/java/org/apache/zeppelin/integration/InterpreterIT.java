@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
 public class InterpreterIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterIT.class);
 
-  @Rule
-  public ErrorCollector collector = new ErrorCollector();
+  @Rule public ErrorCollector collector = new ErrorCollector();
 
   @Before
   public void startUp() {
@@ -51,7 +50,8 @@ public class InterpreterIT extends AbstractZeppelinIT {
   public void testShowDescriptionOnInterpreterCreate() throws Exception {
     try {
       // navigate to interpreter page
-      WebElement settingButton = driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
+      WebElement settingButton =
+          driver.findElement(By.xpath("//button[@class='nav-btn dropdown-toggle ng-scope']"));
       settingButton.click();
       WebElement interpreterLink = driver.findElement(By.xpath("//a[@href='#/interpreter']"));
       interpreterLink.click();
@@ -59,15 +59,22 @@ public class InterpreterIT extends AbstractZeppelinIT {
       WebElement createButton = driver.findElement(By.xpath("//button[contains(., 'Create')]"));
       createButton.click();
 
-      Select select = new Select(driver.findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
+      Select select =
+          new Select(
+              driver.findElement(By.xpath("//select[@ng-change='newInterpreterGroupChange()']")));
       select.selectByVisibleText("spark");
 
-      collector.checkThat("description of interpreter property is displayed",
-          driver.findElement(By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[3]")).getText(),
+      collector.checkThat(
+          "description of interpreter property is displayed",
+          driver
+              .findElement(
+                  By.xpath("//tr/td[contains(text(), 'spark.app.name')]/following-sibling::td[3]"))
+              .getText(),
           CoreMatchers.equalTo("The name of spark application."));
 
     } catch (Exception e) {
-      handleException("Exception in InterpreterIT while testShowDescriptionOnInterpreterCreate ", e);
+      handleException(
+          "Exception in InterpreterIT while testShowDescriptionOnInterpreterCreate ", e);
     }
   }
 }

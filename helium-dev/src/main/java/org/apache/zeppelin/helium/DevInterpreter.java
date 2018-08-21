@@ -17,20 +17,17 @@
 
 package org.apache.zeppelin.helium;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-/**
- * Dummy interpreter to support development mode for Zeppelin app
- */
+/** Dummy interpreter to support development mode for Zeppelin app */
 public class DevInterpreter extends Interpreter {
 
   private InterpreterEvent interpreterEvent;
@@ -41,9 +38,7 @@ public class DevInterpreter extends Interpreter {
     return replName.equals("dev");
   }
 
-  /**
-   * event handler for org.apache.zeppelin.helium.ZeppelinApplicationDevServer
-   */
+  /** event handler for org.apache.zeppelin.helium.ZeppelinApplicationDevServer */
   public static interface InterpreterEvent {
     public InterpreterResult interpret(String st, InterpreterContext context);
   }
@@ -63,8 +58,7 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   public void rerun() {
     try {
@@ -87,8 +81,7 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -101,8 +94,8 @@ public class DevInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 

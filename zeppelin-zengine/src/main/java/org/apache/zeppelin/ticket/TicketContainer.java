@@ -25,12 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Very simple ticket container
- * No cleanup is done, since the same user accross different devices share the same ticket
- * The Map size is at most the number of different user names having access to a Zeppelin instance
+ * Very simple ticket container No cleanup is done, since the same user accross different devices
+ * share the same ticket The Map size is at most the number of different user names having access to
+ * a Zeppelin instance
  */
-
-
 public class TicketContainer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TicketContainer.class);
@@ -52,20 +50,21 @@ public class TicketContainer {
 
   /**
    * For test use
+   *
    * @param principal
    * @param ticket
    * @return true if ticket assigned to principal.
    */
   public boolean isValid(String principal, String ticket) {
-    if ("anonymous".equals(principal) && "anonymous".equals(ticket))
-      return true;
+    if ("anonymous".equals(principal) && "anonymous".equals(ticket)) return true;
     Entry entry = sessions.get(principal);
     return entry != null && entry.ticket.equals(ticket);
   }
 
   /**
-   * get or create ticket for Websocket authentication assigned to authenticated shiro user
-   * For unathenticated user (anonymous), always return ticket value "anonymous"
+   * get or create ticket for Websocket authentication assigned to authenticated shiro user For
+   * unathenticated user (anonymous), always return ticket value "anonymous"
+   *
    * @param principal
    * @return
    */
@@ -73,10 +72,8 @@ public class TicketContainer {
     Entry entry = sessions.get(principal);
     String ticket;
     if (entry == null) {
-      if (principal.equals("anonymous"))
-        ticket = "anonymous";
-      else
-        ticket = UUID.randomUUID().toString();
+      if (principal.equals("anonymous")) ticket = "anonymous";
+      else ticket = UUID.randomUUID().toString();
     } else {
       ticket = entry.ticket;
     }
@@ -87,6 +84,7 @@ public class TicketContainer {
 
   /**
    * Remove ticket from session cache.
+   *
    * @param principal
    */
   public synchronized void removeTicket(String principal) {

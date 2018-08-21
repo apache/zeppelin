@@ -17,13 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -31,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -40,15 +36,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-/**
- * Contains authorization information for notes
- */
+/** Contains authorization information for notes */
 public class NotebookAuthorization {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
   private static NotebookAuthorization instance = null;
@@ -83,8 +71,9 @@ public class NotebookAuthorization {
 
   public static NotebookAuthorization getInstance() {
     if (instance == null) {
-      LOG.warn("Notebook authorization module was called without initialization,"
-          + " initializing with default configuration");
+      LOG.warn(
+          "Notebook authorization module was called without initialization,"
+              + " initializing with default configuration");
       init(ZeppelinConfiguration.create());
     }
     return instance;
@@ -96,7 +85,7 @@ public class NotebookAuthorization {
       authInfo = info.authInfo;
     }
   }
-  
+
   public void setRoles(String user, Set<String> roles) {
     if (StringUtils.isBlank(user)) {
       LOG.warn("Setting roles for empty user");
@@ -105,7 +94,7 @@ public class NotebookAuthorization {
     roles = validateUser(roles);
     userRoles.put(user, roles);
   }
-  
+
   public Set<String> getRoles(String user) {
     Set<String> roles = Sets.newHashSet();
     if (userRoles.containsKey(user)) {
@@ -113,7 +102,7 @@ public class NotebookAuthorization {
     }
     return roles;
   }
-  
+
   private void saveToFile() {
     synchronized (authInfo) {
       NotebookAuthorizationInfoSaving info = new NotebookAuthorizationInfoSaving();
@@ -125,7 +114,7 @@ public class NotebookAuthorization {
       }
     }
   }
-  
+
   public boolean isPublic() {
     return conf.isNotebookPublic();
   }
@@ -188,7 +177,6 @@ public class NotebookAuthorization {
     saveToFile();
   }
 
-
   public void setWriters(String noteId, Set<String> entities) {
     Map<String, Set<String>> noteAuthInfo = authInfo.get(noteId);
     entities = validateUser(entities);
@@ -206,8 +194,8 @@ public class NotebookAuthorization {
   }
 
   /*
-  * If case conversion is enforced, then change entity names to lower case
-  */
+   * If case conversion is enforced, then change entity names to lower case
+   */
   private Set<String> checkCaseAndConvert(Set<String> entities) {
     if (conf.isUsernameForceLowerCase()) {
       Set<String> set2 = new HashSet<String>();
@@ -289,24 +277,24 @@ public class NotebookAuthorization {
   }
 
   public boolean isWriter(String noteId, Set<String> entities) {
-    return isMember(entities, getWriters(noteId)) ||
-           isMember(entities, getOwners(noteId)) ||
-           isAdmin(entities);
+    return isMember(entities, getWriters(noteId))
+        || isMember(entities, getOwners(noteId))
+        || isAdmin(entities);
   }
 
   public boolean isReader(String noteId, Set<String> entities) {
-    return isMember(entities, getReaders(noteId)) ||
-           isMember(entities, getOwners(noteId)) ||
-           isMember(entities, getWriters(noteId)) ||
-           isMember(entities, getRunners(noteId)) ||
-           isAdmin(entities);
+    return isMember(entities, getReaders(noteId))
+        || isMember(entities, getOwners(noteId))
+        || isMember(entities, getWriters(noteId))
+        || isMember(entities, getRunners(noteId))
+        || isAdmin(entities);
   }
 
   public boolean isRunner(String noteId, Set<String> entities) {
-    return isMember(entities, getRunners(noteId)) ||
-           isMember(entities, getWriters(noteId)) ||
-           isMember(entities, getOwners(noteId)) ||
-           isAdmin(entities);
+    return isMember(entities, getRunners(noteId))
+        || isMember(entities, getWriters(noteId))
+        || isMember(entities, getOwners(noteId))
+        || isAdmin(entities);
   }
 
   private boolean isAdmin(Set<String> entities) {
@@ -334,7 +322,7 @@ public class NotebookAuthorization {
     }
     return isOwner(noteId, userAndRoles);
   }
-  
+
   public boolean hasWriteAuthorization(Set<String> userAndRoles, String noteId) {
     if (conf.isAnonymousAllowed()) {
       LOG.debug("Zeppelin runs in anonymous mode, everybody is writer");
@@ -345,7 +333,7 @@ public class NotebookAuthorization {
     }
     return isWriter(noteId, userAndRoles);
   }
-  
+
   public boolean hasReadAuthorization(Set<String> userAndRoles, String noteId) {
     if (conf.isAnonymousAllowed()) {
       LOG.debug("Zeppelin runs in anonymous mode, everybody is reader");
@@ -378,14 +366,17 @@ public class NotebookAuthorization {
     if (subject != null) {
       entities.add(subject.getUser());
     }
-    return FluentIterable.from(notes).filter(new Predicate<NoteInfo>() {
-      @Override
-      public boolean apply(NoteInfo input) {
-        return input != null && isReader(input.getId(), entities);
-      }
-    }).toList();
+    return FluentIterable.from(notes)
+        .filter(
+            new Predicate<NoteInfo>() {
+              @Override
+              public boolean apply(NoteInfo input) {
+                return input != null && isReader(input.getId(), entities);
+              }
+            })
+        .toList();
   }
-  
+
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
       if (isPublic()) {

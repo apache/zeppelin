@@ -79,17 +79,6 @@
           </compilerArgs>
         </configuration>
       </plugin>
- 
-      <!--TODO: comment local `maven-checkstyle-plugin` and use zeppelin common check style-->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-        <executions>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>1.3.1</version>            

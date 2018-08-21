@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.notebook;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -30,38 +34,25 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 @RunWith(MockitoJUnitRunner.class)
 public class FolderTest {
-  @Mock
-  NotebookRepo repo;
+  @Mock NotebookRepo repo;
 
-  @Mock
-  ParagraphJobListener paragraphJobListener;
+  @Mock ParagraphJobListener paragraphJobListener;
 
-  @Mock
-  SearchService index;
+  @Mock SearchService index;
 
-  @Mock
-  Credentials credentials;
+  @Mock Credentials credentials;
 
-  @Mock
-  Interpreter interpreter;
+  @Mock Interpreter interpreter;
 
-  @Mock
-  Scheduler scheduler;
+  @Mock Scheduler scheduler;
 
-  @Mock
-  NoteEventListener noteEventListener;
+  @Mock NoteEventListener noteEventListener;
 
-  @Mock
-  InterpreterFactory interpreterFactory;
+  @Mock InterpreterFactory interpreterFactory;
 
-  @Mock
-  InterpreterSettingManager interpreterSettingManager;
+  @Mock InterpreterSettingManager interpreterSettingManager;
 
   Folder folder;
 
@@ -71,13 +62,43 @@ public class FolderTest {
 
   @Before
   public void createFolderAndNotes() {
-    note1 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    note1 =
+        new Note(
+            "test",
+            "",
+            repo,
+            interpreterFactory,
+            interpreterSettingManager,
+            paragraphJobListener,
+            index,
+            credentials,
+            noteEventListener);
     note1.setName("this/is/a/folder/note1");
 
-    note2 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    note2 =
+        new Note(
+            "test",
+            "",
+            repo,
+            interpreterFactory,
+            interpreterSettingManager,
+            paragraphJobListener,
+            index,
+            credentials,
+            noteEventListener);
     note2.setName("this/is/a/folder/note2");
 
-    note3 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    note3 =
+        new Note(
+            "test",
+            "",
+            repo,
+            interpreterFactory,
+            interpreterSettingManager,
+            paragraphJobListener,
+            index,
+            credentials,
+            noteEventListener);
     note3.setName("this/is/a/folder/note3");
 
     folder = new Folder("this/is/a/folder");
@@ -118,7 +139,17 @@ public class FolderTest {
 
   @Test
   public void addNoteTest() {
-    Note note4 = new Note("test", "", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
+    Note note4 =
+        new Note(
+            "test",
+            "",
+            repo,
+            interpreterFactory,
+            interpreterSettingManager,
+            paragraphJobListener,
+            index,
+            credentials,
+            noteEventListener);
     note4.setName("this/is/a/folder/note4");
 
     folder.addNote(note4);

@@ -16,6 +16,26 @@
  */
 package org.apache.zeppelin.socket;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -37,30 +57,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-/**
- * Basic REST API tests for notebookServer.
- */
+/** Basic REST API tests for notebookServer. */
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
@@ -90,12 +87,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
     NotebookServer server = new NotebookServer();
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
-    assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-          server.checkOrigin(mockRequest, origin));
+    assertTrue(
+        "Origin " + origin + " is not allowed. Please check your hostname.",
+        server.checkOrigin(mockRequest, origin));
   }
 
   @Test
-  public void checkInvalidOrigin(){
+  public void checkInvalidOrigin() {
     NotebookServer server = new NotebookServer();
     assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
   }
@@ -125,12 +123,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
     Paragraph paragraph = createdNote.getParagraphs().get(0);
     String paragraphId = paragraph.getId();
 
-    String[] patches = new String[]{
-        "@@ -0,0 +1,3 @@\n+ABC\n",            // ABC
-        "@@ -1,3 +1,4 @@\n ABC\n+%0A\n",      // press Enter
-        "@@ -1,4 +1,7 @@\n ABC%0A\n+abc\n",   // abc
-        "@@ -1,7 +1,45 @@\n ABC\n-%0Aabc\n+ ssss%0Aabc ssss\n" // add text in two string
-    };
+    String[] patches =
+        new String[] {
+          "@@ -0,0 +1,3 @@\n+ABC\n", // ABC
+          "@@ -1,3 +1,4 @@\n ABC\n+%0A\n", // press Enter
+          "@@ -1,4 +1,7 @@\n ABC%0A\n+abc\n", // abc
+          "@@ -1,7 +1,45 @@\n ABC\n-%0Aabc\n+ ssss%0Aabc ssss\n" // add text in two string
+        };
 
     int sock1SendCount = 0;
     int sock2SendCount = 0;
@@ -168,14 +167,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent()
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     // create a notebook
     Note note1 = notebook.createNote(anonymous);
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
-            .getInterpreterSettings(note1.getId());
+    List<InterpreterSetting> settings =
+        notebook.getInterpreterSettingManager().getInterpreterSettings(note1.getId());
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
         interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
@@ -220,13 +219,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     reset(sock2);
 
     // update object from sock1
-    notebookServer.onMessage(sock1,
+    notebookServer.onMessage(
+        sock1,
         new Message(OP.ANGULAR_OBJECT_UPDATED)
-        .put("noteId", note1.getId())
-        .put("name", "object1")
-        .put("value", "value1")
-        .put("interpreterGroupId", interpreterGroup.getId()).toJson());
-
+            .put("noteId", note1.getId())
+            .put("name", "object1")
+            .put("value", "value1")
+            .put("interpreterGroupId", interpreterGroup.getId())
+            .toJson());
 
     // expect object is broadcasted except for where the update is created
     verify(sock1, times(0)).send(anyString());
@@ -237,35 +237,39 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void testImportNotebook() throws IOException {
-    String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
-        "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
-        "paragraphs import\"," + "\"progressUpdateIntervalMs\":500," +
-        "\"config\":{},\"settings\":{}}]," +
-        "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
-        "{}}}}";
+    String msg =
+        "{\"op\":\"IMPORT_NOTE\",\"data\":"
+            + "{\"note\":{\"paragraphs\": [{\"text\": \"Test "
+            + "paragraphs import\","
+            + "\"progressUpdateIntervalMs\":500,"
+            + "\"config\":{},\"settings\":{}}],"
+            + "\"name\": \"Test Zeppelin notebook import\",\"config\": "
+            + "{}}}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;
     try {
       note = notebookServer.importNote(null, messageReceived);
     } catch (NullPointerException e) {
-      //broadcastNoteList(); failed nothing to worry.
-      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
-          "worry ", e);
+      // broadcastNoteList(); failed nothing to worry.
+      LOG.error(
+          "Exception in NotebookServerTest while testImportNotebook, failed nothing to " + "worry ",
+          e);
     }
 
     assertNotEquals(null, notebook.getNote(note.getId()));
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
-    assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0)
-            .getText());
+    assertEquals(
+        "Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
     notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void bindAngularObjectToRemoteForParagraphs() throws Exception {
-    //Given
+    // Given
     final String varName = "name";
     final String value = "DuyHai DOAN";
-    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
+    final Message messageReceived =
+        new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
             .put("noteId", "noteId")
             .put("name", varName)
             .put("value", value)
@@ -285,20 +289,22 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
-            "paragraphId");
+    final AngularObject<String> ao1 =
+        AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraphId"))
-            .thenReturn(ao1);
+        .thenReturn(ao1);
 
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
 
-    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraphId"));
+    final String mdMsg1 =
+        server.serializeMessage(
+            new Message(OP.ANGULAR_OBJECT_UPDATE)
+                .put("angularObject", ao1)
+                .put("interpreterGroupId", "mdGroup")
+                .put("noteId", "noteId")
+                .put("paragraphId", "paragraphId"));
 
     server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
@@ -313,10 +319,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void bindAngularObjectToLocalForParagraphs() throws Exception {
-    //Given
+    // Given
     final String varName = "name";
     final String value = "DuyHai DOAN";
-    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
+    final Message messageReceived =
+        new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
             .put("noteId", "noteId")
             .put("name", varName)
             .put("value", value)
@@ -335,19 +342,21 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
-            "paragraphId");
+    final AngularObject<String> ao1 =
+        AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.add(varName, value, "noteId", "paragraphId")).thenReturn(ao1);
 
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
 
-    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraphId"));
+    final String mdMsg1 =
+        server.serializeMessage(
+            new Message(OP.ANGULAR_OBJECT_UPDATE)
+                .put("angularObject", ao1)
+                .put("interpreterGroupId", "mdGroup")
+                .put("noteId", "noteId")
+                .put("paragraphId", "paragraphId"));
 
     server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
@@ -360,10 +369,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void unbindAngularObjectFromRemoteForParagraphs() throws Exception {
-    //Given
+    // Given
     final String varName = "name";
     final String value = "val";
-    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
+    final Message messageReceived =
+        new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
             .put("noteId", "noteId")
             .put("name", varName)
             .put("paragraphId", "paragraphId");
@@ -381,17 +391,19 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
-            "paragraphId");
+    final AngularObject<String> ao1 =
+        AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraphId")).thenReturn(ao1);
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
 
-    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraphId"));
+    final String mdMsg1 =
+        server.serializeMessage(
+            new Message(OP.ANGULAR_OBJECT_REMOVE)
+                .put("angularObject", ao1)
+                .put("interpreterGroupId", "mdGroup")
+                .put("noteId", "noteId")
+                .put("paragraphId", "paragraphId"));
 
     server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
@@ -406,10 +418,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void unbindAngularObjectFromLocalForParagraphs() throws Exception {
-    //Given
+    // Given
     final String varName = "name";
     final String value = "val";
-    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
+    final Message messageReceived =
+        new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
             .put("noteId", "noteId")
             .put("name", varName)
             .put("paragraphId", "paragraphId");
@@ -427,19 +440,21 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     when(paragraph.getBindedInterpreter().getInterpreterGroup()).thenReturn(mdGroup);
 
-    final AngularObject<String> ao1 = AngularObjectBuilder.build(varName, value, "noteId",
-            "paragraphId");
+    final AngularObject<String> ao1 =
+        AngularObjectBuilder.build(varName, value, "noteId", "paragraphId");
 
     when(mdRegistry.remove(varName, "noteId", "paragraphId")).thenReturn(ao1);
 
     NotebookSocket conn = mock(NotebookSocket.class);
     NotebookSocket otherConn = mock(NotebookSocket.class);
 
-    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraphId"));
+    final String mdMsg1 =
+        server.serializeMessage(
+            new Message(OP.ANGULAR_OBJECT_REMOVE)
+                .put("angularObject", ao1)
+                .put("interpreterGroupId", "mdGroup")
+                .put("noteId", "noteId")
+                .put("paragraphId", "paragraphId"));
     server.getConnectionManager().noteSocketMap.put("noteId", asList(conn, otherConn));
 
     // When
@@ -468,10 +483,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
       defaultInterpreterId = settings.get(0).getId();
     }
     // create note from sock1
-    notebookServer.onMessage(sock1,
+    notebookServer.onMessage(
+        sock1,
         new Message(OP.NEW_NOTE)
-        .put("name", noteName)
-        .put("defaultInterpreterId", defaultInterpreterId).toJson());
+            .put("name", noteName)
+            .put("defaultInterpreterId", defaultInterpreterId)
+            .toJson());
 
     int sendCount = 2;
     if (ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable()) {
@@ -489,8 +506,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
     }
 
     if (settings.size() > 1) {
-      assertEquals(notebook.getInterpreterSettingManager().getDefaultInterpreterSetting(
-              createdNote.getId()).getId(), defaultInterpreterId);
+      assertEquals(
+          notebook
+              .getInterpreterSettingManager()
+              .getDefaultInterpreterSetting(createdNote.getId())
+              .getId(),
+          defaultInterpreterId);
     }
     notebook.removeNote(createdNote.getId(), anonymous);
   }

@@ -16,17 +16,16 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import org.junit.After;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.After;
+import org.junit.Before;
 
 public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChangeListener {
   private File tmpDir;
@@ -39,8 +38,9 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     watcher = new InterpreterOutputChangeWatcher(this);
     watcher.start();
 
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
-        System.currentTimeMillis());
+    tmpDir =
+        new File(
+            System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
     fileChanged = null;
     numChanged = new AtomicInteger(0);
@@ -65,7 +65,6 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
       file.delete();
     }
   }
-
 
   // @Test
   public void test() throws IOException, InterruptedException {
@@ -99,7 +98,6 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
     assertEquals(1, numChanged.get());
   }
 
-
   @Override
   public void fileChanged(File file) {
     fileChanged = file;
@@ -109,5 +107,4 @@ public class InterpreterOutputChangeWatcherTest implements InterpreterOutputChan
       notify();
     }
   }
-
 }

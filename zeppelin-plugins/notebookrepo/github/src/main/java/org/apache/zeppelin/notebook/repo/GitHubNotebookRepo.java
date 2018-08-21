@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
@@ -29,22 +31,18 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 /**
- * GitHub integration to store notebooks in a GitHub repository.
- * It uses the same simple logic implemented in @see
- * {@link org.apache.zeppelin.notebook.repo.GitNotebookRepo}
+ * GitHub integration to store notebooks in a GitHub repository. It uses the same simple logic
+ * implemented in @see {@link org.apache.zeppelin.notebook.repo.GitNotebookRepo}
  *
- * The logic for updating the local repository from the remote repository is the following:
- * - When the <code>GitHubNotebookRepo</code> is initialized
- * - When pushing the changes to the remote repository
+ * <p>The logic for updating the local repository from the remote repository is the following: -
+ * When the <code>GitHubNotebookRepo</code> is initialized - When pushing the changes to the remote
+ * repository
  *
- * The logic for updating the remote repository on GitHub from local repository is the following:
+ * <p>The logic for updating the remote repository on GitHub from local repository is the following:
  * - When commit the changes (saving the notebook)
  *
- * You should be able to use this integration with all remote git repositories that accept
+ * <p>You should be able to use this integration with all remote git repositories that accept
  * username + password authentication, not just GitHub.
  */
 public class GitHubNotebookRepo extends GitNotebookRepo {
@@ -98,11 +96,9 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       LOG.debug("Pulling latest changes from remote stream");
       PullCommand pullCommand = git.pull();
       pullCommand.setCredentialsProvider(
-        new UsernamePasswordCredentialsProvider(
-          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-        )
-      );
+          new UsernamePasswordCredentialsProvider(
+              zeppelinConfiguration.getZeppelinNotebookGitUsername(),
+              zeppelinConfiguration.getZeppelinNotebookGitAccessToken()));
 
       pullCommand.call();
 
@@ -116,11 +112,9 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
       LOG.debug("Pushing latest changes to remote stream");
       PushCommand pushCommand = git.push();
       pushCommand.setCredentialsProvider(
-        new UsernamePasswordCredentialsProvider(
-          zeppelinConfiguration.getZeppelinNotebookGitUsername(),
-          zeppelinConfiguration.getZeppelinNotebookGitAccessToken()
-        )
-      );
+          new UsernamePasswordCredentialsProvider(
+              zeppelinConfiguration.getZeppelinNotebookGitUsername(),
+              zeppelinConfiguration.getZeppelinNotebookGitAccessToken()));
 
       pushCommand.call();
     } catch (GitAPIException e) {

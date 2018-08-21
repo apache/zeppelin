@@ -17,20 +17,16 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Livy Interpreter for shared kind which share SparkContext across spark/pyspark/r.
- */
+/** Livy Interpreter for shared kind which share SparkContext across spark/pyspark/r. */
 public class LivySharedInterpreter extends BaseLivyInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LivySharedInterpreter.class);
@@ -63,8 +59,8 @@ public class LivySharedInterpreter extends BaseLivyInterpreter {
         isSupported = false;
       }
     } catch (LivyException e) {
-      String msg = "Fail to create session, please check livy interpreter log and " +
-          "livy server log";
+      String msg =
+          "Fail to create session, please check livy interpreter log and " + "livy server log";
       throw new InterpreterException(msg, e);
     }
   }
@@ -82,8 +78,8 @@ public class LivySharedInterpreter extends BaseLivyInterpreter {
       return interpret(st, codeType, context.getParagraphId(), this.displayAppInfo, true, true);
     } catch (LivyException e) {
       LOGGER.error("Fail to interpret:" + st, e);
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          InterpreterUtils.getMostRelevantMessage(e));
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
   }
 

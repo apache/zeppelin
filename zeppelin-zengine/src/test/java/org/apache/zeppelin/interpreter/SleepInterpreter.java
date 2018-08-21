@@ -1,13 +1,10 @@
 package org.apache.zeppelin.interpreter;
 
+import java.util.Properties;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-import java.util.Properties;
-
-/**
- * Interpreter that only accept long value and sleep for such period
- */
+/** Interpreter that only accept long value and sleep for such period */
 public class SleepInterpreter extends Interpreter {
 
   public SleepInterpreter(Properties property) {
@@ -15,14 +12,10 @@ public class SleepInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
-
-  }
+  public void open() {}
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -35,9 +28,7 @@ public class SleepInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -47,8 +38,8 @@ public class SleepInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     if (Boolean.parseBoolean(getProperty("zeppelin.SleepInterpreter.parallel", "false"))) {
-      return SchedulerFactory.singleton().createOrGetParallelScheduler(
-          "Parallel-" + SleepInterpreter.class.getName(), 10);
+      return SchedulerFactory.singleton()
+          .createOrGetParallelScheduler("Parallel-" + SleepInterpreter.class.getName(), 10);
     }
     return super.getScheduler();
   }

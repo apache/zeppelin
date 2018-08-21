@@ -17,6 +17,18 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -26,30 +38,18 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.*;
-
 public class AppendOutputRunnerTest {
 
   private static final int NUM_EVENTS = 10000;
   private static final int NUM_CLUBBED_EVENTS = 100;
-  private static final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+  private static final ScheduledExecutorService service =
+      Executors.newSingleThreadScheduledExecutor();
   private static ScheduledFuture<?> future = null;
   /* It is being accessed by multiple threads.
    * While loop for 'loopForBufferCompletion' could
    * run for-ever.
    */
-  private volatile static int numInvocations = 0;
+  private static volatile int numInvocations = 0;
 
   @After
   public void afterEach() {
@@ -64,7 +64,8 @@ public class AppendOutputRunnerTest {
     String[][] buffer = {{"note", "para", "data\n"}};
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(1))
+        .onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
     verify(listener, times(1)).onOutputAppend("note", "para", 0, "data\n");
   }
 
@@ -74,13 +75,14 @@ public class AppendOutputRunnerTest {
     String note1 = "note1";
     String para1 = "para1";
     String[][] buffer = {
-        {note1, para1, "data1\n"},
-        {note1, para1, "data2\n"},
-        {note1, para1, "data3\n"}
+      {note1, para1, "data1\n"},
+      {note1, para1, "data2\n"},
+      {note1, para1, "data3\n"}
     };
 
     loopForCompletingEvents(listener, 1, buffer);
-    verify(listener, times(1)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(1))
+        .onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\ndata2\ndata3\n");
   }
 
@@ -92,14 +94,15 @@ public class AppendOutputRunnerTest {
     String para1 = "para1";
     String para2 = "para2";
     String[][] buffer = {
-        {note1, para1, "data1\n"},
-        {note1, para2, "data2\n"},
-        {note2, para1, "data3\n"},
-        {note2, para2, "data4\n"}
+      {note1, para1, "data1\n"},
+      {note1, para2, "data2\n"},
+      {note2, para1, "data3\n"},
+      {note2, para2, "data4\n"}
     };
     loopForCompletingEvents(listener, 4, buffer);
 
-    verify(listener, times(4)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, times(4))
+        .onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
     verify(listener, times(1)).onOutputAppend(note1, para1, 0, "data1\n");
     verify(listener, times(1)).onOutputAppend(note1, para2, 0, "data2\n");
     verify(listener, times(1)).onOutputAppend(note2, para1, 0, "data3\n");
@@ -110,8 +113,9 @@ public class AppendOutputRunnerTest {
   public void testClubbedData() throws InterruptedException {
     RemoteInterpreterProcessListener listener = mock(RemoteInterpreterProcessListener.class);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    future = service.scheduleWithFixedDelay(runner, 0,
-        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
+    future =
+        service.scheduleWithFixedDelay(
+            runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
     Thread thread = new Thread(new BombardEvents(runner));
     thread.start();
     thread.join();
@@ -122,7 +126,8 @@ public class AppendOutputRunnerTest {
      * calls, 30-40 Web-socket calls are made. Keeping
      * the unit-test to a pessimistic 100 web-socket calls.
      */
-    verify(listener, atMost(NUM_CLUBBED_EVENTS)).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    verify(listener, atMost(NUM_CLUBBED_EVENTS))
+        .onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
   }
 
   @Test
@@ -132,7 +137,7 @@ public class AppendOutputRunnerTest {
     String data = "data\n";
     int numEvents = 100000;
 
-    for (int i=0; i<numEvents; i++) {
+    for (int i = 0; i < numEvents; i++) {
       runner.appendBuffer("noteId", "paraId", 0, data);
     }
 
@@ -148,16 +153,18 @@ public class AppendOutputRunnerTest {
     do {
       warnLogCounter = 0;
       log = appender.getLog();
-      for (LoggingEvent logEntry: log) {
+      for (LoggingEvent logEntry : log) {
         if (Level.WARN.equals(logEntry.getLevel())) {
           sizeWarnLogEntry = logEntry;
           warnLogCounter += 1;
         }
       }
-    } while(warnLogCounter != 2);
+    } while (warnLogCounter != 2);
 
-    String loggerString = "Processing size for buffered append-output is high: " +
-        (data.length() * numEvents) + " characters.";
+    String loggerString =
+        "Processing size for buffered append-output is high: "
+            + (data.length() * numEvents)
+            + " characters.";
     assertTrue(loggerString.equals(sizeWarnLogEntry.getMessage()));
   }
 
@@ -173,7 +180,7 @@ public class AppendOutputRunnerTest {
     public void run() {
       String noteId = "noteId";
       String paraId = "paraId";
-      for (int i=0; i<NUM_EVENTS; i++) {
+      for (int i = 0; i < NUM_EVENTS; i++) {
         runner.appendBuffer(noteId, paraId, 0, "data\n");
       }
     }
@@ -184,45 +191,48 @@ public class AppendOutputRunnerTest {
 
     @Override
     public boolean requiresLayout() {
-        return false;
+      return false;
     }
 
     @Override
     protected void append(final LoggingEvent loggingEvent) {
-        log.add(loggingEvent);
+      log.add(loggingEvent);
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 
     public List<LoggingEvent> getLog() {
-        return new ArrayList<>(log);
+      return new ArrayList<>(log);
     }
   }
 
   private void prepareInvocationCounts(RemoteInterpreterProcessListener listener) {
-    doAnswer(new Answer<Void>() {
-      @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        numInvocations += 1;
-        return null;
-      }
-    }).when(listener).onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
+    doAnswer(
+            new Answer<Void>() {
+              @Override
+              public Void answer(InvocationOnMock invocation) throws Throwable {
+                numInvocations += 1;
+                return null;
+              }
+            })
+        .when(listener)
+        .onOutputAppend(any(String.class), any(String.class), anyInt(), any(String.class));
   }
 
-  private void loopForCompletingEvents(RemoteInterpreterProcessListener listener,
-      int numTimes, String[][] buffer) {
+  private void loopForCompletingEvents(
+      RemoteInterpreterProcessListener listener, int numTimes, String[][] buffer) {
     numInvocations = 0;
     prepareInvocationCounts(listener);
     AppendOutputRunner runner = new AppendOutputRunner(listener);
-    for (String[] bufferElement: buffer) {
+    for (String[] bufferElement : buffer) {
       runner.appendBuffer(bufferElement[0], bufferElement[1], 0, bufferElement[2]);
     }
-    future = service.scheduleWithFixedDelay(runner, 0,
-        AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
+    future =
+        service.scheduleWithFixedDelay(
+            runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
     long startTimeMs = System.currentTimeMillis();
-    while(numInvocations != numTimes) {
+    while (numInvocations != numTimes) {
       if (System.currentTimeMillis() - startTimeMs > 2000) {
         fail("Buffered events were not sent for 2 seconds");
       }

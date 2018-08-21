@@ -27,22 +27,18 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Zeppelin Watcher that will forward user note to ZeppelinHub.
- *
- */
+/** Zeppelin Watcher that will forward user note to ZeppelinHub. */
 public class WatcherWebsocket implements WebSocketListener {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
   private static final String watcherPrincipal = "watcher";
   public Session connection;
-  
+
   public static WatcherWebsocket createInstace() {
     return new WatcherWebsocket();
   }
-  
+
   @Override
-  public void onWebSocketBinary(byte[] payload, int offset, int len) {
-  }
+  public void onWebSocketBinary(byte[] payload, int offset, int len) {}
 
   @Override
   public void onWebSocketClose(int code, String reason) {
@@ -79,5 +75,4 @@ public class WatcherWebsocket implements WebSocketListener {
       LOG.error("Failed to send message to ZeppelinHub: ", e);
     }
   }
-
 }

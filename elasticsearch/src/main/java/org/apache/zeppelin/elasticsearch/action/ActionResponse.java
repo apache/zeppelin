@@ -20,16 +20,13 @@ package org.apache.zeppelin.elasticsearch.action;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Contains the result of an action (hits, aggregations, ...).
- */
+/** Contains the result of an action (hits, aggregations, ...). */
 public class ActionResponse {
 
   private boolean succeeded;
   private long totalHits;
   private final List<HitWrapper> hits = new LinkedList<>();
   private final List<AggWrapper> aggregations = new LinkedList<>();
-
 
   public ActionResponse succeeded(boolean succeeded) {
     this.succeeded = succeeded;

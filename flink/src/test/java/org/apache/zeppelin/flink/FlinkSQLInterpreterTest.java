@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.flink;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -27,11 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
 
 public class FlinkSQLInterpreterTest {
 
@@ -62,49 +61,48 @@ public class FlinkSQLInterpreterTest {
 
   @Test
   public void testSQLInterpreter() throws InterpreterException {
-    InterpreterResult result = interpreter.interpret(
-        "val ds = benv.fromElements((1, \"jeff\"), (2, \"andy\"))", getInterpreterContext());
+    InterpreterResult result =
+        interpreter.interpret(
+            "val ds = benv.fromElements((1, \"jeff\"), (2, \"andy\"))", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    result = interpreter.interpret("btenv.registerDataSet(\"table_1\", ds)",
-        getInterpreterContext());
+    result =
+        interpreter.interpret("btenv.registerDataSet(\"table_1\", ds)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     result = sqlInterpreter.interpret("select * from table_1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
-    assertEquals("_1\t_2\n" +
-        "1\tjeff\n" +
-        "2\tandy\n", result.message().get(0).getData());
+    assertEquals("_1\t_2\n" + "1\tjeff\n" + "2\tandy\n", result.message().get(0).getData());
   }
 
   private InterpreterContext getInterpreterContext() {
     output = "";
-    InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
-        .build();
-    context.out = new InterpreterOutput(
-        new InterpreterOutputListener() {
-          @Override
-          public void onUpdateAll(InterpreterOutput out) {
+    InterpreterContext context =
+        InterpreterContext.builder()
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+            .build();
+    context.out =
+        new InterpreterOutput(
+            new InterpreterOutputListener() {
+              @Override
+              public void onUpdateAll(InterpreterOutput out) {}
 
-          }
+              @Override
+              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+                try {
+                  output = out.toInterpreterResultMessage().getData();
+                } catch (IOException e) {
+                  e.printStackTrace();
+                }
+              }
 
-          @Override
-          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-            try {
-              output = out.toInterpreterResultMessage().getData();
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          }
-
-          @Override
-          public void onUpdate(int index, InterpreterResultMessageOutput out) {
-            messageOutput = out;
-          }
-        });
+              @Override
+              public void onUpdate(int index, InterpreterResultMessageOutput out) {
+                messageOutput = out;
+              }
+            });
     return context;
   }
 }

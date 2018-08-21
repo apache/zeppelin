@@ -17,15 +17,12 @@
 
 package org.apache.zeppelin.groovy;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
-import java.util.List;
-import java.util.Map;
-
-/**
- * ZeppelinContext for Groovy
- */
+/** ZeppelinContext for Groovy */
 public class GroovyZeppelinContext extends BaseZeppelinContext {
 
   public GroovyZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {

@@ -19,7 +19,6 @@ package org.apache.zeppelin.interpreter.remote;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -31,10 +30,8 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 
-/**
- *
- */
-public class ClientFactory extends BasePooledObjectFactory<Client>{
+/** */
+public class ClientFactory extends BasePooledObjectFactory<Client> {
   private String host;
   private int port;
   Map<Client, TSocket> clientSocketMap = new HashMap<>();
@@ -53,7 +50,7 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
       throw new InterpreterException(e);
     }
 
-    TProtocol protocol = new  TBinaryProtocol(transport);
+    TProtocol protocol = new TBinaryProtocol(transport);
     Client client = new RemoteInterpreterService.Client(protocol);
 
     synchronized (clientSocketMap) {

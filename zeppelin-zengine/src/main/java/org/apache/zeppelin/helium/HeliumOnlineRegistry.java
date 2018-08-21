@@ -18,20 +18,6 @@ package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,20 +29,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This registry reads helium package json data
- * from specified url.
+ * This registry reads helium package json data from specified url.
  *
- * File should be look like
- * [
- *    "packageName": {
- *       "0.0.1": json serialized HeliumPackage class,
- *       "0.0.2": json serialized HeliumPackage class,
- *       ...
- *    },
- *    ...
- * ]
+ * <p>File should be look like [ "packageName": { "0.0.1": json serialized HeliumPackage class,
+ * "0.0.2": json serialized HeliumPackage class, ... }, ... ]
  */
 public class HeliumOnlineRegistry extends HeliumRegistry {
   private Logger logger = LoggerFactory.getLogger(HeliumOnlineRegistry.class);
@@ -74,10 +64,11 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
 
   @Override
   public synchronized List<HeliumPackage> getAll() throws IOException {
-    HttpClient client = HttpClientBuilder.create()
-        .setUserAgent("ApacheZeppelin/" + Util.getVersion())
-        .setProxy(getProxy(uri()))
-        .build();
+    HttpClient client =
+        HttpClientBuilder.create()
+            .setUserAgent("ApacheZeppelin/" + Util.getVersion())
+            .setProxy(getProxy(uri()))
+            .build();
     HttpGet get = new HttpGet(uri());
     HttpResponse response;
     try {
@@ -85,10 +76,8 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       if ((get.getURI().getHost().equals(cfg.getS3Endpoint()))) {
         if (cfg.getS3Timeout() != null) {
           int timeout = Integer.valueOf(cfg.getS3Timeout());
-          RequestConfig requestCfg = RequestConfig.custom()
-                  .setConnectTimeout(timeout)
-                  .setSocketTimeout(timeout)
-                  .build();
+          RequestConfig requestCfg =
+              RequestConfig.custom().setConnectTimeout(timeout).setSocketTimeout(timeout).build();
           get.setConfig(requestCfg);
         }
       }
@@ -106,13 +95,11 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       List<HeliumPackage> packageList = new LinkedList<>();
 
       BufferedReader reader;
-      reader = new BufferedReader(
-          new InputStreamReader(response.getEntity().getContent()));
+      reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
-      List<Map<String, Map<String, HeliumPackage>>> packages = gson.fromJson(
-          reader,
-          new TypeToken<List<Map<String, Map<String, HeliumPackage>>>>() {
-          }.getType());
+      List<Map<String, Map<String, HeliumPackage>>> packages =
+          gson.fromJson(
+              reader, new TypeToken<List<Map<String, Map<String, HeliumPackage>>>>() {}.getType());
       reader.close();
 
       for (Map<String, Map<String, HeliumPackage>> pkg : packages) {
@@ -127,25 +114,27 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
   }
 
   private HttpHost getProxy(String uri) {
-    String httpProxy = StringUtils.isBlank(System.getenv("http_proxy")) ?
-            System.getenv("HTTP_PROXY") : System.getenv("http_proxy");
+    String httpProxy =
+        StringUtils.isBlank(System.getenv("http_proxy"))
+            ? System.getenv("HTTP_PROXY")
+            : System.getenv("http_proxy");
 
-    String httpsProxy = StringUtils.isBlank(System.getenv("https_proxy")) ?
-            System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
+    String httpsProxy =
+        StringUtils.isBlank(System.getenv("https_proxy"))
+            ? System.getenv("HTTPS_PROXY")
+            : System.getenv("https_proxy");
 
     try {
       String scheme = new URI(uri).getScheme();
       if (scheme.toLowerCase().startsWith("https") && StringUtils.isNotBlank(httpsProxy)) {
         URI httpsProxyUri = new URI(httpsProxy);
-        return new HttpHost(httpsProxyUri.getHost(),
-                httpsProxyUri.getPort(), httpsProxyUri.getScheme());
-      }
-      else if (scheme.toLowerCase().startsWith("http") && StringUtils.isNotBlank(httpProxy)){
+        return new HttpHost(
+            httpsProxyUri.getHost(), httpsProxyUri.getPort(), httpsProxyUri.getScheme());
+      } else if (scheme.toLowerCase().startsWith("http") && StringUtils.isNotBlank(httpProxy)) {
         URI httpProxyUri = new URI(httpProxy);
-        return new HttpHost(httpProxyUri.getHost(),
-                httpProxyUri.getPort(), httpProxyUri.getScheme());
-      }
-      else return null;
+        return new HttpHost(
+            httpProxyUri.getHost(), httpProxyUri.getPort(), httpProxyUri.getScheme());
+      } else return null;
     } catch (Exception ex) {
       logger.error(ex.getMessage(), ex);
       return null;
@@ -157,9 +146,7 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
       if (registryCacheFile.isFile()) {
         try {
           return gson.fromJson(
-              new FileReader(registryCacheFile),
-              new TypeToken<List<HeliumPackage>>() {
-              }.getType());
+              new FileReader(registryCacheFile), new TypeToken<List<HeliumPackage>>() {}.getType());
         } catch (FileNotFoundException e) {
           logger.error(e.getMessage(), e);
           return new LinkedList<>();

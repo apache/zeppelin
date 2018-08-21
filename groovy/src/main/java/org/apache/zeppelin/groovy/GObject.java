@@ -18,6 +18,12 @@ package org.apache.zeppelin.groovy;
 
 import groovy.lang.Closure;
 import groovy.xml.MarkupBuilder;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.display.AngularObject;
@@ -27,16 +33,7 @@ import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
-
-/**
- * Groovy interpreter for Zeppelin.
- */
+/** Groovy interpreter for Zeppelin. */
 public class GObject extends groovy.lang.GroovyObjectSupport {
   Logger log;
   StringWriter out;
@@ -45,7 +42,11 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   Map<String, Object> bindings;
   GroovyZeppelinContext z;
 
-  public GObject(Logger log, StringWriter out, Properties p, InterpreterContext ctx,
+  public GObject(
+      Logger log,
+      StringWriter out,
+      Properties p,
+      InterpreterContext ctx,
       Map<String, Object> bindings) {
     this.log = log;
     this.out = out;
@@ -83,9 +84,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     }
   }
 
-  /**
-   * returns gui object.
-   */
+  /** returns gui object. */
   public GUI getGui() {
     return z.getGui();
   }
@@ -125,11 +124,10 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   @ZeppelinApi
-  public Collection<Object> checkbox(String name, Collection<Object> defaultChecked,
-      Map<Object, String> options) {
+  public Collection<Object> checkbox(
+      String name, Collection<Object> defaultChecked, Map<Object, String> options) {
     return z.checkbox(name, new ArrayList<Object>(defaultChecked), toParamOptions(options));
   }
-
 
   /**
    * Returns shared variable if it was previously set. The same as getting groovy script variables
@@ -155,9 +153,9 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * Sets a new value to interpreter's shared variables.
-   * Could be set by <code>put('varName', newValue )</code>
-   * or by just assigning <code>varName = value</code> without declaring a variable.
+   * Sets a new value to interpreter's shared variables. Could be set by <code>
+   * put('varName', newValue )</code> or by just assigning <code>varName = value</code> without
+   * declaring a variable.
    */
   public Object put(String varName, Object newValue) {
     return bindings.put(varName, newValue);
@@ -165,6 +163,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
 
   /**
    * starts or continues rendering html/angular and returns MarkupBuilder to build html.
+   *
    * <pre> g.html().with{
    *  h1("hello")
    *  h2("world")
@@ -187,7 +186,7 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     StringBuffer sb = out.getBuffer();
     startOutputType("%table");
     if (obj instanceof groovy.lang.Closure) {
-      //if closure run and get result collection
+      // if closure run and get result collection
       obj = ((Closure) obj).call();
     }
     if (obj instanceof Collection) {
@@ -245,8 +244,8 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display system.
-   * If variable exists, it'll be overwritten.
+   * Create angular variable in notebook scope and bind with front end Angular display system. If
+   * variable exists, it'll be overwritten.
    *
    * @param name name of the variable
    * @param o value
@@ -255,25 +254,19 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     angularBind(name, o, interpreterContext.getNoteId());
   }
 
-  /**
-   * Run paragraph by id.
-   */
+  /** Run paragraph by id. */
   @ZeppelinApi
   public void run(String noteId, String paragraphId) throws IOException {
     z.run(noteId, paragraphId);
   }
 
-  /**
-   * Run paragraph by id.
-   */
+  /** Run paragraph by id. */
   @ZeppelinApi
   public void run(String paragraphId) throws IOException {
     z.run(paragraphId);
   }
 
-  /**
-   * Run paragraph by id.
-   */
+  /** Run paragraph by id. */
   @ZeppelinApi
   public void run(String noteId, String paragraphId, InterpreterContext context)
       throws IOException {
@@ -288,17 +281,13 @@ public class GObject extends groovy.lang.GroovyObjectSupport {
     z.runNote(noteId, context);
   }
 
-  /**
-   * Run all paragraphs. except this.
-   */
+  /** Run all paragraphs. except this. */
   @ZeppelinApi
   public void runAll() throws IOException {
     z.runAll(interpreterContext);
   }
 
-  /**
-   * Run all paragraphs. except this.
-   */
+  /** Run all paragraphs. except this. */
   @ZeppelinApi
   public void runAll(InterpreterContext context) throws IOException {
     z.runNote(context.getNoteId());

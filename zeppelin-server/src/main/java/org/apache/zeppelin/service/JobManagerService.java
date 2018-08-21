@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -25,14 +29,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-/**
- * Service class for JobManager Page
- */
+/** Service class for JobManager Page */
 public class JobManagerService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobManagerService.class);
@@ -43,9 +40,8 @@ public class JobManagerService {
     this.notebook = notebook;
   }
 
-  public List<NoteJobInfo> getNoteJobInfo(String noteId,
-                                          ServiceContext context,
-                                          ServiceCallback<List<NoteJobInfo>> callback)
+  public List<NoteJobInfo> getNoteJobInfo(
+      String noteId, ServiceContext context, ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     Note jobNote = notebook.getNote(noteId);
@@ -54,12 +50,11 @@ public class JobManagerService {
     return notesJobInfo;
   }
 
-  /**
-   * Get all NoteJobInfo after lastUpdateServerUnixTime
-   */
-  public List<NoteJobInfo> getNoteJobInfoByUnixTime(long lastUpdateServerUnixTime,
-                                                    ServiceContext context,
-                                                    ServiceCallback<List<NoteJobInfo>> callback)
+  /** Get all NoteJobInfo after lastUpdateServerUnixTime */
+  public List<NoteJobInfo> getNoteJobInfoByUnixTime(
+      long lastUpdateServerUnixTime,
+      ServiceContext context,
+      ServiceCallback<List<NoteJobInfo>> callback)
       throws IOException {
     List<Note> notes = notebook.getAllNotes();
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
@@ -73,9 +68,9 @@ public class JobManagerService {
     return notesJobInfo;
   }
 
-  public void removeNoteJobInfo(String noteId,
-                                ServiceContext context,
-                                ServiceCallback<List<NoteJobInfo>> callback) throws IOException {
+  public void removeNoteJobInfo(
+      String noteId, ServiceContext context, ServiceCallback<List<NoteJobInfo>> callback)
+      throws IOException {
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     notesJobInfo.add(new NoteJobInfo(noteId, true));
     callback.onSuccess(notesJobInfo, context);
@@ -90,7 +85,6 @@ public class JobManagerService {
       return paragraph.getDateCreated().getTime();
     }
   }
-
 
   public static class ParagraphJobInfo {
     private String id;
@@ -149,8 +143,8 @@ public class JobManagerService {
     }
 
     private boolean isCron(Note note) {
-      return note.getConfig().containsKey("cron") &&
-          !StringUtils.isBlank(note.getConfig().get("cron").toString());
+      return note.getConfig().containsKey("cron")
+          && !StringUtils.isBlank(note.getConfig().get("cron").toString());
     }
 
     public NoteJobInfo(String noteId, boolean isRemoved) {

@@ -17,25 +17,20 @@
 
 package org.apache.zeppelin.scheduler;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-
-
 /**
- * Skeletal implementation of the Job concept.
- * - designed for inheritance
- * - should be run on a separate thread
- * - maintains internal state: it's status
- * - supports listeners who are updated on status change
+ * Skeletal implementation of the Job concept. - designed for inheritance - should be run on a
+ * separate thread - maintains internal state: it's status - supports listeners who are updated on
+ * status change
  *
- * Job class is serialized/deserialized and used server<->client communication
- * and saving/loading jobs from disk.
- * Changing/adding/deleting non transitive field name need consideration of that.
+ * <p>Job class is serialized/deserialized and used server<->client communication and saving/loading
+ * jobs from disk. Changing/adding/deleting non transitive field name need consideration of that.
  */
 public abstract class Job<T> {
   private static Logger LOGGER = LoggerFactory.getLogger(Job.class);
@@ -44,16 +39,18 @@ public abstract class Job<T> {
   /**
    * Job status.
    *
-   * UNKNOWN - Job is not found in remote
-   * READY - Job is not running, ready to run.
-   * PENDING - Job is submitted to scheduler. but not running yet
-   * RUNNING - Job is running.
-   * FINISHED - Job finished run. with success
-   * ERROR - Job finished run. with error
-   * ABORT - Job finished by abort
+   * <p>UNKNOWN - Job is not found in remote READY - Job is not running, ready to run. PENDING - Job
+   * is submitted to scheduler. but not running yet RUNNING - Job is running. FINISHED - Job
+   * finished run. with success ERROR - Job finished run. with error ABORT - Job finished by abort
    */
   public enum Status {
-    UNKNOWN, READY, PENDING, RUNNING, FINISHED, ERROR, ABORT;
+    UNKNOWN,
+    READY,
+    PENDING,
+    RUNNING,
+    FINISHED,
+    ERROR,
+    ABORT;
 
     public boolean isReady() {
       return this == READY;
@@ -123,9 +120,7 @@ public abstract class Job<T> {
     return status;
   }
 
-  /**
-   * just set status without notifying to listeners for spell.
-   */
+  /** just set status without notifying to listeners for spell. */
   public void setStatusWithoutNotification(Status status) {
     this.status = status;
   }

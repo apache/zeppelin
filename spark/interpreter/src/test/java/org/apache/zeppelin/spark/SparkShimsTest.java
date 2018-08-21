@@ -41,7 +41,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -91,9 +90,8 @@ public class SparkShimsTest {
       SparkShims sparkShims =
           new SparkShims(new Properties()) {
             @Override
-            public void setupSparkListener(String master,
-                                           String sparkWebUrl,
-                                           InterpreterContext context) {}
+            public void setupSparkListener(
+                String master, String sparkWebUrl, InterpreterContext context) {}
 
             @Override
             public String showDataFrame(Object obj, int maxResult) {

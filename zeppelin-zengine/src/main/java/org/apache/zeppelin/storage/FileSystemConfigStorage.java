@@ -15,28 +15,20 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.storage;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.io.IOException;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
-import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 /**
- * It could be used either local file system or hadoop distributed file system,
- * because FileSystem support both local file system and hdfs.
- *
+ * It could be used either local file system or hadoop distributed file system, because FileSystem
+ * support both local file system and hdfs.
  */
 public class FileSystemConfigStorage extends ConfigStorage {
 
@@ -50,8 +42,8 @@ public class FileSystemConfigStorage extends ConfigStorage {
   public FileSystemConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
     this.fs = new FileSystemStorage(zConf, zConf.getConfigFSDir());
-    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
-        " for Zeppelin Config");
+    LOGGER.info(
+        "Creating FileSystem: " + this.fs.getFs().getClass().getName() + " for Zeppelin Config");
     Path configPath = this.fs.makeQualified(new Path(zConf.getConfigFSDir()));
     this.fs.tryMkDir(configPath);
     LOGGER.info("Using folder {} to store Zeppelin Config", configPath);
@@ -108,5 +100,4 @@ public class FileSystemConfigStorage extends ConfigStorage {
     LOGGER.info("Save Credentials to file: " + credentialPath);
     fs.writeFile(credentials, credentialPath, false);
   }
-
 }

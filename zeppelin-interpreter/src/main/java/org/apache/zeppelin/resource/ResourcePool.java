@@ -16,18 +16,18 @@
  */
 package org.apache.zeppelin.resource;
 
-/**
- * Interface for ResourcePool
- */
+/** Interface for ResourcePool */
 public interface ResourcePool {
   /**
    * Get unique id of the resource pool
+   *
    * @return
    */
   String id();
 
   /**
    * Get resource from name
+   *
    * @param name Resource name
    * @return null if resource not found
    */
@@ -35,6 +35,7 @@ public interface ResourcePool {
 
   /**
    * Get resource from name
+   *
    * @param noteId
    * @param paragraphId
    * @param name Resource name
@@ -44,21 +45,22 @@ public interface ResourcePool {
 
   /**
    * Get all resources
+   *
    * @return
    */
   ResourceSet getAll();
 
   /**
    * Put an object into resource pool
+   *
    * @param name
    * @param object
    */
   void put(String name, Object object);
 
   /**
-   * Put an object into resource pool
-   * Given noteId and paragraphId is identifying resource along with name.
-   * Object will be automatically removed on related note or paragraph removal.
+   * Put an object into resource pool Given noteId and paragraphId is identifying resource along
+   * with name. Object will be automatically removed on related note or paragraph removal.
    *
    * @param noteId
    * @param paragraphId
@@ -69,6 +71,7 @@ public interface ResourcePool {
 
   /**
    * Remove object
+   *
    * @param name Resource name to remove
    * @return removed Resource. null if resource not found
    */
@@ -76,6 +79,7 @@ public interface ResourcePool {
 
   /**
    * Remove object
+   *
    * @param noteId
    * @param paragraphId
    * @param name Resource name to remove

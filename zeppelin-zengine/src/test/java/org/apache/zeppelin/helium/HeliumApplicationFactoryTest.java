@@ -16,6 +16,12 @@
  */
 package org.apache.zeppelin.helium;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import java.util.List;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -37,14 +43,6 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-
 
 public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     implements ParagraphJobListener {
@@ -69,16 +67,17 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     SearchService search = mock(SearchService.class);
     notebookRepo = mock(NotebookRepo.class);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
-    notebook = new Notebook(
-        conf,
-        notebookRepo,
-        schedulerFactory,
-        interpreterFactory,
-        interpreterSettingManager,
-        this,
-        search,
-        notebookAuthorization,
-        new Credentials(false, null, null));
+    notebook =
+        new Notebook(
+            conf,
+            notebookRepo,
+            schedulerFactory,
+            interpreterFactory,
+            interpreterSettingManager,
+            this,
+            search,
+            notebookAuthorization,
+            new Credentials(false, null, null));
 
     heliumAppFactory.setNotebook(notebook);
 
@@ -92,18 +91,20 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     super.tearDown();
   }
 
-
   @Test
   public void testLoadRunUnloadApplication()
       throws IOException, ApplicationException, InterruptedException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
-        "name1",
-        "desc1",
-        "",
-        HeliumTestApplication.class.getName(),
-        new String[][]{},
-        "", "");
+    HeliumPackage pkg1 =
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            "",
+            HeliumTestApplication.class.getName(),
+            new String[][] {},
+            "",
+            "");
 
     Note note1 = notebook.createNote(anonymous);
 
@@ -113,7 +114,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getReturn() == null) Thread.yield();
 
     assertEquals("repl1: job", p1.getReturn().message().get(0).getData());
 
@@ -142,13 +143,16 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
   @Test
   public void testUnloadOnParagraphRemove() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
-        "name1",
-        "desc1",
-        "",
-        HeliumTestApplication.class.getName(),
-        new String[][]{},
-        "", "");
+    HeliumPackage pkg1 =
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            "",
+            HeliumTestApplication.class.getName(),
+            new String[][] {},
+            "",
+            "");
 
     Note note1 = notebook.createNote(anonymous);
 
@@ -158,7 +162,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getReturn() == null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -177,17 +181,19 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     notebook.removeNote(note1.getId(), anonymous);
   }
 
-
   @Test
   public void testUnloadOnInterpreterUnbind() throws IOException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
-        "name1",
-        "desc1",
-        "",
-        HeliumTestApplication.class.getName(),
-        new String[][]{},
-        "", "");
+    HeliumPackage pkg1 =
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            "",
+            HeliumTestApplication.class.getName(),
+            new String[][] {},
+            "",
+            "");
 
     Note note1 = notebook.createNote(anonymous);
 
@@ -197,7 +203,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getReturn() == null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -235,17 +241,19 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     notebook.removeNote(note1.getId(), anonymous);
   }
 
-
   @Test
   public void testUnloadOnInterpreterRestart() throws IOException, InterpreterException {
     // given
-    HeliumPackage pkg1 = new HeliumPackage(HeliumType.APPLICATION,
-        "name1",
-        "desc1",
-        "",
-        HeliumTestApplication.class.getName(),
-        new String[][]{},
-        "", "");
+    HeliumPackage pkg1 =
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            "",
+            HeliumTestApplication.class.getName(),
+            new String[][] {},
+            "",
+            "");
 
     Note note1 = notebook.createNote(anonymous);
     String mock1IntpSettingId = null;
@@ -262,7 +270,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
+    while (p1.isTerminated() == false || p1.getReturn() == null) Thread.yield();
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
     ApplicationState app = p1.getApplicationState(appId);
@@ -285,29 +293,18 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest
     notebook.removeNote(note1.getId(), anonymous);
   }
 
+  @Override
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {}
 
-    @Override
-    public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+  @Override
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {}
 
-    }
+  @Override
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {}
 
-    @Override
-    public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+  @Override
+  public void onProgressUpdate(Paragraph paragraph, int progress) {}
 
-    }
-
-    @Override
-    public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-    }
-
-    @Override
-    public void onProgressUpdate(Paragraph paragraph, int progress) {
-
-    }
-
-    @Override
-    public void onStatusChange(Paragraph paragraph, Job.Status before, Job.Status after) {
-
-    }
+  @Override
+  public void onStatusChange(Paragraph paragraph, Job.Status before, Job.Status after) {}
 }

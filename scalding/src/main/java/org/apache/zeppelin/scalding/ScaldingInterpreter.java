@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.scalding;
 
-import org.apache.hadoop.security.UserGroupInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.twitter.scalding.ScaldingILoop;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -31,11 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import com.twitter.scalding.ScaldingILoop;
-
-import scala.Console;
-
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -43,11 +36,11 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import scala.Console;
 
-/**
- * Scalding interpreter for Zeppelin. Based off the Spark interpreter code.
- *
- */
+/** Scalding interpreter for Zeppelin. Based off the Spark interpreter code. */
 public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
 
@@ -70,8 +63,7 @@ public class ScaldingInterpreter extends Interpreter {
   @Override
   public void open() {
     numOpenInstances = numOpenInstances + 1;
-    String maxOpenInstancesStr = getProperty(MAX_OPEN_INSTANCES,
-            MAX_OPEN_INSTANCES_DEFAULT);
+    String maxOpenInstancesStr = getProperty(MAX_OPEN_INSTANCES, MAX_OPEN_INSTANCES_DEFAULT);
     int maxOpenInstances = 50;
     try {
       maxOpenInstances = Integer.valueOf(maxOpenInstancesStr);
@@ -104,7 +96,6 @@ public class ScaldingInterpreter extends Interpreter {
     interpreter.intp().close();
   }
 
-
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     String user = contextInterpreter.getAuthenticationInfo().getUser();
@@ -113,10 +104,10 @@ public class ScaldingInterpreter extends Interpreter {
     if (interpreter == null) {
       logger.error(
           "interpreter == null, open may not have been called because max.open.instances reached");
-      return new InterpreterResult(Code.ERROR,
-        "interpreter == null\n" +
-        "open may not have been called because max.open.instances reached"
-      );
+      return new InterpreterResult(
+          Code.ERROR,
+          "interpreter == null\n"
+              + "open may not have been called because max.open.instances reached");
     }
     if (cmd == null || cmd.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -187,9 +178,9 @@ public class ScaldingInterpreter extends Interpreter {
         String nextLine = linesToRun[l + 1].trim();
         boolean continuation = false;
         if (nextLine.isEmpty()
-                || nextLine.startsWith("//")         // skip empty line or comment
-                || nextLine.startsWith("}")
-                || nextLine.startsWith("object")) { // include "} object" for Scala companion object
+            || nextLine.startsWith("//") // skip empty line or comment
+            || nextLine.startsWith("}")
+            || nextLine.startsWith("object")) { // include "} object" for Scala companion object
           continuation = true;
         } else if (!inComment && nextLine.startsWith("/*")) {
           inComment = true;
@@ -198,9 +189,9 @@ public class ScaldingInterpreter extends Interpreter {
           inComment = false;
           continuation = true;
         } else if (nextLine.length() > 1
-                && nextLine.charAt(0) == '.'
-                && nextLine.charAt(1) != '.'     // ".."
-                && nextLine.charAt(1) != '/') {  // "./"
+            && nextLine.charAt(0) == '.'
+            && nextLine.charAt(1) != '.' // ".."
+            && nextLine.charAt(1) != '/') { // "./"
           continuation = true;
         } else if (inComment) {
           continuation = true;
@@ -266,14 +257,13 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        ScaldingInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton()
+        .createOrGetFIFOScheduler(ScaldingInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return NO_COMPLETION;
   }
-
 }

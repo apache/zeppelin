@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.junit.Test;
 
 public class AuthenticationInfoTest {
@@ -30,13 +29,10 @@ public class AuthenticationInfoTest {
   public void testRoles() {
     final String roles = "[\"role1\", \"role2\", \"role with space\"]";
 
-    final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo",
-        roles, "bar");
+    final AuthenticationInfo authenticationInfo = new AuthenticationInfo("foo", roles, "bar");
 
     assertEquals(
         new ArrayList<>(Arrays.asList("role1", "role2", "role with space")),
         authenticationInfo.getRoles());
-
   }
-
 }

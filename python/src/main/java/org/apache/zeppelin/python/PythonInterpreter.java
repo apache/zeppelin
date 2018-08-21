@@ -19,6 +19,14 @@ package org.apache.zeppelin.python;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -45,19 +53,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Interpreter for Python, it is the first implementation of interpreter for Python, so with less
- * features compared to IPythonInterpreter, but requires less prerequisites than
- * IPythonInterpreter, only python installation is required.
+ * features compared to IPythonInterpreter, but requires less prerequisites than IPythonInterpreter,
+ * only python installation is required.
  */
 public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
@@ -75,7 +74,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   private long pythonPid = -1;
   private IPythonInterpreter iPythonInterpreter;
   private BaseZeppelinContext zeppelinContext;
-  private String condaPythonExec;  // set by PythonCondaInterpreter
+  private String condaPythonExec; // set by PythonCondaInterpreter
   private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
@@ -86,9 +85,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   public void open() throws InterpreterException {
     // try IPythonInterpreter first
     iPythonInterpreter = getIPythonInterpreter();
-    if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
-        StringUtils.isEmpty(
-            iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
+    if (getProperty("zeppelin.python.useIPython", "true").equals("true")
+        && StringUtils.isEmpty(iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
       try {
         iPythonInterpreter.open();
         LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
@@ -130,8 +128,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     // container can also connect to this gateway server.
     String serverAddress = PythonUtils.getLocalIP(properties);
     String secret = PythonUtils.createSecret(256);
-    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret,
-        usePy4jAuth);
+    this.gatewayServer =
+        PythonUtils.createGatewayServer(this, serverAddress, port, secret, usePy4jAuth);
     gatewayServer.start();
 
     // launch python process to connect to the gateway server in JVM side
@@ -154,13 +152,14 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     if (usePy4jAuth) {
       env.put("PY4J_GATEWAY_SECRET", secret);
     }
-    LOGGER.info("Launching Python Process Command: " + cmd.getExecutable() +
-        " " + StringUtils.join(cmd.getArguments(), " "));
+    LOGGER.info(
+        "Launching Python Process Command: "
+            + cmd.getExecutable()
+            + " "
+            + StringUtils.join(cmd.getArguments(), " "));
     executor.execute(cmd, env, this);
     pythonScriptRunning.set(true);
   }
-
-
 
   private void createPythonScript() throws IOException {
     // set java.io.tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
@@ -184,14 +183,12 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return this.iPythonInterpreter != null;
   }
 
-  private void copyResourceToPythonWorkDir(String srcResourceName,
-                                           String dstFileName) throws IOException {
+  private void copyResourceToPythonWorkDir(String srcResourceName, String dstFileName)
+      throws IOException {
     FileOutputStream out = null;
     try {
       out = new FileOutputStream(pythonWorkDir.getAbsoluteFile() + "/" + dstFileName);
-      IOUtils.copy(
-          getClass().getClassLoader().getResourceAsStream(srcResourceName),
-          out);
+      IOUtils.copy(getClass().getClassLoader().getResourceAsStream(srcResourceName), out);
     } finally {
       if (out != null) {
         out.close();
@@ -261,9 +258,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     this.condaPythonExec = pythonExec;
   }
 
-  /**
-   * Request send to Python Daemon
-   */
+  /** Request send to Python Daemon */
   public class PythonInterpretRequest {
     public String statements;
     public boolean isForCompletion;
@@ -335,9 +330,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   // used by subclass such as PySparkInterpreter to set JobGroup before executing spark code
-  protected void preCallPython(InterpreterContext context) {
-
-  }
+  protected void preCallPython(InterpreterContext context) {}
 
   // blocking call. Send python code to python process and get response
   protected void callPython(PythonInterpretRequest request) {
@@ -366,8 +359,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     if (!pythonScriptRunning.get()) {
-      return new InterpreterResult(Code.ERROR, "python process not running "
-          + outputStream.toString());
+      return new InterpreterResult(
+          Code.ERROR, "python process not running " + outputStream.toString());
     }
 
     outputStream.setInterpreterOutput(context.out);
@@ -395,8 +388,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     if (!pythonScriptInitialized.get()) {
       // timeout. didn't get initialized message
-      errorMessage.add(new InterpreterResultMessage(
-          InterpreterResult.Type.TEXT, "Failed to initialize Python"));
+      errorMessage.add(
+          new InterpreterResultMessage(InterpreterResult.Type.TEXT, "Failed to initialize Python"));
       return new InterpreterResult(Code.ERROR, errorMessage);
     }
 
@@ -457,11 +450,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     return 0;
   }
 
-
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.completion(buf, cursor, interpreterContext);
     }
@@ -482,8 +473,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     String[] completionList = null;
     synchronized (statementFinishedNotifier) {
       long startTime = System.currentTimeMillis();
-      while (statementOutput == null
-          && pythonScriptRunning.get()) {
+      while (statementOutput == null && pythonScriptRunning.get()) {
         try {
           if (System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
             LOGGER.error("Python completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
@@ -502,7 +492,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       Gson gson = new Gson();
       completionList = gson.fromJson(statementOutput, String[].class);
     }
-    //end code for completion
+    // end code for completion
     if (completionList == null) {
       return new LinkedList<>();
     }
@@ -538,7 +528,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
         completionStartPosition = indexOfReverseSeqPostion;
       }
-
     }
 
     if (completionStartPosition == completionEndPosition) {
@@ -546,8 +535,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     } else {
       completionStartPosition = completionEndPosition - completionStartPosition;
     }
-    resultCompletionText = completionScriptText.substring(
-        completionStartPosition, completionEndPosition);
+    resultCompletionText =
+        completionScriptText.substring(completionStartPosition, completionEndPosition);
 
     return resultCompletionText;
   }
@@ -575,8 +564,8 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
         IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceName));
     try {
       // Add hook explicitly, otherwise python will fail to execute the statement
-      InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
-          InterpreterContext.get());
+      InterpreterResult result =
+          interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()", InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
         throw new IOException("Fail to run bootstrap script: " + resourceName);
       }

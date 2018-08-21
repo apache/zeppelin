@@ -18,9 +18,7 @@ package org.apache.zeppelin.interpreter;
 
 import java.io.Serializable;
 
-/**
- * Interpreter result message
- */
+/** Interpreter result message */
 public class InterpreterResultMessage implements Serializable {
   InterpreterResult.Type type;
   String data;

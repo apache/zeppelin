@@ -19,6 +19,9 @@ package org.apache.zeppelin.markdown;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Map;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.support.StringBuilderVar;
@@ -28,24 +31,18 @@ import org.pegdown.ast.TextNode;
 import org.pegdown.plugins.BlockPluginParser;
 import org.pegdown.plugins.PegDownPlugins;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Map;
-
-/**
- * Pegdown plugin for YUML.
- */
+/** Pegdown plugin for YUML. */
 public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
   public PegdownYumlPlugin() {
-    super(PegdownParser.OPTIONS,
-        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
-        DefaultParseRunnerProvider);
+    super(
+        PegdownParser.OPTIONS, PegdownParser.PARSING_TIMEOUT_AS_MILLIS, DefaultParseRunnerProvider);
   }
 
-  public PegdownYumlPlugin(Integer options,
-                           Long maxParsingTimeInMillis,
-                           ParseRunnerProvider parseRunnerProvider,
-                           PegDownPlugins plugins) {
+  public PegdownYumlPlugin(
+      Integer options,
+      Long maxParsingTimeInMillis,
+      ParseRunnerProvider parseRunnerProvider,
+      PegDownPlugins plugins) {
     super(options, maxParsingTimeInMillis, parseRunnerProvider, plugins);
   }
 
@@ -77,19 +74,21 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
         startMarker(),
         ZeroOrMore(
             Sequence(
-                parameterName(), name.append(match()),
+                parameterName(),
+                name.append(match()),
                 String("="),
-                OneOrMore(Alphanumeric()), value.append(match())),
+                OneOrMore(Alphanumeric()),
+                value.append(match())),
             Sp(),
             params.put(name.getString(), value.getString()),
-            name.clear(), value.clear()),
+            name.clear(),
+            value.clear()),
         body(),
         body.append(match()),
         endMarker(),
         push(
             new ExpImageNode(
-                "title", createYumlUrl(params.get(), body.getString()), new TextNode("")))
-    );
+                "title", createYumlUrl(params.get(), body.getString()), new TextNode(""))));
   }
 
   public static String createYumlUrl(Map<String, String> params, String body) {
@@ -137,6 +136,6 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[]{blockRule()};
+    return new Rule[] {blockRule()};
   }
 }

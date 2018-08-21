@@ -19,8 +19,8 @@ package org.apache.zeppelin.util;
 import java.util.UUID;
 
 /**
- * Simple implementation of a auto-generated key for websocket watcher.
- * This is a LAZY implementation, we might want to update this later on :)
+ * Simple implementation of a auto-generated key for websocket watcher. This is a LAZY
+ * implementation, we might want to update this later on :)
  */
 public class WatcherSecurityKey {
   public static final String HTTP_HEADER = "X-Watcher-Key";
@@ -31,5 +31,4 @@ public class WatcherSecurityKey {
   public static String getKey() {
     return KEY;
   }
-
 }

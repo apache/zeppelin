@@ -21,11 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Interpreter related constants
- * 
- *
- */
+/** Interpreter related constants */
 public class Constants {
   public static final String ZEPPELIN_INTERPRETER_PORT = "zeppelin.interpreter.port";
 
@@ -49,5 +45,4 @@ public class Constants {
     TIME_SUFFIXES.put("h", TimeUnit.HOURS);
     TIME_SUFFIXES.put("d", TimeUnit.DAYS);
   }
-
 }

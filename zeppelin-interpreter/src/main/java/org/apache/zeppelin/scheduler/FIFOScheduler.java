@@ -22,15 +22,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * FIFOScheduler runs submitted job sequentially
- */
+/** FIFOScheduler runs submitted job sequentially */
 public class FIFOScheduler implements Scheduler {
   List<Job> queue = new LinkedList<>();
   private ExecutorService executor;
@@ -75,8 +72,6 @@ public class FIFOScheduler implements Scheduler {
     return ret;
   }
 
-
-
   @Override
   public void submit(Job job) {
     job.setStatus(Status.PENDING);
@@ -85,7 +80,6 @@ public class FIFOScheduler implements Scheduler {
       queue.notify();
     }
   }
-
 
   @Override
   public Job removeFromWaitingQueue(String jobId) {
@@ -121,54 +115,57 @@ public class FIFOScheduler implements Scheduler {
         }
 
         final Scheduler scheduler = this;
-        this.executor.execute(new Runnable() {
-          @Override
-          public void run() {
-            if (runningJob.isAborted()) {
-              runningJob.setStatus(Status.ABORT);
-              runningJob.aborted = false;
-              synchronized (queue) {
-                queue.notify();
+        this.executor.execute(
+            new Runnable() {
+              @Override
+              public void run() {
+                if (runningJob.isAborted()) {
+                  runningJob.setStatus(Status.ABORT);
+                  runningJob.aborted = false;
+                  synchronized (queue) {
+                    queue.notify();
+                  }
+                  return;
+                }
+
+                runningJob.setStatus(Status.RUNNING);
+                if (listener != null) {
+                  listener.jobStarted(scheduler, runningJob);
+                }
+                runningJob.run();
+                Object jobResult = runningJob.getReturn();
+                if (runningJob.isAborted()) {
+                  runningJob.setStatus(Status.ABORT);
+                  LOGGER.debug(
+                      "Job Aborted, " + runningJob.getId() + ", " + runningJob.getErrorMessage());
+                } else if (runningJob.getException() != null) {
+                  LOGGER.debug("Job Error, " + runningJob.getId() + ", " + runningJob.getReturn());
+                  runningJob.setStatus(Status.ERROR);
+                } else if (jobResult != null
+                    && jobResult instanceof InterpreterResult
+                    && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
+                  LOGGER.debug("Job Error, " + runningJob.getId() + ", " + runningJob.getReturn());
+                  runningJob.setStatus(Status.ERROR);
+                } else {
+                  LOGGER.debug(
+                      "Job Finished, "
+                          + runningJob.getId()
+                          + ", Result: "
+                          + runningJob.getReturn());
+                  runningJob.setStatus(Status.FINISHED);
+                }
+
+                if (listener != null) {
+                  listener.jobFinished(scheduler, runningJob);
+                }
+                // reset aborted flag to allow retry
+                runningJob.aborted = false;
+                runningJob = null;
+                synchronized (queue) {
+                  queue.notify();
+                }
               }
-              return;
-            }
-
-            runningJob.setStatus(Status.RUNNING);
-            if (listener != null) {
-              listener.jobStarted(scheduler, runningJob);
-            }
-            runningJob.run();
-            Object jobResult = runningJob.getReturn();
-            if (runningJob.isAborted()) {
-              runningJob.setStatus(Status.ABORT);
-              LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
-                  runningJob.getErrorMessage());
-            } else if (runningJob.getException() != null) {
-              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.ERROR);
-            } else if (jobResult != null && jobResult instanceof InterpreterResult
-                && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
-              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.ERROR);
-            } else {
-              LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.FINISHED);
-            }
-
-            if (listener != null) {
-              listener.jobFinished(scheduler, runningJob);
-            }
-            // reset aborted flag to allow retry
-            runningJob.aborted = false;
-            runningJob = null;
-            synchronized (queue) {
-              queue.notify();
-            }
-          }
-        });
+            });
       }
     }
   }
@@ -180,5 +177,4 @@ public class FIFOScheduler implements Scheduler {
       queue.notify();
     }
   }
-
 }

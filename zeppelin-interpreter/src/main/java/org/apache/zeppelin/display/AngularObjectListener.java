@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.display;
 
-/**
- *
- */
+/** */
 public interface AngularObjectListener {
   void updated(AngularObject updatedObject);
 }

@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.sap.universe;
 
-
-/**
- * Runtime Exception for SAP universe
- */
+/** Runtime Exception for SAP universe */
 public class UniverseException extends Exception {
 
   public UniverseException(Throwable e) {
@@ -34,5 +31,4 @@ public class UniverseException extends Exception {
   public UniverseException(String msg, Throwable t) {
     super(msg, t);
   }
-
 }

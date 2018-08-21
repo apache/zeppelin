@@ -17,16 +17,13 @@
 
 package org.apache.zeppelin.sap.universe;
 
-/**
- * Info about of universe node
- */
+/** Info about of universe node */
 public class UniverseInfo {
   private String id;
   private String name;
   private String type;
 
-  public UniverseInfo() {
-  }
+  public UniverseInfo() {}
 
   public UniverseInfo(String id, String name, String type) {
     this.id = id;

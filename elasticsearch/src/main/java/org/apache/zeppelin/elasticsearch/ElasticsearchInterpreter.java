@@ -17,23 +17,10 @@
 
 package org.apache.zeppelin.elasticsearch;
 
+import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.github.wnameless.json.flattener.JsonFlattener;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
@@ -62,33 +47,43 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Elasticsearch Interpreter for Zeppelin.
- */
+/** Elasticsearch Interpreter for Zeppelin. */
 public class ElasticsearchInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
 
-  private static final String HELP = "Elasticsearch interpreter:\n"
-      + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
-      + "  - indices: list of indices separated by commas (depends on the command)\n"
-      + "  - types: list of document types separated by commas (depends on the command)\n"
-      + "Commands:\n"
-      + "  - search /indices/types <query>\n"
-      + "    . indices and types can be omitted (at least, you have to provide '/')\n"
-      + "    . a query is either a JSON-formatted query, nor a lucene query\n"
-      + "  - size <value>\n"
-      + "    . defines the size of the result set (default value is in the config)\n"
-      + "    . if used, this command must be declared before a search command\n"
-      + "  - count /indices/types <query>\n"
-      + "    . same comments as for the search\n"
-      + "  - get /index/type/id\n"
-      + "  - delete /index/type/id\n"
-      + "  - index /index/type/id <json-formatted document>\n"
-      + "    . the id can be omitted, elasticsearch will generate one";
+  private static final String HELP =
+      "Elasticsearch interpreter:\n"
+          + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
+          + "  - indices: list of indices separated by commas (depends on the command)\n"
+          + "  - types: list of document types separated by commas (depends on the command)\n"
+          + "Commands:\n"
+          + "  - search /indices/types <query>\n"
+          + "    . indices and types can be omitted (at least, you have to provide '/')\n"
+          + "    . a query is either a JSON-formatted query, nor a lucene query\n"
+          + "  - size <value>\n"
+          + "    . defines the size of the result set (default value is in the config)\n"
+          + "    . if used, this command must be declared before a search command\n"
+          + "  - count /indices/types <query>\n"
+          + "    . same comments as for the search\n"
+          + "  - get /index/type/id\n"
+          + "  - delete /index/type/id\n"
+          + "  - index /index/type/id <json-formatted document>\n"
+          + "    . the id can be omitted, elasticsearch will generate one";
 
-  protected static final List<String> COMMANDS = Arrays.asList(
-      "count", "delete", "get", "help", "index", "search");
+  protected static final List<String> COMMANDS =
+      Arrays.asList("count", "delete", "get", "help", "index", "search");
 
   private static final Pattern FIELD_NAME_PATTERN = Pattern.compile("\\[\\\\\"(.+)\\\\\"\\](.*)");
 
@@ -119,8 +114,12 @@ public class ElasticsearchInterpreter extends Interpreter {
       this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
     } catch (final NumberFormatException e) {
       this.resultSize = 10;
-      logger.error("Unable to parse " + ELASTICSEARCH_RESULT_SIZE + " : " +
-          getProperty(ELASTICSEARCH_RESULT_SIZE), e);
+      logger.error(
+          "Unable to parse "
+              + ELASTICSEARCH_RESULT_SIZE
+              + " : "
+              + getProperty(ELASTICSEARCH_RESULT_SIZE),
+          e);
     }
 
     try {
@@ -154,8 +153,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     int currentResultSize = resultSize;
 
     if (elsClient == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-        "Problem with the Elasticsearch client, please check your configuration (host, port,...)");
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR,
+          "Problem with the Elasticsearch client, please check your configuration (host, port,...)");
     }
 
     String[] items = StringUtils.split(cmd.trim(), " ", 3);
@@ -171,8 +171,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       final String[] lines = StringUtils.split(cmd.trim(), "\n", 2);
 
       if (lines.length < 2) {
-        return processHelp(InterpreterResult.Code.ERROR,
-            "Size cmd must be followed by a search");
+        return processHelp(InterpreterResult.Code.ERROR, "Size cmd must be followed by a search");
       }
 
       final String[] sizeLine = StringUtils.split(lines[0], " ", 2);
@@ -229,8 +228,8 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String s, int i, InterpreterContext interpreterContext) {
     final List suggestions = new ArrayList<>();
 
     for (final String cmd : COMMANDS) {
@@ -242,9 +241,9 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   private void addAngularObject(InterpreterContext interpreterContext, String prefix, Object obj) {
-    interpreterContext.getAngularObjectRegistry().add(
-        prefix + "_" + interpreterContext.getParagraphId().replace("-", "_"),
-        obj, null, null);
+    interpreterContext
+        .getAngularObjectRegistry()
+        .add(prefix + "_" + interpreterContext.getParagraphId().replace("-", "_"), obj, null, null);
   }
 
   private String[] getIndexTypeId(String[] urlItems) {
@@ -256,13 +255,11 @@ public class ElasticsearchInterpreter extends Interpreter {
     final String type = urlItems[1];
     final String id = StringUtils.join(Arrays.copyOfRange(urlItems, 2, urlItems.length), '/');
 
-    if (StringUtils.isEmpty(index)
-        || StringUtils.isEmpty(type)
-        || StringUtils.isEmpty(id)) {
+    if (StringUtils.isEmpty(index) || StringUtils.isEmpty(type) || StringUtils.isEmpty(id)) {
       return null;
     }
 
-    return new String[] { index, type, id };
+    return new String[] {index, type, id};
   }
 
   private InterpreterResult processHelp(InterpreterResult.Code code, String additionalMessage) {
@@ -287,8 +284,8 @@ public class ElasticsearchInterpreter extends Interpreter {
     final String[] indexTypeId = getIndexTypeId(urlItems);
 
     if (indexTypeId == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Bad URL (it should be /index/type/id)");
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR, "Bad URL (it should be /index/type/id)");
     }
 
     final ActionResponse response = elsClient.get(indexTypeId[0], indexTypeId[1], indexTypeId[2]);
@@ -300,9 +297,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       addAngularObject(interpreterContext, "get", json);
 
       return new InterpreterResult(
-          InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.TEXT,
-          jsonStr);
+          InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, jsonStr);
     }
 
     return new InterpreterResult(InterpreterResult.Code.ERROR, "Document not found");
@@ -316,10 +311,11 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @param interpreterContext Instance of the context
    * @return Result of the count request, it contains the total hits
    */
-  private InterpreterResult processCount(String[] urlItems, String data,
-      InterpreterContext interpreterContext) {
+  private InterpreterResult processCount(
+      String[] urlItems, String data, InterpreterContext interpreterContext) {
     if (urlItems.length > 2) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index1,index2,.../type1,type2,...)");
     }
 
@@ -328,9 +324,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     addAngularObject(interpreterContext, "count", response.getTotalHits());
 
     return new InterpreterResult(
-        InterpreterResult.Code.SUCCESS,
-        InterpreterResult.Type.TEXT,
-        "" + response.getTotalHits());
+        InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, "" + response.getTotalHits());
   }
 
   /**
@@ -342,18 +336,22 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @param interpreterContext Instance of the context
    * @return Result of the search request, it contains a tab-formatted string of the matching hits
    */
-  private InterpreterResult processSearch(String[] urlItems, String data, int size,
-      InterpreterContext interpreterContext) {
+  private InterpreterResult processSearch(
+      String[] urlItems, String data, int size, InterpreterContext interpreterContext) {
     if (urlItems.length > 2) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR,
           "Bad URL (it should be /index1,index2,.../type1,type2,...)");
     }
 
     final ActionResponse response = searchData(urlItems, data, size);
 
-    addAngularObject(interpreterContext, "search",
-        (response.getAggregations() != null && response.getAggregations().size() > 0) ?
-            response.getAggregations() : response.getHits());
+    addAngularObject(
+        interpreterContext,
+        "search",
+        (response.getAggregations() != null && response.getAggregations().size() > 0)
+            ? response.getAggregations()
+            : response.getHits());
 
     return buildResponseMessage(response);
   }
@@ -367,17 +365,15 @@ public class ElasticsearchInterpreter extends Interpreter {
    */
   private InterpreterResult processIndex(String[] urlItems, String data) {
     if (urlItems.length < 2 || urlItems.length > 3) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Bad URL (it should be /index/type or /index/type/id)");
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR, "Bad URL (it should be /index/type or /index/type/id)");
     }
 
-    final ActionResponse response = elsClient.index(
-        urlItems[0], urlItems[1], urlItems.length == 2 ? null : urlItems[2], data);
+    final ActionResponse response =
+        elsClient.index(urlItems[0], urlItems[1], urlItems.length == 2 ? null : urlItems[2], data);
 
     return new InterpreterResult(
-        InterpreterResult.Code.SUCCESS,
-        InterpreterResult.Type.TEXT,
-        response.getHit().getId());
+        InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, response.getHit().getId());
   }
 
   /**
@@ -390,8 +386,8 @@ public class ElasticsearchInterpreter extends Interpreter {
     final String[] indexTypeId = getIndexTypeId(urlItems);
 
     if (indexTypeId == null) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Bad URL (it should be /index/type/id)");
+      return new InterpreterResult(
+          InterpreterResult.Code.ERROR, "Bad URL (it should be /index/type/id)");
     }
 
     final ActionResponse response =
@@ -399,9 +395,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     if (response.isSucceeded()) {
       return new InterpreterResult(
-          InterpreterResult.Code.SUCCESS,
-          InterpreterResult.Type.TEXT,
-          response.getHit().getId());
+          InterpreterResult.Code.SUCCESS, InterpreterResult.Type.TEXT, response.getHit().getId());
     }
 
     return new InterpreterResult(InterpreterResult.Code.ERROR, "Document not found");
@@ -451,7 +445,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
       final StringBuffer buffer = new StringBuffer();
       final String[] keys = headerKeys.toArray(new String[0]);
-      for (final String key: keys) {
+      for (final String key : keys) {
         buffer.append("\t" + key);
       }
       buffer.deleteCharAt(0);
@@ -459,7 +453,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       for (final Map<String, Object> bucket : buckets) {
         buffer.append("\n");
 
-        for (final String key: keys) {
+        for (final String key : keys) {
           buffer.append(bucket.get(key)).append("\t");
         }
         buffer.deleteCharAt(buffer.length() - 1);
@@ -479,7 +473,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     final Set<String> headerKeys = new HashSet<>();
     final List<Map<String, Object>> buckets = new LinkedList<>();
 
-    for (final AggWrapper aggregation: aggregations) {
+    for (final AggWrapper aggregation : aggregations) {
       final Map<String, Object> bucketMap = JsonFlattener.flattenAsMap(aggregation.getResult());
       headerKeys.addAll(bucketMap.keySet());
       buckets.add(bucketMap);
@@ -487,7 +481,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     final StringBuffer buffer = new StringBuffer();
     final String[] keys = headerKeys.toArray(new String[0]);
-    for (final String key: keys) {
+    for (final String key : keys) {
       buffer.append("\t" + key);
     }
     buffer.deleteCharAt(0);
@@ -495,7 +489,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     for (final Map<String, Object> bucket : buckets) {
       buffer.append("\n");
 
-      for (final String key: keys) {
+      for (final String key : keys) {
         buffer.append(bucket.get(key)).append("\t");
       }
       buffer.deleteCharAt(buffer.length() - 1);
@@ -511,7 +505,7 @@ public class ElasticsearchInterpreter extends Interpreter {
       return "";
     }
 
-    //First : get all the keys in order to build an ordered list of the values for each hit
+    // First : get all the keys in order to build an ordered list of the values for each hit
     //
     final List<Map<String, Object>> flattenHits = new LinkedList<>();
     final Set<String> keys = new TreeSet<>();
@@ -526,8 +520,8 @@ public class ElasticsearchInterpreter extends Interpreter {
         final String fieldName = iter.next();
         final Matcher fieldNameMatcher = FIELD_NAME_PATTERN.matcher(fieldName);
         if (fieldNameMatcher.matches()) {
-          flattenMap.put(fieldNameMatcher.group(1) + fieldNameMatcher.group(2),
-              flattenJsonMap.get(fieldName));
+          flattenMap.put(
+              fieldNameMatcher.group(1) + fieldNameMatcher.group(2), flattenJsonMap.get(fieldName));
         } else {
           flattenMap.put(fieldName, flattenJsonMap.get(fieldName));
         }

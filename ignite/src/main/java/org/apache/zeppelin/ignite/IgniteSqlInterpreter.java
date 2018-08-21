@@ -16,9 +16,6 @@
  */
 package org.apache.zeppelin.ignite;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -28,7 +25,6 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -37,19 +33,20 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Apache Ignite SQL interpreter (http://ignite.incubator.apache.org/).
  *
- * Use {@code ignite.jdbc.url} property to set up JDBC connection URL.
- * URL has the following pattern:
- * {@code jdbc:ignite://<hostname>:<port>/<cache_name>}
+ * <p>Use {@code ignite.jdbc.url} property to set up JDBC connection URL. URL has the following
+ * pattern: {@code jdbc:ignite://<hostname>:<port>/<cache_name>}
  *
  * <ul>
- *     <li>Hostname is required.</li>
- *     <li>If port is not defined, 11211 is used (default for Ignite client).</li>
- *     <li>Leave cache_name empty if you are connecting to a default cache.
- *     Note that the cache name is case sensitive.</li>
+ *   <li>Hostname is required.
+ *   <li>If port is not defined, 11211 is used (default for Ignite client).
+ *   <li>Leave cache_name empty if you are connecting to a default cache. Note that the cache name
+ *       is case sensitive.
  * </ul>
  */
 public class IgniteSqlInterpreter extends Interpreter {
@@ -179,13 +176,13 @@ public class IgniteSqlInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-            IgniteSqlInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton()
+        .createOrGetFIFOScheduler(IgniteSqlInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 }

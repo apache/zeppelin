@@ -17,8 +17,14 @@
 
 package org.apache.zeppelin.spark;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -32,18 +38,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
-
-/**
- * R and SparkR interpreter with visualization support.
- */
+/** R and SparkR interpreter with visualization support. */
 public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
 
@@ -68,7 +63,7 @@ public class SparkRInterpreter extends Interpreter {
     if (System.getenv("SPARK_HOME") != null) {
       // local or yarn-client mode when SPARK_HOME is specified
       sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
-    } else if (System.getenv("ZEPPELIN_HOME") != null){
+    } else if (System.getenv("ZEPPELIN_HOME") != null) {
       // embedded mode when SPARK_HOME is not specified
       sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R/lib";
       // workaround to make sparkr work without SPARK_HOME
@@ -103,7 +98,8 @@ public class SparkRInterpreter extends Interpreter {
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
 
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
+    zeppelinR =
+        new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
     try {
       zeppelinR.open();
     } catch (IOException e) {
@@ -113,9 +109,11 @@ public class SparkRInterpreter extends Interpreter {
     if (useKnitr()) {
       zeppelinR.eval("library('knitr')");
     }
-    renderOptions = getProperty("zeppelin.R.render.options",
-        "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, " +
-            "warning = F, fig.retina = 2");
+    renderOptions =
+        getProperty(
+            "zeppelin.R.render.options",
+            "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, "
+                + "warning = F, fig.retina = 2");
   }
 
   @Override
@@ -134,26 +132,27 @@ public class SparkRInterpreter extends Interpreter {
     String setJobGroup = "";
     // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
     if (isSpark2) {
-      setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup +
-          "\", \" +" + jobDesc + "\", TRUE)";
+      setJobGroup = "dummy__ <- setJobGroup(\"" + jobGroup + "\", \" +" + jobDesc + "\", TRUE)";
     } else {
-      setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
-          "\", \"" + jobDesc + "\", TRUE)";
+      setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup + "\", \"" + jobDesc + "\", TRUE)";
     }
     lines = setJobGroup + "\n" + lines;
     if (sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_3_0)) {
       // setLocalProperty is only available from spark 2.3.0
       String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
       if (interpreterContext.getLocalProperties().containsKey("pool")) {
-        setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
-            interpreterContext.getLocalProperties().get("pool") + "')";
+        setPoolStmt =
+            "setLocalProperty('spark.scheduler.pool', '"
+                + interpreterContext.getLocalProperties().get("pool")
+                + "')";
       }
       lines = setPoolStmt + "\n" + lines;
     }
     try {
       // render output with knitr
       if (rbackendDead.get()) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
+        return new InterpreterResult(
+            InterpreterResult.Code.ERROR,
             "sparkR backend is dead, please try to increase spark.r.backendConnectionTimeout");
       }
       if (useKnitr()) {
@@ -164,11 +163,7 @@ public class SparkRInterpreter extends Interpreter {
 
         RDisplay rDisplay = render(html, imageWidth);
 
-        return new InterpreterResult(
-            rDisplay.code(),
-            rDisplay.type(),
-            rDisplay.content()
-        );
+        return new InterpreterResult(rDisplay.code(), rDisplay.type(), rDisplay.content());
       } else {
         // alternatively, stream the output (without knitr)
         zeppelinR.setInterpreterOutput(interpreterContext.out);
@@ -209,13 +204,13 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-            SparkRInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton()
+        .createOrGetFIFOScheduler(SparkRInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return new ArrayList<>();
   }
 

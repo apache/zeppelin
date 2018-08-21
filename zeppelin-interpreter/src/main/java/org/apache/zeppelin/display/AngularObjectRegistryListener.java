@@ -17,12 +17,11 @@
 
 package org.apache.zeppelin.display;
 
-/**
- *
- *
- */
+/** */
 public interface AngularObjectRegistryListener {
   void onAdd(String interpreterGroupId, AngularObject object);
+
   void onUpdate(String interpreterGroupId, AngularObject object);
+
   void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId);
 }
