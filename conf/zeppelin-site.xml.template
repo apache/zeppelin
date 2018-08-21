@@ -486,7 +486,7 @@
 
 <!--
 <property>
-    <name>zeppelin.server.clear.authorization.header</name>
+    <name>zeppelin.server.authorization.header.clear</name>
     <value>true</value>
     <description>Authorization header to be cleared if server is running as authcBasic</description>
 </property>

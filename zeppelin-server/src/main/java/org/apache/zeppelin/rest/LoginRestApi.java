@@ -216,7 +216,7 @@ public class LoginRestApi {
     logoutCurrentUser();
     Status status = null;
     Map<String, String> data = new HashMap<>();
-    if (zConf.isClearAuthorizationHeader()) {
+    if (zConf.isAuthorizationHeaderClear()) {
       status = Status.UNAUTHORIZED;
       data.put("clearAuthorizationHeader", "true");
     } else {
