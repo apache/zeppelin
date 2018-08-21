@@ -90,6 +90,62 @@ function addJarInDirForIntp() {
   fi
 }
 
+# [ZEPPELIN-3610]
+# The netty JAR package was introduced due to the introduction
+# of the atomix algorithm in the zeppelin-interpreter module.
+#
+# Running test cases through Travis CI,
+# you need to use the JAR package file
+# in the "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib" directory.
+# Because some JAR packages have version conflicts,
+# the conflicting JAR package is blocked in the test session.
+#
+# For example: the high version of the netty package
+# in the "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib" directory
+# and /interpreter/alluxio/netty-all-4.0.28.Final.jar will create conflicts, etc.
+function addJarExcludeConflictForIntp(){
+  CONFLICT_JAR=(
+    animal-sniffer-annotations-1.14.jar
+    asm-5.0.4.jar
+    config-1.3.2.jar
+    error_prone_annotations-2.0.18.jar
+    fast-classpath-scanner-2.21.jar
+    guava-20.0.jar
+    j2objc-annotations-1.1.jar
+    jsr305-1.3.9.jar
+    kryo-4.0.2.jar
+    minlog-1.3.0.jar
+    netty-buffer-4.1.11.Final.jar
+    netty-codec-4.1.11.Final.jar
+    netty-common-4.1.11.Final.jar
+    netty-handler-4.1.11.Final.jar
+    netty-resolver-4.1.11.Final.jar
+    netty-transport-4.1.11.Final.jar
+    netty-transport-native-epoll-4.1.11.Final-linux-x86_64.jar
+    netty-transport-native-unix-common-4.1.11.Final.jar
+    objenesis-2.5.1.jar
+  )
+
+  if [[ -d "${1}" ]]; then
+    for jar in $(find -L "${1}" -type f -name '*jar'); do
+      exclude=false;
+      for conflict in ${CONFLICT_JAR[@]}
+      do
+        if [[ ${jar} == *${conflict} ]]
+        then
+          exclude=true
+          break
+        fi
+      done
+
+      if [[ ${exclude} == false ]]
+      then
+        ZEPPELIN_INTP_CLASSPATH="${jar}:$ZEPPELIN_INTP_CLASSPATH"
+      fi
+    done
+  fi
+}
+
 ZEPPELIN_COMMANDLINE_MAIN=org.apache.zeppelin.utils.CommandLineUtils
 
 function getZeppelinVersion(){

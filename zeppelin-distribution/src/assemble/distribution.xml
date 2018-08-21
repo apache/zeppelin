@@ -97,6 +97,22 @@
     <fileSet>
       <outputDirectory>/lib/interpreter</outputDirectory>
       <directory>../zeppelin-interpreter/target/lib</directory>
+      <excludes>
+        <exclude>animal-sniffer-annotations-*.jar</exclude>
+        <exclude>asm-*.jar</exclude>
+        <exclude>config-*.jar</exclude>
+        <exclude>error_prone_annotations-*.jar</exclude>
+        <exclude>fast-classpath-scanner-*.jar</exclude>
+        <exclude>guava-*.jar</exclude>
+        <exclude>j2objc-annotations-*.jar</exclude>
+        <exclude>jsr305-*.jar</exclude>
+        <exclude>kryo-*.jar</exclude>
+        <exclude>minlog-*.jar</exclude>
+        <exclude>atomix-*.jar</exclude>
+        <exclude>netty-*-4.1.11.Final*.jar</exclude>
+        <exclude>objenesis-*.jar</exclude>
+        <exclude>reflectasm-*.jar</exclude>
+      </excludes>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>
