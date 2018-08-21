@@ -34,7 +34,7 @@
 
     <properties>
         <!--library versions-->
-        <interpreter.name>hazelcast-jet</interpreter.name>
+        <interpreter.name>hazelcastjet</interpreter.name>
     </properties>
 
     <dependencies>

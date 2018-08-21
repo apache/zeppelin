@@ -33,9 +33,23 @@ The following is a demonstration of a word count example with the result represe
 
 ```java
 %hazelcastjet
-import java.util.HashMap;
+
+import com.hazelcast.jet.Jet;
+import com.hazelcast.jet.JetInstance;
+import com.hazelcast.jet.core.DAG;
+import com.hazelcast.jet.pipeline.Pipeline;
+import com.hazelcast.jet.pipeline.Sinks;
+import com.hazelcast.jet.pipeline.Sources;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.zeppelin.java.JavaInterpreterUtils;
+
+import static com.hazelcast.jet.Traversers.traverseArray;
+import static com.hazelcast.jet.aggregate.AggregateOperations.counting;
+import static com.hazelcast.jet.function.DistributedFunctions.wholeItem;
 
 public class HelloWorld {
 
