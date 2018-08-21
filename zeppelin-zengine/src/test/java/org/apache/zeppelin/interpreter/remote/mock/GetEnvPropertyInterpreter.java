@@ -16,16 +16,14 @@
  */
 package org.apache.zeppelin.interpreter.remote.mock;
 
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-
-import java.util.List;
-import java.util.Properties;
-
 
 public class GetEnvPropertyInterpreter extends Interpreter {
 
@@ -34,29 +32,29 @@ public class GetEnvPropertyInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
-  }
+  public void open() {}
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     String[] cmd = st.split(" ");
     if (cmd[0].equals("getEnv")) {
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getenv(cmd[1]) == null ? "null" : System.getenv(cmd[1]));
-    } else if (cmd[0].equals("getProperty")){
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, System.getProperty(cmd[1]) == null ? "null" : System.getProperty(cmd[1]));
+      return new InterpreterResult(
+          InterpreterResult.Code.SUCCESS,
+          System.getenv(cmd[1]) == null ? "null" : System.getenv(cmd[1]));
+    } else if (cmd[0].equals("getProperty")) {
+      return new InterpreterResult(
+          InterpreterResult.Code.SUCCESS,
+          System.getProperty(cmd[1]) == null ? "null" : System.getProperty(cmd[1]));
     } else {
       return new InterpreterResult(InterpreterResult.Code.ERROR, cmd[0]);
     }
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -69,8 +67,8 @@ public class GetEnvPropertyInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return null;
   }
 
@@ -79,4 +77,3 @@ public class GetEnvPropertyInterpreter extends Interpreter {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
   }
 }
-

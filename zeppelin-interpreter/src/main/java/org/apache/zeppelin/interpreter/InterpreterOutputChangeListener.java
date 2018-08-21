@@ -18,10 +18,7 @@ package org.apache.zeppelin.interpreter;
 
 import java.io.File;
 
-/**
- * InterpreterOutputChangeListener
- */
+/** InterpreterOutputChangeListener */
 public interface InterpreterOutputChangeListener {
   void fileChanged(File file);
-
 }

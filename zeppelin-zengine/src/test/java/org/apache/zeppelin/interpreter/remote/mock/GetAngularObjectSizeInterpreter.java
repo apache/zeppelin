@@ -17,12 +17,10 @@
 
 package org.apache.zeppelin.interpreter.remote.mock;
 
-
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-
-import java.util.Properties;
 
 public class GetAngularObjectSizeInterpreter extends Interpreter {
 
@@ -31,25 +29,20 @@ public class GetAngularObjectSizeInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
-
-  }
+  public void open() {}
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+    return new InterpreterResult(
+        InterpreterResult.Code.SUCCESS,
         "" + context.getAngularObjectRegistry().getRegistry().size());
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {

@@ -21,18 +21,15 @@ import static org.junit.Assert.assertEquals;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BigQueryInterpreterTest {
   protected static class Constants {
@@ -48,7 +45,7 @@ public class BigQueryInterpreterTest {
       return oneQuery;
     }
 
-    public String getWrong()  {
+    public String getWrong() {
       return wrongQuery;
     }
   }
@@ -98,8 +95,8 @@ public class BigQueryInterpreterTest {
 
   @Test
   public void testWithQueryPrefix() {
-    InterpreterResult ret = bqInterpreter.interpret(
-        "#standardSQL\n WITH t AS (select 1) SELECT * FROM t", context);
+    InterpreterResult ret =
+        bqInterpreter.interpret("#standardSQL\n WITH t AS (select 1) SELECT * FROM t", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
   }
 

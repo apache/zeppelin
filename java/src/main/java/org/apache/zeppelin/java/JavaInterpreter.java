@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.java;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -24,15 +29,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
-/**
- * Java interpreter
- */
+/** Java interpreter */
 public class JavaInterpreter extends Interpreter {
 
   private static final Logger logger = LoggerFactory.getLogger(JavaInterpreter.class);
@@ -42,9 +39,7 @@ public class JavaInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
-
-  }
+  public void open() {}
 
   @Override
   public void close() {
@@ -71,15 +66,11 @@ public class JavaInterpreter extends Interpreter {
     } catch (Exception e) {
       logger.error("Exception in Interpreter while interpret", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-
     }
-
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -92,9 +83,8 @@ public class JavaInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return Collections.emptyList();
   }
-
 }

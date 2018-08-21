@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.util.LinkedList;
+import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -30,13 +36,6 @@ import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.LinkedList;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 public class NewSparkSqlInterpreterTest {
 
@@ -64,15 +63,16 @@ public class NewSparkSqlInterpreterTest {
     intpGroup.get("session_1").add(sparkInterpreter);
     intpGroup.get("session_1").add(sqlInterpreter);
 
-    context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setParagraphTitle("title")
-        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-        .setResourcePool(new LocalResourcePool("id"))
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-        .build();
+    context =
+        InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setParagraphTitle("title")
+            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+            .setResourcePool(new LocalResourcePool("id"))
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .build();
     InterpreterContext.set(context);
 
     sparkInterpreter.open();
@@ -88,10 +88,13 @@ public class NewSparkSqlInterpreterTest {
   @Test
   public void test() throws InterpreterException {
     sparkInterpreter.interpret("case class Test(name:String, age:Int)", context);
-    sparkInterpreter.interpret("val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))", context);
+    sparkInterpreter.interpret(
+        "val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))",
+        context);
     sparkInterpreter.interpret("test.toDF.registerTempTable(\"test\")", context);
 
-    InterpreterResult ret = sqlInterpreter.interpret("select name, age from test where age < 40", context);
+    InterpreterResult ret =
+        sqlInterpreter.interpret("select name, age from test where age < 40", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message().get(0).getData());
@@ -100,7 +103,11 @@ public class NewSparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertTrue(ret.message().get(0).getData().length() > 0);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, sqlInterpreter.interpret("select case when name='aa' then name else name end from test", context).code());
+    assertEquals(
+        InterpreterResult.Code.SUCCESS,
+        sqlInterpreter
+            .interpret("select case when name='aa' then name else name end from test", context)
+            .code());
   }
 
   @Test
@@ -129,17 +136,14 @@ public class NewSparkSqlInterpreterTest {
         "val schema = StructType(Seq(StructField(\"name\", StringType, false),StructField(\"age\" , IntegerType, true),StructField(\"other\" , StringType, false)))",
         context);
     sparkInterpreter.interpret(
-        "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))",
-        context);
+        "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))", context);
     sparkInterpreter.interpret(
-        "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
-        context);
-    sparkInterpreter.interpret("val people = sqlContext.createDataFrame(raw, schema)",
-        context);
+        "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))", context);
+    sparkInterpreter.interpret("val people = sqlContext.createDataFrame(raw, schema)", context);
     sparkInterpreter.interpret("people.toDF.registerTempTable(\"people\")", context);
 
-    InterpreterResult ret = sqlInterpreter.interpret(
-        "select name, age from people where name = 'gates'", context);
+    InterpreterResult ret =
+        sqlInterpreter.interpret("select name, age from people where name = 'gates'", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
@@ -161,34 +165,38 @@ public class NewSparkSqlInterpreterTest {
   @Test
   public void testConcurrentSQL() throws InterpreterException, InterruptedException {
     if (sparkInterpreter.getSparkVersion().isSpark2()) {
-      sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+      sparkInterpreter.interpret(
+          "spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
     } else {
-      sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
+      sparkInterpreter.interpret(
+          "sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
     }
 
-    Thread thread1 = new Thread() {
-      @Override
-      public void run() {
-        try {
-          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
-          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-        } catch (InterpreterException e) {
-          e.printStackTrace();
-        }
-      }
-    };
+    Thread thread1 =
+        new Thread() {
+          @Override
+          public void run() {
+            try {
+              InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+              assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+            } catch (InterpreterException e) {
+              e.printStackTrace();
+            }
+          }
+        };
 
-    Thread thread2 = new Thread() {
-      @Override
-      public void run() {
-        try {
-          InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
-          assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-        } catch (InterpreterException e) {
-          e.printStackTrace();
-        }
-      }
-    };
+    Thread thread2 =
+        new Thread() {
+          @Override
+          public void run() {
+            try {
+              InterpreterResult result = sqlInterpreter.interpret("select sleep(10)", context);
+              assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+            } catch (InterpreterException e) {
+              e.printStackTrace();
+            }
+          }
+        };
 
     // start running 2 spark sql, each would sleep 10 seconds, the totally running time should
     // be less than 20 seconds, which means they run concurrently.
@@ -198,8 +206,6 @@ public class NewSparkSqlInterpreterTest {
     thread1.join();
     thread2.join();
     long end = System.currentTimeMillis();
-    assertTrue("running time must be less than 20 seconds", ((end - start)/1000) < 20);
-
+    assertTrue("running time must be less than 20 seconds", ((end - start) / 1000) < 20);
   }
-
 }

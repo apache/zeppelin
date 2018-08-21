@@ -17,10 +17,9 @@
 
 package org.apache.zeppelin.helium;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-
-import com.google.gson.Gson;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.PatternLayout;
@@ -31,9 +30,7 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Run this server for development mode.
- */
+/** Run this server for development mode. */
 public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
   final Logger logger = LoggerFactory.getLogger(ZeppelinApplicationDevServer.class);
 
@@ -42,13 +39,13 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
   private Application app;
   private InterpreterOutput out;
 
-  public ZeppelinApplicationDevServer(final String className, ResourceSet resourceSet) throws
-      Exception {
+  public ZeppelinApplicationDevServer(final String className, ResourceSet resourceSet)
+      throws Exception {
     this(Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT, className, resourceSet);
   }
 
-  public ZeppelinApplicationDevServer(int port, String className, ResourceSet resourceSet) throws
-      Exception {
+  public ZeppelinApplicationDevServer(int port, String className, ResourceSet resourceSet)
+      throws Exception {
     super(port);
     this.className = className;
     this.resourceSet = resourceSet;
@@ -56,16 +53,15 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
   };
 
   void setLogger() {
-    ConsoleAppender console = new ConsoleAppender(); //create appender
-    //configure the appender
+    ConsoleAppender console = new ConsoleAppender(); // create appender
+    // configure the appender
     String PATTERN = "%d [%p|%c|%C{1}] %m%n";
     console.setLayout(new PatternLayout(PATTERN));
     console.setThreshold(Level.DEBUG);
     console.activateOptions();
-    //add appender to any Logger (here is root)
+    // add appender to any Logger (here is root)
     org.apache.log4j.Logger.getRootLogger().addAppender(console);
   }
-
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -140,28 +136,29 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
     if (out == null) {
       final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
-        out = new InterpreterOutput(new InterpreterOutputListener() {
-          @Override
-          public void onUpdateAll(InterpreterOutput out) {
+        out =
+            new InterpreterOutput(
+                new InterpreterOutputListener() {
+                  @Override
+                  public void onUpdateAll(InterpreterOutput out) {}
 
-          }
+                  @Override
+                  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+                    eventClient.onInterpreterOutputAppend(
+                        noteId, paragraphId, index, new String(line));
+                  }
 
-          @Override
-          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-            eventClient.onInterpreterOutputAppend(noteId, paragraphId, index, new String(line));
-          }
-
-          @Override
-          public void onUpdate(int index, InterpreterResultMessageOutput out) {
-            try {
-              eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
-                  index, out.getType(), new String(out.toByteArray()));
-            } catch (IOException e) {
-              logger.error(e.getMessage(), e);
-            }
-          }
-
-        }, this);
+                  @Override
+                  public void onUpdate(int index, InterpreterResultMessageOutput out) {
+                    try {
+                      eventClient.onInterpreterOutputUpdate(
+                          noteId, paragraphId, index, out.getType(), new String(out.toByteArray()));
+                    } catch (IOException e) {
+                      logger.error(e.getMessage(), e);
+                    }
+                  }
+                },
+                this);
       } catch (IOException e) {
         return null;
       }

@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.integration;
 
-
+import java.util.List;
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
 import org.hamcrest.CoreMatchers;
@@ -32,13 +32,10 @@ import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public class SparkParagraphIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(SparkParagraphIT.class);
 
-  @Rule
-  public ErrorCollector collector = new ErrorCollector();
+  @Rule public ErrorCollector collector = new ErrorCollector();
 
   @Before
   public void startUp() {
@@ -72,33 +69,35 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       val bank = bankText.map(s => s.split(";")).filter(s => s(0) != "\"age\"").map(s => Bank(s(0).toInt,s(1).replaceAll("\"", ""),s(2).replaceAll("\"", ""),s(3).replaceAll("\"", ""),s(5).replaceAll("\"", "").toInt)).toDF()
       bank.registerTempTable("bank")
        */
-      setTextOfParagraph(2, "import org.apache.commons.io.IOUtils\\n" +
-          "import java.net.URL\\n" +
-          "import java.nio.charset.Charset\\n" +
-          "val bankText = sc.parallelize(IOUtils.toString(new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),Charset.forName(\"utf8\")).split(\"\\\\n\"))\\n" +
-          "case class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\\n" +
-          "\\n" +
-          "val bank = bankText.map(s => s.split(\";\")).filter(s => s(0) != \"\\\\\"age\\\\\"\").map(s => Bank(s(0).toInt,s(1).replaceAll(\"\\\\\"\", \"\"),s(2).replaceAll(\"\\\\\"\", \"\"),s(3).replaceAll(\"\\\\\"\", \"\"),s(5).replaceAll(\"\\\\\"\", \"\").toInt)).toDF()\\n" +
-          "bank.registerTempTable(\"bank\")");
+      setTextOfParagraph(
+          2,
+          "import org.apache.commons.io.IOUtils\\n"
+              + "import java.net.URL\\n"
+              + "import java.nio.charset.Charset\\n"
+              + "val bankText = sc.parallelize(IOUtils.toString(new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),Charset.forName(\"utf8\")).split(\"\\\\n\"))\\n"
+              + "case class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\\n"
+              + "\\n"
+              + "val bank = bankText.map(s => s.split(\";\")).filter(s => s(0) != \"\\\\\"age\\\\\"\").map(s => Bank(s(0).toInt,s(1).replaceAll(\"\\\\\"\", \"\"),s(2).replaceAll(\"\\\\\"\", \"\"),s(3).replaceAll(\"\\\\\"\", \"\"),s(5).replaceAll(\"\\\\\"\", \"\").toInt)).toDF()\\n"
+              + "bank.registerTempTable(\"bank\")");
       runParagraph(2);
 
       try {
         waitForParagraph(2, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(2, "ERROR");
-        collector.checkThat("2nd Paragraph from SparkParagraphIT of testSpark status:",
-            "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
+        collector.checkThat(
+            "2nd Paragraph from SparkParagraphIT of testSpark status:",
+            "ERROR",
+            CoreMatchers.equalTo("FINISHED"));
       }
 
-      WebElement paragraph2Result = driver.findElement(By.xpath(
-          getParagraphXPath(2) + "//div[contains(@id,\"_text\")]"));
+      WebElement paragraph2Result =
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@id,\"_text\")]"));
 
-      collector.checkThat("2nd Paragraph from SparkParagraphIT of testSpark result: ",
-          paragraph2Result.getText().toString(), CoreMatchers.containsString(
-              "import org.apache.commons.io.IOUtils"
-          )
-      );
+      collector.checkThat(
+          "2nd Paragraph from SparkParagraphIT of testSpark result: ",
+          paragraph2Result.getText().toString(),
+          CoreMatchers.containsString("import org.apache.commons.io.IOUtils"));
 
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testSpark", e);
@@ -108,9 +107,8 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
   @Test
   public void testPySpark() throws Exception {
     try {
-      setTextOfParagraph(1, "%pyspark\\n" +
-          "for x in range(0, 3):\\n" +
-          "    print \"test loop %d\" % (x)");
+      setTextOfParagraph(
+          1, "%pyspark\\n" + "for x in range(0, 3):\\n" + "    print \"test loop %d\" % (x)");
 
       runParagraph(1);
 
@@ -118,35 +116,37 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("Paragraph from SparkParagraphIT of testPySpark status: ",
-            "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
+        collector.checkThat(
+            "Paragraph from SparkParagraphIT of testPySpark status: ",
+            "ERROR",
+            CoreMatchers.equalTo("FINISHED"));
       }
 
-      WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[contains(@id,\"_text\")]"));
-      collector.checkThat("Paragraph from SparkParagraphIT of testPySpark result: ",
-          paragraph1Result.getText().toString(), CoreMatchers.containsString("test loop 0\ntest loop 1\ntest loop 2")
-      );
+      WebElement paragraph1Result =
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@id,\"_text\")]"));
+      collector.checkThat(
+          "Paragraph from SparkParagraphIT of testPySpark result: ",
+          paragraph1Result.getText().toString(),
+          CoreMatchers.containsString("test loop 0\ntest loop 1\ntest loop 2"));
 
       // the last statement's evaluation result is printed
-      setTextOfParagraph(2, "%pyspark\\n" +
-          "sc.version\\n" +
-          "1+1");
+      setTextOfParagraph(2, "%pyspark\\n" + "sc.version\\n" + "1+1");
       runParagraph(2);
       try {
         waitForParagraph(2, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(2, "ERROR");
-        collector.checkThat("Paragraph from SparkParagraphIT of testPySpark status: ",
-                "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
+        collector.checkThat(
+            "Paragraph from SparkParagraphIT of testPySpark status: ",
+            "ERROR",
+            CoreMatchers.equalTo("FINISHED"));
       }
-      WebElement paragraph2Result = driver.findElement(By.xpath(
-              getParagraphXPath(2) + "//div[contains(@id,\"_text\")]"));
-      collector.checkThat("Paragraph from SparkParagraphIT of testPySpark result: ",
-          paragraph2Result.getText().toString(), CoreMatchers.equalTo("2")
-      );
+      WebElement paragraph2Result =
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@id,\"_text\")]"));
+      collector.checkThat(
+          "Paragraph from SparkParagraphIT of testPySpark result: ",
+          paragraph2Result.getText().toString(),
+          CoreMatchers.equalTo("2"));
 
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testPySpark", e);
@@ -156,74 +156,86 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
   @Test
   public void testSqlSpark() throws Exception {
     try {
-      setTextOfParagraph(1,"%sql\\n" +
-          "select * from bank limit 1");
+      setTextOfParagraph(1, "%sql\\n" + "select * from bank limit 1");
       runParagraph(1);
 
       try {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark status: ",
-            "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
+        collector.checkThat(
+            "Paragraph from SparkParagraphIT of testSqlSpark status: ",
+            "ERROR",
+            CoreMatchers.equalTo("FINISHED"));
       }
 
       // Age, Job, Marital, Education, Balance
-      List<WebElement> tableHeaders = driver.findElements(By.cssSelector("span.ui-grid-header-cell-label"));
+      List<WebElement> tableHeaders =
+          driver.findElements(By.cssSelector("span.ui-grid-header-cell-label"));
       String headerNames = "";
 
-      for(WebElement header : tableHeaders) {
+      for (WebElement header : tableHeaders) {
         headerNames += header.getText().toString() + "|";
       }
 
-      collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-          headerNames, CoreMatchers.equalTo("age|job|marital|education|balance|"));
+      collector.checkThat(
+          "Paragraph from SparkParagraphIT of testSqlSpark result: ",
+          headerNames,
+          CoreMatchers.equalTo("age|job|marital|education|balance|"));
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testSqlSpark", e);
     }
   }
 
-//  @Test
+  //  @Test
   public void testDep() throws Exception {
     try {
       // restart spark interpreter before running %dep
       clickAndWait(By.xpath("//span[@uib-tooltip='Interpreter binding']"));
-      clickAndWait(By.xpath("//div[font[contains(text(), 'spark')]]/preceding-sibling::a[@uib-tooltip='Restart']"));
+      clickAndWait(
+          By.xpath(
+              "//div[font[contains(text(), 'spark')]]/preceding-sibling::a[@uib-tooltip='Restart']"));
       clickAndWait(By.xpath("//button[contains(.,'OK')]"));
 
-      setTextOfParagraph(1,"%dep z.load(\"org.apache.commons:commons-csv:1.1\")");
+      setTextOfParagraph(1, "%dep z.load(\"org.apache.commons:commons-csv:1.1\")");
       runParagraph(1);
 
       try {
         waitForParagraph(1, "FINISHED");
-        WebElement paragraph1Result = driver.findElement(By.xpath(getParagraphXPath(1) +
-            "//div[contains(@id,'_text')]"));
-        collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-            paragraph1Result.getText(), CoreMatchers.containsString("res0: org.apache.zeppelin.dep.Dependency = org.apache.zeppelin.dep.Dependency"));
+        WebElement paragraph1Result =
+            driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@id,'_text')]"));
+        collector.checkThat(
+            "Paragraph from SparkParagraphIT of testSqlSpark result: ",
+            paragraph1Result.getText(),
+            CoreMatchers.containsString(
+                "res0: org.apache.zeppelin.dep.Dependency = org.apache.zeppelin.dep.Dependency"));
 
         setTextOfParagraph(2, "import org.apache.commons.csv.CSVFormat");
         runParagraph(2);
 
         try {
           waitForParagraph(2, "FINISHED");
-          WebElement paragraph2Result = driver.findElement(By.xpath(getParagraphXPath(2) +
-              "//div[contains(@id,'_text')]"));
-          collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
-              paragraph2Result.getText(), CoreMatchers.equalTo("import org.apache.commons.csv.CSVFormat"));
+          WebElement paragraph2Result =
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@id,'_text')]"));
+          collector.checkThat(
+              "Paragraph from SparkParagraphIT of testSqlSpark result: ",
+              paragraph2Result.getText(),
+              CoreMatchers.equalTo("import org.apache.commons.csv.CSVFormat"));
 
         } catch (TimeoutException e) {
           waitForParagraph(2, "ERROR");
-          collector.checkThat("Second paragraph from SparkParagraphIT of testDep status: ",
-              "ERROR", CoreMatchers.equalTo("FINISHED")
-          );
+          collector.checkThat(
+              "Second paragraph from SparkParagraphIT of testDep status: ",
+              "ERROR",
+              CoreMatchers.equalTo("FINISHED"));
         }
 
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("First paragraph from SparkParagraphIT of testDep status: ",
-            "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
+        collector.checkThat(
+            "First paragraph from SparkParagraphIT of testDep status: ",
+            "ERROR",
+            CoreMatchers.equalTo("FINISHED"));
       }
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testDep", e);

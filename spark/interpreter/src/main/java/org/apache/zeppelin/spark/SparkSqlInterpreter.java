@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.spark;
 
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Properties;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -30,13 +33,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Properties;
-
-/**
- * Spark SQL interpreter for Zeppelin.
- */
+/** Spark SQL interpreter for Zeppelin. */
 public class SparkSqlInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
 
@@ -62,8 +59,9 @@ public class SparkSqlInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
-      return new InterpreterResult(Code.ERROR, "Spark "
-          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+      return new InterpreterResult(
+          Code.ERROR,
+          "Spark " + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
 
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
@@ -73,11 +71,13 @@ public class SparkSqlInterpreter extends Interpreter {
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
 
     try {
-      String effectiveSQL = Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation")) ?
-          interpolate(st, context.getResourcePool()) : st;
+      String effectiveSQL =
+          Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation"))
+              ? interpolate(st, context.getResourcePool())
+              : st;
       Method method = sqlc.getClass().getMethod("sql", String.class);
-      String msg = sparkInterpreter.getZeppelinContext().showData(
-          method.invoke(sqlc, effectiveSQL));
+      String msg =
+          sparkInterpreter.getZeppelinContext().showData(method.invoke(sqlc, effectiveSQL));
       sc.clearJobGroup();
       return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {
@@ -85,8 +85,8 @@ public class SparkSqlInterpreter extends Interpreter {
         throw new InterpreterException(e);
       }
       logger.error("Invocation target exception", e);
-      String msg = e.getMessage()
-              + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+      String msg =
+          e.getMessage() + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
       return new InterpreterResult(Code.ERROR, msg);
     }
   }
@@ -102,7 +102,6 @@ public class SparkSqlInterpreter extends Interpreter {
     return FormType.SIMPLE;
   }
 
-
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return sparkInterpreter.getProgress(context);
@@ -112,8 +111,9 @@ public class SparkSqlInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     if (concurrentSQL()) {
       int maxConcurrency = Integer.parseInt(getProperty("zeppelin.spark.concurrentSQL", "10"));
-      return SchedulerFactory.singleton().createOrGetParallelScheduler(
-          SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+      return SchedulerFactory.singleton()
+          .createOrGetParallelScheduler(
+              SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
     } else {
       // getSparkInterpreter() calls open() inside.
       // That means if SparkInterpreter is not opened, it'll wait until SparkInterpreter open.
@@ -131,8 +131,8 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return null;
   }
 }

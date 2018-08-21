@@ -22,10 +22,7 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Zeppelin websocket listener class.
- *
- */
+/** Zeppelin websocket listener class. */
 public class ZeppelinWebsocket implements WebSocketListener {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinWebsocket.class);
   public Session connection;
@@ -36,9 +33,7 @@ public class ZeppelinWebsocket implements WebSocketListener {
   }
 
   @Override
-  public void onWebSocketBinary(byte[] arg0, int arg1, int arg2) {
-
-  }
+  public void onWebSocketBinary(byte[] arg0, int arg1, int arg2) {}
 
   @Override
   public void onWebSocketClose(int code, String message) {
@@ -71,5 +66,4 @@ public class ZeppelinWebsocket implements WebSocketListener {
       LOG.error("Failed to send message to ZeppelinHub: {}", e.toString());
     }
   }
-
 }

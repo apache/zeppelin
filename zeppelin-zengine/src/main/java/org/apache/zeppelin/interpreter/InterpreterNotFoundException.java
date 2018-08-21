@@ -1,12 +1,9 @@
 package org.apache.zeppelin.interpreter;
 
-/**
- * Exception for no interpreter is found
- */
+/** Exception for no interpreter is found */
 public class InterpreterNotFoundException extends InterpreterException {
 
-  public InterpreterNotFoundException() {
-  }
+  public InterpreterNotFoundException() {}
 
   public InterpreterNotFoundException(String message) {
     super(message);

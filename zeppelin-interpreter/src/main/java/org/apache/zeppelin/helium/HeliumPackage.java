@@ -17,44 +17,42 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
+import java.util.Map;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.common.JsonSerializable;
 
-import java.util.Map;
-
-/**
- * Helium package definition
- */
+/** Helium package definition */
 @Experimental
 public class HeliumPackage implements JsonSerializable {
   private static final Gson gson = new Gson();
 
   private HeliumType type;
-  private String name;           // user friendly name of this application
-  private String description;    // description
-  private String artifact;       // artifact name e.g) groupId:artifactId:versionId
-  private String className;      // entry point
+  private String name; // user friendly name of this application
+  private String description; // description
+  private String artifact; // artifact name e.g) groupId:artifactId:versionId
+  private String className; // entry point
   // resource classnames that requires [[ .. and .. and .. ] or [ .. and .. and ..] ..]
-  private String [][] resources;
+  private String[][] resources;
 
   private String license;
   private String icon;
   private String published;
 
-  private String groupId;        // get groupId of INTERPRETER type package
-  private String artifactId;     // get artifactId of INTERPRETER type package
+  private String groupId; // get groupId of INTERPRETER type package
+  private String artifactId; // get artifactId of INTERPRETER type package
 
   private SpellPackageInfo spell;
   private Map<String, Object> config;
 
-  public HeliumPackage(HeliumType type,
-                       String name,
-                       String description,
-                       String artifact,
-                       String className,
-                       String[][] resources,
-                       String license,
-                       String icon) {
+  public HeliumPackage(
+      HeliumType type,
+      String name,
+      String description,
+      String artifact,
+      String className,
+      String[][] resources,
+      String license,
+      String icon) {
     this.type = type;
     this.name = name;
     this.description = description;
@@ -85,8 +83,7 @@ public class HeliumPackage implements JsonSerializable {
   }
 
   public static boolean isBundleType(HeliumType type) {
-    return (type == HeliumType.VISUALIZATION ||
-        type == HeliumType.SPELL);
+    return (type == HeliumType.VISUALIZATION || type == HeliumType.SPELL);
   }
 
   public String getName() {
@@ -133,7 +130,9 @@ public class HeliumPackage implements JsonSerializable {
     return spell;
   }
 
-  public Map<String, Object> getConfig() { return config; }
+  public Map<String, Object> getConfig() {
+    return config;
+  }
 
   public String toJson() {
     return gson.toJson(this);

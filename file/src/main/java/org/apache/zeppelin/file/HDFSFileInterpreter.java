@@ -1,42 +1,33 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.file;
 
 import com.google.gson.Gson;
-
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang.StringUtils;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
-/**
- * HDFS implementation of File interpreter for Zeppelin.
- */
+/** HDFS implementation of File interpreter for Zeppelin. */
 public class HDFSFileInterpreter extends FileInterpreter {
   static final String HDFS_URL = "hdfs.url";
   static final String HDFS_USER = "hdfs.user";
@@ -54,7 +45,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     gson = new Gson();
   }
 
-  public HDFSFileInterpreter(Properties property){
+  public HDFSFileInterpreter(Properties property) {
     super(property);
     prepare();
   }
@@ -62,7 +53,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   /**
    * Status of one file.
    *
-   * matches returned JSON
+   * <p>matches returned JSON
    */
   public class OneFileStatus {
     public long accessTime;
@@ -101,7 +92,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   /**
    * Status of one file.
    *
-   * matches returned JSON
+   * <p>matches returned JSON
    */
   public class SingleFileStatus {
     @SerializedName("FileStatus")
@@ -111,7 +102,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   /**
    * Status of all files in a directory.
    *
-   * matches returned JSON
+   * <p>matches returned JSON
    */
   public class MultiFileStatus {
     @SerializedName("FileStatus")
@@ -121,7 +112,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   /**
    * Status of all files in a directory.
    *
-   * matches returned JSON
+   * <p>matches returned JSON
    */
   public class AllFileStatus {
     @SerializedName("FileStatuses")
@@ -146,26 +137,25 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   private String listDir(String path) throws Exception {
     return cmd.runCommand(cmd.listStatus, path, null);
   }
 
-  private String listPermission(OneFileStatus fs){
+  private String listPermission(OneFileStatus fs) {
     StringBuilder sb = new StringBuilder();
     sb.append(fs.type.equalsIgnoreCase("Directory") ? 'd' : '-');
     int p = Integer.parseInt(fs.permission, 16);
     sb.append(((p & 0x400) == 0) ? '-' : 'r');
     sb.append(((p & 0x200) == 0) ? '-' : 'w');
     sb.append(((p & 0x100) == 0) ? '-' : 'x');
-    sb.append(((p & 0x40)  == 0) ? '-' : 'r');
-    sb.append(((p & 0x20)  == 0) ? '-' : 'w');
-    sb.append(((p & 0x10)  == 0) ? '-' : 'x');
-    sb.append(((p & 0x4)   == 0) ? '-' : 'r');
-    sb.append(((p & 0x2)   == 0) ? '-' : 'w');
-    sb.append(((p & 0x1)   == 0) ? '-' : 'x');
+    sb.append(((p & 0x40) == 0) ? '-' : 'r');
+    sb.append(((p & 0x20) == 0) ? '-' : 'w');
+    sb.append(((p & 0x10) == 0) ? '-' : 'x');
+    sb.append(((p & 0x4) == 0) ? '-' : 'r');
+    sb.append(((p & 0x2) == 0) ? '-' : 'w');
+    sb.append(((p & 0x1) == 0) ? '-' : 'x');
     return sb.toString();
   }
 
@@ -180,7 +170,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       sb.append(((fs.replication == 0) ? "-" : fs.replication) + "\t ");
       sb.append(fs.owner + "\t");
       sb.append(fs.group + "\t");
-      if (args.flags.contains(new Character('h'))){ //human readable
+      if (args.flags.contains(new Character('h'))) { // human readable
         sb.append(humanReadableByteCount(fs.length) + "\t\t");
       } else {
         sb.append(fs.length + "\t");
@@ -224,17 +214,19 @@ public class HDFSFileInterpreter extends FileInterpreter {
     }
 
     try {
-      //see if directory.
+      // see if directory.
       if (isDirectory(path)) {
         String sfs = listDir(path);
         if (sfs != null) {
           AllFileStatus allFiles = gson.fromJson(sfs, AllFileStatus.class);
 
-          if (allFiles != null &&
-                  allFiles.fileStatuses != null &&
-                  allFiles.fileStatuses.fileStatus != null) {
-            int length = cmd.maxLength < allFiles.fileStatuses.fileStatus.length ? cmd.maxLength :
-                    allFiles.fileStatuses.fileStatus.length;
+          if (allFiles != null
+              && allFiles.fileStatuses != null
+              && allFiles.fileStatuses.fileStatus != null) {
+            int length =
+                cmd.maxLength < allFiles.fileStatuses.fileStatus.length
+                    ? cmd.maxLength
+                    : allFiles.fileStatuses.fileStatus.length;
             for (int index = 0; index < length; index++) {
               OneFileStatus fs = allFiles.fileStatuses.fileStatus[index];
               all = all + listOne(path, fs) + '\n';
@@ -271,8 +263,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
     final List<InterpreterCompletion> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
@@ -282,19 +274,16 @@ public class HDFSFileInterpreter extends FileInterpreter {
       return suggestions;
     }
 
-    //part of a command == no spaces
-    if (buf.split(" ").length == 1){
+    // part of a command == no spaces
+    if (buf.split(" ").length == 1) {
       if ("cd".contains(buf)) {
-        suggestions.add(new InterpreterCompletion("cd", "cd",
-                CompletionType.command.name()));
+        suggestions.add(new InterpreterCompletion("cd", "cd", CompletionType.command.name()));
       }
       if ("ls".contains(buf)) {
-        suggestions.add(new InterpreterCompletion("ls", "ls",
-                CompletionType.command.name()));
+        suggestions.add(new InterpreterCompletion("ls", "ls", CompletionType.command.name()));
       }
       if ("pwd".contains(buf)) {
-        suggestions.add(new InterpreterCompletion("pwd", "pwd",
-                CompletionType.command.name()));
+        suggestions.add(new InterpreterCompletion("pwd", "pwd", CompletionType.command.name()));
       }
 
       return suggestions;
@@ -302,35 +291,36 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
     // last word will contain the path we're working with.
     String lastToken = buf.substring(buf.lastIndexOf(" ") + 1);
-    if (lastToken.startsWith("-")) { //flag not path
+    if (lastToken.startsWith("-")) { // flag not path
       return null;
     }
 
-    String localPath = ""; //all things before the last '/'
-    String unfinished = lastToken; //unfished filenames or directories
+    String localPath = ""; // all things before the last '/'
+    String unfinished = lastToken; // unfished filenames or directories
     if (lastToken.contains("/")) {
       localPath = lastToken.substring(0, lastToken.lastIndexOf('/') + 1);
       unfinished = lastToken.substring(lastToken.lastIndexOf('/') + 1);
     }
-    String globalPath = getNewPath(localPath); //adjust for cwd
+    String globalPath = getNewPath(localPath); // adjust for cwd
 
-    if (isDirectory(globalPath)){
+    if (isDirectory(globalPath)) {
       try {
         String fileStatusString = listDir(globalPath);
         if (fileStatusString != null) {
           AllFileStatus allFiles = gson.fromJson(fileStatusString, AllFileStatus.class);
 
-          if (allFiles != null &&
-                  allFiles.fileStatuses != null &&
-                  allFiles.fileStatuses.fileStatus != null) {
+          if (allFiles != null
+              && allFiles.fileStatuses != null
+              && allFiles.fileStatuses.fileStatus != null) {
             for (OneFileStatus fs : allFiles.fileStatuses.fileStatus) {
               if (fs.pathSuffix.contains(unfinished)) {
-                //only suggest the text after the last .
+                // only suggest the text after the last .
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
-                //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
+                // beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.
                 String suggestedFinish = fs.pathSuffix.substring(beforeLastPeriod.length());
-                suggestions.add(new InterpreterCompletion(suggestedFinish, suggestedFinish,
-                    CompletionType.path.name()));
+                suggestions.add(
+                    new InterpreterCompletion(
+                        suggestedFinish, suggestedFinish, CompletionType.path.name()));
               }
             }
             return suggestions;
@@ -344,7 +334,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       logger.info("path is not a directory.  No values suggested.");
     }
 
-    //Error in string.
+    // Error in string.
     return null;
   }
 }

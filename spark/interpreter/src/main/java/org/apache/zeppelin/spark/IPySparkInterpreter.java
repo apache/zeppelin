@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.spark;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
@@ -27,13 +30,7 @@ import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
-
-/**
- * PySparkInterpreter which use IPython underlying.
- */
+/** PySparkInterpreter which use IPython underlying. */
 public class IPySparkInterpreter extends IPythonInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IPySparkInterpreter.class);
@@ -50,19 +47,19 @@ public class IPySparkInterpreter extends IPythonInterpreter {
         getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-    setProperty("zeppelin.py4j.useAuth",
-        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
+    setProperty(
+        "zeppelin.py4j.useAuth", sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
-    if (!conf.contains("spark.submit.deployMode") ||
-        !conf.get("spark.submit.deployMode").equals("cluster")) {
+    if (!conf.contains("spark.submit.deployMode")
+        || !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
     }
     setAddBulitinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
-    setProperty("zeppelin.py4j.useAuth",
-        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
+    setProperty(
+        "zeppelin.py4j.useAuth", sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 
@@ -87,7 +84,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     InterpreterContext.set(context);
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = Utils.buildJobDesc(context);
-    String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
+    String setJobGroupStmt = "sc.setJobGroup('" + jobGroupId + "', '" + jobDesc + "')";
     InterpreterResult result = super.interpret(setJobGroupStmt, context);
     if (result.code().equals(InterpreterResult.Code.ERROR)) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");

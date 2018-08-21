@@ -18,7 +18,6 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -50,9 +49,7 @@ public class NotebookRepoWithSettings {
     return this.equals(EMPTY);
   }
 
-  /**
-   * Simple builder :).
-   */
+  /** Simple builder :). */
   public static class Builder {
     private final String name;
     private String className = StringUtils.EMPTY;

@@ -17,6 +17,9 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -28,10 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
 
 public class RemoteAngularObjectTest extends AbstractInterpreterTest
     implements AngularObjectRegistryListener {
@@ -55,21 +54,24 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
 
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
     intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_ao");
-    localRegistry = (RemoteAngularObjectRegistry) intp.getInterpreterGroup().getAngularObjectRegistry();
+    localRegistry =
+        (RemoteAngularObjectRegistry) intp.getInterpreterGroup().getAngularObjectRegistry();
 
-    context = InterpreterContext.builder()
-        .setNoteId("note")
-        .setParagraphId("id")
-        .setAngularObjectRegistry(new AngularObjectRegistry(intp.getInterpreterGroup().getId(), null))
-        .setResourcePool(new LocalResourcePool("pool1"))
-        .build();
+    context =
+        InterpreterContext.builder()
+            .setNoteId("note")
+            .setParagraphId("id")
+            .setAngularObjectRegistry(
+                new AngularObjectRegistry(intp.getInterpreterGroup().getId(), null))
+            .setResourcePool(new LocalResourcePool("pool1"))
+            .build();
 
     intp.open();
-
   }
 
   @Test
-  public void testAngularObjectInterpreterSideCRUD() throws InterruptedException, InterpreterException {
+  public void testAngularObjectInterpreterSideCRUD()
+      throws InterruptedException, InterpreterException {
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
     String[] result = ret.message().get(0).getData().split(" ");
@@ -102,7 +104,8 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
   }
 
   @Test
-  public void testAngularObjectRemovalOnZeppelinServerSide() throws InterruptedException, InterpreterException {
+  public void testAngularObjectRemovalOnZeppelinServerSide()
+      throws InterruptedException, InterpreterException {
     // test if angularobject removal from server side propagate to interpreter process's registry.
     // will happen when notebook is removed.
 
@@ -127,7 +130,8 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
   }
 
   @Test
-  public void testAngularObjectAddOnZeppelinServerSide() throws InterruptedException, InterpreterException {
+  public void testAngularObjectAddOnZeppelinServerSide()
+      throws InterruptedException, InterpreterException {
     // test if angularobject add from server side propagate to interpreter process's registry.
     // will happen when zeppelin server loads notebook and restore the object into registry
 
@@ -160,5 +164,4 @@ public class RemoteAngularObjectTest extends AbstractInterpreterTest
   public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
     onRemove.incrementAndGet();
   }
-
 }

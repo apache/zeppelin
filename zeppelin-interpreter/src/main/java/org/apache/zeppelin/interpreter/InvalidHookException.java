@@ -15,12 +15,9 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.interpreter;
 
-/**
- * Exception for invalid hook
- */
+/** Exception for invalid hook */
 public class InvalidHookException extends Exception {
 
   public InvalidHookException(String message) {

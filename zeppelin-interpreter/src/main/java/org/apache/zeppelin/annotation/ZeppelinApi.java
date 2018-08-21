@@ -21,11 +21,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * APIs exposed to extends pluggable components or exposed to enduser
- */
+/** APIs exposed to extends pluggable components or exposed to enduser */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
-    ElementType.CONSTRUCTOR, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE})
-public @interface ZeppelinApi {
-}
+@Target({
+  ElementType.TYPE,
+  ElementType.FIELD,
+  ElementType.METHOD,
+  ElementType.PARAMETER,
+  ElementType.CONSTRUCTOR,
+  ElementType.LOCAL_VARIABLE,
+  ElementType.PACKAGE
+})
+public @interface ZeppelinApi {}

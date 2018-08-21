@@ -19,6 +19,15 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -35,10 +44,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
-import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -50,16 +59,6 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class RemoteInterpreterEventServer implements RemoteInterpreterEventService.Iface {
 
@@ -79,8 +78,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private final ApplicationEventListener appListener;
   private final Gson gson = new Gson();
 
-  public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
-                                      InterpreterSettingManager interpreterSettingManager) {
+  public RemoteInterpreterEventServer(
+      ZeppelinConfiguration zConf, InterpreterSettingManager interpreterSettingManager) {
     this.portRange = zConf.getZeppelinServerRPCPortRange();
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
@@ -100,32 +99,33 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     LOGGER.info("InterpreterEventServer will start. Port: {}", port);
     RemoteInterpreterEventService.Processor processor =
         new RemoteInterpreterEventService.Processor(this);
-    this.thriftServer = new TThreadPoolServer(
-        new TThreadPoolServer.Args(tSocket).processor(processor));
+    this.thriftServer =
+        new TThreadPoolServer(new TThreadPoolServer.Args(tSocket).processor(processor));
     this.thriftServer.serve();
   }
 
   public void start() throws IOException {
-    Thread startingThread = new Thread() {
-      @Override
-      public void run() {
-        TServerSocket tSocket = null;
-        try {
-          tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
-          port = tSocket.getServerSocket().getLocalPort();
-          host = RemoteInterpreterUtils.findAvailableHostAddress();
-        } catch (IOException e1) {
-          throw new RuntimeException(e1);
-        }
+    Thread startingThread =
+        new Thread() {
+          @Override
+          public void run() {
+            TServerSocket tSocket = null;
+            try {
+              tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
+              port = tSocket.getServerSocket().getLocalPort();
+              host = RemoteInterpreterUtils.findAvailableHostAddress();
+            } catch (IOException e1) {
+              throw new RuntimeException(e1);
+            }
 
-        LOGGER.info("InterpreterEventServer will start. Port: {}", port);
-        RemoteInterpreterEventService.Processor processor =
-            new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
-        thriftServer = new TThreadPoolServer(
-            new TThreadPoolServer.Args(tSocket).processor(processor));
-        thriftServer.serve();
-      }
-    };
+            LOGGER.info("InterpreterEventServer will start. Port: {}", port);
+            RemoteInterpreterEventService.Processor processor =
+                new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
+            thriftServer =
+                new TThreadPoolServer(new TThreadPoolServer.Args(tSocket).processor(processor));
+            thriftServer.serve();
+          }
+        };
     startingThread.start();
     long start = System.currentTimeMillis();
     while ((System.currentTimeMillis() - start) < 30 * 1000) {
@@ -145,8 +145,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     LOGGER.info("InterpreterEventServer is started");
 
     runner = new AppendOutputRunner(listener);
-    appendFuture = appendService.scheduleWithFixedDelay(
-        runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
+    appendFuture =
+        appendService.scheduleWithFixedDelay(
+            runner, 0, AppendOutputRunner.BUFFER_TIME_MS, TimeUnit.MILLISECONDS);
   }
 
   public void stop() {
@@ -157,7 +158,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       appendFuture.cancel(true);
     }
   }
-
 
   public int getPort() {
     return port;
@@ -178,8 +178,9 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     RemoteInterpreterProcess interpreterProcess =
         ((ManagedInterpreterGroup) interpreterGroup).getInterpreterProcess();
     if (interpreterProcess == null) {
-      LOGGER.warn("Interpreter process does not existed yet for InterpreterGroup: " +
-          registerInfo.getInterpreterGroupId());
+      LOGGER.warn(
+          "Interpreter process does not existed yet for InterpreterGroup: "
+              + registerInfo.getInterpreterGroupId());
     }
     ((RemoteInterpreterManagedProcess) interpreterProcess)
         .processStarted(registerInfo.port, registerInfo.host);
@@ -191,19 +192,32 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       runner.appendBuffer(
           event.getNoteId(), event.getParagraphId(), event.getIndex(), event.getData());
     } else {
-      appListener.onOutputAppend(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getAppId(), event.getData());
+      appListener.onOutputAppend(
+          event.getNoteId(),
+          event.getParagraphId(),
+          event.getIndex(),
+          event.getAppId(),
+          event.getData());
     }
   }
 
   @Override
   public void updateOutput(OutputUpdateEvent event) throws TException {
     if (event.getAppId() == null) {
-      listener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          InterpreterResult.Type.valueOf(event.getType()), event.getData());
+      listener.onOutputUpdated(
+          event.getNoteId(),
+          event.getParagraphId(),
+          event.getIndex(),
+          InterpreterResult.Type.valueOf(event.getType()),
+          event.getData());
     } else {
-      appListener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), event.getIndex(),
-          event.getAppId(), InterpreterResult.Type.valueOf(event.getType()), event.getData());
+      appListener.onOutputUpdated(
+          event.getNoteId(),
+          event.getParagraphId(),
+          event.getIndex(),
+          event.getAppId(),
+          InterpreterResult.Type.valueOf(event.getType()),
+          event.getData());
     }
   }
 
@@ -212,21 +226,30 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     listener.onOutputClear(event.getNoteId(), event.getParagraphId());
     for (int i = 0; i < event.getMsg().size(); i++) {
       RemoteInterpreterResultMessage msg = event.getMsg().get(i);
-      listener.onOutputUpdated(event.getNoteId(), event.getParagraphId(), i,
-          InterpreterResult.Type.valueOf(msg.getType()), msg.getData());
+      listener.onOutputUpdated(
+          event.getNoteId(),
+          event.getParagraphId(),
+          i,
+          InterpreterResult.Type.valueOf(msg.getType()),
+          msg.getData());
     }
   }
 
   @Override
   public void appendAppOutput(AppOutputAppendEvent event) throws TException {
-    appListener.onOutputAppend(event.noteId, event.paragraphId, event.index, event.appId,
-        event.data);
+    appListener.onOutputAppend(
+        event.noteId, event.paragraphId, event.index, event.appId, event.data);
   }
 
   @Override
   public void updateAppOutput(AppOutputUpdateEvent event) throws TException {
-    appListener.onOutputUpdated(event.noteId, event.paragraphId, event.index, event.appId,
-        InterpreterResult.Type.valueOf(event.type), event.data);
+    appListener.onOutputUpdated(
+        event.noteId,
+        event.paragraphId,
+        event.index,
+        event.appId,
+        InterpreterResult.Type.valueOf(event.type),
+        event.data);
   }
 
   @Override
@@ -237,11 +260,14 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void runParagraphs(RunParagraphsEvent event) throws TException {
     try {
-      listener.runParagraphs(event.getNoteId(), event.getParagraphIndices(),
-          event.getParagraphIds(), event.getCurParagraphId());
+      listener.runParagraphs(
+          event.getNoteId(),
+          event.getParagraphIndices(),
+          event.getParagraphIds(),
+          event.getCurParagraphId());
       if (InterpreterContext.get() != null) {
-        LOGGER.info("complete runParagraphs." + InterpreterContext.get().getParagraphId() + " "
-          + event);
+        LOGGER.info(
+            "complete runParagraphs." + InterpreterContext.get().getParagraphId() + " " + event);
       } else {
         LOGGER.info("complete runParagraphs." + event);
       }
@@ -258,8 +284,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (interpreterGroup == null) {
       throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
     }
-    interpreterGroup.getAngularObjectRegistry().add(angularObject.getName(),
-        angularObject.get(), angularObject.getNoteId(), angularObject.getParagraphId());
+    interpreterGroup
+        .getAngularObjectRegistry()
+        .add(
+            angularObject.getName(),
+            angularObject.get(),
+            angularObject.getNoteId(),
+            angularObject.getParagraphId());
   }
 
   @Override
@@ -270,22 +301,22 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (interpreterGroup == null) {
       throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
     }
-    AngularObject localAngularObject = interpreterGroup.getAngularObjectRegistry().get(
-        angularObject.getName(), angularObject.getNoteId(), angularObject.getParagraphId());
+    AngularObject localAngularObject =
+        interpreterGroup
+            .getAngularObjectRegistry()
+            .get(
+                angularObject.getName(), angularObject.getNoteId(), angularObject.getParagraphId());
     if (localAngularObject instanceof RemoteAngularObject) {
       // to avoid ping-pong loop
-      ((RemoteAngularObject) localAngularObject).set(
-          angularObject.get(), true, false);
+      ((RemoteAngularObject) localAngularObject).set(angularObject.get(), true, false);
     } else {
       localAngularObject.set(angularObject.get());
     }
   }
 
   @Override
-  public void removeAngularObject(String intpGroupId,
-                                  String noteId,
-                                  String paragraphId,
-                                  String name) throws TException {
+  public void removeAngularObject(
+      String intpGroupId, String noteId, String paragraphId, String name) throws TException {
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
     if (interpreterGroup == null) {
@@ -302,13 +333,11 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
     }
 
-    Map<String, String> paraInfos = gson.fromJson(json,
-        new TypeToken<Map<String, String>>() {
-        }.getType());
+    Map<String, String> paraInfos =
+        gson.fromJson(json, new TypeToken<Map<String, String>>() {}.getType());
     String noteId = paraInfos.get("noteId");
     String paraId = paraInfos.get("paraId");
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
+    String settingId = RemoteInterpreterUtils.getInterpreterSettingId(interpreterGroup.getId());
     if (noteId != null && paraId != null && settingId != null) {
       listener.onParaInfosReceived(noteId, paraId, settingId, paraInfos);
     }
@@ -359,8 +388,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     return obj;
   }
 
-  private Object invokeResourceMethod(String intpGroupId,
-                                      final InvokeResourceMethodEventMessage message) {
+  private Object invokeResourceMethod(
+      String intpGroupId, final InvokeResourceMethodEventMessage message) {
     final ResourceId resourceId = message.resourceId;
     ManagedInterpreterGroup intpGroup =
         interpreterSettingManager.getInterpreterGroupById(resourceId.getResourcePoolId());
@@ -393,21 +422,26 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.error("no resource pool");
         return null;
       }
-    } else if (interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-        .getInterpreterProcess().isRunning()) {
-      ByteBuffer res = interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-          .getInterpreterProcess().callRemoteFunction(
-          new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
-            @Override
-            public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
-              return client.resourceInvokeMethod(
-                  resourceId.getNoteId(),
-                  resourceId.getParagraphId(),
-                  resourceId.getName(),
-                  message.toJson());
-            }
-          }
-      );
+    } else if (interpreterSettingManager
+        .getInterpreterGroupById(intpGroupId)
+        .getInterpreterProcess()
+        .isRunning()) {
+      ByteBuffer res =
+          interpreterSettingManager
+              .getInterpreterGroupById(intpGroupId)
+              .getInterpreterProcess()
+              .callRemoteFunction(
+                  new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
+                    @Override
+                    public ByteBuffer call(RemoteInterpreterService.Client client)
+                        throws Exception {
+                      return client.resourceInvokeMethod(
+                          resourceId.getNoteId(),
+                          resourceId.getParagraphId(),
+                          resourceId.getName(),
+                          message.toJson());
+                    }
+                  });
 
       try {
         return Resource.deserializeObject(res);
@@ -420,23 +454,21 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   private Object getResource(final ResourceId resourceId) {
-    ManagedInterpreterGroup intpGroup = interpreterSettingManager
-        .getInterpreterGroupById(resourceId.getResourcePoolId());
+    ManagedInterpreterGroup intpGroup =
+        interpreterSettingManager.getInterpreterGroupById(resourceId.getResourcePoolId());
     if (intpGroup == null) {
       return null;
     }
     RemoteInterpreterProcess remoteInterpreterProcess = intpGroup.getRemoteInterpreterProcess();
-    ByteBuffer buffer = remoteInterpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
-          @Override
-          public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
-            return  client.resourceGet(
-                resourceId.getNoteId(),
-                resourceId.getParagraphId(),
-                resourceId.getName());
-          }
-        }
-    );
+    ByteBuffer buffer =
+        remoteInterpreterProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
+              @Override
+              public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
+                return client.resourceGet(
+                    resourceId.getNoteId(), resourceId.getParagraphId(), resourceId.getName());
+              }
+            });
 
     try {
       Object o = Resource.deserializeObject(buffer);
@@ -461,14 +493,15 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            }
-        );
+        List<String> resourceList =
+            remoteInterpreterProcess.callRemoteFunction(
+                new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
+                  @Override
+                  public List<String> call(RemoteInterpreterService.Client client)
+                      throws Exception {
+                    return client.resourcePoolGetAll();
+                  }
+                });
         for (String res : resourceList) {
           resourceSet.add(RemoteResource.fromJson(res));
         }

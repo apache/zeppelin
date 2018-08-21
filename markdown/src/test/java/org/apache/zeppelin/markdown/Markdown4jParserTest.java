@@ -19,13 +19,11 @@ package org.apache.zeppelin.markdown;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Properties;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Properties;
-
-import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class Markdown4jParserTest {
   Markdown md;

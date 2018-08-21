@@ -20,12 +20,9 @@ import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-
 import org.apache.zeppelin.utils.ExceptionUtils;
 
-/**
- * UnauthorizedException handler for WebApplicationException.
- */
+/** UnauthorizedException handler for WebApplicationException. */
 public class ForbiddenException extends WebApplicationException {
   private static Response forbiddenJson(String message) {
     return ExceptionUtils.jsonResponseContent(FORBIDDEN, message);

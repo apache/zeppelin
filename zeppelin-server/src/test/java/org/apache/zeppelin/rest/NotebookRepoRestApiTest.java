@@ -23,10 +23,13 @@ import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -34,15 +37,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.zeppelin.user.AuthenticationInfo;
-
-/**
- * NotebookRepo rest api test.
- */
+/** NotebookRepo rest api test. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -57,27 +52,28 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
   public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
-  
+
   @Before
   public void setUp() {
     anonymous = new AuthenticationInfo("anonymous");
   }
-  
+
   private List<Map<String, Object>> getListOfReposotiry() throws IOException {
     GetMethod get = httpGet("/notebook-repositories");
-    Map<String, Object> responce = gson.fromJson(get.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> responce =
+        gson.fromJson(
+            get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     get.releaseConnection();
     return (List<Map<String, Object>>) responce.get("body");
   }
-  
+
   private void updateNotebookRepoWithNewSetting(String payload) throws IOException {
     PutMethod put = httpPut("/notebook-repositories", payload);
     int status = put.getStatusCode();
     put.releaseConnection();
     assertThat(status, is(200));
   }
-  
+
   @Test
   public void thatCanGetNotebookRepositoiesSettings() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -89,9 +85,9 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     GetMethod get = httpGet("/notebook-repositories/reload");
     int status = get.getStatusCode();
     get.releaseConnection();
-    assertThat(status, is(200)); 
+    assertThat(status, is(200));
   }
-  
+
   @Test
   public void setNewDirectoryForLocalDirectory() throws IOException {
     List<Map<String, Object>> listOfRepositories = getListOfReposotiry();
@@ -101,8 +97,10 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
     for (int i = 0; i < listOfRepositories.size(); i++) {
       if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
         localVfs =
-                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
-                        .get(0).get("selected");
+            (String)
+                ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
+                    .get(0)
+                    .get("selected");
         className = (String) listOfRepositories.get(i).get("className");
         break;
       }
@@ -113,26 +111,35 @@ public class NotebookRepoRestApiTest extends AbstractTestRestApi {
       return;
     }
 
-    String payload = "{ \"name\": \"" + className + "\", \"settings\" : " +
-            "{ \"Notebook Path\" : \"/tmp/newDir\" } }";
+    String payload =
+        "{ \"name\": \""
+            + className
+            + "\", \"settings\" : "
+            + "{ \"Notebook Path\" : \"/tmp/newDir\" } }";
     updateNotebookRepoWithNewSetting(payload);
-    
+
     // Verify
     listOfRepositories = getListOfReposotiry();
     String updatedPath = StringUtils.EMPTY;
     for (int i = 0; i < listOfRepositories.size(); i++) {
       if (listOfRepositories.get(i).get("name").equals("VFSNotebookRepo")) {
         updatedPath =
-                (String) ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
-                        .get(0).get("selected");
+            (String)
+                ((List<Map<String, Object>>) listOfRepositories.get(i).get("settings"))
+                    .get(0)
+                    .get("selected");
         break;
       }
     }
     assertThat(updatedPath, anyOf(is("/tmp/newDir"), is("/tmp/newDir/")));
-    
+
     // go back to normal
-    payload = "{ \"name\": \"" + className + "\", \"settings\" : { \"Notebook Path\" : \"" +
-            localVfs + "\" } }";
+    payload =
+        "{ \"name\": \""
+            + className
+            + "\", \"settings\" : { \"Notebook Path\" : \""
+            + localVfs
+            + "\" } }";
     updateNotebookRepoWithNewSetting(payload);
   }
 }

@@ -16,20 +16,16 @@
  */
 package org.apache.zeppelin.sap.universe;
 
+import java.util.*;
 import jline.console.completer.Completer;
 import jline.internal.Preconditions;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
-
-/**
- * Case-insensitive completer.
- */
+/** Case-insensitive completer. */
 public class UniverseNodeInfoCompleter implements Completer {
   private final UniverseInfoTreeNode tree = new UniverseInfoTreeNode();
 
-  public UniverseNodeInfoCompleter() {
-  }
+  public UniverseNodeInfoCompleter() {}
 
   public UniverseNodeInfoCompleter(final Collection<UniverseNodeInfo> nodes) {
     Preconditions.checkNotNull(nodes);
@@ -56,8 +52,8 @@ public class UniverseNodeInfoCompleter implements Completer {
     return completeCollection(buffer, cursor, candidates);
   }
 
-  private int completeCollection(final String buffer, final int cursor,
-      final Collection candidates) {
+  private int completeCollection(
+      final String buffer, final int cursor, final Collection candidates) {
     Preconditions.checkNotNull(candidates);
     if (buffer == null) {
       candidates.addAll(tree.getNodesInfo());

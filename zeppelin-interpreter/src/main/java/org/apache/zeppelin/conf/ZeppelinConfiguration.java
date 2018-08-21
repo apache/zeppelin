@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -33,10 +32,7 @@ import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Zeppelin configuration.
- *
- */
+/** Zeppelin configuration. */
 public class ZeppelinConfiguration extends XMLConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
   private static final long serialVersionUID = 4749305895693848035L;
@@ -68,7 +64,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
-
   public ZeppelinConfiguration() {
     ConfVars[] vars = ConfVars.values();
     for (ConfVars v : vars) {
@@ -86,13 +81,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         throw new RuntimeException("Unsupported VarType");
       }
     }
-
   }
 
-
   /**
-   * Load from resource.
-   *url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
+   * Load from resource. url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
+   *
    * @throws ConfigurationException
    */
   public static synchronized ZeppelinConfiguration create() {
@@ -138,7 +131,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     return conf;
   }
-
 
   private String getStringValue(String name, String d) {
     String value = this.properties.get(name);
@@ -287,10 +279,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
-      return getRelativeDir(
-          String.format("%s/%s",
-              getConfDir(),
-              path));
+      return getRelativeDir(String.format("%s/%s", getConfDir(), path));
     }
   }
 
@@ -319,10 +308,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     if (path != null && path.startsWith("/") || isWindowsPath(path)) {
       return path;
     } else {
-      return getRelativeDir(
-          String.format("%s/%s",
-              getConfDir(),
-              path));
+      return getRelativeDir(String.format("%s/%s", getConfDir(), path));
     }
   }
 
@@ -365,8 +351,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public boolean isRecoveryEnabled() {
-    return !getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS).equals(
-        "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
+    return !getString(ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS)
+        .equals("org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage");
   }
 
   public String getGCSStorageDir() {
@@ -514,7 +500,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_RPC_PORTRANGE);
   }
 
-  public boolean isWindowsPath(String path){
+  public boolean isWindowsPath(String path) {
     return path.matches("^[A-Za-z]:\\\\.*");
   }
 
@@ -537,12 +523,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getConfigFSDir() {
     String fsConfigDir = getString(ConfVars.ZEPPELIN_CONFIG_FS_DIR);
     if (StringUtils.isBlank(fsConfigDir)) {
-      LOG.warn(ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName + " is not specified, fall back to local " +
-          "conf directory " + ConfVars.ZEPPELIN_CONF_DIR.varName);
+      LOG.warn(
+          ConfVars.ZEPPELIN_CONFIG_FS_DIR.varName
+              + " is not specified, fall back to local "
+              + "conf directory "
+              + ConfVars.ZEPPELIN_CONF_DIR.varName);
       return getConfDir();
     }
     if (getString(ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS)
-                .equals("org.apache.zeppelin.storage.LocalConfigStorage")) {
+        .equals("org.apache.zeppelin.storage.LocalConfigStorage")) {
       // only apply getRelativeDir when it is LocalConfigStorage
       return getRelativeDir(fsConfigDir);
     } else {
@@ -550,8 +539,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
-  public List<String> getAllowedOrigins()
-  {
+  public List<String> getAllowedOrigins() {
     if (getString(ConfVars.ZEPPELIN_ALLOWED_ORIGINS).isEmpty()) {
       return Arrays.asList(new String[0]);
     }
@@ -575,7 +563,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SERVER_AUTHORIZATION_HEADER_CLEAR);
   }
 
-
   public String getXFrameOptions() {
     return getString(ConfVars.ZEPPELIN_SERVER_XFRAME_OPTIONS);
   }
@@ -593,15 +580,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getZeppelinNotebookGitURL() {
-    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL);
   }
 
   public String getZeppelinNotebookGitUsername() {
-    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME);
   }
 
   public String getZeppelinNotebookGitAccessToken() {
-    return  getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN);
   }
 
   public String getZeppelinNotebookGitRemoteOrigin() {
@@ -671,9 +658,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return properties;
   }
 
-  /**
-   * Wrapper class.
-   */
+  /** Wrapper class. */
   public enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "./"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
@@ -695,8 +680,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
-    ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
-        "http://repo1.maven.org/maven2/"),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO(
+        "zeppelin.interpreter.dep.mvnRepo", "http://repo1.maven.org/maven2/"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 60000),
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),
@@ -704,7 +689,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
-    ZEPPELIN_RECOVERY_STORAGE_CLASS("zeppelin.recovery.storage.class",
+    ZEPPELIN_RECOVERY_STORAGE_CLASS(
+        "zeppelin.recovery.storage.class",
         "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage"),
     ZEPPELIN_PLUGINS_DIR("zeppelin.plugins.dir", "plugins"),
 
@@ -729,28 +715,31 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_MONGO_COLLECTION("zeppelin.notebook.mongo.collection", "notes"),
     ZEPPELIN_NOTEBOOK_MONGO_URI("zeppelin.notebook.mongo.uri", "mongodb://localhost"),
     ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT("zeppelin.notebook.mongo.autoimport", false),
-    ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage",
-        "org.apache.zeppelin.notebook.repo.GitNotebookRepo"),
+    ZEPPELIN_NOTEBOOK_STORAGE(
+        "zeppelin.notebook.storage", "org.apache.zeppelin.notebook.repo.GitNotebookRepo"),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
-    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",
-        System.getProperty("os.name")
-                .startsWith("Windows") ? "bin/interpreter.cmd" : "bin/interpreter.sh"),
+    ZEPPELIN_INTERPRETER_REMOTE_RUNNER(
+        "zeppelin.interpreter.remoterunner",
+        System.getProperty("os.name").startsWith("Windows")
+            ? "bin/interpreter.cmd"
+            : "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     ZEPPELIN_CONFIG_FS_DIR("zeppelin.config.fs.dir", ""),
-    ZEPPELIN_CONFIG_STORAGE_CLASS("zeppelin.config.storage.class",
-        "org.apache.zeppelin.storage.LocalConfigStorage"),
+    ZEPPELIN_CONFIG_STORAGE_CLASS(
+        "zeppelin.config.storage.class", "org.apache.zeppelin.storage.LocalConfigStorage"),
     ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     ZEPPELIN_HELIUM_REGISTRY("zeppelin.helium.registry", "helium," + HELIUM_PACKAGE_DEFAULT_URL),
-    ZEPPELIN_HELIUM_NODE_INSTALLER_URL("zeppelin.helium.node.installer.url",
-            "https://nodejs.org/dist/"),
-    ZEPPELIN_HELIUM_NPM_INSTALLER_URL("zeppelin.helium.npm.installer.url",
-            "http://registry.npmjs.org/"),
-    ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL("zeppelin.helium.yarnpkg.installer.url",
-            "https://github.com/yarnpkg/yarn/releases/download/"),
+    ZEPPELIN_HELIUM_NODE_INSTALLER_URL(
+        "zeppelin.helium.node.installer.url", "https://nodejs.org/dist/"),
+    ZEPPELIN_HELIUM_NPM_INSTALLER_URL(
+        "zeppelin.helium.npm.installer.url", "http://registry.npmjs.org/"),
+    ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL(
+        "zeppelin.helium.yarnpkg.installer.url",
+        "https://github.com/yarnpkg/yarn/releases/download/"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
@@ -773,7 +762,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
 
-    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
+    ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS(
+        "zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(
         "zeppelin.interpreter.lifecyclemanager.timeout.checkinterval", 6000L),
@@ -786,8 +776,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ACCESS_TOKEN("zeppelin.notebook.git.remote.access-token", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_ORIGIN("zeppelin.notebook.git.remote.origin", "origin"),
-    ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE("zeppelin.notebook.collaborative.mode.enable",
-            true),
+    ZEPPELIN_NOTEBOOK_COLLABORATIVE_MODE_ENABLE(
+        "zeppelin.notebook.collaborative.mode.enable", true),
     ZEPPELIN_NOTEBOOK_CRON_ENABLE("zeppelin.notebook.cron.enable", false),
     ZEPPELIN_NOTEBOOK_CRON_FOLDERS("zeppelin.notebook.cron.folders", null),
     ZEPPELIN_PROXY_URL("zeppelin.proxy.url", null),
@@ -797,15 +787,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SEARCH_TEMP_PATH("zeppelin.search.temp.path", System.getProperty("java.io.tmpdir"));
 
     private String varName;
+
     @SuppressWarnings("rawtypes")
     private Class varClass;
+
     private String stringValue;
     private VarType type;
     private int intValue;
     private float floatValue;
     private boolean booleanValue;
     private long longValue;
-
 
     ConfVars(String varName, String varValue) {
       this.varName = varName;

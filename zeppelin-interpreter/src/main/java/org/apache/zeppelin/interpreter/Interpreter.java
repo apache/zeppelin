@@ -17,7 +17,15 @@
 
 package org.apache.zeppelin.interpreter;
 
-
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
@@ -30,46 +38,32 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Interface for interpreters.
- * If you want to implement new Zeppelin interpreter, extend this class
+ * Interface for interpreters. If you want to implement new Zeppelin interpreter, extend this class
  *
- * Please see,
+ * <p>Please see,
  * https://zeppelin.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
- * open(), close(), interpret() is three the most important method you need to implement.
- * cancel(), getProgress(), completion() is good to have
- * getFormType(), getScheduler() determine Zeppelin's behavior
+ * <p>open(), close(), interpret() is three the most important method you need to implement.
+ * cancel(), getProgress(), completion() is good to have getFormType(), getScheduler() determine
+ * Zeppelin's behavior
  */
 public abstract class Interpreter {
 
   /**
-   * Opens interpreter. You may want to place your initialize routine here.
-   * open() is called only once
+   * Opens interpreter. You may want to place your initialize routine here. open() is called only
+   * once
    */
   @ZeppelinApi
   public abstract void open() throws InterpreterException;
 
   /**
-   * Closes interpreter. You may want to free your resources up here.
-   * close() is called only once
+   * Closes interpreter. You may want to free your resources up here. close() is called only once
    */
   @ZeppelinApi
   public abstract void close() throws InterpreterException;
 
-  /**
-   * Run precode if exists.
-   */
+  /** Run precode if exists. */
   @ZeppelinApi
   public InterpreterResult executePrecode(InterpreterContext interpreterContext)
       throws InterpreterException {
@@ -93,10 +87,8 @@ public abstract class Interpreter {
         // substitute {variable} only if 'variable' has a value ...
         Resource resource = resourcePool.get(varPat.substring(1, varPat.length() - 1));
         Object variableValue = resource == null ? null : resource.get();
-        if (variableValue != null)
-          sb.append(variableValue);
-        else
-          return cmd;
+        if (variableValue != null) sb.append(variableValue);
+        else return cmd;
       } else if (varPat.matches("[{]{2}[^{}]+[}]{2}")) {
         // escape {{text}} ...
         sb.append("{").append(varPat.substring(2, varPat.length() - 2)).append("}");
@@ -116,22 +108,18 @@ public abstract class Interpreter {
    * @param st statements to run
    */
   @ZeppelinApi
-  public abstract InterpreterResult interpret(String st,
-                                              InterpreterContext context)
+  public abstract InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException;
 
-  /**
-   * Optionally implement the canceling routine to abort interpret() method
-   */
+  /** Optionally implement the canceling routine to abort interpret() method */
   @ZeppelinApi
   public abstract void cancel(InterpreterContext context) throws InterpreterException;
 
   /**
-   * Dynamic form handling
-   * see http://zeppelin.apache.org/docs/dynamicform.html
+   * Dynamic form handling see http://zeppelin.apache.org/docs/dynamicform.html
    *
    * @return FormType.SIMPLE enables simple pattern replacement (eg. Hello ${name=world}),
-   * FormType.NATIVE handles form in API
+   *     FormType.NATIVE handles form in API
    */
   @ZeppelinApi
   public abstract FormType getFormType() throws InterpreterException;
@@ -145,8 +133,8 @@ public abstract class Interpreter {
   public abstract int getProgress(InterpreterContext context) throws InterpreterException;
 
   /**
-   * Get completion list based on cursor position.
-   * By implementing this method, it enables auto-completion.
+   * Get completion list based on cursor position. By implementing this method, it enables
+   * auto-completion.
    *
    * @param buf statements
    * @param cursor cursor position in statements
@@ -154,22 +142,22 @@ public abstract class Interpreter {
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
   @ZeppelinApi
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
     return null;
   }
 
   /**
-   * Interpreter can implements it's own scheduler by overriding this method.
-   * There're two default scheduler provided, FIFO, Parallel.
-   * If your interpret() can handle concurrent request, use Parallel or use FIFO.
+   * Interpreter can implements it's own scheduler by overriding this method. There're two default
+   * scheduler provided, FIFO, Parallel. If your interpret() can handle concurrent request, use
+   * Parallel or use FIFO.
    *
-   * You can get default scheduler by using
+   * <p>You can get default scheduler by using
    * SchedulerFactory.singleton().createOrGetFIFOScheduler()
    * SchedulerFactory.singleton().createOrGetParallelScheduler()
    *
    * @return return scheduler instance. This method can be called multiple times and have to return
-   * the same instance. Can not return null.
+   *     the same instance. Can not return null.
    */
   @ZeppelinApi
   public Scheduler getScheduler() {
@@ -366,51 +354,62 @@ public abstract class Interpreter {
   }
 
   /**
-   * Replace markers #{contextFieldName} by values from {@link InterpreterContext} fields
-   * with same name and marker #{user}. If value == null then replace by empty string.
+   * Replace markers #{contextFieldName} by values from {@link InterpreterContext} fields with same
+   * name and marker #{user}. If value == null then replace by empty string.
    */
   private void replaceContextParameters(Properties properties) {
     InterpreterContext interpreterContext = InterpreterContext.get();
     if (interpreterContext != null) {
       String markerTemplate = "#\\{%s\\}";
       List<String> skipFields = Arrays.asList("paragraphTitle", "paragraphId", "paragraphText");
-      List typesToProcess = Arrays.asList(String.class, Double.class, Float.class, Short.class,
-          Byte.class, Character.class, Boolean.class, Integer.class, Long.class);
+      List typesToProcess =
+          Arrays.asList(
+              String.class,
+              Double.class,
+              Float.class,
+              Short.class,
+              Byte.class,
+              Character.class,
+              Boolean.class,
+              Integer.class,
+              Long.class);
       for (String key : properties.stringPropertyNames()) {
         String p = properties.getProperty(key);
         if (StringUtils.isNotEmpty(p)) {
           for (Field field : InterpreterContext.class.getDeclaredFields()) {
             Class clazz = field.getType();
-            if (!skipFields.contains(field.getName()) && (typesToProcess.contains(clazz)
-                || clazz.isPrimitive())) {
+            if (!skipFields.contains(field.getName())
+                && (typesToProcess.contains(clazz) || clazz.isPrimitive())) {
               Object value = null;
               try {
                 value = FieldUtils.readField(field, interpreterContext, true);
               } catch (Exception e) {
                 logger.error("Cannot read value of field {0}", field.getName());
               }
-              p = p.replaceAll(String.format(markerTemplate, field.getName()),
-                  value != null ? value.toString() : StringUtils.EMPTY);
+              p =
+                  p.replaceAll(
+                      String.format(markerTemplate, field.getName()),
+                      value != null ? value.toString() : StringUtils.EMPTY);
             }
           }
-          p = p.replaceAll(String.format(markerTemplate, "user"),
-              StringUtils.defaultString(userName, StringUtils.EMPTY));
+          p =
+              p.replaceAll(
+                  String.format(markerTemplate, "user"),
+                  StringUtils.defaultString(userName, StringUtils.EMPTY));
           properties.setProperty(key, p);
         }
       }
     }
   }
 
-  /**
-   * Type of interpreter.
-   */
+  /** Type of interpreter. */
   public enum FormType {
-    NATIVE, SIMPLE, NONE
+    NATIVE,
+    SIMPLE,
+    NONE
   }
 
-  /**
-   * Represent registered interpreter class
-   */
+  /** Represent registered interpreter class */
   public static class RegisteredInterpreter {
 
     private String group;
@@ -423,13 +422,20 @@ public abstract class Interpreter {
     private InterpreterOption option;
     private InterpreterRunner runner;
 
-    public RegisteredInterpreter(String name, String group, String className,
+    public RegisteredInterpreter(
+        String name,
+        String group,
+        String className,
         Map<String, DefaultInterpreterProperty> properties) {
       this(name, group, className, false, properties);
     }
 
-    public RegisteredInterpreter(String name, String group, String className,
-        boolean defaultInterpreter, Map<String, DefaultInterpreterProperty> properties) {
+    public RegisteredInterpreter(
+        String name,
+        String group,
+        String className,
+        boolean defaultInterpreter,
+        Map<String, DefaultInterpreterProperty> properties) {
       super();
       this.name = name;
       this.group = group;
@@ -488,11 +494,9 @@ public abstract class Interpreter {
     }
   }
 
-  /**
-   * Type of Scheduling.
-   */
+  /** Type of Scheduling. */
   public enum SchedulingMode {
-    FIFO, PARALLEL
+    FIFO,
+    PARALLEL
   }
-
 }

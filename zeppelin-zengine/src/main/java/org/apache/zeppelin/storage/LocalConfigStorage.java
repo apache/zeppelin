@@ -17,6 +17,15 @@
 
 package org.apache.zeppelin.storage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
@@ -24,19 +33,7 @@ import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.FileSystems;
-import java.nio.file.FileSystem;
-import java.nio.file.StandardCopyOption;
-
-/**
- * Storing config in local file system
- */
+/** Storing config in local file system */
 public class LocalConfigStorage extends ConfigStorage {
 
   private static Logger LOGGER = LoggerFactory.getLogger(LocalConfigStorage.class);
@@ -131,5 +128,4 @@ public class LocalConfigStorage extends ConfigStorage {
       throw iox;
     }
   }
-
 }

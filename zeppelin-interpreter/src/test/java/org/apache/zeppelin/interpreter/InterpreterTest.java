@@ -17,13 +17,12 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.junit.Test;
-
-import java.util.Properties;
-
 import static org.junit.Assert.assertEquals;
 
-//TODO(zjffdu) add more test for Interpreter which is a very important class
+import java.util.Properties;
+import org.junit.Test;
+
+// TODO(zjffdu) add more test for Interpreter which is a very important class
 public class InterpreterTest {
 
   @Test
@@ -67,20 +66,22 @@ public class InterpreterTest {
             .build());
 
     Properties p = new Properties();
-    p.put("p1", "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, " +
-        "#{replName}, #{noteId}, #{user}," +
-        " #{authenticationInfo}");
+    p.put(
+        "p1",
+        "replName #{noteId}, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, "
+            + "#{replName}, #{noteId}, #{user},"
+            + " #{authenticationInfo}");
     Interpreter intp = new DummyInterpreter(p);
     intp.setUserName(user);
     String actual = intp.getProperty("p1");
     InterpreterContext.remove();
 
     assertEquals(
-        String.format("replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , " +
-                "%s, %s, #{authenticationInfo}", noteId,
-            noteId, user),
-        actual
-    );
+        String.format(
+            "replName %s, #{paragraphTitle}, #{paragraphId}, #{paragraphText}, , "
+                + "%s, %s, #{authenticationInfo}",
+            noteId, noteId, user),
+        actual);
   }
 
   public static class DummyInterpreter extends Interpreter {
@@ -90,14 +91,10 @@ public class InterpreterTest {
     }
 
     @Override
-    public void open() {
-
-    }
+    public void open() {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
     public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -105,9 +102,7 @@ public class InterpreterTest {
     }
 
     @Override
-    public void cancel(InterpreterContext context) {
-
-    }
+    public void cancel(InterpreterContext context) {}
 
     @Override
     public FormType getFormType() {
@@ -119,5 +114,4 @@ public class InterpreterTest {
       return 0;
     }
   }
-
 }

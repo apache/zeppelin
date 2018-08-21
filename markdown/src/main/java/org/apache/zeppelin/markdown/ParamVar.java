@@ -17,10 +17,9 @@
 
 package org.apache.zeppelin.markdown;
 
-import org.parboiled.support.Var;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.parboiled.support.Var;
 
 /**
  * Implementation of Var to support parameter parsing.

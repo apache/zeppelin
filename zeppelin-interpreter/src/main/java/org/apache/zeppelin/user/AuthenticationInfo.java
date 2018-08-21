@@ -15,23 +15,17 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.user;
 
-
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
-/***
- *
- */
+/** * */
 public class AuthenticationInfo implements JsonSerializable {
   private static final Logger LOG = LoggerFactory.getLogger(AuthenticationInfo.class);
   private static final Gson gson = new Gson();
@@ -40,8 +34,8 @@ public class AuthenticationInfo implements JsonSerializable {
   List<String> roles;
   String ticket;
   UserCredentials userCredentials;
-  public static final AuthenticationInfo ANONYMOUS = new AuthenticationInfo("anonymous", null,
-      "anonymous");
+  public static final AuthenticationInfo ANONYMOUS =
+      new AuthenticationInfo("anonymous", null, "anonymous");
 
   public AuthenticationInfo() {}
 
@@ -49,7 +43,8 @@ public class AuthenticationInfo implements JsonSerializable {
     this.user = user;
   }
 
-  /***
+  /**
+   * *
    *
    * @param user
    * @param ticket
@@ -110,15 +105,17 @@ public class AuthenticationInfo implements JsonSerializable {
 
   public static boolean isAnonymous(AuthenticationInfo subject) {
     if (subject == null) {
-      LOG.warn("Subject is null, assuming anonymous. "
-          + "Not recommended to use subject as null except in tests");
+      LOG.warn(
+          "Subject is null, assuming anonymous. "
+              + "Not recommended to use subject as null except in tests");
       return true;
     }
     return subject.isAnonymous();
   }
 
   public boolean isAnonymous() {
-    return ANONYMOUS.equals(this) || "anonymous".equalsIgnoreCase(this.getUser())
+    return ANONYMOUS.equals(this)
+        || "anonymous".equalsIgnoreCase(this.getUser())
         || StringUtils.isEmpty(this.getUser());
   }
 

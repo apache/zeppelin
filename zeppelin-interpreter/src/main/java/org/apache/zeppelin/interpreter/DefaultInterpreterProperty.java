@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
-/**
- * Property for registered interpreter
- */
+/** Property for registered interpreter */
 public class DefaultInterpreterProperty {
   private String envName;
   private String propertyName;
@@ -27,8 +25,8 @@ public class DefaultInterpreterProperty {
   private String description;
   private String type;
 
-  public DefaultInterpreterProperty(String envName, String propertyName, Object defaultValue,
-                                String description, String type) {
+  public DefaultInterpreterProperty(
+      String envName, String propertyName, Object defaultValue, String description, String type) {
     this.envName = envName;
     this.propertyName = propertyName;
     this.defaultValue = defaultValue;
@@ -48,9 +46,13 @@ public class DefaultInterpreterProperty {
     this(envName, propertyName, defaultValue, null, InterpreterPropertyType.TEXTAREA.getValue());
   }
 
-  public DefaultInterpreterProperty(String envName, String propertyName, String defaultValue,
-      String description) {
-    this(envName, propertyName, defaultValue, description,
+  public DefaultInterpreterProperty(
+      String envName, String propertyName, String defaultValue, String description) {
+    this(
+        envName,
+        propertyName,
+        defaultValue,
+        description,
         InterpreterPropertyType.TEXTAREA.getValue());
   }
 
@@ -122,7 +124,8 @@ public class DefaultInterpreterProperty {
 
   @Override
   public String toString() {
-    return String.format("{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " +
-            "type=%s}", envName, propertyName, defaultValue, description, type);
+    return String.format(
+        "{envName=%s, propertyName=%s, defaultValue=%s, description=%20s, " + "type=%s}",
+        envName, propertyName, defaultValue, description, type);
   }
 }

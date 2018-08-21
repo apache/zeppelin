@@ -16,9 +16,7 @@
  */
 package org.apache.zeppelin.notebook;
 
-/**
- * Folder listener used by FolderView
- */
+/** Folder listener used by FolderView */
 public interface FolderListener {
   void onFolderRenamed(Folder folder, String oldFolderId);
 }

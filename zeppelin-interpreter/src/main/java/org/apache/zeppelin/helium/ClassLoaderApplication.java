@@ -18,12 +18,11 @@ package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.resource.ResourceSet;
 
-/**
- * Application wrapper
- */
+/** Application wrapper */
 public class ClassLoaderApplication extends Application {
   Application app;
   ClassLoader cl;
+
   public ClassLoaderApplication(Application app, ClassLoader cl) throws ApplicationException {
     super(app.context());
     this.app = app;

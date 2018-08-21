@@ -17,10 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
+import java.util.List;
+import java.util.Properties;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -28,12 +29,9 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Properties;
-
 /**
- * It is the Wrapper of OldSparkInterpreter & NewSparkInterpreter.
- * Property zeppelin.spark.useNew control which one to use.
+ * It is the Wrapper of OldSparkInterpreter & NewSparkInterpreter. Property zeppelin.spark.useNew
+ * control which one to use.
  */
 public class SparkInterpreter extends AbstractSparkInterpreter {
 
@@ -41,7 +39,6 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
 
   // either OldSparkInterpreter or NewSparkInterpreter
   private AbstractSparkInterpreter delegation;
-
 
   public SparkInterpreter(Properties properties) {
     super(properties);
@@ -79,10 +76,8 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf,
-                                                int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
     return delegation.completion(buf, cursor, interpreterContext);
   }
 
@@ -99,7 +94,6 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   public AbstractSparkInterpreter getDelegation() {
     return delegation;
   }
-
 
   @Override
   public SparkContext getSparkContext() {

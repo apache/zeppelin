@@ -16,16 +16,15 @@
  */
 package org.apache.zeppelin.tabledata;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.util.Iterator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Iterator;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class TableDataProxyTest {
   private LocalResourcePool pool;
@@ -37,9 +36,9 @@ public class TableDataProxyTest {
 
   @Test
   public void testProxyTable() {
-    InterpreterResultMessage msg = new InterpreterResultMessage(
-        InterpreterResult.Type.TABLE,
-        "key\tvalue\nsun\t100\nmoon\t200\n");
+    InterpreterResultMessage msg =
+        new InterpreterResultMessage(
+            InterpreterResult.Type.TABLE, "key\tvalue\nsun\t100\nmoon\t200\n");
     InterpreterResultTableData table = new InterpreterResultTableData(msg);
 
     pool.put("table", table);

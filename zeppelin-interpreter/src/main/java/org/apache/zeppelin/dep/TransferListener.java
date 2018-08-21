@@ -22,16 +22,13 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.transfer.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 
-/**
- * Simple listener that show deps downloading progress.
- */
+/** Simple listener that show deps downloading progress. */
 public class TransferListener extends AbstractTransferListener {
   private Logger logger = LoggerFactory.getLogger(TransferListener.class);
 
@@ -46,8 +43,11 @@ public class TransferListener extends AbstractTransferListener {
     String message =
         event.getRequestType() == TransferEvent.RequestType.PUT ? "Uploading" : "Downloading";
 
-    logger.info(message + ": " + event.getResource().getRepositoryUrl()
-                + event.getResource().getResourceName());
+    logger.info(
+        message
+            + ": "
+            + event.getResource().getRepositoryUrl()
+            + event.getResource().getResourceName());
   }
 
   @Override
@@ -112,8 +112,15 @@ public class TransferListener extends AbstractTransferListener {
         throughput = " at " + format.format(kbPerSec) + " KB/sec";
       }
 
-      logger.info(type + ": " + resource.getRepositoryUrl() + resource.getResourceName() + " ("
-          + len + throughput + ")");
+      logger.info(
+          type
+              + ": "
+              + resource.getRepositoryUrl()
+              + resource.getResourceName()
+              + " ("
+              + len
+              + throughput
+              + ")");
     }
   }
 
@@ -139,5 +146,4 @@ public class TransferListener extends AbstractTransferListener {
   private long toKB(long bytes) {
     return (bytes + 1023) / 1024;
   }
-
 }

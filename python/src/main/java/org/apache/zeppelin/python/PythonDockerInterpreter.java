@@ -16,15 +16,6 @@
  */
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -34,10 +25,16 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Helps run python interpreter on a docker container
- */
+/** Helps run python interpreter on a docker container */
 public class PythonDockerInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PythonDockerInterpreter.class);
   Pattern activatePattern = Pattern.compile("activate\\s*(.*)");
@@ -61,9 +58,7 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
@@ -83,23 +78,26 @@ public class PythonDockerInterpreter extends Interpreter {
       pull(out, image);
 
       // mount pythonscript dir
-      String mountPythonScript = "-v " + pythonWorkDir.getAbsolutePath() +
-          ":/_python_workdir ";
+      String mountPythonScript = "-v " + pythonWorkDir.getAbsolutePath() + ":/_python_workdir ";
 
       // mount zeppelin dir
-      String mountPy4j = "-v " + zeppelinHome.getAbsolutePath() +
-          ":/_zeppelin ";
+      String mountPy4j = "-v " + zeppelinHome.getAbsolutePath() + ":/_zeppelin ";
 
       // set PYTHONPATH
       String pythonPath = ".:/_python_workdir/py4j-src-0.10.7.zip:/_python_workdir";
 
-      setPythonCommand("docker run -i --rm " +
-          mountPythonScript +
-          mountPy4j +
-          "-e PYTHONPATH=\"" + pythonPath + "\" " +
-          image + " " +
-          pythonInterpreter.getPythonExec() + " " +
-          "/_python_workdir/zeppelin_python.py");
+      setPythonCommand(
+          "docker run -i --rm "
+              + mountPythonScript
+              + mountPy4j
+              + "-e PYTHONPATH=\""
+              + pythonPath
+              + "\" "
+              + image
+              + " "
+              + pythonInterpreter.getPythonExec()
+              + " "
+              + "/_python_workdir/zeppelin_python.py");
       restartPythonProcess();
       out.clear();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "\"" + image + "\" activated");
@@ -111,7 +109,6 @@ public class PythonDockerInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Not supported command: " + st);
     }
   }
-
 
   public void setPythonCommand(String cmd) throws InterpreterException {
     pythonInterpreter.setPythonExec(cmd);
@@ -127,9 +124,7 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -142,8 +137,8 @@ public class PythonDockerInterpreter extends Interpreter {
   }
 
   /**
-   * Use python interpreter's scheduler.
-   * To make sure %python.docker paragraph and %python paragraph runs sequentially
+   * Use python interpreter's scheduler. To make sure %python.docker paragraph and %python paragraph
+   * runs sequentially
    */
   @Override
   public Scheduler getScheduler() {

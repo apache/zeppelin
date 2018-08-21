@@ -23,25 +23,22 @@ import static org.junit.Assert.assertTrue;
 import com.google.gson.Gson;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
-
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.helium.HeliumRegistry;
 import org.apache.zeppelin.helium.HeliumType;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class HeliumRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -62,25 +59,27 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.helium.clear();
     ZeppelinServer.helium.addRegistry(registry);
 
-    registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name1",
-                "desc1",
-                "artifact1",
-                "className1",
-                new String[][]{},
-                "",
-                ""));
+    registry.add(
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            "artifact1",
+            "className1",
+            new String[][] {},
+            "",
+            ""));
 
-    registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name2",
-                "desc2",
-                "artifact2",
-                "className2",
-                new String[][]{},
-                "",
-                ""));
+    registry.add(
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name2",
+            "desc2",
+            "artifact2",
+            "className2",
+            new String[][] {},
+            "",
+            ""));
   }
 
   @After
@@ -92,8 +91,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   public void testGetAllPackageInfo() throws IOException {
     GetMethod get = httpGet("/helium/package");
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp =
+        gson.fromJson(
+            get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Set<String>> body = (Map<String, Set<String>>) resp.get("body");
 
     assertEquals(body.size(), 2);
@@ -106,8 +106,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     // No enabled packages initially
     GetMethod get1 = httpGet("/helium/enabledPackage");
     assertThat(get1, isAllowed());
-    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp1 =
+        gson.fromJson(
+            get1.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
     assertEquals(body1.size(), 0);
 
@@ -116,8 +117,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
 
     GetMethod get2 = httpGet("/helium/enabledPackage");
     assertThat(get2, isAllowed());
-    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp2 =
+        gson.fromJson(
+            get2.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
 
     assertEquals(body2.size(), 1);
@@ -130,8 +132,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     String packageName = "name1";
     GetMethod get = httpGet("/helium/package/" + packageName);
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp =
+        gson.fromJson(
+            get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<StringMap<Object>> body = (List<StringMap<Object>>) resp.get("body");
 
     assertEquals(body.size(), 1);
@@ -143,8 +146,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   public void testGetAllPackageConfigs() throws IOException {
     GetMethod get = httpGet("/helium/config/");
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp =
+        gson.fromJson(
+            get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     StringMap<Object> body = (StringMap<Object>) resp.get("body");
     // ToDo: Apply config with POST command and check update
     assertEquals(body.size(), 0);
@@ -156,8 +160,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     String artifact = "artifact1";
     GetMethod get = httpGet("/helium/config/" + packageName + "/" + artifact);
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp =
+        gson.fromJson(
+            get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     StringMap<Object> body = (StringMap<Object>) resp.get("body");
     assertTrue(body.containsKey("confPersisted"));
   }
@@ -170,8 +175,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     post1.releaseConnection();
 
     GetMethod get1 = httpGet("/helium/package/" + packageName);
-    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp1 =
+        gson.fromJson(
+            get1.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
     assertEquals(body1.get(0).get("enabled"), true);
 
@@ -180,8 +186,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     post2.releaseConnection();
 
     GetMethod get2 = httpGet("/helium/package/" + packageName);
-    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp2 =
+        gson.fromJson(
+            get2.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
     assertEquals(body2.get(0).get("enabled"), false);
   }
@@ -190,12 +197,13 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   public void testVisualizationPackageOrder() throws IOException {
     GetMethod get1 = httpGet("/helium/order/visualization");
     assertThat(get1, isAllowed());
-    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp1 =
+        gson.fromJson(
+            get1.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<Object> body1 = (List<Object>) resp1.get("body");
     assertEquals(body1.size(), 0);
 
-    //We assume allPackages list has been refreshed before sorting
+    // We assume allPackages list has been refreshed before sorting
     ZeppelinServer.helium.getAllPackageInfo();
 
     String postRequestJson = "[name2, name1]";
@@ -205,8 +213,9 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
 
     GetMethod get2 = httpGet("/helium/order/visualization");
     assertThat(get2, isAllowed());
-    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Object> resp2 =
+        gson.fromJson(
+            get2.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     List<Object> body2 = (List<Object>) resp2.get("body");
     assertEquals(body2.size(), 2);
     assertEquals(body2.get(0), "name2");

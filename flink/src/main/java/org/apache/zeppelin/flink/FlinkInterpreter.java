@@ -17,16 +17,15 @@
 
 package org.apache.zeppelin.flink;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import org.apache.flink.api.scala.ExecutionEnvironment;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 public class FlinkInterpreter extends Interpreter {
 
@@ -44,8 +43,11 @@ public class FlinkInterpreter extends Interpreter {
 
     // bind ZeppelinContext
     int maxRow = Integer.parseInt(getProperty("zeppelin.flink.maxResult", "1000"));
-    this.z = new FlinkZeppelinContext(innerIntp.getBatchTableEnviroment(),
-        getInterpreterGroup().getInterpreterHookRegistry(), maxRow);
+    this.z =
+        new FlinkZeppelinContext(
+            innerIntp.getBatchTableEnviroment(),
+            getInterpreterGroup().getInterpreterHookRegistry(),
+            maxRow);
     List<String> modifiers = new ArrayList<>();
     modifiers.add("@transient");
     this.innerIntp.bind("z", z.getClass().getCanonicalName(), z, modifiers);
@@ -66,9 +68,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {
-
-  }
+  public void cancel(InterpreterContext context) throws InterpreterException {}
 
   @Override
   public FormType getFormType() throws InterpreterException {
@@ -81,10 +81,8 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf,
-                                                int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
     return innerIntp.completion(buf, cursor, interpreterContext);
   }
 
@@ -99,5 +97,4 @@ public class FlinkInterpreter extends Interpreter {
   FlinkZeppelinContext getZeppelinContext() {
     return this.z;
   }
-
 }

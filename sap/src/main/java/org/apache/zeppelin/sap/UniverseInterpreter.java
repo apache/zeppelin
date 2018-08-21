@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.sap;
 
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -27,15 +31,7 @@ import org.apache.zeppelin.sap.universe.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-/**
- * SAP Universe interpreter for Zeppelin.
- */
+/** SAP Universe interpreter for Zeppelin. */
 public class UniverseInterpreter extends Interpreter {
 
   public UniverseInterpreter(Properties properties) {
@@ -51,8 +47,8 @@ public class UniverseInterpreter extends Interpreter {
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
-  private static final String EMPTY_DATA_MESSAGE = "%html\n" +
-      "<h4><center><b>No Data Available</b></center></h4>";
+  private static final String EMPTY_DATA_MESSAGE =
+      "%html\n" + "<h4><center><b>No Data Available</b></center></h4>";
 
   private static final String CONCURRENT_EXECUTION_KEY = "universe.concurrent.use";
   private static final String CONCURRENT_EXECUTION_COUNT = "universe.concurrent.maxConnection";
@@ -63,10 +59,10 @@ public class UniverseInterpreter extends Interpreter {
     String password = getProperty("universe.password");
     String apiUrl = getProperty("universe.api.url");
     String authType = getProperty("universe.authType");
-    final int queryTimeout = Integer.parseInt(
-        StringUtils.defaultIfEmpty(getProperty("universe.queryTimeout"), "7200000"));
-    this.client =
-        new UniverseClient(user, password, apiUrl, authType, queryTimeout);
+    final int queryTimeout =
+        Integer.parseInt(
+            StringUtils.defaultIfEmpty(getProperty("universe.queryTimeout"), "7200000"));
+    this.client = new UniverseClient(user, password, apiUrl, authType, queryTimeout);
     this.universeUtil = new UniverseUtil();
   }
 
@@ -82,8 +78,10 @@ public class UniverseInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String originalSt, InterpreterContext context)
       throws InterpreterException {
-    final String st = Boolean.parseBoolean(getProperty("universe.interpolation", "false")) ?
-        interpolate(originalSt, context.getResourcePool()) : originalSt;
+    final String st =
+        Boolean.parseBoolean(getProperty("universe.interpolation", "false"))
+            ? interpolate(originalSt, context.getResourcePool())
+            : originalSt;
     try {
       InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
       String paragraphId = context.getParagraphId();
@@ -125,7 +123,7 @@ public class UniverseInterpreter extends Interpreter {
       try {
         client.closeSession(context.getParagraphId());
       } catch (Exception e) {
-        logger.error("Error close SAP session", e );
+        logger.error("Error close SAP session", e);
       }
     }
   }
@@ -135,7 +133,7 @@ public class UniverseInterpreter extends Interpreter {
     try {
       client.closeSession(context.getParagraphId());
     } catch (Exception e) {
-      logger.error("Error close SAP session", e );
+      logger.error("Error close SAP session", e);
     }
   }
 
@@ -150,16 +148,15 @@ public class UniverseInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
     List<InterpreterCompletion> candidates = new ArrayList<>();
 
     try {
       universeCompleter = createOrUpdateUniverseCompleter(interpreterContext, buf, cursor);
       universeCompleter.complete(buf, cursor, candidates);
     } catch (UniverseException e) {
-      logger.error("Error update completer", e );
+      logger.error("Error update completer", e);
     }
 
     return candidates;
@@ -168,9 +165,9 @@ public class UniverseInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     String schedulerName = UniverseInterpreter.class.getName() + this.hashCode();
-    return isConcurrentExecution() ?
-        SchedulerFactory.singleton().createOrGetParallelScheduler(schedulerName,
-            getMaxConcurrentConnection())
+    return isConcurrentExecution()
+        ? SchedulerFactory.singleton()
+            .createOrGetParallelScheduler(schedulerName, getMaxConcurrentConnection())
         : SchedulerFactory.singleton().createOrGetFIFOScheduler(schedulerName);
   }
 
@@ -212,8 +209,8 @@ public class UniverseInterpreter extends Interpreter {
     return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
-  private UniverseCompleter createOrUpdateUniverseCompleter(InterpreterContext interpreterContext,
-                                                            final String buf, final int cursor)
+  private UniverseCompleter createOrUpdateUniverseCompleter(
+      InterpreterContext interpreterContext, final String buf, final int cursor)
       throws UniverseException {
     final UniverseCompleter completer;
     if (universeCompleter == null) {
@@ -224,12 +221,13 @@ public class UniverseInterpreter extends Interpreter {
     try {
       final String token = client.getToken(interpreterContext.getParagraphId());
       ExecutorService executorService = Executors.newFixedThreadPool(1);
-      executorService.execute(new Runnable() {
-        @Override
-        public void run() {
-          completer.createOrUpdate(client, token, buf, cursor);
-        }
-      });
+      executorService.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              completer.createOrUpdate(client, token, buf, cursor);
+            }
+          });
 
       executorService.shutdown();
 
@@ -240,7 +238,7 @@ public class UniverseInterpreter extends Interpreter {
       try {
         client.closeSession(interpreterContext.getParagraphId());
       } catch (Exception e) {
-        logger.error("Error close SAP session", e );
+        logger.error("Error close SAP session", e);
       }
     }
     return completer;

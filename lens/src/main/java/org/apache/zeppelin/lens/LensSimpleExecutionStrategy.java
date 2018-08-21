@@ -15,6 +15,7 @@
  */
 package org.apache.zeppelin.lens;
 
+import java.util.logging.Logger;
 import org.springframework.shell.core.ExecutionProcessor;
 import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.event.ParseResult;
@@ -22,11 +23,7 @@ import org.springframework.shell.support.logging.HandlerUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
-import java.util.logging.Logger;
-
-/**
- * workaround for https://github.com/spring-projects/spring-shell/issues/73.
- */
+/** workaround for https://github.com/spring-projects/spring-shell/issues/73. */
 public class LensSimpleExecutionStrategy implements ExecutionStrategy {
 
   private static final Logger logger = HandlerUtils.getLogger(LensSimpleExecutionStrategy.class);
@@ -56,8 +53,8 @@ public class LensSimpleExecutionStrategy implements ExecutionStrategy {
 
   private Object invoke(ParseResult parseResult) {
     try {
-      return ReflectionUtils.invokeMethod(parseResult.getMethod(),
-        parseResult.getInstance(), parseResult.getArguments());
+      return ReflectionUtils.invokeMethod(
+          parseResult.getMethod(), parseResult.getInstance(), parseResult.getArguments());
     } catch (Throwable th) {
       logger.severe("Command failed " + th);
       return handleThrowable(th);

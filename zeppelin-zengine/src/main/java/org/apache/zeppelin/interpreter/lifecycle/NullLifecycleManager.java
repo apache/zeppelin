@@ -15,29 +15,20 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.interpreter.lifecycle;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.LifecycleManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 
-/**
- * Do nothing for the lifecycle of interpreter. User need to explicitly start/stop interpreter.
- */
+/** Do nothing for the lifecycle of interpreter. User need to explicitly start/stop interpreter. */
 public class NullLifecycleManager implements LifecycleManager {
 
-  public NullLifecycleManager(ZeppelinConfiguration zConf) {
-
-  }
+  public NullLifecycleManager(ZeppelinConfiguration zConf) {}
 
   @Override
-  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {
-
-  }
+  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {}
 
   @Override
-  public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {
-
-  }
+  public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {}
 }

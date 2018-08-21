@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -26,14 +28,7 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-/**
- * ManagedInterpreterGroup runs under zeppelin server
- */
+/** ManagedInterpreterGroup runs under zeppelin server */
 public class ManagedInterpreterGroup extends InterpreterGroup {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ManagedInterpreterGroup.class);
@@ -43,6 +38,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   /**
    * Create InterpreterGroup with given id and interpreterSetting, used in ZeppelinServer
+   *
    * @param id
    * @param interpreterSetting
    */
@@ -55,16 +51,16 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
-                                                                             Properties properties)
-      throws IOException {
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(
+      String userName, Properties properties) throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
-          properties);
+      remoteInterpreterProcess =
+          interpreterSetting.createInterpreterProcess(id, userName, properties);
       remoteInterpreterProcess.start(userName);
       interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
-      getInterpreterSetting().getRecoveryStorage()
+      getInterpreterSetting()
+          .getRecoveryStorage()
           .onInterpreterClientStart(remoteInterpreterProcess);
     }
     return remoteInterpreterProcess;
@@ -78,10 +74,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return remoteInterpreterProcess;
   }
 
-
-  /**
-   * Close all interpreter instances in this group
-   */
+  /** Close all interpreter instances in this group */
   public synchronized void close() {
     LOGGER.info("Close InterpreterGroup: " + id);
     for (String sessionId : sessions.keySet()) {
@@ -91,13 +84,17 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
   /**
    * Close all interpreter instances in this session
+   *
    * @param sessionId
    */
   public synchronized void close(String sessionId) {
-    LOGGER.info("Close Session: " + sessionId + " for interpreter setting: " +
-        interpreterSetting.getName());
+    LOGGER.info(
+        "Close Session: "
+            + sessionId
+            + " for interpreter setting: "
+            + interpreterSetting.getName());
     close(sessions.remove(sessionId));
-    //TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
+    // TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
     if (sessions.isEmpty() && interpreterSetting != null) {
       LOGGER.info("Remove this InterpreterGroup: {} as all the sessions are closed", id);
       interpreterSetting.removeInterpreterGroup(id);
@@ -137,7 +134,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       } catch (InterpreterException e) {
         LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
       }
-      //TODO(zjffdu) move the close of schedule to Interpreter
+      // TODO(zjffdu) move the close of schedule to Interpreter
       if (null != scheduler) {
         SchedulerFactory.singleton().removeScheduler(scheduler.getName());
       }
@@ -157,5 +154,4 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       return interpreters;
     }
   }
-
 }

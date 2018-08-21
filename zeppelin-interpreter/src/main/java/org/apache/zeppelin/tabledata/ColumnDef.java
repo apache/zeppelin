@@ -18,13 +18,9 @@ package org.apache.zeppelin.tabledata;
 
 import java.io.Serializable;
 
-/**
- * Column definition
- */
+/** Column definition */
 public class ColumnDef implements Serializable {
-  /**
-   * Type
-   */
+  /** Type */
   public enum TYPE {
     STRING,
     LONG,

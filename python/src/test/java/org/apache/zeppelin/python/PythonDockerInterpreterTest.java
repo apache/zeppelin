@@ -16,18 +16,6 @@
  */
 package org.apache.zeppelin.python;
 
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Properties;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -35,6 +23,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Properties;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class PythonDockerInterpreterTest {
   private PythonDockerInterpreter docker;
@@ -77,8 +76,6 @@ public class PythonDockerInterpreterTest {
   }
 
   private InterpreterContext getInterpreterContext() {
-    return InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
-        .build();
+    return InterpreterContext.builder().setInterpreterOut(new InterpreterOutput(null)).build();
   }
 }

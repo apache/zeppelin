@@ -16,19 +16,17 @@
  */
 package org.apache.zeppelin.jupyter.types;
 
-/**
- * Jupyter Output Types.
- */
+/** Jupyter Output Types. */
 public enum JupyterOutputType {
   TEXT_PLAIN("text/plain"),
   IMAGE_PNG("image/png"),
   LATEX("text/latex"),
   SVG_XML("image/svg+xml"),
   TEXT_HTML("text/html"),
-  APPLICATION_JAVASCRIPT("application/javascript")
-  ;
+  APPLICATION_JAVASCRIPT("application/javascript");
 
   private final String type;
+
   private JupyterOutputType(final String type) {
     this.type = type;
   }

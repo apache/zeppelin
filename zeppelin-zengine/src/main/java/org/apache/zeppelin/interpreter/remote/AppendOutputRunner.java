@@ -17,26 +17,22 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This thread sends paragraph's append-data
- * periodically, rather than continously, with
- * a period of BUFFER_TIME_MS. It handles append-data
- * for all paragraphs across all notebooks.
+ * This thread sends paragraph's append-data periodically, rather than continously, with a period of
+ * BUFFER_TIME_MS. It handles append-data for all paragraphs across all notebooks.
  */
 public class AppendOutputRunner implements Runnable {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(AppendOutputRunner.class);
+  private static final Logger logger = LoggerFactory.getLogger(AppendOutputRunner.class);
   public static final Long BUFFER_TIME_MS = new Long(100);
   private static final Long SAFE_PROCESSING_TIME = new Long(10);
   private static final Long SAFE_PROCESSING_STRING_SIZE = new Long(100000);
@@ -70,14 +66,16 @@ public class AppendOutputRunner implements Runnable {
     Long processingStartTime = System.currentTimeMillis();
     queue.drainTo(list);
 
-    for (AppendOutputBuffer buffer: list) {
+    for (AppendOutputBuffer buffer : list) {
       String noteId = buffer.getNoteId();
       String paragraphId = buffer.getParagraphId();
       int index = buffer.getIndex();
       String stringBufferKey = noteId + ":" + paragraphId + ":" + index;
 
-      StringBuilder builder = stringBufferMap.containsKey(stringBufferKey) ?
-          stringBufferMap.get(stringBufferKey) : new StringBuilder();
+      StringBuilder builder =
+          stringBufferMap.containsKey(stringBufferKey)
+              ? stringBufferMap.get(stringBufferKey)
+              : new StringBuilder();
 
       builder.append(buffer.getData());
       stringBufferMap.put(stringBufferKey, builder);
@@ -85,11 +83,12 @@ public class AppendOutputRunner implements Runnable {
     Long processingTime = System.currentTimeMillis() - processingStartTime;
 
     if (processingTime > SAFE_PROCESSING_TIME) {
-      logger.warn("Processing time for buffered append-output is high: " +
-          processingTime + " milliseconds.");
+      logger.warn(
+          "Processing time for buffered append-output is high: "
+              + processingTime
+              + " milliseconds.");
     } else {
-      logger.debug("Processing time for append-output took "
-          + processingTime + " milliseconds");
+      logger.debug("Processing time for append-output took " + processingTime + " milliseconds");
     }
 
     Long sizeProcessed = new Long(0);
@@ -101,16 +100,14 @@ public class AppendOutputRunner implements Runnable {
     }
 
     if (sizeProcessed > SAFE_PROCESSING_STRING_SIZE) {
-      logger.warn("Processing size for buffered append-output is high: " +
-          sizeProcessed + " characters.");
+      logger.warn(
+          "Processing size for buffered append-output is high: " + sizeProcessed + " characters.");
     } else {
-      logger.debug("Processing size for append-output is " +
-          sizeProcessed + " characters");
+      logger.debug("Processing size for append-output is " + sizeProcessed + " characters");
     }
   }
 
   public void appendBuffer(String noteId, String paragraphId, int index, String outputToAppend) {
     queue.offer(new AppendOutputBuffer(noteId, paragraphId, index, outputToAppend));
   }
-
 }

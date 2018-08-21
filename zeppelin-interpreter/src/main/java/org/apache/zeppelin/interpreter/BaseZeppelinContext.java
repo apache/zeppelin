@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
@@ -31,15 +36,7 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-/**
- * Base class for ZeppelinContext
- */
+/** Base class for ZeppelinContext */
 public abstract class BaseZeppelinContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseZeppelinContext.class);
@@ -73,18 +70,14 @@ public abstract class BaseZeppelinContext {
    */
   protected abstract String showData(Object obj);
 
-  /**
-   * @deprecated use z.textbox instead
-   */
+  /** @deprecated use z.textbox instead */
   @Deprecated
   @ZeppelinApi
   public Object input(String name) {
     return textbox(name);
   }
 
-  /**
-   * @deprecated use z.textbox instead
-   */
+  /** @deprecated use z.textbox instead */
   @Deprecated
   @ZeppelinApi
   public Object input(String name, Object defaultValue) {
@@ -121,8 +114,7 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
-  public List<Object> checkbox(String name, List<Object> defaultChecked,
-                                     ParamOption[] options) {
+  public List<Object> checkbox(String name, List<Object> defaultChecked, ParamOption[] options) {
     return checkbox(name, defaultChecked, options, false);
   }
 
@@ -147,8 +139,8 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
-  public List<Object> noteCheckbox(String name, List<Object> defaultChecked,
-                                         ParamOption[] options) {
+  public List<Object> noteCheckbox(
+      String name, List<Object> defaultChecked, ParamOption[] options) {
     return checkbox(name, defaultChecked, options, true);
   }
 
@@ -157,9 +149,8 @@ public abstract class BaseZeppelinContext {
     return select(name, defaultValue, paramOptions, true);
   }
 
-
-  private Object select(String name, Object defaultValue, ParamOption[] paramOptions,
-                        boolean noteForm) {
+  private Object select(
+      String name, Object defaultValue, ParamOption[] paramOptions, boolean noteForm) {
     if (noteForm) {
       return noteGui.select(name, defaultValue, paramOptions);
     } else {
@@ -175,8 +166,7 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private List<Object> checkbox(String name, ParamOption[] options,
-                                      boolean noteForm) {
+  private List<Object> checkbox(String name, ParamOption[] options, boolean noteForm) {
     List<Object> defaultValues = new LinkedList<>();
     for (ParamOption option : options) {
       defaultValues.add(option.getValue());
@@ -188,8 +178,8 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private List<Object> checkbox(String name, List<Object> defaultChecked,
-                                      ParamOption[] options, boolean noteForm) {
+  private List<Object> checkbox(
+      String name, List<Object> defaultChecked, ParamOption[] options, boolean noteForm) {
     if (noteForm) {
       return noteGui.checkbox(name, defaultChecked, options);
     } else {
@@ -204,7 +194,6 @@ public abstract class BaseZeppelinContext {
   public GUI getGui() {
     return gui;
   }
-
 
   public GUI getNoteGui() {
     return noteGui;
@@ -225,10 +214,10 @@ public abstract class BaseZeppelinContext {
   public void setMaxResult(int maxResult) {
     this.maxResult = maxResult;
   }
-  
+
   /**
-   * display special types of objects for interpreter.
-   * Each interpreter can has its own supported classes.
+   * display special types of objects for interpreter. Each interpreter can has its own supported
+   * classes.
    *
    * @param o object
    */
@@ -238,10 +227,10 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * display special types of objects for interpreter.
-   * Each interpreter can has its own supported classes.
+   * display special types of objects for interpreter. Each interpreter can has its own supported
+   * classes.
    *
-   * @param o         object
+   * @param o object
    * @param maxResult maximum number of rows to display
    */
   @ZeppelinApi
@@ -250,8 +239,10 @@ public abstract class BaseZeppelinContext {
       if (isSupportedObject(o)) {
         interpreterContext.out.write(showData(o));
       } else {
-        interpreterContext.out.write("ZeppelinContext doesn't support to show type: "
-            + o.getClass().getCanonicalName() + "\n");
+        interpreterContext.out.write(
+            "ZeppelinContext doesn't support to show type: "
+                + o.getClass().getCanonicalName()
+                + "\n");
         interpreterContext.out.write(o.toString());
       }
     } catch (IOException e) {
@@ -291,8 +282,7 @@ public abstract class BaseZeppelinContext {
   }
 
   @ZeppelinApi
-  public void run(String noteId, String paragraphId)
-      throws IOException {
+  public void run(String noteId, String paragraphId) throws IOException {
     run(noteId, paragraphId, InterpreterContext.get(), true);
   }
 
@@ -314,8 +304,9 @@ public abstract class BaseZeppelinContext {
    * @param context
    */
   @ZeppelinApi
-  public void run(String noteId, String paragraphId, InterpreterContext context,
-                  boolean checkCurrentParagraph) throws IOException {
+  public void run(
+      String noteId, String paragraphId, InterpreterContext context, boolean checkCurrentParagraph)
+      throws IOException {
 
     if (paragraphId.equals(context.getParagraphId()) && checkCurrentParagraph) {
       throw new RuntimeException("Can not run current Paragraph");
@@ -323,7 +314,8 @@ public abstract class BaseZeppelinContext {
     List<String> paragraphIds = new ArrayList<>();
     paragraphIds.add(paragraphId);
     List<Integer> paragraphIndices = new ArrayList<>();
-    context.getIntpEventClient()
+    context
+        .getIntpEventClient()
         .runParagraphs(noteId, paragraphIds, paragraphIndices, context.getParagraphId());
   }
 
@@ -334,7 +326,8 @@ public abstract class BaseZeppelinContext {
   public void runNote(String noteId, InterpreterContext context) throws IOException {
     List<String> paragraphIds = new ArrayList<>();
     List<Integer> paragraphIndices = new ArrayList<>();
-    context.getIntpEventClient()
+    context
+        .getIntpEventClient()
         .runParagraphs(noteId, paragraphIds, paragraphIndices, context.getParagraphId());
   }
 
@@ -349,10 +342,10 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * @param idx                   paragraph index
+   * @param idx paragraph index
    * @param checkCurrentParagraph check whether you call this run method in the current paragraph.
-   *          Set it to false only when you are sure you are not invoking this method to run current
-   *          paragraph. Otherwise you would run current paragraph in infinite loop.
+   *     Set it to false only when you are sure you are not invoking this method to run current
+   *     paragraph. Otherwise you would run current paragraph in infinite loop.
    */
   public void run(int idx, boolean checkCurrentParagraph) throws IOException {
     String noteId = interpreterContext.getNoteId();
@@ -363,7 +356,7 @@ public abstract class BaseZeppelinContext {
    * Run paragraph at index
    *
    * @param noteId
-   * @param idx     index starting from 0
+   * @param idx index starting from 0
    * @param context interpreter context
    */
   public void run(String noteId, int idx, InterpreterContext context) throws IOException {
@@ -372,20 +365,20 @@ public abstract class BaseZeppelinContext {
 
   /**
    * @param noteId
-   * @param idx                   paragraph index
-   * @param context               interpreter context
-   * @param checkCurrentParagraph
-   * check whether you call this run method in the current paragraph.
-   * Set it to false only when you are sure you are not invoking this method to run current
-   * paragraph. Otherwise you would run current paragraph in infinite loop.
+   * @param idx paragraph index
+   * @param context interpreter context
+   * @param checkCurrentParagraph check whether you call this run method in the current paragraph.
+   *     Set it to false only when you are sure you are not invoking this method to run current
+   *     paragraph. Otherwise you would run current paragraph in infinite loop.
    */
-  public void run(String noteId, int idx, InterpreterContext context,
-                  boolean checkCurrentParagraph) throws IOException {
+  public void run(String noteId, int idx, InterpreterContext context, boolean checkCurrentParagraph)
+      throws IOException {
 
     List<String> paragraphIds = new ArrayList<>();
     List<Integer> paragraphIndices = new ArrayList<>();
     paragraphIndices.add(idx);
-    context.getIntpEventClient()
+    context
+        .getIntpEventClient()
         .runParagraphs(noteId, paragraphIds, paragraphIndices, context.getParagraphId());
   }
 
@@ -394,9 +387,7 @@ public abstract class BaseZeppelinContext {
     runAll(interpreterContext);
   }
 
-  /**
-   * Run all paragraphs. except this.
-   */
+  /** Run all paragraphs. except this. */
   @ZeppelinApi
   public void runAll(InterpreterContext context) throws IOException {
     runNote(context.getNoteId());
@@ -417,7 +408,6 @@ public abstract class BaseZeppelinContext {
     }
     return ao;
   }
-
 
   /**
    * Get angular object. Look up notebook scope first and then global scope
@@ -453,11 +443,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display system.
-   * If variable exists, it'll be overwritten.
+   * Create angular variable in notebook scope and bind with front end Angular display system. If
+   * variable exists, it'll be overwritten.
    *
    * @param name name of the variable
-   * @param o    value
+   * @param o value
    */
   @ZeppelinApi
   public void angularBind(String name, Object o) throws TException {
@@ -465,11 +455,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in global scope and bind with front end Angular display system.
-   * If variable exists, it'll be overwritten.
+   * Create angular variable in global scope and bind with front end Angular display system. If
+   * variable exists, it'll be overwritten.
    *
    * @param name name of the variable
-   * @param o    value
+   * @param o value
    */
   @Deprecated
   public void angularBindGlobal(String name, Object o) throws TException {
@@ -477,11 +467,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in local scope and bind with front end Angular display system.
-   * If variable exists, value will be overwritten and watcher will be added.
+   * Create angular variable in local scope and bind with front end Angular display system. If
+   * variable exists, value will be overwritten and watcher will be added.
    *
-   * @param name    name of variable
-   * @param o       value
+   * @param name name of variable
+   * @param o value
    * @param watcher watcher of the variable
    */
   @ZeppelinApi
@@ -490,11 +480,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in global scope and bind with front end Angular display system.
-   * If variable exists, value will be overwritten and watcher will be added.
+   * Create angular variable in global scope and bind with front end Angular display system. If
+   * variable exists, value will be overwritten and watcher will be added.
    *
-   * @param name    name of variable
-   * @param o       value
+   * @param name name of variable
+   * @param o value
    * @param watcher watcher of the variable
    */
   @Deprecated
@@ -506,7 +496,7 @@ public abstract class BaseZeppelinContext {
   /**
    * Add watcher into angular variable (local scope)
    *
-   * @param name    name of the variable
+   * @param name name of the variable
    * @param watcher watcher
    */
   @ZeppelinApi
@@ -517,14 +507,13 @@ public abstract class BaseZeppelinContext {
   /**
    * Add watcher into angular variable (global scope)
    *
-   * @param name    name of the variable
+   * @param name name of the variable
    * @param watcher watcher
    */
   @Deprecated
   public void angularWatchGlobal(String name, AngularObjectWatcher watcher) {
     angularWatch(name, null, watcher);
   }
-
 
   /**
    * Remove watcher from angular variable (local)
@@ -547,7 +536,6 @@ public abstract class BaseZeppelinContext {
   public void angularUnwatchGlobal(String name, AngularObjectWatcher watcher) {
     angularUnwatch(name, null, watcher);
   }
-
 
   /**
    * Remove all watchers for the angular variable (local)
@@ -591,11 +579,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display system.
-   * If variable exists, it'll be overwritten.
+   * Create angular variable in notebook scope and bind with front end Angular display system. If
+   * variable exists, it'll be overwritten.
    *
    * @param name name of the variable
-   * @param o    value
+   * @param o value
    */
   public void angularBind(String name, Object o, String noteId) throws TException {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
@@ -608,12 +596,11 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display
-   * system.
-   * If variable exists, value will be overwritten and watcher will be added.
+   * Create angular variable in notebook scope and bind with front end Angular display system. If
+   * variable exists, value will be overwritten and watcher will be added.
    *
-   * @param name    name of variable
-   * @param o       value
+   * @param name name of variable
+   * @param o value
    * @param watcher watcher of the variable
    */
   private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher)
@@ -631,7 +618,7 @@ public abstract class BaseZeppelinContext {
   /**
    * Add watcher into angular binding variable
    *
-   * @param name    name of the variable
+   * @param name name of the variable
    * @param watcher watcher
    */
   public void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
@@ -693,8 +680,8 @@ public abstract class BaseZeppelinContext {
   /**
    * General function to register hook event
    *
-   * @param event    The type of event to hook to (pre_exec, post_exec)
-   * @param cmd      The code to be executed by the interpreter on given event
+   * @param event The type of event to hook to (pre_exec, post_exec)
+   * @param cmd The code to be executed by the interpreter on given event
    * @param replName Name of the interpreter
    */
   @Experimental
@@ -707,7 +694,7 @@ public abstract class BaseZeppelinContext {
    * registerHook() wrapper for current repl
    *
    * @param event The type of event to hook to (pre_exec, post_exec)
-   * @param cmd   The code to be executed by the interpreter on given event
+   * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
   public void registerHook(String event, String cmd) throws InvalidHookException {
@@ -738,7 +725,7 @@ public abstract class BaseZeppelinContext {
   /**
    * Unbind code from given hook event and given repl
    *
-   * @param event    The type of event to hook to (pre_exec, post_exec)
+   * @param event The type of event to hook to (pre_exec, post_exec)
    * @param replName Name of the interpreter
    */
   @Experimental
@@ -761,7 +748,7 @@ public abstract class BaseZeppelinContext {
    * Unbind code from given hook event and given note
    *
    * @param noteId The id of note
-   * @param event  The type of event to hook to (pre_exec, post_exec)
+   * @param event The type of event to hook to (pre_exec, post_exec)
    */
   @Experimental
   public void unregisterNoteHook(String noteId, String event) {
@@ -769,12 +756,11 @@ public abstract class BaseZeppelinContext {
     hooks.unregister(noteId, className, event);
   }
 
-
   /**
    * Unbind code from given hook event, given note and given repl
    *
-   * @param noteId   The id of note
-   * @param event    The type of event to hook to (pre_exec, post_exec)
+   * @param noteId The id of note
+   * @param event The type of event to hook to (pre_exec, post_exec)
    * @param replName Name of the interpreter
    */
   @Experimental
@@ -782,7 +768,6 @@ public abstract class BaseZeppelinContext {
     String className = getClassNameFromReplName(replName);
     hooks.unregister(noteId, className, event);
   }
-
 
   /**
    * Add object into resource pool
@@ -797,8 +782,7 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Get object from resource pool
-   * Search local process first and then the other processes
+   * Get object from resource pool Search local process first and then the other processes
    *
    * @param name
    * @return null if resource not found
@@ -838,9 +822,7 @@ public abstract class BaseZeppelinContext {
     return resource != null;
   }
 
-  /**
-   * Get all resources
-   */
+  /** Get all resources */
   @ZeppelinApi
   public ResourceSet getAll() {
     ResourcePool resourcePool = interpreterContext.getResourcePool();

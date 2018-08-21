@@ -17,15 +17,12 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.io.IOException;
+import java.util.Properties;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 
-import java.io.IOException;
-import java.util.Properties;
-
-/**
- * Component to Launch interpreter process.
- */
+/** Component to Launch interpreter process. */
 public abstract class InterpreterLauncher {
 
   protected ZeppelinConfiguration zConf;
@@ -42,8 +39,11 @@ public abstract class InterpreterLauncher {
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     if (properties.containsKey(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
-      connectTimeout = Integer.parseInt(properties.getProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));
+      connectTimeout =
+          Integer.parseInt(
+              properties.getProperty(
+                  ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT
+                      .getVarName()));
     }
     return connectTimeout;
   }

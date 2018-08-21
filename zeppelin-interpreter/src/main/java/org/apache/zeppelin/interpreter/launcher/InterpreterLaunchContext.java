@@ -17,14 +17,11 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 
-import java.util.Properties;
-
-/**
- * Context class for Interpreter Launch
- */
+/** Context class for Interpreter Launch */
 public class InterpreterLaunchContext {
 
   private Properties properties;
@@ -38,16 +35,17 @@ public class InterpreterLaunchContext {
   private int zeppelinServerRPCPort;
   private String zeppelinServerHost;
 
-  public InterpreterLaunchContext(Properties properties,
-                                  InterpreterOption option,
-                                  InterpreterRunner runner,
-                                  String userName,
-                                  String interpreterGroupId,
-                                  String interpreterSettingId,
-                                  String interpreterSettingGroup,
-                                  String interpreterSettingName,
-                                  int zeppelinServerRPCPort,
-                                  String zeppelinServerHost) {
+  public InterpreterLaunchContext(
+      Properties properties,
+      InterpreterOption option,
+      InterpreterRunner runner,
+      String userName,
+      String interpreterGroupId,
+      String interpreterSettingId,
+      String interpreterSettingGroup,
+      String interpreterSettingName,
+      int zeppelinServerRPCPort,
+      String zeppelinServerHost) {
     this.properties = properties;
     this.option = option;
     this.runner = runner;

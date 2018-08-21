@@ -17,15 +17,14 @@
 
 package org.apache.zeppelin.interpreter.util;
 
+import java.io.IOException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.slf4j.Logger;
-
-import java.io.IOException;
 
 /**
  * Output Stream integrated with InterpreterOutput.
  *
- * Can be used to channel output from interpreters.
+ * <p>Can be used to channel output from interpreters.
  */
 public class InterpreterOutputStream extends LogOutputStream {
   private Logger logger;
@@ -49,8 +48,8 @@ public class InterpreterOutputStream extends LogOutputStream {
     if (ignoreLeadingNewLinesFromScalaReporter && b == '\n') {
       StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
       for (StackTraceElement stack : stacks) {
-        if (stack.getClassName().equals("scala.tools.nsc.interpreter.ReplReporter") &&
-            stack.getMethodName().equals("error")) {
+        if (stack.getClassName().equals("scala.tools.nsc.interpreter.ReplReporter")
+            && stack.getMethodName().equals("error")) {
           // ignore. Please see ZEPPELIN-2067
           return;
         }
@@ -65,12 +64,12 @@ public class InterpreterOutputStream extends LogOutputStream {
   }
 
   @Override
-  public void write(byte [] b) throws IOException {
+  public void write(byte[] b) throws IOException {
     write(b, 0, b.length);
   }
 
   @Override
-  public void write(byte [] b, int off, int len) throws IOException {
+  public void write(byte[] b, int off, int len) throws IOException {
     for (int i = off; i < len; i++) {
       write(b[i]);
     }

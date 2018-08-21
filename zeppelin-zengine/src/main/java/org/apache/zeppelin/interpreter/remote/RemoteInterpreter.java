@@ -20,6 +20,10 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -45,19 +49,10 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-/**
- * Proxy for Interpreter instance that runs on separate process
- */
+/** Proxy for Interpreter instance that runs on separate process */
 public class RemoteInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreter.class);
   private static final Gson gson = new Gson();
-
 
   private String className;
   private String sessionId;
@@ -69,14 +64,13 @@ public class RemoteInterpreter extends Interpreter {
 
   private LifecycleManager lifecycleManager;
 
-  /**
-   * Remote interpreter and manage interpreter process
-   */
-  public RemoteInterpreter(Properties properties,
-                           String sessionId,
-                           String className,
-                           String userName,
-                           LifecycleManager lifecycleManager) {
+  /** Remote interpreter and manage interpreter process */
+  public RemoteInterpreter(
+      Properties properties,
+      String sessionId,
+      String className,
+      String userName,
+      LifecycleManager lifecycleManager) {
     super(properties);
     this.sessionId = sessionId;
     this.className = className;
@@ -124,8 +118,8 @@ public class RemoteInterpreter extends Interpreter {
         // The why we we create all the interpreter of the session is because some interpreter
         // depends on other interpreter. e.g. PySparkInterpreter depends on SparkInterpreter.
         // also see method Interpreter.getInterpreterInTheSameSessionByClassName
-        for (Interpreter interpreter : getInterpreterGroup()
-                                        .getOrCreateSession(this.getUserName(), sessionId)) {
+        for (Interpreter interpreter :
+            getInterpreterGroup().getOrCreateSession(this.getUserName(), sessionId)) {
           try {
             if (!(interpreter instanceof ConfInterpreter)) {
               ((RemoteInterpreter) interpreter).internal_create();
@@ -135,22 +129,23 @@ public class RemoteInterpreter extends Interpreter {
           }
         }
 
-        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            LOGGER.info("Open RemoteInterpreter {}", getClassName());
-            // open interpreter here instead of in the jobRun method in RemoteInterpreterServer
-            // client.open(sessionId, className);
-            // Push angular object loaded from JSON file to remote interpreter
-            synchronized (getInterpreterGroup()) {
-              if (!getInterpreterGroup().isAngularRegistryPushed()) {
-                pushAngularObjectRegistryToRemote(client);
-                getInterpreterGroup().setAngularRegistryPushed(true);
+        interpreterProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<Void>() {
+              @Override
+              public Void call(Client client) throws Exception {
+                LOGGER.info("Open RemoteInterpreter {}", getClassName());
+                // open interpreter here instead of in the jobRun method in RemoteInterpreterServer
+                // client.open(sessionId, className);
+                // Push angular object loaded from JSON file to remote interpreter
+                synchronized (getInterpreterGroup()) {
+                  if (!getInterpreterGroup().isAngularRegistryPushed()) {
+                    pushAngularObjectRegistryToRemote(client);
+                    getInterpreterGroup().setAngularRegistryPushed(true);
+                  }
+                }
+                return null;
               }
-            }
-            return null;
-          }
-        });
+            });
         isOpened = true;
         this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
       }
@@ -161,20 +156,24 @@ public class RemoteInterpreter extends Interpreter {
     synchronized (this) {
       if (!isCreated) {
         this.interpreterProcess = getOrCreateInterpreterProcess();
-        interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            LOGGER.info("Create RemoteInterpreter {}", getClassName());
-            client.createInterpreter(getInterpreterGroup().getId(), sessionId,
-                className, (Map) getProperties(), getUserName());
-            return null;
-          }
-        });
+        interpreterProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<Void>() {
+              @Override
+              public Void call(Client client) throws Exception {
+                LOGGER.info("Create RemoteInterpreter {}", getClassName());
+                client.createInterpreter(
+                    getInterpreterGroup().getId(),
+                    sessionId,
+                    className,
+                    (Map) getProperties(),
+                    getUserName());
+                return null;
+              }
+            });
         isCreated = true;
       }
     }
   }
-
 
   @Override
   public void close() throws InterpreterException {
@@ -185,13 +184,14 @@ public class RemoteInterpreter extends Interpreter {
       } catch (IOException e) {
         throw new InterpreterException(e);
       }
-      interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-        @Override
-        public Void call(Client client) throws Exception {
-          client.close(sessionId, className);
-          return null;
-        }
-      });
+      interpreterProcess.callRemoteFunction(
+          new RemoteInterpreterProcess.RemoteFunction<Void>() {
+            @Override
+            public Void call(Client client) throws Exception {
+              client.close(sessionId, className);
+              return null;
+            }
+          });
       isOpened = false;
       this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
     } else {
@@ -219,11 +219,13 @@ public class RemoteInterpreter extends Interpreter {
           @Override
           public InterpreterResult call(Client client) throws Exception {
 
-            RemoteInterpreterResult remoteResult = client.interpret(
-                sessionId, className, st, convert(context));
-            Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
-                remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
-                }.getType());
+            RemoteInterpreterResult remoteResult =
+                client.interpret(sessionId, className, st, convert(context));
+            Map<String, Object> remoteConfig =
+                (Map<String, Object>)
+                    gson.fromJson(
+                        remoteResult.getConfig(),
+                        new TypeToken<Map<String, Object>>() {}.getType());
             context.getConfig().clear();
             if (remoteConfig != null) {
               context.getConfig().putAll(remoteConfig);
@@ -251,9 +253,7 @@ public class RemoteInterpreter extends Interpreter {
             InterpreterResult result = convert(remoteResult);
             return result;
           }
-        }
-    );
-
+        });
   }
 
   @Override
@@ -269,13 +269,14 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    interpreterProcess.callRemoteFunction(new RemoteInterpreterProcess.RemoteFunction<Void>() {
-      @Override
-      public Void call(Client client) throws Exception {
-        client.cancel(sessionId, className, convert(context));
-        return null;
-      }
-    });
+    interpreterProcess.callRemoteFunction(
+        new RemoteInterpreterProcess.RemoteFunction<Void>() {
+          @Override
+          public Void call(Client client) throws Exception {
+            client.cancel(sessionId, className, convert(context));
+            return null;
+          }
+        });
   }
 
   @Override
@@ -297,17 +298,17 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
     this.lifecycleManager.onInterpreterUse(this.getInterpreterGroup(), sessionId);
-    FormType type = interpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<FormType>() {
-          @Override
-          public FormType call(Client client) throws Exception {
-            formType = FormType.valueOf(client.getFormType(sessionId, className));
-            return formType;
-          }
-        });
+    FormType type =
+        interpreterProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<FormType>() {
+              @Override
+              public FormType call(Client client) throws Exception {
+                formType = FormType.valueOf(client.getFormType(sessionId, className));
+                return formType;
+              }
+            });
     return type;
   }
-
 
   @Override
   public int getProgress(final InterpreterContext context) throws InterpreterException {
@@ -331,10 +332,9 @@ public class RemoteInterpreter extends Interpreter {
         });
   }
 
-
   @Override
-  public List<InterpreterCompletion> completion(final String buf, final int cursor,
-                                                final InterpreterContext interpreterContext)
+  public List<InterpreterCompletion> completion(
+      final String buf, final int cursor, final InterpreterContext interpreterContext)
       throws InterpreterException {
     if (!isOpened) {
       open();
@@ -350,8 +350,8 @@ public class RemoteInterpreter extends Interpreter {
         new RemoteInterpreterProcess.RemoteFunction<List<InterpreterCompletion>>() {
           @Override
           public List<InterpreterCompletion> call(Client client) throws Exception {
-            return client.completion(sessionId, className, buf, cursor,
-                convert(interpreterContext));
+            return client.completion(
+                sessionId, className, buf, cursor, convert(interpreterContext));
           }
         });
   }
@@ -377,36 +377,48 @@ public class RemoteInterpreter extends Interpreter {
         });
   }
 
-
   @Override
   public Scheduler getScheduler() {
-    int maxConcurrency = Integer.parseInt(
-        getProperty("zeppelin.interpreter.max.poolsize",
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue() + ""));
+    int maxConcurrency =
+        Integer.parseInt(
+            getProperty(
+                "zeppelin.interpreter.max.poolsize",
+                ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue()
+                    + ""));
     // one session own one Scheduler, so that when one session is closed, all the jobs/paragraphs
     // running under the scheduler of this session will be aborted.
-    Scheduler s = new RemoteScheduler(
-        RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-"
-            + sessionId,
-        SchedulerFactory.singleton().getExecutor(),
-        sessionId,
-        this,
-        SchedulerFactory.singleton(),
-        maxConcurrency);
+    Scheduler s =
+        new RemoteScheduler(
+            RemoteInterpreter.class.getSimpleName()
+                + "-"
+                + getInterpreterGroup().getId()
+                + "-"
+                + sessionId,
+            SchedulerFactory.singleton().getExecutor(),
+            sessionId,
+            this,
+            SchedulerFactory.singleton(),
+            maxConcurrency);
     return SchedulerFactory.singleton().createOrGetScheduler(s);
   }
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
-    return new RemoteInterpreterContext(ic.getNoteId(), ic.getNoteName(), ic.getParagraphId(),
-        ic.getReplName(), ic.getParagraphTitle(), ic.getParagraphText(),
-        gson.toJson(ic.getAuthenticationInfo()), gson.toJson(ic.getConfig()), ic.getGui().toJson(),
+    return new RemoteInterpreterContext(
+        ic.getNoteId(),
+        ic.getNoteName(),
+        ic.getParagraphId(),
+        ic.getReplName(),
+        ic.getParagraphTitle(),
+        ic.getParagraphText(),
+        gson.toJson(ic.getAuthenticationInfo()),
+        gson.toJson(ic.getConfig()),
+        ic.getGui().toJson(),
         gson.toJson(ic.getNoteGui()),
         ic.getLocalProperties());
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {
-    InterpreterResult r = new InterpreterResult(
-        InterpreterResult.Code.valueOf(result.getCode()));
+    InterpreterResult r = new InterpreterResult(InterpreterResult.Code.valueOf(result.getCode()));
 
     for (RemoteInterpreterResultMessage m : result.getMsg()) {
       r.add(InterpreterResult.Type.valueOf(m.getType()), m.getData());
@@ -416,21 +428,20 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   /**
-   * Push local angular object registry to
-   * remote interpreter. This method should be
-   * call ONLY once when the first Interpreter is created
+   * Push local angular object registry to remote interpreter. This method should be call ONLY once
+   * when the first Interpreter is created
    */
   private void pushAngularObjectRegistryToRemote(Client client) throws TException {
-    final AngularObjectRegistry angularObjectRegistry = this.getInterpreterGroup()
-        .getAngularObjectRegistry();
+    final AngularObjectRegistry angularObjectRegistry =
+        this.getInterpreterGroup().getAngularObjectRegistry();
     if (angularObjectRegistry != null && angularObjectRegistry.getRegistry() != null) {
-      final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry
-          .getRegistry();
-      LOGGER.info("Push local angular object registry from ZeppelinServer to" +
-          " remote interpreter group {}", this.getInterpreterGroup().getId());
-      final java.lang.reflect.Type registryType = new TypeToken<Map<String,
-          Map<String, AngularObject>>>() {
-      }.getType();
+      final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry.getRegistry();
+      LOGGER.info(
+          "Push local angular object registry from ZeppelinServer to"
+              + " remote interpreter group {}",
+          this.getInterpreterGroup().getId());
+      final java.lang.reflect.Type registryType =
+          new TypeToken<Map<String, Map<String, AngularObject>>>() {}.getType();
       client.angularRegistryPush(gson.toJson(registry, registryType));
     }
   }

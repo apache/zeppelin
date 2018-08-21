@@ -20,16 +20,12 @@ package org.apache.zeppelin.interpreter;
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/**
- * Remote Zeppelin Server Resource
- */
+/** Remote Zeppelin Server Resource */
 public class RemoteZeppelinServerResource implements JsonSerializable {
   private static final Gson gson = new Gson();
 
-  /**
-   * Resource Type for Zeppelin Server
-   */
-  public enum Type{
+  /** Resource Type for Zeppelin Server */
+  public enum Type {
     PARAGRAPH_RUNNERS
   }
 

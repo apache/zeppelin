@@ -17,17 +17,12 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
+import java.io.IOException;
+import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 
-import java.io.IOException;
-import java.util.Map;
-
-
-/**
- * Interface for storing interpreter process recovery metadata.
- *
- */
+/** Interface for storing interpreter process recovery metadata. */
 public abstract class RecoveryStorage {
 
   protected ZeppelinConfiguration zConf;
@@ -39,6 +34,7 @@ public abstract class RecoveryStorage {
 
   /**
    * Update RecoveryStorage when new InterpreterClient is started
+   *
    * @param client
    * @throws IOException
    */
@@ -46,20 +42,19 @@ public abstract class RecoveryStorage {
 
   /**
    * Update RecoveryStorage when InterpreterClient is stopped
+   *
    * @param client
    * @throws IOException
    */
   public abstract void onInterpreterClientStop(InterpreterClient client) throws IOException;
 
   /**
-   *
    * It is only called when Zeppelin Server is started.
    *
    * @return
    * @throws IOException
    */
   public abstract Map<String, InterpreterClient> restore() throws IOException;
-
 
   /**
    * It is called after constructor

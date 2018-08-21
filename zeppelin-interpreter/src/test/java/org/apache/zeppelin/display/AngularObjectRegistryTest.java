@@ -17,13 +17,12 @@
 
 package org.apache.zeppelin.display;
 
-import org.apache.thrift.TException;
-import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.thrift.TException;
+import org.junit.Test;
 
 public class AngularObjectRegistryTest {
 
@@ -33,27 +32,27 @@ public class AngularObjectRegistryTest {
     final AtomicInteger onUpdate = new AtomicInteger(0);
     final AtomicInteger onRemove = new AtomicInteger(0);
 
-    AngularObjectRegistry registry = new AngularObjectRegistry("intpId",
-        new AngularObjectRegistryListener() {
+    AngularObjectRegistry registry =
+        new AngularObjectRegistry(
+            "intpId",
+            new AngularObjectRegistryListener() {
 
-          @Override
-          public void onAdd(String interpreterGroupId, AngularObject object) {
-            onAdd.incrementAndGet();
-          }
+              @Override
+              public void onAdd(String interpreterGroupId, AngularObject object) {
+                onAdd.incrementAndGet();
+              }
 
-          @Override
-          public void onUpdate(String interpreterGroupId, AngularObject object) {
-            onUpdate.incrementAndGet();
-          }
+              @Override
+              public void onUpdate(String interpreterGroupId, AngularObject object) {
+                onUpdate.incrementAndGet();
+              }
 
-          @Override
-          public void onRemove(String interpreterGroupId,
-                               String name,
-                               String noteId,
-                               String paragraphId) {
-            onRemove.incrementAndGet();
-          }
-        });
+              @Override
+              public void onRemove(
+                  String interpreterGroupId, String name, String noteId, String paragraphId) {
+                onRemove.incrementAndGet();
+              }
+            });
 
     registry.add("name1", "value1", "note1", null);
     assertEquals(1, registry.getAll("note1", null).size());
@@ -88,7 +87,6 @@ public class AngularObjectRegistryTest {
     AngularObject ao4 = registry.add("name3", "o4", "noteId1", null);
     AngularObject ao5 = registry.add("name4", "o5", null, null);
 
-
     assertNull(registry.get("name3", "noteId1", "paragraphId1"));
     assertNull(registry.get("name1", "noteId2", null));
     assertEquals("o1", registry.get("name1", "noteId1", "paragraphId1").get());
@@ -113,5 +111,4 @@ public class AngularObjectRegistryTest {
     assertEquals(1, registry.getAll(null, null).size());
     assertEquals(5, registry.getAllWithGlobal("noteId1").size());
   }
-
 }

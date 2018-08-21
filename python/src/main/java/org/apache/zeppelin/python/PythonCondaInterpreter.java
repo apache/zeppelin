@@ -16,18 +16,6 @@
  */
 package org.apache.zeppelin.python;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,11 +28,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Conda support
- * TODO(zjffdu) Add removing conda env
- */
+/** Conda support TODO(zjffdu) Add removing conda env */
 public class PythonCondaInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(PythonCondaInterpreter.class);
   public static final String ZEPPELIN_PYTHON = "zeppelin.python";
@@ -70,14 +66,10 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() throws InterpreterException {
-
-  }
+  public void open() throws InterpreterException {}
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
@@ -167,7 +159,6 @@ public class PythonCondaInterpreter extends Interpreter {
         getInterpreterInTheSameSessionByClassName(PythonInterpreter.class, false);
     pythonInterpreter.close();
     pythonInterpreter.open();
-
   }
 
   public static String runCondaCommandForTextOutput(String title, List<String> commands)
@@ -188,8 +179,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return wrapCondaTableOutputStyle(title, envPerName);
   }
 
-  protected Map<String, String> getCondaEnvs()
-      throws IOException, InterruptedException {
+  protected Map<String, String> getCondaEnvs() throws IOException, InterruptedException {
     String result = runCommand("conda", "env", "list");
     Map<String, String> envList = parseCondaCommonStdout(result);
     return envList;
@@ -199,8 +189,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return wrapCondaTableOutputStyle("Environment List", getCondaEnvs());
   }
 
-  private String runCondaEnv(List<String> restArgs)
-      throws IOException, InterruptedException {
+  private String runCondaEnv(List<String> restArgs) throws IOException, InterruptedException {
 
     restArgs.add(0, "conda");
     restArgs.add(1, "env");
@@ -259,8 +248,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return runCondaCommandForTextOutput("Conda Information", commands);
   }
 
-  private String runCondaCreate(List<String> restArgs)
-      throws IOException, InterruptedException {
+  private String runCondaCreate(List<String> restArgs) throws IOException, InterruptedException {
     restArgs.add(0, "conda");
     restArgs.add(1, "create");
     restArgs.add(2, "--yes");
@@ -268,8 +256,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return runCondaCommandForTextOutput("Environment Creation", restArgs);
   }
 
-  private String runCondaInstall(List<String> restArgs)
-      throws IOException, InterruptedException {
+  private String runCondaInstall(List<String> restArgs) throws IOException, InterruptedException {
 
     restArgs.add(0, "conda");
     restArgs.add(1, "install");
@@ -282,8 +269,7 @@ public class PythonCondaInterpreter extends Interpreter {
     return runCondaCommandForTextOutput("Package Installation", restArgs);
   }
 
-  private String runCondaUninstall(List<String> restArgs)
-      throws IOException, InterruptedException {
+  private String runCondaUninstall(List<String> restArgs) throws IOException, InterruptedException {
 
     restArgs.add(0, "conda");
     restArgs.add(1, "uninstall");
@@ -299,12 +285,9 @@ public class PythonCondaInterpreter extends Interpreter {
   public static String wrapCondaBasicOutputStyle(String title, String content) {
     StringBuilder sb = new StringBuilder();
     if (null != title && !title.isEmpty()) {
-      sb.append("<h4>").append(title).append("</h4>\n")
-          .append("</div><br />\n");
+      sb.append("<h4>").append(title).append("</h4>\n").append("</div><br />\n");
     }
-    sb.append("<div style=\"white-space:pre-wrap;\">\n")
-        .append(content)
-        .append("</div>");
+    sb.append("<div style=\"white-space:pre-wrap;\">\n").append(content).append("</div>");
 
     return sb.toString();
   }
@@ -320,11 +303,13 @@ public class PythonCondaInterpreter extends Interpreter {
     for (String name : kv.keySet()) {
       String path = kv.get(name);
 
-      sb.append(String.format("<div style=\"display:table-row\">" +
-              "<div style=\"display:table-cell;width:150px\">%s</div>" +
-              "<div style=\"display:table-cell;\">%s</div>" +
-              "</div>\n",
-          name, path));
+      sb.append(
+          String.format(
+              "<div style=\"display:table-row\">"
+                  + "<div style=\"display:table-cell;width:150px\">%s</div>"
+                  + "<div style=\"display:table-cell;\">%s</div>"
+                  + "</div>\n",
+              name, path));
     }
     sb.append("</div>\n");
 
@@ -352,9 +337,7 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -367,8 +350,8 @@ public class PythonCondaInterpreter extends Interpreter {
   }
 
   /**
-   * Use python interpreter's scheduler.
-   * To make sure %python.conda paragraph and %python paragraph runs sequentially
+   * Use python interpreter's scheduler. To make sure %python.conda paragraph and %python paragraph
+   * runs sequentially
    */
   @Override
   public Scheduler getScheduler() {
@@ -381,8 +364,7 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  public static String runCommand(List<String> commands)
-      throws IOException, InterruptedException {
+  public static String runCommand(List<String> commands) throws IOException, InterruptedException {
     logger.info("Starting shell commands: " + StringUtils.join(commands, " "));
     Process process = Runtime.getRuntime().exec(commands.toArray(new String[0]));
     StreamGobbler errorGobbler = new StreamGobbler(process.getErrorStream());
@@ -429,8 +411,7 @@ public class PythonCondaInterpreter extends Interpreter {
     }
   }
 
-  public static String runCommand(String... command)
-      throws IOException, InterruptedException {
+  public static String runCommand(String... command) throws IOException, InterruptedException {
 
     List<String> list = new ArrayList<>(command.length);
     for (String arg : command) {
