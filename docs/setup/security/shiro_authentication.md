@@ -307,6 +307,12 @@ anyofrolesuser = org.apache.zeppelin.utils.AnyOfRolesUserAuthorizationFilter
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
 
+## FAQ
+
+Zeppelin sever is configured as form-based authentication but is behind proxy configured as basic-authentication for example [NGINX](./authentication_nginx.html#http-basic-authentication-using-nginx) and don't want Zeppelin-Server to clear authentication headers. 
+
+> Set `zeppelin.server.authorization.header.clear` to `false` in zeppelin-site.xml
+
 ## Other authentication methods
 
 - [HTTP Basic Authentication using NGINX](./authentication_nginx.html)
