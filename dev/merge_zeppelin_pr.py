@@ -29,13 +29,24 @@ import os
 import re
 import subprocess
 import sys
-import urllib2
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 try:
     import jira.client
     JIRA_IMPORTED = True
 except ImportError:
     JIRA_IMPORTED = False
+
+try:
+    raw_input = input
+except NameError:
+    pass
 
 # Location of your Zeppelin git development area
 ZEPPELIN_HOME = os.environ.get("ZEPPELIN_HOME", os.getcwd())
@@ -60,20 +71,20 @@ os.chdir(ZEPPELIN_HOME)
 
 def get_json(url):
     try:
-        return json.load(urllib2.urlopen(url))
-    except urllib2.HTTPError as e:
-        print "Unable to fetch URL, exiting: %s" % url
+        return json.load(urlopen(url))
+    except:
+        print("Unable to fetch URL, exiting: %s" % url)
         sys.exit(-1)
 
 
 def fail(msg):
-    print msg
+    print(msg)
     clean_up()
     sys.exit(-1)
 
 
 def run_cmd(cmd):
-    print cmd
+    print(cmd)
     if isinstance(cmd, list):
         return subprocess.check_output(cmd)
     else:
@@ -90,13 +101,13 @@ original_head = run_cmd("git rev-parse HEAD")[:8]
 
 
 def clean_up():
-    print "Restoring head pointer to %s" % original_head
+    print("Restoring head pointer to %s" % original_head)
     run_cmd("git checkout %s" % original_head)
 
     branches = run_cmd("git branch").replace(" ", "").split("\n")
 
     for branch in filter(lambda x: x.startswith(BRANCH_PREFIX), branches):
-        print "Deleting local branch %s" % branch
+        print("Deleting local branch %s" % branch)
         run_cmd("git branch -D %s" % branch)
 
 
@@ -119,14 +130,14 @@ def merge_pr(pr_num, target_ref):
         had_conflicts = True
 
     commit_authors = run_cmd(['git', 'log', 'HEAD..%s' % pr_branch_name,
-                             '--pretty=format:%an <%ae>']).split("\n")
+                             '--pretty=format:%an <%ae>']).split('\n')
     commit_date = run_cmd(['git', 'log', '%s' % pr_branch_name, '-1',
                              '--pretty=format:%ad'])
     distinct_authors = sorted(set(commit_authors),
                               key=lambda x: commit_authors.count(x), reverse=True)
     primary_author = distinct_authors[0]
     commits = run_cmd(['git', 'log', 'HEAD..%s' % pr_branch_name,
-                      '--pretty=format:%h [%an] %s']).split("\n\n")
+                      '--pretty=format:%h [%an] %s']).split('\n\n')
 
     merge_message_flags = []
 
@@ -276,7 +287,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
     asf_jira.transition_issue(
         jira_id, resolve["id"], fixVersions=jira_fix_versions, comment=comment)
 
-    print "Succesfully resolved %s with fixVersions=%s!" % (jira_id, fix_versions)
+    print("Succesfully resolved %s with fixVersions=%s!" % (jira_id, fix_versions))
 
 
 def resolve_jira_issues(title, merge_branches, comment):
@@ -315,13 +326,13 @@ if merge_commits:
     merge_hash = merge_commits[0]["commit_id"]
     message = get_json("%s/commits/%s" % (GITHUB_API_BASE, merge_hash))["commit"]["message"]
 
-    print "Pull request %s has already been merged, assuming you want to backport" % pr_num
+    print("Pull request %s has already been merged, assuming you want to backport" % pr_num)
     commit_is_downloaded = run_cmd(['git', 'rev-parse', '--quiet', '--verify',
                                     "%s^{commit}" % merge_hash]).strip() != ""
     if not commit_is_downloaded:
         fail("Couldn't find any merge commit for #%s, you may need to update HEAD." % pr_num)
 
-    print "Found commit %s:\n%s" % (merge_hash, message)
+    print("Found commit %s:\n%s" % (merge_hash, message))
     cherry_pick(pr_num, merge_hash, latest_branch)
     sys.exit(0)
 
@@ -349,8 +360,8 @@ if JIRA_IMPORTED:
         jira_comment = "Issue resolved by pull request %s\n[%s/%s]" % (pr_num, GITHUB_BASE, pr_num)
         resolve_jira_issues(title, merged_refs, jira_comment)
     else:
-        print "JIRA_USERNAME and JIRA_PASSWORD not set"
-        print "Exiting without trying to close the associated JIRA."
+        print("JIRA_USERNAME and JIRA_PASSWORD not set")
+        print("Exiting without trying to close the associated JIRA.")
 else:
-    print "Could not find jira library. Run 'sudo pip install jira' to install."
-    print "Exiting without trying to close the associated JIRA."
+    print("Could not find jira library. Run 'sudo pip install jira' to install.")
+    print("Exiting without trying to close the associated JIRA.")
