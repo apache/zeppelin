@@ -130,7 +130,7 @@ def merge_pr(pr_num, target_ref):
         had_conflicts = True
 
     commit_authors = run_cmd(['git', 'log', 'HEAD..%s' % pr_branch_name,
-                             b'--pretty=format:%an <%ae>']).split("\n")
+                             '--pretty=format:%an <%ae>'.encode('utf-8')]).split("\n")
     commit_date = run_cmd(['git', 'log', '%s' % pr_branch_name, '-1',
                              '--pretty=format:%ad'])
     distinct_authors = sorted(set(commit_authors),
