@@ -19,9 +19,7 @@ package org.apache.zeppelin.jupyter.zformat;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-/**
- *
- */
+/** */
 public class Note {
 
   @SerializedName("name")

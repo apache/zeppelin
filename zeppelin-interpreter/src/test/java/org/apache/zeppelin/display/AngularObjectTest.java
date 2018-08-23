@@ -17,14 +17,13 @@
 
 package org.apache.zeppelin.display;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 
 public class AngularObjectTest {
 
@@ -32,63 +31,57 @@ public class AngularObjectTest {
   public void testEquals() {
     assertEquals(
         new AngularObject("name", "value", "note1", null, null),
-        new AngularObject("name", "value", "note1", null, null)
-    );
+        new AngularObject("name", "value", "note1", null, null));
 
     assertEquals(
         new AngularObject("name", "value", "note1", "paragraph1", null),
-        new AngularObject("name", "value", "note1", "paragraph1", null)
-    );
+        new AngularObject("name", "value", "note1", "paragraph1", null));
 
     assertEquals(
         new AngularObject("name", "value", null, null, null),
-        new AngularObject("name", "value", null, null, null)
-    );
+        new AngularObject("name", "value", null, null, null));
 
     assertEquals(
         new AngularObject("name", "value1", null, null, null),
-        new AngularObject("name", "value2", null, null, null)
-    );
+        new AngularObject("name", "value2", null, null, null));
 
     assertNotSame(
         new AngularObject("name1", "value", null, null, null),
-        new AngularObject("name2", "value", null, null, null)
-    );
+        new AngularObject("name2", "value", null, null, null));
 
     assertNotSame(
         new AngularObject("name1", "value", "note1", null, null),
-        new AngularObject("name2", "value", "note2", null, null)
-    );
+        new AngularObject("name2", "value", "note2", null, null));
 
     assertNotSame(
         new AngularObject("name1", "value", "note", null, null),
-        new AngularObject("name2", "value", null, null, null)
-    );
+        new AngularObject("name2", "value", null, null, null));
 
     assertNotSame(
         new AngularObject("name", "value", "note", "paragraph1", null),
-        new AngularObject("name", "value", "note", "paragraph2", null)
-    );
+        new AngularObject("name", "value", "note", "paragraph2", null));
 
     assertNotSame(
         new AngularObject("name", "value", "note1", null, null),
-        new AngularObject("name", "value", "note1", "paragraph1", null)
-    );
-
-
+        new AngularObject("name", "value", "note1", "paragraph1", null));
   }
 
   @Test
   public void testListener() throws TException {
     final AtomicInteger updated = new AtomicInteger(0);
-    AngularObject ao = new AngularObject("name", "value", "note1", null,
-        new AngularObjectListener() {
+    AngularObject ao =
+        new AngularObject(
+            "name",
+            "value",
+            "note1",
+            null,
+            new AngularObjectListener() {
 
-          @Override
-          public void updated(AngularObject updatedObject) {
-            updated.incrementAndGet();
-          }
-        });
+              @Override
+              public void updated(AngularObject updatedObject) {
+                updated.incrementAndGet();
+              }
+            });
 
     assertEquals(0, updated.get());
     ao.set("newValue");
@@ -107,20 +100,26 @@ public class AngularObjectTest {
   public void testWatcher() throws InterruptedException, TException {
     final AtomicInteger updated = new AtomicInteger(0);
     final AtomicInteger onWatch = new AtomicInteger(0);
-    AngularObject ao = new AngularObject("name", "value", "note1", null,
-        new AngularObjectListener() {
+    AngularObject ao =
+        new AngularObject(
+            "name",
+            "value",
+            "note1",
+            null,
+            new AngularObjectListener() {
+              @Override
+              public void updated(AngularObject updatedObject) {
+                updated.incrementAndGet();
+              }
+            });
+
+    ao.addWatcher(
+        new AngularObjectWatcher(null) {
           @Override
-          public void updated(AngularObject updatedObject) {
-            updated.incrementAndGet();
+          public void watch(Object oldObject, Object newObject, InterpreterContext context) {
+            onWatch.incrementAndGet();
           }
         });
-
-    ao.addWatcher(new AngularObjectWatcher(null) {
-      @Override
-      public void watch(Object oldObject, Object newObject, InterpreterContext context) {
-        onWatch.incrementAndGet();
-      }
-    });
 
     assertEquals(0, onWatch.get());
     ao.set("newValue");

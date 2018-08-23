@@ -21,9 +21,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 
-/**
- * Contains the Spark and Zeppelin Contexts made available to SparkR.
- */
+/** Contains the Spark and Zeppelin Contexts made available to SparkR. */
 public class ZeppelinRContext {
   private static SparkContext sparkContext;
   private static SQLContext sqlContext;
@@ -63,7 +61,11 @@ public class ZeppelinRContext {
     return sparkSession;
   }
 
-  public static void setJavaSparkContext(JavaSparkContext jsc) { javaSparkContext = jsc; }
+  public static void setJavaSparkContext(JavaSparkContext jsc) {
+    javaSparkContext = jsc;
+  }
 
-  public static JavaSparkContext getJavaSparkContext() { return javaSparkContext; }
+  public static JavaSparkContext getJavaSparkContext() {
+    return javaSparkContext;
+  }
 }

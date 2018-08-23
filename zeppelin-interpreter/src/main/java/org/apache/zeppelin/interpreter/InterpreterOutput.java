@@ -16,10 +16,6 @@
  */
 package org.apache.zeppelin.interpreter;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +24,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * InterpreterOutput is OutputStream that supposed to print content on notebook
- * in addition to InterpreterResult which used to return from Interpreter.interpret().
+ * InterpreterOutput is OutputStream that supposed to print content on notebook in addition to
+ * InterpreterResult which used to return from Interpreter.interpret().
  */
 public class InterpreterOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
@@ -61,8 +59,8 @@ public class InterpreterOutput extends OutputStream {
     clear();
   }
 
-  public InterpreterOutput(InterpreterOutputListener flushListener,
-                           InterpreterOutputChangeListener listener)
+  public InterpreterOutput(
+      InterpreterOutputListener flushListener, InterpreterOutputChangeListener listener)
       throws IOException {
     this.flushListener = flushListener;
     this.changeListener = listener;
@@ -168,7 +166,6 @@ public class InterpreterOutput extends OutputStream {
     }
   }
 
-
   int previousChar = 0;
   boolean startOfTheNewLine = true;
   boolean firstCharIsPercentSign = false;
@@ -190,8 +187,12 @@ public class InterpreterOutput extends OutputStream {
           InterpreterResult.Type type = currentOut.getType();
           if (type == InterpreterResult.Type.TEXT || type == InterpreterResult.Type.TABLE) {
             setType(InterpreterResult.Type.HTML);
-            getCurrentOutput().write(ResultMessages.getExceedsLimitSizeMessage(limit,
-                "ZEPPELIN_INTERPRETER_OUTPUT_LIMIT").getData().getBytes());
+            getCurrentOutput()
+                .write(
+                    ResultMessages.getExceedsLimitSizeMessage(
+                            limit, "ZEPPELIN_INTERPRETER_OUTPUT_LIMIT")
+                        .getData()
+                        .getBytes());
             truncated = true;
             return;
           }
@@ -275,12 +276,12 @@ public class InterpreterOutput extends OutputStream {
   }
 
   @Override
-  public void write(byte [] b) throws IOException {
+  public void write(byte[] b) throws IOException {
     write(b, 0, b.length);
   }
 
   @Override
-  public void write(byte [] b, int off, int len) throws IOException {
+  public void write(byte[] b, int off, int len) throws IOException {
     for (int i = off; i < len; i++) {
       write(b[i]);
     }
@@ -288,6 +289,7 @@ public class InterpreterOutput extends OutputStream {
 
   /**
    * In dev mode, it monitors file and update ZeppelinServer
+   *
    * @param file
    * @throws IOException
    */
@@ -307,6 +309,7 @@ public class InterpreterOutput extends OutputStream {
 
   /**
    * write contents in the resource file in the classpath
+   *
    * @param url
    * @throws IOException
    */

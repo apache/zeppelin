@@ -16,12 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.install;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.util.Util;
-import org.sonatype.aether.RepositoryException;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -30,10 +24,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.util.Util;
+import org.sonatype.aether.RepositoryException;
 
-/**
- * Commandline utility to install interpreter from maven repository
- */
+/** Commandline utility to install interpreter from maven repository */
 public class InstallInterpreter {
   private final File interpreterListFile;
   private final File interpreterBaseDir;
@@ -44,7 +41,6 @@ public class InstallInterpreter {
   private String proxyPassword;
 
   /**
-   *
    * @param interpreterListFile
    * @param interpreterBaseDir interpreter directory for installing binaries
    * @throws IOException
@@ -58,10 +54,7 @@ public class InstallInterpreter {
     readAvailableInterpreters();
   }
 
-
-  /**
-   * Information for available informations
-   */
+  /** Information for available informations */
   private static class AvailableInterpreterInfo {
     public final String name;
     public final String artifact;
@@ -121,7 +114,7 @@ public class InstallInterpreter {
     }
   }
 
-  public void install(String [] names) {
+  public void install(String[] names) {
     for (String name : names) {
       install(name);
     }
@@ -139,7 +132,7 @@ public class InstallInterpreter {
     throw new RuntimeException("Can't find interpreter '" + name + "'");
   }
 
-  public void install(String [] names, String [] artifacts) {
+  public void install(String[] names, String[] artifacts) {
     if (names.length != artifacts.length) {
       throw new RuntimeException("Length of given names and artifacts are different");
     }
@@ -157,19 +150,18 @@ public class InstallInterpreter {
 
     File installDir = new File(interpreterBaseDir, name);
     if (installDir.exists()) {
-      System.err.println("Directory " + installDir.getAbsolutePath()
-        + " already exists"
-        + "\n\nSkipped");
+      System.err.println(
+          "Directory " + installDir.getAbsolutePath() + " already exists" + "\n\nSkipped");
       return;
     }
 
-    System.out.println("Install " + name + "(" + artifact + ") to "
-        + installDir.getAbsolutePath() + " ... ");
+    System.out.println(
+        "Install " + name + "(" + artifact + ") to " + installDir.getAbsolutePath() + " ... ");
 
     try {
       depResolver.load(artifact, installDir);
-      System.out.println("Interpreter " + name + " installed under " +
-          installDir.getAbsolutePath() + ".");
+      System.out.println(
+          "Interpreter " + name + " installed under " + installDir.getAbsolutePath() + ".");
       startTip();
     } catch (RepositoryException e) {
       e.printStackTrace();
@@ -188,29 +180,32 @@ public class InstallInterpreter {
     System.out.println("Options");
     System.out.println("  -l, --list                   List available interpreters");
     System.out.println("  -a, --all                    Install all available interpreters");
-    System.out.println("  -n, --name       [NAMES]     Install interpreters (comma separated " +
-        "list)" +
-        "e.g. md,shell,jdbc,python,angular");
-    System.out.println("  -t, --artifact   [ARTIFACTS] (Optional with -n) custom artifact names" +
-        ". " +
-        "(comma separated list correspond to --name) " +
-        "e.g. customGroup:customArtifact:customVersion");
+    System.out.println(
+        "  -n, --name       [NAMES]     Install interpreters (comma separated "
+            + "list)"
+            + "e.g. md,shell,jdbc,python,angular");
+    System.out.println(
+        "  -t, --artifact   [ARTIFACTS] (Optional with -n) custom artifact names"
+            + ". "
+            + "(comma separated list correspond to --name) "
+            + "e.g. customGroup:customArtifact:customVersion");
     System.out.println("  --proxy-url      [url]       (Optional) proxy url. http(s)://host:port");
     System.out.println("  --proxy-user     [user]      (Optional) proxy user");
     System.out.println("  --proxy-password [password]  (Optional) proxy password");
   }
 
-  public static void main(String [] args) throws IOException {
+  public static void main(String[] args) throws IOException {
     if (args.length == 0) {
       usage();
       return;
     }
 
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    InstallInterpreter installer = new InstallInterpreter(
-        new File(conf.getInterpreterListPath()),
-        new File(conf.getInterpreterDir()),
-        conf.getInterpreterLocalRepoPath());
+    InstallInterpreter installer =
+        new InstallInterpreter(
+            new File(conf.getInterpreterListPath()),
+            new File(conf.getInterpreterDir()),
+            conf.getInterpreterLocalRepoPath());
 
     String names = null;
     String artifacts = null;
@@ -281,8 +276,9 @@ public class InstallInterpreter {
   }
 
   private static void startTip() {
-    System.out.println("\n1. Restart Zeppelin"
-      + "\n2. Create interpreter setting in 'Interpreter' menu on Zeppelin GUI"
-      + "\n3. Then you can bind the interpreter on your note");
+    System.out.println(
+        "\n1. Restart Zeppelin"
+            + "\n2. Create interpreter setting in 'Interpreter' menu on Zeppelin GUI"
+            + "\n3. Then you can bind the interpreter on your note");
   }
 }

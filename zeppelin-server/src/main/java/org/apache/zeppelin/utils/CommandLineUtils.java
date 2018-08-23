@@ -17,12 +17,9 @@
 package org.apache.zeppelin.utils;
 
 import java.util.Locale;
-
 import org.apache.zeppelin.util.Util;
 
-/**
- * CommandLine Support Class.
- */
+/** CommandLine Support Class. */
 public class CommandLineUtils {
   public static void main(String[] args) {
     if (args.length == 0) {

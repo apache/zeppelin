@@ -1,25 +1,18 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.file;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -38,11 +30,10 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * File interpreter for Zeppelin.
- *
- */
+/** File interpreter for Zeppelin. */
 public abstract class FileInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(FileInterpreter.class);
   String currentDir = null;
@@ -53,9 +44,7 @@ public abstract class FileInterpreter extends Interpreter {
     currentDir = new String("/");
   }
 
-  /**
-   * Handling the arguments of the command.
-   */
+  /** Handling the arguments of the command. */
   public class CommandArgs {
     public String input = null;
     public String command = null;
@@ -69,12 +58,12 @@ public abstract class FileInterpreter extends Interpreter {
     }
 
     private void parseArg(String arg) {
-      if (arg.charAt(0) == '-') {                   // handle flags
+      if (arg.charAt(0) == '-') { // handle flags
         for (int i = 0; i < arg.length(); i++) {
           Character c = arg.charAt(i);
           flags.add(c);
         }
-      } else {                                      // handle other args
+      } else { // handle other args
         args.add(arg);
       }
     }
@@ -99,7 +88,7 @@ public abstract class FileInterpreter extends Interpreter {
   public abstract boolean isDirectory(String path);
 
   // Combine paths, takes care of arguments such as ..
-  protected String getNewPath(String argument){
+  protected String getNewPath(String argument) {
     Path arg = Paths.get(argument);
     Path ret = arg.isAbsolute() ? arg : Paths.get(currentDir, argument);
     return ret.normalize().toString();
@@ -145,8 +134,7 @@ public abstract class FileInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -160,13 +148,13 @@ public abstract class FileInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        FileInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton()
+        .createOrGetFIFOScheduler(FileInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return null;
   }
 }

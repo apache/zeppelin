@@ -17,13 +17,14 @@
 package org.apache.zeppelin.helium;
 
 import com.github.eirslett.maven.plugins.frontend.lib.*;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-
+import java.io.*;
+import java.net.URI;
+import java.util.*;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -35,18 +36,11 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.WriterAppender;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.URI;
-import java.util.*;
-
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-
-/**
- * Load helium visualization & spell
- */
+/** Load helium visualization & spell */
 public class HeliumBundleFactory {
   private Logger logger = LoggerFactory.getLogger(HeliumBundleFactory.class);
   private static final String NODE_VERSION = "v6.9.1";
@@ -82,7 +76,7 @@ public class HeliumBundleFactory {
   private Gson gson;
   private boolean nodeAndNpmInstalled = false;
 
-  private ByteArrayOutputStream out  = new ByteArrayOutputStream();
+  private ByteArrayOutputStream out = new ByteArrayOutputStream();
 
   public HeliumBundleFactory(
       ZeppelinConfiguration conf,
@@ -90,7 +84,8 @@ public class HeliumBundleFactory {
       File moduleDownloadPath,
       File tabledataModulePath,
       File visualizationModulePath,
-      File spellModulePath) throws TaskRunnerException {
+      File spellModulePath)
+      throws TaskRunnerException {
     this(conf, nodeInstallationDir, moduleDownloadPath);
     this.tabledataModulePath = tabledataModulePath;
     this.visualizationModulePath = visualizationModulePath;
@@ -98,9 +93,8 @@ public class HeliumBundleFactory {
   }
 
   private HeliumBundleFactory(
-      ZeppelinConfiguration conf,
-      File nodeInstallationDir,
-      File moduleDownloadPath) throws TaskRunnerException {
+      ZeppelinConfiguration conf, File nodeInstallationDir, File moduleDownloadPath)
+      throws TaskRunnerException {
     this.heliumLocalRepoDirectory = new File(moduleDownloadPath, HELIUM_LOCAL_REPO);
     this.heliumBundleDirectory = new File(heliumLocalRepoDirectory, HELIUM_BUNDLES_DIR);
     this.heliumLocalModuleDirectory = new File(heliumLocalRepoDirectory, HELIUM_LOCAL_MODULE_DIR);
@@ -109,11 +103,11 @@ public class HeliumBundleFactory {
     this.defaultNpmInstallerUrl = conf.getHeliumNpmInstallerUrl();
     this.defaultYarnInstallerUrl = conf.getHeliumYarnInstallerUrl();
 
-    nodeInstallationDirectory = (nodeInstallationDir == null) ?
-        heliumLocalRepoDirectory : nodeInstallationDir;
+    nodeInstallationDirectory =
+        (nodeInstallationDir == null) ? heliumLocalRepoDirectory : nodeInstallationDir;
 
-    frontEndPluginFactory = new FrontendPluginFactory(
-            heliumLocalRepoDirectory, nodeInstallationDirectory);
+    frontEndPluginFactory =
+        new FrontendPluginFactory(heliumLocalRepoDirectory, nodeInstallationDirectory);
 
     gson = new Gson();
   }
@@ -123,20 +117,20 @@ public class HeliumBundleFactory {
       return;
     }
     try {
-      NodeInstaller nodeInstaller = frontEndPluginFactory
-              .getNodeInstaller(getProxyConfig(isSecure(defaultNodeInstallerUrl)));
+      NodeInstaller nodeInstaller =
+          frontEndPluginFactory.getNodeInstaller(getProxyConfig(isSecure(defaultNodeInstallerUrl)));
       nodeInstaller.setNodeVersion(NODE_VERSION);
       nodeInstaller.setNodeDownloadRoot(defaultNodeInstallerUrl);
       nodeInstaller.install();
 
-      NPMInstaller npmInstaller = frontEndPluginFactory
-              .getNPMInstaller(getProxyConfig(isSecure(defaultNpmInstallerUrl)));
+      NPMInstaller npmInstaller =
+          frontEndPluginFactory.getNPMInstaller(getProxyConfig(isSecure(defaultNpmInstallerUrl)));
       npmInstaller.setNpmVersion(NPM_VERSION);
       npmInstaller.setNpmDownloadRoot(defaultNpmInstallerUrl + "/" + NPM_PACKAGE_NAME + "/-/");
       npmInstaller.install();
 
-      YarnInstaller yarnInstaller = frontEndPluginFactory
-              .getYarnInstaller(getProxyConfig(isSecure(defaultYarnInstallerUrl)));
+      YarnInstaller yarnInstaller =
+          frontEndPluginFactory.getYarnInstaller(getProxyConfig(isSecure(defaultYarnInstallerUrl)));
       yarnInstaller.setYarnVersion(YARN_VERSION);
       yarnInstaller.setYarnDownloadRoot(defaultYarnInstallerUrl);
       yarnInstaller.install();
@@ -154,11 +148,15 @@ public class HeliumBundleFactory {
   private ProxyConfig getProxyConfig(boolean isSecure) {
     List<ProxyConfig.Proxy> proxies = new LinkedList<>();
 
-    String httpProxy = StringUtils.isBlank(System.getenv("http_proxy")) ?
-            System.getenv("HTTP_PROXY") : System.getenv("http_proxy");
+    String httpProxy =
+        StringUtils.isBlank(System.getenv("http_proxy"))
+            ? System.getenv("HTTP_PROXY")
+            : System.getenv("http_proxy");
 
-    String httpsProxy = StringUtils.isBlank(System.getenv("https_proxy")) ?
-            System.getenv("HTTPS_PROXY") : System.getenv("https_proxy");
+    String httpsProxy =
+        StringUtils.isBlank(System.getenv("https_proxy"))
+            ? System.getenv("HTTPS_PROXY")
+            : System.getenv("https_proxy");
 
     try {
       if (isSecure && StringUtils.isNotBlank(httpsProxy))
@@ -187,8 +185,10 @@ public class HeliumBundleFactory {
         username = authority[0];
       }
     }
-    String nonProxyHosts = StringUtils.isBlank(System.getenv("no_proxy")) ?
-            System.getenv("NO_PROXY") : System.getenv("no_proxy");
+    String nonProxyHosts =
+        StringUtils.isBlank(System.getenv("no_proxy"))
+            ? System.getenv("NO_PROXY")
+            : System.getenv("no_proxy");
     return new ProxyConfig.Proxy(proxyId, protocol, host, port, username, password, nonProxyHosts);
   }
 
@@ -214,8 +214,8 @@ public class HeliumBundleFactory {
 
   private static List<String> unTgz(File tarFile, File directory) throws IOException {
     List<String> result = new ArrayList<>();
-    try (TarArchiveInputStream in = new TarArchiveInputStream(
-            new GzipCompressorInputStream(new FileInputStream(tarFile)))) {
+    try (TarArchiveInputStream in =
+        new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(tarFile)))) {
       TarArchiveEntry entry = in.getNextTarEntry();
       while (entry != null) {
         if (entry.isDirectory()) {
@@ -237,34 +237,35 @@ public class HeliumBundleFactory {
     return result;
   }
 
-  /**
-   * @return main file name of this helium package (relative path)
-   */
-  private String downloadPackage(HeliumPackage pkg, String[] nameAndVersion, File bundleDir,
-                                String templateWebpackConfig, String templatePackageJson,
-                                FrontendPluginFactory fpf) throws IOException, TaskRunnerException {
+  /** @return main file name of this helium package (relative path) */
+  private String downloadPackage(
+      HeliumPackage pkg,
+      String[] nameAndVersion,
+      File bundleDir,
+      String templateWebpackConfig,
+      String templatePackageJson,
+      FrontendPluginFactory fpf)
+      throws IOException, TaskRunnerException {
     if (bundleDir.exists()) {
       FileUtils.deleteQuietly(bundleDir);
     }
     FileUtils.forceMkdir(bundleDir);
 
-    FileFilter copyFilter = new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        String fileName = pathname.getName();
-        if (fileName.startsWith(".") || fileName.startsWith("#") || fileName.startsWith("~")) {
-          return false;
-        } else {
-          return true;
-        }
-      }
-    };
+    FileFilter copyFilter =
+        new FileFilter() {
+          @Override
+          public boolean accept(File pathname) {
+            String fileName = pathname.getName();
+            if (fileName.startsWith(".") || fileName.startsWith("#") || fileName.startsWith("~")) {
+              return false;
+            } else {
+              return true;
+            }
+          }
+        };
 
     if (isLocalPackage(pkg)) {
-      FileUtils.copyDirectory(
-              new File(pkg.getArtifact()),
-              bundleDir,
-              copyFilter);
+      FileUtils.copyDirectory(new File(pkg.getArtifact()), bundleDir, copyFilter);
     } else {
       // if online package
       String version = nameAndVersion[1];
@@ -276,7 +277,7 @@ public class HeliumBundleFactory {
       File extracted = new File(heliumBundleDirectory, "package");
       FileUtils.deleteDirectory(extracted);
       List<String> entries = unTgz(tgz, heliumBundleDirectory);
-      for (String entry: entries) logger.debug("Extracted " + entry);
+      for (String entry : entries) logger.debug("Extracted " + entry);
       tgz.delete();
       FileUtils.copyDirectory(extracted, bundleDir);
       FileUtils.deleteDirectory(extracted);
@@ -285,20 +286,22 @@ public class HeliumBundleFactory {
     // 1. setup package.json
     File existingPackageJson = new File(bundleDir, "package.json");
     JsonReader reader = new JsonReader(new FileReader(existingPackageJson));
-    Map<String, Object> packageJson = gson.fromJson(reader,
-            new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, Object> packageJson =
+        gson.fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, String> existingDeps = (Map<String, String>) packageJson.get("dependencies");
     String mainFileName = (String) packageJson.get("main");
 
     StringBuilder dependencies = new StringBuilder();
     int index = 0;
-    for (Map.Entry<String, String> e: existingDeps.entrySet()) {
+    for (Map.Entry<String, String> e : existingDeps.entrySet()) {
       dependencies.append("    \"").append(e.getKey()).append("\": ");
-      if (e.getKey().equals("zeppelin-vis") ||
-          e.getKey().equals("zeppelin-tabledata") ||
-          e.getKey().equals("zeppelin-spell")) {
-        dependencies.append("\"file:../../" + HELIUM_LOCAL_MODULE_DIR + "/")
-                .append(e.getKey()).append("\"");
+      if (e.getKey().equals("zeppelin-vis")
+          || e.getKey().equals("zeppelin-tabledata")
+          || e.getKey().equals("zeppelin-spell")) {
+        dependencies
+            .append("\"file:../../" + HELIUM_LOCAL_MODULE_DIR + "/")
+            .append(e.getKey())
+            .append("\"");
       } else {
         dependencies.append("\"").append(e.getValue()).append("\"");
       }
@@ -321,8 +324,8 @@ public class HeliumBundleFactory {
     return mainFileName;
   }
 
-  private void prepareSource(HeliumPackage pkg, String[] moduleNameVersion,
-                            String mainFileName) throws IOException {
+  private void prepareSource(HeliumPackage pkg, String[] moduleNameVersion, String mainFileName)
+      throws IOException {
     StringBuilder loadJsImport = new StringBuilder();
     StringBuilder loadJsRegister = new StringBuilder();
     String className = "bundles" + pkg.getName().replaceAll("[-_]", "");
@@ -332,10 +335,7 @@ public class HeliumBundleFactory {
       mainFileName = mainFileName.substring(0, mainFileName.length() - 3);
     }
 
-    loadJsImport
-        .append("import ")
-        .append(className)
-        .append(" from \"../" + mainFileName + "\"\n");
+    loadJsImport.append("import ").append(className).append(" from \"../" + mainFileName + "\"\n");
 
     loadJsRegister.append(HELIUM_BUNDLES_VAR + ".push({\n");
     loadJsRegister.append("id: \"" + moduleNameVersion[0] + "\",\n");
@@ -347,17 +347,17 @@ public class HeliumBundleFactory {
 
     File srcDir = getHeliumPackageSourceDirectory(pkg.getName());
     FileUtils.forceMkdir(srcDir);
-    FileUtils.write(new File(srcDir, HELIUM_BUNDLES_SRC),
-            loadJsImport.append(loadJsRegister).toString());
+    FileUtils.write(
+        new File(srcDir, HELIUM_BUNDLES_SRC), loadJsImport.append(loadJsRegister).toString());
   }
 
   private synchronized void installNodeModules(FrontendPluginFactory fpf) throws IOException {
     try {
       out.reset();
       String commandForNpmInstall =
-              String.format("install --fetch-retries=%d --fetch-retry-factor=%d " +
-                              "--fetch-retry-mintimeout=%d",
-                      FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+          String.format(
+              "install --fetch-retries=%d --fetch-retry-factor=%d " + "--fetch-retry-mintimeout=%d",
+              FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
       logger.info("Installing required node modules");
       yarnCommand(fpf, commandForNpmInstall);
       logger.info("Installed required node modules");
@@ -366,8 +366,8 @@ public class HeliumBundleFactory {
     }
   }
 
-  private synchronized File bundleHeliumPackage(FrontendPluginFactory fpf,
-                                               File bundleDir) throws IOException {
+  private synchronized File bundleHeliumPackage(FrontendPluginFactory fpf, File bundleDir)
+      throws IOException {
     try {
       out.reset();
       logger.info("Bundling helium packages");
@@ -380,8 +380,7 @@ public class HeliumBundleFactory {
     String bundleStdoutResult = new String(out.toByteArray());
     File heliumBundle = new File(bundleDir, HELIUM_BUNDLE);
     if (!heliumBundle.isFile()) {
-      throw new IOException(
-              "Can't create bundle: \n" + bundleStdoutResult);
+      throw new IOException("Can't create bundle: \n" + bundleStdoutResult);
     }
 
     WebpackResult result = getWebpackResultFromOutput(bundleStdoutResult);
@@ -393,9 +392,8 @@ public class HeliumBundleFactory {
     return heliumBundle;
   }
 
-  public synchronized File buildPackage(HeliumPackage pkg,
-                                        boolean rebuild,
-                                        boolean recopyLocalModule) throws IOException {
+  public synchronized File buildPackage(
+      HeliumPackage pkg, boolean rebuild, boolean recopyLocalModule) throws IOException {
     if (pkg == null) {
       return null;
     }
@@ -426,20 +424,20 @@ public class HeliumBundleFactory {
       FileUtils.deleteQuietly(heliumLocalRepoDirectory);
       FileUtils.forceMkdir(heliumLocalRepoDirectory);
     }
-    FrontendPluginFactory fpf = new FrontendPluginFactory(
-            bundleDir, nodeInstallationDirectory);
+    FrontendPluginFactory fpf = new FrontendPluginFactory(bundleDir, nodeInstallationDirectory);
 
     // resources: webpack.js, package.json
-    String templateWebpackConfig = Resources.toString(
-        Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
-    String templatePackageJson = Resources.toString(
-        Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
+    String templateWebpackConfig =
+        Resources.toString(Resources.getResource("helium/webpack.config.js"), Charsets.UTF_8);
+    String templatePackageJson =
+        Resources.toString(Resources.getResource("helium/" + PACKAGE_JSON), Charsets.UTF_8);
 
     // 2. download helium package using `npm pack`
     String mainFileName = null;
     try {
-      mainFileName = downloadPackage(pkg, moduleNameVersion, bundleDir,
-              templateWebpackConfig, templatePackageJson, fpf);
+      mainFileName =
+          downloadPackage(
+              pkg, moduleNameVersion, bundleDir, templateWebpackConfig, templatePackageJson, fpf);
     } catch (TaskRunnerException e) {
       throw new IOException(e);
     }
@@ -478,36 +476,34 @@ public class HeliumBundleFactory {
     }
   }
 
-  private void copyFrameworkModule(boolean recopy, FileFilter filter,
-                           File src, File dest) throws IOException {
+  private void copyFrameworkModule(boolean recopy, FileFilter filter, File src, File dest)
+      throws IOException {
     if (src != null) {
       if (recopy && dest.exists()) {
         FileUtils.deleteDirectory(dest);
       }
 
       if (!dest.exists()) {
-        FileUtils.copyDirectory(
-            src,
-            dest,
-            filter);
+        FileUtils.copyDirectory(src, dest, filter);
       }
     }
   }
 
   private void deleteYarnCache() {
-    FilenameFilter filter = new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        if ((name.startsWith("npm-zeppelin-vis-") ||
-            name.startsWith("npm-zeppelin-tabledata-") ||
-            name.startsWith("npm-zeppelin-spell-")) &&
-            dir.isDirectory()) {
-          return true;
-        }
+    FilenameFilter filter =
+        new FilenameFilter() {
+          @Override
+          public boolean accept(File dir, String name) {
+            if ((name.startsWith("npm-zeppelin-vis-")
+                    || name.startsWith("npm-zeppelin-tabledata-")
+                    || name.startsWith("npm-zeppelin-spell-"))
+                && dir.isDirectory()) {
+              return true;
+            }
 
-        return false;
-      }
-    };
+            return false;
+          }
+        };
 
     File[] localModuleCaches = yarnCacheDir.listFiles(filter);
     if (localModuleCaches != null) {
@@ -517,42 +513,38 @@ public class HeliumBundleFactory {
     }
   }
 
-  void copyFrameworkModulesToInstallPath(boolean recopy)
-      throws IOException {
+  void copyFrameworkModulesToInstallPath(boolean recopy) throws IOException {
 
-    FileFilter npmPackageCopyFilter = new FileFilter() {
-      @Override
-      public boolean accept(File pathname) {
-        String fileName = pathname.getName();
-        if (fileName.startsWith(".") || fileName.startsWith("#") || fileName.startsWith("~")) {
-          return false;
-        } else {
-          return true;
-        }
-      }
-    };
+    FileFilter npmPackageCopyFilter =
+        new FileFilter() {
+          @Override
+          public boolean accept(File pathname) {
+            String fileName = pathname.getName();
+            if (fileName.startsWith(".") || fileName.startsWith("#") || fileName.startsWith("~")) {
+              return false;
+            } else {
+              return true;
+            }
+          }
+        };
 
     FileUtils.forceMkdir(heliumLocalModuleDirectory);
     // should delete yarn caches for local modules since they might be updated
     deleteYarnCache();
 
     // install tabledata module
-    File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory,
-        "zeppelin-tabledata");
-    copyFrameworkModule(recopy, npmPackageCopyFilter,
-        tabledataModulePath, tabledataModuleInstallPath);
+    File tabledataModuleInstallPath = new File(heliumLocalModuleDirectory, "zeppelin-tabledata");
+    copyFrameworkModule(
+        recopy, npmPackageCopyFilter, tabledataModulePath, tabledataModuleInstallPath);
 
     // install visualization module
-    File visModuleInstallPath = new File(heliumLocalModuleDirectory,
-        "zeppelin-vis");
-    copyFrameworkModule(recopy, npmPackageCopyFilter,
-        visualizationModulePath, visModuleInstallPath);
+    File visModuleInstallPath = new File(heliumLocalModuleDirectory, "zeppelin-vis");
+    copyFrameworkModule(
+        recopy, npmPackageCopyFilter, visualizationModulePath, visModuleInstallPath);
 
     // install spell module
-    File spellModuleInstallPath = new File(heliumLocalModuleDirectory,
-        "zeppelin-spell");
-    copyFrameworkModule(recopy, npmPackageCopyFilter,
-        spellModulePath, spellModuleInstallPath);
+    File spellModuleInstallPath = new File(heliumLocalModuleDirectory, "zeppelin-spell");
+    copyFrameworkModule(recopy, npmPackageCopyFilter, spellModulePath, spellModuleInstallPath);
   }
 
   private WebpackResult getWebpackResultFromOutput(String output) {
@@ -609,8 +601,7 @@ public class HeliumBundleFactory {
         return null;
       }
       try {
-        NpmPackage npmPackage = NpmPackage.fromJson(
-            FileUtils.readFileToString(packageJson));
+        NpmPackage npmPackage = NpmPackage.fromJson(FileUtils.readFileToString(packageJson));
 
         String[] nameVersion = new String[2];
         nameVersion[0] = npmPackage.name;
@@ -627,9 +618,7 @@ public class HeliumBundleFactory {
       if ((pos = artifact.indexOf('@')) > 0) {
         nameVersion[0] = artifact.substring(0, pos);
         nameVersion[1] = artifact.substring(pos + 1);
-      } else if (
-          (pos = artifact.indexOf('^')) > 0 ||
-              (pos = artifact.indexOf('~')) > 0) {
+      } else if ((pos = artifact.indexOf('^')) > 0 || (pos = artifact.indexOf('~')) > 0) {
         nameVersion[0] = artifact.substring(0, pos);
         nameVersion[1] = artifact.substring(pos);
       } else {
@@ -642,9 +631,13 @@ public class HeliumBundleFactory {
 
   synchronized void install(HeliumPackage pkg) throws TaskRunnerException {
     String commandForNpmInstallArtifact =
-        String.format("install %s --fetch-retries=%d --fetch-retry-factor=%d " +
-                        "--fetch-retry-mintimeout=%d", pkg.getArtifact(),
-                FETCH_RETRY_COUNT, FETCH_RETRY_FACTOR_COUNT, FETCH_RETRY_MIN_TIMEOUT);
+        String.format(
+            "install %s --fetch-retries=%d --fetch-retry-factor=%d "
+                + "--fetch-retry-mintimeout=%d",
+            pkg.getArtifact(),
+            FETCH_RETRY_COUNT,
+            FETCH_RETRY_FACTOR_COUNT,
+            FETCH_RETRY_MIN_TIMEOUT);
     npmCommand(commandForNpmInstallArtifact);
   }
 
@@ -653,7 +646,8 @@ public class HeliumBundleFactory {
   }
 
   private void npmCommand(String args, Map<String, String> env) throws TaskRunnerException {
-    NpmRunner npm = frontEndPluginFactory.getNpmRunner(
+    NpmRunner npm =
+        frontEndPluginFactory.getNpmRunner(
             getProxyConfig(isSecure(defaultNpmInstallerUrl)), defaultNpmInstallerUrl);
     npm.execute(args, env);
   }
@@ -666,37 +660,36 @@ public class HeliumBundleFactory {
     yarnCommand(fpf, args, new HashMap<String, String>());
   }
 
-  private void yarnCommand(FrontendPluginFactory fpf,
-                           String args, Map<String, String> env) throws TaskRunnerException {
-    YarnRunner yarn = fpf.getYarnRunner(
-            getProxyConfig(isSecure(defaultNpmInstallerUrl)), defaultNpmInstallerUrl);
+  private void yarnCommand(FrontendPluginFactory fpf, String args, Map<String, String> env)
+      throws TaskRunnerException {
+    YarnRunner yarn =
+        fpf.getYarnRunner(getProxyConfig(isSecure(defaultNpmInstallerUrl)), defaultNpmInstallerUrl);
     yarn.execute(args, env);
   }
 
   private synchronized void configureLogger() {
-    org.apache.log4j.Logger npmLogger = org.apache.log4j.Logger.getLogger(
-        "com.github.eirslett.maven.plugins.frontend.lib.DefaultYarnRunner");
+    org.apache.log4j.Logger npmLogger =
+        org.apache.log4j.Logger.getLogger(
+            "com.github.eirslett.maven.plugins.frontend.lib.DefaultYarnRunner");
     Enumeration appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
 
     if (appenders != null) {
       while (appenders.hasMoreElements()) {
         Appender appender = (Appender) appenders.nextElement();
-        appender.addFilter(new Filter() {
+        appender.addFilter(
+            new Filter() {
 
-          @Override
-          public int decide(LoggingEvent loggingEvent) {
-            if (loggingEvent.getLoggerName().contains("DefaultYarnRunner")) {
-              return DENY;
-            } else {
-              return NEUTRAL;
-            }
-          }
-        });
+              @Override
+              public int decide(LoggingEvent loggingEvent) {
+                if (loggingEvent.getLoggerName().contains("DefaultYarnRunner")) {
+                  return DENY;
+                } else {
+                  return NEUTRAL;
+                }
+              }
+            });
       }
     }
-    npmLogger.addAppender(new WriterAppender(
-        new PatternLayout("%m%n"),
-        out
-    ));
+    npmLogger.addAppender(new WriterAppender(new PatternLayout("%m%n"), out));
   }
 }

@@ -17,15 +17,14 @@
 
 package org.apache.zeppelin.interpreter;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.Properties;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Properties;
-
-import static org.junit.Assert.assertTrue;
 
 public class ZeppCtxtVariableTest {
 
@@ -36,12 +35,10 @@ public class ZeppCtxtVariableTest {
     }
 
     @Override
-    public void open() {
-    }
+    public void open() {}
 
     @Override
-    public void close() {
-    }
+    public void close() {}
 
     @Override
     public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -49,8 +46,7 @@ public class ZeppCtxtVariableTest {
     }
 
     @Override
-    public void cancel(InterpreterContext context) {
-    }
+    public void cancel(InterpreterContext context) {}
 
     @Override
     public FormType getFormType() {
@@ -71,17 +67,17 @@ public class ZeppCtxtVariableTest {
 
     resourcePool = new LocalResourcePool("ZeppelinContextVariableInterpolationTest");
 
-    InterpreterContext context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setResourcePool(resourcePool)
-        .build();
+    InterpreterContext context =
+        InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setResourcePool(resourcePool)
+            .build();
     InterpreterContext.set(context);
 
     interpreter = new TestInterpreter(new Properties());
 
     resourcePool.put("PI", "3.1415");
-
   }
 
   @After
@@ -113,13 +109,11 @@ public class ZeppCtxtVariableTest {
     assertTrue("multiLineSubstitutionSuccessful1", "{PI}\n3.1415\n{PI}\n3.1415".equals(result));
   }
 
-
   @Test
   public void multiLineSubstitutionSuccessful2() {
     String result = interpreter.interpolate("prefix {PI} {{PI\n}} suffix", resourcePool);
     assertTrue("multiLineSubstitutionSuccessful2", "prefix 3.1415 {PI\n} suffix".equals(result));
   }
-
 
   @Test
   public void multiLineSubstitutionSuccessful3() {
@@ -127,13 +121,11 @@ public class ZeppCtxtVariableTest {
     assertTrue("multiLineSubstitutionSuccessful3", "prefix {\nPI} 3.1415 suffix".equals(result));
   }
 
-
   @Test
   public void multiLineSubstitutionFailure2() {
     String result = interpreter.interpolate("prefix {PI\n} suffix", resourcePool);
     assertTrue("multiLineSubstitutionFailure2", "prefix {PI\n} suffix".equals(result));
   }
-
 
   @Test
   public void multiLineSubstitutionFailure3() {
@@ -200,5 +192,4 @@ public class ZeppCtxtVariableTest {
     String result = interpreter.interpolate("Paired } end an escaped sequence", resourcePool);
     assertTrue("Random braces - four", "Paired } end an escaped sequence".equals(result));
   }
-
 }

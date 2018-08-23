@@ -17,14 +17,14 @@
 
 package org.apache.zeppelin.python;
 
-
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,15 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PythonCondaInterpreterTest {
   private PythonCondaInterpreter conda;
@@ -105,14 +103,14 @@ public class PythonCondaInterpreterTest {
   }
 
   @Test
-  public void testParseCondaCommonStdout()
-      throws IOException, InterruptedException {
+  public void testParseCondaCommonStdout() throws IOException, InterruptedException {
 
-    StringBuilder sb = new StringBuilder()
-        .append("# comment1\n")
-        .append("# comment2\n")
-        .append("env1     /location1\n")
-        .append("env2     /location2\n");
+    StringBuilder sb =
+        new StringBuilder()
+            .append("# comment1\n")
+            .append("# comment2\n")
+            .append("env1     /location1\n")
+            .append("env2     /location2\n");
 
     Map<String, String> locationPerEnv =
         PythonCondaInterpreter.parseCondaCommonStdout(sb.toString());
@@ -123,20 +121,15 @@ public class PythonCondaInterpreterTest {
 
   @Test
   public void testGetRestArgsFromMatcher() {
-    Matcher m =
-        PythonCondaInterpreter.PATTERN_COMMAND_ENV.matcher("env remove --name test --yes");
+    Matcher m = PythonCondaInterpreter.PATTERN_COMMAND_ENV.matcher("env remove --name test --yes");
     m.matches();
 
     List<String> restArgs = PythonCondaInterpreter.getRestArgsFromMatcher(m);
-    List<String> expected = Arrays.asList(new String[]{"remove", "--name", "test", "--yes"});
+    List<String> expected = Arrays.asList(new String[] {"remove", "--name", "test", "--yes"});
     assertEquals(expected, restArgs);
   }
 
   private InterpreterContext getInterpreterContext() {
-    return InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
-        .build();
+    return InterpreterContext.builder().setInterpreterOut(new InterpreterOutput(null)).build();
   }
-
-
 }

@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.pig;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.pig.impl.plan.OperatorPlan;
 import org.apache.pig.tools.pigstats.JobStats;
 import org.apache.pig.tools.pigstats.OutputStats;
@@ -24,12 +26,7 @@ import org.apache.pig.tools.pigstats.PigProgressNotificationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-
-/**
- *
- */
+/** */
 public class PigScriptListener implements PigProgressNotificationListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(PigScriptListener.class);
 
@@ -37,19 +34,13 @@ public class PigScriptListener implements PigProgressNotificationListener {
   private int progress;
 
   @Override
-  public void initialPlanNotification(String scriptId, OperatorPlan<?> plan) {
-
-  }
+  public void initialPlanNotification(String scriptId, OperatorPlan<?> plan) {}
 
   @Override
-  public void launchStartedNotification(String scriptId, int numJobsToLaunch) {
-
-  }
+  public void launchStartedNotification(String scriptId, int numJobsToLaunch) {}
 
   @Override
-  public void jobsSubmittedNotification(String scriptId, int numJobsSubmitted) {
-
-  }
+  public void jobsSubmittedNotification(String scriptId, int numJobsSubmitted) {}
 
   @Override
   public void jobStartedNotification(String scriptId, String assignedJobId) {
@@ -57,19 +48,13 @@ public class PigScriptListener implements PigProgressNotificationListener {
   }
 
   @Override
-  public void jobFinishedNotification(String scriptId, JobStats jobStats) {
-
-  }
+  public void jobFinishedNotification(String scriptId, JobStats jobStats) {}
 
   @Override
-  public void jobFailedNotification(String scriptId, JobStats jobStats) {
-
-  }
+  public void jobFailedNotification(String scriptId, JobStats jobStats) {}
 
   @Override
-  public void outputCompletedNotification(String scriptId, OutputStats outputStats) {
-
-  }
+  public void outputCompletedNotification(String scriptId, OutputStats outputStats) {}
 
   @Override
   public void progressUpdatedNotification(String scriptId, int progress) {
@@ -78,9 +63,7 @@ public class PigScriptListener implements PigProgressNotificationListener {
   }
 
   @Override
-  public void launchCompletedNotification(String scriptId, int numJobsSucceeded) {
-
-  }
+  public void launchCompletedNotification(String scriptId, int numJobsSucceeded) {}
 
   public Set<String> getJobIds() {
     return jobIds;

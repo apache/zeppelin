@@ -20,9 +20,7 @@ import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.resource.ResourceId;
 
-/**
- * message payload to invoke method of resource in the resourcepool
- */
+/** message payload to invoke method of resource in the resourcepool */
 public class InvokeResourceMethodEventMessage implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -37,8 +35,7 @@ public class InvokeResourceMethodEventMessage implements JsonSerializable {
       String methodName,
       Class[] paramtypes,
       Object[] params,
-      String returnResourceName
-  ) {
+      String returnResourceName) {
     this.resourceId = resourceId;
     this.methodName = methodName;
     if (paramtypes != null) {
@@ -54,12 +51,12 @@ public class InvokeResourceMethodEventMessage implements JsonSerializable {
     this.returnResourceName = returnResourceName;
   }
 
-  public Class [] getParamTypes() throws ClassNotFoundException {
+  public Class[] getParamTypes() throws ClassNotFoundException {
     if (paramClassnames == null) {
       return null;
     }
 
-    Class [] types = new Class[paramClassnames.length];
+    Class[] types = new Class[paramClassnames.length];
     for (int i = 0; i < paramClassnames.length; i++) {
       types[i] = this.getClass().getClassLoader().loadClass(paramClassnames[i]);
     }

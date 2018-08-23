@@ -23,17 +23,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The InterpreterHookRegistry specifies code to be conditionally executed by an
- * interpreter. The constants defined in this class denote currently
- * supported events. Each instance is bound to a single InterpreterGroup.
- * Scope is determined on a per-note basis (except when null for global scope).
+ * The InterpreterHookRegistry specifies code to be conditionally executed by an interpreter. The
+ * constants defined in this class denote currently supported events. Each instance is bound to a
+ * single InterpreterGroup. Scope is determined on a per-note basis (except when null for global
+ * scope).
  */
 public class InterpreterHookRegistry {
   static final String GLOBAL_KEY = "_GLOBAL_";
 
   // Scope (noteId/global scope) -> (ClassName -> (EventType -> Hook Code))
   private Map<String, Map<String, Map<String, String>>> registry = new HashMap<>();
-
 
   /**
    * Adds a note to the registry
@@ -47,7 +46,7 @@ public class InterpreterHookRegistry {
       }
     }
   }
-  
+
   /**
    * Adds a className to the registry
    *
@@ -62,7 +61,7 @@ public class InterpreterHookRegistry {
       }
     }
   }
-  
+
   /**
    * Register a hook for a specific event.
    *
@@ -71,8 +70,8 @@ public class InterpreterHookRegistry {
    * @param event hook event (see constants defined in this class)
    * @param cmd Code to be executed by the interpreter
    */
-  public void register(String noteId, String className,
-                       String event, String cmd) throws InvalidHookException {
+  public void register(String noteId, String className, String event, String cmd)
+      throws InvalidHookException {
     synchronized (registry) {
       if (!HookType.ValidEvents.contains(event)) {
         throw new InvalidHookException("event " + event + " is not valid hook event");
@@ -84,7 +83,7 @@ public class InterpreterHookRegistry {
       registry.get(noteId).get(className).put(event, cmd);
     }
   }
-  
+
   /**
    * Unregister a hook for a specific event.
    *
@@ -101,7 +100,7 @@ public class InterpreterHookRegistry {
       registry.get(noteId).get(className).remove(event);
     }
   }
-  
+
   /**
    * Get a hook for a specific event.
    *
@@ -118,18 +117,16 @@ public class InterpreterHookRegistry {
       return registry.get(noteId).get(className).get(event);
     }
   }
-  
-  /**
-  * Container for hook event type constants
-  */
+
+  /** Container for hook event type constants */
   public enum HookType {
 
     // Execute the hook code PRIOR to main paragraph code execution
     PRE_EXEC("pre_exec"),
-    
+
     // Execute the hook code AFTER main paragraph code execution
     POST_EXEC("post_exec"),
-    
+
     // Same as above but reserved for interpreter developers, in order to allow
     // notebook users to use the above without overwriting registry settings
     // that are initialized directly in subclasses of Interpreter.
@@ -147,11 +144,11 @@ public class InterpreterHookRegistry {
     }
 
     public static Set<String> ValidEvents = new HashSet();
+
     static {
       for (HookType type : values()) {
         ValidEvents.add(type.getName());
       }
     }
   }
-   
 }

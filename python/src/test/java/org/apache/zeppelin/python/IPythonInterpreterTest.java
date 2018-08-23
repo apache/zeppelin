@@ -17,6 +17,13 @@
 
 package org.apache.zeppelin.python;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -25,15 +32,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
 
@@ -113,8 +111,11 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   public void testIPythonPlotting() throws InterpreterException, InterruptedException, IOException {
     // matplotlib
     InterpreterContext context = getInterpreterContext();
-    InterpreterResult result = interpreter.interpret("%matplotlib inline\n" +
-        "import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
+    InterpreterResult result =
+        interpreter.interpret(
+            "%matplotlib inline\n"
+                + "import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)",
+            context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> interpreterResultMessages =
@@ -144,10 +145,13 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     // bokeh
     // bokeh initialization
     context = getInterpreterContext();
-    result = interpreter.interpret("from bokeh.io import output_notebook, show\n" +
-        "from bokeh.plotting import figure\n" +
-        "import bkzep\n" +
-        "output_notebook(notebook_type='zeppelin')", context);
+    result =
+        interpreter.interpret(
+            "from bokeh.io import output_notebook, show\n"
+                + "from bokeh.plotting import figure\n"
+                + "import bkzep\n"
+                + "output_notebook(notebook_type='zeppelin')",
+            context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -159,12 +163,15 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
 
     // bokeh plotting
     context = getInterpreterContext();
-    result = interpreter.interpret("from bokeh.plotting import figure, output_file, show\n" +
-        "x = [1, 2, 3, 4, 5]\n" +
-        "y = [6, 7, 2, 4, 5]\n" +
-        "p = figure(title=\"simple line example\", x_axis_label='x', y_axis_label='y')\n" +
-        "p.line(x, y, legend=\"Temp.\", line_width=2)\n" +
-        "show(p)", context);
+    result =
+        interpreter.interpret(
+            "from bokeh.plotting import figure, output_file, show\n"
+                + "x = [1, 2, 3, 4, 5]\n"
+                + "y = [6, 7, 2, 4, 5]\n"
+                + "p = figure(title=\"simple line example\", x_axis_label='x', y_axis_label='y')\n"
+                + "p.line(x, y, legend=\"Temp.\", line_width=2)\n"
+                + "show(p)",
+            context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -176,10 +183,13 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
 
     // ggplot
     context = getInterpreterContext();
-    result = interpreter.interpret("from ggplot import *\n" +
-        "ggplot(diamonds, aes(x='price', fill='cut')) +\\\n" +
-        "    geom_density(alpha=0.25) +\\\n" +
-        "    facet_wrap(\"clarity\")", context);
+    result =
+        interpreter.interpret(
+            "from ggplot import *\n"
+                + "ggplot(diamonds, aes(x='price', fill='cut')) +\\\n"
+                + "    geom_density(alpha=0.25) +\\\n"
+                + "    facet_wrap(\"clarity\")",
+            context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
@@ -234,5 +244,4 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     result = interpreter.interpret("print('1'*3000)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
-
 }

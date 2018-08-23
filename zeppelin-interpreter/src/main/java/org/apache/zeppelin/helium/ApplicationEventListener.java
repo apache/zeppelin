@@ -18,15 +18,19 @@ package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
-/**
- * Event from HeliumApplication running on remote interpreter process
- */
+/** Event from HeliumApplication running on remote interpreter process */
 public interface ApplicationEventListener {
-  void onOutputAppend(
-      String noteId, String paragraphId, int index, String appId, String output);
+  void onOutputAppend(String noteId, String paragraphId, int index, String appId, String output);
+
   void onOutputUpdated(
-      String noteId, String paragraphId, int index, String appId,
-      InterpreterResult.Type type, String output);
+      String noteId,
+      String paragraphId,
+      int index,
+      String appId,
+      InterpreterResult.Type type,
+      String output);
+
   void onLoad(String noteId, String paragraphId, String appId, HeliumPackage pkg);
+
   void onStatusChange(String noteId, String paragraphId, String appId, String status);
 }

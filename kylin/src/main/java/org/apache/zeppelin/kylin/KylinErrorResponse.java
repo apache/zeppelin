@@ -21,9 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/**
- * class for Kylin Error Response.
- */
+/** class for Kylin Error Response. */
 class KylinErrorResponse implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -34,8 +32,8 @@ class KylinErrorResponse implements JsonSerializable {
   private Object data;
   private String msg;
 
-  KylinErrorResponse(String stacktrace, String exception, String url,
-      String code, Object data, String msg) {
+  KylinErrorResponse(
+      String stacktrace, String exception, String url, String code, Object data, String msg) {
     this.stacktrace = stacktrace;
     this.exception = exception;
     this.url = url;

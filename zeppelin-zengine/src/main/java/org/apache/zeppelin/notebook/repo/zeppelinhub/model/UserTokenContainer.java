@@ -24,17 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * User token manager class.
- *
- */
-
+/** User token manager class. */
 public class UserTokenContainer {
   private static final Logger LOG = LoggerFactory.getLogger(UserTokenContainer.class);
   private static UserTokenContainer instance = null;
@@ -42,8 +37,7 @@ public class UserTokenContainer {
   private final ZeppelinhubRestApiHandler restApiClient;
   private String defaultToken;
 
-  public static UserTokenContainer init(ZeppelinhubRestApiHandler restClient, 
-      String defaultToken) {
+  public static UserTokenContainer init(ZeppelinhubRestApiHandler restClient, String defaultToken) {
     if (instance == null) {
       instance = new UserTokenContainer(restClient, defaultToken);
     }
@@ -58,7 +52,7 @@ public class UserTokenContainer {
   public static UserTokenContainer getInstance() {
     return instance;
   }
-  
+
   public void setUserToken(String username, String token) {
     if (StringUtils.isBlank(username) || StringUtils.isBlank(token)) {
       LOG.warn("Can't set empty user token");
@@ -66,7 +60,7 @@ public class UserTokenContainer {
     }
     userTokens.put(username, token);
   }
-  
+
   public String getUserToken(String principal) {
     if (StringUtils.isBlank(principal) || "anonymous".equals(principal)) {
       if (StringUtils.isBlank(defaultToken)) {
@@ -95,7 +89,7 @@ public class UserTokenContainer {
     }
     return token;
   }
-  
+
   public String getExistingUserToken(String principal) {
     if (StringUtils.isBlank(principal) || "anonymous".equals(principal)) {
       return StringUtils.EMPTY;
@@ -106,15 +100,14 @@ public class UserTokenContainer {
     }
     return token;
   }
-  
+
   public String removeUserToken(String username) {
     return userTokens.remove(username);
   }
-  
+
   /**
-   * Get user default instance.
-   * From now, it will be from the first instance from the list,
-   * But later we can think about marking a default one and return it instead :)
+   * Get user default instance. From now, it will be from the first instance from the list, But
+   * later we can think about marking a default one and return it instead :)
    */
   public String getDefaultZeppelinInstanceToken(String ticket) throws IOException {
     List<Instance> instances = getUserInstances(ticket);
@@ -123,14 +116,14 @@ public class UserTokenContainer {
     }
 
     String token = instances.get(0).token;
-    LOG.debug("The following instance has been assigned {} with token {}", instances.get(0).name,
-        token);
+    LOG.debug(
+        "The following instance has been assigned {} with token {}", instances.get(0).name, token);
     return token;
   }
-  
+
   /**
-   * Get list of user instances from Zeppelinhub.
-   * This will avoid and remove the needs of setting up token in zeppelin-env.sh.
+   * Get list of user instances from Zeppelinhub. This will avoid and remove the needs of setting up
+   * token in zeppelin-env.sh.
    */
   public List<Instance> getUserInstances(String ticket) throws IOException {
     if (StringUtils.isBlank(ticket)) {
@@ -138,11 +131,11 @@ public class UserTokenContainer {
     }
     return restApiClient.getInstances(ticket);
   }
-  
+
   public List<String> getAllTokens() {
     return new ArrayList<String>(userTokens.values());
   }
-  
+
   public Map<String, String> getAllUserTokens() {
     return new HashMap<String, String>(userTokens);
   }

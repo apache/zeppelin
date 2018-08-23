@@ -20,11 +20,8 @@ package org.apache.zeppelin.interpreter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Types of interpreter properties
- */
+/** Types of interpreter properties */
 public enum InterpreterPropertyType {
-
   TEXTAREA("textarea"),
   STRING("string"),
   NUMBER("number"),

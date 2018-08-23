@@ -17,6 +17,15 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -37,21 +46,10 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PySparkInterpreterMatplotlibTest {
 
-  @ClassRule
-  public static TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule public static TemporaryFolder tmpDir = new TemporaryFolder();
 
   static SparkInterpreter sparkInterpreter;
   static PySparkInterpreter pyspark;
@@ -61,21 +59,21 @@ public class PySparkInterpreterMatplotlibTest {
 
   public static class AltPySparkInterpreter extends PySparkInterpreter {
     /**
-     * Since pyspark output is  sent to an outputstream rather than
-     * being directly provided by interpret(), this subclass is created to
-     * override interpret() to append the result from the outputStream
-     * for the sake of convenience in testing.
+     * Since pyspark output is sent to an outputstream rather than being directly provided by
+     * interpret(), this subclass is created to override interpret() to append the result from the
+     * outputStream for the sake of convenience in testing.
      */
     public AltPySparkInterpreter(Properties property) {
       super(property);
     }
 
     /**
-     * This code is mainly copied from RemoteInterpreterServer.java which
-     * normally handles this in real use cases.
+     * This code is mainly copied from RemoteInterpreterServer.java which normally handles this in
+     * real use cases.
      */
     @Override
-    public InterpreterResult interpret(String st, InterpreterContext context) throws InterpreterException {
+    public InterpreterResult interpret(String st, InterpreterContext context)
+        throws InterpreterException {
       context.out.clear();
       InterpreterResult result = super.interpret(st, context);
       List<InterpreterResultMessage> resultMessages = null;
@@ -106,8 +104,7 @@ public class PySparkInterpreterMatplotlibTest {
   }
 
   /**
-   * Get spark version number as a numerical value.
-   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   * Get spark version number as a numerical value. eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
    */
   public static int getSparkVersionNumber() {
     if (sparkInterpreter == null) {
@@ -123,12 +120,13 @@ public class PySparkInterpreterMatplotlibTest {
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
-    context = InterpreterContext.builder()
-        .setNoteId("note")
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-        .build();
+    context =
+        InterpreterContext.builder()
+            .setNoteId("note")
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+            .build();
     InterpreterContext.set(context);
 
     sparkInterpreter = new SparkInterpreter(getPySparkTestProperties());
@@ -183,7 +181,8 @@ public class PySparkInterpreterMatplotlibTest {
     InterpreterResult ret2;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
     ret = pyspark.interpret("plt.close()", context);
-    ret = pyspark.interpret("z.configure_mpl(interactive=False, close=True, angular=False)", context);
+    ret =
+        pyspark.interpret("z.configure_mpl(interactive=False, close=True, angular=False)", context);
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret1 = pyspark.interpret("plt.show()", context);
 
@@ -210,7 +209,9 @@ public class PySparkInterpreterMatplotlibTest {
     InterpreterResult ret2;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
     ret = pyspark.interpret("plt.close()", context);
-    ret = pyspark.interpret("z.configure_mpl(interactive=False, close=False, angular=False)", context);
+    ret =
+        pyspark.interpret(
+            "z.configure_mpl(interactive=False, close=False, angular=False)", context);
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret1 = pyspark.interpret("plt.show()", context);
 
@@ -235,7 +236,8 @@ public class PySparkInterpreterMatplotlibTest {
     InterpreterResult ret;
     ret = pyspark.interpret("import matplotlib.pyplot as plt", context);
     ret = pyspark.interpret("plt.close()", context);
-    ret = pyspark.interpret("z.configure_mpl(interactive=False, close=False, angular=True)", context);
+    ret =
+        pyspark.interpret("z.configure_mpl(interactive=False, close=False, angular=True)", context);
     ret = pyspark.interpret("plt.plot([1, 2, 3])", context);
     ret = pyspark.interpret("plt.show()", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());

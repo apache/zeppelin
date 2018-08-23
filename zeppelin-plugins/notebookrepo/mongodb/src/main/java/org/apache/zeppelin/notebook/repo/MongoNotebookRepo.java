@@ -30,9 +30,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Backend for storing Notebook on MongoDB
- */
+/** Backend for storing Notebook on MongoDB */
 public class MongoNotebookRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(MongoNotebookRepo.class);
 
@@ -41,9 +39,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   private MongoDatabase db;
   private MongoCollection<Document> coll;
 
-  public MongoNotebookRepo() {
-
-  }
+  public MongoNotebookRepo() {}
 
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
@@ -59,15 +55,14 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   /**
-   * If environment variable ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT is true,
-   * this method will insert local notes into MongoDB on startup.
-   * If a note already exists in MongoDB, skip it.
+   * If environment variable ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT is true, this method will insert
+   * local notes into MongoDB on startup. If a note already exists in MongoDB, skip it.
    */
   private void insertFileSystemNotes() throws IOException {
     LinkedList<Document> docs = new LinkedList<>(); // docs to be imported
     NotebookRepo vfsRepo = new VFSNotebookRepo();
     vfsRepo.init(conf);
-    List<NoteInfo> infos =  vfsRepo.list(null);
+    List<NoteInfo> infos = vfsRepo.list(null);
     // collect notes to be imported
     for (NoteInfo info : infos) {
       Note note = vfsRepo.get(info.getId(), null);
@@ -83,15 +78,16 @@ public class MongoNotebookRepo implements NotebookRepo {
     try {
       coll.insertMany(docs, new InsertManyOptions().ordered(false));
     } catch (MongoBulkWriteException e) {
-      printDuplicatedException(e);  //print duplicated document warning log
+      printDuplicatedException(e); // print duplicated document warning log
     }
 
-    vfsRepo.close();  // it does nothing for now but maybe in the future...
+    vfsRepo.close(); // it does nothing for now but maybe in the future...
   }
 
   /**
-   * MongoBulkWriteException contains error messages that inform
-   * which documents were duplicated. This method catches those ID and print them.
+   * MongoBulkWriteException contains error messages that inform which documents were duplicated.
+   * This method catches those ID and print them.
+   *
    * @param e
    */
   private void printDuplicatedException(MongoBulkWriteException e) {
@@ -127,19 +123,17 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   /**
-   * Find documents of which type of _id is object ID, and change it to note ID.
-   * Since updating _id field is not allowed, remove original documents and insert
-   * new ones with string _id(note ID)
+   * Find documents of which type of _id is object ID, and change it to note ID. Since updating _id
+   * field is not allowed, remove original documents and insert new ones with string _id(note ID)
    */
   private void syncId() {
     // find documents whose id type is object id
-    MongoCursor<Document> cursor =  coll.find(type("_id", BsonType.OBJECT_ID)).iterator();
+    MongoCursor<Document> cursor = coll.find(type("_id", BsonType.OBJECT_ID)).iterator();
     // if there is no such document, exit
-    if (!cursor.hasNext())
-      return;
+    if (!cursor.hasNext()) return;
 
-    List<ObjectId> oldDocIds = new LinkedList<>();    // document ids need to update
-    List<Document> updatedDocs = new LinkedList<>();  // new documents to be inserted
+    List<ObjectId> oldDocIds = new LinkedList<>(); // document ids need to update
+    List<Document> updatedDocs = new LinkedList<>(); // new documents to be inserted
 
     while (cursor.hasNext()) {
       Document doc = cursor.next();
@@ -158,9 +152,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     cursor.close();
   }
 
-  /**
-   * Convert document to note
-   */
+  /** Convert document to note */
   private Note documentToNote(Document doc) {
     // document to JSON
     String json = doc.toJson();
@@ -168,9 +160,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     return Note.fromJson(json);
   }
 
-  /**
-   * Convert note to document
-   */
+  /** Convert note to document */
   private Document noteToDocument(Note note) {
     // note to JSON
     String json = note.toJson();
@@ -218,5 +208,4 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
   }
-
 }

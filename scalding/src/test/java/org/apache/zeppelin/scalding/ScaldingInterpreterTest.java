@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.scalding;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -27,16 +32,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.File;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-/**
- * Tests for the Scalding interpreter for Zeppelin.
- *
- */
+/** Tests for the Scalding interpreter for Zeppelin. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScaldingInterpreterTest {
   public static ScaldingInterpreter repl;
@@ -45,8 +41,9 @@ public class ScaldingInterpreterTest {
 
   @Before
   public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
-            System.currentTimeMillis());
+    tmpDir =
+        new File(
+            System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
 
     tmpDir.mkdirs();
@@ -59,11 +56,12 @@ public class ScaldingInterpreterTest {
       repl.open();
     }
 
-    context = InterpreterContext.builder()
-        .setNoteId("noteId")
-        .setParagraphId("paragraphId")
-        .setAuthenticationInfo(new AuthenticationInfo())
-        .build();
+    context =
+        InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .setAuthenticationInfo(new AuthenticationInfo())
+            .build();
   }
 
   @After
@@ -88,40 +86,45 @@ public class ScaldingInterpreterTest {
 
   @Test
   public void testNextLineComments() {
-    assertEquals(InterpreterResult.Code.SUCCESS,
-            repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+    assertEquals(
+        InterpreterResult.Code.SUCCESS,
+        repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
   }
 
   @Test
   public void testNextLineCompanionObject() {
-    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter " +
-            "{\n def apply(x: Long) = new Counter()\n}";
+    String code =
+        "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter "
+            + "{\n def apply(x: Long) = new Counter()\n}";
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code, context).code());
   }
 
   @Test
   public void testBasicIntp() {
-    assertEquals(InterpreterResult.Code.SUCCESS,
-        repl.interpret("val a = 1\nval b = 2", context).code());
+    assertEquals(
+        InterpreterResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2", context).code());
 
     // when interpret incomplete expression
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
     assertTrue(incomplete.message().get(0).getData().length() > 0); // expecting some error
-                                                   // message
+    // message
   }
 
   @Test
   public void testBasicScalding() {
-    assertEquals(InterpreterResult.Code.SUCCESS,
-        repl.interpret("case class Sale(state: String, name: String, sale: Int)\n" +
-          "val salesList = List(Sale(\"CA\", \"A\", 60), Sale(\"CA\", \"A\", 20), " +
-                        "Sale(\"VA\", \"B\", 15))\n" +
-          "val salesPipe = TypedPipe.from(salesList)\n" +
-          "val results = salesPipe.map{x => (1, Set(x.state), x.sale)}.\n" +
-          "    groupAll.sum.values.map{ case(count, set, sum) => (count, set.size, sum) }\n" +
-          "results.dump",
-          context).code());
+    assertEquals(
+        InterpreterResult.Code.SUCCESS,
+        repl.interpret(
+                "case class Sale(state: String, name: String, sale: Int)\n"
+                    + "val salesList = List(Sale(\"CA\", \"A\", 60), Sale(\"CA\", \"A\", 20), "
+                    + "Sale(\"VA\", \"B\", 15))\n"
+                    + "val salesPipe = TypedPipe.from(salesList)\n"
+                    + "val results = salesPipe.map{x => (1, Set(x.state), x.sale)}.\n"
+                    + "    groupAll.sum.values.map{ case(count, set, sum) => (count, set.size, sum) }\n"
+                    + "results.dump",
+                context)
+            .code());
   }
 
   @Test
@@ -131,14 +134,15 @@ public class ScaldingInterpreterTest {
 
   @Test
   public void testEndWithComment() {
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment",
-            context).code());
+    assertEquals(
+        InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }
 
   @Test
   public void testReferencingUndefinedVal() {
-    InterpreterResult result = repl.interpret("def category(min: Int) = {"
-        + "    if (0 <= value) \"error\"" + "}", context);
+    InterpreterResult result =
+        repl.interpret(
+            "def category(min: Int) = {" + "    if (0 <= value) \"error\"" + "}", context);
     assertEquals(Code.ERROR, result.code());
   }
 }

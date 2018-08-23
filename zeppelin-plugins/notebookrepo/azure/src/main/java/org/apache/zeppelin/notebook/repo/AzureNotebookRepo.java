@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,9 +43,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Azure storage backend for notebooks
- */
+/** Azure storage backend for notebooks */
 public class AzureNotebookRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(AzureNotebookRepo.class);
 
@@ -55,9 +52,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   private String shareName;
   private CloudFileDirectory rootDir;
 
-  public AzureNotebookRepo() {
-
-  }
+  public AzureNotebookRepo() {}
 
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
@@ -65,15 +60,18 @@ public class AzureNotebookRepo implements NotebookRepo {
     shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
 
     try {
-      CloudStorageAccount account = CloudStorageAccount.parse(
-          conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
+      CloudStorageAccount account =
+          CloudStorageAccount.parse(
+              conf.getString(
+                  ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
       CloudFileClient client = account.createCloudFileClient();
       CloudFileShare share = client.getShareReference(shareName);
       share.createIfNotExists();
 
-      CloudFileDirectory userDir = StringUtils.isBlank(user) ?
-          share.getRootDirectoryReference() :
-          share.getRootDirectoryReference().getDirectoryReference(user);
+      CloudFileDirectory userDir =
+          StringUtils.isBlank(user)
+              ? share.getRootDirectoryReference()
+              : share.getRootDirectoryReference().getDirectoryReference(user);
       userDir.createIfNotExists();
 
       rootDir = userDir.getDirectoryReference("notebook");
@@ -128,8 +126,8 @@ public class AzureNotebookRepo implements NotebookRepo {
       throw new IOException(msg, e);
     }
 
-    String json = IOUtils.toString(ins,
-        conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
+    String json =
+        IOUtils.toString(ins, conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING));
     ins.close();
     return Note.fromJson(json);
   }
@@ -199,8 +197,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
@@ -212,5 +209,4 @@ public class AzureNotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
   }
-
 }

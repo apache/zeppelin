@@ -16,6 +16,10 @@
  */
 package org.apache.zeppelin.jupyter;
 
+import com.google.common.base.Joiner;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -24,20 +28,13 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import com.google.common.base.Joiner;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
 import org.apache.zeppelin.jupyter.nbformat.Cell;
 import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
@@ -56,9 +53,7 @@ import org.apache.zeppelin.jupyter.zformat.TypeData;
 import org.apache.zeppelin.markdown.MarkdownParser;
 import org.apache.zeppelin.markdown.PegdownParser;
 
-/**
- *
- */
+/** */
 public class JupyterUtil {
 
   private final RuntimeTypeAdapterFactory<Cell> cellTypeFactory;
@@ -67,13 +62,18 @@ public class JupyterUtil {
   private final MarkdownParser markdownProcessor;
 
   public JupyterUtil() {
-    this.cellTypeFactory = RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
-        .registerSubtype(MarkdownCell.class, "markdown").registerSubtype(CodeCell.class, "code")
-        .registerSubtype(RawCell.class, "raw").registerSubtype(HeadingCell.class, "heading");
-    this.outputTypeFactory = RuntimeTypeAdapterFactory.of(Output.class, "output_type")
-        .registerSubtype(ExecuteResult.class, "execute_result")
-        .registerSubtype(DisplayData.class, "display_data").registerSubtype(Stream.class, "stream")
-        .registerSubtype(Error.class, "error");
+    this.cellTypeFactory =
+        RuntimeTypeAdapterFactory.of(Cell.class, "cell_type")
+            .registerSubtype(MarkdownCell.class, "markdown")
+            .registerSubtype(CodeCell.class, "code")
+            .registerSubtype(RawCell.class, "raw")
+            .registerSubtype(HeadingCell.class, "heading");
+    this.outputTypeFactory =
+        RuntimeTypeAdapterFactory.of(Output.class, "output_type")
+            .registerSubtype(ExecuteResult.class, "execute_result")
+            .registerSubtype(DisplayData.class, "display_data")
+            .registerSubtype(Stream.class, "stream")
+            .registerSubtype(Error.class, "error");
     this.markdownProcessor = new PegdownParser();
   }
 
@@ -89,8 +89,8 @@ public class JupyterUtil {
     return getNote(in, new GsonBuilder(), codeReplaced, markdownReplaced);
   }
 
-  public Note getNote(Reader in, GsonBuilder gsonBuilder, String codeReplaced,
-      String markdownReplaced) {
+  public Note getNote(
+      Reader in, GsonBuilder gsonBuilder, String codeReplaced, String markdownReplaced) {
     return getNote(getNbformat(in, gsonBuilder), codeReplaced, markdownReplaced);
   }
 
@@ -102,7 +102,7 @@ public class JupyterUtil {
       name = "Note converted from Jupyter";
     }
     note.setName(name);
-    
+
     String lineSeparator = System.lineSeparator();
     Paragraph paragraph;
     List<Paragraph> paragraphs = new ArrayList<>();
@@ -160,11 +160,11 @@ public class JupyterUtil {
     return note;
   }
 
-
-  
   private Gson getGson(GsonBuilder gsonBuilder) {
-    return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
-        .registerTypeAdapterFactory(outputTypeFactory).create();
+    return gsonBuilder
+        .registerTypeAdapterFactory(cellTypeFactory)
+        .registerTypeAdapterFactory(outputTypeFactory)
+        .create();
   }
 
   public static void main(String[] args) throws ParseException, IOException {

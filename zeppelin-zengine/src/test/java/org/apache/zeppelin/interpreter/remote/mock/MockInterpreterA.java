@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.interpreter.remote.mock;
 
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -25,9 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-
-import java.util.List;
-import java.util.Properties;
 
 public class MockInterpreterA extends Interpreter {
 
@@ -39,12 +38,11 @@ public class MockInterpreterA extends Interpreter {
 
   @Override
   public void open() {
-    //new RuntimeException().printStackTrace();
+    // new RuntimeException().printStackTrace();
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   public String getLastStatement() {
     return lastSt;
@@ -66,9 +64,7 @@ public class MockInterpreterA extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -81,17 +77,19 @@ public class MockInterpreterA extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return null;
   }
 
   @Override
   public Scheduler getScheduler() {
     if (getProperty("parallel") != null && getProperty("parallel").equals("true")) {
-      return SchedulerFactory.singleton().createOrGetParallelScheduler("interpreter_" + this.hashCode(), 10);
+      return SchedulerFactory.singleton()
+          .createOrGetParallelScheduler("interpreter_" + this.hashCode(), 10);
     } else {
-      return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
+      return SchedulerFactory.singleton()
+          .createOrGetFIFOScheduler("interpreter_" + this.hashCode());
     }
   }
 }

@@ -17,17 +17,11 @@
 
 package org.apache.zeppelin.interpreter;
 
-/**
- * An interface for processing custom callback code into the interpreter.
- */
+/** An interface for processing custom callback code into the interpreter. */
 public interface InterpreterHookListener {
-  /**
-   * Prepends pre-execute hook code to the script that will be interpreted
-   */
+  /** Prepends pre-execute hook code to the script that will be interpreted */
   void onPreExecute(String script);
-  
-  /**
-   * Appends post-execute hook code to the script that will be interpreted
-   */
+
+  /** Appends post-execute hook code to the script that will be interpreted */
   void onPostExecute(String script);
 }

@@ -17,15 +17,14 @@
 
 package org.apache.zeppelin;
 
-
+import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openqa.selenium.WebDriver;
-import java.util.concurrent.TimeUnit;
 
 public class ZeppelinITUtils {
 
-  public final static Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ZeppelinITUtils.class);
 
   public static void sleep(long millis, boolean logOutput) {
     if (logOutput) {
@@ -43,9 +42,9 @@ public class ZeppelinITUtils {
   }
 
   public static void restartZeppelin() {
-    CommandExecutor.executeCommandLocalHost("../bin/zeppelin-daemon.sh restart",
-        false, ProcessData.Types_Of_Data.OUTPUT);
-    //wait for server to start.
+    CommandExecutor.executeCommandLocalHost(
+        "../bin/zeppelin-daemon.sh restart", false, ProcessData.Types_Of_Data.OUTPUT);
+    // wait for server to start.
     sleep(5000, false);
   }
 
@@ -54,7 +53,9 @@ public class ZeppelinITUtils {
   }
 
   public static void turnOnImplicitWaits(WebDriver driver) {
-    driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
-        TimeUnit.SECONDS);
+    driver
+        .manage()
+        .timeouts()
+        .implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT, TimeUnit.SECONDS);
   }
 }

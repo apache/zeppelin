@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.interpreter;
 
 import java.util.Properties;
-
 
 public class DoubleEchoInterpreter extends Interpreter {
 
@@ -28,14 +26,10 @@ public class DoubleEchoInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {
-
-  }
+  public void open() {}
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -43,9 +37,7 @@ public class DoubleEchoInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {

@@ -18,17 +18,14 @@ package org.apache.zeppelin.jupyter.nbformat;
 
 import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-/**
- *
- */
+/** */
 public abstract class Output {
 
   @SerializedName("output_type")
@@ -71,7 +68,6 @@ public abstract class Output {
     return jupyterOutputType;
   }
 
-
   protected TypeData getZeppelinResult(Map<String, Object> data, JupyterOutputType type) {
     TypeData result = null;
     Object outputsObject = data.get(type.toString());
@@ -86,20 +82,18 @@ public abstract class Output {
     if (type == JupyterOutputType.IMAGE_PNG) {
       String base64CodeRaw = outputData;
       String base64Code = base64CodeRaw.replace("\n", "");
-      result = new TypeData(
+      result =
+          new TypeData(
               type.getZeppelinType().toString(),
-              ZeppelinResultGenerator.toBase64ImageHtmlElement(base64Code)
-      );
+              ZeppelinResultGenerator.toBase64ImageHtmlElement(base64Code));
     } else if (type == JupyterOutputType.LATEX) {
-      result = new TypeData(
-              type.getZeppelinType().toString(),
-              ZeppelinResultGenerator.toLatex(outputData)
-      );
+      result =
+          new TypeData(
+              type.getZeppelinType().toString(), ZeppelinResultGenerator.toLatex(outputData));
     } else if (type == JupyterOutputType.APPLICATION_JAVASCRIPT) {
-      result = new TypeData(
-              type.getZeppelinType().toString(),
-              ZeppelinResultGenerator.toJavascript(outputData)
-      );
+      result =
+          new TypeData(
+              type.getZeppelinType().toString(), ZeppelinResultGenerator.toJavascript(outputData));
     } else {
       result = new TypeData(type.getZeppelinType().toString(), outputData);
     }
@@ -107,19 +101,21 @@ public abstract class Output {
   }
 
   public abstract ZeppelinOutputType getTypeOfZeppelin();
+
   public abstract TypeData toZeppelinResult();
 
   private static class ZeppelinResultGenerator {
     public static String toBase64ImageHtmlElement(String image) {
-      return "<div style='width:auto;height:auto'><img src=data:image/png;base64," + image
-              + " style='width=auto;height:auto'/></div>";
+      return "<div style='width:auto;height:auto'><img src=data:image/png;base64,"
+          + image
+          + " style='width=auto;height:auto'/></div>";
     }
+
     public static String toLatex(String latexCode) {
       String latexContents = latexCode;
-      return "<div>" +
-              "<div>" + latexContents + "</div>" +
-              "</div>";
+      return "<div>" + "<div>" + latexContents + "</div>" + "</div>";
     }
+
     public static String toJavascript(String javascriptCode) {
       return "<script type='application/javascript'>" + javascriptCode + "</script>";
     }

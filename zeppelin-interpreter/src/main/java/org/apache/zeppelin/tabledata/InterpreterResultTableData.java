@@ -16,19 +16,16 @@
  */
 package org.apache.zeppelin.tabledata;
 
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 
-/**
- * Table data with interpreter result type 'TABLE'
- */
+/** Table data with interpreter result type 'TABLE' */
 public class InterpreterResultTableData implements TableData, Serializable {
   private final InterpreterResultMessage msg;
-  ColumnDef [] columnDef;
+  ColumnDef[] columnDef;
   List<Row> rows = new LinkedList<>();
 
   public InterpreterResultTableData(InterpreterResultMessage msg) {
@@ -45,12 +42,11 @@ public class InterpreterResultTableData implements TableData, Serializable {
       }
 
       for (int r = 1; r < lines.length; r++) {
-        Object [] row = lines[r].split("\t");
+        Object[] row = lines[r].split("\t");
         rows.add(new Row(row));
       }
     }
   }
-
 
   @Override
   public ColumnDef[] columns() {

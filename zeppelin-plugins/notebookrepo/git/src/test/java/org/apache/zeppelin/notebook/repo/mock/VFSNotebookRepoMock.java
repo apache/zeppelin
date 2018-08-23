@@ -16,11 +16,10 @@
  */
 package org.apache.zeppelin.notebook.repo.mock;
 
+import java.io.IOException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-
-import java.io.IOException;
 
 public class VFSNotebookRepoMock extends VFSNotebookRepo {
 
@@ -32,5 +31,4 @@ public class VFSNotebookRepoMock extends VFSNotebookRepo {
   public void init(ZeppelinConfiguration conf) throws IOException {
     super.init(conf);
   }
-
 }

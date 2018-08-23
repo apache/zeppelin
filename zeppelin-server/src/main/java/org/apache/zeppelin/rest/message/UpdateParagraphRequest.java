@@ -16,15 +16,12 @@
  */
 package org.apache.zeppelin.rest.message;
 
-/**
- * UpdateParagraphRequest.
- */
+/** UpdateParagraphRequest. */
 public class UpdateParagraphRequest {
   String title;
   String text;
 
-  public UpdateParagraphRequest() {
-  }
+  public UpdateParagraphRequest() {}
 
   public String getTitle() {
     return title;

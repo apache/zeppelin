@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,9 +45,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
-*
-*/
+/** */
 public class VFSNotebookRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(VFSNotebookRepo.class);
 
@@ -56,9 +53,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   private URI filesystemRoot;
   protected ZeppelinConfiguration conf;
 
-  public VFSNotebookRepo() {
-
-  }
+  public VFSNotebookRepo() {}
 
   @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
@@ -162,7 +157,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     if (!noteJson.exists()) {
       throw new IOException(noteJson.getName().toString() + " not found");
     }
-    
+
     FileContent content = noteJson.getContent();
     InputStream ins = content.getInputStream();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
@@ -242,7 +237,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    //no-op    
+    // no-op
   }
 
   @Override
@@ -273,14 +268,15 @@ public class VFSNotebookRepo implements NotebookRepo {
       LOG.error("Notebook path is invalid");
       return;
     }
-    LOG.warn("{} will change notebook dir from {} to {}",
-        subject.getUser(), getNotebookDirPath(), newNotebookDirectotyPath);
+    LOG.warn(
+        "{} will change notebook dir from {} to {}",
+        subject.getUser(),
+        getNotebookDirPath(),
+        newNotebookDirectotyPath);
     try {
       setNotebookDirectory(newNotebookDirectotyPath);
     } catch (IOException e) {
       LOG.error("Cannot update notebook directory", e);
     }
   }
-
 }
-

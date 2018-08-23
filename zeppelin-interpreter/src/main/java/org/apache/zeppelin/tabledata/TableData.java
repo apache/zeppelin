@@ -18,18 +18,18 @@ package org.apache.zeppelin.tabledata;
 
 import java.util.Iterator;
 
-/**
- * Abstract representation of table data
- */
+/** Abstract representation of table data */
 public interface TableData {
   /**
    * Get column definitions
+   *
    * @return
    */
-  ColumnDef [] columns();
+  ColumnDef[] columns();
 
   /**
    * Get row iterator
+   *
    * @param
    * @return
    */

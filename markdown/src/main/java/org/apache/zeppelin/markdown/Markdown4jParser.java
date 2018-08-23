@@ -17,13 +17,10 @@
 
 package org.apache.zeppelin.markdown;
 
+import java.io.IOException;
 import org.markdown4j.Markdown4jProcessor;
 
-import java.io.IOException;
-
-/**
- * Markdown Parser using markdown4j processor.
- */
+/** Markdown Parser using markdown4j processor. */
 public class Markdown4jParser implements MarkdownParser {
   private Markdown4jProcessor processor;
 

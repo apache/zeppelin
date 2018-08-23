@@ -18,6 +18,28 @@ package org.apache.zeppelin.utils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.security.Principal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -38,39 +60,13 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-import javax.sql.DataSource;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-/**
- * Tools for securing Zeppelin.
- */
+/** Tools for securing Zeppelin. */
 public class SecurityUtils {
   private static final String ANONYMOUS = "anonymous";
   private static final HashSet<String> EMPTY_HASHSET = Sets.newHashSet();
   private static boolean isEnabled = false;
   private static final Logger LOGGER = LoggerFactory.getLogger(SecurityUtils.class);
   private static Collection<Realm> realms;
-
 
   public static void setIsEnabled(boolean value) {
     isEnabled = value;
@@ -89,10 +85,10 @@ public class SecurityUtils {
     sourceUriHost = sourceUriHost.toLowerCase();
     String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();
 
-    return conf.getAllowedOrigins().contains("*") ||
-        currentHost.equals(sourceUriHost) ||
-        "localhost".equals(sourceUriHost) ||
-        conf.getAllowedOrigins().contains(sourceHost);
+    return conf.getAllowedOrigins().contains("*")
+        || currentHost.equals(sourceUriHost)
+        || "localhost".equals(sourceUriHost)
+        || conf.getAllowedOrigins().contains(sourceHost);
   }
 
   /**
@@ -110,8 +106,8 @@ public class SecurityUtils {
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
       if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
-        LOGGER.debug("Converting principal name " + principal
-            + " to lower case:" + principal.toLowerCase());
+        LOGGER.debug(
+            "Converting principal name " + principal + " to lower case:" + principal.toLowerCase());
         principal = principal.toLowerCase();
       }
     } else {
@@ -141,10 +137,8 @@ public class SecurityUtils {
     Collection<Realm> realms = defaultWebSecurityManager.getRealms();
     return realms;
   }
-  
-  /**
-   * Checked if shiro enabled or not.
-   */
+
+  /** Checked if shiro enabled or not. */
   public static boolean isAuthenticated() {
     if (!isEnabled) {
       return false;
@@ -152,9 +146,9 @@ public class SecurityUtils {
     return org.apache.shiro.SecurityUtils.getSubject().isAuthenticated();
   }
 
-
   /**
    * Get candidated users based on searchText
+   *
    * @param searchText
    * @param numUsersToFetch
    * @return
@@ -171,14 +165,12 @@ public class SecurityUtils {
           if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
             usersList.addAll(SecurityUtils.getUserList((IniRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
-            usersList.addAll(getUserList((JndiLdapRealm) realm, searchText,
-                numUsersToFetch));
+            usersList.addAll(getUserList((JndiLdapRealm) realm, searchText, numUsersToFetch));
           } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
-            usersList.addAll(getUserList((LdapRealm) realm, searchText,
-                numUsersToFetch));
+            usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
           } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
-            usersList.addAll(getUserList((ActiveDirectoryGroupRealm) realm,
-                searchText, numUsersToFetch));
+            usersList.addAll(
+                getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
           } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserList((JdbcRealm) realm));
           }
@@ -225,7 +217,7 @@ public class SecurityUtils {
    */
   public static HashSet<String> getAssociatedRoles() {
     if (!isEnabled) {
-      return  Sets.newHashSet();
+      return Sets.newHashSet();
     }
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
     HashSet<String> roles = new HashSet<>();
@@ -241,10 +233,11 @@ public class SecurityUtils {
           break;
         } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
           try {
-            AuthorizationInfo auth = ((LdapRealm) realm).queryForAuthorizationInfo(
-                new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
-                ((LdapRealm) realm).getContextFactory()
-            );
+            AuthorizationInfo auth =
+                ((LdapRealm) realm)
+                    .queryForAuthorizationInfo(
+                        new SimplePrincipalCollection(subject.getPrincipal(), realm.getName()),
+                        ((LdapRealm) realm).getContextFactory());
             if (auth != null) {
               roles = new HashSet<>(auth.getRoles());
             }
@@ -270,9 +263,7 @@ public class SecurityUtils {
     return roles;
   }
 
-  /**
-   * Function to extract users from shiro.ini.
-   */
+  /** Function to extract users from shiro.ini. */
   private static List<String> getUserList(IniRealm r) {
     List<String> userList = new ArrayList<>();
     Map getIniUser = r.getIni().get("users");
@@ -286,9 +277,8 @@ public class SecurityUtils {
     return userList;
   }
 
-
-  /***
-   * Get user roles from shiro.ini.
+  /**
+   * * Get user roles from shiro.ini.
    *
    * @param r
    * @return
@@ -306,9 +296,7 @@ public class SecurityUtils {
     return roleList;
   }
 
-  /**
-   * Function to extract users from LDAP.
-   */
+  /** Function to extract users from LDAP. */
   private static List<String> getUserList(JndiLdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     String userDnTemplate = r.getUserDnTemplate();
@@ -323,8 +311,8 @@ public class SecurityUtils {
       constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
       String[] attrIDs = {userDnPrefix};
       constraints.setReturningAttributes(attrIDs);
-      NamingEnumeration result = ctx.search(userDnSuffix, "(" + userDnPrefix + "=*" + searchText +
-          "*)", constraints);
+      NamingEnumeration result =
+          ctx.search(userDnSuffix, "(" + userDnPrefix + "=*" + searchText + "*)", constraints);
       while (result.hasMore()) {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userDnPrefix) != null) {
@@ -339,9 +327,7 @@ public class SecurityUtils {
     return userList;
   }
 
-  /**
-   * Function to extract users from Zeppelin LdapRealm.
-   */
+  /** Function to extract users from Zeppelin LdapRealm. */
   private static List<String> getUserList(LdapRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     LOGGER.debug("SearchText: " + searchText);
@@ -356,9 +342,17 @@ public class SecurityUtils {
       constraints.setCountLimit(numUsersToFetch);
       String[] attrIDs = {userAttribute};
       constraints.setReturningAttributes(attrIDs);
-      NamingEnumeration result = ctx.search(userSearchRealm, "(&(objectclass=" +
-          userObjectClass + ")("
-          + userAttribute + "=*" + searchText + "*))", constraints);
+      NamingEnumeration result =
+          ctx.search(
+              userSearchRealm,
+              "(&(objectclass="
+                  + userObjectClass
+                  + ")("
+                  + userAttribute
+                  + "=*"
+                  + searchText
+                  + "*))",
+              constraints);
       while (result.hasMore()) {
         Attributes attrs = ((SearchResult) result.next()).getAttributes();
         if (attrs.get(userAttribute) != null) {
@@ -380,8 +374,8 @@ public class SecurityUtils {
     return userList;
   }
 
-  /***
-   * Get user roles from shiro.ini for Zeppelin LdapRealm.
+  /**
+   * * Get user roles from shiro.ini for Zeppelin LdapRealm.
    *
    * @param r
    * @return
@@ -393,16 +387,15 @@ public class SecurityUtils {
       Iterator it = roles.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry pair = (Map.Entry) it.next();
-        LOGGER.debug("RoleKeyValue: " + pair.getKey() +
-            " = " + pair.getValue());
+        LOGGER.debug("RoleKeyValue: " + pair.getKey() + " = " + pair.getValue());
         roleList.add((String) pair.getKey());
       }
     }
     return roleList;
   }
 
-  private static List<String> getUserList(ActiveDirectoryGroupRealm r, String searchText,
-                                   int numUsersToFetch) {
+  private static List<String> getUserList(
+      ActiveDirectoryGroupRealm r, String searchText, int numUsersToFetch) {
     List<String> userList = new ArrayList<>();
     try {
       LdapContext ctx = r.getLdapContextFactory().getSystemLdapContext();
@@ -413,9 +406,7 @@ public class SecurityUtils {
     return userList;
   }
 
-  /**
-   * Function to extract users from JDBCs.
-   */
+  /** Function to extract users from JDBCs. */
   private static List<String> getUserList(JdbcRealm obj) {
     List<String> userlist = new ArrayList<>();
     Connection con = null;

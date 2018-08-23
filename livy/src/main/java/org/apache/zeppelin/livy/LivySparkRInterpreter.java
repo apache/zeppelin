@@ -19,10 +19,7 @@ package org.apache.zeppelin.livy;
 
 import java.util.Properties;
 
-
-/**
- * Livy PySpark interpreter for Zeppelin.
- */
+/** Livy PySpark interpreter for Zeppelin. */
 public class LivySparkRInterpreter extends BaseLivyInterpreter {
 
   public LivySparkRInterpreter(Properties property) {
@@ -36,13 +33,13 @@ public class LivySparkRInterpreter extends BaseLivyInterpreter {
 
   @Override
   protected String extractAppId() throws LivyException {
-    //TODO(zjffdu) depends on SparkR
+    // TODO(zjffdu) depends on SparkR
     return null;
   }
 
   @Override
   protected String extractWebUIAddress() throws LivyException {
-    //TODO(zjffdu) depends on SparkR
+    // TODO(zjffdu) depends on SparkR
     return null;
   }
 }

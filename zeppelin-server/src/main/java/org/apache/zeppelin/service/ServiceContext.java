@@ -15,16 +15,12 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.service;
 
+import java.util.Set;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
-import java.util.Set;
-
-/**
- * Context info for Service call
- */
+/** Context info for Service call */
 public class ServiceContext {
 
   private AuthenticationInfo autheInfo;
