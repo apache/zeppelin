@@ -43,6 +43,11 @@ try:
 except ImportError:
     JIRA_IMPORTED = False
 
+try:
+    raw_input = input
+except NameError:
+    pass
+
 # Location of your Zeppelin git development area
 ZEPPELIN_HOME = os.environ.get("ZEPPELIN_HOME", os.getcwd())
 # Remote name which points to the Github site
