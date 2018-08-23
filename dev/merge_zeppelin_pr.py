@@ -29,7 +29,13 @@ import os
 import re
 import subprocess
 import sys
-import urllib2
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 try:
     import jira.client
@@ -60,8 +66,8 @@ os.chdir(ZEPPELIN_HOME)
 
 def get_json(url):
     try:
-        return json.load(urllib2.urlopen(url))
-    except urllib2.HTTPError as e:
+        return json.load(urlopen(url))
+    except:
         print("Unable to fetch URL, exiting: %s" % url)
         sys.exit(-1)
 
