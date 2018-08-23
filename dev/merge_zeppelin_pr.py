@@ -130,14 +130,14 @@ def merge_pr(pr_num, target_ref):
         had_conflicts = True
 
     commit_authors = run_cmd(['git', 'log', 'HEAD..%s' % pr_branch_name,
-                             '--pretty=format:%an <%ae>'.encode('utf-8')]).split("\n")
+                             '--pretty=format:%an <%ae>']).split('\n')
     commit_date = run_cmd(['git', 'log', '%s' % pr_branch_name, '-1',
                              '--pretty=format:%ad'])
     distinct_authors = sorted(set(commit_authors),
                               key=lambda x: commit_authors.count(x), reverse=True)
     primary_author = distinct_authors[0]
     commits = run_cmd(['git', 'log', 'HEAD..%s' % pr_branch_name,
-                      '--pretty=format:%h [%an] %s']).split("\n\n")
+                      '--pretty=format:%h [%an] %s']).split('\n\n')
 
     merge_message_flags = []
 
