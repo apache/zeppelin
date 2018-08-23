@@ -62,18 +62,18 @@ def get_json(url):
     try:
         return json.load(urllib2.urlopen(url))
     except urllib2.HTTPError as e:
-        print "Unable to fetch URL, exiting: %s" % url
+        print("Unable to fetch URL, exiting: %s" % url)
         sys.exit(-1)
 
 
 def fail(msg):
-    print msg
+    print(msg)
     clean_up()
     sys.exit(-1)
 
 
 def run_cmd(cmd):
-    print cmd
+    print(cmd)
     if isinstance(cmd, list):
         return subprocess.check_output(cmd)
     else:
@@ -90,13 +90,13 @@ original_head = run_cmd("git rev-parse HEAD")[:8]
 
 
 def clean_up():
-    print "Restoring head pointer to %s" % original_head
+    print("Restoring head pointer to %s" % original_head)
     run_cmd("git checkout %s" % original_head)
 
     branches = run_cmd("git branch").replace(" ", "").split("\n")
 
     for branch in filter(lambda x: x.startswith(BRANCH_PREFIX), branches):
-        print "Deleting local branch %s" % branch
+        print("Deleting local branch %s" % branch)
         run_cmd("git branch -D %s" % branch)
 
 
@@ -276,7 +276,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
     asf_jira.transition_issue(
         jira_id, resolve["id"], fixVersions=jira_fix_versions, comment=comment)
 
-    print "Succesfully resolved %s with fixVersions=%s!" % (jira_id, fix_versions)
+    print("Succesfully resolved %s with fixVersions=%s!" % (jira_id, fix_versions))
 
 
 def resolve_jira_issues(title, merge_branches, comment):
@@ -315,13 +315,13 @@ if merge_commits:
     merge_hash = merge_commits[0]["commit_id"]
     message = get_json("%s/commits/%s" % (GITHUB_API_BASE, merge_hash))["commit"]["message"]
 
-    print "Pull request %s has already been merged, assuming you want to backport" % pr_num
+    print("Pull request %s has already been merged, assuming you want to backport" % pr_num)
     commit_is_downloaded = run_cmd(['git', 'rev-parse', '--quiet', '--verify',
                                     "%s^{commit}" % merge_hash]).strip() != ""
     if not commit_is_downloaded:
         fail("Couldn't find any merge commit for #%s, you may need to update HEAD." % pr_num)
 
-    print "Found commit %s:\n%s" % (merge_hash, message)
+    print("Found commit %s:\n%s" % (merge_hash, message))
     cherry_pick(pr_num, merge_hash, latest_branch)
     sys.exit(0)
 
@@ -349,8 +349,8 @@ if JIRA_IMPORTED:
         jira_comment = "Issue resolved by pull request %s\n[%s/%s]" % (pr_num, GITHUB_BASE, pr_num)
         resolve_jira_issues(title, merged_refs, jira_comment)
     else:
-        print "JIRA_USERNAME and JIRA_PASSWORD not set"
-        print "Exiting without trying to close the associated JIRA."
+        print("JIRA_USERNAME and JIRA_PASSWORD not set")
+        print("Exiting without trying to close the associated JIRA.")
 else:
-    print "Could not find jira library. Run 'sudo pip install jira' to install."
-    print "Exiting without trying to close the associated JIRA."
+    print("Could not find jira library. Run 'sudo pip install jira' to install.")
+    print("Exiting without trying to close the associated JIRA.")
