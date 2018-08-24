@@ -62,6 +62,8 @@ public class FileSystemStorage {
     this.hadoopConf = new Configuration();
     // disable checksum for local file system. because interpreter.json may be updated by
     // non-hadoop filesystem api
+    // disable caching for file:// scheme to avoid getting LocalFS which does CRC checks
+    this.hadoopConf.setBoolean("fs.file.impl.disable.cache", true);
     this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
 
