@@ -50,6 +50,11 @@ matrix:
       dist: trusty
       env: BUILD_PLUGINS="false" SCALA_VER="2.11" PROFILE="-Prat" BUILD_FLAG="clean" TEST_FLAG="org.apache.rat:apache-rat-plugin:check" TEST_PROJECTS=""
 
+    # Check style fast
+    - jdk: "oraclejdk8"
+      dist: trusty
+      env: BUILD_PLUGINS="true" SCALA_VER="2.11" PROFILE="-Pr,integration,examples" BUILD_FLAG="clean" TEST_FLAG="fmt:check" TEST_PROJECTS=""
+
     # Run e2e tests (in zeppelin-web)
     # chrome dropped the support for precise (ubuntu 12.04), so need to use trusty
     # also, can't use JDK 7 in trusty: https://github.com/travis-ci/travis-ci/issues/7884

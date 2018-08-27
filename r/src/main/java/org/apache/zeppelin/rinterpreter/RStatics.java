@@ -27,10 +27,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.spark.SparkZeppelinContext;
 
-/**
- * RStatics provides static class methods that can be accessed through the SparkR bridge
- *
- */
+/** RStatics provides static class methods that can be accessed through the SparkR bridge */
 public class RStatics {
   private static SparkContext sc = null;
   private static SparkZeppelinContext z = null;
@@ -75,10 +72,12 @@ public class RStatics {
   public static RContext getRCon() {
     return rCon;
   }
+
   public static RContext setrCon(RContext newrCon) {
     rCon = newrCon;
     return rCon;
   }
+
   public static Boolean testRDD(String name) {
     Object x = z.get(name);
     return (x instanceof org.apache.spark.api.java.JavaRDD);
