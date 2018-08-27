@@ -17,32 +17,44 @@
 
 package org.apache.zeppelin.service;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.rest.AbstractTestRestApi;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class NotebookServiceTest extends AbstractTestRestApi {
+import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
+import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.junit.Before;
+import org.junit.Test;
+
+public class NotebookServiceTest {
 
   private static NotebookService notebookService;
 
@@ -51,17 +63,72 @@ public class NotebookServiceTest extends AbstractTestRestApi {
 
   private ServiceCallback callback = mock(ServiceCallback.class);
 
-  @BeforeClass
-  public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
-    AbstractTestRestApi.startUp(NotebookServiceTest.class.getSimpleName());
-    notebookService = ZeppelinServer.notebookWsServer.getNotebookService();
-  }
+  @Before
+  public void setUp() throws Exception {
+    ZeppelinConfiguration zeppelinConfiguration = ZeppelinConfiguration.create();
+    NotebookRepo notebookRepo =
+        new NotebookRepo() {
+          Map<String, Note> notes = Maps.newHashMap();
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+          @Override
+          public void init(ZeppelinConfiguration zConf) throws IOException {}
+
+          @Override
+          public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+            return notes.values().stream().map(NoteInfo::new).collect(Collectors.toList());
+          }
+
+          @Override
+          public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+            return notes.get(noteId);
+          }
+
+          @Override
+          public void save(Note note, AuthenticationInfo subject) throws IOException {
+            notes.put(note.getId(), note);
+          }
+
+          @Override
+          public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+            notes.remove(notes.get(noteId));
+          }
+
+          @Override
+          public void close() {}
+
+          @Override
+          public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
+            return null;
+          }
+
+          @Override
+          public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {}
+        };
+    InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
+    InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
+    SearchService searchService = new LuceneSearch(zeppelinConfiguration);
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    Credentials credentials = new Credentials(false, null, null);
+    Notebook notebook =
+        new Notebook(
+            zeppelinConfiguration,
+            notebookRepo,
+            mockInterpreterFactory,
+            mockInterpreterSettingManager,
+            searchService,
+            notebookAuthorization,
+            credentials);
+    notebookService = new NotebookService(notebook);
+
+    String interpreterName = "test";
+    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
+    when(mockInterpreterSettingManager.getDefaultInterpreterSetting())
+        .thenReturn(mockInterpreterSetting);
+
+    Interpreter mockInterpreter = mock(Interpreter.class);
+    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any()))
+        .thenReturn(mockInterpreter);
   }
 
   @Test
