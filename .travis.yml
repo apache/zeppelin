@@ -148,6 +148,7 @@ install:
   - if [ $BUILD_PLUGINS == "true" ]; then echo "mvn clean package -pl zeppelin-plugins -amd -B"; mvn clean package -pl zeppelin-plugins -amd -B; fi
 
 before_script:
+  - cat $HOME/.m2/settings.xml
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
   - if [[ -n $LIVY_VER ]]; then ./testing/downloadLivy.sh $LIVY_VER; fi
   - if [[ -n $LIVY_VER ]]; then export LIVY_HOME=`pwd`/livy-$LIVY_VER-bin; fi
@@ -185,4 +186,3 @@ after_failure:
   - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stdout
   - cat livy/target/tmp/livy-int-test/MiniYarnMain/target/org.apache.livy.test.framework.MiniYarnMain/*/*/*/stderr
   - cat zeppelin-zengine/target/org.apache.zeppelin.interpreter.MiniHadoopCluster/*/*/*/stdout
-  - cat $HOME/.m2/settings.xml
