@@ -97,6 +97,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final int MAX_LINE_DEFAULT = 1000;
+  static final int RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT = 10000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -104,6 +105,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String USER_KEY = "user";
   static final String PASSWORD_KEY = "password";
   static final String PRECODE_KEY = "precode";
+  static final String STRING_TYPE = "stringType";
   static final String STATEMENT_PRECODE_KEY = "statementPrecode";
   static final String COMPLETER_SCHEMA_FILTERS_KEY = "completer.schemaFilters";
   static final String COMPLETER_TTL_KEY = "completer.ttlInSeconds";
@@ -113,6 +115,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String JDBC_JCEKS_CREDENTIAL_KEY = "jceks.credentialKey";
   static final String PRECODE_KEY_TEMPLATE = "%s.precode";
   static final String STATEMENT_PRECODE_KEY_TEMPLATE = "%s.statementPrecode";
+  static final String RESOURCE_POOL_INSERT_ROW_NUMBER = "resourcePoolInsertRowNumber";
   static final String DOT = ".";
 
   private static final char WHITESPACE = ' ';
@@ -120,6 +123,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
+  static final String POOL_REQ_PREFIX = "{ResourcePool";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
@@ -129,6 +133,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
   static final String DEFAULT_PRECODE = DEFAULT_KEY + DOT + PRECODE_KEY;
   static final String DEFAULT_STATEMENT_PRECODE = DEFAULT_KEY + DOT + STATEMENT_PRECODE_KEY;
+  static final String DEFAULT_STRING_TYPE = DEFAULT_KEY + DOT + STRING_TYPE;
 
   static final String EMPTY_COLUMN_VALUE = "";
 
@@ -580,66 +585,6 @@ public class JDBCInterpreter extends KerberosInterpreter {
   inspired from https://github.com/postgres/pgadmin3/blob/794527d97e2e3b01399954f3b79c8e2585b908dd/
     pgadmin/dlg/dlgProperty.cpp#L999-L1045
    */
-  protected ArrayList<String> splitSqlQueries(String sql) {
-    ArrayList<String> queries = new ArrayList<>();
-    StringBuilder query = new StringBuilder();
-    char character;
-
-    Boolean multiLineComment = false;
-    Boolean singleLineComment = false;
-    Boolean quoteString = false;
-    Boolean doubleQuoteString = false;
-
-    for (int item = 0; item < sql.length(); item++) {
-      character = sql.charAt(item);
-
-      if (singleLineComment && (character == '\n' || item == sql.length() - 1)) {
-        singleLineComment = false;
-      }
-
-      if (multiLineComment && character == '/' && sql.charAt(item - 1) == '*') {
-        multiLineComment = false;
-      }
-
-      if (character == '\'') {
-        if (quoteString) {
-          quoteString = false;
-        } else if (!doubleQuoteString) {
-          quoteString = true;
-        }
-      }
-
-      if (character == '"') {
-        if (doubleQuoteString && item > 0) {
-          doubleQuoteString = false;
-        } else if (!quoteString) {
-          doubleQuoteString = true;
-        }
-      }
-
-      if (!quoteString && !doubleQuoteString && !multiLineComment && !singleLineComment
-          && sql.length() > item + 1) {
-        if (character == '-' && sql.charAt(item + 1) == '-') {
-          singleLineComment = true;
-        } else if (character == '/' && sql.charAt(item + 1) == '*') {
-          multiLineComment = true;
-        }
-      }
-
-      if (character == ';' && !quoteString && !doubleQuoteString && !multiLineComment
-          && !singleLineComment) {
-        queries.add(StringUtils.trim(query.toString()));
-        query = new StringBuilder();
-      } else if (item == sql.length() - 1) {
-        query.append(character);
-        queries.add(StringUtils.trim(query.toString()));
-      } else {
-        query.append(character);
-      }
-    }
-
-    return queries;
-  }
 
   public InterpreterResult executePrecode(InterpreterContext interpreterContext) {
     InterpreterResult interpreterResult = null;
@@ -689,8 +634,10 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     try {
       List<String> sqlArray;
+      SqlParser parser = null;
       if (splitQuery) {
-        sqlArray = splitSqlQueries(sql);
+        parser = new SqlParser(sql);
+        sqlArray = parser.splitSqlQueries();
       } else {
         sqlArray = Arrays.asList(sql);
       }
@@ -698,6 +645,20 @@ public class JDBCInterpreter extends KerberosInterpreter {
       for (int i = 0; i < sqlArray.size(); i++) {
         String sqlToExecute = sqlArray.get(i);
         statement = connection.createStatement();
+
+        if (parser == null) {
+          parser = new SqlParser(sql);
+        }
+        List <String> poolReqs = parser.resourcePoolReqs();
+
+        if (!poolReqs.isEmpty()) {
+          final String stringType = getProperty(DEFAULT_STRING_TYPE);
+          final String insertRowNumber = getProperty(RESOURCE_POOL_INSERT_ROW_NUMBER);
+          sqlToExecute = JDBCPoolManager.preparePoolData(sqlToExecute, statement,
+              interpreterContext, stringType, insertRowNumber == null ?
+                  RESOURCE_POOL_INSERT_ROW_NUMBER_DEFAULT : Integer.parseInt(insertRowNumber),
+              poolReqs);
+        }
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());

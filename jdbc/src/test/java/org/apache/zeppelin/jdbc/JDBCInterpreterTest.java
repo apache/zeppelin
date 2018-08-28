@@ -19,8 +19,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import static java.lang.String.format;
-
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
@@ -30,25 +28,16 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PRECODE;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.PRECODE_KEY_TEMPLATE;
 
-import org.junit.Before;
 import org.junit.Test;
 import static org.apache.zeppelin.jdbc.JDBCInterpreter.STATEMENT_PRECODE_KEY_TEMPLATE;
 
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -65,49 +54,7 @@ import org.apache.zeppelin.user.UsernamePassword;
 /**
  * JDBC interpreter unit tests.
  */
-public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
-  static String jdbcConnection;
-  InterpreterContext interpreterContext;
-
-  private static String getJdbcConnection() throws IOException {
-    if (null == jdbcConnection) {
-      Path tmpDir = Files.createTempDirectory("h2-test-");
-      tmpDir.toFile().deleteOnExit();
-      jdbcConnection = format("jdbc:h2:%s", tmpDir);
-    }
-    return jdbcConnection;
-  }
-
-  public static Properties getJDBCTestProperties() {
-    Properties p = new Properties();
-    p.setProperty("default.driver", "org.postgresql.Driver");
-    p.setProperty("default.url", "jdbc:postgresql://localhost:5432/");
-    p.setProperty("default.user", "gpadmin");
-    p.setProperty("default.password", "");
-    p.setProperty("common.max_count", "1000");
-
-    return p;
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    Class.forName("org.h2.Driver");
-    Connection connection = DriverManager.getConnection(getJdbcConnection());
-    Statement statement = connection.createStatement();
-    statement.execute(
-        "DROP TABLE IF EXISTS test_table; " +
-        "CREATE TABLE test_table(id varchar(255), name varchar(255));");
-
-    PreparedStatement insertStatement = connection.prepareStatement(
-            "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
-    insertStatement.setString(1, null);
-    insertStatement.execute();
-    interpreterContext = InterpreterContext.builder()
-        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-        .build();
-  }
-
-
+public class JDBCInterpreterTest extends JDBCAbstractTest {
   @Test
   public void testForParsePropertyKey() {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
@@ -207,7 +154,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     Properties properties = new Properties();
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
-    List<String> multipleSqlArray = t.splitSqlQueries(sqlQuery);
+    List<String> multipleSqlArray = new SqlParser(sqlQuery).splitSqlQueries();
     assertEquals(10, multipleSqlArray.size());
     assertEquals("insert into test_table(id, name) values ('a', ';\"')", multipleSqlArray.get(0));
     assertEquals("select * from test_table", multipleSqlArray.get(1));
