@@ -770,28 +770,6 @@ public class NotebookService {
     }
   }
 
-  public void updatePersonalizedMode(String noteId,
-                                     boolean isPersonalized,
-                                     ServiceContext context,
-                                     ServiceCallback<Note> callback) throws IOException {
-
-    Note note = notebook.getNote(noteId);
-    if (note == null) {
-      callback.onFailure(new NoteNotFoundException(noteId), context);
-      return;
-    }
-
-    if (!checkPermission(noteId, Permission.WRITER, Message.OP.UPDATE_PERSONALIZED_MODE, context,
-        callback)) {
-      return;
-    }
-
-    note.setPersonalizedMode(isPersonalized);
-    note.persist(context.getAutheInfo());
-    callback.onSuccess(note, context);
-  }
-
-
   enum Permission {
     READER,
     WRITER,

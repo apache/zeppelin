@@ -155,8 +155,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
 
   public Paragraph cloneParagraphForUser(String user) {
     Paragraph p = new Paragraph(this);
-    // reset status to READY when clone Paragraph for personalization.
-    p.status = Status.READY;
     addUser(p, user);
     return p;
   }
