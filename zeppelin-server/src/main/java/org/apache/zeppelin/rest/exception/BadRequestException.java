@@ -20,9 +20,12 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import org.apache.zeppelin.utils.ExceptionUtils;
 
-/** BadRequestException handler for WebApplicationException. */
+/**
+ * BadRequestException handler for WebApplicationException.
+ */
 public class BadRequestException extends WebApplicationException {
   public BadRequestException() {
     super(ExceptionUtils.jsonResponse(BAD_REQUEST));

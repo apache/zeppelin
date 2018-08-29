@@ -19,7 +19,9 @@ package org.apache.zeppelin.scheduler;
 
 import java.util.Collection;
 
-/** Interface for scheduler */
+/**
+ * Interface for scheduler
+ */
 public interface Scheduler extends Runnable {
   String getName();
 

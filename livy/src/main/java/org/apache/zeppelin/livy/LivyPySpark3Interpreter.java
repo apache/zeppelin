@@ -19,7 +19,10 @@ package org.apache.zeppelin.livy;
 
 import java.util.Properties;
 
-/** Livy PySpark interpreter for Zeppelin. */
+
+/**
+ * Livy PySpark interpreter for Zeppelin.
+ */
 public class LivyPySpark3Interpreter extends LivyPySparkBaseInterpreter {
 
   public LivyPySpark3Interpreter(Properties property) {
@@ -30,4 +33,5 @@ public class LivyPySpark3Interpreter extends LivyPySparkBaseInterpreter {
   public String getSessionKind() {
     return "pyspark3";
   }
+
 }

@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.interpreter;
 
 import java.util.Properties;
 
-/** Just return the received statement back */
+/**
+ * Just return the received statement back
+ */
 public class EchoInterpreter extends Interpreter {
 
   public EchoInterpreter(Properties property) {
@@ -27,10 +30,14 @@ public class EchoInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {}
+  public void open() {
+
+  }
 
   @Override
-  public void close() {}
+  public void close() {
+
+  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -42,7 +49,9 @@ public class EchoInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+
+  }
 
   @Override
   public FormType getFormType() {

@@ -18,15 +18,17 @@ package org.apache.zeppelin.tabledata;
 
 import java.io.Serializable;
 
-/** Row representation of table data */
+/**
+ * Row representation of table data
+ */
 public class Row implements Serializable {
   private final Object[] data;
 
-  public Row(Object[] data) {
+  public Row(Object [] data) {
     this.data = data;
   }
 
-  public Object[] get() {
+  public Object [] get() {
     return data;
   }
 }

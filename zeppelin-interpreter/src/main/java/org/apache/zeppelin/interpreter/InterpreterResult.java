@@ -18,20 +18,25 @@
 package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Interpreter result template. */
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Interpreter result template.
+ */
 public class InterpreterResult implements Serializable, JsonSerializable {
   transient Logger logger = LoggerFactory.getLogger(InterpreterResult.class);
   private static final Gson gson = new Gson();
 
-  /** Type of result after code execution. */
+  /**
+   *  Type of result after code execution.
+   */
   public enum Code {
     SUCCESS,
     INCOMPLETE,
@@ -39,7 +44,9 @@ public class InterpreterResult implements Serializable, JsonSerializable {
     KEEP_PREVIOUS_RESULT
   }
 
-  /** Type of Data. */
+  /**
+   * Type of Data.
+   */
   public enum Type {
     TEXT,
     HTML,
@@ -75,7 +82,6 @@ public class InterpreterResult implements Serializable, JsonSerializable {
 
   /**
    * Automatically detect %[display_system] directives
-   *
    * @param msg
    */
   public void add(String msg) {
@@ -88,6 +94,7 @@ public class InterpreterResult implements Serializable, JsonSerializable {
     } catch (IOException e) {
       logger.error(e.getMessage(), e);
     }
+
   }
 
   public void add(Type type, String data) {

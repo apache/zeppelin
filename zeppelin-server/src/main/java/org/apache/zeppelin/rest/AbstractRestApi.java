@@ -18,13 +18,14 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Sets;
-import java.io.IOException;
-import java.util.Set;
-import javax.ws.rs.WebApplicationException;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
+
+import javax.ws.rs.WebApplicationException;
+import java.io.IOException;
+import java.util.Set;
 
 public class AbstractRestApi {
 

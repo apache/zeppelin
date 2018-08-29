@@ -17,13 +17,14 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class InterpreterSettingTest {
 
@@ -31,44 +32,28 @@ public class InterpreterSettingTest {
   public void testCreateInterpreters() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create default interpreter for user1 and note1
-    assertEquals(
-        EchoInterpreter.class.getName(),
-        interpreterSetting.getDefaultInterpreter("user1", "note1").getClassName());
+    assertEquals(EchoInterpreter.class.getName(), interpreterSetting.getDefaultInterpreter("user1", "note1").getClassName());
 
     // create interpreter echo for user1 and note1
-    assertEquals(
-        EchoInterpreter.class.getName(),
-        interpreterSetting.getInterpreter("user1", "note1", "echo").getClassName());
-    assertEquals(
-        interpreterSetting.getDefaultInterpreter("user1", "note1"),
-        interpreterSetting.getInterpreter("user1", "note1", "echo"));
+    assertEquals(EchoInterpreter.class.getName(), interpreterSetting.getInterpreter("user1", "note1", "echo").getClassName());
+    assertEquals(interpreterSetting.getDefaultInterpreter("user1", "note1"), interpreterSetting.getInterpreter("user1", "note1", "echo"));
 
     // create interpreter double_echo for user1 and note1
-    assertEquals(
-        DoubleEchoInterpreter.class.getName(),
-        interpreterSetting.getInterpreter("user1", "note1", "double_echo").getClassName());
+    assertEquals(DoubleEchoInterpreter.class.getName(), interpreterSetting.getInterpreter("user1", "note1", "double_echo").getClassName());
 
     // create non-existed interpreter
     assertNull(interpreterSetting.getInterpreter("user1", "note1", "invalid_echo"));
@@ -78,26 +63,18 @@ public class InterpreterSettingTest {
   public void testSharedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SHARED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create default interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -122,26 +99,18 @@ public class InterpreterSettingTest {
   public void testPerUserScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -166,26 +135,18 @@ public class InterpreterSettingTest {
   public void testPerNoteScopedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -210,26 +171,18 @@ public class InterpreterSettingTest {
   public void testPerUserIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -254,26 +207,18 @@ public class InterpreterSettingTest {
   public void testPerNoteIsolatedMode() {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -298,26 +243,18 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -333,9 +270,7 @@ public class InterpreterSettingTest {
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
 
     // group1 for user1 has 2 sessions, and group2 for user2 has 1 session
-    assertEquals(
-        interpreterSetting.getInterpreterGroup("user1", "note1"),
-        interpreterSetting.getInterpreterGroup("user1", "note2"));
+    assertEquals(interpreterSetting.getInterpreterGroup("user1", "note1"), interpreterSetting.getInterpreterGroup("user1", "note2"));
     assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note1").getSessionNum());
     assertEquals(2, interpreterSetting.getInterpreterGroup("user1", "note2").getSessionNum());
     assertEquals(1, interpreterSetting.getInterpreterGroup("user2", "note1").getSessionNum());
@@ -359,26 +294,18 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.ISOLATED);
     interpreterOption.setPerNote(InterpreterOption.ISOLATED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");
@@ -423,26 +350,18 @@ public class InterpreterSettingTest {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
     interpreterOption.setPerNote(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    InterpreterSetting interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
 
     // create interpreter for user1 and note1
     interpreterSetting.getDefaultInterpreter("user1", "note1");

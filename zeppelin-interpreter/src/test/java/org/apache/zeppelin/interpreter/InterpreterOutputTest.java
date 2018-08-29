@@ -16,13 +16,15 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 public class InterpreterOutputTest implements InterpreterOutputListener {
   private InterpreterOutput out;
@@ -76,6 +78,7 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     out.flush();
     assertEquals("div", new String(out.getOutputAt(0).toByteArray()));
   }
+
 
   @Test
   public void testType() throws IOException {
@@ -150,6 +153,7 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals("<h3> This is a hack </h3>\t234\n", new String(out.getOutputAt(1).toByteArray()));
   }
 
+
   @Test
   public void testTableCellFormatting() throws IOException {
     out.write("%table col1\tcol2\n\n%html val1\tval2\n".getBytes());
@@ -188,8 +192,11 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     InterpreterOutput.limit = Constants.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
   }
 
+
   @Override
-  public void onUpdateAll(InterpreterOutput out) {}
+  public void onUpdateAll(InterpreterOutput out) {
+
+  }
 
   @Override
   public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {

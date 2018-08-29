@@ -17,10 +17,6 @@
 
 package org.apache.zeppelin.interpreter.mock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -28,76 +24,81 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-public class MockInterpreter2 extends Interpreter {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+public class MockInterpreter2 extends Interpreter{
   Map<String, Object> vars = new HashMap<>();
 
-  public MockInterpreter2(Properties property) {
-    super(property);
-  }
+	public MockInterpreter2(Properties property) {
+		super(property);
+	}
 
-  boolean open;
+	boolean open;
 
-  @Override
-  public void open() {
-    open = true;
-  }
+	@Override
+	public void open() {
+		open = true;
+	}
 
-  @Override
-  public void close() {
-    open = false;
-  }
+	@Override
+	public void close() {
+		open = false;
+	}
 
-  public boolean isOpen() {
-    return open;
-  }
+	public boolean isOpen() {
+		return open;
+	}
 
-  @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
-    InterpreterResult result;
 
-    if ("getId".equals(st)) {
-      // get unique id of this interpreter instance
-      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
-    } else if (st.startsWith("sleep")) {
-      try {
-        Thread.sleep(Integer.parseInt(st.split(" ")[1]));
-      } catch (InterruptedException e) {
-        // nothing to do
-      }
-      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: " + st);
-    } else {
-      result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: " + st);
-    }
+	@Override
+	public InterpreterResult interpret(String st, InterpreterContext context) {
+		InterpreterResult result;
 
-    if (context.getResourcePool() != null) {
-      context
-          .getResourcePool()
-          .put(context.getNoteId(), context.getParagraphId(), "result", result);
-    }
-    return result;
-  }
+		if ("getId".equals(st)) {
+			// get unique id of this interpreter instance
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+		} else if (st.startsWith("sleep")) {
+			try {
+				Thread.sleep(Integer.parseInt(st.split(" ")[1]));
+			} catch (InterruptedException e) {
+				// nothing to do
+			}
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: " + st);
+		} else {
+			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: " + st);
+		}
 
-  @Override
-  public void cancel(InterpreterContext context) {}
+		if (context.getResourcePool() != null) {
+			context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
+		}
+		return result;
+	}
 
-  @Override
-  public FormType getFormType() {
-    return FormType.SIMPLE;
-  }
+	@Override
+	public void cancel(InterpreterContext context) {
+	}
 
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-  }
+	@Override
+	public FormType getFormType() {
+		return FormType.SIMPLE;
+	}
 
-  @Override
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_" + this.hashCode());
-  }
+	@Override
+	public int getProgress(InterpreterContext context) {
+		return 0;
+	}
 
-  @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
-    return null;
-  }
+	@Override
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
+	}
+
+	@Override
+	public List<InterpreterCompletion> completion(String buf, int cursor,
+			InterpreterContext interpreterContext) {
+		return null;
+	}
 }

@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
  *
  * @see Job#progress()
  * @see JobListener#onProgressUpdate(org.apache.zeppelin.scheduler.Job, int)
- *     <p>TODO(moon) : add description.
+ *
+ * TODO(moon) : add description.
  */
 public class JobProgressPoller extends Thread {
   public static final long DEFAULT_INTERVAL_MSEC = 500;

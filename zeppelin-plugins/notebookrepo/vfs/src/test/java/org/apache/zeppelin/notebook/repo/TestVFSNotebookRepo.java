@@ -17,13 +17,7 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.common.collect.ImmutableMap;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
@@ -32,6 +26,13 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestVFSNotebookRepo {
 
@@ -43,8 +44,7 @@ public class TestVFSNotebookRepo {
   public void setUp() throws IOException {
     notebookRepo = new VFSNotebookRepo();
     FileUtils.forceMkdir(new File(notebookDir));
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
     zConf = new ZeppelinConfiguration();
     notebookRepo.init(zConf);
   }
@@ -91,8 +91,7 @@ public class TestVFSNotebookRepo {
 
   @Test
   public void testUpdateSettings() throws IOException {
-    List<NotebookRepoSettingsInfo> repoSettings =
-        notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
+    List<NotebookRepoSettingsInfo> repoSettings = notebookRepo.getSettings(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, repoSettings.size());
     NotebookRepoSettingsInfo settingInfo = repoSettings.get(0);
     assertEquals("Notebook Path", settingInfo.name);

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -42,25 +43,26 @@ import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 
-/** Deps resolver. Add new dependencies from mvn repo (at runtime) to Zeppelin. */
+/**
+ * Deps resolver.
+ * Add new dependencies from mvn repo (at runtime) to Zeppelin.
+ */
 public class DependencyResolver extends AbstractDependencyResolver {
   private Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
 
-  private final String[] exclusions =
-      new String[] {
-        "org.apache.zeppelin:zeppelin-zengine",
-        "org.apache.zeppelin:zeppelin-interpreter",
-        "org.apache.zeppelin:zeppelin-server"
-      };
+  private final String[] exclusions = new String[] {"org.apache.zeppelin:zeppelin-zengine",
+                                                    "org.apache.zeppelin:zeppelin-interpreter",
+                                                    "org.apache.zeppelin:zeppelin-server"};
 
   public DependencyResolver(String localRepoPath) {
     super(localRepoPath);
   }
 
-  public List<File> load(String artifact) throws RepositoryException, IOException {
+  public List<File> load(String artifact)
+      throws RepositoryException, IOException {
     return load(artifact, new LinkedList<String>());
   }
-
+  
   public synchronized List<File> load(String artifact, Collection<String> excludes)
       throws RepositoryException, IOException {
     if (StringUtils.isBlank(artifact)) {
@@ -101,7 +103,8 @@ public class DependencyResolver extends AbstractDependencyResolver {
     return libs;
   }
 
-  public synchronized void copyLocalDependency(String srcPath, File destPath) throws IOException {
+  public synchronized void copyLocalDependency(String srcPath, File destPath)
+      throws IOException {
     if (StringUtils.isBlank(srcPath)) {
       return;
     }
@@ -152,12 +155,13 @@ public class DependencyResolver extends AbstractDependencyResolver {
    * @throws Exception
    */
   @Override
-  public List<ArtifactResult> getArtifactsWithDep(String dependency, Collection<String> excludes)
+  public List<ArtifactResult> getArtifactsWithDep(String dependency,
+                                                  Collection<String> excludes)
       throws RepositoryException {
     Artifact artifact = new DefaultArtifact(dependency);
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
-        new PatternExclusionsDependencyFilter(excludes);
+            new PatternExclusionsDependencyFilter(excludes);
 
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
@@ -167,14 +171,13 @@ public class DependencyResolver extends AbstractDependencyResolver {
         collectRequest.addRepository(repo);
       }
     }
-    DependencyRequest dependencyRequest =
-        new DependencyRequest(
-            collectRequest, DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
+    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
+            DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
     try {
       return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
     } catch (NullPointerException | DependencyResolutionException ex) {
       throw new RepositoryException(
-          String.format("Cannot fetch dependencies for %s", dependency), ex);
+              String.format("Cannot fetch dependencies for %s", dependency), ex);
     }
   }
 }

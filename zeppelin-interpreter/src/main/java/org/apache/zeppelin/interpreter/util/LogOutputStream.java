@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Minor modification of LogOutputStream of apache commons exec. LogOutputStream of apache commons
- * exec has one issue that method flush doesn't throw IOException, so that SparkOutputStream can not
- * extend it correctly.
+ * Minor modification of LogOutputStream of apache commons exec.
+ * LogOutputStream of apache commons exec has one issue that method flush doesn't throw IOException,
+ * so that SparkOutputStream can not extend it correctly.
  */
 public abstract class LogOutputStream extends OutputStream {
   private static final int INTIAL_SIZE = 132;
@@ -61,6 +61,7 @@ public abstract class LogOutputStream extends OutputStream {
     if (this.buffer.size() > 0) {
       this.processBuffer();
     }
+
   }
 
   @Override
@@ -98,6 +99,7 @@ public abstract class LogOutputStream extends OutputStream {
         --remaining;
       }
     }
+
   }
 
   protected void processBuffer() {

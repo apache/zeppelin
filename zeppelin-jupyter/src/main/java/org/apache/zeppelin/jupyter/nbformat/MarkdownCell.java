@@ -16,5 +16,9 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
-/** */
-public class MarkdownCell extends Cell {}
+/**
+ *
+ */
+public class MarkdownCell extends Cell {
+
+}

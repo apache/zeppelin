@@ -16,9 +16,12 @@
  */
 package org.apache.zeppelin.notebook;
 
-/** Notebook event */
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+
+/**
+ * Notebook event
+ */
 public interface NotebookEventListener extends NoteEventListener {
   public void onNoteRemove(Note note);
-
   public void onNoteCreate(Note note);
 }

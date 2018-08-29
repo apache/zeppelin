@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.common;
 
-/** Interface for class that can be serialized to json */
+/**
+ * Interface for class that can be serialized to json
+ */
 public interface JsonSerializable {
 
   String toJson();

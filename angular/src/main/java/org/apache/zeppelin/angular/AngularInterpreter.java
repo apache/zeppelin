@@ -20,6 +20,7 @@ package org.apache.zeppelin.angular;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -29,7 +30,9 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-/** */
+/**
+ *
+ */
 public class AngularInterpreter extends Interpreter {
 
   public AngularInterpreter(Properties property) {
@@ -37,10 +40,12 @@ public class AngularInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {}
+  public void open() {
+  }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -48,7 +53,8 @@ public class AngularInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 
   @Override
   public FormType getFormType() {
@@ -61,14 +67,14 @@ public class AngularInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton()
-        .createOrGetFIFOScheduler(AngularInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        AngularInterpreter.class.getName() + this.hashCode());
   }
 }

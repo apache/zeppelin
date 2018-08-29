@@ -20,7 +20,9 @@ package org.apache.zeppelin.livy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Provide reading comparing capability of livy version. */
+/**
+ * Provide reading comparing capability of livy version.
+ */
 public class LivyVersion {
   private static final Logger logger = LoggerFactory.getLogger(LivyVersion.class);
 
@@ -50,8 +52,8 @@ public class LivyVersion {
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(String.format("%d%02d%02d", major, minor, patch));
     } catch (Exception e) {
-      logger.error(
-          "Can not recognize Livy version " + versionString + ". Assume it's a future release", e);
+      logger.error("Can not recognize Livy version " + versionString +
+          ". Assume it's a future release", e);
 
       // assume it is future release
       version = 99999;

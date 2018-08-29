@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
-/** */
+/**
+ *
+ */
 public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
-  private static ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private static ZeppelinConfiguration conf =  ZeppelinConfiguration.create();
 
   // always set it as true, keep this field just for backward compatibility
   boolean remote = true;
@@ -84,7 +86,8 @@ public class InterpreterOption {
     isUserImpersonate = userImpersonate;
   }
 
-  public InterpreterOption() {}
+  public InterpreterOption() {
+  }
 
   public InterpreterOption(String perUser, String perNote) {
     if (perUser == null) {
@@ -107,8 +110,8 @@ public class InterpreterOption {
     option.perUser = other.perUser;
     option.isExistingProcess = other.isExistingProcess;
     option.setPermission = other.setPermission;
-    option.owners =
-        (null == other.owners) ? new ArrayList<String>() : new ArrayList<>(other.owners);
+    option.owners = (null == other.owners) ?
+        new ArrayList<String>() : new ArrayList<>(other.owners);
 
     return option;
   }
@@ -120,6 +123,7 @@ public class InterpreterOption {
   public int getPort() {
     return port;
   }
+
 
   public boolean perUserShared() {
     return SHARED.equals(perUser);

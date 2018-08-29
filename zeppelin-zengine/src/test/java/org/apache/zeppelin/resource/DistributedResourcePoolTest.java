@@ -16,9 +16,6 @@
  */
 package org.apache.zeppelin.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.google.gson.Gson;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -30,26 +27,30 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Unittest for DistributedResourcePool */
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Unittest for DistributedResourcePool
+ */
 public class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
   private RemoteInterpreter intp1;
   private RemoteInterpreter intp2;
   private InterpreterContext context;
 
+
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    InterpreterSetting interpreterSetting =
-        interpreterSettingManager.getByName("mock_resource_pool");
-    intp1 =
-        (RemoteInterpreter)
-            interpreterSetting.getInterpreter("user1", "note1", "mock_resource_pool");
-    intp2 =
-        (RemoteInterpreter)
-            interpreterSetting.getInterpreter("user2", "note1", "mock_resource_pool");
+    InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("mock_resource_pool");
+    intp1 = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_resource_pool");
+    intp2 = (RemoteInterpreter) interpreterSetting.getInterpreter("user2", "note1", "mock_resource_pool");
 
-    context = InterpreterContext.builder().setNoteId("note").setParagraphId("id").build();
+    context = InterpreterContext.builder()
+        .setNoteId("note")
+        .setParagraphId("id")
+        .build();
 
     intp1.open();
     intp2.open();
@@ -85,54 +86,47 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
     final LocalResourcePool pool2 = new LocalResourcePool("pool2");
     final LocalResourcePool pool3 = new LocalResourcePool("pool3");
 
-    DistributedResourcePool pool1 =
-        new DistributedResourcePool(
-            "pool1",
-            new ResourcePoolConnector() {
-              @Override
-              public ResourceSet getAllResources() {
-                ResourceSet set = pool2.getAll();
-                set.addAll(pool3.getAll());
+    DistributedResourcePool pool1 = new DistributedResourcePool("pool1", new ResourcePoolConnector() {
+      @Override
+      public ResourceSet getAllResources() {
+        ResourceSet set = pool2.getAll();
+        set.addAll(pool3.getAll());
 
-                ResourceSet remoteSet = new ResourceSet();
-                Gson gson = new Gson();
-                for (Resource s : set) {
-                  RemoteResource remoteResource = RemoteResource.fromJson(s.toJson());
-                  remoteResource.setResourcePoolConnector(this);
-                  remoteSet.add(remoteResource);
-                }
-                return remoteSet;
-              }
+        ResourceSet remoteSet = new ResourceSet();
+        Gson gson = new Gson();
+        for (Resource s : set) {
+          RemoteResource remoteResource = RemoteResource.fromJson(s.toJson());
+          remoteResource.setResourcePoolConnector(this);
+          remoteSet.add(remoteResource);
+        }
+        return remoteSet;
+      }
 
-              @Override
-              public Object readResource(ResourceId id) {
-                if (id.getResourcePoolId().equals(pool2.id())) {
-                  return pool2.get(id.getName()).get();
-                }
-                if (id.getResourcePoolId().equals(pool3.id())) {
-                  return pool3.get(id.getName()).get();
-                }
-                return null;
-              }
+      @Override
+      public Object readResource(ResourceId id) {
+        if (id.getResourcePoolId().equals(pool2.id())) {
+          return pool2.get(id.getName()).get();
+        }
+        if (id.getResourcePoolId().equals(pool3.id())) {
+          return pool3.get(id.getName()).get();
+        }
+        return null;
+      }
 
-              @Override
-              public Object invokeMethod(
-                  ResourceId id, String methodName, Class[] paramTypes, Object[] params) {
-                return null;
-              }
+      @Override
+      public Object invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[] params) {
+        return null;
+      }
 
-              @Override
-              public Resource invokeMethod(
-                  ResourceId id,
-                  String methodName,
-                  Class[] paramTypes,
-                  Object[] params,
-                  String returnResourceName) {
-                return null;
-              }
-            });
+      @Override
+      public Resource invokeMethod(ResourceId id, String methodName, Class[] paramTypes, Object[]
+          params, String returnResourceName) {
+        return null;
+      }
+    });
 
     assertEquals(0, pool1.getAll().size());
+
 
     // test get() can get from pool
     pool2.put("object1", "value2");
@@ -161,6 +155,7 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
     intp2.interpret("put note2:paragraph1:key1 value1", context);
     intp2.interpret("put note2:paragraph2:key2 value2", context);
 
+
     // then get all resources.
     assertEquals(4, interpreterSettingManager.getAllResources().size());
 
@@ -169,27 +164,23 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
 
     // then resources should be removed.
     assertEquals(2, interpreterSettingManager.getAllResources().size());
-    assertEquals(
-        "",
-        gson.fromJson(
-            intp1.interpret("get note1:paragraph1:key1", context).message().get(0).getData(),
-            String.class));
-    assertEquals(
-        "",
-        gson.fromJson(
-            intp1.interpret("get note1:paragraph2:key1", context).message().get(0).getData(),
-            String.class));
+    assertEquals("", gson.fromJson(
+        intp1.interpret("get note1:paragraph1:key1", context).message().get(0).getData(),
+        String.class));
+    assertEquals("", gson.fromJson(
+        intp1.interpret("get note1:paragraph2:key1", context).message().get(0).getData(),
+        String.class));
+
 
     // when remove all resources from note2:paragraph1
     interpreterSettingManager.removeResourcesBelongsToParagraph("note2", "paragraph1");
 
     // then 1
     assertEquals(1, interpreterSettingManager.getAllResources().size());
-    assertEquals(
-        "value2",
-        gson.fromJson(
-            intp1.interpret("get note2:paragraph2:key2", context).message().get(0).getData(),
-            String.class));
+    assertEquals("value2", gson.fromJson(
+        intp1.interpret("get note2:paragraph2:key2", context).message().get(0).getData(),
+        String.class));
+
   }
 
   @Test

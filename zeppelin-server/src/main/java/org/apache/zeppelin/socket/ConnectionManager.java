@@ -17,22 +17,11 @@
 
 package org.apache.zeppelin.socket;
 
+
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.GUI;
@@ -48,17 +37,30 @@ import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Manager class for managing websocket connections */
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+/**
+ * Manager class for managing websocket connections
+ */
 public class ConnectionManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionManager.class);
-  private static Gson gson =
-      new GsonBuilder()
-          .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-          .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-          .setPrettyPrinting()
-          .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-          .create();
+  private static Gson gson = new GsonBuilder()
+      .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .setPrettyPrinting()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
 
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
   // noteId -> connection
@@ -67,15 +69,18 @@ public class ConnectionManager {
   final Map<String, Queue<NotebookSocket>> userSocketMap = new ConcurrentHashMap<>();
 
   /**
-   * This is a special endpoint in the notebook websoket, Every connection in this Queue will be
-   * able to watch every websocket event, it doesnt need to be listed into the map of noteSocketMap.
-   * This can be used to get information about websocket traffic and watch what is going on.
+   * This is a special endpoint in the notebook websoket, Every connection in this Queue
+   * will be able to watch every websocket event, it doesnt need to be listed into the map of
+   * noteSocketMap. This can be used to get information about websocket traffic and watch what
+   * is going on.
    */
   final Queue<NotebookSocket> watcherSockets = Queues.newConcurrentLinkedQueue();
 
   private HashSet<String> collaborativeModeList = new HashSet<>();
-  private Boolean collaborativeModeEnable =
-      ZeppelinConfiguration.create().isZeppelinNotebookCollaborativeModeEnable();
+  private Boolean collaborativeModeEnable = ZeppelinConfiguration
+      .create()
+      .isZeppelinNotebookCollaborativeModeEnable();
+
 
   public void addConnection(NotebookSocket conn) {
     connectedSockets.add(conn);
@@ -198,6 +203,7 @@ public class ConnectionManager {
     broadcast(noteId, message);
   }
 
+
   protected String serializeMessage(Message m) {
     return gson.toJson(m);
   }
@@ -239,11 +245,8 @@ public class ConnectionManager {
       for (NotebookSocket watcher : watcherSockets) {
         try {
           watcher.send(
-              WatcherMessage.builder(noteId)
-                  .subject(subject)
-                  .message(serializeMessage(message))
-                  .build()
-                  .toJson());
+              WatcherMessage.builder(noteId).subject(subject).message(serializeMessage(message))
+                  .build().toJson());
         } catch (IOException e) {
           LOGGER.error("Cannot broadcast message to watcher", e);
         }
@@ -275,7 +278,9 @@ public class ConnectionManager {
     }
   }
 
-  /** Send websocket message to all connections regardless of notebook id. */
+  /**
+   * Send websocket message to all connections regardless of notebook id.
+   */
   public void broadcastToAllConnections(String serialized) {
     broadcastToAllConnectionsExcept(null, serialized);
   }
@@ -303,6 +308,7 @@ public class ConnectionManager {
     }
     return connectedUsers;
   }
+
 
   public void multicastToUser(String user, Message m) {
     if (!userSocketMap.containsKey(user)) {
@@ -340,15 +346,15 @@ public class ConnectionManager {
     }
   }
 
-  public void broadcastNoteListExcept(
-      List<Map<String, String>> notesInfo, AuthenticationInfo subject) {
+  public void broadcastNoteListExcept(List<Map<String, String>> notesInfo,
+                                      AuthenticationInfo subject) {
     Set<String> userAndRoles;
     NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
     for (String user : userSocketMap.keySet()) {
       if (subject.getUser().equals(user)) {
         continue;
       }
-      // reloaded already above; parameter - false
+      //reloaded already above; parameter - false
       userAndRoles = authInfo.getRoles(user);
       userAndRoles.add(user);
       // TODO(zjffdu) is it ok for comment the following line ?
@@ -371,12 +377,12 @@ public class ConnectionManager {
     }
   }
 
-  public void broadcastParagraphs(
-      Map<String, Paragraph> userParagraphMap, Paragraph defaultParagraph) {
+  public void broadcastParagraphs(Map<String, Paragraph> userParagraphMap,
+                                  Paragraph defaultParagraph) {
     if (null != userParagraphMap) {
       for (String user : userParagraphMap.keySet()) {
-        multicastToUser(
-            user, new Message(Message.OP.PARAGRAPH).put("paragraph", userParagraphMap.get(user)));
+        multicastToUser(user,
+            new Message(Message.OP.PARAGRAPH).put("paragraph", userParagraphMap.get(user)));
       }
     }
   }
@@ -384,8 +390,7 @@ public class ConnectionManager {
   private void broadcastNewParagraph(Note note, Paragraph para) {
     LOGGER.info("Broadcasting paragraph on run call instead of note.");
     int paraIndex = note.getParagraphs().indexOf(para);
-    broadcast(
-        note.getId(),
+    broadcast(note.getId(),
         new Message(Message.OP.PARAGRAPH_ADDED).put("paragraph", para).put("index", paraIndex));
   }
 
@@ -401,12 +406,13 @@ public class ConnectionManager {
   //    broadcastNoteListExcept(notesInfo, subject);
   //  }
 
+
   private void broadcastNoteForms(Note note) {
     GUI formsSettings = new GUI();
     formsSettings.setForms(note.getNoteForms());
     formsSettings.setParams(note.getNoteParams());
-    broadcast(
-        note.getId(), new Message(Message.OP.SAVE_NOTE_FORMS).put("formsData", formsSettings));
+    broadcast(note.getId(), new Message(Message.OP.SAVE_NOTE_FORMS)
+        .put("formsData", formsSettings));
   }
 
   public void switchConnectionToWatcher(NotebookSocket conn) {
@@ -430,7 +436,7 @@ public class ConnectionManager {
 
   private boolean isSessionAllowedToSwitchToWatcher(NotebookSocket session) {
     String watcherSecurityKey = session.getRequest().getHeader(WatcherSecurityKey.HTTP_HEADER);
-    return !(StringUtils.isBlank(watcherSecurityKey)
-        || !watcherSecurityKey.equals(WatcherSecurityKey.getKey()));
+    return !(StringUtils.isBlank(watcherSecurityKey) || !watcherSecurityKey
+        .equals(WatcherSecurityKey.getKey()));
   }
 }

@@ -19,7 +19,9 @@ package org.apache.zeppelin.elasticsearch.client;
 
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 
-/** Interface that must be implemented by any kind of Elasticsearch client (transport, ...). */
+/**
+ * Interface that must be implemented by any kind of Elasticsearch client (transport, ...).
+ */
 public interface ElasticsearchClient {
 
   ActionResponse get(String index, String type, String id);

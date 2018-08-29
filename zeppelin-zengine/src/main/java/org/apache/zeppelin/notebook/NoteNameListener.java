@@ -17,11 +17,12 @@
 
 package org.apache.zeppelin.notebook;
 
-/** NoteNameListener. It's used by FolderView. */
+/**
+ * NoteNameListener. It's used by FolderView.
+ */
 public interface NoteNameListener {
   /**
    * Fired after note name changed
-   *
    * @param note
    * @param oldName
    */

@@ -30,10 +30,11 @@ import org.junit.Test;
  * They should contain username and password of an valid system user to make the test pass. The
  * service needs to be configured under /etc/pam.d/sshd to resolve and authenticate the system user.
  *
- * <p>Contains main() function so the test can be executed manually.
+ * Contains main() function so the test can be executed manually.
  *
- * <p>Set in MacOS to run in IDE(A): $ launchctl setenv PAM_USER user $ launchctl setenv PAM_PASS
- * xxxxx
+ * Set in MacOS to run in IDE(A):
+ * $ launchctl setenv PAM_USER user
+ * $ launchctl setenv PAM_PASS xxxxx
  */
 public class PamRealmTest {
 

@@ -20,14 +20,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 
 /**
  * Search (both, indexing and query) the notes.
- *
- * <p>Intended to have multiple implementation, i.e: - local Lucene (in-memory, on-disk) - remote
- * Elasticsearch
+ * 
+ * Intended to have multiple implementation, i.e:
+ *  - local Lucene (in-memory, on-disk)
+ *  - remote Elasticsearch
  */
 public interface SearchService {
 
@@ -40,7 +42,9 @@ public interface SearchService {
   public List<Map<String, String>> query(String queryStr);
 
   /**
-   * Updates all documents in index for the given note: - name - all paragraphs
+   * Updates all documents in index for the given note:
+   *  - name
+   *  - all paragraphs
    *
    * @param note a Note to update index for
    * @throws IOException
@@ -61,7 +65,9 @@ public interface SearchService {
    */
   public void addIndexDoc(Note note);
 
-  /** Deletes all docs on given Note from index */
+  /**
+   * Deletes all docs on given Note from index
+   */
   public void deleteIndexDocs(Note note);
 
   /**
@@ -73,6 +79,9 @@ public interface SearchService {
    */
   public void deleteIndexDoc(Note note, Paragraph p);
 
-  /** Frees the recourses used by index */
+  /**
+   * Frees the recourses used by index
+   */
   public void close();
+
 }

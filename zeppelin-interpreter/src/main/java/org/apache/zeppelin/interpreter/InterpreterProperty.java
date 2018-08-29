@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.interpreter;
 
-/** Property for instance of interpreter */
+/**
+ * Property for instance of interpreter
+ */
 public class InterpreterProperty {
   private String name;
   private Object value;

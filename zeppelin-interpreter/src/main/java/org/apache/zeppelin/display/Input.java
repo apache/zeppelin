@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.display;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,13 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.display.ui.CheckBox;
-import org.apache.zeppelin.display.ui.OptionInput;
-import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
-import org.apache.zeppelin.display.ui.Password;
-import org.apache.zeppelin.display.ui.Select;
-import org.apache.zeppelin.display.ui.TextBox;
 
 /**
  * Base class for dynamic forms. Also used as factory class of dynamic forms.
@@ -61,7 +62,8 @@ public class Input<T> implements Serializable {
   protected boolean hidden;
   protected String argument;
 
-  public Input() {}
+  public Input() {
+  }
 
   public boolean isHidden() {
     return hidden;
@@ -116,17 +118,17 @@ public class Input<T> implements Serializable {
       return false;
     }
     if (defaultValue instanceof Object[]) {
-      if (defaultValue != null
-          ? !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
+      if (defaultValue != null ?
+          !Arrays.equals((Object[]) defaultValue, (Object[]) input.defaultValue)
           : input.defaultValue != null) {
         return false;
       }
-    } else if (defaultValue != null
-        ? !defaultValue.equals(input.defaultValue)
-        : input.defaultValue != null) {
+    } else if (defaultValue != null ?
+        !defaultValue.equals(input.defaultValue) : input.defaultValue != null) {
       return false;
     }
     return argument != null ? argument.equals(input.argument) : input.argument == null;
+
   }
 
   @Override
@@ -213,6 +215,7 @@ public class Input<T> implements Serializable {
       valuePart = null;
     }
 
+
     String varName;
     String displayName = null;
     String type = null;
@@ -265,9 +268,11 @@ public class Input<T> implements Serializable {
           }
         }
 
+
       } else { // no option
         defaultValue = valuePart;
       }
+
     }
 
     Input input = null;
@@ -290,8 +295,8 @@ public class Input<T> implements Serializable {
     return input;
   }
 
-  public static LinkedHashMap<String, Input> extractSimpleQueryForm(
-      String script, boolean noteForm) {
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script,
+                                                                    boolean noteForm) {
     LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
       return forms;
@@ -336,18 +341,16 @@ public class Input<T> implements Serializable {
       }
 
       String expanded;
-      if (value instanceof Object[] || value instanceof Collection) { // multi-selection
+      if (value instanceof Object[] || value instanceof Collection) {  // multi-selection
         OptionInput optionInput = (OptionInput) input;
         String delimiter = input.argument;
         if (delimiter == null) {
           delimiter = DEFAULT_DELIMITER;
         }
-        Collection<Object> checked =
-            value instanceof Collection
-                ? (Collection<Object>) value
-                : Arrays.asList((Object[]) value);
+        Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
+            : Arrays.asList((Object[]) value);
         List<Object> validChecked = new LinkedList<>();
-        for (Object o : checked) { // filter out obsolete checked values
+        for (Object o : checked) {  // filter out obsolete checked values
           for (ParamOption option : optionInput.getOptions()) {
             if (option.getValue().equals(o)) {
               validChecked.add(o);
@@ -357,7 +360,7 @@ public class Input<T> implements Serializable {
         }
         params.put(input.name, validChecked);
         expanded = StringUtils.join(validChecked, delimiter);
-      } else { // single-selection
+      } else {  // single-selection
         expanded = value.toString();
       }
       replaced = match.replaceFirst(expanded);
@@ -367,8 +370,10 @@ public class Input<T> implements Serializable {
     return replaced;
   }
 
+
   public static String[] split(String str) {
     return str.split(";(?=([^\"']*\"[^\"']*\")*[^\"']*$)");
+
   }
 
   /*
@@ -377,32 +382,28 @@ public class Input<T> implements Serializable {
    * str.split("\\|(?=([^\"']*\"[^\"']*\")*[^\"']*$)"); }
    */
 
+
   public static String[] splitPipe(String str) {
     return split(str, '|');
   }
 
   public static String[] split(String str, char split) {
-    return split(str, new String[] {String.valueOf(split)}, false);
+    return split(str, new String[]{String.valueOf(split)}, false);
   }
 
   public static String[] split(String str, String[] splitters, boolean includeSplitter) {
     String escapeSeq = "\"',;${}";
     char escapeChar = '\\';
 
-    String[] blockStart = new String[] {"\"", "'", "${", "N_(", "N_<"};
-    String[] blockEnd = new String[] {"\"", "'", "}", "N_)", "N_>"};
+    String[] blockStart = new String[]{"\"", "'", "${", "N_(", "N_<"};
+    String[] blockEnd = new String[]{"\"", "'", "}", "N_)", "N_>"};
 
     return split(str, escapeSeq, escapeChar, blockStart, blockEnd, splitters, includeSplitter);
+
   }
 
-  public static String[] split(
-      String str,
-      String escapeSeq,
-      char escapeChar,
-      String[] blockStart,
-      String[] blockEnd,
-      String[] splitters,
-      boolean includeSplitter) {
+  public static String[] split(String str, String escapeSeq, char escapeChar, String[] blockStart,
+                               String[] blockEnd, String[] splitters, boolean includeSplitter) {
 
     List<String> splits = new ArrayList<>();
 
@@ -455,10 +456,8 @@ public class Input<T> implements Serializable {
         if (isNestedBlock(blockStart[blockStack.get(0)]) == true) {
           // try to find nested block start
 
-          if (curString
-                  .substring(lastEscapeOffset + 1)
-                  .endsWith(getBlockStr(blockStart[blockStack.get(0)]))
-              == true) {
+          if (curString.substring(lastEscapeOffset + 1).endsWith(
+              getBlockStr(blockStart[blockStack.get(0)])) == true) {
             blockStack.add(0, blockStack.get(0)); // block is started
             blockStartPos = i;
             continue;
@@ -466,9 +465,8 @@ public class Input<T> implements Serializable {
         }
 
         // check if block is finishing
-        if (curString
-            .substring(lastEscapeOffset + 1)
-            .endsWith(getBlockStr(blockEnd[blockStack.get(0)]))) {
+        if (curString.substring(lastEscapeOffset + 1).endsWith(
+            getBlockStr(blockEnd[blockStack.get(0)]))) {
           // the block closer is one of the splitters (and not nested block)
           if (isNestedBlock(blockEnd[blockStack.get(0)]) == false) {
             for (String splitter : splitters) {
@@ -515,8 +513,8 @@ public class Input<T> implements Serializable {
 
         // check if block is started
         for (int b = 0; b < blockStart.length; b++) {
-          if (curString.substring(lastEscapeOffset + 1).endsWith(getBlockStr(blockStart[b]))
-              == true) {
+          if (curString.substring(lastEscapeOffset + 1)
+              .endsWith(getBlockStr(blockStart[b])) == true) {
             blockStack.add(0, b); // block is started
             blockStartPos = i;
             break;
@@ -527,7 +525,8 @@ public class Input<T> implements Serializable {
     if (curString.length() > 0) {
       splits.add(curString.toString().trim());
     }
-    return splits.toArray(new String[] {});
+    return splits.toArray(new String[]{});
+
   }
 
   private static String getBlockStr(String blockDef) {

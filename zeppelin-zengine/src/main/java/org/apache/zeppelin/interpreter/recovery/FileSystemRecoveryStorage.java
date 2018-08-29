@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.interpreter.recovery;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -35,10 +30,18 @@ import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
 /**
  * Hadoop compatible FileSystem based RecoveryStorage implementation.
  *
- * <p>Save InterpreterProcess in the format of: InterpreterGroupId host:port
+ * Save InterpreterProcess in the format of:
+ * InterpreterGroupId host:port
  */
 public class FileSystemRecoveryStorage extends RecoveryStorage {
 
@@ -48,15 +51,15 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   private FileSystemStorage fs;
   private Path recoveryDir;
 
-  public FileSystemRecoveryStorage(
-      ZeppelinConfiguration zConf, InterpreterSettingManager interpreterSettingManager)
+  public FileSystemRecoveryStorage(ZeppelinConfiguration zConf,
+                                   InterpreterSettingManager interpreterSettingManager)
       throws IOException {
     super(zConf);
     this.interpreterSettingManager = interpreterSettingManager;
     this.zConf = zConf;
     this.fs = new FileSystemStorage(zConf, zConf.getRecoveryDir());
-    LOGGER.info(
-        "Creating FileSystem: " + this.fs.getFs().getClass().getName() + " for Zeppelin Recovery.");
+    LOGGER.info("Creating FileSystem: " + this.fs.getFs().getClass().getName() +
+        " for Zeppelin Recovery.");
     this.recoveryDir = this.fs.makeQualified(new Path(zConf.getRecoveryDir()));
     LOGGER.info("Using folder {} to store recovery data", recoveryDir);
     this.fs.tryMkDir(recoveryDir);
@@ -79,12 +82,8 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
     for (ManagedInterpreterGroup interpreterGroup : interpreterSetting.getAllInterpreterGroups()) {
       RemoteInterpreterProcess interpreterProcess = interpreterGroup.getInterpreterProcess();
       if (interpreterProcess != null) {
-        recoveryContent.add(
-            interpreterGroup.getId()
-                + "\t"
-                + interpreterProcess.getHost()
-                + ":"
-                + interpreterProcess.getPort());
+        recoveryContent.add(interpreterGroup.getId() + "\t" + interpreterProcess.getHost() + ":" +
+            interpreterProcess.getPort());
       }
     }
     LOGGER.debug("Updating recovery data for interpreterSetting: " + interpreterSettingName);
@@ -100,8 +99,8 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
 
     for (Path path : paths) {
       String fileName = path.getName();
-      String interpreterSettingName =
-          fileName.substring(0, fileName.length() - ".recovery".length());
+      String interpreterSettingName = fileName.substring(0,
+          fileName.length() - ".recovery".length());
       String recoveryContent = fs.readFile(path);
       if (!StringUtils.isBlank(recoveryContent)) {
         for (String line : recoveryContent.split(System.lineSeparator())) {
@@ -110,12 +109,8 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
           String[] hostPort = tokens[1].split(":");
           int connectTimeout =
               zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-          RemoteInterpreterRunningProcess client =
-              new RemoteInterpreterRunningProcess(
-                  interpreterSettingName,
-                  connectTimeout,
-                  hostPort[0],
-                  Integer.parseInt(hostPort[1]));
+          RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
+              interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
           // interpreterSettingManager may be null when this class is used when it is used
           // stop-interpreter.sh
           clients.put(groupId, client);

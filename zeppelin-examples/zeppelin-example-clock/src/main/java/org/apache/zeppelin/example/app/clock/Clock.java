@@ -16,9 +16,6 @@
  */
 package org.apache.zeppelin.example.app.clock;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.apache.zeppelin.helium.Application;
 import org.apache.zeppelin.helium.ApplicationContext;
 import org.apache.zeppelin.helium.ApplicationException;
@@ -27,7 +24,14 @@ import org.apache.zeppelin.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Basic example application. Get java.util.Date from resource pool and display it */
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * Basic example application.
+ * Get java.util.Date from resource pool and display it
+ */
 public class Clock extends Application {
   private final Logger logger = LoggerFactory.getLogger(Clock.class);
 
@@ -56,29 +60,30 @@ public class Clock extends Application {
     }
   }
 
+
   public void start() {
-    updateThread =
-        new Thread() {
-          public void run() {
-            while (!shutdown) {
-              // format date
-              SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    updateThread = new Thread() {
+      public void run() {
+        while (!shutdown) {
+          // format date
+          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-              // put formatted string to angular object.
-              context().getAngularObjectRegistry().add("date", df.format(date));
+          // put formatted string to angular object.
+          context().getAngularObjectRegistry().add("date", df.format(date));
 
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException e) {
-                // nothing todo
-              }
-              date = new Date(date.getTime() + 1000);
-            }
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            // nothing todo
           }
-        };
+          date = new Date(date.getTime() + 1000);
+        }
+      }
+    };
 
     updateThread.start();
   }
+
 
   @Override
   public void unload() throws ApplicationException {
@@ -91,13 +96,16 @@ public class Clock extends Application {
     context().getAngularObjectRegistry().remove("date");
   }
 
-  /** Development mode */
+  /**
+   * Development mode
+   */
   public static void main(String[] args) throws Exception {
     LocalResourcePool pool = new LocalResourcePool("dev");
     pool.put("date", new Date());
 
-    ZeppelinApplicationDevServer devServer =
-        new ZeppelinApplicationDevServer(Clock.class.getName(), pool.getAll());
+    ZeppelinApplicationDevServer devServer = new ZeppelinApplicationDevServer(
+        Clock.class.getName(),
+        pool.getAll());
 
     devServer.start();
     devServer.join();

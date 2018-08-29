@@ -37,10 +37,6 @@ Since Zeppelin uses Git for it's SCM system, you need git client installed in yo
 
 You are free to use whatever IDE you prefer, or your favorite command line editor.
 
-#### Code Style
-
-We decided to use `google-java-format`. You can install this formatter from [https://github.com/google/google-java-format](https://github.com/google/google-java-format). And the build script also contains `fmt-maven-plugin` to verify the formats of files. You can check `mvn validate` and fix wrong formats by running `mvn fmt:format` manually.
-
 #### Build Tools
 
 To build the code, install

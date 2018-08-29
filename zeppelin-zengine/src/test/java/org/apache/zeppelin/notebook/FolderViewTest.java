@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.util.*;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -35,25 +30,40 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 @RunWith(MockitoJUnitRunner.class)
 public class FolderViewTest {
-  @Mock NotebookRepo repo;
+  @Mock
+  NotebookRepo repo;
 
-  @Mock ParagraphJobListener paragraphJobListener;
+  @Mock
+  ParagraphJobListener paragraphJobListener;
 
-  @Mock SearchService index;
+  @Mock
+  SearchService index;
 
-  @Mock Credentials credentials;
+  @Mock
+  Credentials credentials;
 
-  @Mock Interpreter interpreter;
+  @Mock
+  Interpreter interpreter;
 
-  @Mock Scheduler scheduler;
+  @Mock
+  Scheduler scheduler;
 
-  @Mock NoteEventListener noteEventListener;
+  @Mock
+  NoteEventListener noteEventListener;
 
-  @Mock InterpreterFactory interpreterFactory;
+  @Mock
+  InterpreterFactory interpreterFactory;
 
-  @Mock InterpreterSettingManager interpreterSettingManager;
+  @Mock
+  InterpreterSettingManager interpreterSettingManager;
 
   FolderView folderView;
 
@@ -61,11 +71,11 @@ public class FolderViewTest {
   Note note2;
   Note note3;
 
-  List<String> testNoteNames =
-      Arrays.asList(
+  List<String> testNoteNames = Arrays.asList(
           "note1", "/note2",
           "a/note1", "/a/note2",
-          "a/b/note1", "/a/b/note2");
+          "a/b/note1", "/a/b/note2"
+  );
 
   Folder rootFolder;
   Folder aFolder;
@@ -79,17 +89,7 @@ public class FolderViewTest {
   Note abNote2;
 
   private Note createNote() {
-    Note note =
-        new Note(
-            "test",
-            "test",
-            repo,
-            interpreterFactory,
-            interpreterSettingManager,
-            paragraphJobListener,
-            index,
-            credentials,
-            noteEventListener);
+    Note note = new Note("test", "test", repo, interpreterFactory, interpreterSettingManager, paragraphJobListener, index, credentials, noteEventListener);
     note.setNoteNameListener(folderView);
     return note;
   }
@@ -279,7 +279,9 @@ public class FolderViewTest {
     assertEquals(sameName, aFolder.getId());
   }
 
-  /** Should rename a empty folder */
+  /**
+   * Should rename a empty folder
+   */
   @Test
   public void renameEmptyFolderTest() {
     // Create a note of which name is "x/y/z" and rename "x" -> "u"
@@ -294,7 +296,9 @@ public class FolderViewTest {
     assertNotNull(folderView.getFolder("u/y"));
   }
 
-  /** Should also rename child folders of the target folder */
+  /**
+   * Should also rename child folders of the target folder
+   */
   @Test
   public void renameFolderHasChildrenTest() {
     // "a" -> "x"

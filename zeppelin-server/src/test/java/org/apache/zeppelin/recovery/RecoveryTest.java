@@ -22,10 +22,16 @@ import static org.junit.Assert.assertThat;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.io.File;
-import java.util.Map;
+
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.File;
+import java.util.Map;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
@@ -36,9 +42,6 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class RecoveryTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
@@ -46,13 +49,11 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_STORAGE_CLASS.getVarName(),
         FileSystemRecoveryStorage.class.getName());
     recoveryDir = Files.createTempDir();
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
-        recoveryDir.getAbsolutePath());
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
+            recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
   }
 
@@ -71,9 +72,8 @@ public class RecoveryTest extends AbstractTestRestApi {
     p1.setText("%python user='abc'");
     PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp =
-        gson.fromJson(
-            post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
@@ -102,20 +102,17 @@ public class RecoveryTest extends AbstractTestRestApi {
     p1.setText("%python user='abc'");
     PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp =
-        gson.fromJson(
-            post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
 
     // restart the python interpreter
-    ZeppelinServer.notebook
-        .getInterpreterSettingManager()
-        .restart(
-            ((ManagedInterpreterGroup) p1.getBindedInterpreter().getInterpreterGroup())
-                .getInterpreterSetting()
-                .getId());
+    ZeppelinServer.notebook.getInterpreterSettingManager().restart(
+        ((ManagedInterpreterGroup) p1.getBindedInterpreter().getInterpreterGroup())
+            .getInterpreterSetting().getId()
+    );
 
     // shutdown zeppelin and restart it
     shutDown();
@@ -141,16 +138,15 @@ public class RecoveryTest extends AbstractTestRestApi {
     p1.setText("%python user='abc'");
     PostMethod post = httpPost("/notebook/job/" + note1.getId(), "");
     assertThat(post, isAllowed());
-    Map<String, Object> resp =
-        gson.fromJson(
-            post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
 
     // shutdown zeppelin and restart it
     shutDown();
-    StopInterpreter.main(new String[] {});
+    StopInterpreter.main(new String[]{});
 
     startUp(RecoveryTest.class.getSimpleName());
 

@@ -16,12 +16,7 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
@@ -30,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinhubWebsocket;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinHubOp;
@@ -48,7 +44,16 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Manage a zeppelinhub websocket connection. */
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONException;
+import com.amazonaws.util.json.JSONObject;
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+/**
+ * Manage a zeppelinhub websocket connection.
+ */
 public class ZeppelinhubClient {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinhubClient.class);
 
@@ -60,9 +65,9 @@ public class ZeppelinhubClient {
   private static final long CONNECTION_IDLE_TIME = TimeUnit.SECONDS.toMillis(30);
   private static ZeppelinhubClient instance = null;
   private static Gson gson;
-
+  
   private SchedulerService schedulerService;
-  private Map<String, ZeppelinhubSession> sessionMap =
+  private Map<String, ZeppelinhubSession> sessionMap = 
       new ConcurrentHashMap<String, ZeppelinhubSession>();
 
   public static ZeppelinhubClient initialize(String zeppelinhubUrl, String token) {
@@ -93,8 +98,10 @@ public class ZeppelinhubClient {
       LOG.error("Cannot connect to zeppelinhub via websocket", e);
     }
   }
-
-  public void initUser(String token) {}
+  
+  public void initUser(String token) {
+    
+  }
 
   public void stop() {
     LOG.info("Stopping Zeppelinhub websocket client");
@@ -113,7 +120,7 @@ public class ZeppelinhubClient {
   public String getToken() {
     return this.zeppelinhubToken;
   }
-
+  
   public void send(String msg, String token) {
     ZeppelinhubSession zeppelinhubSession = getSession(token);
     if (!isConnectedToZeppelinhub(zeppelinhubSession)) {
@@ -126,7 +133,7 @@ public class ZeppelinhubClient {
     }
     zeppelinhubSession.sendByFuture(msg);
   }
-
+  
   private boolean isConnectedToZeppelinhub(ZeppelinhubSession zeppelinhubSession) {
     return (zeppelinhubSession != null && zeppelinhubSession.isSessionOpen());
   }
@@ -173,7 +180,7 @@ public class ZeppelinhubClient {
     request.setCookies(Lists.newArrayList(new HttpCookie(TOKEN_HEADER, token)));
     return request;
   }
-
+  
   private WebSocketClient createNewWebsocketClient() {
     SslContextFactory sslContextFactory = new SslContextFactory();
     WebSocketClient client = new WebSocketClient(sslContextFactory);
@@ -182,7 +189,7 @@ public class ZeppelinhubClient {
     client.setMaxIdleTimeout(CONNECTION_IDLE_TIME);
     return client;
   }
-
+  
   private void addRoutines() {
     schedulerService.add(ZeppelinHubHeartbeat.newInstance(this), 10, 23);
   }
@@ -262,9 +269,8 @@ public class ZeppelinhubClient {
           LOG.warn("Wrong \"paragraph\" format for RUN_NOTEBOOK");
           continue;
         }
-        zeppelinMsg.data =
-            gson.fromJson(
-                paragraphs.getString(i), new TypeToken<Map<String, Object>>() {}.getType());
+        zeppelinMsg.data = gson.fromJson(paragraphs.getString(i), 
+            new TypeToken<Map<String, Object>>(){}.getType());
         zeppelinMsg.principal = principal;
         zeppelinMsg.ticket = TicketContainer.instance.getTicket(principal);
         client.relayToZeppelin(zeppelinMsg, noteId);
@@ -276,4 +282,5 @@ public class ZeppelinhubClient {
     }
     return true;
   }
+
 }

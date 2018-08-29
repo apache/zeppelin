@@ -19,6 +19,12 @@ package org.apache.zeppelin.display;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,22 +32,23 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.zeppelin.display.ui.CheckBox;
-import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
-import org.apache.zeppelin.display.ui.Password;
-import org.apache.zeppelin.display.ui.Select;
-import org.apache.zeppelin.display.ui.TextBox;
 
-/** Settings of a form. */
+
+/**
+ * Settings of a form.
+ */
 public class GUI implements Serializable {
 
-  private static Gson gson =
-      new GsonBuilder().registerTypeAdapterFactory(Input.TypeAdapterFactory).create();
+  private static Gson gson = new GsonBuilder()
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
 
   Map<String, Object> params = new HashMap<>(); // form parameters from client
   Map<String, Input> forms = new LinkedHashMap<>(); // form configuration
 
-  public GUI() {}
+  public GUI() {
+
+  }
 
   public void setParams(Map<String, Object> values) {
     this.params = values;
@@ -102,8 +109,8 @@ public class GUI implements Serializable {
     return value;
   }
 
-  public List<Object> checkbox(
-      String id, Collection<Object> defaultChecked, ParamOption[] options) {
+  public List<Object> checkbox(String id, Collection<Object> defaultChecked,
+                               ParamOption[] options) {
     Collection<Object> checked = (Collection<Object>) params.get(id);
     if (checked == null) {
       checked = defaultChecked;
@@ -146,6 +153,7 @@ public class GUI implements Serializable {
       return false;
     }
     return forms != null ? forms.equals(gui.forms) : gui.forms == null;
+
   }
 
   @Override

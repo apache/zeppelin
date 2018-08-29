@@ -17,17 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -43,6 +32,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -56,7 +46,20 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO(zjffdu) move it to zeppelin-zengine
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+
+//TODO(zjffdu) move it to zeppelin-zengine
 public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   private File mainZepDir;
@@ -77,12 +80,11 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   @Before
   public void setUp() throws Exception {
-    String zpath =
-        System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
+    String zpath = System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis();
     mainZepDir = new File(zpath);
     mainZepDir.mkdirs();
     new File(mainZepDir, "conf").mkdirs();
-    String mainNotePath = zpath + "/notebook";
+    String mainNotePath = zpath+"/notebook";
     String secNotePath = mainNotePath + "_secondary";
     mainNotebookDir = new File(mainNotePath);
     secNotebookDir = new File(secNotePath);
@@ -90,16 +92,11 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     secNotebookDir.mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), mainZepDir.getAbsolutePath());
-    System.setProperty(
-        ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
-    System.setProperty(
-        ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
-        "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.VFSNotebookRepo,org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock");
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "false");
-    System.setProperty(
-        ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), mainZepDir.getAbsolutePath() + "/conf");
-    System.setProperty(
-        ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName(), mainZepDir.getAbsolutePath() + "/conf");
+    System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
 
     LOG.info("main Note dir : " + mainNotePath);
     LOG.info("secondary note dir : " + secNotePath);
@@ -110,29 +107,16 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     this.schedulerFactory = SchedulerFactory.singleton();
 
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
-    interpreterSettingManager =
-        new InterpreterSettingManager(
-            conf,
-            mock(AngularObjectRegistryListener.class),
-            mock(RemoteInterpreterProcessListener.class),
-            mock(ApplicationEventListener.class));
+    interpreterSettingManager = new InterpreterSettingManager(conf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     factory = new InterpreterFactory(interpreterSettingManager);
 
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebookSync =
-        new Notebook(
-            conf,
-            notebookRepoSync,
-            schedulerFactory,
-            factory,
-            interpreterSettingManager,
-            this,
-            search,
-            notebookAuthorization,
-            credentials);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
+            notebookAuthorization, credentials);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -159,9 +143,7 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
     assertEquals(1, notebookRepoSync.list(1, anonymous).size());
-    assertEquals(
-        notebookRepoSync.list(0, anonymous).get(0).getId(),
-        notebookRepoSync.list(1, anonymous).get(0).getId());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
 
     notebookSync.removeNote(notebookRepoSync.list(0, null).get(0).getId(), anonymous);
   }
@@ -178,9 +160,7 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0, anonymous).size());
     assertEquals(1, notebookRepoSync.list(1, anonymous).size());
-    assertEquals(
-        notebookRepoSync.list(0, anonymous).get(0).getId(),
-        notebookRepoSync.list(1, anonymous).get(0).getId());
+    assertEquals(notebookRepoSync.list(0, anonymous).get(0).getId(),notebookRepoSync.list(1, anonymous).get(0).getId());
 
     /* remove Note */
     notebookSync.removeNote(notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous);
@@ -188,6 +168,7 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     /* check that deleted in both storages */
     assertEquals(0, notebookRepoSync.list(0, anonymous).size());
     assertEquals(0, notebookRepoSync.list(1, anonymous).size());
+
   }
 
   @Test
@@ -205,58 +186,30 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     assertEquals(1, note.getParagraphs().size());
 
     /* new paragraph not yet saved into storages */
-    assertEquals(
-        0,
-        notebookRepoSync
-            .get(0, notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous)
-            .getParagraphs()
-            .size());
-    assertEquals(
-        0,
-        notebookRepoSync
-            .get(1, notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous)
-            .getParagraphs()
-            .size());
+    assertEquals(0, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
+    assertEquals(0, notebookRepoSync.get(1,
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
 
     /* save to storage under index 0 (first storage) */
     notebookRepoSync.save(0, note, anonymous);
 
     /* check paragraph saved to first storage */
-    assertEquals(
-        1,
-        notebookRepoSync
-            .get(0, notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous)
-            .getParagraphs()
-            .size());
+    assertEquals(1, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* check paragraph isn't saved to second storage */
-    assertEquals(
-        0,
-        notebookRepoSync
-            .get(1, notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous)
-            .getParagraphs()
-            .size());
+    assertEquals(0, notebookRepoSync.get(1,
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync(null);
     /* check whether added to second storage */
-    assertEquals(
-        1,
-        notebookRepoSync
-            .get(1, notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous)
-            .getParagraphs()
-            .size());
+    assertEquals(1, notebookRepoSync.get(1,
+    notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getParagraphs().size());
     /* check whether same paragraph id */
-    assertEquals(
-        p1.getId(),
-        notebookRepoSync
-            .get(0, notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous)
-            .getLastParagraph()
-            .getId());
-    assertEquals(
-        p1.getId(),
-        notebookRepoSync
-            .get(1, notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous)
-            .getLastParagraph()
-            .getId());
+    assertEquals(p1.getId(), notebookRepoSync.get(0,
+        notebookRepoSync.list(0, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
+    assertEquals(p1.getId(), notebookRepoSync.get(1,
+        notebookRepoSync.list(1, anonymous).get(0).getId(), anonymous).getLastParagraph().getId());
     notebookRepoSync.remove(note.getId(), anonymous);
   }
 
@@ -287,22 +240,12 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   @Test
   public void testOneWaySyncOnReloadedList() throws IOException, SchedulerException {
-    System.setProperty(
-        ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync =
-        new Notebook(
-            conf,
-            notebookRepoSync,
-            schedulerFactory,
-            factory,
-            interpreterSettingManager,
-            this,
-            search,
-            notebookAuthorization,
-            credentials);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
+            notebookAuthorization, credentials);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
@@ -345,23 +288,12 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
 
   @Test
   public void testCheckpointOneStorage() throws IOException, SchedulerException {
-    System.setProperty(
-        ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
-        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync =
-        new Notebook(
-            vConf,
-            vRepoSync,
-            schedulerFactory,
-            factory,
-            interpreterSettingManager,
-            this,
-            search,
-            notebookAuthorization,
-            credentials);
+    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
+            notebookAuthorization, credentials);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
@@ -422,30 +354,18 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     notebookRepoSync.save(1, note, null);
 
     /* check paragraph isn't saved into first storage */
-    assertEquals(
-        0,
-        notebookRepoSync
-            .get(0, notebookRepoSync.list(0, null).get(0).getId(), null)
-            .getParagraphs()
-            .size());
+    assertEquals(0, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
     /* check paragraph is saved into second storage */
-    assertEquals(
-        1,
-        notebookRepoSync
-            .get(1, notebookRepoSync.list(1, null).get(0).getId(), null)
-            .getParagraphs()
-            .size());
+    assertEquals(1, notebookRepoSync.get(1,
+        notebookRepoSync.list(1, null).get(0).getId(), null).getParagraphs().size());
 
     /* now sync by user1 */
     notebookRepoSync.sync(user1);
 
     /* check that note updated and acl are same on main storage*/
-    assertEquals(
-        1,
-        notebookRepoSync
-            .get(0, notebookRepoSync.list(0, null).get(0).getId(), null)
-            .getParagraphs()
-            .size());
+    assertEquals(1, notebookRepoSync.get(0,
+        notebookRepoSync.list(0, null).get(0).getId(), null).getParagraphs().size());
     assertEquals(true, authInfo.isOwner(note.getId(), entity));
     assertEquals(1, authInfo.getOwners(note.getId()).size());
     assertEquals(0, authInfo.getReaders(note.getId()).size());
@@ -477,31 +397,44 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     assertEquals(true, authInfo.isWriter(note.getId(), entity));
   }
 
-  static void delete(File file) {
-    if (file.isFile()) file.delete();
-    else if (file.isDirectory()) {
-      File[] files = file.listFiles();
-      if (files != null && files.length > 0) {
-        for (File f : files) {
-          delete(f);
+  static void delete(File file){
+    if(file.isFile()) file.delete();
+      else if(file.isDirectory()){
+        File [] files = file.listFiles();
+        if(files!=null && files.length>0){
+          for(File f : files){
+            delete(f);
+          }
         }
+        file.delete();
       }
-      file.delete();
-    }
+  }
+
+
+
+  @Override
+  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
+
   }
 
   @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {}
+  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
+
+  }
 
   @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {}
+  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
+  }
 
   @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {}
+  public void onProgressUpdate(Paragraph paragraph, int progress) {
+  }
 
   @Override
-  public void onProgressUpdate(Paragraph paragraph, int progress) {}
+  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
 
-  @Override
-  public void onStatusChange(Paragraph paragraph, Status before, Status after) {}
+  }
+
+
 }

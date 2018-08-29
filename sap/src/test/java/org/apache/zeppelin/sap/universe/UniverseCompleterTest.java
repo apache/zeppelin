@@ -5,27 +5,30 @@
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
- * <p>http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.zeppelin.sap.universe;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.completer.CachedCompleter;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.completer.CachedCompleter;
-import org.junit.Before;
-import org.junit.Test;
-
-/** Universe completer unit tests */
+/**
+ * Universe completer unit tests
+ */
 public class UniverseCompleterTest {
 
   private UniverseCompleter universeCompleter;
@@ -43,34 +46,21 @@ public class UniverseCompleterTest {
     universes.put("(GLOBAL) universe", new UniverseInfo("3", "(GLOBAL) universe", "uvx"));
     UniverseInfo universeInfo = new UniverseInfo("1", "testUniverse", "uvx");
     Map<String, UniverseNodeInfo> testUniverseNodes = new HashMap<>();
-    testUniverseNodes.put(
-        "[Dimension].[Test].[name1]",
-        new UniverseNodeInfo(
-            "name1id",
-            "name1",
-            "dimension",
-            "Dimension\\Test",
+    testUniverseNodes.put("[Dimension].[Test].[name1]",
+        new UniverseNodeInfo("name1id", "name1", "dimension", "Dimension\\Test",
             "Dimension|folder\\Test|folder\\name1|dimension"));
-    testUniverseNodes.put(
-        "[Dimension].[Test].[name2]",
-        new UniverseNodeInfo(
-            "name2id",
-            "name2",
-            "dimension",
-            "Dimension\\Test",
+    testUniverseNodes.put("[Dimension].[Test].[name2]",
+        new UniverseNodeInfo("name2id", "name2", "dimension", "Dimension\\Test",
             "Dimension|folder\\Test|folder\\name2|dimension"));
-    testUniverseNodes.put(
-        "[Filter].[name3]",
-        new UniverseNodeInfo(
-            "name3id", "name3", "filter", "Filter", "Filter|folder\\name3|filter"));
-    testUniverseNodes.put(
-        "[Filter].[name4]",
-        new UniverseNodeInfo(
-            "name4id", "name4", "filter", "Filter", "Filter|folder\\name4|filter"));
-    testUniverseNodes.put(
-        "[Measure].[name5]",
-        new UniverseNodeInfo(
-            "name5id", "name5", "measure", "Measure", "Measure|folder\\name5|measure"));
+    testUniverseNodes.put("[Filter].[name3]",
+        new UniverseNodeInfo("name3id", "name3", "filter", "Filter",
+            "Filter|folder\\name3|filter"));
+    testUniverseNodes.put("[Filter].[name4]",
+        new UniverseNodeInfo("name4id", "name4", "filter", "Filter",
+            "Filter|folder\\name4|filter"));
+    testUniverseNodes.put("[Measure].[name5]",
+        new UniverseNodeInfo("name5id", "name5", "measure", "Measure",
+            "Measure|folder\\name5|measure"));
 
     universeClient = mock(UniverseClient.class);
     when(universeClient.getUniverseInfo(anyString())).thenReturn(universeInfo);

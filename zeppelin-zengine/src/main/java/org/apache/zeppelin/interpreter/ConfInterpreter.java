@@ -17,12 +17,13 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Properties;
 
 /**
  * Special Interpreter for Interpreter Configuration customization. It is attached to each
@@ -36,11 +37,11 @@ public class ConfInterpreter extends Interpreter {
   protected String interpreterGroupId;
   protected InterpreterSetting interpreterSetting;
 
-  public ConfInterpreter(
-      Properties properties,
-      String sessionId,
-      String interpreterGroupId,
-      InterpreterSetting interpreterSetting) {
+
+  public ConfInterpreter(Properties properties,
+                         String sessionId,
+                         String interpreterGroupId,
+                         InterpreterSetting interpreterSetting) {
     super(properties);
     this.sessionId = sessionId;
     this.interpreterGroupId = interpreterGroupId;
@@ -48,10 +49,14 @@ public class ConfInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() throws InterpreterException {}
+  public void open() throws InterpreterException {
+
+  }
 
   @Override
-  public void close() throws InterpreterException {}
+  public void close() throws InterpreterException {
+
+  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
@@ -63,8 +68,8 @@ public class ConfInterpreter extends Interpreter {
       Properties newProperties = new Properties();
       newProperties.load(new StringReader(st));
       finalProperties.putAll(newProperties);
-      LOGGER.debug(
-          "Properties for InterpreterGroup: " + interpreterGroupId + " is " + finalProperties);
+      LOGGER.debug("Properties for InterpreterGroup: " + interpreterGroupId + " is "
+          + finalProperties);
       interpreterSetting.setInterpreterGroupProperties(interpreterGroupId, finalProperties);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     } catch (IOException e) {
@@ -74,7 +79,9 @@ public class ConfInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {}
+  public void cancel(InterpreterContext context) throws InterpreterException {
+
+  }
 
   @Override
   public FormType getFormType() throws InterpreterException {

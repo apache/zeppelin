@@ -16,20 +16,21 @@
  */
 package org.apache.zeppelin.tabledata;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Iterator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.junit.Test;
 
+import java.util.Iterator;
+
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertEquals;
+
 public class InterpreterResultTableDataTest {
   @Test
   public void test() {
-    InterpreterResultMessage msg =
-        new InterpreterResultMessage(
-            InterpreterResult.Type.TABLE, "key\tvalue\nsun\t100\nmoon\t200\n");
+    InterpreterResultMessage msg = new InterpreterResultMessage(
+        InterpreterResult.Type.TABLE,
+        "key\tvalue\nsun\t100\nmoon\t200\n");
     InterpreterResultTableData table = new InterpreterResultTableData(msg);
 
     ColumnDef[] cols = table.columns();

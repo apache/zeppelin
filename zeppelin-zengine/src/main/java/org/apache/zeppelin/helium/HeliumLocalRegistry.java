@@ -18,16 +18,19 @@ package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Simple Helium registry on local filesystem */
+/**
+ * Simple Helium registry on local filesystem
+ */
 public class HeliumLocalRegistry extends HeliumRegistry {
   private Logger logger = LoggerFactory.getLogger(HeliumLocalRegistry.class);
 
@@ -36,6 +39,7 @@ public class HeliumLocalRegistry extends HeliumRegistry {
   public HeliumLocalRegistry(String name, String uri) {
     super(name, uri);
     gson = new Gson();
+
   }
 
   @Override
@@ -43,7 +47,7 @@ public class HeliumLocalRegistry extends HeliumRegistry {
     List<HeliumPackage> result = new LinkedList<>();
 
     File file = new File(uri());
-    File[] files = file.listFiles();
+    File [] files = file.listFiles();
     if (files == null) {
       return result;
     }
@@ -72,4 +76,5 @@ public class HeliumLocalRegistry extends HeliumRegistry {
       return null;
     }
   }
+
 }

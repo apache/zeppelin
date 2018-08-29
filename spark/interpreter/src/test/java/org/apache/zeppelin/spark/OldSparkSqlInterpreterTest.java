@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.util.LinkedList;
-import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -39,9 +33,17 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.util.LinkedList;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 public class OldSparkSqlInterpreterTest {
 
-  @ClassRule public static TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
   static SparkSqlInterpreter sql;
   static SparkInterpreter repl;
@@ -72,16 +74,15 @@ public class OldSparkSqlInterpreterTest {
     sql.setInterpreterGroup(intpGroup);
     sql.open();
 
-    context =
-        InterpreterContext.builder()
-            .setNoteId("noteId")
-            .setParagraphId("paragraphId")
-            .setParagraphTitle("title")
-            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-            .setResourcePool(new LocalResourcePool("id"))
-            .setInterpreterOut(new InterpreterOutput(null))
-            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-            .build();
+    context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setParagraphTitle("title")
+        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+        .setResourcePool(new LocalResourcePool("id"))
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+        .build();
   }
 
   @AfterClass
@@ -97,9 +98,7 @@ public class OldSparkSqlInterpreterTest {
   @Test
   public void test() throws InterpreterException {
     repl.interpret("case class Test(name:String, age:Int)", context);
-    repl.interpret(
-        "val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))",
-        context);
+    repl.interpret("val test = sc.parallelize(Seq(Test(\"moon\", 33), Test(\"jobs\", 51), Test(\"gates\", 51), Test(\"park\", 34)))", context);
     if (isDataFrameSupported()) {
       repl.interpret("test.toDF.registerTempTable(\"test\")", context);
     } else {
@@ -115,10 +114,7 @@ public class OldSparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertTrue(ret.message().get(0).getData().length() > 0);
 
-    assertEquals(
-        InterpreterResult.Code.SUCCESS,
-        sql.interpret("select case when name==\"aa\" then name else name end from test", context)
-            .code());
+    assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }
 
   @Test
@@ -153,19 +149,23 @@ public class OldSparkSqlInterpreterTest {
         "val schema = StructType(Seq(StructField(\"name\", StringType, false),StructField(\"age\" , IntegerType, true),StructField(\"other\" , StringType, false)))",
         context);
     repl.interpret(
-        "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))", context);
+        "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))",
+        context);
     repl.interpret(
-        "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))", context);
+        "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
+        context);
     if (isDataFrameSupported()) {
-      repl.interpret("val people = sqlContext.createDataFrame(raw, schema)", context);
+      repl.interpret("val people = sqlContext.createDataFrame(raw, schema)",
+          context);
       repl.interpret("people.toDF.registerTempTable(\"people\")", context);
     } else {
-      repl.interpret("val people = sqlContext.applySchema(raw, schema)", context);
+      repl.interpret("val people = sqlContext.applySchema(raw, schema)",
+          context);
       repl.interpret("people.registerTempTable(\"people\")", context);
     }
 
-    InterpreterResult ret =
-        sql.interpret("select name, age from people where name = 'gates'", context);
+    InterpreterResult ret = sql.interpret(
+        "select name, age from people where name = 'gates'", context);
     System.err.println("RET=" + ret.message());
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());

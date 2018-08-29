@@ -16,15 +16,17 @@
  */
 package org.apache.zeppelin.socket;
 
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS;
-
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Responsible to create the WebSockets for the NotebookServer. */
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_ALLOWED_ORIGINS;
+
+/**
+ * Responsible to create the WebSockets for the NotebookServer.
+ */
 public class NotebookWebSocketCreator implements WebSocketCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookWebSocketCreator.class);
@@ -33,17 +35,15 @@ public class NotebookWebSocketCreator implements WebSocketCreator {
   public NotebookWebSocketCreator(NotebookServer notebookServer) {
     this.notebookServer = notebookServer;
   }
-
   public Object createWebSocket(ServletUpgradeRequest request, ServletUpgradeResponse response) {
     String origin = request.getHeader("Origin");
     if (notebookServer.checkOrigin(request.getHttpServletRequest(), origin)) {
       return new NotebookSocket(request.getHttpServletRequest(), "", notebookServer);
     } else {
-      LOG.error(
-          "Websocket request is not allowed by {} settings. Origin: {}",
-          ZEPPELIN_ALLOWED_ORIGINS,
-          origin);
+      LOG.error("Websocket request is not allowed by {} settings. Origin: {}",
+          ZEPPELIN_ALLOWED_ORIGINS, origin);
       return null;
     }
   }
+
 }

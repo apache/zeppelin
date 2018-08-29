@@ -19,15 +19,7 @@ package org.apache.zeppelin.rest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -43,15 +35,26 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.plugin.PluginManager;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.server.ZeppelinServer;
 
 public abstract class AbstractTestRestApi {
   protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
@@ -63,47 +66,47 @@ public abstract class AbstractTestRestApi {
 
   private static File shiroIni = null;
   private static String zeppelinShiro =
-      "[users]\n"
-          + "admin = password1, admin\n"
-          + "user1 = password2, role1, role2\n"
-          + "user2 = password3, role3\n"
-          + "user3 = password4, role2\n"
-          + "[main]\n"
-          + "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n"
-          + "securityManager.sessionManager = $sessionManager\n"
-          + "securityManager.sessionManager.globalSessionTimeout = 86400000\n"
-          + "shiro.loginUrl = /api/login\n"
-          + "[roles]\n"
-          + "role1 = *\n"
-          + "role2 = *\n"
-          + "role3 = *\n"
-          + "admin = *\n"
-          + "[urls]\n"
-          + "/api/version = anon\n"
-          + "/** = authc";
+      "[users]\n" +
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "user2 = password3, role3\n" +
+          "user3 = password4, role2\n" +
+          "[main]\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "role1 = *\n" +
+          "role2 = *\n" +
+          "role3 = *\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
 
   private static String zeppelinShiroKnox =
-      "[users]\n"
-          + "admin = password1, admin\n"
-          + "user1 = password2, role1, role2\n"
-          + "[main]\n"
-          + "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n"
-          + "knoxJwtRealm.providerUrl = https://domain.example.com/\n"
-          + "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n"
-          + "knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout\n"
-          + "knoxJwtRealm.redirectParam = originalUrl\n"
-          + "knoxJwtRealm.cookieName = hadoop-jwt\n"
-          + "knoxJwtRealm.publicKeyPath = knox-sso.pem\n"
-          + "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n"
-          + "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n"
-          + "securityManager.sessionManager = $sessionManager\n"
-          + "securityManager.sessionManager.globalSessionTimeout = 86400000\n"
-          + "shiro.loginUrl = /api/login\n"
-          + "[roles]\n"
-          + "admin = *\n"
-          + "[urls]\n"
-          + "/api/version = anon\n"
-          + "/** = authc";
+      "[users]\n" +
+          "admin = password1, admin\n" +
+          "user1 = password2, role1, role2\n" +
+          "[main]\n" +
+          "knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm\n" +
+          "knoxJwtRealm.providerUrl = https://domain.example.com/\n" +
+          "knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html\n" +
+          "knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout\n" +
+          "knoxJwtRealm.redirectParam = originalUrl\n" +
+          "knoxJwtRealm.cookieName = hadoop-jwt\n" +
+          "knoxJwtRealm.publicKeyPath = knox-sso.pem\n" +
+          "authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter\n" +
+          "sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager\n" +
+          "securityManager.sessionManager = $sessionManager\n" +
+          "securityManager.sessionManager.globalSessionTimeout = 86400000\n" +
+          "shiro.loginUrl = /api/login\n" +
+          "[roles]\n" +
+          "admin = *\n" +
+          "[urls]\n" +
+          "/api/version = anon\n" +
+          "/** = authc";
 
   private static File knoxSsoPem = null;
   private static String knoxSsoPemCertificate =
@@ -152,27 +155,23 @@ public abstract class AbstractTestRestApi {
   }
 
   static ExecutorService executor;
-  protected static final Runnable SERVER =
-      new Runnable() {
-        @Override
-        public void run() {
-          try {
-            ZeppelinServer.main(new String[] {""});
-          } catch (Exception e) {
-            LOG.error("Exception in WebDriverManager while getWebDriver ", e);
-            throw new RuntimeException(e);
-          }
-        }
-      };
+  protected static final Runnable SERVER = new Runnable() {
+    @Override
+    public void run() {
+      try {
+        ZeppelinServer.main(new String[]{""});
+      } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
+        throw new RuntimeException(e);
+      }
+    }
+  };
 
   private static void start(boolean withAuth, String testClassName, boolean withKnox)
-      throws Exception {
-    LOG.info(
-        "Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
-        withAuth,
-        testClassName,
-        withKnox);
-
+          throws Exception {
+    LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
+        withAuth, testClassName, withKnox);
+    
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -180,19 +179,20 @@ public abstract class AbstractTestRestApi {
       confDir = new File(zeppelinHome, "conf_" + testClassName);
       confDir.mkdirs();
 
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
           zeppelinHome.getAbsolutePath());
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
           new File("../zeppelin-web/dist").getAbsolutePath());
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
+          confDir.getAbsolutePath());
       System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(), "spark");
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+          "spark");
       notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
       System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getPath());
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+          notebookDir.getPath()
+      );
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -204,8 +204,8 @@ public abstract class AbstractTestRestApi {
       if (withAuth) {
         isRunningWithAuth = true;
         // Set Anonymous session to false.
-        System.setProperty(
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(), "false");
+        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(),
+                "false");
 
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
@@ -213,8 +213,8 @@ public abstract class AbstractTestRestApi {
           shiroIni.createNewFile();
         }
         if (withKnox) {
-          FileUtils.writeStringToFile(
-              shiroIni, zeppelinShiroKnox.replaceAll("knox-sso.pem", confDir + "/knox-sso.pem"));
+          FileUtils.writeStringToFile(shiroIni,
+              zeppelinShiroKnox.replaceAll("knox-sso.pem", confDir + "/knox-sso.pem"));
           knoxSsoPem = new File(confDir, "knox-sso.pem");
           if (!knoxSsoPem.exists()) {
             knoxSsoPem.createNewFile();
@@ -223,13 +223,14 @@ public abstract class AbstractTestRestApi {
         } else {
           FileUtils.writeStringToFile(shiroIni, zeppelinShiro);
         }
+
       }
 
       executor = Executors.newSingleThreadExecutor();
       executor.submit(SERVER);
       long s = System.currentTimeMillis();
       boolean started = false;
-      while (System.currentTimeMillis() - s < 1000 * 60 * 3) { // 3 minutes
+      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
         Thread.sleep(2000);
         started = checkIfServerIsRunning();
         if (started == true) {
@@ -246,11 +247,11 @@ public abstract class AbstractTestRestApi {
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
     start(true, testClassName, true);
   }
-
+  
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
     start(true, testClassName, false);
   }
-
+  
   protected static void startUp(String testClassName) throws Exception {
     start(false, testClassName, false);
   }
@@ -271,8 +272,8 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
     if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
       // restart interpreter to stop all interpreter processes
-      List<InterpreterSetting> settingList =
-          ZeppelinServer.notebook.getInterpreterSettingManager().get();
+      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
+              .get();
       if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
         for (InterpreterSetting setting : settingList) {
           ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
@@ -288,7 +289,7 @@ public abstract class AbstractTestRestApi {
 
       long s = System.currentTimeMillis();
       boolean started = true;
-      while (System.currentTimeMillis() - s < 1000 * 60 * 3) { // 3 minutes
+      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
         Thread.sleep(2000);
         started = checkIfServerIsRunning();
         if (started == false) {
@@ -300,11 +301,11 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-
+      
       if (isRunningWithAuth) {
         isRunningWithAuth = false;
-        System.clearProperty(
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
+        System
+            .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
       if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
@@ -323,9 +324,8 @@ public abstract class AbstractTestRestApi {
       request = httpGet("/version");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
-      LOG.error(
-          "AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not "
-              + "running");
+      LOG.error("AbstractTestRestApi.checkIfServerIsRunning() fails .. ZeppelinServer is not " +
+              "running");
       isRunning = false;
     } finally {
       if (request != null) {
@@ -338,13 +338,13 @@ public abstract class AbstractTestRestApi {
   protected static GetMethod httpGet(String path) throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
-
+  
   protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
 
   protected static GetMethod httpGet(String path, String user, String pwd, String cookies)
-      throws IOException {
+          throws IOException {
     LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
     GetMethod getMethod = new GetMethod(URL + path);
@@ -365,7 +365,7 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static DeleteMethod httpDelete(String path, String user, String pwd)
-      throws IOException {
+          throws IOException {
     LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
     DeleteMethod deleteMethod = new DeleteMethod(URL + path);
@@ -383,7 +383,7 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static PostMethod httpPost(String path, String request, String user, String pwd)
-      throws IOException {
+          throws IOException {
     LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
     PostMethod postMethod = new PostMethod(URL + path);
@@ -402,7 +402,7 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static PutMethod httpPut(String path, String body, String user, String pwd)
-      throws IOException {
+          throws IOException {
     LOG.info("Connecting to {}", URL + path);
     HttpClient httpClient = new HttpClient();
     PutMethod putMethod = new PutMethod(URL + path);
@@ -448,7 +448,7 @@ public abstract class AbstractTestRestApi {
     }
     return true;
   }
-
+  
   protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
     return new TypeSafeMatcher<HttpMethodBase>() {
       WeakReference<HttpMethodBase> method;
@@ -461,19 +461,13 @@ public abstract class AbstractTestRestApi {
 
       @Override
       public void describeTo(Description description) {
-        description
-            .appendText("HTTP response ")
-            .appendValue(expectedStatusCode)
-            .appendText(" from ")
-            .appendText(method.get().getPath());
+        description.appendText("HTTP response ").appendValue(expectedStatusCode)
+            .appendText(" from ").appendText(method.get().getPath());
       }
 
       @Override
       protected void describeMismatchSafely(HttpMethodBase item, Description description) {
-        description
-            .appendText("got ")
-            .appendValue(item.getStatusCode())
-            .appendText(" ")
+        description.appendText("got ").appendValue(item.getStatusCode()).appendText(" ")
             .appendText(item.getStatusText());
       }
     };
@@ -534,9 +528,7 @@ public abstract class AbstractTestRestApi {
 
       @Override
       public void describeTo(Description description) {
-        description
-            .appendText("response in JSON format with \"")
-            .appendText(memberName)
+        description.appendText("response in JSON format with \"").appendText(memberName)
             .appendText("\" beeing a root element ");
       }
 
@@ -561,7 +553,9 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-  /** Status code matcher. */
+  /**
+   * Status code matcher.
+   */
   protected Matcher<? super HttpMethodBase> isForbidden() {
     return responsesWith(403);
   }

@@ -20,6 +20,7 @@ package org.apache.zeppelin.helium;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+
 import org.apache.thrift.TException;
 import org.apache.zeppelin.helium.DevInterpreter.InterpreterEvent;
 import org.apache.zeppelin.interpreter.*;
@@ -28,14 +29,15 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Interpreter development server */
-public class ZeppelinDevServer extends RemoteInterpreterServer
-    implements InterpreterEvent, InterpreterOutputChangeListener {
+/**
+ * Interpreter development server
+ */
+public class ZeppelinDevServer extends
+    RemoteInterpreterServer implements InterpreterEvent, InterpreterOutputChangeListener {
   private static final Logger logger = LoggerFactory.getLogger(ZeppelinDevServer.class);
 
   private DevInterpreter interpreter = null;
   private InterpreterOutput out;
-
   public ZeppelinDevServer(int port) throws TException, IOException {
     super(null, port, null, ":");
   }
@@ -56,7 +58,8 @@ public class ZeppelinDevServer extends RemoteInterpreterServer
     }
 
     Interpreter intp = super.getInterpreter(sessionId, className);
-    interpreter = (DevInterpreter) (((LazyOpenInterpreter) intp).getInnerInterpreter());
+    interpreter = (DevInterpreter) (
+        ((LazyOpenInterpreter) intp).getInnerInterpreter());
     interpreter.setInterpreterEvent(this);
     return super.getInterpreter(sessionId, className);
   }
@@ -67,29 +70,27 @@ public class ZeppelinDevServer extends RemoteInterpreterServer
     if (out == null) {
       final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
-        out =
-            new InterpreterOutput(
-                new InterpreterOutputListener() {
-                  @Override
-                  public void onUpdateAll(InterpreterOutput out) {}
+        out = new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onUpdateAll(InterpreterOutput out) {
 
-                  @Override
-                  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-                    eventClient.onInterpreterOutputAppend(
-                        noteId, paragraphId, index, new String(line));
-                  }
+          }
 
-                  @Override
-                  public void onUpdate(int index, InterpreterResultMessageOutput out) {
-                    try {
-                      eventClient.onInterpreterOutputUpdate(
-                          noteId, paragraphId, index, out.getType(), new String(out.toByteArray()));
-                    } catch (IOException e) {
-                      logger.error(e.getMessage(), e);
-                    }
-                  }
-                },
-                this);
+          @Override
+          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+            eventClient.onInterpreterOutputAppend(noteId, paragraphId, index, new String(line));
+          }
+
+          @Override
+          public void onUpdate(int index, InterpreterResultMessageOutput out) {
+            try {
+              eventClient.onInterpreterOutputUpdate(noteId, paragraphId,
+                  index, out.getType(), new String(out.toByteArray()));
+            } catch (IOException e) {
+              logger.error(e.getMessage(), e);
+            }
+          }
+        }, this);
       } catch (IOException e) {
         return null;
       }
@@ -114,7 +115,9 @@ public class ZeppelinDevServer extends RemoteInterpreterServer
     interpreter.rerun();
   }
 
-  /** Wait until %dev paragraph is executed and connected to this process */
+  /**
+   * Wait until %dev paragraph is executed and connected to this process
+   */
   public void waitForConnected() {
     synchronized (this) {
       while (!isConnected()) {

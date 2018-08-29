@@ -1,8 +1,5 @@
 package org.apache.zeppelin.interpreter;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -12,7 +9,13 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+
 /**
+ *
  * Util class for creating a Mini Hadoop cluster in local machine to test scenarios that needs
  * hadoop cluster.
  */
@@ -31,31 +34,28 @@ public class MiniHadoopCluster {
     this.hadoopConf = new Configuration();
     new File(configPath).mkdirs();
     // start MiniDFSCluster
-    this.dfsCluster =
-        new MiniDFSCluster.Builder(hadoopConf)
-            .numDataNodes(2)
-            .format(true)
-            .waitSafeMode(true)
-            .build();
+    this.dfsCluster = new MiniDFSCluster.Builder(hadoopConf)
+        .numDataNodes(2)
+        .format(true)
+        .waitSafeMode(true)
+        .build();
     this.dfsCluster.waitActive();
     saveConfig(hadoopConf, configPath + "/core-site.xml");
 
     // start MiniYarnCluster
     YarnConfiguration baseConfig = new YarnConfiguration(hadoopConf);
-    baseConfig.set(
-        "yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage", "95");
-    this.yarnCluster = new MiniYARNCluster(getClass().getName(), 2, 1, 1);
+    baseConfig.set("yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage", "95");
+    this.yarnCluster = new MiniYARNCluster(getClass().getName(), 2,
+        1, 1);
     yarnCluster.init(baseConfig);
 
     // Install a shutdown hook for stop the service and kill all running applications.
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                yarnCluster.stop();
-              }
-            });
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        yarnCluster.stop();
+      }
+    });
 
     yarnCluster.start();
 
@@ -77,7 +77,7 @@ public class MiniHadoopCluster {
     }
 
     LOGGER.info("RM address in configuration is " + yarnConfig.get(YarnConfiguration.RM_ADDRESS));
-    saveConfig(yarnConfig, configPath + "/yarn-site.xml");
+    saveConfig(yarnConfig,configPath + "/yarn-site.xml");
   }
 
   protected void saveConfig(Configuration conf, String dest) throws IOException {

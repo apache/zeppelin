@@ -15,17 +15,9 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.service;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -33,6 +25,16 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 public class ConfigurationServiceTest extends AbstractTestRestApi {
 
@@ -45,8 +47,8 @@ public class ConfigurationServiceTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(), "helium");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
+        "helium");
     AbstractTestRestApi.startUp(ConfigurationServiceTest.class.getSimpleName());
     configurationService = ZeppelinServer.notebookWsServer.getConfigurationService();
   }

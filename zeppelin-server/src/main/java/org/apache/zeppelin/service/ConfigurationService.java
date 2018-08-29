@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.service;
 
-import java.io.IOException;
-import java.util.Map;
 import javax.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class ConfigurationService {
 
@@ -35,30 +37,27 @@ public class ConfigurationService {
     this.zConf = zConf;
   }
 
-  public Map<String, String> getAllProperties(
-      ServiceContext context, ServiceCallback<Map<String, String>> callback) throws IOException {
-    Map<String, String> properties =
-        zConf.dumpConfigurations(
-            key ->
-                !key.contains("password")
-                    && !key.equals(
-                        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
-                            .getVarName()));
+  public Map<String, String> getAllProperties(ServiceContext context,
+                                              ServiceCallback<Map<String, String>> callback)
+      throws IOException {
+    Map<String, String> properties = zConf.dumpConfigurations(key ->
+        !key.contains("password") &&
+            !key.equals(ZeppelinConfiguration.ConfVars
+                .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING.getVarName()));
     callback.onSuccess(properties, context);
     return properties;
   }
 
-  public Map<String, String> getPropertiesWithPrefix(
-      String prefix, ServiceContext context, ServiceCallback<Map<String, String>> callback)
+  public Map<String, String> getPropertiesWithPrefix(String prefix,
+                                                     ServiceContext context,
+                                                     ServiceCallback<Map<String, String>> callback)
       throws IOException {
-    Map<String, String> properties =
-        zConf.dumpConfigurations(
-            key ->
-                !key.contains("password")
-                    && !key.equals(
-                        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
-                            .getVarName())
-                    && key.startsWith(prefix));
+    Map<String, String> properties = zConf.dumpConfigurations(key ->
+        !key.contains("password") &&
+            !key.equals(ZeppelinConfiguration.ConfVars
+                    .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
+                    .getVarName()) &&
+            key.startsWith(prefix));
     callback.onSuccess(properties, context);
     return properties;
   }

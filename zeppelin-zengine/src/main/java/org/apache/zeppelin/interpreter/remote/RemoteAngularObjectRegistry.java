@@ -18,24 +18,28 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
-import java.util.List;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Proxy for AngularObjectRegistry that exists in remote interpreter process */
+import java.util.List;
+
+/**
+ * Proxy for AngularObjectRegistry that exists in remote interpreter process
+ */
 public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   Logger logger = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);
   private ManagedInterpreterGroup interpreterGroup;
 
-  public RemoteAngularObjectRegistry(
-      String interpreterId,
-      AngularObjectRegistryListener listener,
-      ManagedInterpreterGroup interpreterGroup) {
+  public RemoteAngularObjectRegistry(String interpreterId,
+                                     AngularObjectRegistryListener listener,
+                                     ManagedInterpreterGroup interpreterGroup) {
     super(interpreterId, listener);
     this.interpreterGroup = interpreterGroup;
   }
@@ -45,16 +49,17 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   }
 
   /**
-   * When ZeppelinServer side code want to add angularObject to the registry, this method should be
-   * used instead of add()
-   *
+   * When ZeppelinServer side code want to add angularObject to the registry,
+   * this method should be used instead of add()
    * @param name
    * @param o
    * @param noteId
    * @return
    */
-  public AngularObject addAndNotifyRemoteProcess(
-      final String name, final Object o, final String noteId, final String paragraphId) {
+  public AngularObject addAndNotifyRemoteProcess(final String name,
+                                                 final Object o,
+                                                 final String noteId,
+                                                 final String paragraphId) {
 
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (!remoteInterpreterProcess.isRunning()) {
@@ -69,38 +74,41 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
             client.angularObjectAdd(name, noteId, paragraphId, gson.toJson(o));
             return null;
           }
-        });
+        }
+    );
 
     return super.add(name, o, noteId, paragraphId, true);
+
   }
 
   /**
-   * When ZeppelinServer side code want to remove angularObject from the registry, this method
-   * should be used instead of remove()
-   *
+   * When ZeppelinServer side code want to remove angularObject from the registry,
+   * this method should be used instead of remove()
    * @param name
    * @param noteId
    * @param paragraphId
    * @return
    */
-  public AngularObject removeAndNotifyRemoteProcess(
-      final String name, final String noteId, final String paragraphId) {
+  public AngularObject removeAndNotifyRemoteProcess(final String name,
+                                                    final String noteId,
+                                                    final String paragraphId) {
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (remoteInterpreterProcess == null || !remoteInterpreterProcess.isRunning()) {
       return super.remove(name, noteId, paragraphId);
     }
     remoteInterpreterProcess.callRemoteFunction(
-        new RemoteInterpreterProcess.RemoteFunction<Void>() {
-          @Override
-          public Void call(Client client) throws Exception {
-            client.angularObjectRemove(name, noteId, paragraphId);
-            return null;
-          }
-        });
+      new RemoteInterpreterProcess.RemoteFunction<Void>() {
+        @Override
+        public Void call(Client client) throws Exception {
+          client.angularObjectRemove(name, noteId, paragraphId);
+          return null;
+        }
+      }
+    );
 
     return super.remove(name, noteId, paragraphId);
   }
-
+  
   public void removeAllAndNotifyRemoteProcess(String noteId, String paragraphId) {
     List<AngularObject> all = getAll(noteId, paragraphId);
     for (AngularObject ao : all) {
@@ -109,9 +117,9 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   }
 
   @Override
-  protected AngularObject createNewAngularObject(
-      String name, Object o, String noteId, String paragraphId) {
-    return new RemoteAngularObject(
-        name, o, noteId, paragraphId, interpreterGroup, getAngularObjectListener());
+  protected AngularObject createNewAngularObject(String name, Object o, String noteId, String
+          paragraphId) {
+    return new RemoteAngularObject(name, o, noteId, paragraphId, interpreterGroup,
+        getAngularObjectListener());
   }
 }

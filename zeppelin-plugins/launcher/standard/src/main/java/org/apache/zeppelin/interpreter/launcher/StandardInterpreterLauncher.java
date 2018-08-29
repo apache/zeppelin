@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.interpreter.launcher;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
@@ -30,7 +28,13 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Interpreter Launcher which use shell script to launch the interpreter process. */
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Interpreter Launcher which use shell script to launch the interpreter process.
+ */
 public class StandardInterpreterLauncher extends InterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StandardInterpreterLauncher.class);
@@ -51,7 +55,10 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
 
     if (option.isExistingProcess()) {
       return new RemoteInterpreterRunningProcess(
-          context.getInterpreterSettingName(), connectTimeout, option.getHost(), option.getPort());
+          context.getInterpreterSettingName(),
+          connectTimeout,
+          option.getHost(),
+          option.getPort());
     } else {
       // try to recover it first
       if (zConf.isRecoveryEnabled()) {
@@ -59,38 +66,25 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
             recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
         if (recoveredClient != null) {
           if (recoveredClient.isRunning()) {
-            LOGGER.info(
-                "Recover interpreter process: "
-                    + recoveredClient.getHost()
-                    + ":"
-                    + recoveredClient.getPort());
+            LOGGER.info("Recover interpreter process: " + recoveredClient.getHost() + ":" +
+                recoveredClient.getPort());
             return recoveredClient;
           } else {
-            LOGGER.warn(
-                "Cannot recover interpreter process: "
-                    + recoveredClient.getHost()
-                    + ":"
-                    + recoveredClient.getPort()
-                    + ", as it is already terminated.");
+            LOGGER.warn("Cannot recover interpreter process: " + recoveredClient.getHost() + ":"
+                + recoveredClient.getPort() + ", as it is already terminated.");
           }
         }
       }
 
       // create new remote process
-      String localRepoPath =
-          zConf.getInterpreterLocalRepoPath() + "/" + context.getInterpreterSettingId();
+      String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
+          + context.getInterpreterSettingId();
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
-          context.getZeppelinServerRPCPort(),
-          context.getZeppelinServerHost(),
-          zConf.getInterpreterPortRange(),
-          zConf.getInterpreterDir() + "/" + groupName,
-          localRepoPath,
-          buildEnvFromProperties(context),
-          connectTimeout,
-          name,
-          context.getInterpreterGroupId(),
-          option.isUserImpersonate());
+          context.getZeppelinServerRPCPort(), context.getZeppelinServerHost(), zConf.getInterpreterPortRange(),
+          zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
+          buildEnvFromProperties(context), connectTimeout, name,
+          context.getInterpreterGroupId(), option.isUserImpersonate());
     }
   }
 

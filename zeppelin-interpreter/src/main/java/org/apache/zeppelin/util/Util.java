@@ -17,11 +17,14 @@
 
 package org.apache.zeppelin.util;
 
-import java.io.IOException;
-import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 
-/** TODO(moon) : add description. */
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * TODO(moon) : add description.
+ */
 public class Util {
   private static final String PROJECT_PROPERTIES_VERSION_KEY = "version";
   private static final String GIT_PROPERTIES_COMMIT_ID_KEY = "git.commit.id.abbrev";
@@ -37,7 +40,7 @@ public class Util {
       projectProperties.load(Util.class.getResourceAsStream("/project.properties"));
       gitProperties.load(Util.class.getResourceAsStream("/git.properties"));
     } catch (IOException e) {
-      // Fail to read project.properties
+      //Fail to read project.properties
     }
   }
 
@@ -47,8 +50,8 @@ public class Util {
    * @return Current Zeppelin version
    */
   public static String getVersion() {
-    return StringUtils.defaultIfEmpty(
-        projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY), StringUtils.EMPTY);
+    return StringUtils.defaultIfEmpty(projectProperties.getProperty(PROJECT_PROPERTIES_VERSION_KEY),
+            StringUtils.EMPTY);
   }
 
   /**
@@ -57,8 +60,8 @@ public class Util {
    * @return Latest Zeppelin commit id
    */
   public static String getGitCommitId() {
-    return StringUtils.defaultIfEmpty(
-        gitProperties.getProperty(GIT_PROPERTIES_COMMIT_ID_KEY), StringUtils.EMPTY);
+    return StringUtils.defaultIfEmpty(gitProperties.getProperty(GIT_PROPERTIES_COMMIT_ID_KEY),
+            StringUtils.EMPTY);
   }
 
   /**
@@ -67,7 +70,7 @@ public class Util {
    * @return Latest Zeppelin commit timestamp
    */
   public static String getGitTimestamp() {
-    return StringUtils.defaultIfEmpty(
-        gitProperties.getProperty(GIT_PROPERTIES_COMMIT_TS_KEY), StringUtils.EMPTY);
+    return StringUtils.defaultIfEmpty(gitProperties.getProperty(GIT_PROPERTIES_COMMIT_TS_KEY),
+            StringUtils.EMPTY);
   }
 }

@@ -16,18 +16,22 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.util.List;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 
-/** Angular Registry for helium app */
+import java.util.List;
+
+/**
+ * Angular Registry for helium app
+ */
 public class HeliumAppAngularObjectRegistry {
   private final String noteId;
   private final String appId;
   private final AngularObjectRegistry angularObjectRegistry;
 
-  public HeliumAppAngularObjectRegistry(
-      AngularObjectRegistry angularObjectRegistry, String noteId, String appId) {
+  public HeliumAppAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry,
+                                        String noteId,
+                                        String appId) {
     this.angularObjectRegistry = angularObjectRegistry;
     this.noteId = noteId;
     this.appId = appId;

@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -33,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
@@ -46,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -66,9 +65,15 @@ import org.apache.zeppelin.user.UserCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Paragraph is a representation of an execution unit. */
-public class Paragraph extends JobWithProgressPoller<InterpreterResult>
-    implements Cloneable, JsonSerializable {
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+
+/**
+ * Paragraph is a representation of an execution unit.
+ */
+public class Paragraph extends JobWithProgressPoller<InterpreterResult> implements Cloneable,
+    JsonSerializable {
 
   private static Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
   private static Pattern REPL_PATTERN =
@@ -87,9 +92,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
   // Application states in this paragraph
   private final List<ApplicationState> apps = new LinkedList<>();
 
-  /** ************ Transient fields which are not serializabled into note json ************* */
+  /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
-
   private transient String scriptText;
   private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
@@ -100,13 +104,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
+
   @VisibleForTesting
   Paragraph() {
     super(generateId(), null);
   }
 
-  public Paragraph(
-      String paragraphId, Note note, JobListener listener, InterpreterFactory interpreterFactory) {
+  public Paragraph(String paragraphId, Note note, JobListener listener,
+      InterpreterFactory interpreterFactory) {
     super(paragraphId, generateId(), listener);
     this.note = note;
     this.interpreterFactory = interpreterFactory;
@@ -193,8 +198,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
 
         if (matcher.groupCount() == 3 && matcher.group(3) != null) {
           String localPropertiesText = matcher.group(3);
-          String[] splits =
-              localPropertiesText.substring(1, localPropertiesText.length() - 1).split(",");
+          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() -1)
+              .split(",");
           for (String split : splits) {
             String[] kv = split.split("=");
             if (StringUtils.isBlank(split) || kv.length == 0) {
@@ -209,14 +214,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
               localProperties.put(kv[0].trim(), kv[1].trim());
             }
           }
-          this.scriptText =
-              this.text
-                  .substring(
-                      headingSpace.length() + intpText.length() + localPropertiesText.length() + 1)
-                  .trim();
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() +
+              localPropertiesText.length() + 1).trim();
         } else {
-          this.scriptText =
-              this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
+          this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
         }
       } else {
         this.intpText = "";
@@ -270,8 +271,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.interpreterFactory.getInterpreter(
-        user, note.getId(), intpText, note.getDefaultInterpreterGroup());
+    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText,
+        note.getDefaultInterpreterGroup());
   }
 
   public void setInterpreter(Interpreter interpreter) {
@@ -368,7 +369,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
         return true;
       }
     } catch (InterpreterNotFoundException e) {
-      InterpreterResult intpResult = new InterpreterResult(InterpreterResult.Code.ERROR);
+      InterpreterResult intpResult =
+          new InterpreterResult(InterpreterResult.Code.ERROR);
       setReturn(intpResult, e);
       setStatus(Job.Status.ERROR);
       throw new RuntimeException(e);
@@ -377,20 +379,16 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
 
   @Override
   protected InterpreterResult jobRun() throws Throwable {
-    LOGGER.info(
-        "Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
-        getId(),
-        intpText,
-        note.getId(),
-        subject.getUser());
+    LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+            getId(), intpText, note.getId(), subject.getUser());
     this.runtimeInfos.clear();
     this.interpreter = getBindedInterpreter();
     if (this.interpreter == null) {
       LOGGER.error("Can not find interpreter name " + intpText);
       throw new RuntimeException("Can not find interpreter for " + intpText);
     }
-    InterpreterSetting interpreterSetting =
-        ((ManagedInterpreterGroup) interpreter.getInterpreterGroup()).getInterpreterSetting();
+    InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+        interpreter.getInterpreterGroup()).getInterpreterSetting();
     if (interpreterSetting != null) {
       interpreterSetting.waitForReady();
     }
@@ -421,7 +419,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
       settings.setForms(inputs);
       if (!noteInputs.isEmpty()) {
         if (!note.getNoteForms().isEmpty()) {
-          Map<String, Input> currentNoteForms = note.getNoteForms();
+          Map<String, Input> currentNoteForms =  note.getNoteForms();
           for (String s : noteInputs.keySet()) {
             if (!currentNoteForms.containsKey(s)) {
               currentNoteForms.put(s, noteInputs.get(s));
@@ -491,42 +489,40 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
   private InterpreterContext getInterpreterContext() {
     final Paragraph self = this;
 
-    return getInterpreterContext(
-        new InterpreterOutput(
-            new InterpreterOutputListener() {
-              @Override
-              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-                ((ParagraphJobListener) getListener())
-                    .onOutputAppend(self, index, new String(line));
-              }
+    return getInterpreterContext(new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+        ((ParagraphJobListener) getListener()).onOutputAppend(self, index, new String(line));
+      }
 
-              @Override
-              public void onUpdate(int index, InterpreterResultMessageOutput out) {
-                try {
-                  ((ParagraphJobListener) getListener())
-                      .onOutputUpdate(self, index, out.toInterpreterResultMessage());
-                } catch (IOException e) {
-                  LOGGER.error(e.getMessage(), e);
-                }
-              }
+      @Override
+      public void onUpdate(int index, InterpreterResultMessageOutput out) {
+        try {
+          ((ParagraphJobListener) getListener())
+              .onOutputUpdate(self, index, out.toInterpreterResultMessage());
+        } catch (IOException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
 
-              @Override
-              public void onUpdateAll(InterpreterOutput out) {
-                try {
-                  List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
-                  ((ParagraphJobListener) getListener()).onOutputUpdateAll(self, messages);
-                  updateParagraphResult(messages);
-                } catch (IOException e) {
-                  LOGGER.error(e.getMessage(), e);
-                }
-              }
+      @Override
+      public void onUpdateAll(InterpreterOutput out) {
+        try {
+          List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
+          ((ParagraphJobListener) getListener()).onOutputUpdateAll(self, messages);
+          updateParagraphResult(messages);
+        } catch (IOException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
 
-              private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
-                // update paragraph results
-                InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
-                setReturn(result, null);
-              }
-            }));
+      }
+
+      private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
+        // update paragraph results
+        InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
+        setReturn(result, null);
+      }
+    }));
   }
 
   private InterpreterContext getInterpreterContext(InterpreterOutput output) {
@@ -540,7 +536,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
 
     Credentials credentials = note.getCredentials();
     if (subject != null) {
-      UserCredentials userCredentials = credentials.getUserCredentials(subject.getUser());
+      UserCredentials userCredentials =
+          credentials.getUserCredentials(subject.getUser());
       subject.setUserCredentials(userCredentials);
     }
 
@@ -603,6 +600,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
     }
   }
 
+
   public ApplicationState getApplicationState(String appId) {
     synchronized (apps) {
       for (ApplicationState as : apps) {
@@ -621,8 +619,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
     }
   }
 
-  String extractVariablesFromAngularRegistry(
-      String scriptBody, Map<String, Input> inputs, AngularObjectRegistry angularRegistry) {
+  String extractVariablesFromAngularRegistry(String scriptBody, Map<String, Input> inputs,
+      AngularObjectRegistry angularRegistry) {
 
     final String noteId = this.getNote().getId();
     final String paragraphId = this.getId();
@@ -644,16 +642,15 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return interpreterFactory.getInterpreter(
-              user, note.getId(), replName, note.getDefaultInterpreterGroup())
-          != null;
+      return interpreterFactory.getInterpreter(user, note.getId(), replName,
+          note.getDefaultInterpreterGroup()) != null;
     } catch (InterpreterNotFoundException e) {
       return false;
     }
   }
 
-  public void updateRuntimeInfos(
-      String label, String tooltip, Map<String, String> infos, String group, String intpSettingId) {
+  public void updateRuntimeInfos(String label, String tooltip, Map<String, String> infos,
+      String group, String intpSettingId) {
     if (this.runtimeInfos == null) {
       this.runtimeInfos = new HashMap<>();
     }
@@ -708,9 +705,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
     if (user != null ? !user.equals(paragraph.user) : paragraph.user != null) {
       return false;
     }
-    if (dateUpdated != null
-        ? !dateUpdated.equals(paragraph.dateUpdated)
-        : paragraph.dateUpdated != null) {
+    if (dateUpdated != null ?
+        !dateUpdated.equals(paragraph.dateUpdated) : paragraph.dateUpdated != null) {
       return false;
     }
     if (config != null ? !config.equals(paragraph.config) : paragraph.config != null) {
@@ -720,7 +716,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
       return false;
     }
 
-    return results != null ? results.equals(paragraph.results) : paragraph.results == null;
+    return results != null ?
+        results.equals(paragraph.results) : paragraph.results == null;
+
   }
 
   @Override
@@ -744,4 +742,5 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult>
   public static Paragraph fromJson(String json) {
     return Note.getGson().fromJson(json, Paragraph.class);
   }
+
 }

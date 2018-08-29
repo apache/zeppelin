@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.livy;
 
-/** */
+/**
+ *
+ */
 public class SessionNotFoundException extends LivyException {
 
   public SessionNotFoundException(String message) {

@@ -17,10 +17,14 @@
 
 package org.apache.zeppelin.display.ui;
 
-/** Html Dropdown list */
+/**
+ * Html Dropdown list
+ */
 public class Select extends OptionInput<Object> {
 
-  public Select() {}
+  public Select() {
+
+  }
 
   public Select(String name, Object defaultValue, ParamOption[] options) {
     this.name = name;
@@ -28,4 +32,5 @@ public class Select extends OptionInput<Object> {
     this.defaultValue = defaultValue;
     this.options = options;
   }
+
 }

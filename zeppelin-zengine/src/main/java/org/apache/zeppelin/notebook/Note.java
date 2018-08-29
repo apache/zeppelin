@@ -17,12 +17,36 @@
 
 package org.apache.zeppelin.notebook;
 
-import static java.lang.String.format;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.utility.IdHashes;
+import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,39 +58,21 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.utility.IdHashes;
-import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Binded interpreters for a note */
+import static java.lang.String.format;
+
+/**
+ * Binded interpreters for a note
+ */
 public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
-  private static Gson gson =
-      new GsonBuilder()
-          .setPrettyPrinting()
-          .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-          .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
-          .registerTypeAdapterFactory(Input.TypeAdapterFactory)
-          .create();
+  private static Gson gson = new GsonBuilder()
+      .setPrettyPrinting()
+      .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+      .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
+      .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .create();
 
   // threadpool for delayed persist of note
   private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
@@ -108,20 +114,14 @@ public class Note implements JsonSerializable {
    */
   private Map<String, Object> info = new HashMap<>();
 
+
   public Note() {
     generateId();
   }
 
-  public Note(
-      String name,
-      String defaultInterpreterGroup,
-      NotebookRepo repo,
-      InterpreterFactory factory,
-      InterpreterSettingManager interpreterSettingManager,
-      ParagraphJobListener paragraphJobListener,
-      SearchService noteIndex,
-      Credentials credentials,
-      NoteEventListener noteEventListener) {
+  public Note(String name, String defaultInterpreterGroup, NotebookRepo repo, InterpreterFactory factory,
+      InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
+      SearchService noteIndex, Credentials credentials, NoteEventListener noteEventListener) {
     this.name = name;
     this.defaultInterpreterGroup = defaultInterpreterGroup;
     this.repo = repo;
@@ -214,12 +214,15 @@ public class Note implements JsonSerializable {
     return notePath.substring(lastSlashIndex + 1);
   }
 
-  /** @return normalized folder path, which is folderId */
+  /**
+   * @return normalized folder path, which is folderId
+   */
   public String getFolderId() {
     String notePath = getName();
 
     // Ignore first '/'
-    if (notePath.charAt(0) == '/') notePath = notePath.substring(1);
+    if (notePath.charAt(0) == '/')
+      notePath = notePath.substring(1);
 
     int lastSlashIndex = notePath.lastIndexOf("/");
     // The root folder
@@ -283,9 +286,8 @@ public class Note implements JsonSerializable {
     final Note paragraphNote = paragraph.getNote();
     if (!paragraphNote.getId().equals(this.getId())) {
       throw new IllegalArgumentException(
-          format(
-              "The paragraph %s from note %s " + "does not belong to note %s",
-              paragraph.getId(), paragraphNote.getId(), this.getId()));
+          format("The paragraph %s from note %s " + "does not belong to note %s", paragraph.getId(),
+              paragraphNote.getId(), this.getId()));
     }
 
     boolean foundParagraph = false;
@@ -298,9 +300,8 @@ public class Note implements JsonSerializable {
 
     if (!foundParagraph) {
       throw new IllegalArgumentException(
-          format(
-              "Cannot find paragraph %s " + "from note %s",
-              paragraph.getId(), paragraphNote.getId()));
+          format("Cannot find paragraph %s " + "from note %s", paragraph.getId(),
+              paragraphNote.getId()));
     }
   }
 
@@ -345,11 +346,14 @@ public class Note implements JsonSerializable {
     this.credentials = credentials;
   }
 
+
   Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
   }
 
-  /** Create a new paragraph and add it to the end of the note. */
+  /**
+   * Create a new paragraph and add it to the end of the note.
+   */
   public Paragraph addNewParagraph(AuthenticationInfo authenticationInfo) {
     return insertNewParagraph(paragraphs.size(), authenticationInfo);
   }
@@ -362,23 +366,24 @@ public class Note implements JsonSerializable {
   void addCloneParagraph(Paragraph srcParagraph, AuthenticationInfo subject) {
 
     // Keep paragraph original ID
-    final Paragraph newParagraph =
-        new Paragraph(srcParagraph.getId(), this, paragraphJobListener, factory);
+    final Paragraph newParagraph = new Paragraph(srcParagraph.getId(), this,
+        paragraphJobListener, factory);
 
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = srcParagraph.settings.getParams();
     Map<String, Input> form = srcParagraph.settings.getForms();
 
     logger.debug("srcParagraph user: " + srcParagraph.getUser());
-
+    
     newParagraph.setAuthenticationInfo(subject);
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
     newParagraph.settings.setForms(form);
     newParagraph.setText(srcParagraph.getText());
     newParagraph.setTitle(srcParagraph.getTitle());
-
+    
     logger.debug("newParagraph user: " + newParagraph.getUser());
+
 
     try {
       Gson gson = new Gson();
@@ -497,7 +502,9 @@ public class Note implements JsonSerializable {
     return null;
   }
 
-  /** Clear all paragraph output of note */
+  /**
+   * Clear all paragraph output of note
+   */
   public void clearAllParagraphOutput() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
@@ -510,7 +517,7 @@ public class Note implements JsonSerializable {
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
    * @param paragraphId ID of paragraph
-   * @param index new index
+   * @param index       new index
    */
   public void moveParagraph(String paragraphId, int index) {
     moveParagraph(paragraphId, index, false);
@@ -519,10 +526,10 @@ public class Note implements JsonSerializable {
   /**
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
-   * @param paragraphId ID of paragraph
-   * @param index new index
-   * @param throwWhenIndexIsOutOfBound whether throw IndexOutOfBoundException when index is out of
-   *     bound
+   * @param paragraphId                ID of paragraph
+   * @param index                      new index
+   * @param throwWhenIndexIsOutOfBound whether throw IndexOutOfBoundException
+   *                                   when index is out of bound
    */
   public void moveParagraph(String paragraphId, int index, boolean throwWhenIndexIsOutOfBound) {
     synchronized (paragraphs) {
@@ -646,18 +653,19 @@ public class Note implements JsonSerializable {
     }
   }
 
-  /** Run all paragraphs sequentially. Only used for CronJob */
+  /**
+   * Run all paragraphs sequentially. Only used for CronJob
+   */
   public synchronized void runAll() {
     String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
     String cronExecutingRoles = (String) getConfig().get("cronExecutingRoles");
     if (null == cronExecutingUser) {
       cronExecutingUser = "anonymous";
     }
-    AuthenticationInfo authenticationInfo =
-        new AuthenticationInfo(
-            cronExecutingUser,
-            StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
-            null);
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
+        cronExecutingUser,
+        StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
+        null);
     runAll(authenticationInfo, true);
   }
 
@@ -689,7 +697,9 @@ public class Note implements JsonSerializable {
     return p.execute(blocking);
   }
 
-  /** Return true if there is a running or pending paragraph */
+  /**
+   * Return true if there is a running or pending paragraph
+   */
   boolean isRunningOrPending() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
@@ -731,7 +741,7 @@ public class Note implements JsonSerializable {
     if (settings == null || settings.size() == 0) {
       return;
     }
-
+    
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup(user, id);
       if (intpGroup != null) {
@@ -790,7 +800,9 @@ public class Note implements JsonSerializable {
     repo.save(this, subject);
   }
 
-  /** Persist this note with maximum delay. */
+  /**
+   * Persist this note with maximum delay.
+   */
   public void persist(int maxDelaySec, AuthenticationInfo subject) {
     startDelayedPersistTimer(maxDelaySec, subject);
   }
@@ -798,6 +810,7 @@ public class Note implements JsonSerializable {
   void unpersist(AuthenticationInfo subject) throws IOException {
     repo.remove(getId(), subject);
   }
+
 
   /**
    * Return new note for specific user. this inserts and replaces user paragraph which doesn't
@@ -831,21 +844,17 @@ public class Note implements JsonSerializable {
         return;
       }
 
-      delayedPersist =
-          delayedPersistThreadPool.schedule(
-              new Runnable() {
+      delayedPersist = delayedPersistThreadPool.schedule(new Runnable() {
 
-                @Override
-                public void run() {
-                  try {
-                    persist(subject);
-                  } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                  }
-                }
-              },
-              maxDelaySec,
-              TimeUnit.SECONDS);
+        @Override
+        public void run() {
+          try {
+            persist(subject);
+          } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+          }
+        }
+      }, maxDelaySec, TimeUnit.SECONDS);
     }
   }
 
@@ -935,22 +944,21 @@ public class Note implements JsonSerializable {
     if (paragraphs != null ? !paragraphs.equals(note.paragraphs) : note.paragraphs != null) {
       return false;
     }
-    // TODO(zjffdu) exclude name because FolderView.index use Note as key and consider different
-    // name
-    // as same note
+    //TODO(zjffdu) exclude name because FolderView.index use Note as key and consider different name
+    //as same note
     //    if (name != null ? !name.equals(note.name) : note.name != null) return false;
     if (id != null ? !id.equals(note.id) : note.id != null) {
       return false;
     }
-    if (angularObjects != null
-        ? !angularObjects.equals(note.angularObjects)
-        : note.angularObjects != null) {
+    if (angularObjects != null ?
+        !angularObjects.equals(note.angularObjects) : note.angularObjects != null) {
       return false;
     }
     if (config != null ? !config.equals(note.config) : note.config != null) {
       return false;
     }
     return info != null ? info.equals(note.info) : note.info == null;
+
   }
 
   @Override

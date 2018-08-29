@@ -17,13 +17,6 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -31,8 +24,21 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter;
+import org.apache.zeppelin.interpreter.remote.mock.GetEnvPropertyInterpreter;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
@@ -58,17 +64,14 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertEquals(remoteInterpreter1.getScheduler(), remoteInterpreter2.getScheduler());
 
     InterpreterContext context1 = createDummyInterpreterContext();
-    assertEquals(
-        "hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
     assertEquals(Interpreter.FormType.NATIVE, interpreter1.getFormType());
     assertEquals(0, remoteInterpreter1.getProgress(context1));
     assertNotNull(remoteInterpreter1.getOrCreateInterpreterProcess());
     assertTrue(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
 
-    assertEquals(
-        "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
-    assertEquals(
-        remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
+    assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+    assertEquals(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
         remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
 
     // Call InterpreterGroup.close instead of Interpreter.close, otherwise we will have the
@@ -76,16 +79,14 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     remoteInterpreter1.getInterpreterGroup().close(remoteInterpreter1.getSessionId());
     assertNull(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess());
     try {
-      assertEquals(
-          "hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+      assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
       fail("Should not be able to call interpret after interpreter is closed");
     } catch (Exception e) {
       e.printStackTrace();
     }
 
     try {
-      assertEquals(
-          "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+      assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
       fail("Should not be able to call getProgress after RemoterInterpreterProcess is stoped");
     } catch (Exception e) {
       e.printStackTrace();
@@ -106,33 +107,28 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertNotEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
 
     InterpreterContext context1 = createDummyInterpreterContext();
-    assertEquals(
-        "hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
-    assertEquals(
-        "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     assertEquals(Interpreter.FormType.NATIVE, interpreter1.getFormType());
     assertEquals(0, remoteInterpreter1.getProgress(context1));
 
     assertNotNull(remoteInterpreter1.getOrCreateInterpreterProcess());
     assertTrue(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
 
-    assertEquals(
-        remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
+    assertEquals(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
         remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
     // Call InterpreterGroup.close instead of Interpreter.close, otherwise we will have the
     // RemoteInterpreterProcess leakage.
     remoteInterpreter1.getInterpreterGroup().close(remoteInterpreter1.getSessionId());
     try {
-      assertEquals(
-          "hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+      assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
       fail("Should not be able to call interpret after interpreter is closed");
     } catch (Exception e) {
       e.printStackTrace();
     }
 
     assertTrue(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
-    assertEquals(
-        "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
     try {
       assertEquals("hello", remoteInterpreter2.interpret("hello", context1));
@@ -157,17 +153,14 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertNotEquals(interpreter1.getScheduler(), interpreter2.getScheduler());
 
     InterpreterContext context1 = createDummyInterpreterContext();
-    assertEquals(
-        "hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
-    assertEquals(
-        "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     assertEquals(Interpreter.FormType.NATIVE, interpreter1.getFormType());
     assertEquals(0, remoteInterpreter1.getProgress(context1));
     assertNotNull(remoteInterpreter1.getOrCreateInterpreterProcess());
     assertTrue(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
 
-    assertNotEquals(
-        remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
+    assertNotEquals(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess(),
         remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
     // Call InterpreterGroup.close instead of Interpreter.close, otherwise we will have the
     // RemoteInterpreterProcess leakage.
@@ -181,33 +174,29 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
       e.printStackTrace();
     }
 
-    assertEquals(
-        "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+    assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
     try {
-      assertEquals(
-          "hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
+      assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
       fail("Should not be able to call interpret after interpreter is closed");
     } catch (Exception e) {
       e.printStackTrace();
     }
     assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
+
   }
 
   @Test
-  public void testExecuteIncorrectPrecode()
-      throws TTransportException, IOException, InterpreterException {
+  public void testExecuteIncorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "fail test");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
-    InterpreterContext context1 = createDummyInterpreterContext();
-    ;
+    InterpreterContext context1 = createDummyInterpreterContext();;
     assertEquals(Code.ERROR, interpreter1.interpret("10", context1).code());
   }
 
   @Test
-  public void testExecuteCorrectPrecode()
-      throws TTransportException, IOException, InterpreterException {
+  public void testExecuteCorrectPrecode() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
     interpreterSetting.setProperty("zeppelin.SleepInterpreter.precode", "1");
     Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
@@ -216,8 +205,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testRemoteInterperterErrorStatus()
-      throws TTransportException, IOException, InterpreterException {
+  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException, InterpreterException {
     interpreterSetting.setProperty("zeppelin.interpreter.echo.fail", "true");
     interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
 
@@ -225,8 +213,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertTrue(interpreter1 instanceof RemoteInterpreter);
     RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
 
-    InterpreterContext context1 = createDummyInterpreterContext();
-    ;
+    InterpreterContext context1 = createDummyInterpreterContext();;
     assertEquals(Code.ERROR, remoteInterpreter1.interpret("hello", context1).code());
   }
 
@@ -240,30 +227,28 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
     // time overhead of launching the process.
     interpreter1.interpret("1", context1);
-    Thread thread1 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
-            } catch (InterpreterException e) {
-              e.printStackTrace();
-              fail();
-            }
-          }
-        };
-    Thread thread2 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
-            } catch (InterpreterException e) {
-              e.printStackTrace();
-              fail();
-            }
-          }
-        };
+    Thread thread1 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
+      }
+    };
+    Thread thread2 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
+      }
+    };
     long start = System.currentTimeMillis();
     thread1.start();
     thread2.start();
@@ -284,30 +269,28 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
     // time overhead of launching the process.
     interpreter1.interpret("1", context1);
-    Thread thread1 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
-            } catch (InterpreterException e) {
-              e.printStackTrace();
-              fail();
-            }
-          }
-        };
-    Thread thread2 =
-        new Thread() {
-          @Override
-          public void run() {
-            try {
-              assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
-            } catch (InterpreterException e) {
-              e.printStackTrace();
-              fail();
-            }
-          }
-        };
+    Thread thread1 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
+      }
+    };
+    Thread thread2 = new Thread() {
+      @Override
+      public void run() {
+        try {
+          assertEquals(Code.SUCCESS, interpreter1.interpret("100", context1).code());
+        } catch (InterpreterException e) {
+          e.printStackTrace();
+          fail();
+        }
+      }
+    };
     long start = System.currentTimeMillis();
     thread1.start();
     thread2.start();
@@ -331,14 +314,12 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreterSetting.getOption().setPerUser(InterpreterOption.SCOPED);
     Interpreter interpreter1_user1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
     Interpreter interpreter2_user1 = interpreterSetting.getInterpreter("user1", "note1", "echo");
-    assertEquals(
-        interpreter1_user1.getInterpreterGroup(), interpreter2_user1.getInterpreterGroup());
+    assertEquals(interpreter1_user1.getInterpreterGroup(), interpreter2_user1.getInterpreterGroup());
     assertEquals(interpreter1_user1.getScheduler(), interpreter2_user1.getScheduler());
 
     Interpreter interpreter1_user2 = interpreterSetting.getInterpreter("user2", "note1", "sleep");
     Interpreter interpreter2_user2 = interpreterSetting.getInterpreter("user2", "note1", "echo");
-    assertEquals(
-        interpreter1_user2.getInterpreterGroup(), interpreter2_user2.getInterpreterGroup());
+    assertEquals(interpreter1_user2.getInterpreterGroup(), interpreter2_user2.getInterpreterGroup());
     assertEquals(interpreter1_user2.getScheduler(), interpreter2_user2.getScheduler());
 
     // scheduler is shared in session but not across session
@@ -380,29 +361,19 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "get");
     final InterpreterContext context1 = createDummyInterpreterContext();
 
-    assertEquals(
-        "VALUE_1", interpreter1.interpret("getEnv ENV_1", context1).message().get(0).getData());
-    assertEquals(
-        "null", interpreter1.interpret("getEnv ENV_2", context1).message().get(0).getData());
+    assertEquals("VALUE_1", interpreter1.interpret("getEnv ENV_1", context1).message().get(0).getData());
+    assertEquals("null", interpreter1.interpret("getEnv ENV_2", context1).message().get(0).getData());
 
-    assertEquals(
-        "value_1",
-        interpreter1.interpret("getProperty property_1", context1).message().get(0).getData());
-    assertEquals(
-        "null",
-        interpreter1
-            .interpret("getProperty not_existed_property", context1)
-            .message()
-            .get(0)
-            .getData());
+    assertEquals("value_1", interpreter1.interpret("getProperty property_1", context1).message().get(0).getData());
+    assertEquals("null", interpreter1.interpret("getProperty not_existed_property", context1).message().get(0).getData());
   }
 
   @Test
   public void testConvertDynamicForms() throws InterpreterException {
     GUI gui = new GUI();
     OptionInput.ParamOption[] paramOptions = {
-      new OptionInput.ParamOption("value1", "param1"),
-      new OptionInput.ParamOption("value2", "param2")
+        new OptionInput.ParamOption("value1", "param1"),
+        new OptionInput.ParamOption("value2", "param2")
     };
     List<Object> defaultValues = new ArrayList();
     defaultValues.add("default1");
@@ -417,4 +388,5 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     interpreter.interpret("text", context);
     assertArrayEquals(expected.values().toArray(), gui.getForms().values().toArray());
   }
+
 }

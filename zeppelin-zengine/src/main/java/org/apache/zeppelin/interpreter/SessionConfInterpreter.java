@@ -17,24 +17,24 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.List;
-import java.util.Properties;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.List;
+import java.util.Properties;
+
 public class SessionConfInterpreter extends ConfInterpreter {
 
   private static Logger LOGGER = LoggerFactory.getLogger(SessionConfInterpreter.class);
 
-  public SessionConfInterpreter(
-      Properties properties,
-      String sessionId,
-      String interpreterGroupId,
-      InterpreterSetting interpreterSetting) {
+  public SessionConfInterpreter(Properties properties,
+                                String sessionId,
+                                String interpreterGroupId,
+                                InterpreterSetting interpreterSetting) {
     super(properties, sessionId, interpreterGroupId, interpreterSetting);
   }
 
@@ -56,8 +56,7 @@ public class SessionConfInterpreter extends ConfInterpreter {
         if (intp instanceof RemoteInterpreter) {
           RemoteInterpreter remoteInterpreter = (RemoteInterpreter) intp;
           if (remoteInterpreter.isOpened()) {
-            return new InterpreterResult(
-                InterpreterResult.Code.ERROR,
+            return new InterpreterResult(InterpreterResult.Code.ERROR,
                 "Can not change interpreter session properties after this session is started");
           }
           remoteInterpreter.setProperties(finalProperties);

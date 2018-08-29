@@ -17,10 +17,15 @@
 
 package org.apache.zeppelin.interpreter;
 
-/** General Exception for interpreters. */
+
+/**
+ * General Exception for interpreters.
+ *
+ */
 public class InterpreterException extends Exception {
 
-  public InterpreterException() {}
+  public InterpreterException() {
+  }
 
   public InterpreterException(Throwable e) {
     super(e);
@@ -34,8 +39,8 @@ public class InterpreterException extends Exception {
     super(msg, t);
   }
 
-  public InterpreterException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public InterpreterException(String message, Throwable cause, boolean enableSuppression,
+                       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 }

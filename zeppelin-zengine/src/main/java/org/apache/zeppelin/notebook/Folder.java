@@ -18,14 +18,16 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.collect.Sets;
-import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+
 /**
- * Represents a folder of Notebook. ID of the folder is a normalized path of it. 'normalized path'
- * means the path that removed '/' from the beginning and the end of the path. e.g. "a/b/c", but not
- * "/a/b/c", "a/b/c/" or "/a/b/c/". One exception can be the root folder, which is '/'.
+ * Represents a folder of Notebook. ID of the folder is a normalized path of it.
+ * 'normalized path' means the path that removed '/' from the beginning and the end of the path.
+ * e.g. "a/b/c", but not "/a/b/c", "a/b/c/" or "/a/b/c/".
+ * One exception can be the root folder, which is '/'.
  */
 public class Folder {
   public static final String ROOT_FOLDER_ID = "/";
@@ -53,12 +55,13 @@ public class Folder {
   }
 
   public String getName() {
-    if (isRoot()) return ROOT_FOLDER_ID;
+    if (isRoot())
+      return ROOT_FOLDER_ID;
 
     String path = getId();
 
     int lastSlashIndex = path.lastIndexOf("/");
-    if (lastSlashIndex < 0) { // This folder is under the root
+    if (lastSlashIndex < 0) {   // This folder is under the root
       return path;
     }
 
@@ -66,7 +69,8 @@ public class Folder {
   }
 
   public String getParentFolderId() {
-    if (isRoot()) return ROOT_FOLDER_ID;
+    if (isRoot())
+      return ROOT_FOLDER_ID;
 
     int lastSlashIndex = getId().lastIndexOf("/");
     // The root folder
@@ -105,8 +109,8 @@ public class Folder {
    * @param newId
    */
   public void rename(String newId) {
-    if (isRoot()) // root folder cannot be renamed
-    return;
+    if (isRoot())   // root folder cannot be renamed
+      return;
 
     String oldId = getId();
     id = normalizeFolderId(newId);
@@ -168,7 +172,7 @@ public class Folder {
 
   public void addChild(Folder child) {
     if (child == this) // prevent the root folder from setting itself as child
-    return;
+      return;
     children.put(child.getId(), child);
   }
 
@@ -213,8 +217,8 @@ public class Folder {
     return notes;
   }
 
-  public List<Note> getNotesRecursively(
-      Set<String> userAndRoles, NotebookAuthorization notebookAuthorization) {
+  public List<Note> getNotesRecursively(Set<String> userAndRoles,
+      NotebookAuthorization notebookAuthorization) {
     final Set<String> entities = Sets.newHashSet();
     if (userAndRoles != null) {
       entities.addAll(userAndRoles);
@@ -245,7 +249,8 @@ public class Folder {
   }
 
   public boolean isTrash() {
-    if (isRoot()) return false;
+    if (isRoot())
+      return false;
 
     return getId().split("/")[0].equals(TRASH_FOLDER_ID);
   }

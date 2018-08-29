@@ -20,25 +20,25 @@ package org.apache.zeppelin.java;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** Java interpreter utility methods */
+/**
+ * Java interpreter utility methods
+ */
 public class JavaInterpreterUtils {
 
   /**
    * Convert a map to %table display system to leverage Zeppelin's built in visualization
-   *
    * @param keyName Key column name
    * @param valueName Value column name
    * @param rows Map of keys and values
    * @return Zeppelin %table
    */
-  public static String displayTableFromSimpleMap(String keyName, String valueName, Map<?, ?> rows) {
+  public static String displayTableFromSimpleMap(String keyName, String valueName, Map<?, ?> rows){
     String table = "%table\n";
     table += keyName + "\t" + valueName + "\n";
-    table +=
-        rows.entrySet()
-            .stream()
+    table += rows.entrySet().stream()
             .map(e -> e.getKey() + "\t" + e.getValue())
             .collect(Collectors.joining("\n"));
     return table;
   }
+
 }

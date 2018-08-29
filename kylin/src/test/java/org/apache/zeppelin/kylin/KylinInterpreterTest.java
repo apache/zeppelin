@@ -19,12 +19,6 @@ package org.apache.zeppelin.kylin;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Locale;
-import java.util.Properties;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -32,10 +26,18 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.AbstractHttpMessage;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Locale;
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class KylinInterpreterTest {
   static final Properties KYLIN_PROPERTIES = new Properties();
@@ -54,54 +56,38 @@ public class KylinInterpreterTest {
   @Test
   public void testWithDefault() {
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
-    InterpreterResult result =
-        t.interpret(
-            "select a.date,sum(b.measure) as measure from kylin_fact_table a "
-                + "inner join kylin_lookup_table b on a.date=b.date group by a.date",
-            null);
-    assertEquals(
-        "default",
-        t.getProject(
-            "select a.date,sum(b.measure) as measure "
-                + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
-                + "group by a.date"));
+    InterpreterResult result = t.interpret(
+        "select a.date,sum(b.measure) as measure from kylin_fact_table a " +
+            "inner join kylin_lookup_table b on a.date=b.date group by a.date", null);
+    assertEquals("default", t.getProject("select a.date,sum(b.measure) as measure "
+            + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+            + "group by a.date"));
     assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
   }
 
   @Test
   public void testWithProject() {
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
-    assertEquals(
-        "project2",
-        t.getProject(
-            "(project2)\n select a.date,sum(b.measure) "
-                + "as measure from kylin_fact_table a inner join kylin_lookup_table b on "
-                + "a.date=b.date group by a.date"));
-    assertEquals(
-        "",
-        t.getProject(
-            "()\n select a.date,sum(b.measure) as measure "
-                + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
-                + "group by a.date"));
-    assertEquals(
-        "\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+    assertEquals("project2", t.getProject("(project2)\n select a.date,sum(b.measure) "
+            + "as measure from kylin_fact_table a inner join kylin_lookup_table b on "
+            + "a.date=b.date group by a.date"));
+    assertEquals("", t.getProject("()\n select a.date,sum(b.measure) as measure "
+            + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+            + "group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
             + "inner join kylin_lookup_table b on a.date=b.date group by a.date",
-        t.getSQL(
-            "(project2)\n select a.date,sum(b.measure) as measure "
-                + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
-                + "group by a.date"));
-    assertEquals(
-        "\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+            t.getSQL("(project2)\n select a.date,sum(b.measure) as measure "
+                    + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+                    + "group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
             + "inner join kylin_lookup_table b on a.date=b.date group by a.date",
-        t.getSQL(
-            "()\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
-                + "inner join kylin_lookup_table b on a.date=b.date group by a.date"));
+            t.getSQL("()\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+                    + "inner join kylin_lookup_table b on a.date=b.date group by a.date"));
   }
 
   @Test
   public void testParseResult() {
-    String msg =
-        "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
             + "\"name\":\"COUNTRY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
             + "\"tableName\":\"SALES_TABLE\",\"precision\":256,\"scale\":0,\"columnType\":12,"
             + "\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
@@ -123,12 +109,11 @@ public class KylinInterpreterTest {
             + "\"isException\":false,\"exceptionMessage\":null,\"duration\":134,"
             + "\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
             + "\"partial\":false}";
-    String expected =
-        "%table COUNTRY \tCURRENCY \tCOUNT__ \t \n"
-            + "AMERICA \tUSD \tnull \t \n"
-            + "null \tRMB \t0 \t \n"
-            + "KOR \tnull \t100 \t \n"
-            + "\\\"abc\\\" \ta,b,c \t-1 \t \n";
+    String expected = "%table COUNTRY \tCURRENCY \tCOUNT__ \t \n" +
+            "AMERICA \tUSD \tnull \t \n" +
+            "null \tRMB \t0 \t \n" +
+            "KOR \tnull \t100 \t \n" +
+            "\\\"abc\\\" \ta,b,c \t-1 \t \n";
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     String actual = t.formatResult(msg);
     Assert.assertEquals(expected, actual);
@@ -136,8 +121,7 @@ public class KylinInterpreterTest {
 
   @Test
   public void testParseEmptyResult() {
-    String msg =
-        "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
             + "\"name\":\"COUNTRY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
             + "\"tableName\":\"SALES_TABLE\",\"precision\":256,\"scale\":0,\"columnType\":12,"
             + "\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
@@ -154,8 +138,7 @@ public class KylinInterpreterTest {
             + "\"columnType\":-5,\"columnTypeName\":\"BIGINT\",\"writable\":false,"
             + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
             + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],"
-            + "\"results\":[],"
-            + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,"
+            + "\"results\":[]," + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,"
             + "\"isException\":false,\"exceptionMessage\":null,\"duration\":134,"
             + "\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
             + "\"partial\":false}";
@@ -190,32 +173,37 @@ class MockKylinInterpreter extends KylinInterpreter {
   }
 }
 
-class MockHttpClient {
-  public MockHttpResponse execute(HttpPost post) {
+class MockHttpClient{
+  public MockHttpResponse execute(HttpPost post){
     return new MockHttpResponse();
   }
 }
 
-class MockHttpResponse extends AbstractHttpMessage implements HttpResponse {
+class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
   @Override
   public StatusLine getStatusLine() {
     return new MockStatusLine();
   }
 
   @Override
-  public void setStatusLine(StatusLine statusLine) {}
+  public void setStatusLine(StatusLine statusLine) {
+  }
 
   @Override
-  public void setStatusLine(ProtocolVersion protocolVersion, int i) {}
+  public void setStatusLine(ProtocolVersion protocolVersion, int i) {
+  }
 
   @Override
-  public void setStatusLine(ProtocolVersion protocolVersion, int i, String s) {}
+  public void setStatusLine(ProtocolVersion protocolVersion, int i, String s) {
+  }
 
   @Override
-  public void setStatusCode(int i) throws IllegalStateException {}
+  public void setStatusCode(int i) throws IllegalStateException {
+  }
 
   @Override
-  public void setReasonPhrase(String s) throws IllegalStateException {}
+  public void setReasonPhrase(String s) throws IllegalStateException {
+  }
 
   @Override
   public HttpEntity getEntity() {
@@ -223,7 +211,8 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse {
   }
 
   @Override
-  public void setEntity(HttpEntity httpEntity) {}
+  public void setEntity(HttpEntity httpEntity) {
+  }
 
   @Override
   public Locale getLocale() {
@@ -231,7 +220,8 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse {
   }
 
   @Override
-  public void setLocale(Locale locale) {}
+  public void setLocale(Locale locale) {
+  }
 
   @Override
   public ProtocolVersion getProtocolVersion() {
@@ -239,7 +229,7 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse {
   }
 }
 
-class MockStatusLine implements StatusLine {
+class MockStatusLine implements StatusLine{
   @Override
   public ProtocolVersion getProtocolVersion() {
     return null;
@@ -256,7 +246,7 @@ class MockStatusLine implements StatusLine {
   }
 }
 
-class MockEntity implements HttpEntity {
+class MockEntity implements HttpEntity{
   @Override
   public boolean isRepeatable() {
     return false;
@@ -284,16 +274,15 @@ class MockEntity implements HttpEntity {
 
   @Override
   public InputStream getContent() throws IOException, IllegalStateException {
-    return new ByteArrayInputStream(
-        ("{\"columnMetas\":"
-                + "[{\"label\":\"PART_DT\"},{\"label\":\"measure\"}],"
-                + "\"results\":[[\"2012-01-03\",\"917.4138\"],"
-                + "[\"2012-05-06\",\"592.4823\"]]}")
-            .getBytes());
+    return new ByteArrayInputStream(("{\"columnMetas\":" +
+        "[{\"label\":\"PART_DT\"},{\"label\":\"measure\"}]," +
+        "\"results\":[[\"2012-01-03\",\"917.4138\"]," +
+        "[\"2012-05-06\",\"592.4823\"]]}").getBytes());
   }
 
   @Override
-  public void writeTo(OutputStream outputStream) throws IOException {}
+  public void writeTo(OutputStream outputStream) throws IOException {
+  }
 
   @Override
   public boolean isStreaming() {
@@ -301,5 +290,6 @@ class MockEntity implements HttpEntity {
   }
 
   @Override
-  public void consumeContent() throws IOException {}
+  public void consumeContent() throws IOException {
+  }
 }

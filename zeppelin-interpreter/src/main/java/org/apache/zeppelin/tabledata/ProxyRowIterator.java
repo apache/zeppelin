@@ -16,10 +16,13 @@
  */
 package org.apache.zeppelin.tabledata;
 
-import java.util.Iterator;
 import org.apache.zeppelin.resource.Resource;
 
-/** Proxy row iterator */
+import java.util.Iterator;
+
+/**
+ * Proxy row iterator
+ */
 public class ProxyRowIterator implements Iterator<Row> {
 
   private final Resource rows;

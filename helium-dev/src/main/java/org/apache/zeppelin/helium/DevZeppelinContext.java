@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.helium;
 
-import java.util.List;
-import java.util.Map;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
-/** ZeppelinContext for DevInterpreter */
+import java.util.List;
+import java.util.Map;
+
+/**
+ * ZeppelinContext for DevInterpreter
+ */
 public class DevZeppelinContext extends BaseZeppelinContext {
   public DevZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);

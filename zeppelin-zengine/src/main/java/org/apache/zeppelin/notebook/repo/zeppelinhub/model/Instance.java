@@ -16,7 +16,10 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.model;
 
-/** ZeppelinHub Instance structure. */
+/**
+ * ZeppelinHub Instance structure.
+ *
+ */
 public class Instance {
   public int id;
   public String name;

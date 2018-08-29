@@ -17,54 +17,37 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.junit.Test;
 
 public class InterpreterFactoryTest extends AbstractInterpreterTest {
 
   @Test
   public void testGetFactory() throws InterpreterException {
 
-    assertTrue(
-        interpreterFactory.getInterpreter("user1", "note1", "", "test")
-            instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "", "test") instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "", "test");
     // EchoInterpreter is the default interpreter because test is the default interpreter group
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(
-        interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test")
-            instanceof RemoteInterpreter);
-    remoteInterpreter =
-        (RemoteInterpreter)
-            interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test");
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(
-        interpreterFactory.getInterpreter("user1", "note1", "test", "test")
-            instanceof RemoteInterpreter);
-    remoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test", "test");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(
-        interpreterFactory.getInterpreter("user1", "note1", "test2", "test")
-            instanceof RemoteInterpreter);
-    remoteInterpreter =
-        (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2", "test");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(
-        interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test")
-            instanceof RemoteInterpreter);
-    remoteInterpreter =
-        (RemoteInterpreter)
-            interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test");
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
   }
 

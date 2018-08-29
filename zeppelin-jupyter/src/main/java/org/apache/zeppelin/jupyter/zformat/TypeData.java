@@ -18,7 +18,9 @@ package org.apache.zeppelin.jupyter.zformat;
 
 import com.google.gson.annotations.SerializedName;
 
-/** */
+/**
+ *
+ */
 public class TypeData {
   public static final String TABLE = "TABLE";
   public static final String HTML = "HTML";

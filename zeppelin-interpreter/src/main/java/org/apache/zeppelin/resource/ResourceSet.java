@@ -17,12 +17,15 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
+import org.apache.zeppelin.common.JsonSerializable;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
-import org.apache.zeppelin.common.JsonSerializable;
 
-/** List of resources */
+/**
+ * List of resources
+ */
 public class ResourceSet extends LinkedList<Resource> implements JsonSerializable {
 
   private static final Gson gson = new Gson();

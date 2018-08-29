@@ -18,20 +18,6 @@
 package org.apache.zeppelin.sap.universe;
 
 import com.sun.org.apache.xpath.internal.NodeSet;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.http.Header;
@@ -52,7 +38,24 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-/** Client for API SAP Universe */
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Client for API  SAP Universe
+ */
 public class UniverseClient {
 
   private static Logger logger = LoggerFactory.getLogger(UniverseClient.class);
@@ -73,7 +76,8 @@ public class UniverseClient {
   private String apiUrl;
   private String authType;
   private Header[] commonHeaders = {
-    new BasicHeader("Accept", "application/xml"), new BasicHeader("Content-Type", "application/xml")
+    new BasicHeader("Accept", "application/xml"),
+    new BasicHeader("Content-Type", "application/xml")
   };
   // <name, id>
   private final Map<String, UniverseInfo> universesMap = new ConcurrentHashMap();
@@ -83,55 +87,53 @@ public class UniverseClient {
   private long universesUpdated = 0;
   private Map<String, Long> universesInfoUpdatedMap = new HashMap<>();
 
-  private final String loginRequestTemplate =
-      "<attrs xmlns=\"http://www.sap.com/rws/bip\">\n"
-          + "<attr name=\"userName\" type=\"string\">%s</attr>\n"
-          + "<attr name=\"password\" type=\"string\">%s</attr>\n"
-          + "<attr name=\"auth\" type=\"string\" "
-          + "possibilities=\"secEnterprise,secLDAP,secWinAD,secSAPR3\">%s</attr>\n"
-          + "</attrs>";
+  private final String loginRequestTemplate = "<attrs xmlns=\"http://www.sap.com/rws/bip\">\n"
+      + "<attr name=\"userName\" type=\"string\">%s</attr>\n"
+      + "<attr name=\"password\" type=\"string\">%s</attr>\n"
+      + "<attr name=\"auth\" type=\"string\" "
+      + "possibilities=\"secEnterprise,secLDAP,secWinAD,secSAPR3\">%s</attr>\n" + "</attrs>";
   private final String createQueryRequestTemplate =
-      "<query xmlns=\"http://www.sap.com/rws/sl/universe\" dataSourceType=\"%s\" "
-          + "dataSourceId=\"%s\">\n"
-          + "<querySpecification version=\"1.0\">\n"
-          + "   <queryOptions>\n"
-          + "            <queryOption name=\"duplicatedRows\" value=\"%s\"/>\n"
-          + "            <queryOption name=\"maxRowsRetrieved\" activated=\"%s\" value=\"%d\"/>\n"
-          + "  </queryOptions>"
-          + "  <queryData>\n%s\n"
-          + "     %s\n"
-          + "  </queryData>\n"
-          + "</querySpecification>\n"
-          + "</query>\n";
+      "<query xmlns=\"http://www.sap.com/rws/sl/universe\" dataSourceType=\"%s\" " +
+          "dataSourceId=\"%s\">\n" +
+          "<querySpecification version=\"1.0\">\n" +
+          "   <queryOptions>\n" +
+          "            <queryOption name=\"duplicatedRows\" value=\"%s\"/>\n" +
+          "            <queryOption name=\"maxRowsRetrieved\" activated=\"%s\" value=\"%d\"/>\n" +
+          "  </queryOptions>" +
+          "  <queryData>\n%s\n" +
+          "     %s\n" +
+          "  </queryData>\n" +
+          "</querySpecification>\n" +
+          "</query>\n";
   private final String filterPartTemplate = "<filterPart>%s\n</filterPart>";
   private final String errorMessageTemplate = "%s\n\n%s";
-  private final String parameterTemplate =
-      "<parameter type=\"prompt\">\n" + "%s\n" + "%s\n" + "%s\n" + "%s\n" + "</parameter>\n";
-  private final String parameterAnswerTemplate =
-      "<answer constrained=\"%s\" type=\"%s\">\n"
-          + "            <info cardinality=\"%s\" keepLastValues=\"%s\"></info>\n"
-          + "               <values>\n"
-          + "     "
-          + "                 <value>%s</value>\n"
-          + "              </values>\n"
-          + "        </answer>\n";
+  private final String parameterTemplate = "<parameter type=\"prompt\">\n" +
+      "%s\n" +
+      "%s\n" +
+      "%s\n" +
+      "%s\n" +
+      "</parameter>\n";
+  private final String parameterAnswerTemplate = "<answer constrained=\"%s\" type=\"%s\">\n" +
+      "            <info cardinality=\"%s\" keepLastValues=\"%s\"></info>\n" +
+      "               <values>\n" + "     " +
+      "                 <value>%s</value>\n" +
+      "              </values>\n" +
+      "        </answer>\n";
 
-  public UniverseClient(
-      String user, String password, String apiUrl, String authType, int queryTimeout) {
-    RequestConfig requestConfig =
-        RequestConfig.custom()
-            .setConnectTimeout(queryTimeout)
-            .setSocketTimeout(queryTimeout)
-            .build();
+  public UniverseClient(String user, String password, String apiUrl, String authType,
+                        int queryTimeout) {
+    RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectTimeout(queryTimeout)
+        .setSocketTimeout(queryTimeout)
+        .build();
     PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     cm.setMaxTotal(100);
     cm.setDefaultMaxPerRoute(100);
     cm.closeIdleConnections(10, TimeUnit.MINUTES);
-    httpClient =
-        HttpClientBuilder.create()
-            .setConnectionManager(cm)
-            .setDefaultRequestConfig(requestConfig)
-            .build();
+    httpClient = HttpClientBuilder.create()
+        .setConnectionManager(cm)
+        .setDefaultRequestConfig(requestConfig)
+        .build();
 
     this.user = user;
     this.password = password;
@@ -148,98 +150,68 @@ public class UniverseClient {
     try {
       httpClient.close();
     } catch (Exception e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(close all): Error close HTTP client",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient " +
+          "(close all): Error close HTTP client", ExceptionUtils.getStackTrace(e)));
     }
+
   }
 
   public String createQuery(String token, UniverseQuery query) throws UniverseException {
     try {
       HttpPost httpPost = new HttpPost(String.format("%s%s", apiUrl, "/sl/v1/queries"));
       setHeaders(httpPost, token);
-      String where =
-          StringUtils.isNotBlank(query.getWhere())
-              ? String.format(filterPartTemplate, query.getWhere())
-              : StringUtils.EMPTY;
-      httpPost.setEntity(
-          new StringEntity(
-              String.format(
-                  createQueryRequestTemplate,
-                  query.getUniverseInfo().getType(),
-                  query.getUniverseInfo().getId(),
-                  query.getDuplicatedRows(),
-                  query.getMaxRowsRetrieved().isPresent(),
-                  query.getMaxRowsRetrieved().orElse(0),
-                  query.getSelect(),
-                  where),
-              "UTF-8"));
+      String where = StringUtils.isNotBlank(query.getWhere()) ?
+          String.format(filterPartTemplate, query.getWhere()) : StringUtils.EMPTY;
+      httpPost.setEntity(new StringEntity(
+          String.format(createQueryRequestTemplate, query.getUniverseInfo().getType(),
+              query.getUniverseInfo().getId(), query.getDuplicatedRows(),
+              query.getMaxRowsRetrieved().isPresent(), query.getMaxRowsRetrieved().orElse(0),
+              query.getSelect(), where), "UTF-8"));
       HttpResponse response = httpClient.execute(httpPost);
 
       if (response.getStatusLine().getStatusCode() == 200) {
         return getValue(EntityUtils.toString(response.getEntity()), "//success/id");
       }
 
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(create query): Request failed\n",
-              EntityUtils.toString(response.getEntity())));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(create query): Request failed\n", EntityUtils.toString(response.getEntity())));
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(create query): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(create query): Request failed", ExceptionUtils.getStackTrace(e)));
     } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(create query): Response processing failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(create query): Response processing failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
   public void deleteQuery(String token, String queryId) throws UniverseException {
     try {
       if (StringUtils.isNotBlank(queryId)) {
-        HttpDelete httpDelete =
-            new HttpDelete(String.format("%s%s%s", apiUrl, "/sl/v1/queries/", queryId));
+        HttpDelete httpDelete = new HttpDelete(String.format("%s%s%s", apiUrl, "/sl/v1/queries/",
+            queryId));
         setHeaders(httpDelete, token);
         httpClient.execute(httpDelete);
       }
     } catch (Exception e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(delete query): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient " +
+          "(delete query): Request failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
   public List<List<String>> getResults(String token, String queryId) throws UniverseException {
-    HttpGet httpGet =
-        new HttpGet(
-            String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/", queryId, "/data.svc/Flows0"));
+    HttpGet httpGet = new HttpGet(String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/",
+        queryId, "/data.svc/Flows0"));
     setHeaders(httpGet, token);
     HttpResponse response = null;
     try {
       response = httpClient.execute(httpGet);
       if (response.getStatusLine().getStatusCode() != 200) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get results): Request failed\n",
-                EntityUtils.toString(response.getEntity())));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get results): Request failed\n", EntityUtils.toString(response.getEntity())));
       }
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get results): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient " +
+          "(get results): Request failed", ExceptionUtils.getStackTrace(e)));
     }
 
     try (InputStream xmlStream = response.getEntity().getContent()) {
@@ -253,23 +225,15 @@ public class UniverseClient {
       if (resultsNodes != null) {
         return parseResults(resultsNodes);
       } else {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get results): Response processing failed"));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get results): Response processing failed"));
       }
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get results): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get results): Request failed", ExceptionUtils.getStackTrace(e)));
     } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get results): Response processing failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get results): Response processing failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
@@ -281,31 +245,23 @@ public class UniverseClient {
       HttpPost httpPost = new HttpPost(String.format("%s%s", apiUrl, "/logon/long"));
       setHeaders(httpPost);
 
-      httpPost.setEntity(
-          new StringEntity(String.format(loginRequestTemplate, user, password, authType), "UTF-8"));
+      httpPost.setEntity(new StringEntity(
+          String.format(loginRequestTemplate, user, password, authType), "UTF-8"));
       HttpResponse response = httpClient.execute(httpPost);
       String result = null;
       if (response.getStatusLine().getStatusCode() == 200) {
-        result =
-            getValue(
-                EntityUtils.toString(response.getEntity()),
-                "//content/attrs/attr[@name=\"logonToken\"]");
+        result = getValue(EntityUtils.toString(response.getEntity()),
+            "//content/attrs/attr[@name=\"logonToken\"]");
         tokens.put(paragraphId, result);
       }
 
       return result;
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get token): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get token): Request failed", ExceptionUtils.getStackTrace(e)));
     } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get token): Response processing failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get token): Response processing failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
@@ -322,11 +278,8 @@ public class UniverseClient {
 
       return false;
     } catch (Exception e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(close session): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(close session): Request failed", ExceptionUtils.getStackTrace(e)));
     } finally {
       tokens.remove(paragraphId);
     }
@@ -341,9 +294,8 @@ public class UniverseClient {
     UniverseInfo universeInfo = universesMap.get(universeName);
     if (universeInfo != null && StringUtils.isNotBlank(universeInfo.getId())) {
       Map<String, UniverseNodeInfo> universeNodeInfoMap = universeInfosMap.get(universeName);
-      if (universeNodeInfoMap != null
-          && universesInfoUpdatedMap.containsKey(universeName)
-          && !isExpired(universesInfoUpdatedMap.get(universeName))) {
+      if (universeNodeInfoMap != null && universesInfoUpdatedMap.containsKey(universeName) &&
+          !isExpired(universesInfoUpdatedMap.get(universeName))) {
         return universeNodeInfoMap;
       } else {
         universeNodeInfoMap = new HashMap<>();
@@ -373,19 +325,14 @@ public class UniverseClient {
               parseUniverseInfo(universeRootInfoNodes, universeNodeInfoMap);
             }
           } catch (Exception e) {
-            throw new UniverseException(
-                String.format(
-                    errorMessageTemplate,
-                    "UniverseClient " + "(get universe nodes info): Response processing failed",
-                    ExceptionUtils.getStackTrace(e)));
+            throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+                    + "(get universe nodes info): Response processing failed",
+                ExceptionUtils.getStackTrace(e)));
           }
         }
       } catch (IOException e) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get universe nodes info): Request failed",
-                ExceptionUtils.getStackTrace(e)));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get universe nodes info): Request failed", ExceptionUtils.getStackTrace(e)));
       }
       universeInfosMap.put(universeName, universeNodeInfoMap);
       universesInfoUpdatedMap.put(universeName, System.currentTimeMillis());
@@ -393,6 +340,7 @@ public class UniverseClient {
       return universeNodeInfoMap;
     }
     return Collections.emptyMap();
+
   }
 
   public void loadUniverses(String token) throws UniverseException {
@@ -419,25 +367,19 @@ public class UniverseClient {
 
   public List<UniverseQueryPrompt> getParameters(String token, String queryId)
       throws UniverseException {
-    HttpGet httpGet =
-        new HttpGet(String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/", queryId, "/parameters"));
+    HttpGet httpGet = new HttpGet(String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/",
+        queryId, "/parameters"));
     setHeaders(httpGet, token);
     HttpResponse response = null;
     try {
       response = httpClient.execute(httpGet);
       if (response.getStatusLine().getStatusCode() != 200) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get parameters): Request failed\n",
-                EntityUtils.toString(response.getEntity())));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get parameters): Request failed\n", EntityUtils.toString(response.getEntity())));
       }
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get parameters): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient " +
+          "(get parameters): Request failed", ExceptionUtils.getStackTrace(e)));
     }
 
     try (InputStream xmlStream = response.getEntity().getContent()) {
@@ -451,56 +393,39 @@ public class UniverseClient {
       if (parametersNodes != null) {
         return parseParameters(parametersNodes);
       } else {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get parameters): Response processing failed"));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get parameters): Response processing failed"));
       }
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get parameters): Response processing failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get parameters): Response processing failed", ExceptionUtils.getStackTrace(e)));
     } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get parameters): Response processing failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get parameters): Response processing failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
-  public void setParametersValues(
-      String token, String queryId, List<UniverseQueryPrompt> parameters) throws UniverseException {
-    HttpPut httpPut =
-        new HttpPut(String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/", queryId, "/parameters"));
+  public void setParametersValues(String token, String queryId,
+                                  List<UniverseQueryPrompt> parameters) throws UniverseException {
+    HttpPut httpPut = new HttpPut(String.format("%s%s%s%s", apiUrl, "/sl/v1/queries/",
+        queryId, "/parameters"));
     setHeaders(httpPut, token);
     HttpResponse response = null;
     try {
       StringBuilder request = new StringBuilder();
       request.append("<parameters>\n");
       for (UniverseQueryPrompt parameter : parameters) {
-        String answer =
-            String.format(
-                parameterAnswerTemplate,
-                parameter.getConstrained(),
-                parameter.getType(),
-                parameter.getCardinality(),
-                parameter.getKeepLastValues(),
-                parameter.getValue());
-        String id =
-            parameter.getId() != null
-                ? String.format("<id>%s</id>\n", parameter.getId())
-                : StringUtils.EMPTY;
-        String technicalName =
-            parameter.getTechnicalName() != null
-                ? String.format("<technicalName>%s</technicalName>\n", parameter.getTechnicalName())
-                : StringUtils.EMPTY;
-        String name =
-            parameter.getTechnicalName() != null
-                ? String.format("<name>%s</name>\n", parameter.getName())
-                : StringUtils.EMPTY;
+        String answer = String.format(parameterAnswerTemplate, parameter.getConstrained(),
+            parameter.getType(), parameter.getCardinality(), parameter.getKeepLastValues(),
+            parameter.getValue());
+        String id = parameter.getId() != null ? String.format("<id>%s</id>\n", parameter.getId()) :
+            StringUtils.EMPTY;
+        String technicalName = parameter.getTechnicalName() != null ?
+            String.format("<technicalName>%s</technicalName>\n", parameter.getTechnicalName()) :
+            StringUtils.EMPTY;
+        String name = parameter.getTechnicalName() != null ?
+            String.format("<name>%s</name>\n", parameter.getName()) :
+            StringUtils.EMPTY;
         request.append(String.format(parameterTemplate, id, technicalName, name, answer));
       }
       request.append("</parameters>\n");
@@ -509,37 +434,28 @@ public class UniverseClient {
 
       response = httpClient.execute(httpPut);
       if (response.getStatusLine().getStatusCode() != 200) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(set parameters): Request failed\n",
-                EntityUtils.toString(response.getEntity())));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(set parameters): Request failed\n", EntityUtils.toString(response.getEntity())));
       }
     } catch (IOException e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(set parameters): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient " +
+          "(set parameters): Request failed", ExceptionUtils.getStackTrace(e)));
     }
   }
 
   private void loadUniverses(String token, int offset, Map<String, UniverseInfo> universesMap)
       throws UniverseException {
     int limit = 50;
-    HttpGet httpGet =
-        new HttpGet(
-            String.format("%s%s?offset=%s&limit=%s", apiUrl, "/sl/v1/universes", offset, limit));
+    HttpGet httpGet = new HttpGet(String.format("%s%s?offset=%s&limit=%s", apiUrl,
+        "/sl/v1/universes",
+        offset, limit));
     setHeaders(httpGet, token);
     HttpResponse response = null;
     try {
       response = httpClient.execute(httpGet);
     } catch (Exception e) {
-      throw new UniverseException(
-          String.format(
-              errorMessageTemplate,
-              "UniverseClient " + "(get universes): Request failed",
-              ExceptionUtils.getStackTrace(e)));
+      throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+          + "(get universes): Request failed", ExceptionUtils.getStackTrace(e)));
     }
     if (response != null && response.getStatusLine().getStatusCode() == 200) {
       try (InputStream xmlStream = response.getEntity().getContent()) {
@@ -590,17 +506,11 @@ public class UniverseClient {
           }
         }
       } catch (IOException e) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get universes): Response processing failed",
-                ExceptionUtils.getStackTrace(e)));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get universes): Response processing failed", ExceptionUtils.getStackTrace(e)));
       } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
-        throw new UniverseException(
-            String.format(
-                errorMessageTemplate,
-                "UniverseClient " + "(get universes): Response processing failed",
-                ExceptionUtils.getStackTrace(e)));
+        throw new UniverseException(String.format(errorMessageTemplate, "UniverseClient "
+            + "(get universes): Response processing failed", ExceptionUtils.getStackTrace(e)));
       }
     }
   }
@@ -624,8 +534,8 @@ public class UniverseClient {
     }
   }
 
-  private String getValue(String response, String xPathString)
-      throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+  private String getValue(String response, String xPathString) throws ParserConfigurationException,
+      IOException, SAXException, XPathExpressionException {
     try (InputStream xmlStream = new ByteArrayInputStream(response.getBytes())) {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
@@ -648,9 +558,8 @@ public class UniverseClient {
       for (int i = 0; i < count; i++) {
         Node parameterNode = parametersNodeList.item(i);
         Node type = parameterNode.getAttributes().getNamedItem("type");
-        if (type != null
-            && type.getTextContent().equalsIgnoreCase("prompt")
-            && parameterNode.hasChildNodes()) {
+        if (type != null && type.getTextContent().equalsIgnoreCase("prompt") &&
+            parameterNode.hasChildNodes()) {
           NodeList parameterInfoNodes = parameterNode.getChildNodes();
           int childNodesCount = parameterInfoNodes.getLength();
           String name = null;
@@ -703,9 +612,8 @@ public class UniverseClient {
             }
           }
           if (name != null && id != null && cardinality != null) {
-            parameters.add(
-                new UniverseQueryPrompt(
-                    id, name, cardinality, constrained, valueType, technicalName, keepLastValues));
+            parameters.add(new UniverseQueryPrompt(id, name, cardinality, constrained, valueType,
+                technicalName, keepLastValues));
             break;
           }
         }
@@ -797,8 +705,8 @@ public class UniverseClient {
           key.append("[");
           key.append(StringUtils.join(path, "].["));
           key.append(String.format("].[%s]", nodeName));
-          nodes.put(
-              key.toString(), new UniverseNodeInfo(nodeId, nodeName, nodeType, folder, nodePath));
+          nodes.put(key.toString(),
+              new UniverseNodeInfo(nodeId, nodeName, nodeType, folder, nodePath));
         }
       }
     }
@@ -880,8 +788,7 @@ public class UniverseClient {
                   key.append(String.format("].[%s]", nodeName));
                 }
               }
-              nodes.put(
-                  key.toString(),
+              nodes.put(key.toString(),
                   new UniverseNodeInfo(nodeId, nodeName, nodeType, folder, nodePath));
             }
           }

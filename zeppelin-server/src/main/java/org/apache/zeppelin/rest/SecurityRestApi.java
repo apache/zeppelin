@@ -17,18 +17,6 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -38,7 +26,22 @@ import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Zeppelin security rest api endpoint. */
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Zeppelin security rest api endpoint.
+ */
 @Path("/security")
 @Produces("application/json")
 public class SecurityRestApi {
@@ -46,8 +49,10 @@ public class SecurityRestApi {
   private static final Gson gson = new Gson();
 
   /**
-   * Get ticket Returns username & ticket for anonymous access, username is always anonymous. After
-   * getting this ticket, access through websockets become safe
+   * Get ticket
+   * Returns username & ticket
+   * for anonymous access, username is always anonymous.
+   * After getting this ticket, access through websockets become safe
    *
    * @return 200 response
    */
@@ -80,7 +85,7 @@ public class SecurityRestApi {
   /**
    * Get userlist.
    *
-   * <p>Returns list of all user from available realms
+   * Returns list of all user from available realms
    *
    * @return 200 response
    */
@@ -96,19 +101,17 @@ public class SecurityRestApi {
     List<String> autoSuggestRoleList = new ArrayList<>();
     Collections.sort(usersList);
     Collections.sort(rolesList);
-    Collections.sort(
-        usersList,
-        new Comparator<String>() {
-          @Override
-          public int compare(String o1, String o2) {
-            if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
-              return 0;
-            } else if (o1.matches(searchText + "(.*)")) {
-              return -1;
-            }
-            return 0;
-          }
-        });
+    Collections.sort(usersList, new Comparator<String>() {
+      @Override
+      public int compare(String o1, String o2) {
+        if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
+          return 0;
+        } else if (o1.matches(searchText + "(.*)")) {
+          return -1;
+        }
+        return 0;
+      }
+    });
     int maxLength = 0;
     for (String user : usersList) {
       if (StringUtils.containsIgnoreCase(user, searchText)) {

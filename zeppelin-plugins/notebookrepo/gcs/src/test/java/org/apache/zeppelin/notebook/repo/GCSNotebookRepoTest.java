@@ -55,13 +55,12 @@ public class GCSNotebookRepoTest {
 
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(
-        new Object[][] {
-          {"bucketname", Optional.absent(), "gs://bucketname"},
-          {"bucketname-with-slash", Optional.absent(), "gs://bucketname-with-slash/"},
-          {"bucketname", Optional.of("path/to/dir"), "gs://bucketname/path/to/dir"},
-          {"bucketname", Optional.of("trailing/slash"), "gs://bucketname/trailing/slash/"}
-        });
+    return Arrays.asList(new Object[][] {
+        { "bucketname", Optional.absent(), "gs://bucketname" },
+        { "bucketname-with-slash", Optional.absent(), "gs://bucketname-with-slash/" },
+        { "bucketname", Optional.of("path/to/dir"), "gs://bucketname/path/to/dir" },
+        { "bucketname", Optional.of("trailing/slash"), "gs://bucketname/trailing/slash/" }
+    });
   }
 
   @Parameter(0)
@@ -124,8 +123,7 @@ public class GCSNotebookRepoTest {
     try {
       notebookRepo.get("id", AUTH_INFO);
       fail();
-    } catch (IOException e) {
-    }
+    } catch (IOException e) {}
   }
 
   @Test
@@ -147,8 +145,7 @@ public class GCSNotebookRepoTest {
     try {
       notebookRepo.get("id", AUTH_INFO);
       fail();
-    } catch (IOException e) {
-    }
+    } catch (IOException e) {}
   }
 
   @Test
@@ -174,8 +171,7 @@ public class GCSNotebookRepoTest {
     try {
       notebookRepo.remove("id", AUTH_INFO);
       fail();
-    } catch (IOException e) {
-    }
+    } catch (IOException e) {}
   }
 
   @Test
@@ -204,14 +200,16 @@ public class GCSNotebookRepoTest {
   }
 
   private void create(Note note) throws IOException {
-    BlobInfo info =
-        BlobInfo.newBuilder(makeBlobId(note.getId())).setContentType("application/json").build();
+    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId()))
+        .setContentType("application/json")
+        .build();
     storage.create(info, note.toJson().getBytes("UTF-8"));
   }
 
   private void createMalformed(String noteId) throws IOException {
-    BlobInfo info =
-        BlobInfo.newBuilder(makeBlobId(noteId)).setContentType("application/json").build();
+    BlobInfo info = BlobInfo.newBuilder(makeBlobId(noteId))
+        .setContentType("application/json")
+        .build();
     storage.create(info, "{ invalid-json }".getBytes("UTF-8"));
   }
 
@@ -223,8 +221,7 @@ public class GCSNotebookRepoTest {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "");
       new GCSNotebookRepo(new ZeppelinConfiguration(), storage);
       fail();
-    } catch (IOException e) {
-    }
+    } catch (IOException e) {}
   }
 
   @Test
@@ -233,7 +230,6 @@ public class GCSNotebookRepoTest {
       System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR.getVarName(), "foo");
       new GCSNotebookRepo(new ZeppelinConfiguration(), storage);
       fail();
-    } catch (IOException e) {
-    }
+    } catch (IOException e) {}
   }
 }

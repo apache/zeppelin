@@ -19,17 +19,25 @@ package org.apache.zeppelin.tabledata;
 
 import java.util.Map;
 
-/** The base network entity */
+/**
+ * The base network entity
+ *
+ */
 public abstract class GraphEntity {
 
   private long id;
 
-  /** The data of the entity */
+  /**
+   * The data of the entity
+   * 
+   */
   private Map<String, Object> data;
 
-  /** The primary type of the entity */
+  /**
+   * The primary type of the entity
+   */
   private String label;
-
+  
   public GraphEntity() {}
 
   public GraphEntity(long id, Map<String, Object> data, String label) {
@@ -62,4 +70,5 @@ public abstract class GraphEntity {
   public void setLabel(String label) {
     this.label = label;
   }
+
 }

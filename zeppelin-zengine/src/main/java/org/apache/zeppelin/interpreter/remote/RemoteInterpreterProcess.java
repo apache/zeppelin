@@ -24,14 +24,17 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Abstract class for interpreter process */
+/**
+ * Abstract class for interpreter process
+ */
 public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
 
   private GenericObjectPool<Client> clientPool;
   private int connectTimeout;
 
-  public RemoteInterpreterProcess(int connectTimeout) {
+  public RemoteInterpreterProcess(
+      int connectTimeout) {
     this.connectTimeout = connectTimeout;
   }
 
@@ -71,8 +74,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   }
 
   /**
-   * Called when angular object is updated in client side to propagate change to the remote process
-   *
+   * Called when angular object is updated in client side to propagate
+   * change to the remote process
    * @param name
    * @param o
    */
@@ -82,10 +85,8 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
       client = getClient();
     } catch (NullPointerException e) {
       // remote process not started
-      logger.info(
-          "NullPointerException in RemoteInterpreterProcess while "
-              + "updateRemoteAngularObject getClient, remote process not started",
-          e);
+      logger.info("NullPointerException in RemoteInterpreterProcess while " +
+          "updateRemoteAngularObject getClient, remote process not started", e);
       return;
     } catch (Exception e) {
       logger.error("Can't update angular object", e);
@@ -129,7 +130,10 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     return null;
   }
 
-  /** @param <T> */
+  /**
+   *
+   * @param <T>
+   */
   public interface RemoteFunction<T> {
     T call(Client client) throws Exception;
   }

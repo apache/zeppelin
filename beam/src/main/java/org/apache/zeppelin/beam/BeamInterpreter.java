@@ -17,13 +17,17 @@
 
 package org.apache.zeppelin.beam;
 
-import java.util.Properties;
 import org.apache.zeppelin.java.JavaInterpreter;
 
-/** Beam interpreter */
+import java.util.Properties;
+
+/**
+ * Beam interpreter
+ */
 public class BeamInterpreter extends JavaInterpreter {
 
   public BeamInterpreter(Properties property) {
     super(property);
   }
+
 }

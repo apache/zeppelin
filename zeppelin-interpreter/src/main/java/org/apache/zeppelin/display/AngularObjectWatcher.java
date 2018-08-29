@@ -19,7 +19,9 @@ package org.apache.zeppelin.display;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 
-/** */
+/**
+ *
+ */
 public abstract class AngularObjectWatcher {
   private InterpreterContext context;
 

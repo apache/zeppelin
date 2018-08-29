@@ -17,10 +17,13 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
-import java.util.Map;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/** To read package.json */
+import java.util.Map;
+
+/**
+ * To read package.json
+ */
 public class NpmPackage implements JsonSerializable {
   private static final Gson gson = new Gson();
 

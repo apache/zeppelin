@@ -15,19 +15,9 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -37,6 +27,20 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.junit.Test;
 import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.repository.RemoteRepository;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
 
 public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
@@ -70,12 +74,8 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals("central", repositories.get(0).getId());
 
     // Load it again
-    InterpreterSettingManager interpreterSettingManager2 =
-        new InterpreterSettingManager(
-            conf,
-            mock(AngularObjectRegistryListener.class),
-            mock(RemoteInterpreterProcessListener.class),
-            mock(ApplicationEventListener.class));
+    InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(5, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
@@ -92,6 +92,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     repositories = interpreterSettingManager2.getRepositories();
     assertEquals(2, repositories.size());
     assertEquals("central", repositories.get(0).getId());
+
   }
 
   @Test
@@ -101,18 +102,16 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     option.setPerNote("scoped");
     option.setPerUser("scoped");
     Map<String, InterpreterProperty> properties = new HashMap<>();
-    properties.put("property_4", new InterpreterProperty("property_4", "value_4"));
+    properties.put("property_4", new InterpreterProperty("property_4","value_4"));
 
     try {
-      interpreterSettingManager.createNewSetting(
-          "test2", "test", new ArrayList<Dependency>(), option, properties);
+      interpreterSettingManager.createNewSetting("test2", "test", new ArrayList<Dependency>(), option, properties);
       fail("Should fail due to interpreter already existed");
     } catch (IOException e) {
       assertTrue(e.getMessage().contains("already existed"));
     }
 
-    interpreterSettingManager.createNewSetting(
-        "test3", "test", new ArrayList<Dependency>(), option, properties);
+    interpreterSettingManager.createNewSetting("test3", "test", new ArrayList<Dependency>(), option, properties);
     assertEquals(6, interpreterSettingManager.get().size());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
@@ -133,12 +132,8 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertNotNull(interpreterSetting.getInterpreterSettingManager());
 
     // load it again, it should be saved in interpreter-setting.json. So we can restore it properly
-    InterpreterSettingManager interpreterSettingManager2 =
-        new InterpreterSettingManager(
-            conf,
-            mock(AngularObjectRegistryListener.class),
-            mock(RemoteInterpreterProcessListener.class),
-            mock(ApplicationEventListener.class));
+    InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(6, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
@@ -157,8 +152,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     newProperties.put("property_4", new InterpreterProperty("property_4", "new_value_4"));
     List<Dependency> newDependencies = new ArrayList<>();
     newDependencies.add(new Dependency("com.databricks:spark-avro_2.11:3.1.0"));
-    interpreterSettingManager.setPropertyAndRestart(
-        interpreterSetting.getId(), newOption, newProperties, newDependencies);
+    interpreterSettingManager.setPropertyAndRestart(interpreterSetting.getId(), newOption, newProperties, newDependencies);
     interpreterSetting = interpreterSettingManager.get(interpreterSetting.getId());
     assertEquals("test3", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
@@ -190,29 +184,22 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     assertEquals(5, interpreterSettingManager.get().size());
 
     // load it again
-    InterpreterSettingManager interpreterSettingManager3 =
-        new InterpreterSettingManager(
-            new ZeppelinConfiguration(),
-            mock(AngularObjectRegistryListener.class),
-            mock(RemoteInterpreterProcessListener.class),
-            mock(ApplicationEventListener.class));
+    InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(new ZeppelinConfiguration(),
+        mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
     assertEquals(5, interpreterSettingManager3.get().size());
+
   }
 
   @Test
   public void testGetEditor() throws IOException, InterpreterNotFoundException {
-    Interpreter echoInterpreter =
-        interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
+    Interpreter echoInterpreter = interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
     // get editor setting from interpreter-setting.json
-    Map<String, Object> editor =
-        interpreterSettingManager.getEditorSetting(echoInterpreter, "user1", "note1", "test.echo");
+    Map<String, Object> editor = interpreterSettingManager.getEditorSetting(echoInterpreter, "user1", "note1", "test.echo");
     assertEquals("java", editor.get("language"));
 
     // when editor setting doesn't exit, return the default editor
-    Interpreter mock1Interpreter =
-        interpreterFactory.getInterpreter("user1", "note1", "mock1", "test");
-    editor =
-        interpreterSettingManager.getEditorSetting(mock1Interpreter, "user1", "note1", "mock1");
+    Interpreter mock1Interpreter = interpreterFactory.getInterpreter("user1", "note1", "mock1", "test");
+    editor = interpreterSettingManager.getEditorSetting(mock1Interpreter,"user1", "note1", "mock1");
     assertEquals("text", editor.get("language"));
   }
 

@@ -17,14 +17,14 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.junit.Test;
+
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.POST_EXEC;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.POST_EXEC_DEV;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.PRE_EXEC;
 import static org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType.PRE_EXEC_DEV;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import org.junit.Test;
 
 public class InterpreterHookRegistryTest {
 
@@ -71,4 +71,5 @@ public class InterpreterHookRegistryTest {
     // Test that only valid event codes ("pre_exec", "post_exec") are accepted
     registry.register("foo", "bar", "baz", "whatever");
   }
+
 }

@@ -19,18 +19,26 @@ package org.apache.zeppelin.tabledata;
 
 import java.util.Map;
 
-/** The Zeppelin Relationship entity */
+/**
+ * The Zeppelin Relationship entity
+ *
+ */
 public class Relationship extends GraphEntity {
 
-  /** Source node ID */
+  /**
+   * Source node ID
+   */
   private long source;
 
-  /** End node ID */
+  /**
+   * End node ID
+   */
   private long target;
 
   public Relationship() {}
 
-  public Relationship(long id, Map<String, Object> data, long source, long target, String label) {
+  public Relationship(long id, Map<String, Object> data, long source,
+      long target, String label) {
     super(id, data, label);
     this.setSource(source);
     this.setTarget(target);
@@ -51,4 +59,5 @@ public class Relationship extends GraphEntity {
   public void setTarget(long endNodeId) {
     this.target = endNodeId;
   }
+
 }

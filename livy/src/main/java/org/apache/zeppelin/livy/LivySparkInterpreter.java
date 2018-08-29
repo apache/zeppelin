@@ -19,7 +19,9 @@ package org.apache.zeppelin.livy;
 
 import java.util.Properties;
 
-/** Livy Spark interpreter for Zeppelin. */
+/**
+ * Livy Spark interpreter for Zeppelin.
+ */
 public class LivySparkInterpreter extends BaseLivyInterpreter {
 
   public LivySparkInterpreter(Properties property) {
@@ -34,7 +36,8 @@ public class LivySparkInterpreter extends BaseLivyInterpreter {
   @Override
   protected String extractAppId() throws LivyException {
     return extractStatementResult(
-        interpret("sc.applicationId", null, false, false, false).message().get(0).getData());
+        interpret("sc.applicationId", null, false, false, false).message()
+            .get(0).getData());
   }
 
   @Override
@@ -42,25 +45,17 @@ public class LivySparkInterpreter extends BaseLivyInterpreter {
     interpret(
         "val webui=sc.getClass.getMethod(\"ui\").invoke(sc).asInstanceOf[Some[_]].get",
         null,
-        null,
-        false,
-        false,
-        false);
+        null, false, false, false);
     return extractStatementResult(
         interpret(
-                "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)",
-                null,
-                false,
-                false,
-                false)
-            .message()
-            .get(0)
-            .getData());
+            "webui.getClass.getMethod(\"appUIAddress\").invoke(webui)", null, false, false, false)
+            .message().get(0).getData());
   }
 
   /**
-   * Extract the eval result of spark shell, e.g. extract application_1473129941656_0048 from
-   * following: res0: String = application_1473129941656_0048
+   * Extract the eval result of spark shell, e.g. extract application_1473129941656_0048
+   * from following:
+   * res0: String = application_1473129941656_0048
    *
    * @param result
    * @return
@@ -70,8 +65,8 @@ public class LivySparkInterpreter extends BaseLivyInterpreter {
     if ((pos = result.indexOf("=")) >= 0) {
       return result.substring(pos + 1).trim();
     } else {
-      throw new RuntimeException(
-          "No result can be extracted from '" + result + "', " + "something must be wrong");
+      throw new RuntimeException("No result can be extracted from '" + result + "', " +
+          "something must be wrong");
     }
   }
 }

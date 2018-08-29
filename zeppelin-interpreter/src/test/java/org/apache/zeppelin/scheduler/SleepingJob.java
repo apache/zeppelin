@@ -17,12 +17,15 @@
 
 package org.apache.zeppelin.scheduler;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** */
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ *
+ */
 public class SleepingJob extends Job {
 
   private int time;
@@ -32,6 +35,7 @@ public class SleepingJob extends Job {
 
   static Logger LOGGER = LoggerFactory.getLogger(SleepingJob.class);
   private Object results;
+
 
   public SleepingJob(String jobName, JobListener listener, int time) {
     super(jobName, listener);
@@ -90,4 +94,6 @@ public class SleepingJob extends Job {
     i.put("LoopCount", Integer.toString(count));
     return i;
   }
+
+
 }

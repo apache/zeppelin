@@ -21,15 +21,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Experimental API Might change or be removed at anytime, or be adopted as ZeppelinApi */
+/**
+ * Experimental API
+ * Might change or be removed at anytime, or be adopted as ZeppelinApi
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({
-  ElementType.TYPE,
-  ElementType.FIELD,
-  ElementType.METHOD,
-  ElementType.PARAMETER,
-  ElementType.CONSTRUCTOR,
-  ElementType.LOCAL_VARIABLE,
-  ElementType.PACKAGE
-})
-public @interface Experimental {}
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
+    ElementType.CONSTRUCTOR, ElementType.LOCAL_VARIABLE, ElementType.PACKAGE})
+public @interface Experimental {
+}

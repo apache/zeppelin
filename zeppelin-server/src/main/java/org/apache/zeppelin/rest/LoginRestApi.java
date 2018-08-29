@@ -17,13 +17,27 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
+import javax.inject.Inject;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.Notebook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import javax.inject.Inject;
+
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,27 +48,18 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
+
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Created for org.apache.zeppelin.rest.message. */
+/**
+ * Created for org.apache.zeppelin.rest.message.
+ */
 @Path("/login")
 @Produces("application/json")
 public class LoginRestApi {
@@ -150,36 +155,38 @@ public class LoginRestApi {
       data.put("ticket", ticket);
 
       response = new JsonResponse(Response.Status.OK, "", data);
-      // if no exception, that's it, we're done!
+      //if no exception, that's it, we're done!
 
-      // set roles for user in NotebookAuthorization module
+      //set roles for user in NotebookAuthorization module
       NotebookAuthorization.getInstance().setRoles(principal, roles);
     } catch (UnknownAccountException uae) {
-      // username wasn't in the system, show them an error message?
+      //username wasn't in the system, show them an error message?
       LOG.error("Exception in login: ", uae);
     } catch (IncorrectCredentialsException ice) {
-      // password didn't match, try again?
+      //password didn't match, try again?
       LOG.error("Exception in login: ", ice);
     } catch (LockedAccountException lae) {
-      // account for that username is locked - can't login.  Show them a message?
+      //account for that username is locked - can't login.  Show them a message?
       LOG.error("Exception in login: ", lae);
     } catch (AuthenticationException ae) {
-      // unexpected condition - error?
+      //unexpected condition - error?
       LOG.error("Exception in login: ", ae);
     }
     return response;
   }
 
   /**
-   * Post Login Returns userName & password for anonymous access, username is always anonymous.
+   * Post Login
+   * Returns userName & password
+   * for anonymous access, username is always anonymous.
    * After getting this ticket, access through websockets become safe
    *
    * @return 200 response
    */
   @POST
   @ZeppelinApi
-  public Response postLogin(
-      @FormParam("userName") String userName, @FormParam("password") String password) {
+  public Response postLogin(@FormParam("userName") String userName,
+      @FormParam("password") String password) {
     JsonResponse response = null;
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();

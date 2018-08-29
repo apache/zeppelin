@@ -19,7 +19,9 @@ package org.apache.zeppelin.rest;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-/** Response wrapper. */
+/**
+ * Response wrapper.
+ */
 @XmlRootElement
 public class NotebookResponse {
   private String msg;

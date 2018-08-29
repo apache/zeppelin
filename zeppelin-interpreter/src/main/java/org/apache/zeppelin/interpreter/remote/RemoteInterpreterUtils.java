@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet4Address;
@@ -29,19 +35,17 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import org.apache.commons.lang.StringUtils;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** */
+/**
+ *
+ */
 public class RemoteInterpreterUtils {
   static Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterUtils.class);
 
+
   public static int findRandomAvailablePortOnAllLocalInterfaces() throws IOException {
     int port;
-    try (ServerSocket socket = new ServerSocket(0); ) {
+    try (ServerSocket socket = new ServerSocket(0);) {
       port = socket.getLocalPort();
       socket.close();
     }
@@ -55,7 +59,8 @@ public class RemoteInterpreterUtils {
    * @return
    * @throws IOException
    */
-  public static TServerSocket createTServerSocket(String portRange) throws IOException {
+  public static TServerSocket createTServerSocket(String portRange)
+      throws IOException {
 
     TServerSocket tSocket = null;
     // ':' is the default value which means no constraints on the portRange
@@ -91,8 +96,8 @@ public class RemoteInterpreterUtils {
   public static String findAvailableHostAddress() throws UnknownHostException, SocketException {
     InetAddress address = InetAddress.getLocalHost();
     if (address.isLoopbackAddress()) {
-      for (NetworkInterface networkInterface :
-          Collections.list(NetworkInterface.getNetworkInterfaces())) {
+      for (NetworkInterface networkInterface : Collections
+          .list(NetworkInterface.getNetworkInterfaces())) {
         if (!networkInterface.isLoopback()) {
           for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
             InetAddress a = interfaceAddress.getAddress();
@@ -116,27 +121,15 @@ public class RemoteInterpreterUtils {
     } catch (ConnectException cne) {
       // end point is not accessible
       if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug(
-            "Remote endpoint '"
-                + host
-                + ":"
-                + port
-                + "' is not accessible "
-                + "(might be initializing): "
-                + cne.getMessage());
+        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
+            "(might be initializing): " + cne.getMessage());
       }
       return false;
     } catch (IOException ioe) {
       // end point is not accessible
       if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug(
-            "Remote endpoint '"
-                + host
-                + ":"
-                + port
-                + "' is not accessible "
-                + "(might be initializing): "
-                + ioe.getMessage());
+        LOGGER.debug("Remote endpoint '" + host + ":" + port + "' is not accessible " +
+            "(might be initializing): " + ioe.getMessage());
       }
       return false;
     }
@@ -158,4 +151,5 @@ public class RemoteInterpreterUtils {
 
     return key.matches("^[A-Z_0-9]*");
   }
+
 }

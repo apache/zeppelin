@@ -1,7 +1,5 @@
 package org.apache.zeppelin.notebook.repo.zeppelinhub.security;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -9,23 +7,34 @@ import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Map;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Authentication module. */
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+/**
+ * Authentication module.
+ *
+ */
 public class Authentication implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(Authentication.class);
   private String principal = "anonymous";
@@ -66,10 +75,11 @@ public class Authentication implements Runnable {
     client = new HttpClient(connectionManager);
     this.token = token;
 
-    authEnabled =
-        !conf.getBoolean("ZEPPELIN_ALLOW_ANONYMOUS", ZEPPELIN_CONF_ANONYMOUS_ALLOWED, true);
+    authEnabled = !conf.getBoolean("ZEPPELIN_ALLOW_ANONYMOUS",
+        ZEPPELIN_CONF_ANONYMOUS_ALLOWED, true);
 
-    userKey = conf.getString("ZEPPELINHUB_USER_KEY", ZEPPELINHUB_USER_KEY, "");
+    userKey = conf.getString("ZEPPELINHUB_USER_KEY",
+        ZEPPELINHUB_USER_KEY, "");
 
     loginEndpoint = getLoginEndpoint(conf);
   }
@@ -89,9 +99,8 @@ public class Authentication implements Runnable {
   public boolean isAuthenticated() {
     return authenticated;
   }
-
   private String getLoginEndpoint(ZeppelinConfiguration conf) {
-    int port = conf.getInt("ZEPPELIN_PORT", "zeppelin.server.port", 8080);
+    int port = conf.getInt("ZEPPELIN_PORT", "zeppelin.server.port" , 8080);
     if (port <= 0) {
       port = 8080;
     }
@@ -111,16 +120,15 @@ public class Authentication implements Runnable {
         if (isEmptyMap(authCredentials)) {
           return false;
         }
-        principal =
-            authCredentials.containsKey("principal") ? authCredentials.get("principal") : principal;
+        principal = authCredentials.containsKey("principal") ? authCredentials.get("principal")
+            : principal;
         ticket = authCredentials.containsKey("ticket") ? authCredentials.get("ticket") : ticket;
         roles = authCredentials.containsKey("roles") ? authCredentials.get("roles") : roles;
         LOG.info("Authenticated into Zeppelin as {} and roles {}", principal, roles);
         return true;
       } else {
-        LOG.warn(
-            "ZEPPELINHUB_USER_KEY isn't provided. Please provide your credentials"
-                + "for your instance in ZeppelinHub website and generate your key.");
+        LOG.warn("ZEPPELINHUB_USER_KEY isn't provided. Please provide your credentials"
+            + "for your instance in ZeppelinHub website and generate your key.");
       }
     }
     return false;
@@ -132,9 +140,9 @@ public class Authentication implements Runnable {
       LOG.warn("ZEPPELINHUB_USER_KEY is blank");
       return StringUtils.EMPTY;
     }
-    // use hashed token as a salt
+    //use hashed token as a salt
     String hashedToken = Integer.toString(token.hashCode());
-    return decrypt(userKey, hashedToken);
+    return decrypt(userKey, hashedToken); 
   }
 
   private String decrypt(String value, String initVector) {
@@ -172,8 +180,8 @@ public class Authentication implements Runnable {
       int code = client.executeMethod(post);
       if (code == HttpStatus.SC_OK) {
         String content = post.getResponseBodyAsString();
-        Map<String, Object> resp =
-            gson.fromJson(content, new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> resp = gson.fromJson(content, 
+            new TypeToken<Map<String, Object>>() {}.getType());
         LOG.info("Received from Zeppelin LoginRestApi : " + content);
         return (Map<String, String>) resp.get("body");
       } else {

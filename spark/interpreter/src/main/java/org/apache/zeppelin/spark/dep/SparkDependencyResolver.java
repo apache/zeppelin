@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.dep.AbstractDependencyResolver;
@@ -42,6 +43,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
 import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
+
 import scala.Some;
 import scala.collection.IndexedSeq;
 import scala.reflect.io.AbstractFile;
@@ -50,30 +52,29 @@ import scala.tools.nsc.backend.JavaPlatform;
 import scala.tools.nsc.util.ClassPath;
 import scala.tools.nsc.util.MergedClassPath;
 
-/** Deps resolver. Add new dependencies from mvn repo (at runtime) to Spark interpreter group. */
+/**
+ * Deps resolver.
+ * Add new dependencies from mvn repo (at runtime) to Spark interpreter group.
+ */
 public class SparkDependencyResolver extends AbstractDependencyResolver {
   Logger logger = LoggerFactory.getLogger(SparkDependencyResolver.class);
   private Global global;
   private ClassLoader runtimeClassLoader;
   private SparkContext sc;
 
-  private final String[] exclusions =
-      new String[] {
-        "org.scala-lang:scala-library",
-        "org.scala-lang:scala-compiler",
-        "org.scala-lang:scala-reflect",
-        "org.scala-lang:scalap",
-        "org.apache.zeppelin:zeppelin-zengine",
-        "org.apache.zeppelin:zeppelin-spark",
-        "org.apache.zeppelin:zeppelin-server"
-      };
+  private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
+                                                    "org.scala-lang:scala-compiler",
+                                                    "org.scala-lang:scala-reflect",
+                                                    "org.scala-lang:scalap",
+                                                    "org.apache.zeppelin:zeppelin-zengine",
+                                                    "org.apache.zeppelin:zeppelin-spark",
+                                                    "org.apache.zeppelin:zeppelin-server"};
 
-  public SparkDependencyResolver(
-      Global global,
-      ClassLoader runtimeClassLoader,
-      SparkContext sc,
-      String localRepoPath,
-      String additionalRemoteRepository) {
+  public SparkDependencyResolver(Global global,
+                                 ClassLoader runtimeClassLoader,
+                                 SparkContext sc,
+                                 String localRepoPath,
+                                 String additionalRemoteRepository) {
     super(localRepoPath);
     this.global = global;
     this.runtimeClassLoader = runtimeClassLoader;
@@ -98,8 +99,8 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
     }
   }
 
-  private void updateCompilerClassPath(URL[] urls)
-      throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+  private void updateCompilerClassPath(URL[] urls) throws IllegalAccessException,
+      IllegalArgumentException, InvocationTargetException {
 
     JavaPlatform platform = (JavaPlatform) global.platform();
     MergedClassPath<AbstractFile> newClassPath = mergeUrlsIntoClassPath(platform, urls);
@@ -119,15 +120,15 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
     }
 
     // Reload all jars specified into our compiler
-    global.invalidateClassPathEntries(
-        scala.collection.JavaConversions.asScalaBuffer(classPaths).toList());
+    global.invalidateClassPathEntries(scala.collection.JavaConversions.asScalaBuffer(classPaths)
+        .toList());
   }
 
   // Until spark 1.1.x
   // check https://github.com/apache/spark/commit/191d7cf2a655d032f160b9fa181730364681d0e7
-  private void updateRuntimeClassPath_1_x(URL[] urls)
-      throws SecurityException, IllegalAccessException, IllegalArgumentException,
-          InvocationTargetException, NoSuchMethodException {
+  private void updateRuntimeClassPath_1_x(URL[] urls) throws SecurityException,
+      IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException {
     Method addURL;
     addURL = runtimeClassLoader.getClass().getDeclaredMethod("addURL", new Class[] {URL.class});
     addURL.setAccessible(true);
@@ -136,9 +137,9 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
     }
   }
 
-  private void updateRuntimeClassPath_2_x(URL[] urls)
-      throws SecurityException, IllegalAccessException, IllegalArgumentException,
-          InvocationTargetException, NoSuchMethodException {
+  private void updateRuntimeClassPath_2_x(URL[] urls) throws SecurityException,
+      IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException {
     Method addURL;
     addURL = runtimeClassLoader.getClass().getDeclaredMethod("addNewUrl", new Class[] {URL.class});
     addURL.setAccessible(true);
@@ -177,17 +178,17 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
       }
     }
 
-    return new MergedClassPath(
-        scala.collection.JavaConversions.asScalaBuffer(cp).toIndexedSeq(),
+    return new MergedClassPath(scala.collection.JavaConversions.asScalaBuffer(cp).toIndexedSeq(),
         platform.classPath().context());
   }
 
-  public List<String> load(String artifact, boolean addSparkContext) throws Exception {
+  public List<String> load(String artifact,
+      boolean addSparkContext) throws Exception {
     return load(artifact, new LinkedList<String>(), addSparkContext);
   }
 
-  public List<String> load(String artifact, Collection<String> excludes, boolean addSparkContext)
-      throws Exception {
+  public List<String> load(String artifact, Collection<String> excludes,
+      boolean addSparkContext) throws Exception {
     if (StringUtils.isBlank(artifact)) {
       // Should throw here
       throw new RuntimeException("Invalid artifact to load");
@@ -221,8 +222,8 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
     }
   }
 
-  private List<String> loadFromMvn(
-      String artifact, Collection<String> excludes, boolean addSparkContext) throws Exception {
+  private List<String> loadFromMvn(String artifact, Collection<String> excludes,
+      boolean addSparkContext) throws Exception {
     List<String> loadedLibs = new LinkedList<>();
     Collection<String> allExclusions = new LinkedList<>();
     allExclusions.addAll(excludes);
@@ -246,21 +247,14 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
     List<URL> newClassPathList = new LinkedList<>();
     List<File> files = new LinkedList<>();
     for (ArtifactResult artifactResult : listOfArtifact) {
-      logger.info(
-          "Load "
-              + artifactResult.getArtifact().getGroupId()
-              + ":"
-              + artifactResult.getArtifact().getArtifactId()
-              + ":"
-              + artifactResult.getArtifact().getVersion());
+      logger.info("Load " + artifactResult.getArtifact().getGroupId() + ":"
+          + artifactResult.getArtifact().getArtifactId() + ":"
+          + artifactResult.getArtifact().getVersion());
       newClassPathList.add(artifactResult.getArtifact().getFile().toURI().toURL());
       files.add(artifactResult.getArtifact().getFile());
-      loadedLibs.add(
-          artifactResult.getArtifact().getGroupId()
-              + ":"
-              + artifactResult.getArtifact().getArtifactId()
-              + ":"
-              + artifactResult.getArtifact().getVersion());
+      loadedLibs.add(artifactResult.getArtifact().getGroupId() + ":"
+          + artifactResult.getArtifact().getArtifactId() + ":"
+          + artifactResult.getArtifact().getVersion());
     }
 
     global.new Run();
@@ -287,8 +281,8 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
    * @throws Exception
    */
   @Override
-  public List<ArtifactResult> getArtifactsWithDep(String dependency, Collection<String> excludes)
-      throws Exception {
+  public List<ArtifactResult> getArtifactsWithDep(String dependency,
+      Collection<String> excludes) throws Exception {
     Artifact artifact = new DefaultArtifact(inferScalaVersion(dependency));
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
@@ -302,9 +296,8 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
         collectRequest.addRepository(repo);
       }
     }
-    DependencyRequest dependencyRequest =
-        new DependencyRequest(
-            collectRequest, DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
+    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }
 
@@ -347,7 +340,7 @@ public class SparkDependencyResolver extends AbstractDependencyResolver {
         }
       }
 
-      String[] version = scala.util.Properties.versionNumberString().split("[.]");
+      String [] version = scala.util.Properties.versionNumberString().split("[.]");
       String scalaVersion = version[0] + "." + version[1];
 
       return groupId + ":" + artifactId + "_" + scalaVersion + versionSep + restOfthem;

@@ -16,13 +16,16 @@
  */
 package org.apache.zeppelin.ignite;
 
-import java.io.Serializable;
 import org.apache.ignite.cache.query.annotations.QuerySqlField;
 
-public class Person implements Serializable {
-  @QuerySqlField private String name;
+import java.io.Serializable;
 
-  @QuerySqlField private int age;
+public class Person implements Serializable {
+  @QuerySqlField
+  private String name;
+
+  @QuerySqlField
+  private int age;
 
   public Person(String name, int age) {
     this.name = name;

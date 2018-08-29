@@ -17,12 +17,17 @@
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Collections;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
+
 import org.apache.zeppelin.common.JsonSerializable;
 
-/** Represent payload of a notebook repo settings. */
+/**
+ * Represent payload of a notebook repo settings.
+ */
 public class NotebookRepoSettingsRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 

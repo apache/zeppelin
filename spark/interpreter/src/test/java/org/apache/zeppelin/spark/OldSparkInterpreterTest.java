@@ -17,14 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
 import org.apache.spark.SparkConf;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -49,10 +41,21 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OldSparkInterpreterTest {
 
-  @ClassRule public static TemporaryFolder tmpDir = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder tmpDir = new TemporaryFolder();
 
   static SparkInterpreter repl;
   static InterpreterGroup intpGroup;
@@ -60,7 +63,8 @@ public class OldSparkInterpreterTest {
   static Logger LOGGER = LoggerFactory.getLogger(OldSparkInterpreterTest.class);
 
   /**
-   * Get spark version number as a numerical value. eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   * Get spark version number as a numerical value.
+   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
    */
   public static int getSparkVersionNumber(SparkInterpreter repl) {
     if (repl == null) {
@@ -87,16 +91,15 @@ public class OldSparkInterpreterTest {
   @BeforeClass
   public static void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
-    context =
-        InterpreterContext.builder()
-            .setNoteId("noteId")
-            .setParagraphId("paragraphId")
-            .setParagraphTitle("title")
-            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-            .setResourcePool(new LocalResourcePool("id"))
-            .setInterpreterOut(new InterpreterOutput(null))
-            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-            .build();
+    context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .setParagraphTitle("title")
+        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+        .setResourcePool(new LocalResourcePool("id"))
+        .setInterpreterOut(new InterpreterOutput(null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+        .build();
     InterpreterContext.set(context);
 
     intpGroup.put("note", new LinkedList<Interpreter>());
@@ -105,10 +108,10 @@ public class OldSparkInterpreterTest {
     intpGroup.get("note").add(repl);
     repl.open();
     // The first para interpretdr will set the Eventclient wrapper
-    // SparkInterpreter.interpret(String, InterpreterContext) ->
-    // SparkInterpreter.populateSparkWebUrl(InterpreterContext) ->
-    // ZeppelinContext.setEventClient(RemoteEventClientWrapper)
-    // running a dummy to ensure that we dont have any race conditions among tests
+    //SparkInterpreter.interpret(String, InterpreterContext) ->
+    //SparkInterpreter.populateSparkWebUrl(InterpreterContext) ->
+    //ZeppelinContext.setEventClient(RemoteEventClientWrapper)
+    //running a dummy to ensure that we dont have any race conditions among tests
     repl.interpret("sc", context);
   }
 
@@ -119,14 +122,14 @@ public class OldSparkInterpreterTest {
 
   @Test
   public void testBasicIntp() throws InterpreterException {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        repl.interpret("val a = 1\nval b = 2", context).code());
 
     // when interpret incomplete expression
     InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
     assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
     assertTrue(incomplete.message().get(0).getData().length() > 0); // expecting some error
-    // message
+                                                   // message
 
     /*
      * assertEquals(1, repl.getValue("a")); assertEquals(2, repl.getValue("b"));
@@ -150,41 +153,30 @@ public class OldSparkInterpreterTest {
 
   @Test
   public void testNextLineComments() throws InterpreterException {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS,
-        repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n/*comment here\n*/.toInt", context).code());
   }
 
   @Test
   public void testNextLineCompanionObject() throws InterpreterException {
-    String code =
-        "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
+    String code = "class Counter {\nvar value: Long = 0\n}\n // comment\n\n object Counter {\n def apply(x: Long) = new Counter()\n}";
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code, context).code());
   }
 
   @Test
   public void testEndWithComment() throws InterpreterException {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }
 
   @Test
   public void testCreateDataFrame() throws InterpreterException {
     if (getSparkVersionNumber(repl) >= 13) {
       repl.interpret("case class Person(name:String, age:Int)\n", context);
-      repl.interpret(
-          "val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n",
-          context);
+      repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
       repl.interpret("people.toDF.count", context);
-      assertEquals(
-          new Long(4),
-          context
-              .getResourcePool()
-              .get(
-                  context.getNoteId(),
-                  context.getParagraphId(),
-                  WellKnownResourceName.ZeppelinReplResult.toString())
-              .get());
+      assertEquals(new Long(4), context.getResourcePool().get(
+          context.getNoteId(),
+          context.getParagraphId(),
+          WellKnownResourceName.ZeppelinReplResult.toString()).get());
     }
   }
 
@@ -192,25 +184,22 @@ public class OldSparkInterpreterTest {
   public void testZShow() throws InterpreterException {
     String code = "";
     repl.interpret("case class Person(name:String, age:Int)\n", context);
-    repl.interpret(
-        "val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n",
-        context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
     if (getSparkVersionNumber(repl) < 13) {
       repl.interpret("people.registerTempTable(\"people\")", context);
       code = "z.show(sqlc.sql(\"select * from people\"))";
     } else {
       code = "z.show(people.toDF)";
     }
-    assertEquals(Code.SUCCESS, repl.interpret(code, context).code());
+      assertEquals(Code.SUCCESS, repl.interpret(code, context).code());
   }
 
   @Test
   public void testSparkSql() throws IOException, InterpreterException {
     repl.interpret("case class Person(name:String, age:Int)\n", context);
-    repl.interpret(
-        "val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n",
-        context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
     assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
+
 
     if (getSparkVersionNumber(repl) <= 11) { // spark 1.2 or later does not allow create multiple
       // SparkContext in the same jvm by default.
@@ -221,9 +210,7 @@ public class OldSparkInterpreterTest {
       repl2.open();
 
       repl2.interpret("case class Man(name:String, age:Int)", context);
-      repl2.interpret(
-          "val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))",
-          context);
+      repl2.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
       assertEquals(Code.SUCCESS, repl2.interpret("man.take(3)", context).code());
       repl2.close();
     }
@@ -231,9 +218,8 @@ public class OldSparkInterpreterTest {
 
   @Test
   public void testReferencingUndefinedVal() throws InterpreterException {
-    InterpreterResult result =
-        repl.interpret(
-            "def category(min: Int) = {" + "    if (0 <= value) \"error\"" + "}", context);
+    InterpreterResult result = repl.interpret("def category(min: Int) = {"
+        + "    if (0 <= value) \"error\"" + "}", context);
     assertEquals(Code.ERROR, result.code());
   }
 
@@ -246,26 +232,23 @@ public class OldSparkInterpreterTest {
       String value = (String) intpProperty.get(key);
       LOGGER.debug(String.format("[%s]: [%s]", key, value));
       if (key.startsWith("spark.") && value.isEmpty()) {
-        assertTrue(
-            String.format("configuration starting from 'spark.' should not be empty. [%s]", key),
-            !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
+        assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
       }
     }
   }
 
   @Test
-  public void shareSingleSparkContext()
-      throws InterruptedException, IOException, InterpreterException {
+  public void shareSingleSparkContext() throws InterruptedException, IOException, InterpreterException {
     // create another SparkInterpreter
     SparkInterpreter repl2 = new SparkInterpreter(getSparkTestProperties(tmpDir));
     repl2.setInterpreterGroup(intpGroup);
     intpGroup.get("note").add(repl2);
     repl2.open();
 
-    assertEquals(
-        Code.SUCCESS, repl.interpret("print(sc.parallelize(1 to 10).count())", context).code());
-    assertEquals(
-        Code.SUCCESS, repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+    assertEquals(Code.SUCCESS,
+        repl.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+    assertEquals(Code.SUCCESS,
+        repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
 
     repl2.close();
   }
@@ -314,17 +297,17 @@ public class OldSparkInterpreterTest {
   @Test
   public void testMultilineCompletion() throws InterpreterException {
     String buf = "val x = 1\nsc.";
-    List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
+	List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
     assertTrue(completions.size() > 0);
   }
 
   @Test
   public void testMultilineCompletionNewVar() throws InterpreterException {
     Assume.assumeFalse("this feature does not work with scala 2.10", Utils.isScala2_10());
-    Assume.assumeTrue(
-        "This feature does not work with scala < 2.11.8", Utils.isCompilerAboveScala2_11_7());
+    Assume.assumeTrue("This feature does not work with scala < 2.11.8", Utils.isCompilerAboveScala2_11_7());
     String buf = "val x = sc\nx.";
-    List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
+	  List<InterpreterCompletion> completions = repl.completion(buf, buf.length(), null);
     assertTrue(completions.size() > 0);
   }
+
 }

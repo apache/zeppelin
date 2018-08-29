@@ -17,24 +17,28 @@
 
 package org.apache.zeppelin.pig;
 
-import java.lang.reflect.Field;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.BackendException;
 import org.apache.pig.backend.hadoop.executionengine.HExecutionEngine;
 import org.apache.pig.backend.hadoop.executionengine.Launcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** */
+/**
+ *
+ */
 public abstract class BasePigInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(BasePigInterpreter.class);
 
@@ -56,7 +60,7 @@ public abstract class BasePigInterpreter extends Interpreter {
       for (String jobId : jobIds) {
         LOGGER.info("Kill jobId:" + jobId);
         HExecutionEngine engine =
-            (HExecutionEngine) getPigServer().getPigContext().getExecutionEngine();
+                (HExecutionEngine) getPigServer().getPigContext().getExecutionEngine();
         try {
           Field launcherField = HExecutionEngine.class.getDeclaredField("launcher");
           launcherField.setAccessible(true);
@@ -68,8 +72,8 @@ public abstract class BasePigInterpreter extends Interpreter {
         }
       }
     } else {
-      LOGGER.warn(
-          "No PigScriptListener found, can not cancel paragraph:" + context.getParagraphId());
+      LOGGER.warn("No PigScriptListener found, can not cancel paragraph:"
+              + context.getParagraphId());
     }
   }
 
@@ -89,15 +93,14 @@ public abstract class BasePigInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton()
-        .createOrGetFIFOScheduler(PigInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+            PigInterpreter.class.getName() + this.hashCode());
   }
 
   public abstract PigServer getPigServer();
 
   /**
    * Use paragraph title if it exists, else use the last line of pig script.
-   *
    * @param cmd
    * @param context
    * @return

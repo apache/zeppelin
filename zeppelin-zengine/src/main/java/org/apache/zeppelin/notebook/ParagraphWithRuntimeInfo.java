@@ -20,8 +20,8 @@ package org.apache.zeppelin.notebook;
 import java.util.Map;
 
 /**
- * This class is used for broadcast Paragrapah to frontend. runtimeInfos will also been prapagated
- * to frontend.
+ * This class is used for broadcast Paragrapah to frontend.
+ * runtimeInfos will also been prapagated to frontend.
  */
 public class ParagraphWithRuntimeInfo extends Paragraph {
 
@@ -31,4 +31,5 @@ public class ParagraphWithRuntimeInfo extends Paragraph {
     super(p);
     this.runtimeInfos = p.getRuntimeInfos();
   }
+
 }

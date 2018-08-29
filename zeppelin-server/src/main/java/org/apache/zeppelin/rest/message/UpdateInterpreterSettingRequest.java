@@ -17,14 +17,18 @@
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
+
 import java.util.List;
 import java.util.Map;
+
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
 
-/** UpdateInterpreterSetting rest api request message. */
+/**
+ * UpdateInterpreterSetting rest api request message.
+ */
 public class UpdateInterpreterSettingRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -32,10 +36,8 @@ public class UpdateInterpreterSettingRequest implements JsonSerializable {
   List<Dependency> dependencies;
   InterpreterOption option;
 
-  public UpdateInterpreterSettingRequest(
-      Map<String, InterpreterProperty> properties,
-      List<Dependency> dependencies,
-      InterpreterOption option) {
+  public UpdateInterpreterSettingRequest(Map<String, InterpreterProperty> properties,
+      List<Dependency> dependencies, InterpreterOption option) {
     this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;

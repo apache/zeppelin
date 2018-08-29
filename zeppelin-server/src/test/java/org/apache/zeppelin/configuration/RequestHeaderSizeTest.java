@@ -22,21 +22,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.rest.AbstractTestRestApi;
 
 public class RequestHeaderSizeTest extends AbstractTestRestApi {
   private static final int REQUEST_HEADER_MAX_SIZE = 20000;
 
   @Before
   public void startZeppelin() throws Exception {
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE.getVarName(),
-        String.valueOf(REQUEST_HEADER_MAX_SIZE));
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_JETTY_REQUEST_HEADER_SIZE
+            .getVarName(), String.valueOf(REQUEST_HEADER_MAX_SIZE));
     startUp(RequestHeaderSizeTest.class.getSimpleName());
   }
 

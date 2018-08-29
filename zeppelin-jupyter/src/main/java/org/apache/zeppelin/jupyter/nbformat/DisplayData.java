@@ -16,12 +16,19 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.gson.annotations.SerializedName;
-import java.util.Map;
+import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
-/** */
+import java.util.List;
+import java.util.Map;
+
+/**
+ *
+ */
 public class DisplayData extends Output {
 
   @SerializedName("data")
@@ -43,21 +50,17 @@ public class DisplayData extends Output {
 
   private static class ZeppelinResultGenerator {
     public static String toBase64ImageHtmlElement(String image) {
-      return "<div style='width:auto;height:auto'><img src=data:image/png;base64,"
-          + image
-          + " style='width=auto;height:auto'/></div>";
+      return "<div style='width:auto;height:auto'><img src=data:image/png;base64," + image
+              + " style='width=auto;height:auto'/></div>";
     }
-
     public static String toLatex(String latexCode) {
       String latexContents = latexCode;
-      return "<div>"
-          + "<div class='class=\"alert alert-warning\"'>"
-          + "<strong>Warning!</strong> Currently, Latex is not supported."
-          + "</div>"
-          + "<div>"
-          + latexContents
-          + "</div>"
-          + "</div>";
+      return "<div>" +
+              "<div class='class=\"alert alert-warning\"'>" +
+              "<strong>Warning!</strong> Currently, Latex is not supported." +
+              "</div>" +
+              "<div>" + latexContents + "</div>" +
+              "</div>";
     }
   }
 }

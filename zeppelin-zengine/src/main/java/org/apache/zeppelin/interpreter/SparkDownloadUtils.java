@@ -12,7 +12,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Utility class for downloading spark. This is used for spark integration test. */
+/**
+ * Utility class for downloading spark. This is used for spark integration test.
+ *
+ */
 public class SparkDownloadUtils {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkDownloadUtils.class);
 
@@ -26,6 +29,7 @@ public class SparkDownloadUtils {
     }
   }
 
+
   public static String downloadSpark(String version) {
     File targetSparkHomeFolder = new File(downloadFolder + "/spark-" + version + "-bin-hadoop2.6");
     if (targetSparkHomeFolder.exists()) {
@@ -36,19 +40,11 @@ public class SparkDownloadUtils {
     boolean downloaded = false;
     for (int i = 0; i < 3; i++) {
       try {
-        String preferredMirror =
-            IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
+        String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
         File downloadFile = new File(downloadFolder + "/spark-" + version + "-bin-hadoop2.6.tgz");
-        String downloadURL =
-            preferredMirror
-                + "/spark/spark-"
-                + version
-                + "/spark-"
-                + version
-                + "-bin-hadoop2.6.tgz";
+        String downloadURL = preferredMirror + "/spark/spark-" + version + "/spark-" + version + "-bin-hadoop2.6.tgz";
         runShellCommand(new String[] {"wget", downloadURL, "-P", downloadFolder});
-        runShellCommand(
-            new String[] {"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
+        runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
         downloaded = true;
         break;
       } catch (Exception e) {
@@ -86,20 +82,11 @@ public class SparkDownloadUtils {
     // Try mirrors a few times until one succeeds
     for (int i = 0; i < 3; i++) {
       try {
-        String preferredMirror =
-            IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
-        File downloadFile =
-            new File(downloadFolder + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz");
-        String downloadURL =
-            preferredMirror
-                + "/flink/flink-"
-                + version
-                + "/flink-"
-                + version
-                + "-bin-hadoop27-scala_2.11.tgz";
+        String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
+        File downloadFile = new File(downloadFolder + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz");
+        String downloadURL = preferredMirror + "/flink/flink-" + version + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz";
         runShellCommand(new String[] {"wget", downloadURL, "-P", downloadFolder});
-        runShellCommand(
-            new String[] {"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
+        runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", downloadFolder});
         downloaded = true;
         break;
       } catch (Exception e) {
@@ -109,8 +96,7 @@ public class SparkDownloadUtils {
 
     // fallback to use apache archive
     if (!downloaded) {
-      File downloadFile =
-          new File(downloadFolder + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz");
+      File downloadFile = new File(downloadFolder + "/flink-" + version + "-bin-hadoop27-scala_2.11.tgz");
       String downloadURL =
           "https://archive.apache.org/dist/flink/flink-"
               + version
@@ -155,7 +141,7 @@ public class SparkDownloadUtils {
         BufferedReader br = new BufferedReader(isr);
         String line = null;
         long startTime = System.currentTimeMillis();
-        while ((line = br.readLine()) != null) {
+        while ( (line = br.readLine()) != null) {
           // logging per 5 seconds
           if ((System.currentTimeMillis() - startTime) > 5000) {
             LOGGER.info(line);

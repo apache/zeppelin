@@ -19,12 +19,7 @@ package org.apache.zeppelin.realm;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -39,15 +34,26 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** A {@code Realm} implementation that uses the ZeppelinHub to authenticate users. */
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
+import org.apache.zeppelin.server.ZeppelinServer;
+
+/**
+ * A {@code Realm} implementation that uses the ZeppelinHub to authenticate users.
+ *
+ */
 public class ZeppelinHubRealm extends AuthorizingRealm {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubRealm.class);
   private static final String DEFAULT_ZEPPELINHUB_URL = "https://www.zeppelinhub.com";
@@ -65,7 +71,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   public ZeppelinHubRealm() {
     super();
     LOG.debug("Init ZeppelinhubRealm");
-    // TODO(anthonyc): think about more setting for this HTTP client.
+    //TODO(anthonyc): think about more setting for this HTTP client.
     //                eg: if user uses proxy etcetc...
     httpClient = new HttpClient();
     name = getClass().getName() + "_" + INSTANCE_COUNT.getAndIncrement();
@@ -73,7 +79,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authToken)
-      throws AuthenticationException {
+          throws AuthenticationException {
     UsernamePasswordToken token = (UsernamePasswordToken) authToken;
     if (StringUtils.isBlank(token.getUsername())) {
       throw new AccountException("Empty usernames are not allowed by this realm.");
@@ -95,11 +101,11 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Setter of ZeppelinHub URL, this will be called by Shiro based on zeppelinhubUrl property in
-   * shiro.ini file.
+   * Setter of ZeppelinHub URL, this will be called by Shiro based on zeppelinhubUrl property
+   * in shiro.ini file.
    *
-   * <p>It will also perform a check of ZeppelinHub url {@link #isZeppelinHubUrlValid}, if the url
-   * is not valid, the default zeppelinhub url will be used.
+   * It will also perform a check of ZeppelinHub url {@link #isZeppelinHubUrlValid},
+   * if the url is not valid, the default zeppelinhub url will be used.
    *
    * @param url
    */
@@ -131,8 +137,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
       if (statusCode != HttpStatus.SC_OK) {
         LOG.error("Cannot login user, HTTP status code is {} instead on 200 (OK)", statusCode);
         put.releaseConnection();
-        throw new AuthenticationException(
-            "Couldnt login to ZeppelinHub. " + "Login or password incorrect");
+        throw new AuthenticationException("Couldnt login to ZeppelinHub. "
+            + "Login or password incorrect");
       }
       responseBody = put.getResponseBodyAsString();
       userSession = put.getResponseHeader(USER_SESSION_HEADER).getValue();
@@ -159,8 +165,13 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   /**
    * Create a JSON String that represent login payload.
    *
-   * <p>Payload will look like: {@code { 'login': 'userLogin', 'password': 'userpassword' } }
-   *
+   * Payload will look like:
+   * {@code
+   *  {
+   *   'login': 'userLogin',
+   *   'password': 'userpassword'
+   *  }
+   * }
    * @param login
    * @param pwd
    * @return
@@ -171,9 +182,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
   }
 
   /**
-   * Perform a Simple URL check by using {@code URI(url).toURL()}. If the url is not valid, the
-   * try-catch condition will catch the exceptions and return false, otherwise true will be
-   * returned.
+   * Perform a Simple URL check by using {@code URI(url).toURL()}.
+   * If the url is not valid, the try-catch condition will catch the exceptions and return false,
+   * otherwise true will be returned.
    *
    * @param url
    * @return
@@ -190,7 +201,9 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     return valid;
   }
 
-  /** Helper class that will be use to fromJson ZeppelinHub response. */
+  /**
+   * Helper class that will be use to fromJson ZeppelinHub response.
+   */
   protected static class User implements JsonSerializable {
     private static final Gson gson = new Gson();
     public String login;
@@ -212,8 +225,8 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     /* TODO(xxx): add proper roles */
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(username);
-    ServiceContext context =
-        new ServiceContext(new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
+    ServiceContext context = new ServiceContext(
+        new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
     try {
       ZeppelinServer.notebookWsServer.broadcastReloadedNoteList(null, context);
     } catch (IOException e) {

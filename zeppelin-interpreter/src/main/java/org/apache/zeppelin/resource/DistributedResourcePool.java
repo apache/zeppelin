@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.resource;
 
-/** distributed resource pool */
+/**
+ * distributed resource pool
+ */
 public class DistributedResourcePool extends LocalResourcePool {
 
   private final ResourcePoolConnector connector;
@@ -38,7 +40,6 @@ public class DistributedResourcePool extends LocalResourcePool {
 
   /**
    * get resource by name.
-   *
    * @param name
    * @param remote false only return from local resource
    * @return null if resource not found.
@@ -64,7 +65,6 @@ public class DistributedResourcePool extends LocalResourcePool {
 
   /**
    * get resource by name.
-   *
    * @param name
    * @param remote false only return from local resource
    * @return null if resource not found.
@@ -77,12 +77,10 @@ public class DistributedResourcePool extends LocalResourcePool {
     }
 
     if (remote) {
-      ResourceSet resources =
-          connector
-              .getAllResources()
-              .filterByNoteId(noteId)
-              .filterByParagraphId(paragraphId)
-              .filterByName(name);
+      ResourceSet resources = connector.getAllResources()
+          .filterByNoteId(noteId)
+          .filterByParagraphId(paragraphId)
+          .filterByName(name);
 
       if (resources.isEmpty()) {
         return null;
@@ -101,7 +99,6 @@ public class DistributedResourcePool extends LocalResourcePool {
 
   /**
    * Get all resource from the pool
-   *
    * @param remote false only return local resource
    * @return
    */

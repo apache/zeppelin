@@ -19,7 +19,9 @@ package org.apache.zeppelin.jupyter.nbformat;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-/** */
+/**
+ *
+ */
 public class Metadata {
 
   @SerializedName("kernelspec")

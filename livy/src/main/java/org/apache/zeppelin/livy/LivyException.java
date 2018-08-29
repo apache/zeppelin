@@ -19,9 +19,12 @@ package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.InterpreterException;
 
-/** Livy api related exception. */
+/**
+ * Livy api related exception.
+ */
 public class LivyException extends InterpreterException {
-  public LivyException() {}
+  public LivyException() {
+  }
 
   public LivyException(String message) {
     super(message);
@@ -35,8 +38,8 @@ public class LivyException extends InterpreterException {
     super(cause);
   }
 
-  public LivyException(
-      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public LivyException(String message, Throwable cause, boolean enableSuppression,
+                       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 }

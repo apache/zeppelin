@@ -16,8 +16,10 @@
  */
 package org.apache.zeppelin.cassandra;
 
-/** Parsing Exception for Cassandra CQL statement. */
-public class ParsingException extends RuntimeException {
+/**
+ * Parsing Exception for Cassandra CQL statement.
+ */
+public class ParsingException extends RuntimeException{
   public ParsingException(String message) {
     super(message);
   }

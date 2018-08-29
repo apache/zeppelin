@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.helium;
 
-/** Info for Helium Spell Package. */
+/**
+ * Info for Helium Spell Package.
+ */
 public class SpellPackageInfo {
   private String magic;
   private String usage;

@@ -18,10 +18,9 @@ package org.apache.zeppelin.cassandra;
 
 import static java.lang.Integer.parseInt;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.JdkSSLOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,24 +28,31 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.JdkSSLOptions;
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.Session;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Interpreter for Apache Cassandra CQL query language. */
+/**
+ * Interpreter for Apache Cassandra CQL query language.
+ */
 public class CassandraInterpreter extends Interpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CassandraInterpreter.class);
 
   public static final String CASSANDRA_INTERPRETER_PARALLELISM =
-      "cassandra.interpreter.parallelism";
+          "cassandra.interpreter.parallelism";
   public static final String CASSANDRA_HOSTS = "cassandra.hosts";
   public static final String CASSANDRA_PORT = "cassandra.native.port";
   public static final String CASSANDRA_PROTOCOL_VERSION = "cassandra.protocol.version";
@@ -59,54 +65,62 @@ public class CassandraInterpreter extends Interpreter {
   public static final String CASSANDRA_RETRY_POLICY = "cassandra.retry.policy";
   public static final String CASSANDRA_RECONNECTION_POLICY = "cassandra.reconnection.policy";
   public static final String CASSANDRA_SPECULATIVE_EXECUTION_POLICY =
-      "cassandra.speculative.execution.policy";
+          "cassandra.speculative.execution.policy";
   public static final String CASSANDRA_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS =
-      "cassandra.max.schema.agreement.wait.second";
+          "cassandra.max.schema.agreement.wait.second";
   public static final String CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_LOCAL =
-      "cassandra.pooling.new.connection.threshold.local";
+          "cassandra.pooling.new.connection.threshold.local";
   public static final String CASSANDRA_POOLING_NEW_CONNECTION_THRESHOLD_REMOTE =
-      "cassandra.pooling.new.connection.threshold.remote";
+          "cassandra.pooling.new.connection.threshold.remote";
   public static final String CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_LOCAL =
-      "cassandra.pooling.max.connection.per.host.local";
+          "cassandra.pooling.max.connection.per.host.local";
   public static final String CASSANDRA_POOLING_MAX_CONNECTION_PER_HOST_REMOTE =
-      "cassandra.pooling.max.connection.per.host.remote";
+          "cassandra.pooling.max.connection.per.host.remote";
   public static final String CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_LOCAL =
-      "cassandra.pooling.core.connection.per.host.local";
+          "cassandra.pooling.core.connection.per.host.local";
   public static final String CASSANDRA_POOLING_CORE_CONNECTION_PER_HOST_REMOTE =
-      "cassandra.pooling.core.connection.per.host.remote";
+          "cassandra.pooling.core.connection.per.host.remote";
   public static final String CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_LOCAL =
-      "cassandra.pooling.max.request.per.connection.local";
+          "cassandra.pooling.max.request.per.connection.local";
   public static final String CASSANDRA_POOLING_MAX_REQUESTS_PER_CONNECTION_REMOTE =
-      "cassandra.pooling.max.request.per.connection.remote";
+          "cassandra.pooling.max.request.per.connection.remote";
   public static final String CASSANDRA_POOLING_IDLE_TIMEOUT_SECONDS =
-      "cassandra.pooling.idle.timeout.seconds";
+          "cassandra.pooling.idle.timeout.seconds";
   public static final String CASSANDRA_POOLING_POOL_TIMEOUT_MILLIS =
-      "cassandra.pooling.pool.timeout.millisecs";
+          "cassandra.pooling.pool.timeout.millisecs";
   public static final String CASSANDRA_POOLING_HEARTBEAT_INTERVAL_SECONDS =
-      "cassandra.pooling.heartbeat.interval.seconds";
+          "cassandra.pooling.heartbeat.interval.seconds";
   public static final String CASSANDRA_QUERY_DEFAULT_CONSISTENCY =
-      "cassandra.query.default.consistency";
+          "cassandra.query.default.consistency";
   public static final String CASSANDRA_QUERY_DEFAULT_SERIAL_CONSISTENCY =
-      "cassandra.query.default.serial.consistency";
+          "cassandra.query.default.serial.consistency";
   public static final String CASSANDRA_QUERY_DEFAULT_FETCH_SIZE =
-      "cassandra.query.default.fetchSize";
+          "cassandra.query.default.fetchSize";
   public static final String CASSANDRA_QUERY_DEFAULT_IDEMPOTENCE =
-      "cassandra.query.default.idempotence";
+          "cassandra.query.default.idempotence";
   public static final String CASSANDRA_SOCKET_CONNECTION_TIMEOUT_MILLIS =
-      "cassandra.socket.connection.timeout.millisecs";
-  public static final String CASSANDRA_SOCKET_KEEP_ALIVE = "cassandra.socket.keep.alive";
+          "cassandra.socket.connection.timeout.millisecs";
+  public static final String CASSANDRA_SOCKET_KEEP_ALIVE =
+          "cassandra.socket.keep.alive";
   public static final String CASSANDRA_SOCKET_READ_TIMEOUT_MILLIS =
-      "cassandra.socket.read.timeout.millisecs";
+          "cassandra.socket.read.timeout.millisecs";
   public static final String CASSANDRA_SOCKET_RECEIVED_BUFFER_SIZE_BYTES =
-      "cassandra.socket.received.buffer.size.bytes";
-  public static final String CASSANDRA_SOCKET_REUSE_ADDRESS = "cassandra.socket.reuse.address";
+          "cassandra.socket.received.buffer.size.bytes";
+  public static final String CASSANDRA_SOCKET_REUSE_ADDRESS =
+          "cassandra.socket.reuse.address";
   public static final String CASSANDRA_SOCKET_SEND_BUFFER_SIZE_BYTES =
-      "cassandra.socket.send.buffer.size.bytes";
-  public static final String CASSANDRA_SOCKET_SO_LINGER = "cassandra.socket.soLinger";
-  public static final String CASSANDRA_SOCKET_TCP_NO_DELAY = "cassandra.socket.tcp.no_delay";
-  public static final String CASSANDRA_WITH_SSL = "cassandra.ssl.enabled";
-  public static final String CASSANDRA_TRUSTSTORE_PATH = "cassandra.ssl.truststore.path";
-  public static final String CASSANDRA_TRUSTSTORE_PASSWORD = "cassandra.ssl.truststore.password";
+          "cassandra.socket.send.buffer.size.bytes";
+  public static final String CASSANDRA_SOCKET_SO_LINGER =
+          "cassandra.socket.soLinger";
+  public static final String CASSANDRA_SOCKET_TCP_NO_DELAY =
+          "cassandra.socket.tcp.no_delay";
+  public static final String CASSANDRA_WITH_SSL =
+          "cassandra.ssl.enabled";
+  public static final String CASSANDRA_TRUSTSTORE_PATH =
+          "cassandra.ssl.truststore.path";
+  public static final String CASSANDRA_TRUSTSTORE_PASSWORD =
+          "cassandra.ssl.truststore.password";
+
 
   public static final String DEFAULT_HOST = "localhost";
   public static final String DEFAULT_PORT = "9042";
@@ -163,30 +177,25 @@ public class CassandraInterpreter extends Interpreter {
       hosts.append(address).append(",");
     }
 
-    LOGGER.info(
-        "Bootstrapping Cassandra Java Driver to connect to "
-            + hosts.toString()
-            + "on port "
-            + port);
+    LOGGER.info("Bootstrapping Cassandra Java Driver to connect to " + hosts.toString() +
+            "on port " + port);
 
     Compression compression = driverConfig.getCompressionProtocol(this);
 
-    clusterBuilder =
-        Cluster.builder()
+    clusterBuilder = Cluster.builder()
             .addContactPoints(addresses)
             .withPort(port)
             .withProtocolVersion(driverConfig.getProtocolVersion(this))
             .withClusterName(getProperty(CASSANDRA_CLUSTER_NAME))
             .withCompression(compression)
-            .withCredentials(
-                getProperty(CASSANDRA_CREDENTIALS_USERNAME),
-                getProperty(CASSANDRA_CREDENTIALS_PASSWORD))
+            .withCredentials(getProperty(CASSANDRA_CREDENTIALS_USERNAME),
+                    getProperty(CASSANDRA_CREDENTIALS_PASSWORD))
             .withLoadBalancingPolicy(driverConfig.getLoadBalancingPolicy(this))
             .withRetryPolicy(driverConfig.getRetryPolicy(this))
             .withReconnectionPolicy(driverConfig.getReconnectionPolicy(this))
             .withSpeculativeExecutionPolicy(driverConfig.getSpeculativeExecutionPolicy(this))
             .withMaxSchemaAgreementWaitSeconds(
-                parseInt(getProperty(CASSANDRA_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS)))
+                    parseInt(getProperty(CASSANDRA_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS)))
             .withPoolingOptions(driverConfig.getPoolingOptions(this))
             .withQueryOptions(driverConfig.getQueryOptions(this))
             .withSocketOptions(driverConfig.getSocketOptions(this));
@@ -199,19 +208,20 @@ public class CassandraInterpreter extends Interpreter {
         final SSLContext sslContext;
         {
           final KeyStore trustStore = KeyStore.getInstance("JKS");
-          final InputStream stream =
-              Files.newInputStream(Paths.get(getProperty(CASSANDRA_TRUSTSTORE_PATH)));
+          final InputStream stream = Files.newInputStream(Paths.get(
+                  getProperty(CASSANDRA_TRUSTSTORE_PATH)));
           trustStore.load(stream, getProperty(CASSANDRA_TRUSTSTORE_PASSWORD).toCharArray());
 
-          final TrustManagerFactory trustManagerFactory =
-              TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+          final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                  TrustManagerFactory.getDefaultAlgorithm());
           trustManagerFactory.init(trustStore);
 
           sslContext = SSLContext.getInstance("TLS");
           sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
         }
-        clusterBuilder =
-            clusterBuilder.withSSL(JdkSSLOptions.builder().withSSLContext(sslContext).build());
+        clusterBuilder = clusterBuilder.withSSL(JdkSSLOptions.builder()
+                .withSSLContext(sslContext)
+                .build());
       } catch (Exception e) {
         LOGGER.error(e.toString());
       }
@@ -236,7 +246,8 @@ public class CassandraInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 
   @Override
   public FormType getFormType() {
@@ -249,16 +260,15 @@ public class CassandraInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return NO_COMPLETION;
   }
 
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-        .createOrGetParallelScheduler(
-            CassandraInterpreter.class.getName() + this.hashCode(),
-            parseInt(getProperty(CASSANDRA_INTERPRETER_PARALLELISM)));
+            .createOrGetParallelScheduler(CassandraInterpreter.class.getName() + this.hashCode(),
+                    parseInt(getProperty(CASSANDRA_INTERPRETER_PARALLELISM)));
   }
 }

@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SessionConfInterpreterTest {
 
@@ -39,8 +41,8 @@ public class SessionConfInterpreterTest {
     Properties properties = new Properties();
     properties.setProperty("property_1", "value_1");
     properties.setProperty("property_2", "value_2");
-    SessionConfInterpreter confInterpreter =
-        new SessionConfInterpreter(properties, "session_1", "group_1", mockInterpreterSetting);
+    SessionConfInterpreter confInterpreter = new SessionConfInterpreter(
+        properties, "session_1", "group_1", mockInterpreterSetting);
 
     RemoteInterpreter remoteInterpreter =
         new RemoteInterpreter(properties, "session_1", "clasName", "user1", null);
@@ -50,8 +52,8 @@ public class SessionConfInterpreterTest {
     when(mockInterpreterGroup.get("session_1")).thenReturn(interpreters);
 
     InterpreterResult result =
-        confInterpreter.interpret(
-            "property_1\tupdated_value_1\nproperty_3\tvalue_3", mock(InterpreterContext.class));
+        confInterpreter.interpret("property_1\tupdated_value_1\nproperty_3\tvalue_3",
+            mock(InterpreterContext.class));
     assertEquals(InterpreterResult.Code.SUCCESS, result.code);
     assertEquals(3, remoteInterpreter.getProperties().size());
     assertEquals("updated_value_1", remoteInterpreter.getProperty("property_1"));
@@ -60,8 +62,8 @@ public class SessionConfInterpreterTest {
 
     remoteInterpreter.setOpened(true);
     result =
-        confInterpreter.interpret(
-            "property_1\tupdated_value_1\nproperty_3\tvalue_3", mock(InterpreterContext.class));
+        confInterpreter.interpret("property_1\tupdated_value_1\nproperty_3\tvalue_3",
+            mock(InterpreterContext.class));
     assertEquals(InterpreterResult.Code.ERROR, result.code);
   }
 }

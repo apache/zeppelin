@@ -17,16 +17,21 @@
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
+
 import java.util.Map;
+
 import org.apache.zeppelin.common.JsonSerializable;
 
-/** RunParagraphWithParametersRequest rest api request message. */
+/**
+ * RunParagraphWithParametersRequest rest api request message.
+ */
 public class RunParagraphWithParametersRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
   Map<String, Object> params;
 
-  public RunParagraphWithParametersRequest() {}
+  public RunParagraphWithParametersRequest() {
+  }
 
   public Map<String, Object> getParams() {
     return params;

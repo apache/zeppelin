@@ -17,15 +17,17 @@
 
 package org.apache.zeppelin.spark;
 
-import java.util.Properties;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+
+import java.util.Properties;
 
 /**
- * Abstract class for SparkInterpreter. For the purpose of co-exist of NewSparkInterpreter and
- * OldSparkInterpreter
+ * Abstract class for SparkInterpreter. For the purpose of co-exist of NewSparkInterpreter
+ * and OldSparkInterpreter
  */
 public abstract class AbstractSparkInterpreter extends Interpreter {
 

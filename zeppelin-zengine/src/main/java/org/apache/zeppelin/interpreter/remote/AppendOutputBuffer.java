@@ -17,7 +17,10 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-/** This element stores the buffered append-data of paragraph's output. */
+/**
+ * This element stores the buffered
+ * append-data of paragraph's output.
+ */
 public class AppendOutputBuffer {
 
   private String noteId;
@@ -47,4 +50,5 @@ public class AppendOutputBuffer {
   public String getData() {
     return data;
   }
+
 }

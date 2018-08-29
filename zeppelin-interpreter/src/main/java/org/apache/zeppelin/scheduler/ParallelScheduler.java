@@ -22,11 +22,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Parallel scheduler runs submitted job concurrently. */
+/**
+ * Parallel scheduler runs submitted job concurrently.
+ */
 public class ParallelScheduler implements Scheduler {
   List<Job> queue = new LinkedList<>();
   List<Job> running = new LinkedList<>();
@@ -38,8 +41,8 @@ public class ParallelScheduler implements Scheduler {
 
   static Logger LOGGER = LoggerFactory.getLogger(ParallelScheduler.class);
 
-  public ParallelScheduler(
-      String name, ExecutorService executor, SchedulerListener listener, int maxConcurrency) {
+  public ParallelScheduler(String name, ExecutorService executor, SchedulerListener listener,
+      int maxConcurrency) {
     this.name = name;
     this.executor = executor;
     this.listener = listener;
@@ -87,6 +90,8 @@ public class ParallelScheduler implements Scheduler {
     }
     return ret;
   }
+
+
 
   @Override
   public void submit(Job job) {
@@ -178,6 +183,7 @@ public class ParallelScheduler implements Scheduler {
     }
   }
 
+
   @Override
   public void stop() {
     terminate = true;
@@ -185,4 +191,5 @@ public class ParallelScheduler implements Scheduler {
       queue.notify();
     }
   }
+
 }

@@ -17,13 +17,35 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.ClientConfigurationFactory;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3EncryptionClient;
@@ -35,30 +57,14 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Backend for storing Notebooks on S3 */
+/**
+ * Backend for storing Notebooks on S3
+ */
 public class S3NotebookRepo implements NotebookRepo {
   private static final Logger LOG = LoggerFactory.getLogger(S3NotebookRepo.class);
 
@@ -82,7 +88,9 @@ public class S3NotebookRepo implements NotebookRepo {
   private boolean useServerSideEncryption;
   private ZeppelinConfiguration conf;
 
-  public S3NotebookRepo() {}
+  public S3NotebookRepo() {
+
+  }
 
   public void init(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
@@ -100,18 +108,20 @@ public class S3NotebookRepo implements NotebookRepo {
     }
 
     ClientConfiguration cliConf = createClientConfiguration();
-
+    
     // see if we should be encrypting data in S3
     String kmsKeyID = conf.getS3KMSKeyID();
     if (kmsKeyID != null) {
       // use the AWS KMS to encrypt data
       KMSEncryptionMaterialsProvider emp = new KMSEncryptionMaterialsProvider(kmsKeyID);
       this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
-    } else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
+    }
+    else if (conf.getS3EncryptionMaterialsProviderClass() != null) {
       // use a custom encryption materials provider class
       EncryptionMaterialsProvider emp = createCustomProvider(conf);
       this.s3client = new AmazonS3EncryptionClient(credentialsProvider, emp, cliConf, cryptoConf);
-    } else {
+    }
+    else {
       // regular S3
       this.s3client = new AmazonS3Client(credentialsProvider, cliConf);
     }
@@ -121,8 +131,8 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   /**
-   * Create an instance of a custom encryption materials provider class which supplies encryption
-   * keys to use when reading/writing data in S3.
+   * Create an instance of a custom encryption materials provider class
+   * which supplies encryption keys to use when reading/writing data in S3.
    */
   private EncryptionMaterialsProvider createCustomProvider(ZeppelinConfiguration conf)
       throws IOException {
@@ -133,17 +143,15 @@ public class S3NotebookRepo implements NotebookRepo {
       Object empInstance = Class.forName(empClassname).newInstance();
       if (empInstance instanceof EncryptionMaterialsProvider) {
         emp = (EncryptionMaterialsProvider) empInstance;
-      } else {
-        throw new IOException(
-            "Class "
-                + empClassname
-                + " does not implement "
+      }
+      else {
+        throw new IOException("Class " + empClassname + " does not implement "
                 + EncryptionMaterialsProvider.class.getName());
       }
-    } catch (Exception e) {
-      throw new IOException(
-          "Unable to instantiate encryption materials provider class " + empClassname + ": " + e,
-          e);
+    }
+    catch (Exception e) {
+      throw new IOException("Unable to instantiate encryption materials provider class "
+              + empClassname + ": " + e, e);
     }
 
     return emp;
@@ -151,7 +159,6 @@ public class S3NotebookRepo implements NotebookRepo {
 
   /**
    * Create AWS client configuration and return it.
-   *
    * @return AWS client configuration
    */
   private ClientConfiguration createClientConfiguration() {
@@ -171,8 +178,9 @@ public class S3NotebookRepo implements NotebookRepo {
     List<NoteInfo> infos = new LinkedList<>();
     NoteInfo info;
     try {
-      ListObjectsRequest listObjectsRequest =
-          new ListObjectsRequest().withBucketName(bucketName).withPrefix(user + "/" + "notebook");
+      ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+              .withBucketName(bucketName)
+              .withPrefix(user + "/" + "notebook");
       ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
@@ -196,7 +204,8 @@ public class S3NotebookRepo implements NotebookRepo {
     S3Object s3object;
     try {
       s3object = s3client.getObject(new GetObjectRequest(bucketName, key));
-    } catch (AmazonClientException ace) {
+    }
+    catch (AmazonClientException ace) {
       throw new IOException("Unable to retrieve object from S3: " + ace, ace);
     }
 
@@ -237,9 +246,11 @@ public class S3NotebookRepo implements NotebookRepo {
       }
 
       s3client.putObject(putRequest);
-    } catch (AmazonClientException ace) {
+    }
+    catch (AmazonClientException ace) {
       throw new IOException("Unable to store note in S3: " + ace, ace);
-    } finally {
+    }
+    finally {
       FileUtils.deleteQuietly(file);
     }
   }
@@ -247,8 +258,8 @@ public class S3NotebookRepo implements NotebookRepo {
   @Override
   public void remove(String noteId, AuthenticationInfo subject) throws IOException {
     String key = user + "/" + "notebook" + "/" + noteId;
-    final ListObjectsRequest listObjectsRequest =
-        new ListObjectsRequest().withBucketName(bucketName).withPrefix(key);
+    final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+        .withBucketName(bucketName).withPrefix(key);
 
     try {
       ObjectListing objects = s3client.listObjects(listObjectsRequest);
@@ -258,14 +269,15 @@ public class S3NotebookRepo implements NotebookRepo {
         }
         objects = s3client.listNextBatchOfObjects(objects);
       } while (objects.isTruncated());
-    } catch (AmazonClientException ace) {
+    }
+    catch (AmazonClientException ace) {
       throw new IOException("Unable to remove note in S3: " + ace, ace);
     }
   }
 
   @Override
   public void close() {
-    // no-op
+    //no-op
   }
 
   @Override
@@ -278,4 +290,5 @@ public class S3NotebookRepo implements NotebookRepo {
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
     LOG.warn("Method not implemented");
   }
+
 }

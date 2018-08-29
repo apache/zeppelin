@@ -16,11 +16,14 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** This class connects to existing process */
+/**
+ * This class connects to existing process
+ */
 public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
   private final String host;
@@ -28,7 +31,11 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final String interpreterSettingName;
 
   public RemoteInterpreterRunningProcess(
-      String interpreterSettingName, int connectTimeout, String host, int port) {
+      String interpreterSettingName,
+      int connectTimeout,
+      String host,
+      int port
+  ) {
     super(connectTimeout);
     this.interpreterSettingName = interpreterSettingName;
     this.host = host;
@@ -63,14 +70,13 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
       if (isRunning()) {
         logger.info("Kill interpreter process");
         try {
-          callRemoteFunction(
-              new RemoteFunction<Void>() {
-                @Override
-                public Void call(RemoteInterpreterService.Client client) throws Exception {
-                  client.shutdown();
-                  return null;
-                }
-              });
+          callRemoteFunction(new RemoteFunction<Void>() {
+            @Override
+            public Void call(RemoteInterpreterService.Client client) throws Exception {
+              client.shutdown();
+              return null;
+            }
+          });
         } catch (Exception e) {
           logger.warn("ignore the exception when shutting down interpreter process.", e);
         }

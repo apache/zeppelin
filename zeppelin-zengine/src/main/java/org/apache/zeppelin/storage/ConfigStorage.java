@@ -15,22 +15,31 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.storage;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.IOException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.helium.HeliumConf;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.NotebookAuthorizationInfoSaving;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.CredentialsInfoSaving;
 import org.apache.zeppelin.util.ReflectionUtils;
+
+import java.io.IOException;
 
 /**
  * Interface for storing zeppelin configuration.
  *
- * <p>1. interpreter-setting.json 2. helium.json 3. notebook-authorization.json 4. credentials.json
+ * 1. interpreter-setting.json
+ * 2. helium.json
+ * 3. notebook-authorization.json
+ * 4. credentials.json
+ *
  */
 public abstract class ConfigStorage {
 
@@ -49,9 +58,10 @@ public abstract class ConfigStorage {
   private static ConfigStorage createConfigStorage(ZeppelinConfiguration zConf) throws IOException {
     String configStorageClass =
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_STORAGE_CLASS);
-    return ReflectionUtils.createClazzInstance(
-        configStorageClass, new Class[] {ZeppelinConfiguration.class}, new Object[] {zConf});
+    return ReflectionUtils.createClazzInstance(configStorageClass,
+        new Class[] {ZeppelinConfiguration.class}, new Object[] {zConf});
   }
+
 
   public ConfigStorage(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
@@ -71,7 +81,7 @@ public abstract class ConfigStorage {
   public abstract void saveCredentials(String credentials) throws IOException;
 
   protected InterpreterInfoSaving buildInterpreterInfoSaving(String json) {
-    // TODO(zjffdu) This kind of post processing is ugly.
+    //TODO(zjffdu) This kind of post processing is ugly.
     JsonParser jsonParser = new JsonParser();
     JsonObject jsonObject = jsonParser.parse(json).getAsJsonObject();
     InterpreterInfoSaving infoSaving = InterpreterInfoSaving.fromJson(json);
@@ -82,8 +92,7 @@ public abstract class ConfigStorage {
       // previously created setting should turn this feature on here.
       interpreterSetting.getOption();
       interpreterSetting.convertPermissionsFromUsersToOwners(
-          jsonObject
-              .getAsJsonObject("interpreterSettings")
+          jsonObject.getAsJsonObject("interpreterSettings")
               .getAsJsonObject(interpreterSetting.getId()));
     }
     return infoSaving;

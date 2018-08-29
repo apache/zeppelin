@@ -147,7 +147,6 @@
     <plugin.download.version>1.3.0</plugin.download.version>
     <plugin.deploy.version>2.8.2</plugin.deploy.version>
     <plugin.shade.version>3.1.1</plugin.shade.version>
-    <plugin.fmt.version>2.5.1</plugin.fmt.version>
 
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
@@ -398,6 +397,46 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <skip>true</skip>
+          <failOnViolation>false</failOnViolation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <sourceDirectories>${basedir}/src/main/java,${basedir}/src/main/scala</sourceDirectories>
+          <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+          <configLocation>_tools/checkstyle.xml</configLocation>
+          <outputFile>${basedir}/target/checkstyle-output.xml</outputFile>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+          <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle-fail-build</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <failOnViolation>true</failOnViolation>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>checkstyle-gen-html-report</id>
+            <phase>install</phase>
+            <goals>
+              <goal>checkstyle-aggregate</goal>
+            </goals>
+            <configuration>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*,org/apache/zeppelin/scio/avro/*,org/apache/zeppelin/python/proto/*</excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <version>${plugin.resource.version}</version>
         <executions>
@@ -530,29 +569,14 @@
       </configuration>
     </plugin>
     -->
-      <plugin>
-        <groupId>com.coveo</groupId>
-        <artifactId>fmt-maven-plugin</artifactId>
-      </plugin>
     </plugins>
 
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>com.coveo</groupId>
-          <artifactId>fmt-maven-plugin</artifactId>
-          <version>${plugin.fmt.version}</version>
-          <configuration>
-            <displayLimit>10000</displayLimit>
-          </configuration>
-          <executions>
-            <execution>
-              <phase>validate</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${plugin.checkstyle.version}</version>
         </plugin>
 
         <plugin>

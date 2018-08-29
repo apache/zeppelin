@@ -16,6 +16,14 @@
  */
 package org.apache.zeppelin.helium;
 
+import org.apache.zeppelin.dep.DependencyResolver;
+import org.apache.zeppelin.resource.DistributedResourcePool;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourceSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URL;
@@ -25,15 +33,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.resource.DistributedResourcePool;
-import org.apache.zeppelin.resource.Resource;
-import org.apache.zeppelin.resource.ResourcePool;
-import org.apache.zeppelin.resource.ResourceSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** Load application */
+/**
+ * Load application
+ */
 public class ApplicationLoader {
   Logger logger = LoggerFactory.getLogger(ApplicationLoader.class);
 
@@ -44,10 +47,13 @@ public class ApplicationLoader {
   public ApplicationLoader(ResourcePool resourcePool, DependencyResolver depResolver) {
     this.depResolver = depResolver;
     this.resourcePool = resourcePool;
-    cached = Collections.synchronizedMap(new HashMap<HeliumPackage, Class<Application>>());
+    cached = Collections.synchronizedMap(
+        new HashMap<HeliumPackage, Class<Application>>());
   }
 
-  /** Information of loaded application */
+  /**
+   * Information of loaded application
+   */
   private static class RunningApplication {
     HeliumPackage packageInfo;
     String noteId;
@@ -84,13 +90,13 @@ public class ApplicationLoader {
       }
 
       RunningApplication r = (RunningApplication) o;
-      return packageInfo.equals(r.getPackageInfo())
-          && paragraphId.equals(r.getParagraphId())
-          && noteId.equals(r.getNoteId());
+      return packageInfo.equals(r.getPackageInfo()) && paragraphId.equals(r.getParagraphId()) &&
+          noteId.equals(r.getNoteId());
     }
   }
 
   /**
+   *
    * Instantiate application
    *
    * @param packageInfo
@@ -98,7 +104,8 @@ public class ApplicationLoader {
    * @return
    * @throws Exception
    */
-  public Application load(HeliumPackage packageInfo, ApplicationContext context) throws Exception {
+  public Application load(HeliumPackage packageInfo, ApplicationContext context)
+      throws Exception {
     if (packageInfo.getType() != HeliumType.APPLICATION) {
       throw new ApplicationException(
           "Can't instantiate " + packageInfo.getType() + " package using ApplicationLoader");
@@ -109,9 +116,8 @@ public class ApplicationLoader {
         new RunningApplication(packageInfo, context.getNoteId(), context.getParagraphId());
 
     // get resource required by this package
-    ResourceSet resources =
-        findRequiredResourceSet(
-            packageInfo.getResources(), context.getNoteId(), context.getParagraphId());
+    ResourceSet resources = findRequiredResourceSet(packageInfo.getResources(),
+        context.getNoteId(), context.getParagraphId());
 
     // load class
     Class<Application> appClass = loadClass(packageInfo);
@@ -133,7 +139,7 @@ public class ApplicationLoader {
   }
 
   public ResourceSet findRequiredResourceSet(
-      String[][] requiredResources, String noteId, String paragraphId) {
+      String [][] requiredResources, String noteId, String paragraphId) {
     if (requiredResources == null || requiredResources.length == 0) {
       return new ResourceSet();
     }
@@ -148,8 +154,10 @@ public class ApplicationLoader {
     return findRequiredResourceSet(requiredResources, noteId, paragraphId, allResources);
   }
 
-  static ResourceSet findRequiredResourceSet(
-      String[][] requiredResources, String noteId, String paragraphId, ResourceSet resources) {
+  static ResourceSet findRequiredResourceSet(String [][] requiredResources,
+                                             String noteId,
+                                             String paragraphId,
+                                             ResourceSet resources) {
     ResourceSet args = new ResourceSet();
     if (requiredResources == null || requiredResources.length == 0) {
       return args;
@@ -157,7 +165,7 @@ public class ApplicationLoader {
 
     resources = resources.filterByNoteId(noteId).filterByParagraphId(paragraphId);
 
-    for (String[] requires : requiredResources) {
+    for (String [] requires : requiredResources) {
       args.clear();
 
       for (String require : requires) {
@@ -189,6 +197,7 @@ public class ApplicationLoader {
     return null;
   }
 
+
   private Class<Application> loadClass(HeliumPackage packageInfo) throws Exception {
     if (cached.containsKey(packageInfo)) {
       return cached.get(packageInfo);
@@ -210,7 +219,8 @@ public class ApplicationLoader {
     }
     URLClassLoader applicationClassLoader =
         new URLClassLoader(
-            urlList.toArray(new URL[] {}), Thread.currentThread().getContextClassLoader());
+            urlList.toArray(new URL[]{}),
+            Thread.currentThread().getContextClassLoader());
 
     Class<Application> cls =
         (Class<Application>) applicationClassLoader.loadClass(packageInfo.getClassName());

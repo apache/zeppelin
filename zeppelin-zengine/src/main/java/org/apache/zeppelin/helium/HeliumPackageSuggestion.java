@@ -21,7 +21,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Suggested apps */
+/**
+ * Suggested apps
+ */
 public class HeliumPackageSuggestion {
   private final List<HeliumPackageSearchResult> available = new LinkedList<>();
 
@@ -30,20 +32,21 @@ public class HeliumPackageSuggestion {
    * provides n - 'favorite' list, based on occurrence of apps in notebook
    */
 
-  public HeliumPackageSuggestion() {}
+  public HeliumPackageSuggestion() {
+
+  }
 
   public void addAvailablePackage(HeliumPackageSearchResult r) {
     available.add(r);
+
   }
 
   public void sort() {
-    Collections.sort(
-        available,
-        new Comparator<HeliumPackageSearchResult>() {
-          @Override
-          public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
-            return o1.getPkg().getName().compareTo(o2.getPkg().getName());
-          }
-        });
+    Collections.sort(available, new Comparator<HeliumPackageSearchResult>() {
+      @Override
+      public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
+        return o1.getPkg().getName().compareTo(o2.getPkg().getName());
+      }
+    });
   }
 }

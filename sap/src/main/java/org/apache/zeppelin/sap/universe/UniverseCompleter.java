@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.sap.universe;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.*;
-import java.util.regex.Pattern;
 import jline.console.completer.ArgumentCompleter.ArgumentList;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +27,15 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** SAP Universe auto complete functionality. */
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.regex.Pattern;
+
+/**
+ * SAP Universe auto complete functionality.
+ */
 public class UniverseCompleter {
 
   private static Logger logger = LoggerFactory.getLogger(UniverseCompleter.class);
@@ -44,63 +47,69 @@ public class UniverseCompleter {
   public static final String KW_UNIVERSE = "universe";
   public static final String TYPE_FOLDER = "folder";
 
-  private static final Comparator nodeInfoComparator =
-      new Comparator<UniverseNodeInfo>() {
-        @Override
-        public int compare(UniverseNodeInfo o1, UniverseNodeInfo o2) {
-          if (o1.getType().equalsIgnoreCase(TYPE_FOLDER)
-              && o2.getType().equalsIgnoreCase(TYPE_FOLDER)) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
-          }
-          if (o1.getType().equalsIgnoreCase(TYPE_FOLDER)) {
-            return -1;
-          }
-          if (o2.getType().equalsIgnoreCase(TYPE_FOLDER)) {
-            return 1;
-          }
-          if (!o1.getType().equalsIgnoreCase(o2.getType())) {
-            return o1.getType().compareToIgnoreCase(o2.getType());
-          } else {
+  private static final Comparator nodeInfoComparator = new Comparator<UniverseNodeInfo>() {
+    @Override
+    public int compare(UniverseNodeInfo o1, UniverseNodeInfo o2) {
+      if (o1.getType().equalsIgnoreCase(TYPE_FOLDER)
+          && o2.getType().equalsIgnoreCase(TYPE_FOLDER)) {
+        return o1.getName().compareToIgnoreCase(o2.getName());
+      }
+      if (o1.getType().equalsIgnoreCase(TYPE_FOLDER)) {
+        return -1;
+      }
+      if (o2.getType().equalsIgnoreCase(TYPE_FOLDER)) {
+        return 1;
+      }
+      if (!o1.getType().equalsIgnoreCase(o2.getType())) {
+        return o1.getType().compareToIgnoreCase(o2.getType());
+      } else {
 
-            return o1.getName().compareToIgnoreCase(o2.getName());
-          }
+        return o1.getName().compareToIgnoreCase(o2.getName());
+      }
+    }
+  };
+
+  /**
+   * Delimiter that can split keyword list
+   */
+  private WhitespaceArgumentDelimiter sqlDelimiter = new WhitespaceArgumentDelimiter() {
+
+    private Pattern pattern = Pattern.compile(",|;");
+
+    @Override
+    public boolean isDelimiterChar(CharSequence buffer, int pos) {
+      char c = buffer.charAt(pos);
+      boolean endName = false;
+      for (int i = pos; i > 0; i--) {
+        char ch = buffer.charAt(i);
+        if (ch == '\n') {
+          break;
         }
-      };
-
-  /** Delimiter that can split keyword list */
-  private WhitespaceArgumentDelimiter sqlDelimiter =
-      new WhitespaceArgumentDelimiter() {
-
-        private Pattern pattern = Pattern.compile(",|;");
-
-        @Override
-        public boolean isDelimiterChar(CharSequence buffer, int pos) {
-          char c = buffer.charAt(pos);
-          boolean endName = false;
-          for (int i = pos; i > 0; i--) {
-            char ch = buffer.charAt(i);
-            if (ch == '\n') {
-              break;
-            }
-            if (ch == START_NAME && !endName) {
-              return false;
-            }
-            if (ch == END_NAME) {
-              break;
-            }
-          }
-          return pattern.matcher(StringUtils.EMPTY + buffer.charAt(pos)).matches()
+        if (ch == START_NAME && !endName) {
+          return false;
+        }
+        if (ch == END_NAME) {
+          break;
+        }
+      }
+      return pattern.matcher(StringUtils.EMPTY + buffer.charAt(pos)).matches()
               || super.isDelimiterChar(buffer, pos);
-        }
-      };
+    }
+  };
 
-  /** Universe completer */
+  /**
+   * Universe completer
+   */
   private CachedCompleter universeCompleter;
 
-  /** Keywords completer */
+  /**
+   * Keywords completer
+   */
   private CachedCompleter keywordCompleter;
 
-  /** UniverseInfo completers */
+  /**
+   * UniverseInfo completers
+   */
   private Map<String, CachedCompleter> universeInfoCompletersMap = new HashMap<>();
 
   private int ttlInSeconds;
@@ -115,7 +124,8 @@ public class UniverseCompleter {
     String argument = cursorArgument.getCursorArgumentPartForComplete();
     if (cursorArgument.isUniverseNamePosition()) {
       List<CharSequence> universeCandidates = new ArrayList<>();
-      universeCompleter.getCompleter().complete(argument, argument.length(), universeCandidates);
+      universeCompleter.getCompleter().complete(argument, argument.length(),
+          universeCandidates);
       addCompletions(candidates, universeCandidates, CompletionType.universe.name());
       return universeCandidates.size();
     }
@@ -132,9 +142,8 @@ public class UniverseCompleter {
     }
 
     List<CharSequence> keywordCandidates = new ArrayList<>();
-    keywordCompleter
-        .getCompleter()
-        .complete(argument, argument.length() > 0 ? argument.length() : 0, keywordCandidates);
+    keywordCompleter.getCompleter().complete(argument,
+        argument.length() > 0 ? argument.length() : 0, keywordCandidates);
     addCompletions(candidates, keywordCandidates, CompletionType.keyword.name());
 
     return keywordCandidates.size();
@@ -143,36 +152,32 @@ public class UniverseCompleter {
   public void createOrUpdate(UniverseClient client, String token, String buffer, int cursor) {
     try {
       CursorArgument cursorArgument = parseCursorArgument(buffer, cursor);
-      if (keywordCompleter == null
-          || keywordCompleter.getCompleter() == null
+      if (keywordCompleter == null || keywordCompleter.getCompleter() == null
           || keywordCompleter.isExpired()) {
         Set<String> keywords = getKeywordsCompletions();
         if (keywords != null && !keywords.isEmpty()) {
           keywordCompleter = new CachedCompleter(new StringsCompleter(keywords), 0);
         }
       }
-      if (cursorArgument.needLoadUniverses()
-          || (universeCompleter == null
-              || universeCompleter.getCompleter() == null
-              || universeCompleter.isExpired())) {
+      if (cursorArgument.needLoadUniverses() || (universeCompleter == null
+          || universeCompleter.getCompleter() == null || universeCompleter.isExpired())) {
         client.cleanUniverses();
         client.loadUniverses(token);
         if (client.getUniversesMap().size() > 0) {
-          universeCompleter =
-              new CachedCompleter(
-                  new StringsCompleter(client.getUniversesMap().keySet()), ttlInSeconds);
+          universeCompleter = new CachedCompleter(
+              new StringsCompleter(client.getUniversesMap().keySet()), ttlInSeconds);
         }
       }
-      if (cursorArgument.needLoadUniverseInfo()
-          && (!universeInfoCompletersMap.containsKey(cursorArgument.getUniverse())
-              || universeInfoCompletersMap.get(cursorArgument.getUniverse()).getCompleter() == null
-              || universeInfoCompletersMap.get(cursorArgument.getUniverse()).isExpired())) {
+      if (cursorArgument.needLoadUniverseInfo() &&
+          (!universeInfoCompletersMap.containsKey(cursorArgument.getUniverse()) ||
+              universeInfoCompletersMap.get(cursorArgument.getUniverse()).getCompleter() == null ||
+              universeInfoCompletersMap.get(cursorArgument.getUniverse()).isExpired())) {
         if (StringUtils.isNotBlank(cursorArgument.getUniverse())) {
           client.removeUniverseInfo(cursorArgument.getUniverse());
-          Map<String, UniverseNodeInfo> info =
-              client.getUniverseNodesInfo(token, cursorArgument.getUniverse());
-          CachedCompleter completer =
-              new CachedCompleter(new UniverseNodeInfoCompleter(info.values()), ttlInSeconds);
+          Map<String, UniverseNodeInfo> info = client.getUniverseNodesInfo(token, cursorArgument
+              .getUniverse());
+          CachedCompleter completer = new CachedCompleter(
+              new UniverseNodeInfoCompleter(info.values()), ttlInSeconds);
           universeInfoCompletersMap.put(cursorArgument.getUniverse(), completer);
         }
       }
@@ -183,10 +188,8 @@ public class UniverseCompleter {
 
   private Set<String> getKeywordsCompletions() throws IOException {
     String keywords =
-        new BufferedReader(
-                new InputStreamReader(
-                    UniverseCompleter.class.getResourceAsStream("/universe.keywords")))
-            .readLine();
+        new BufferedReader(new InputStreamReader(
+            UniverseCompleter.class.getResourceAsStream("/universe.keywords"))).readLine();
 
     Set<String> completions = new TreeSet<>();
 
@@ -214,8 +217,8 @@ public class UniverseCompleter {
 
         if (argIndex > 0 && argList.getArguments()[argIndex - 1].equalsIgnoreCase(KW_UNIVERSE)) {
           result.setUniverseNamePosition(true);
-          result.setCursorArgumentPartForComplete(
-              cleanName(argList.getCursorArgument().substring(0, argList.getArgumentPosition())));
+          result.setCursorArgumentPartForComplete(cleanName(argList.getCursorArgument()
+              .substring(0, argList.getArgumentPosition())));
           return result;
         }
         if (argIndex > 1) {
@@ -233,8 +236,8 @@ public class UniverseCompleter {
             result.setUniverseNodePosition(true);
             return result;
           } else {
-            result.setCursorArgumentPartForComplete(
-                argList.getCursorArgument().substring(0, argList.getArgumentPosition()));
+            result.setCursorArgumentPartForComplete(argList.getCursorArgument()
+                .substring(0, argList.getArgumentPosition()));
           }
         }
       }
@@ -251,10 +254,8 @@ public class UniverseCompleter {
     return name.replaceAll(CLEAN_NAME_REGEX, StringUtils.EMPTY);
   }
 
-  private void addCompletions(
-      List<InterpreterCompletion> interpreterCompletions,
-      List<CharSequence> candidates,
-      String meta) {
+  private void addCompletions(List<InterpreterCompletion> interpreterCompletions,
+                              List<CharSequence> candidates, String meta) {
     for (CharSequence candidate : candidates) {
       String value;
       if (meta.equalsIgnoreCase(CompletionType.universe.name())) {
@@ -266,8 +267,8 @@ public class UniverseCompleter {
     }
   }
 
-  private void addCompletions(
-      List<InterpreterCompletion> interpreterCompletions, List<UniverseNodeInfo> candidates) {
+  private void addCompletions(List<InterpreterCompletion> interpreterCompletions,
+                              List<UniverseNodeInfo> candidates) {
     for (UniverseNodeInfo candidate : candidates) {
       String value;
       if (candidate.getType().equalsIgnoreCase(TYPE_FOLDER)) {
@@ -275,8 +276,8 @@ public class UniverseCompleter {
       } else {
         value = String.format("%s%s", candidate.getName(), END_NAME);
       }
-      interpreterCompletions.add(
-          new InterpreterCompletion(candidate.getName(), value, candidate.getType()));
+      interpreterCompletions.add(new InterpreterCompletion(candidate.getName(), value,
+          candidate.getType()));
     }
   }
 

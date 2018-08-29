@@ -1,15 +1,18 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * <p>http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package org.apache.zeppelin.realm.jwt;
@@ -18,13 +21,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-/** * */
+
+/***
+ * 
+ */
 public class SimplePrincipalMapper implements PrincipalMapper {
 
   public HashMap<String, String[]> principalMappings = null;
   public HashMap<String, String[]> groupMappings = null;
 
-  public SimplePrincipalMapper() {}
+  public SimplePrincipalMapper() {
+  }
 
   /* (non-Javadoc)
    * @see org.apache.hadoop.gateway.filter.PrincipalMapper#loadMappingTable(java.lang.String)
@@ -38,7 +45,8 @@ public class SimplePrincipalMapper implements PrincipalMapper {
     }
   }
 
-  private HashMap<String, String[]> parseMapping(String mappings) throws PrincipalMappingException {
+  private HashMap<String, String[]> parseMapping(String mappings)
+      throws PrincipalMappingException {
     if (mappings == null) {
       return null;
     }
@@ -63,10 +71,8 @@ public class SimplePrincipalMapper implements PrincipalMapper {
       // no principal mapping will occur
       table.clear();
       throw new PrincipalMappingException(
-          "Unable to load mappings from provided string: "
-              + mappings
-              + " - no principal mapping will be provided.",
-          e);
+          "Unable to load mappings from provided string: " + mappings
+              + " - no principal mapping will be provided.", e);
     }
   }
 

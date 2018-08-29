@@ -16,8 +16,6 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
@@ -29,7 +27,12 @@ import org.apache.zeppelin.scheduler.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** HeliumApplicationFactory */
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+/**
+ * HeliumApplicationFactory
+ */
 public class HeliumApplicationFactory implements ApplicationEventListener, NotebookEventListener {
   private final Logger logger = LoggerFactory.getLogger(HeliumApplicationFactory.class);
   private final ExecutorService executor;
@@ -37,27 +40,29 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   private ApplicationEventListener applicationEventListener;
 
   public HeliumApplicationFactory() {
-    executor =
-        ExecutorFactory.singleton().createOrGet(HeliumApplicationFactory.class.getName(), 10);
+    executor = ExecutorFactory.singleton().createOrGet(
+        HeliumApplicationFactory.class.getName(), 10);
   }
 
   private boolean isRemote(InterpreterGroup group) {
     return group.getAngularObjectRegistry() instanceof RemoteAngularObjectRegistry;
   }
 
-  /** Load pkg and run task */
+
+  /**
+   * Load pkg and run task
+   */
   public String loadAndRun(HeliumPackage pkg, Paragraph paragraph) {
     ApplicationState appState = paragraph.createOrGetApplicationState(pkg);
-    onLoad(
-        paragraph.getNote().getId(),
-        paragraph.getId(),
-        appState.getId(),
+    onLoad(paragraph.getNote().getId(), paragraph.getId(), appState.getId(),
         appState.getHeliumPackage());
     executor.submit(new LoadApplication(appState, pkg, paragraph));
     return appState.getId();
   }
 
-  /** Load application and run in the remote process */
+  /**
+   * Load application and run in the remote process
+   */
   private class LoadApplication implements Runnable {
     private final HeliumPackage pkg;
     private final Paragraph paragraph;
@@ -109,16 +114,19 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
         final String pkgInfo = pkg.toJson();
         final String appId = appState.getId();
 
-        RemoteApplicationResult ret =
-            intpProcess.callRemoteFunction(
-                new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-                  @Override
-                  public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                      throws Exception {
-                    return client.loadApplication(
-                        appId, pkgInfo, paragraph.getNote().getId(), paragraph.getId());
-                  }
-                });
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
+              @Override
+              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
+                  throws Exception {
+                return client.loadApplication(
+                    appId,
+                    pkgInfo,
+                    paragraph.getNote().getId(),
+                    paragraph.getId());
+              }
+            }
+        );
         if (ret.isSuccess()) {
           appStatusChange(paragraph, appState.getId(), ApplicationState.Status.LOADED);
         } else {
@@ -130,7 +138,6 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
 
   /**
    * Get ApplicationState
-   *
    * @param paragraph
    * @param appId
    * @return
@@ -140,7 +147,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   }
 
   /**
-   * Unload application It does not remove ApplicationState
+   * Unload application
+   * It does not remove ApplicationState
    *
    * @param paragraph
    * @param appId
@@ -149,7 +157,9 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
     executor.execute(new UnloadApplication(paragraph, appId));
   }
 
-  /** Unload application task */
+  /**
+   * Unload application task
+   */
   private class UnloadApplication implements Runnable {
     private final Paragraph paragraph;
     private final String appId;
@@ -203,15 +213,15 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
           throw new ApplicationException("Target interpreter process is not running");
         }
 
-        RemoteApplicationResult ret =
-            intpProcess.callRemoteFunction(
-                new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-                  @Override
-                  public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                      throws Exception {
-                    return client.unloadApplication(appsToUnload.getId());
-                  }
-                });
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
+              @Override
+              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
+                  throws Exception {
+                return client.unloadApplication(appsToUnload.getId());
+              }
+            }
+        );
         if (ret.isSuccess()) {
           appStatusChange(paragraph, appsToUnload.getId(), ApplicationState.Status.UNLOADED);
         } else {
@@ -222,7 +232,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   }
 
   /**
-   * Run application It does not remove ApplicationState
+   * Run application
+   * It does not remove ApplicationState
    *
    * @param paragraph
    * @param appId
@@ -231,7 +242,9 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
     executor.execute(new RunApplication(paragraph, appId));
   }
 
-  /** Run application task */
+  /**
+   * Run application task
+   */
   private class RunApplication implements Runnable {
     private final Paragraph paragraph;
     private final String appId;
@@ -265,7 +278,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
     private void run(final ApplicationState app) throws ApplicationException {
       synchronized (app) {
         if (app.getStatus() != ApplicationState.Status.LOADED) {
-          throw new ApplicationException("Can't run application status " + app.getStatus());
+          throw new ApplicationException(
+              "Can't run application status " + app.getStatus());
         }
 
         Interpreter intp = null;
@@ -280,15 +294,15 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
         if (intpProcess == null) {
           throw new ApplicationException("Target interpreter process is not running");
         }
-        RemoteApplicationResult ret =
-            intpProcess.callRemoteFunction(
-                new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
-                  @Override
-                  public RemoteApplicationResult call(RemoteInterpreterService.Client client)
-                      throws Exception {
-                    return client.runApplication(app.getId());
-                  }
-                });
+        RemoteApplicationResult ret = intpProcess.callRemoteFunction(
+            new RemoteInterpreterProcess.RemoteFunction<RemoteApplicationResult>() {
+              @Override
+              public RemoteApplicationResult call(RemoteInterpreterService.Client client)
+                  throws Exception {
+                return client.runApplication(app.getId());
+              }
+            }
+        );
         if (ret.isSuccess()) {
           // success
         } else {
@@ -316,12 +330,8 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
 
   @Override
   public void onOutputUpdated(
-      String noteId,
-      String paragraphId,
-      int index,
-      String appId,
-      InterpreterResult.Type type,
-      String output) {
+      String noteId, String paragraphId, int index, String appId,
+      InterpreterResult.Type type, String output) {
     ApplicationState appToUpdate = getAppState(noteId, paragraphId, appId);
 
     if (appToUpdate != null) {
@@ -354,7 +364,9 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
     }
   }
 
-  private void appStatusChange(Paragraph paragraph, String appId, ApplicationState.Status status) {
+  private void appStatusChange(Paragraph paragraph,
+                               String appId,
+                               ApplicationState.Status status) {
     ApplicationState app = paragraph.getApplicationState(appId);
     app.setStatus(status);
     onStatusChange(paragraph.getNote().getId(), paragraph.getId(), appId, status.toString());
@@ -398,10 +410,13 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   }
 
   @Override
-  public void onNoteRemove(Note note) {}
+  public void onNoteRemove(Note note) {
+  }
 
   @Override
-  public void onNoteCreate(Note note) {}
+  public void onNoteCreate(Note note) {
+
+  }
 
   @Override
   public void onParagraphRemove(Paragraph paragraph) {
@@ -413,7 +428,9 @@ public class HeliumApplicationFactory implements ApplicationEventListener, Noteb
   }
 
   @Override
-  public void onParagraphCreate(Paragraph p) {}
+  public void onParagraphCreate(Paragraph p) {
+
+  }
 
   @Override
   public void onParagraphStatusChange(Paragraph p, Job.Status status) {

@@ -16,18 +16,21 @@
  */
 package org.apache.zeppelin.types;
 
-import java.util.List;
 import org.apache.zeppelin.interpreter.InterpreterInfo;
 
-/** InterpreterSetting information for binding. */
+import java.util.List;
+
+/**
+ * InterpreterSetting information for binding.
+ */
 public class InterpreterSettingsList {
   private String id;
   private String name;
   private List<InterpreterInfo> interpreters;
   private boolean selected;
 
-  public InterpreterSettingsList(
-      String id, String name, List<InterpreterInfo> interpreters, boolean selected) {
+  public InterpreterSettingsList(String id, String name,
+                                 List<InterpreterInfo> interpreters, boolean selected) {
     this.id = id;
     this.name = name;
     this.interpreters = interpreters;

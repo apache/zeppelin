@@ -19,27 +19,26 @@ package org.apache.zeppelin.realm.jwt;
 
 public interface PrincipalMapper {
   /**
-   * Load the internal principal mapping table from the provided string value which conforms to the
-   * following semicolon delimited format: actual[,another-actual]=mapped;...
-   *
+   * Load the internal principal mapping table from the provided
+   * string value which conforms to the following semicolon delimited format:
+   * actual[,another-actual]=mapped;...
    * @param principalMapping
    */
   void loadMappingTable(String principalMapping, String groupMapping)
-      throws PrincipalMappingException;
+          throws PrincipalMappingException;
 
   /**
-   * Acquire a mapped principal name from the mapping table as appropriate. Otherwise, the provided
-   * principalName will be used.
-   *
+   * Acquire a mapped principal name from the mapping table
+   * as appropriate. Otherwise, the provided principalName
+   * will be used.
    * @param principalName
    * @return principal name to be used in the assertion
    */
   String mapUserPrincipal(String principalName);
 
   /**
-   * Acquire array of group principal names from the mapping table as appropriate. Otherwise, return
-   * null.
-   *
+   * Acquire array of group principal names from the mapping table
+   * as appropriate. Otherwise, return null.
    * @param principalName
    * @return group principal names to be used in the assertion
    */

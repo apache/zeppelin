@@ -19,12 +19,13 @@ package org.apache.zeppelin.service;
 
 import java.io.IOException;
 
-/** This will be used by service classes as callback mechanism. */
+/**
+ * This will be used by service classes as callback mechanism.
+ */
 public interface ServiceCallback<T> {
 
   /**
    * Called when this service call is starting
-   *
    * @param message
    * @param context
    * @throws IOException
@@ -33,7 +34,6 @@ public interface ServiceCallback<T> {
 
   /**
    * Called when this service call is succeed
-   *
    * @param result
    * @param context
    * @throws IOException
@@ -41,11 +41,11 @@ public interface ServiceCallback<T> {
   void onSuccess(T result, ServiceContext context) throws IOException;
 
   /**
-   * Called when this service call is failed
-   *
+   * Called when this service call is failed 
    * @param ex
    * @param context
    * @throws IOException
    */
   void onFailure(Exception ex, ServiceContext context) throws IOException;
+
 }

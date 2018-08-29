@@ -19,12 +19,14 @@ package org.apache.zeppelin.helium;
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/** Represetns webpack json format result */
+/**
+ * Represetns webpack json format result
+ */
 public class WebpackResult implements JsonSerializable {
   private static final Gson gson = new Gson();
 
-  public final String[] errors = new String[0];
-  public final String[] warnings = new String[0];
+  public final String [] errors = new String[0];
+  public final String [] warnings = new String[0];
 
   public String toJson() {
     return gson.toJson(this);

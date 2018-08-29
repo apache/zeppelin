@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.aether.AbstractRepositoryListener;
 import org.sonatype.aether.RepositoryEvent;
 
-/** Simple listener that print log. */
+/**
+ * Simple listener that print log.
+ */
 public class RepositoryListener extends AbstractRepositoryListener {
   Logger logger = LoggerFactory.getLogger(RepositoryListener.class);
 
@@ -40,11 +42,8 @@ public class RepositoryListener extends AbstractRepositoryListener {
 
   @Override
   public void artifactDescriptorInvalid(RepositoryEvent event) {
-    logger.info(
-        "Invalid artifact descriptor for "
-            + event.getArtifact()
-            + ": "
-            + event.getException().getMessage());
+    logger.info("Invalid artifact descriptor for " + event.getArtifact() + ": "
+                                                   + event.getException().getMessage());
   }
 
   @Override

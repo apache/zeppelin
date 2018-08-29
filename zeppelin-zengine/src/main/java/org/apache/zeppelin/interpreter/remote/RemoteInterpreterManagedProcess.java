@@ -18,11 +18,6 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -35,11 +30,19 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** This class manages start / stop of remote interpreter process */
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * This class manages start / stop of remote interpreter process
+ */
 public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     implements ExecuteResultHandler {
-  private static final Logger logger =
-      LoggerFactory.getLogger(RemoteInterpreterManagedProcess.class);
+  private static final Logger logger = LoggerFactory.getLogger(
+      RemoteInterpreterManagedProcess.class);
 
   private final String interpreterRunner;
   private final int zeppelinServerRPCPort;
@@ -144,15 +147,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
         }
       }
       if (!running.get()) {
-        throw new IOException(
-            new String(
-                String.format(
-                        "Interpreter Process creation is time out in %d seconds",
-                        getConnectTimeout() / 1000)
-                    + "\n"
-                    + "You can increase timeout threshold via "
-                    + "setting zeppelin.interpreter.connect.timeout of this interpreter.\n"
-                    + cmdOut.toString()));
+        throw new IOException(new String(
+            String.format("Interpreter Process creation is time out in %d seconds",
+                getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
+                "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
+                cmdOut.toString()));
       }
     } catch (InterruptedException e) {
       logger.error("Remote interpreter is not accessible");
@@ -164,14 +163,13 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     if (isRunning()) {
       logger.info("Kill interpreter process");
       try {
-        callRemoteFunction(
-            new RemoteFunction<Void>() {
-              @Override
-              public Void call(RemoteInterpreterService.Client client) throws Exception {
-                client.shutdown();
-                return null;
-              }
-            });
+        callRemoteFunction(new RemoteFunction<Void>() {
+          @Override
+          public Void call(RemoteInterpreterService.Client client) throws Exception {
+            client.shutdown();
+            return null;
+          }
+        });
       } catch (Exception e) {
         logger.warn("ignore the exception when shutting down");
       }
@@ -188,6 +186,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   public void onProcessComplete(int exitValue) {
     logger.info("Interpreter process exited {}", exitValue);
     running.set(false);
+
   }
 
   // called by RemoteInterpreterServer to notify that RemoteInterpreter Process is started
@@ -254,7 +253,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
 
     @Override
-    public void write(byte[] b) throws IOException {
+    public void write(byte [] b) throws IOException {
       super.write(b);
 
       if (out != null) {
@@ -267,7 +266,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
 
     @Override
-    public void write(byte[] b, int offset, int len) throws IOException {
+    public void write(byte [] b, int offset, int len) throws IOException {
       super.write(b, offset, len);
 
       if (out != null) {

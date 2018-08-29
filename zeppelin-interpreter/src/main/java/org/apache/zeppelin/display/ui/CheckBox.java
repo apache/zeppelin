@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.display.ui;
 
 import java.util.Collection;
 
-/** Html Checkbox */
+/**
+ * Html Checkbox
+ */
 public class CheckBox extends OptionInput<Object[]> {
 
-  public CheckBox() {}
+  public CheckBox() {
+  }
 
   public CheckBox(String name, Object[] defaultValue, ParamOption[] options) {
     this.name = name;
@@ -34,4 +38,5 @@ public class CheckBox extends OptionInput<Object[]> {
   public CheckBox(String name, Collection<Object> defaultValue, ParamOption[] options) {
     this(name, defaultValue.toArray(), options);
   }
+
 }

@@ -17,32 +17,37 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
+import com.google.gson.internal.StringMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
-/** */
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.*;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+
+/**
+ *
+ */
 public class InterpreterInfoSaving implements JsonSerializable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterInfoSaving.class);
-  private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+  private static final Gson gson =  new GsonBuilder().setPrettyPrinting().create();
 
   public Map<String, InterpreterSetting> interpreterSettings = new HashMap<>();
   public List<RemoteRepository> interpreterRepositories = new ArrayList<>();
@@ -58,8 +63,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
       if (infoSaving != null && infoSaving.interpreterSettings != null) {
         for (InterpreterSetting interpreterSetting : infoSaving.interpreterSettings.values()) {
           interpreterSetting.convertPermissionsFromUsersToOwners(
-              jsonObject
-                  .getAsJsonObject("interpreterSettings")
+              jsonObject.getAsJsonObject("interpreterSettings")
                   .getAsJsonObject(interpreterSetting.getId()));
         }
       }
@@ -76,8 +80,7 @@ public class InterpreterInfoSaving implements JsonSerializable {
       } catch (UnsupportedOperationException e) {
         // File system does not support Posix file permissions (likely windows) - continue anyway.
         LOGGER.warn("unable to setPosixFilePermissions on '{}'.", file);
-      }
-      ;
+      };
     }
     LOGGER.info("Save Interpreter Settings to " + file);
     IOUtils.write(this.toJson(), new FileOutputStream(file.toFile()));

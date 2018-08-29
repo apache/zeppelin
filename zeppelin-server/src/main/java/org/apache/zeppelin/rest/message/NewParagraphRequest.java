@@ -17,15 +17,18 @@
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
+
 import java.util.HashMap;
+
 import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * NewParagraphRequest rest api request message
  *
- * <p>index field will be ignored when it's used to provide initial paragraphs visualization
- * (optional) one of: table,pieChart,multibarChart,stackedAreaChart,lineChart,scatterChart colWidth
- * (optional), e.g. 12.0
+ * index field will be ignored when it's used to provide initial paragraphs
+ * visualization (optional) one of:
+ * table,pieChart,multibarChart,stackedAreaChart,lineChart,scatterChart
+ * colWidth (optional), e.g. 12.0
  */
 public class NewParagraphRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
@@ -33,9 +36,10 @@ public class NewParagraphRequest implements JsonSerializable {
   String title;
   String text;
   Double index;
-  HashMap<String, Object> config;
+  HashMap< String, Object > config;
 
-  public NewParagraphRequest() {}
+  public NewParagraphRequest() {
+  }
 
   public String getTitle() {
     return title;
@@ -49,7 +53,7 @@ public class NewParagraphRequest implements JsonSerializable {
     return index;
   }
 
-  public HashMap<String, Object> getConfig() {
+  public HashMap< String, Object > getConfig() {
     return config;
   }
 

@@ -18,6 +18,13 @@
 package org.apache.zeppelin.plugin;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -27,14 +34,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
-import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.ConcurrentHashMap;
 
-/** Class for loading Plugins */
+/**
+ * Class for loading Plugins
+ */
 public class PluginManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(PluginManager.class);
 
@@ -59,30 +63,24 @@ public class PluginManager {
     String isTest = System.getenv("IS_ZEPPELIN_TEST");
     if (isTest != null && isTest.equals("true")) {
       try {
-        NotebookRepo notebookRepo =
-            (NotebookRepo) (Class.forName(notebookRepoClassName).newInstance());
+        NotebookRepo notebookRepo = (NotebookRepo)
+            (Class.forName(notebookRepoClassName).newInstance());
         return notebookRepo;
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn(
-            "Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
+        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
       }
     }
 
-    String simpleClassName =
-        notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
-    URLClassLoader pluginClassLoader =
-        getPluginClassLoader(pluginsDir, "NotebookRepo", simpleClassName);
+    String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
+    URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "NotebookRepo", simpleClassName);
     if (pluginClassLoader == null) {
       return null;
     }
     NotebookRepo notebookRepo = null;
     try {
-      notebookRepo =
-          (NotebookRepo)
-              (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
+      notebookRepo = (NotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn(
-          "Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
     }
 
     if (notebookRepo == null) {
@@ -91,8 +89,9 @@ public class PluginManager {
     return notebookRepo;
   }
 
-  public synchronized InterpreterLauncher loadInterpreterLauncher(
-      String launcherPlugin, RecoveryStorage recoveryStorage) throws IOException {
+  public synchronized InterpreterLauncher loadInterpreterLauncher(String launcherPlugin,
+                                                     RecoveryStorage recoveryStorage)
+      throws IOException {
 
     if (cachedLaunchers.containsKey(launcherPlugin)) {
       return cachedLaunchers.get(launcherPlugin);
@@ -102,16 +101,11 @@ public class PluginManager {
     String pluginClass = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
     InterpreterLauncher launcher = null;
     try {
-      launcher =
-          (InterpreterLauncher)
-              (Class.forName(pluginClass, true, pluginClassLoader))
-                  .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
-                  .newInstance(zConf, recoveryStorage);
-    } catch (InstantiationException
-        | IllegalAccessException
-        | ClassNotFoundException
-        | NoSuchMethodException
-        | InvocationTargetException e) {
+      launcher = (InterpreterLauncher) (Class.forName(pluginClass, true, pluginClassLoader))
+          .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+          .newInstance(zConf, recoveryStorage);
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+        | NoSuchMethodException | InvocationTargetException e) {
       LOGGER.warn("Fail to instantiate Launcher from plugin classpath:" + launcherPlugin, e);
     }
 
@@ -122,29 +116,25 @@ public class PluginManager {
     return launcher;
   }
 
-  private URLClassLoader getPluginClassLoader(
-      String pluginsDir, String pluginType, String pluginName) throws IOException {
+  private URLClassLoader getPluginClassLoader(String pluginsDir,
+                                              String pluginType,
+                                              String pluginName) throws IOException {
 
     File pluginFolder = new File(pluginsDir + "/" + pluginType + "/" + pluginName);
     if (!pluginFolder.exists() || pluginFolder.isFile()) {
-      LOGGER.warn(
-          "PluginFolder "
-              + pluginFolder.getAbsolutePath()
-              + " doesn't exist or is not a directory");
+      LOGGER.warn("PluginFolder " + pluginFolder.getAbsolutePath() +
+          " doesn't exist or is not a directory");
       return null;
     }
     List<URL> urls = new ArrayList<>();
     for (File file : pluginFolder.listFiles()) {
-      LOGGER.debug("Add file " + file.getAbsolutePath() + " to classpath of plugin: " + pluginName);
+      LOGGER.debug("Add file " + file.getAbsolutePath() + " to classpath of plugin: "
+          + pluginName);
       urls.add(file.toURI().toURL());
     }
     if (urls.isEmpty()) {
-      LOGGER.warn(
-          "Can not load plugin "
-              + pluginName
-              + ", because the plugin folder "
-              + pluginFolder
-              + " is empty.");
+      LOGGER.warn("Can not load plugin " + pluginName +
+          ", because the plugin folder " + pluginFolder + " is empty.");
       return null;
     }
     return new URLClassLoader(urls.toArray(new URL[0]));

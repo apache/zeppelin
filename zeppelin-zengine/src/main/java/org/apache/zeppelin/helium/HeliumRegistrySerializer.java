@@ -17,20 +17,26 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** HeliumRegistrySerializer (and deserializer) for gson */
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+/**
+ * HeliumRegistrySerializer (and deserializer) for gson
+ */
 public class HeliumRegistrySerializer
     implements JsonSerializer<HeliumRegistry>, JsonDeserializer<HeliumRegistry> {
   Logger logger = LoggerFactory.getLogger(HeliumRegistrySerializer.class);
 
   @Override
-  public HeliumRegistry deserialize(
-      JsonElement json, Type type, JsonDeserializationContext jsonDeserializationContext)
+  public HeliumRegistry deserialize(JsonElement json,
+                                Type type,
+                                JsonDeserializationContext jsonDeserializationContext)
       throws JsonParseException {
     JsonObject jsonObject = json.getAsJsonObject();
     String className = jsonObject.get("class").getAsString();
@@ -44,19 +50,17 @@ public class HeliumRegistrySerializer
       Constructor<HeliumRegistry> constructor = cls.getConstructor(String.class, String.class);
       HeliumRegistry registry = constructor.newInstance(name, uri);
       return registry;
-    } catch (ClassNotFoundException
-        | NoSuchMethodException
-        | IllegalAccessException
-        | InstantiationException
-        | InvocationTargetException e) {
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+        InstantiationException | InvocationTargetException e) {
       logger.error(e.getMessage(), e);
       return null;
     }
   }
 
   @Override
-  public JsonElement serialize(
-      HeliumRegistry heliumRegistry, Type type, JsonSerializationContext jsonSerializationContext) {
+  public JsonElement serialize(HeliumRegistry heliumRegistry,
+                               Type type,
+                               JsonSerializationContext jsonSerializationContext) {
     JsonObject json = new JsonObject();
     json.addProperty("class", heliumRegistry.getClass().getName());
     json.addProperty("uri", heliumRegistry.uri());

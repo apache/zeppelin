@@ -19,7 +19,9 @@ package org.apache.zeppelin.jupyter.zformat;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-/** */
+/**
+ *
+ */
 public class Result {
   public static final String SUCCESS = "SUCCESS";
   public static final String ERROR = "ERROR";

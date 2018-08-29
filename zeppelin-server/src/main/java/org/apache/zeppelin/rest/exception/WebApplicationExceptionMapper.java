@@ -31,14 +31,14 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
 
   public WebApplicationExceptionMapper() {
     GsonBuilder gsonBuilder = new GsonBuilder().enableComplexMapKeySerialization();
-    gsonBuilder.registerTypeHierarchyAdapter(Exception.class, new ExceptionSerializer());
+    gsonBuilder.registerTypeHierarchyAdapter(
+        Exception.class, new ExceptionSerializer());
     this.gson = gsonBuilder.create();
   }
 
   @Override
   public Response toResponse(WebApplicationException exception) {
     return Response.status(exception.getResponse().getStatus())
-        .entity(gson.toJson(exception))
-        .build();
+        .entity(gson.toJson(exception)).build();
   }
 }

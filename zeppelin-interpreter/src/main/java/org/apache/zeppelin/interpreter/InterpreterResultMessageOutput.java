@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.interpreter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,10 +28,10 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** InterpreterMessageOutputStream */
+/**
+ * InterpreterMessageOutputStream
+ */
 public class InterpreterResultMessageOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterResultMessageOutput.class);
   private final int NEW_LINE_CHAR = '\n';
@@ -43,7 +46,8 @@ public class InterpreterResultMessageOutput extends OutputStream {
   private boolean firstWrite = true;
 
   public InterpreterResultMessageOutput(
-      InterpreterResult.Type type, InterpreterResultMessageOutputListener listener) {
+      InterpreterResult.Type type,
+      InterpreterResultMessageOutputListener listener) {
     this.type = type;
     this.flushListener = listener;
   }
@@ -51,8 +55,7 @@ public class InterpreterResultMessageOutput extends OutputStream {
   public InterpreterResultMessageOutput(
       InterpreterResult.Type type,
       InterpreterResultMessageOutputListener flushListener,
-      InterpreterOutputChangeListener listener)
-      throws IOException {
+      InterpreterOutputChangeListener listener) throws IOException {
     this.type = type;
     this.flushListener = flushListener;
     watcher = new InterpreterOutputChangeWatcher(listener);
@@ -106,12 +109,12 @@ public class InterpreterResultMessageOutput extends OutputStream {
   }
 
   @Override
-  public void write(byte[] b) throws IOException {
+  public void write(byte [] b) throws IOException {
     write(b, 0, b.length);
   }
 
   @Override
-  public void write(byte[] b, int off, int len) throws IOException {
+  public void write(byte [] b, int off, int len) throws IOException {
     synchronized (outList) {
       for (int i = off; i < len; i++) {
         write(b[i]);
@@ -121,7 +124,6 @@ public class InterpreterResultMessageOutput extends OutputStream {
 
   /**
    * In dev mode, it monitors file and update ZeppelinServer
-   *
    * @param file
    * @throws IOException
    */
@@ -138,7 +140,6 @@ public class InterpreterResultMessageOutput extends OutputStream {
 
   /**
    * write contents in the resource file in the classpath
-   *
    * @param url
    * @throws IOException
    */

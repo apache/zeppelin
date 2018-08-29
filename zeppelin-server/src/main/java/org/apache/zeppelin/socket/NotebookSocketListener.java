@@ -16,11 +16,11 @@
  */
 package org.apache.zeppelin.socket;
 
-/** NoteboookSocket listener. */
+/**
+ * NoteboookSocket listener.
+ */
 public interface NotebookSocketListener {
   void onClose(NotebookSocket socket, int code, String message);
-
   void onOpen(NotebookSocket socket);
-
   void onMessage(NotebookSocket socket, String message);
 }

@@ -20,7 +20,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -34,10 +33,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Watch the change for the development mode support */
+/**
+ * Watch the change for the development mode support
+ */
 public class InterpreterOutputChangeWatcher extends Thread {
   Logger logger = LoggerFactory.getLogger(InterpreterOutputChangeWatcher.class);
 
@@ -78,6 +80,7 @@ public class InterpreterOutputChangeWatcher extends Thread {
     synchronized (watchKeys) {
       for (WatchKey key : watchKeys.keySet()) {
         key.cancel();
+
       }
       watchKeys.clear();
       watchFiles.clear();

@@ -17,15 +17,18 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.util.List;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.scheduler.JobListener;
 
-/** Listen paragraph update */
+import java.util.List;
+
+/**
+ * Listen paragraph update
+ */
 public interface ParagraphJobListener extends JobListener<Paragraph> {
   void onOutputAppend(Paragraph paragraph, int idx, String output);
-
   void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
-
   void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
 }

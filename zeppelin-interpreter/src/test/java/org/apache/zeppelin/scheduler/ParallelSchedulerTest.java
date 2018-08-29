@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.scheduler;
 
+
 import junit.framework.TestCase;
 import org.apache.zeppelin.scheduler.Job.Status;
 
@@ -30,7 +31,9 @@ public class ParallelSchedulerTest extends TestCase {
   }
 
   @Override
-  public void tearDown() {}
+  public void tearDown() {
+
+  }
 
   public void testRun() throws InterruptedException {
     Scheduler s = schedulerSvc.createOrGetParallelScheduler("test", 2);
@@ -59,5 +62,7 @@ public class ParallelSchedulerTest extends TestCase {
     assertEquals(Status.RUNNING, job3.getStatus());
     assertEquals(1, s.getJobsRunning().size());
     assertEquals(0, s.getJobsWaiting().size());
+
   }
+
 }

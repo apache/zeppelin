@@ -20,15 +20,18 @@ import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.ZeppelinClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Routine that sends PING to all connected Zeppelin ws connections. */
+/**
+ * Routine that sends PING to all connected Zeppelin ws connections.
+ *
+ */
 public class ZeppelinHeartbeat implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinHubHeartbeat.class);
   private ZeppelinClient client;
-
+  
   public static ZeppelinHeartbeat newInstance(ZeppelinClient client) {
     return new ZeppelinHeartbeat(client);
   }
-
+  
   private ZeppelinHeartbeat(ZeppelinClient client) {
     this.client = client;
   }

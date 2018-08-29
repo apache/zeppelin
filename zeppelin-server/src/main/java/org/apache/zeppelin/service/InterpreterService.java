@@ -154,9 +154,8 @@ public class InterpreterService {
       if (null != serviceCallback) {
         try {
           serviceCallback.onFailure(
-              new Exception(
-                  "Error while downloading " + request.getName() + " as " + e.getMessage()),
-              null);
+              new Exception("Error while downloading " + request.getName() + " as " +
+                  e.getMessage()), null);
         } catch (IOException e1) {
           logger.error("ServiceCallback failure", e1);
         }

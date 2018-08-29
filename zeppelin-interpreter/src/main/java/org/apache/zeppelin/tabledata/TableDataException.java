@@ -18,7 +18,9 @@ package org.apache.zeppelin.tabledata;
 
 import java.io.IOException;
 
-/** TableDataException */
+/**
+ * TableDataException
+ */
 public class TableDataException extends IOException {
   public TableDataException(String s) {
     super(s);

@@ -16,11 +16,13 @@
  */
 package org.apache.zeppelin.resource;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
-/** Unit test for ResourceSet */
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Unit test for ResourceSet
+ */
 public class ResourceSetTest {
 
   @Test

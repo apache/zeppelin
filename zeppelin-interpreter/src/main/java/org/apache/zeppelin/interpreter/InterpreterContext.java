@@ -17,15 +17,18 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
-/** Interpreter context */
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Interpreter context
+ */
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC = new ThreadLocal<>();
 
@@ -60,7 +63,9 @@ public class InterpreterContext {
   private Map<String, String> localProperties = new HashMap<>();
   private RemoteInterpreterEventClient intpEventClient;
 
-  /** Builder class for InterpreterContext */
+  /**
+   * Builder class for InterpreterContext
+   */
   public static class Builder {
     private InterpreterContext context;
 
@@ -163,7 +168,10 @@ public class InterpreterContext {
     return new Builder();
   }
 
-  private InterpreterContext() {}
+  private InterpreterContext() {
+
+  }
+
 
   public String getNoteId() {
     return noteId;
@@ -220,7 +228,7 @@ public class InterpreterContext {
   public String getInterpreterClassName() {
     return interpreterClassName;
   }
-
+  
   public void setInterpreterClassName(String className) {
     this.interpreterClassName = className;
   }
@@ -239,7 +247,6 @@ public class InterpreterContext {
 
   /**
    * Set progress of paragraph manually
-   *
    * @param n integer from 0 to 100
    */
   public void setProgress(int n) {

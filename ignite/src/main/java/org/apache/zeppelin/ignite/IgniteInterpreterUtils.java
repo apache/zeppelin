@@ -19,11 +19,12 @@ package org.apache.zeppelin.ignite;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
-/** Apache Ignite interpreter utils. */
+/**
+ * Apache Ignite interpreter utils.
+ */
 public class IgniteInterpreterUtils {
   /**
    * Builds error result from given exception.
-   *
    * @param e Exception.
    * @return result.
    */

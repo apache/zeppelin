@@ -17,16 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -34,6 +24,18 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 public class PythonInterpreterTest extends BasePythonInterpreterTest {
 
@@ -65,7 +67,7 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
   public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
     super.testCodeCompletion();
 
-    // TODO(zjffdu) PythonInterpreter doesn't support this kind of code completion for now.
+    //TODO(zjffdu) PythonInterpreter doesn't support this kind of code completion for now.
     // completion
     //    InterpreterContext context = getInterpreterContext();
     //    List<InterpreterCompletion> completions = interpreter.completion("ab", 2, context);
@@ -93,8 +95,7 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
 
   @Test
   public void testCancelIntp() throws InterruptedException, InterpreterException {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS,
+    assertEquals(InterpreterResult.Code.SUCCESS,
         interpreter.interpret("a = 1\n", getInterpreterContext()).code());
     Thread t = new Thread(new infinityPythonJob());
     t.start();

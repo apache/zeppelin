@@ -17,14 +17,20 @@
 
 package org.apache.zeppelin.scio;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.LinkedList;
-import java.util.Properties;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ScioInterpreterTest {
   private static ScioInterpreter repl;
@@ -34,7 +40,10 @@ public class ScioInterpreterTest {
   private final String newline = "\n";
 
   private InterpreterContext getNewContext() {
-    return InterpreterContext.builder().setNoteId("noteId").setParagraphId("paragraphId").build();
+    return InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
   }
 
   @Before
@@ -53,8 +62,7 @@ public class ScioInterpreterTest {
 
   @Test
   public void testBasicSuccess() {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS,
+    assertEquals(InterpreterResult.Code.SUCCESS,
         repl.interpret("val a = 1" + newline + "val b = 2", context).code());
   }
 
@@ -74,36 +82,28 @@ public class ScioInterpreterTest {
 
   @Test
   public void testBasicPipeline() {
-    assertEquals(
-        InterpreterResult.Code.SUCCESS,
-        repl.interpret(
-                "val (sc, _) = ContextAndArgs(argz)"
-                    + newline
-                    + "sc.parallelize(1 to 10).closeAndCollect().toList",
-                context)
-            .code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        repl.interpret("val (sc, _) = ContextAndArgs(argz)" + newline
+            + "sc.parallelize(1 to 10).closeAndCollect().toList", context).code());
   }
 
   @Test
   public void testBasicMultiStepPipeline() {
     final StringBuilder code = new StringBuilder();
-    code.append("val (sc, _) = ContextAndArgs(argz)")
-        .append(newline)
-        .append("val numbers = sc.parallelize(1 to 10)")
-        .append(newline)
-        .append("val results = numbers.closeAndCollect().toList")
-        .append(newline)
+    code.append("val (sc, _) = ContextAndArgs(argz)").append(newline)
+        .append("val numbers = sc.parallelize(1 to 10)").append(newline)
+        .append("val results = numbers.closeAndCollect().toList").append(newline)
         .append("println(results)");
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret(code.toString(), context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        repl.interpret(code.toString(), context).code());
   }
 
   @Test
   public void testException() {
-    InterpreterResult exception =
-        repl.interpret(
-            "val (sc, _) = ContextAndArgs(argz)" + newline + "throw new Exception(\"test\")",
-            context);
+    InterpreterResult exception = repl.interpret("val (sc, _) = ContextAndArgs(argz)" + newline
+        + "throw new Exception(\"test\")", context);
     assertEquals(InterpreterResult.Code.ERROR, exception.code());
     assertTrue(exception.message().get(0).getData().length() > 0);
   }
+
 }

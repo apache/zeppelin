@@ -19,29 +19,31 @@ package org.apache.zeppelin.jdbc.security;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.SIMPLE;
 
-import java.io.IOException;
-import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Created for org.apache.zeppelin.jdbc.security on 09/07/16. */
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * Created for org.apache.zeppelin.jdbc.security on 09/07/16.
+ */
 public class JDBCSecurityImpl {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JDBCSecurityImpl.class);
 
-  /**
-   * *
-   *
+  /***
    * @param properties
    */
-  public static void createSecureConfiguration(
-      Properties properties, AuthenticationMethod authType) {
+  public static void createSecureConfiguration(Properties properties,
+      AuthenticationMethod authType) {
     switch (authType) {
       case KERBEROS:
-        Configuration conf = new org.apache.hadoop.conf.Configuration();
+        Configuration conf = new
+            org.apache.hadoop.conf.Configuration();
         conf.set("hadoop.security.authentication", KERBEROS.toString());
         UserGroupInformation.setConfiguration(conf);
         try {
@@ -55,13 +57,12 @@ public class JDBCSecurityImpl {
                 properties.getProperty("zeppelin.jdbc.principal"),
                 properties.getProperty("zeppelin.jdbc.keytab.location"));
           } else {
-            LOGGER.info(
-                "The user has already logged in using Keytab and principal, "
-                    + "no action required");
+            LOGGER.info("The user has already logged in using Keytab and principal, " +
+                "no action required");
           }
         } catch (IOException e) {
-          LOGGER.error(
-              "Failed to get either keytab location or principal name in the " + "interpreter", e);
+          LOGGER.error("Failed to get either keytab location or principal name in the " +
+              "interpreter", e);
         }
     }
   }
@@ -69,14 +70,11 @@ public class JDBCSecurityImpl {
   public static AuthenticationMethod getAuthtype(Properties properties) {
     AuthenticationMethod authType;
     try {
-      authType =
-          AuthenticationMethod.valueOf(
-              properties.getProperty("zeppelin.jdbc.auth.type").trim().toUpperCase());
+      authType = AuthenticationMethod.valueOf(properties.getProperty("zeppelin.jdbc.auth.type")
+          .trim().toUpperCase());
     } catch (Exception e) {
-      LOGGER.error(
-          String.format(
-              "Invalid auth.type detected with value %s, defaulting " + "auth.type to SIMPLE",
-              properties.getProperty("zeppelin.jdbc.auth.type")));
+      LOGGER.error(String.format("Invalid auth.type detected with value %s, defaulting " +
+          "auth.type to SIMPLE", properties.getProperty("zeppelin.jdbc.auth.type")));
       authType = SIMPLE;
     }
     return authType;

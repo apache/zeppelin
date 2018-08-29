@@ -16,21 +16,26 @@
  */
 package org.apache.zeppelin.spark;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** R repl interaction */
+import java.io.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * R repl interaction
+ */
 public class ZeppelinR implements ExecuteResultHandler {
   private static Logger logger = LoggerFactory.getLogger(ZeppelinR.class);
 
@@ -43,28 +48,32 @@ public class ZeppelinR implements ExecuteResultHandler {
   private PipedOutputStream input;
   private final String scriptPath;
   private final String libPath;
-  static Map<Integer, ZeppelinR> zeppelinR =
-      Collections.synchronizedMap(new HashMap<Integer, ZeppelinR>());
+  static Map<Integer, ZeppelinR> zeppelinR = Collections.synchronizedMap(
+      new HashMap<Integer, ZeppelinR>());
 
   private InterpreterOutput initialOutput;
   private final int port;
   private boolean rScriptRunning;
 
-  /** To be notified R repl initialization */
+  /**
+   * To be notified R repl initialization
+   */
   boolean rScriptInitialized = false;
-
   Integer rScriptInitializeNotifier = new Integer(0);
 
-  /** Request to R repl */
+  /**
+   * Request to R repl
+   */
   Request rRequestObject = null;
-
   Integer rRequestNotifier = new Integer(0);
 
   /**
    * Request object
    *
-   * <p>type : "eval", "set", "get" stmt : statement to evaluate when type is "eval" key when type
-   * is "set" or "get" value : value object when type is "put"
+   * type : "eval", "set", "get"
+   * stmt : statement to evaluate when type is "eval"
+   *        key when type is "set" or "get"
+   * value : value object when type is "put"
    */
   public static class Request {
     String type;
@@ -90,25 +99,20 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-  /** Response from R repl */
+  /**
+   * Response from R repl
+   */
   Object rResponseValue = null;
-
   boolean rResponseError = false;
   Integer rResponseNotifier = new Integer(0);
 
   /**
    * Create ZeppelinR instance
-   *
    * @param rCmdPath R repl commandline path
    * @param libPath sparkr library path
    */
-  public ZeppelinR(
-      String rCmdPath,
-      String libPath,
-      int sparkRBackendPort,
-      SparkVersion sparkVersion,
-      int timeout,
-      SparkRInterpreter sparkRInterpreter) {
+  public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort,
+      SparkVersion sparkVersion, int timeout, SparkRInterpreter sparkRInterpreter) {
     this.rCmdPath = rCmdPath;
     this.libPath = libPath;
     this.sparkVersion = sparkVersion;
@@ -125,7 +129,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * Start R repl
-   *
    * @throws IOException
    */
   public void open() throws IOException, InterpreterException {
@@ -161,6 +164,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     executor.setStreamHandler(streamHandler);
     Map env = EnvironmentUtils.getProcEnvironment();
 
+
     initialOutput = new InterpreterOutput(null);
     outputStream.setInterpreterOutput(initialOutput);
     executor.execute(cmd, env, this);
@@ -172,7 +176,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * Evaluate expression
-   *
    * @param expr
    * @return
    */
@@ -185,7 +188,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * assign value to key
-   *
    * @param key
    * @param value
    */
@@ -198,7 +200,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * get value of key
-   *
    * @param key
    * @return
    */
@@ -211,7 +212,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * get value of key, as a string
-   *
    * @param key
    * @return
    */
@@ -224,7 +224,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * Send request to r repl and return response
-   *
    * @return responseValue
    */
   private Object request() throws RuntimeException, InterpreterException {
@@ -264,16 +263,17 @@ public class ZeppelinR implements ExecuteResultHandler {
   }
 
   /**
-   * Wait until src/main/resources/R/zeppelin_sparkr.R is initialized and call onScriptInitialized()
+   * Wait until src/main/resources/R/zeppelin_sparkr.R is initialized
+   * and call onScriptInitialized()
    *
    * @throws InterpreterException
    */
   private void waitForRScriptInitialized() throws InterpreterException {
     synchronized (rScriptInitializeNotifier) {
       long startTime = System.nanoTime();
-      while (rScriptInitialized == false
-          && rScriptRunning
-          && System.nanoTime() - startTime < 10L * 1000 * 1000000) {
+      while (rScriptInitialized == false &&
+          rScriptRunning &&
+          System.nanoTime() - startTime < 10L * 1000 * 1000000) {
         try {
           rScriptInitializeNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -297,7 +297,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * invoked by src/main/resources/R/zeppelin_sparkr.R
-   *
    * @return
    */
   public Request getRequest() {
@@ -318,7 +317,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * invoked by src/main/resources/R/zeppelin_sparkr.R
-   *
    * @param value
    * @param error
    */
@@ -330,7 +328,9 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-  /** invoked by src/main/resources/R/zeppelin_sparkr.R */
+  /**
+   * invoked by src/main/resources/R/zeppelin_sparkr.R
+   */
   public void onScriptInitialized() {
     synchronized (rScriptInitializeNotifier) {
       rScriptInitialized = true;
@@ -338,7 +338,9 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
-  /** Create R script in tmp dir */
+  /**
+   * Create R script in tmp dir
+   */
   private void createRScript() throws InterpreterException {
     ClassLoader classLoader = getClass().getClassLoader();
     File out = new File(scriptPath);
@@ -349,7 +351,9 @@ public class ZeppelinR implements ExecuteResultHandler {
 
     try {
       FileOutputStream outStream = new FileOutputStream(out);
-      IOUtils.copy(classLoader.getResourceAsStream("R/zeppelin_sparkr.R"), outStream);
+      IOUtils.copy(
+          classLoader.getResourceAsStream("R/zeppelin_sparkr.R"),
+          outStream);
       outStream.close();
     } catch (IOException e) {
       throw new InterpreterException(e);
@@ -358,7 +362,9 @@ public class ZeppelinR implements ExecuteResultHandler {
     logger.info("File {} created", scriptPath);
   }
 
-  /** Terminate this R repl */
+  /**
+   * Terminate this R repl
+   */
   public void close() {
     executor.getWatchdog().destroyProcess();
     new File(scriptPath).delete();
@@ -366,8 +372,8 @@ public class ZeppelinR implements ExecuteResultHandler {
   }
 
   /**
-   * Get instance This method will be invoded from zeppelin_sparkr.R
-   *
+   * Get instance
+   * This method will be invoded from zeppelin_sparkr.R
    * @param hashcode
    * @return
    */
@@ -377,7 +383,6 @@ public class ZeppelinR implements ExecuteResultHandler {
 
   /**
    * Pass InterpreterOutput to capture the repl output
-   *
    * @param out
    */
   public void setInterpreterOutput(InterpreterOutput out) {
@@ -395,6 +400,7 @@ public class ZeppelinR implements ExecuteResultHandler {
     logger.error(e.getMessage(), e);
     rScriptRunning = false;
   }
+
 
   public static class SparkRInterpreterOutputStream extends InterpreterOutputStream {
 

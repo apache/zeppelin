@@ -16,11 +16,6 @@
  */
 package org.apache.zeppelin.ignite;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
-import java.util.Properties;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.IgniteConfiguration;
@@ -32,7 +27,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for Apache Ignite interpreter ({@link IgniteInterpreter}). */
+import java.util.Collections;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Tests for Apache Ignite interpreter ({@link IgniteInterpreter}).
+ */
 public class IgniteInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
@@ -57,9 +60,8 @@ public class IgniteInterpreterTest {
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(
-        IgniteSqlInterpreter.IGNITE_JDBC_URL,
-        "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL,
+            "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
     props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
     props.setProperty(IgniteInterpreter.IGNITE_PEER_CLASS_LOADING_ENABLED, "false");
     props.setProperty(IgniteInterpreter.IGNITE_ADDRESSES, HOST);
@@ -78,21 +80,12 @@ public class IgniteInterpreterTest {
   public void testInterpret() {
     String sizeVal = "size";
 
-    InterpreterResult result =
-        intp.interpret(
-            "import org.apache.ignite.IgniteCache\n"
-                + "val "
-                + sizeVal
-                + " = ignite.cluster().nodes().size()",
-            INTP_CONTEXT);
+    InterpreterResult result = intp.interpret("import org.apache.ignite.IgniteCache\n" +
+            "val " + sizeVal + " = ignite.cluster().nodes().size()", INTP_CONTEXT);
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(
-        result
-            .message()
-            .get(0)
-            .getData()
-            .contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
+    assertTrue(result.message().get(0).getData().contains(sizeVal + ": Int = " +
+            ignite.cluster().nodes().size()));
 
     result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());

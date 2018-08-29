@@ -18,18 +18,21 @@ package org.apache.zeppelin.jupyter.nbformat;
 
 import static org.junit.Assert.assertTrue;
 
-import com.google.gson.Gson;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+
+import com.google.gson.Gson;
 import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 import org.junit.Test;
 
-/** */
+/**
+ *
+ */
 public class JupyterUtilTest {
 
   @Test
@@ -69,17 +72,13 @@ public class JupyterUtilTest {
 
     Paragraph markdownParagraph = n.getParagraphs().get(6);
 
-    assertTrue(
-        markdownParagraph
-            .getText()
-            .equals(
-                "%md\n"
-                    + "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n"
-                    + "<div class=\"row\">\n"
-                    + "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n"
-                    + "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n"
-                    + "    </div>\n"
-                    + "</div>"));
+    assertTrue(markdownParagraph.getText().equals("%md\n" +
+            "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n" +
+            "<div class=\"row\">\n" +
+            "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
+            "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
+            "    </div>\n" +
+            "</div>"));
     assertTrue(markdownParagraph.getStatus().equals("FINISHED"));
 
     Map<String, Object> markdownConfig = markdownParagraph.getConfig();
@@ -87,19 +86,14 @@ public class JupyterUtilTest {
     assertTrue(((boolean) markdownConfig.get("editorHide")) == true);
     assertTrue(markdownParagraph.getResults().getCode().equals("SUCCESS"));
     List<TypeData> results = markdownParagraph.getResults().getMsg();
-    assertTrue(
-        results
-            .get(0)
-            .getData()
-            .equals(
-                "<div class=\"markdown-body\">\n"
-                    + "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n"
-                    + "<div class=\"row\">\n"
-                    + "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n"
-                    + "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n"
-                    + "    </div>\n"
-                    + "</div>\n"
-                    + "</div>"));
+    assertTrue(results.get(0).getData().equals("<div class=\"markdown-body\">\n" +
+            "<div class=\"alert\" style=\"border: 1px solid #aaa; background: radial-gradient(ellipse at center, #ffffff 50%, #eee 100%);\">\n" +
+            "<div class=\"row\">\n" +
+            "    <div class=\"col-sm-1\"><img src=\"https://knowledgeanyhow.org/static/images/favicon_32x32.png\" style=\"margin-top: -6px\"/></div>\n" +
+            "    <div class=\"col-sm-11\">This notebook was created using <a href=\"https://knowledgeanyhow.org\">IBM Knowledge Anyhow Workbench</a>.  To learn more, visit us at <a href=\"https://knowledgeanyhow.org\">https://knowledgeanyhow.org</a>.</div>\n" +
+            "    </div>\n" +
+            "</div>\n" +
+            "</div>"));
     assertTrue(results.get(0).getType().equals("HTML"));
   }
 }

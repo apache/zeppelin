@@ -17,10 +17,11 @@
 
 package org.apache.zeppelin.rest.exception;
 
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import org.apache.zeppelin.utils.ExceptionUtils;
 
 import javax.ws.rs.WebApplicationException;
-import org.apache.zeppelin.utils.ExceptionUtils;
+
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 public class ParagraphNotFoundException extends WebApplicationException {
 

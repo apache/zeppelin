@@ -20,7 +20,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-/** Utility class for creating instances via java reflection. */
+
+/**
+ * Utility class for creating instances via java reflection.
+ *
+ */
 public class ReflectionUtils {
 
   public static Class<?> getClazz(String className) throws IOException {
@@ -39,47 +43,39 @@ public class ReflectionUtils {
     try {
       instance = clazz.newInstance();
     } catch (InstantiationException e) {
-      throw new IOException("Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
+      throw new IOException(
+          "Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
     } catch (IllegalAccessException e) {
-      throw new IOException("Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
+      throw new IOException(
+          "Unable to instantiate class with 0 arguments: " + clazz.getName(), e);
     }
     return instance;
   }
 
-  private static <T> T getNewInstance(
-      Class<T> clazz, Class<?>[] parameterTypes, Object[] parameters) throws IOException {
+  private static <T> T getNewInstance(Class<T> clazz,
+                                      Class<?>[] parameterTypes,
+                                      Object[] parameters)
+      throws IOException {
     T instance;
     try {
       Constructor<T> constructor = clazz.getConstructor(parameterTypes);
       instance = constructor.newInstance(parameters);
     } catch (InstantiationException e) {
       throw new IOException(
-          "Unable to instantiate class with "
-              + parameters.length
-              + " arguments: "
-              + clazz.getName(),
-          e);
+          "Unable to instantiate class with " + parameters.length + " arguments: " +
+              clazz.getName(), e);
     } catch (IllegalAccessException e) {
       throw new IOException(
-          "Unable to instantiate class with "
-              + parameters.length
-              + " arguments: "
-              + clazz.getName(),
-          e);
+          "Unable to instantiate class with " + parameters.length + " arguments: " +
+              clazz.getName(), e);
     } catch (NoSuchMethodException e) {
       throw new IOException(
-          "Unable to instantiate class with "
-              + parameters.length
-              + " arguments: "
-              + clazz.getName(),
-          e);
+          "Unable to instantiate class with " + parameters.length + " arguments: " +
+              clazz.getName(), e);
     } catch (InvocationTargetException e) {
       throw new IOException(
-          "Unable to instantiate class with "
-              + parameters.length
-              + " arguments: "
-              + clazz.getName(),
-          e);
+          "Unable to instantiate class with " + parameters.length + " arguments: " +
+              clazz.getName(), e);
     }
     return instance;
   }
@@ -91,10 +87,13 @@ public class ReflectionUtils {
     return instance;
   }
 
-  public static <T> T createClazzInstance(
-      String className, Class<?>[] parameterTypes, Object[] parameters) throws IOException {
+  public static <T> T createClazzInstance(String className,
+                                          Class<?>[] parameterTypes,
+                                          Object[] parameters) throws IOException {
     Class<?> clazz = getClazz(className);
     T instance = (T) getNewInstance(clazz, parameterTypes, parameters);
     return instance;
   }
+
+
 }

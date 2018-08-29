@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol;
 
-/** Zeppelinhub Op. */
+/**
+ * Zeppelinhub Op.
+ */
 public enum ZeppelinHubOp {
   LIVE,
   DEAD,

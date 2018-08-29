@@ -17,17 +17,19 @@
 
 package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
 
 public class ManagedInterpreterGroupTest {
 
@@ -39,32 +41,23 @@ public class ManagedInterpreterGroupTest {
   public void setUp() throws IOException, RepositoryException {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 =
-        new InterpreterInfo(
-            EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 =
-        new InterpreterInfo(
-            DoubleEchoInterpreter.class.getName(),
-            "double_echo",
-            false,
-            new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
-    interpreterSetting =
-        new InterpreterSetting.Builder()
-            .setId("id")
-            .setName("test")
-            .setGroup("test")
-            .setInterpreterInfos(interpreterInfos)
-            .setOption(interpreterOption)
-            .create();
+    interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("test")
+        .setGroup("test")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
   }
 
   @Test
   public void testInterpreterGroup() {
-    ManagedInterpreterGroup interpreterGroup =
-        new ManagedInterpreterGroup("group_1", interpreterSetting);
+    ManagedInterpreterGroup interpreterGroup = new ManagedInterpreterGroup("group_1", interpreterSetting);
     assertEquals(0, interpreterGroup.getSessionNum());
 
     // create session_1

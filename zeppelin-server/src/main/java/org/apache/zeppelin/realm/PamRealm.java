@@ -16,8 +16,6 @@
  */
 package org.apache.zeppelin.realm;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -33,7 +31,12 @@ import org.jvnet.libpam.UnixUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** An {@code AuthorizingRealm} based on libpam4j. */
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+/**
+ * An {@code AuthorizingRealm} based on libpam4j.
+ */
 public class PamRealm extends AuthorizingRealm {
   private static final Logger LOG = LoggerFactory.getLogger(PamRealm.class);
 
@@ -45,7 +48,7 @@ public class PamRealm extends AuthorizingRealm {
 
     UserPrincipal user = principals.oneByType(UserPrincipal.class);
 
-    if (user != null) {
+    if (user != null){
       roles.addAll(user.getUnixUser().getGroups());
     }
 
@@ -54,20 +57,21 @@ public class PamRealm extends AuthorizingRealm {
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
-      throws AuthenticationException {
+          throws AuthenticationException {
     UsernamePasswordToken userToken = (UsernamePasswordToken) token;
     UnixUser user;
 
     try {
-      user =
-          (new PAM(this.getService()))
-              .authenticate(userToken.getUsername(), new String(userToken.getPassword()));
+      user = (new PAM(this.getService()))
+          .authenticate(userToken.getUsername(), new String(userToken.getPassword()));
     } catch (PAMException e) {
       throw new AuthenticationException("Authentication failed for PAM.", e);
     }
 
     return new SimpleAuthenticationInfo(
-        new UserPrincipal(user), userToken.getCredentials(), getName());
+        new UserPrincipal(user),
+        userToken.getCredentials(),
+        getName());
   }
 
   public String getService() {

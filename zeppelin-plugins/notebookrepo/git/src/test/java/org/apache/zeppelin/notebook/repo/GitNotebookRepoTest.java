@@ -20,11 +20,11 @@ package org.apache.zeppelin.notebook.repo;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
-import com.google.common.base.Joiner;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -44,6 +44,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
 public class GitNotebookRepoTest {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepoTest.class);
 
@@ -57,8 +59,7 @@ public class GitNotebookRepoTest {
 
   @Before
   public void setUp() throws Exception {
-    String zpath =
-        System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" + System.currentTimeMillis();
+    String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinTest_" + System.currentTimeMillis();
     zeppelinDir = new File(zpath);
     zeppelinDir.mkdirs();
     new File(zeppelinDir, "conf").mkdirs();
@@ -70,23 +71,24 @@ public class GitNotebookRepoTest {
     String testNoteDir = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID);
     String testNoteDir2 = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID2);
     FileUtils.copyDirectory(
-        new File(
-            GitNotebookRepoTest.class
-                .getResource(Joiner.on(File.separator).join("", TEST_NOTE_ID))
-                .getFile()),
-        new File(testNoteDir));
+            new File(
+                GitNotebookRepoTest.class.getResource(
+                Joiner.on(File.separator).join("", TEST_NOTE_ID)
+              ).getFile()
+            ),
+            new File(testNoteDir));
     FileUtils.copyDirectory(
-        new File(
-            GitNotebookRepoTest.class
-                .getResource(Joiner.on(File.separator).join("", TEST_NOTE_ID2))
-                .getFile()),
-        new File(testNoteDir2));
+            new File(
+                GitNotebookRepoTest.class.getResource(
+                Joiner.on(File.separator).join("", TEST_NOTE_ID2)
+              ).getFile()
+            ),
+        new File(testNoteDir2)
+    );
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), zeppelinDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(
-        ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(),
-        "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), "org.apache.zeppelin.notebook.repo.GitNotebookRepo");
 
     conf = ZeppelinConfiguration.create();
   }
@@ -100,14 +102,14 @@ public class GitNotebookRepoTest {
 
   @Test
   public void initNonemptyNotebookDir() throws IOException, GitAPIException {
-    // given - .git does not exit
+    //given - .git does not exit
     File dotGit = new File(Joiner.on(File.separator).join(notebooksDir, ".git"));
     assertThat(dotGit.exists()).isEqualTo(false);
 
-    // when
+    //when
     notebookRepo = new GitNotebookRepo(conf);
 
-    // then
+    //then
     Git git = notebookRepo.getGit();
     assertThat(git).isNotNull();
 
@@ -121,21 +123,21 @@ public class GitNotebookRepoTest {
 
   @Test
   public void showNotebookHistoryEmptyTest() throws GitAPIException, IOException {
-    // given
+    //given
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
 
-    // when
+    //when
     List<Revision> testNotebookHistory = notebookRepo.revisionHistory(TEST_NOTE_ID, null);
 
-    // then
-    // no initial commit, empty history
+    //then
+    //no initial commit, empty history
     assertThat(testNotebookHistory).isEmpty();
   }
 
   @Test
   public void showNotebookHistoryMultipleNotesTest() throws IOException {
-    // initial checks
+    //initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
@@ -143,13 +145,13 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null)).isEmpty();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null)).isEmpty();
 
-    // add commit to both notes
+    //add commit to both notes
     notebookRepo.checkpoint(TEST_NOTE_ID, "first commit, note1", null);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
     notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
 
-    // modify, save and checkpoint first note
+    //modify, save and checkpoint first note
     Note note = notebookRepo.get(TEST_NOTE_ID, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -162,10 +164,10 @@ public class GitNotebookRepoTest {
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
     assertThat(notebookRepo.checkpoint(TEST_NOTE_ID2, "first commit, note2", null))
-        .isEqualTo(Revision.EMPTY);
+      .isEqualTo(Revision.EMPTY);
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID2, null).size()).isEqualTo(1);
 
-    // modify, save and checkpoint second note
+    //modify, save and checkpoint second note
     note = notebookRepo.get(TEST_NOTE_ID2, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -211,7 +213,7 @@ public class GitNotebookRepoTest {
   }
 
   private boolean containsNote(List<NoteInfo> notes, String noteId) {
-    for (NoteInfo note : notes) {
+    for (NoteInfo note: notes) {
       if (note.getId().equals(noteId)) {
         return true;
       }
@@ -321,7 +323,7 @@ public class GitNotebookRepoTest {
 
   @Test
   public void setRevisionTest() throws IOException {
-    // create repo and check that note doesn't contain revisions
+    //create repo and check that note doesn't contain revisions
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
     assertThat(containsNote(notebookRepo.list(null), TEST_NOTE_ID)).isTrue();
@@ -335,7 +337,7 @@ public class GitNotebookRepoTest {
 
     // checkpoint revision1
     Revision revision1 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: first commit", null);
-    // TODO(khalid): change to EMPTY after rebase
+    //TODO(khalid): change to EMPTY after rebase
     assertThat(revision1).isNotNull();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(1);
 
@@ -352,7 +354,7 @@ public class GitNotebookRepoTest {
 
     // checkpoint revision2
     Revision revision2 = notebookRepo.checkpoint(TEST_NOTE_ID, "set revision: second commit", null);
-    // TODO(khalid): change to EMPTY after rebase
+    //TODO(khalid): change to EMPTY after rebase
     assertThat(revision2).isNotNull();
     assertThat(notebookRepo.revisionHistory(TEST_NOTE_ID, null).size()).isEqualTo(2);
 

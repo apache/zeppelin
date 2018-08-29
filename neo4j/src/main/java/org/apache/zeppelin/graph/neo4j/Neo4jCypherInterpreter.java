@@ -17,25 +17,7 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.graph.GraphResult;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.internal.util.Iterables;
 import org.neo4j.driver.v1.Record;
@@ -46,7 +28,30 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.neo4j.driver.v1.types.TypeSystem;
 import org.neo4j.driver.v1.util.Pair;
 
-/** Neo4j interpreter for Zeppelin. */
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.graph.GraphResult;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+
+/**
+ * Neo4j interpreter for Zeppelin.
+ */
 public class Neo4jCypherInterpreter extends Interpreter {
   private static final String TABLE = "%table";
   public static final String NEW_LINE = "\n";
@@ -57,9 +62,9 @@ public class Neo4jCypherInterpreter extends Interpreter {
   private Map<String, String> labels;
 
   private Set<String> types;
-
+  
   private final Neo4jConnectionManager neo4jConnectionManager;
-
+  
   private final ObjectMapper jsonMapper = new ObjectMapper();
 
   public Neo4jCypherInterpreter(Properties properties) {
@@ -79,8 +84,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
 
   public Map<String, String> getLabels(boolean refresh) {
     if (labels == null || refresh) {
-      Map<String, String> old =
-          labels == null ? new LinkedHashMap<String, String>() : new LinkedHashMap<>(labels);
+      Map<String, String> old = labels == null ?
+          new LinkedHashMap<String, String>() : new LinkedHashMap<>(labels);
       labels = new LinkedHashMap<>();
       StatementResult result = this.neo4jConnectionManager.execute("CALL db.labels()");
       Set<String> colors = new HashSet<>();
@@ -117,7 +122,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
       return new InterpreterResult(Code.SUCCESS);
     }
     try {
-      StatementResult result = this.neo4jConnectionManager.execute(cypherQuery, interpreterContext);
+      StatementResult result = this.neo4jConnectionManager.execute(cypherQuery,
+              interpreterContext);
       Set<Node> nodes = new HashSet<>();
       Set<Relationship> relationships = new HashSet<>();
       List<String> columns = new ArrayList<>();
@@ -135,8 +141,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
             nodes.addAll(Iterables.asList(field.value().asPath().nodes()));
             relationships.addAll(Iterables.asList(field.value().asPath().relationships()));
           } else {
-            setTabularResult(
-                field.key(), field.value(), columns, line, InternalTypeSystem.TYPE_SYSTEM);
+            setTabularResult(field.key(), field.value(), columns, line,
+                    InternalTypeSystem.TYPE_SYSTEM);
           }
         }
         if (!line.isEmpty()) {
@@ -154,19 +160,15 @@ public class Neo4jCypherInterpreter extends Interpreter {
     }
   }
 
-  private void setTabularResult(
-      String key, Object obj, List<String> columns, List<String> line, TypeSystem typeSystem) {
+  private void setTabularResult(String key, Object obj, List<String> columns, List<String> line,
+      TypeSystem typeSystem) {
     if (obj instanceof Value) {
       Value value = (Value) obj;
       if (value.hasType(typeSystem.MAP())) {
         Map<String, Object> map = value.asMap();
         for (Entry<String, Object> entry : map.entrySet()) {
-          setTabularResult(
-              String.format(MAP_KEY_TEMPLATE, key, entry.getKey()),
-              entry.getValue(),
-              columns,
-              line,
-              typeSystem);
+          setTabularResult(String.format(MAP_KEY_TEMPLATE, key, entry.getKey()), entry.getValue(),
+                columns, line, typeSystem);
         }
       } else {
         addValueToLine(key, columns, line, value);
@@ -174,12 +176,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
     } else if (obj instanceof Map) {
       Map<String, Object> map = (Map<String, Object>) obj;
       for (Entry<String, Object> entry : map.entrySet()) {
-        setTabularResult(
-            String.format(MAP_KEY_TEMPLATE, key, entry.getKey()),
-            entry.getValue(),
-            columns,
-            line,
-            typeSystem);
+        setTabularResult(String.format(MAP_KEY_TEMPLATE, key, entry.getKey()), entry.getValue(),
+                columns, line, typeSystem);
       }
     } else {
       addValueToLine(key, columns, line, obj);
@@ -239,7 +237,8 @@ public class Neo4jCypherInterpreter extends Interpreter {
     return new InterpreterResult(Code.SUCCESS, msg.toString());
   }
 
-  private InterpreterResult renderGraph(Set<Node> nodes, Set<Relationship> relationships) {
+  private InterpreterResult renderGraph(Set<Node> nodes,
+      Set<Relationship> relationships) {
     logger.info("Executing renderGraph method");
     List<org.apache.zeppelin.tabledata.Node> nodesList = new ArrayList<>();
     List<org.apache.zeppelin.tabledata.Relationship> relsList = new ArrayList<>();
@@ -250,15 +249,14 @@ public class Neo4jCypherInterpreter extends Interpreter {
     for (Node node : nodes) {
       nodesList.add(Neo4jConversionUtils.toZeppelinNode(node, labels));
     }
-    return new GraphResult(
-        Code.SUCCESS, new GraphResult.Graph(nodesList, relsList, labels, getTypes(true), true));
+    return new GraphResult(Code.SUCCESS,
+        new GraphResult.Graph(nodesList, relsList, labels, getTypes(true), true));
   }
 
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton()
-        .createOrGetParallelScheduler(
-            Neo4jCypherInterpreter.class.getName() + this.hashCode(),
+        .createOrGetParallelScheduler(Neo4jCypherInterpreter.class.getName() + this.hashCode(),
             Integer.parseInt(getProperty(Neo4jConnectionManager.NEO4J_MAX_CONCURRENCY)));
   }
 
@@ -273,5 +271,6 @@ public class Neo4jCypherInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 }

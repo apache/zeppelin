@@ -16,7 +16,6 @@
  */
 
 package org.apache.zeppelin.dep;
-
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import com.google.gson.Gson;
@@ -24,7 +23,10 @@ import org.apache.zeppelin.common.JsonSerializable;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.Proxy;
 
-/** */
+/**
+ *
+ *
+ */
 public class Repository implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -39,7 +41,7 @@ public class Repository implements JsonSerializable {
   private String proxyLogin = null;
   private String proxyPassword = null;
 
-  public Repository(String id) {
+  public Repository(String id){
     this.id = id;
   }
 
@@ -64,23 +66,23 @@ public class Repository implements JsonSerializable {
   public String getUrl() {
     return url;
   }
-
+  
   public Repository username(String username) {
     this.username = username;
     return this;
   }
-
+  
   public Repository password(String password) {
     this.password = password;
     return this;
   }
-
+  
   public Repository credentials(String username, String password) {
     this.username = username;
     this.password = password;
     return this;
   }
-
+  
   public Authentication getAuthentication() {
     Authentication auth = null;
     if (this.username != null && this.password != null) {
@@ -92,8 +94,8 @@ public class Repository implements JsonSerializable {
   public Proxy getProxy() {
     if (isNotBlank(proxyHost) && proxyPort != null) {
       if (isNotBlank(proxyLogin)) {
-        return new Proxy(
-            proxyProtocol, proxyHost, proxyPort, new Authentication(proxyLogin, proxyPassword));
+        return new Proxy(proxyProtocol, proxyHost, proxyPort,
+                new Authentication(proxyLogin, proxyPassword));
       } else {
         return new Proxy(proxyProtocol, proxyHost, proxyPort, null);
       }

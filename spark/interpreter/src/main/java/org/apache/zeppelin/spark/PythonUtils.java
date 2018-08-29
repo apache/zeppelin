@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.spark;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 
-/** Util class for PySpark */
+/**
+ * Util class for PySpark
+ */
 public class PythonUtils {
 
   /**
    * Get the PYTHONPATH for PySpark, either from SPARK_HOME, if it is set, or from ZEPPELIN_HOME
    * when it is embedded mode.
    *
-   * <p>This method will called in zeppelin server process and spark driver process when it is local
-   * or yarn-client mode.
+   * This method will called in zeppelin server process and spark driver process when it is
+   * local or yarn-client mode.
    */
   public static String sparkPythonPath() {
     List<String> pythonPath = new ArrayList<String>();
@@ -47,15 +51,12 @@ public class PythonUtils {
         throw new RuntimeException("No pyspark.zip found under " + sparkHome + "/python/lib");
       }
       pythonPath.add(pyspark.getAbsolutePath());
-      File[] py4j =
-          new File(sparkHome + "/python/lib")
-              .listFiles(
-                  new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                      return name.startsWith("py4j");
-                    }
-                  });
+      File[] py4j = new File(sparkHome + "/python/lib").listFiles(new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+          return name.startsWith("py4j");
+        }
+      });
       if (py4j.length == 0) {
         throw new RuntimeException("No py4j files found under " + sparkHome + "/python/lib");
       } else if (py4j.length > 1) {
@@ -70,21 +71,19 @@ public class PythonUtils {
         throw new RuntimeException("No pyspark.zip found: " + pyspark.getAbsolutePath());
       }
       pythonPath.add(pyspark.getAbsolutePath());
-      File[] py4j =
-          new File(zeppelinHome, "interpreter/spark/pyspark")
-              .listFiles(
-                  new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                      return name.startsWith("py4j");
-                    }
-                  });
+      File[] py4j = new File(zeppelinHome, "interpreter/spark/pyspark").listFiles(
+          new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+              return name.startsWith("py4j");
+            }
+          });
       if (py4j.length == 0) {
-        throw new RuntimeException(
-            "No py4j files found under " + zeppelinHome + "/interpreter/spark/pyspark");
+        throw new RuntimeException("No py4j files found under " + zeppelinHome +
+            "/interpreter/spark/pyspark");
       } else if (py4j.length > 1) {
-        throw new RuntimeException(
-            "Multiple py4j files found under " + sparkHome + "/interpreter/spark/pyspark");
+        throw new RuntimeException("Multiple py4j files found under " + sparkHome +
+            "/interpreter/spark/pyspark");
       } else {
         pythonPath.add(py4j[0].getAbsolutePath());
       }

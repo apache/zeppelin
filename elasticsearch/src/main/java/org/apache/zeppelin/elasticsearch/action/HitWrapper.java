@@ -21,7 +21,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-/** Contains the data of a hit. */
+/**
+ * Contains the data of a hit.
+ */
 public class HitWrapper {
 
   private final JsonParser parser = new JsonParser();

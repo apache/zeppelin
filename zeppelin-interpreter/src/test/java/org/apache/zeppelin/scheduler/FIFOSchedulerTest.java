@@ -30,7 +30,9 @@ public class FIFOSchedulerTest extends TestCase {
   }
 
   @Override
-  public void tearDown() {}
+  public void tearDown() {
+
+  }
 
   public void testRun() throws InterruptedException {
     Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
@@ -49,12 +51,14 @@ public class FIFOSchedulerTest extends TestCase {
     assertEquals(1, s.getJobsRunning().size());
     assertEquals(1, s.getJobsWaiting().size());
 
+
     Thread.sleep(500);
     assertEquals(Status.FINISHED, job1.getStatus());
     assertEquals(Status.RUNNING, job2.getStatus());
     assertTrue((500 < (Long) job1.getReturn()));
     assertEquals(1, s.getJobsRunning().size());
     assertEquals(0, s.getJobsWaiting().size());
+
   }
 
   public void testAbort() throws InterruptedException {

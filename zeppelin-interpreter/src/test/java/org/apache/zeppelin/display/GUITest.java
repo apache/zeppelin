@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.display;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.display.ui.Select;
@@ -30,10 +24,19 @@ import org.apache.zeppelin.display.ui.TextBox;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class GUITest {
 
-  private ParamOption[] options =
-      new ParamOption[] {new ParamOption("1", "value_1"), new ParamOption("2", "value_2")};
+  private ParamOption[] options = new ParamOption[]{
+      new ParamOption("1", "value_1"),
+      new ParamOption("2", "value_2")
+  };
 
   private List<Object> checkedItems;
 
@@ -83,7 +86,8 @@ public class GUITest {
     GUI gui = new GUI();
     gui.forms.put("textbox_1", new OldInput.OldTextBox("textbox_1", "default_text_1"));
     gui.forms.put("select_1", new OldInput.OldSelect("select_1", "1", options));
-    gui.forms.put("checkbox_1", new OldInput.OldCheckBox("checkbox_1", checkedItems, options));
+    gui.forms.put("checkbox_1",
+        new OldInput.OldCheckBox("checkbox_1", checkedItems, options));
 
     // convert to old json format.
     String json = gui.toJson();
@@ -107,7 +111,8 @@ public class GUITest {
     GUI gui = new GUI();
     gui.forms.put("textbox_1", new OldInput("textbox_1", "default_text_1"));
     gui.forms.put("select_1", new OldInput("select_1", "1", options));
-    gui.forms.put("checkbox_1", new OldInput.OldCheckBox("checkbox_1", checkedItems, options));
+    gui.forms.put("checkbox_1",
+        new OldInput.OldCheckBox("checkbox_1", checkedItems, options));
 
     // convert to old json format.
     String json = gui.toJson();
@@ -126,48 +131,46 @@ public class GUITest {
   // load old json file and will convert it into new forms of Input
   @Test
   public void testOldGson_3() throws IOException {
-    String oldJson =
-        "{\n"
-            + "        \"params\": {\n"
-            + "          \"maxAge\": \"35\"\n"
-            + "        },\n"
-            + "        \"forms\": {\n"
-            + "          \"maxAge\": {\n"
-            + "            \"name\": \"maxAge\",\n"
-            + "            \"defaultValue\": \"30\",\n"
-            + "            \"hidden\": false\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }";
+    String oldJson = "{\n" +
+        "        \"params\": {\n" +
+        "          \"maxAge\": \"35\"\n" +
+        "        },\n" +
+        "        \"forms\": {\n" +
+        "          \"maxAge\": {\n" +
+        "            \"name\": \"maxAge\",\n" +
+        "            \"defaultValue\": \"30\",\n" +
+        "            \"hidden\": false\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }";
     GUI gui = GUI.fromJson(oldJson);
     assertEquals(1, gui.forms.size());
     assertTrue(gui.forms.get("maxAge") instanceof TextBox);
     assertEquals("30", gui.forms.get("maxAge").getDefaultValue());
 
-    oldJson =
-        "{\n"
-            + "        \"params\": {\n"
-            + "          \"marital\": \"single\"\n"
-            + "        },\n"
-            + "        \"forms\": {\n"
-            + "          \"marital\": {\n"
-            + "            \"name\": \"marital\",\n"
-            + "            \"defaultValue\": \"single\",\n"
-            + "            \"options\": [\n"
-            + "              {\n"
-            + "                \"value\": \"single\"\n"
-            + "              },\n"
-            + "              {\n"
-            + "                \"value\": \"divorced\"\n"
-            + "              },\n"
-            + "              {\n"
-            + "                \"value\": \"married\"\n"
-            + "              }\n"
-            + "            ],\n"
-            + "            \"hidden\": false\n"
-            + "          }\n"
-            + "        }\n"
-            + "      }";
+    oldJson = "{\n" +
+        "        \"params\": {\n" +
+        "          \"marital\": \"single\"\n" +
+        "        },\n" +
+        "        \"forms\": {\n" +
+        "          \"marital\": {\n" +
+        "            \"name\": \"marital\",\n" +
+        "            \"defaultValue\": \"single\",\n" +
+        "            \"options\": [\n" +
+        "              {\n" +
+        "                \"value\": \"single\"\n" +
+        "              },\n" +
+        "              {\n" +
+        "                \"value\": \"divorced\"\n" +
+        "              },\n" +
+        "              {\n" +
+        "                \"value\": \"married\"\n" +
+        "              }\n" +
+        "            ],\n" +
+        "            \"hidden\": false\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }";
     gui = GUI.fromJson(oldJson);
     assertEquals(1, gui.forms.size());
     assertTrue(gui.forms.get("marital") instanceof Select);

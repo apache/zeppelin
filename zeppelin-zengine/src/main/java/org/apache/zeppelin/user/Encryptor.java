@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.user;
 
-import java.io.IOException;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -26,7 +25,11 @@ import org.bouncycastle.crypto.paddings.ZeroBytePadding;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Base64;
 
-/** Encrypt/decrypt arrays of bytes! */
+import java.io.IOException;
+
+/**
+ * Encrypt/decrypt arrays of bytes!
+ */
 public class Encryptor {
   private final BufferedBlockCipher encryptCipher;
   private final BufferedBlockCipher decryptCipher;
@@ -38,6 +41,7 @@ public class Encryptor {
     decryptCipher = new PaddedBufferedBlockCipher(new AESEngine(), new ZeroBytePadding());
     decryptCipher.init(false, new KeyParameter(encryptKey.getBytes()));
   }
+
 
   public String encrypt(String inputString) throws IOException {
     byte[] input = inputString.getBytes();

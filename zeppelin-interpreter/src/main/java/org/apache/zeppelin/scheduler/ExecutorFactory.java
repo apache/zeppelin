@@ -21,14 +21,18 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** */
+/**
+ *
+ */
 public class ExecutorFactory {
   private static ExecutorFactory _executor;
   private static Long _executorLock = new Long(0);
 
   Map<String, ExecutorService> executor = new HashMap<>();
 
-  public ExecutorFactory() {}
+  public ExecutorFactory() {
+
+  }
 
   public static ExecutorFactory singleton() {
     if (_executor == null) {
@@ -68,9 +72,10 @@ public class ExecutorFactory {
     }
   }
 
+
   public void shutdownAll() {
     synchronized (executor) {
-      for (String name : executor.keySet()) {
+      for (String name : executor.keySet()){
         shutdown(name);
       }
     }

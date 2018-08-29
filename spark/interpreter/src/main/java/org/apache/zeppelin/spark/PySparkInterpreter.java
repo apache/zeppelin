@@ -17,14 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -39,10 +31,19 @@ import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 /**
- * Interpreter for PySpark, it is the first implementation of interpreter for PySpark, so with less
- * features compared to IPySparkInterpreter, but requires less prerequisites than
- * IPySparkInterpreter, only python is required.
+ *  Interpreter for PySpark, it is the first implementation of interpreter for PySpark, so with less
+ *  features compared to IPySparkInterpreter, but requires less prerequisites than
+ *  IPySparkInterpreter, only python is required.
  */
 public class PySparkInterpreter extends PythonInterpreter {
 
@@ -63,7 +64,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     DepInterpreter depInterpreter =
         getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
     // load libraries from Dependency Interpreter
-    URL[] urls = new URL[0];
+    URL [] urls = new URL[0];
     List<URL> urlList = new LinkedList<>();
 
     if (depInterpreter != null) {
@@ -107,8 +108,7 @@ public class PySparkInterpreter extends PythonInterpreter {
       // must create spark interpreter after ClassLoader is set, otherwise the additional jars
       // can not be loaded by spark repl.
       this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-      setProperty(
-          "zeppelin.py4j.useAuth",
+      setProperty("zeppelin.py4j.useAuth",
           sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
       // create Python Process and JVM gateway
       super.open();
@@ -154,11 +154,9 @@ public class PySparkInterpreter extends PythonInterpreter {
   protected void preCallPython(InterpreterContext context) {
     String jobGroup = Utils.buildJobGroupId(context);
     String jobDesc = Utils.buildJobDesc(context);
-    callPython(
-        new PythonInterpretRequest(
-            String.format("if 'sc' in locals():\n\tsc.setJobGroup('%s', '%s')", jobGroup, jobDesc),
-            false,
-            false));
+    callPython(new PythonInterpretRequest(
+        String.format("if 'sc' in locals():\n\tsc.setJobGroup('%s', '%s')", jobGroup, jobDesc),
+        false, false));
 
     String pool = "None";
     if (context.getLocalProperties().containsKey("pool")) {

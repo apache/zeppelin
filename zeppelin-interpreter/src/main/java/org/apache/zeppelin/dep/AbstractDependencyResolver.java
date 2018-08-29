@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
@@ -30,12 +31,15 @@ import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.resolution.ArtifactResult;
 
-/** Abstract dependency resolver. Add new dependencies from mvn repo (at runtime) Zeppelin. */
+/**
+ * Abstract dependency resolver.
+ * Add new dependencies from mvn repo (at runtime) Zeppelin.
+ */
 public abstract class AbstractDependencyResolver {
   protected RepositorySystem system = Booter.newRepositorySystem();
   protected List<RemoteRepository> repos = new LinkedList<>();
   protected RepositorySystemSession session;
-
+  
   public AbstractDependencyResolver(String localRepoPath) {
     session = Booter.newRepositorySystemSession(system, localRepoPath);
     repos.add(Booter.newCentralRepository()); // add maven central
@@ -55,15 +59,15 @@ public abstract class AbstractDependencyResolver {
   public List<RemoteRepository> getRepos() {
     return this.repos;
   }
-
+  
   public void addRepo(String id, String url, boolean snapshot) {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(
-          snapshot,
-          new RepositoryPolicy(
-              true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN));
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
+          RepositoryPolicy.UPDATE_POLICY_DAILY,
+          RepositoryPolicy.CHECKSUM_POLICY_WARN));
       repos.add(rr);
     }
   }
@@ -72,10 +76,10 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(
-          snapshot,
-          new RepositoryPolicy(
-              true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN));
+      rr.setPolicy(snapshot, new RepositoryPolicy(
+          true,
+          RepositoryPolicy.UPDATE_POLICY_DAILY,
+          RepositoryPolicy.CHECKSUM_POLICY_WARN));
       rr.setAuthentication(auth);
       rr.setProxy(proxy);
       repos.add(rr);
@@ -96,6 +100,6 @@ public abstract class AbstractDependencyResolver {
     return null;
   }
 
-  public abstract List<ArtifactResult> getArtifactsWithDep(
-      String dependency, Collection<String> excludes) throws Exception;
+  public abstract List<ArtifactResult> getArtifactsWithDep(String dependency,
+      Collection<String> excludes) throws Exception;
 }

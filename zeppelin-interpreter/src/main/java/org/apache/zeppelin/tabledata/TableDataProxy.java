@@ -16,10 +16,13 @@
  */
 package org.apache.zeppelin.tabledata;
 
-import java.util.Iterator;
 import org.apache.zeppelin.resource.Resource;
 
-/** Proxy TableData for ResourcePool */
+import java.util.Iterator;
+
+/**
+ * Proxy TableData for ResourcePool
+ */
 public class TableDataProxy implements TableData {
   private final Resource resource;
 
@@ -29,7 +32,8 @@ public class TableDataProxy implements TableData {
 
   @Override
   public ColumnDef[] columns() {
-    return (ColumnDef[]) resource.invokeMethod("columns", null, null);
+    return (ColumnDef[]) resource.invokeMethod(
+        "columns", null, null);
   }
 
   @Override

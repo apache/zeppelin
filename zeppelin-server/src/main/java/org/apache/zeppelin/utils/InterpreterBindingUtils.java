@@ -16,22 +16,25 @@
  */
 package org.apache.zeppelin.utils;
 
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 
-/** Utils for interpreter bindings. */
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Utils for interpreter bindings.
+ */
 public class InterpreterBindingUtils {
-  public static List<InterpreterSettingsList> getInterpreterBindings(
-      Notebook notebook, String noteId) {
+  public static List<InterpreterSettingsList> getInterpreterBindings(Notebook notebook,
+                                                                     String noteId) {
     List<InterpreterSettingsList> settingList = new LinkedList<>();
-    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
+    List<InterpreterSetting> selectedSettings =
+        notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
-      settingList.add(
-          new InterpreterSettingsList(
-              setting.getId(), setting.getName(), setting.getInterpreterInfos(), true));
+      settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
+          setting.getInterpreterInfos(), true));
     }
 
     return settingList;

@@ -20,11 +20,14 @@ package org.apache.zeppelin.dep;
 import java.util.LinkedList;
 import java.util.List;
 
-/** */
+/**
+ *
+ */
 public class Dependency {
   private String groupArtifactVersion;
   private boolean local = false;
   private List<String> exclusions;
+
 
   public Dependency(String groupArtifactVersion) {
     this.groupArtifactVersion = groupArtifactVersion;
@@ -42,7 +45,6 @@ public class Dependency {
 
   /**
    * Don't add artifact into SparkContext (sc.addJar())
-   *
    * @return
    */
   public Dependency local() {
@@ -56,6 +58,7 @@ public class Dependency {
   }
 
   /**
+   *
    * @param exclusions comma or newline separated list of "groupId:ArtifactId"
    * @return
    */
@@ -66,6 +69,7 @@ public class Dependency {
 
     return this;
   }
+
 
   public String getGroupArtifactVersion() {
     return groupArtifactVersion;

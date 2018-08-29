@@ -16,9 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.remote.mock;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -27,7 +24,13 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
-/** MockInterpreter to test outputstream */
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+
+/**
+ * MockInterpreter to test outputstream
+ */
 public class MockInterpreterOutputStream extends Interpreter {
   private String lastSt;
 
@@ -37,11 +40,12 @@ public class MockInterpreterOutputStream extends Interpreter {
 
   @Override
   public void open() {
-    // new RuntimeException().printStackTrace();
+    //new RuntimeException().printStackTrace();
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
   public String getLastStatement() {
     return lastSt;
@@ -58,12 +62,14 @@ public class MockInterpreterOutputStream extends Interpreter {
     } catch (IOException e) {
       throw new InterpreterException(e);
     }
-    return new InterpreterResult(
-        InterpreterResult.Code.valueOf(ret[0]), (ret.length > 2) ? ret[2] : "");
+    return new InterpreterResult(InterpreterResult.Code.valueOf(ret[0]), (ret.length > 2) ?
+            ret[2] : "");
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+
+  }
 
   @Override
   public FormType getFormType() {
@@ -76,8 +82,8 @@ public class MockInterpreterOutputStream extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 

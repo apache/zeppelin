@@ -16,6 +16,14 @@
  */
 package org.apache.zeppelin.ignite;
 
+import org.apache.ignite.Ignite;
+import org.apache.ignite.Ignition;
+import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
@@ -27,21 +35,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.ignite.Ignite;
-import org.apache.ignite.Ignition;
-import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
-import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import scala.Console;
 import scala.Some;
 import scala.collection.JavaConversions;
@@ -51,20 +45,29 @@ import scala.tools.nsc.interpreter.Results.Result;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
+
 /**
  * Apache Ignite interpreter (http://ignite.incubator.apache.org/).
  *
- * <p>Use the following properties for interpreter configuration:
+ * Use the following properties for interpreter configuration:
  *
  * <ul>
- *   <li>{@code ignite.addresses} - coma separated list of hosts in form {@code <host>:<port>} or
- *       {@code <host>:<port_1>..<port_n>}
- *   <li>{@code ignite.clientMode} - indicates that Ignite interpreter should start node in client
- *       mode ({@code true} or {@code false}).
- *   <li>{@code ignite.peerClassLoadingEnabled} - enables/disables peer class loading ({@code true}
- *       or {@code false}).
- *   <li>{@code ignite.config.url} - URL for Ignite configuration. If this URL specified then all
- *       aforementioned properties will not be taken in account.
+ *     <li>{@code ignite.addresses} - coma separated list of hosts in form {@code <host>:<port>}
+ *     or {@code <host>:<port_1>..<port_n>} </li>
+ *     <li>{@code ignite.clientMode} - indicates that Ignite interpreter
+ *     should start node in client mode ({@code true} or {@code false}).</li>
+ *     <li>{@code ignite.peerClassLoadingEnabled} - enables/disables peer class loading
+ *     ({@code true} or {@code false}).</li>
+ *     <li>{@code ignite.config.url} - URL for Ignite configuration. If this URL specified then
+ *     all aforementioned properties will not be taken in account.</li>
  * </ul>
  */
 public class IgniteInterpreter extends Interpreter {
@@ -159,11 +162,9 @@ public class IgniteInterpreter extends Interpreter {
   }
 
   public Object getLastObject() {
-    Object obj =
-        imain
-            .lastRequest()
-            .lineRep()
-            .call("$result", JavaConversions.asScalaBuffer(new LinkedList<>()));
+    Object obj = imain.lastRequest().lineRep().call(
+        "$result",
+        JavaConversions.asScalaBuffer(new LinkedList<>()));
     return obj;
   }
 
@@ -187,14 +188,14 @@ public class IgniteInterpreter extends Interpreter {
           conf.setDiscoverySpi(discoSpi);
 
           conf.setPeerClassLoadingEnabled(
-              Boolean.parseBoolean(getProperty(IGNITE_PEER_CLASS_LOADING_ENABLED)));
+                  Boolean.parseBoolean(getProperty(IGNITE_PEER_CLASS_LOADING_ENABLED)));
 
           ignite = Ignition.start(conf);
         }
 
         initEx = null;
       } catch (Exception e) {
-        logger.error("Error in IgniteInterpreter while getIgnite: ", e);
+        logger.error("Error in IgniteInterpreter while getIgnite: " , e);
         initEx = e;
       }
     }
@@ -210,10 +211,9 @@ public class IgniteInterpreter extends Interpreter {
       if (getIgnite() != null) {
         binder.put("ignite", ignite);
 
-        imain.interpret(
-            "@transient val ignite = "
-                + "_binder.get(\"ignite\")"
-                + ".asInstanceOf[org.apache.ignite.Ignite]");
+        imain.interpret("@transient val ignite = "
+            + "_binder.get(\"ignite\")"
+            + ".asInstanceOf[org.apache.ignite.Ignite]");
       }
     } finally {
       Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -263,7 +263,8 @@ public class IgniteInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 
   private InterpreterResult interpret(String[] lines) {
     String[] linesToRun = new String[lines.length + 1];
@@ -276,7 +277,7 @@ public class IgniteInterpreter extends Interpreter {
 
     String incomplete = "";
     for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];
+      String s = linesToRun[l];      
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
@@ -333,14 +334,14 @@ public class IgniteInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return new LinkedList<>();
   }
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton()
-        .createOrGetFIFOScheduler(IgniteInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+            IgniteInterpreter.class.getName() + this.hashCode());
   }
 }

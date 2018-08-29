@@ -27,6 +27,7 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -47,7 +48,11 @@ import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Zeppelin websocket client. */
+
+/**
+ * Zeppelin websocket client.
+ *
+ */
 public class ZeppelinClient {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinClient.class);
   private final URI zeppelinWebsocketUrl;
@@ -62,24 +67,22 @@ public class ZeppelinClient {
   private static final int MIN = 60;
   private static final String ORIGIN = "Origin";
 
-  private static final Set<String> actionable =
-      new HashSet<String>(
-          Arrays.asList(
-              // running events
-              "ANGULAR_OBJECT_UPDATE",
-              "PROGRESS",
-              "NOTE",
-              "PARAGRAPH",
-              "PARAGRAPH_UPDATE_OUTPUT",
-              "PARAGRAPH_APPEND_OUTPUT",
-              "PARAGRAPH_CLEAR_OUTPUT",
-              "PARAGRAPH_REMOVE",
-              // run or stop events
-              "RUN_PARAGRAPH",
-              "CANCEL_PARAGRAPH"));
+  private static final Set<String> actionable = new  HashSet<String>(Arrays.asList(
+      // running events
+      "ANGULAR_OBJECT_UPDATE",
+      "PROGRESS",
+      "NOTE",
+      "PARAGRAPH",
+      "PARAGRAPH_UPDATE_OUTPUT",
+      "PARAGRAPH_APPEND_OUTPUT",
+      "PARAGRAPH_CLEAR_OUTPUT",
+      "PARAGRAPH_REMOVE",
+      // run or stop events
+      "RUN_PARAGRAPH",
+      "CANCEL_PARAGRAPH"));
 
-  public static ZeppelinClient initialize(
-      String zeppelinUrl, String token, ZeppelinConfiguration conf) {
+  public static ZeppelinClient initialize(String zeppelinUrl, String token, 
+      ZeppelinConfiguration conf) {
     if (instance == null) {
       instance = new ZeppelinClient(zeppelinUrl, token, conf);
     }
@@ -108,7 +111,7 @@ public class ZeppelinClient {
     client.setMaxIdleTimeout(5 * MIN * 1000);
     client.setMaxTextMessageBufferSize(Client.getMaxNoteSize());
     client.getPolicy().setMaxTextMessageSize(Client.getMaxNoteSize());
-    // TODO(khalid): other client settings
+    //TODO(khalid): other client settings
     return client;
   }
 
@@ -127,28 +130,25 @@ public class ZeppelinClient {
 
   private void addRoutines() {
     schedulerService.add(ZeppelinHeartbeat.newInstance(this), 10, 1 * MIN);
-    new Timer()
-        .schedule(
-            new java.util.TimerTask() {
-              @Override
-              public void run() {
-                int time = 0;
-                while (time < 5 * MIN) {
-                  watcherSession = openWatcherSession();
-                  if (watcherSession == null) {
-                    try {
-                      Thread.sleep(5000);
-                      time += 5;
-                    } catch (InterruptedException e) {
-                      // continue
-                    }
-                  } else {
-                    break;
-                  }
-                }
-              }
-            },
-            5000);
+    new Timer().schedule(new java.util.TimerTask() {
+      @Override
+      public void run() {
+        int time = 0;
+        while (time < 5 * MIN) {
+          watcherSession = openWatcherSession();
+          if (watcherSession == null) {
+            try {
+              Thread.sleep(5000);
+              time += 5;
+            } catch (InterruptedException e) {
+              //continue
+            }
+          } else {
+            break;
+          }
+        }
+      }
+    }, 5000);
   }
 
   public void stop() {
@@ -192,7 +192,7 @@ public class ZeppelinClient {
       return null;
     }
   }
-
+  
   private Session openWatcherSession() {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader(WatcherSecurityKey.HTTP_HEADER, WatcherSecurityKey.getKey());
@@ -218,7 +218,7 @@ public class ZeppelinClient {
     }
     noteSession.getRemote().sendStringByFuture(serialize(msg));
   }
-
+  
   public Session getZeppelinConnection(String noteId, String principal, String ticket) {
     if (StringUtils.isBlank(noteId)) {
       LOG.warn("Cannot get Websocket session with blanck noteId");
@@ -226,8 +226,8 @@ public class ZeppelinClient {
     }
     return getNoteSession(noteId, principal, ticket);
   }
-
-  /*
+  
+/*
   private Message zeppelinGetNoteMsg(String noteId) {
     Message getNoteMsg = new Message(Message.OP.GET_NOTE);
     HashMap<String, Object> data = new HashMap<>();
@@ -247,7 +247,7 @@ public class ZeppelinClient {
     }
     return session;
   }
-
+  
   private Session openNoteSession(String noteId, String principal, String ticket) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader(ORIGIN, "*");
@@ -272,7 +272,7 @@ public class ZeppelinClient {
     }
     return session;
   }
-
+  
   private boolean isSessionOpen(Session session) {
     return (session != null) && (session.isOpen());
   }
@@ -289,7 +289,7 @@ public class ZeppelinClient {
 
   public void handleMsgFromZeppelin(String message, String noteId) {
     Map<String, String> meta = new HashMap<>();
-    // TODO(khalid): don't use zeppelinhubToken in this class, decouple
+    //TODO(khalid): don't use zeppelinhubToken in this class, decouple
     meta.put("noteId", noteId);
     Message zeppelinMsg = deserialize(message);
     if (zeppelinMsg == null) {
@@ -299,7 +299,7 @@ public class ZeppelinClient {
     if (!isActionable(zeppelinMsg.op)) {
       return;
     }
-
+    
     token = UserTokenContainer.getInstance().getUserToken(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
@@ -312,6 +312,7 @@ public class ZeppelinClient {
     } else {
       client.relayToZeppelinHub(hubMsg.toJson(), token);
     }
+
   }
 
   private void relayToAllZeppelinHub(ZeppelinhubMessage hubMsg, String noteId) {
@@ -323,7 +324,7 @@ public class ZeppelinClient {
     Client client = Client.getInstance();
     Set<String> userAndRoles;
     String token;
-    for (String user : userTokens.keySet()) {
+    for (String user: userTokens.keySet()) {
       userAndRoles = noteAuth.getRoles(user);
       userAndRoles.add(user);
       if (noteAuth.isReader(noteId, userAndRoles)) {
@@ -340,7 +341,7 @@ public class ZeppelinClient {
     }
     return actionable.contains(action.name());
   }
-
+  
   public void removeNoteConnection(String noteId) {
     if (StringUtils.isBlank(noteId)) {
       LOG.error("Cannot remove session for empty noteId");
@@ -355,14 +356,14 @@ public class ZeppelinClient {
     }
     LOG.info("Removed note websocket connection for note {}", noteId);
   }
-
+  
   private void removeAllConnections() {
     if (watcherSession != null && watcherSession.isOpen()) {
       watcherSession.close();
     }
 
     Session noteSession = null;
-    for (Map.Entry<String, Session> note : notesConnection.entrySet()) {
+    for (Map.Entry<String, Session> note: notesConnection.entrySet()) {
       noteSession = note.getValue();
       if (isSessionOpen(noteSession)) {
         noteSession.close();
@@ -378,8 +379,10 @@ public class ZeppelinClient {
     }
     watcherSession.getRemote().sendStringByFuture(serialize(new Message(OP.PING)));
   }
-
-  /** Only used in test. */
+  
+  /**
+   * Only used in test.
+   */
   public int countConnectedNotes() {
     return notesConnection.size();
   }

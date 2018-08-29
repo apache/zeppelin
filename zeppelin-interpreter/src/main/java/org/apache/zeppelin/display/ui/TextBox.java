@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
+
 package org.apache.zeppelin.display.ui;
 
 import org.apache.zeppelin.display.Input;
 
-/** Html TextBox control */
+/**
+ * Html TextBox control
+ */
 public class TextBox extends Input<String> {
 
-  public TextBox() {}
+  public TextBox() {
+
+  }
 
   public TextBox(String name, String defaultValue) {
     this.name = name;
     this.displayName = name;
     this.defaultValue = defaultValue;
   }
+
 }

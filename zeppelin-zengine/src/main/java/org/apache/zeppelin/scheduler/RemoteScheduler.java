@@ -17,11 +17,6 @@
 
 package org.apache.zeppelin.scheduler;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
@@ -29,7 +24,16 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** RemoteScheduler runs in ZeppelinServer and proxies Scheduler running on RemoteInterpreter */
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+/**
+ * RemoteScheduler runs in ZeppelinServer and proxies Scheduler running on RemoteInterpreter
+ *
+ */
 public class RemoteScheduler implements Scheduler {
   Logger logger = LoggerFactory.getLogger(RemoteScheduler.class);
 
@@ -43,13 +47,9 @@ public class RemoteScheduler implements Scheduler {
   private final String sessionId;
   private RemoteInterpreter remoteInterpreter;
 
-  public RemoteScheduler(
-      String name,
-      ExecutorService executor,
-      String sessionId,
-      RemoteInterpreter remoteInterpreter,
-      SchedulerListener listener,
-      int maxConcurrency) {
+  public RemoteScheduler(String name, ExecutorService executor, String sessionId,
+                         RemoteInterpreter remoteInterpreter, SchedulerListener listener,
+                         int maxConcurrency) {
     this.name = name;
     this.executor = executor;
     this.listener = listener;
@@ -88,10 +88,8 @@ public class RemoteScheduler implements Scheduler {
           try {
             queue.wait(500);
           } catch (InterruptedException e) {
-            logger.error(
-                "Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote "
-                    + "queue.wait",
-                e);
+            logger.error("Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote " +
+                "queue.wait", e);
           }
         }
       }
@@ -160,7 +158,10 @@ public class RemoteScheduler implements Scheduler {
     }
   }
 
-  /** Role of the class is get status info from remote process from PENDING to RUNNING status. */
+  /**
+   * Role of the class is get status info from remote process from PENDING to
+   * RUNNING status.
+   */
   private class JobStatusPoller extends Thread {
     private long initialPeriodMsec;
     private long initialPeriodCheckIntervalMsec;
@@ -170,11 +171,8 @@ public class RemoteScheduler implements Scheduler {
     private Job job;
     volatile Status lastStatus;
 
-    public JobStatusPoller(
-        long initialPeriodMsec,
-        long initialPeriodCheckIntervalMsec,
-        long checkIntervalMsec,
-        Job job,
+    public JobStatusPoller(long initialPeriodMsec,
+        long initialPeriodCheckIntervalMsec, long checkIntervalMsec, Job job,
         JobListener listener) {
       setName("JobStatusPoller-" + job.getId());
       this.initialPeriodMsec = initialPeriodMsec;
@@ -230,13 +228,14 @@ public class RemoteScheduler implements Scheduler {
       }
     }
 
+
     private Status getLastStatus() {
       if (terminate == true) {
         if (job.getErrorMessage() != null) {
           return Status.ERROR;
-        } else if (lastStatus != Status.FINISHED
-            && lastStatus != Status.ERROR
-            && lastStatus != Status.ABORT) {
+        } else if (lastStatus != Status.FINISHED &&
+            lastStatus != Status.ERROR &&
+            lastStatus != Status.ABORT) {
           return Status.FINISHED;
         } else {
           return (lastStatus == null) ? Status.FINISHED : lastStatus;
@@ -262,7 +261,7 @@ public class RemoteScheduler implements Scheduler {
     }
   }
 
-  // TODO(zjffdu) need to refactor the schdule module which is too complicated
+  //TODO(zjffdu) need to refactor the schdule module which is too complicated
   private class JobRunner implements Runnable, JobListener {
     private final Logger logger = LoggerFactory.getLogger(JobRunner.class);
     private Scheduler scheduler;
@@ -296,7 +295,8 @@ public class RemoteScheduler implements Scheduler {
         return;
       }
 
-      JobStatusPoller jobStatusPoller = new JobStatusPoller(1500, 100, 500, job, this);
+      JobStatusPoller jobStatusPoller = new JobStatusPoller(1500, 100, 500,
+          job, this);
       jobStatusPoller.start();
 
       if (listener != null) {
@@ -321,8 +321,7 @@ public class RemoteScheduler implements Scheduler {
       } else if (job.getException() != null) {
         logger.debug("Job ABORT, " + job.getId() + ", " + job.getErrorMessage());
         job.setStatus(Status.ERROR);
-      } else if (jobResult != null
-          && jobResult instanceof InterpreterResult
+      } else if (jobResult != null && jobResult instanceof InterpreterResult
           && ((InterpreterResult) jobResult).code() == Code.ERROR) {
         logger.debug("Job Error, " + job.getId() + ", " + job.getErrorMessage());
         job.setStatus(Status.ERROR);
@@ -345,13 +344,15 @@ public class RemoteScheduler implements Scheduler {
     }
 
     @Override
-    public void onProgressUpdate(Job job, int progress) {}
+    public void onProgressUpdate(Job job, int progress) {
+    }
 
     @Override
     public void onStatusChange(Job job, Status before, Status after) {
       // Update remoteStatus
       if (jobExecuted == false) {
-        if (after == Status.FINISHED || after == Status.ABORT || after == Status.ERROR) {
+        if (after == Status.FINISHED || after == Status.ABORT
+            || after == Status.ERROR) {
           // it can be status of last run.
           // so not updating the remoteStatus
           return;
@@ -377,5 +378,7 @@ public class RemoteScheduler implements Scheduler {
     synchronized (queue) {
       queue.notify();
     }
+
   }
+
 }

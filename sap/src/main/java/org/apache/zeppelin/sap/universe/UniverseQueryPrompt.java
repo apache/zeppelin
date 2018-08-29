@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.sap.universe;
 
-/** Info about parameter of universe query */
+/**
+ * Info about parameter of universe query
+ */
 public class UniverseQueryPrompt {
   private Integer id;
   private String name;
@@ -28,16 +30,11 @@ public class UniverseQueryPrompt {
   private String technicalName;
   private String keepLastValues;
 
-  public UniverseQueryPrompt() {}
+  public UniverseQueryPrompt() {
+  }
 
-  public UniverseQueryPrompt(
-      Integer id,
-      String name,
-      String cardinality,
-      String constrained,
-      String type,
-      String technicalName,
-      String keepLastValues) {
+  public UniverseQueryPrompt(Integer id, String name, String cardinality, String constrained,
+                             String type, String technicalName, String keepLastValues) {
     this.id = id;
     this.name = name;
     this.cardinality = cardinality;

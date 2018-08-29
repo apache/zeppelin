@@ -17,8 +17,12 @@
 
 package org.apache.zeppelin.markdown;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Properties;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -27,16 +31,18 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/** MarkdownInterpreter interpreter for Zeppelin. */
+/**
+ * MarkdownInterpreter interpreter for Zeppelin.
+ */
 public class Markdown extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   private MarkdownParser parser;
 
-  /** Markdown Parser Type. */
+  /**
+   * Markdown Parser Type.
+   */
   public enum MarkdownParserType {
     PEGDOWN {
       @Override
@@ -79,7 +85,8 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
   @Override
   public InterpreterResult interpret(String markdownText, InterpreterContext interpreterContext) {
@@ -96,7 +103,8 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+  }
 
   @Override
   public FormType getFormType() {
@@ -115,8 +123,8 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) {
     return null;
   }
 }

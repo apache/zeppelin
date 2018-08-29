@@ -18,7 +18,9 @@ package org.apache.zeppelin.jupyter.nbformat;
 
 import com.google.gson.annotations.SerializedName;
 
-/** */
+/**
+ *
+ */
 public class LanguageInfo {
 
   @SerializedName("name")
@@ -35,4 +37,5 @@ public class LanguageInfo {
 
   @SerializedName("pygments_lexer")
   private String pygmentsLexer;
+
 }

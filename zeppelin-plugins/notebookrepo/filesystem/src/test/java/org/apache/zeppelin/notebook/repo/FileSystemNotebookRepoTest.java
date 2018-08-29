@@ -1,13 +1,6 @@
 package org.apache.zeppelin.notebook.repo;
 
-import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -18,6 +11,15 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 public class FileSystemNotebookRepoTest {
 
@@ -30,11 +32,9 @@ public class FileSystemNotebookRepoTest {
 
   @Before
   public void setUp() throws IOException {
-    notebookDir =
-        Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
+    notebookDir = Files.createTempDirectory("FileSystemNotebookRepoTest").toFile().getAbsolutePath();
     zConf = new ZeppelinConfiguration();
-    System.setProperty(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir);
     hadoopConf = new Configuration();
     fs = FileSystem.get(hadoopConf);
     hdfsNotebookRepo = new FileSystemNotebookRepo();
@@ -80,8 +80,7 @@ public class FileSystemNotebookRepoTest {
 
   @Test
   public void testComplicatedScenarios() throws IOException {
-    // scenario_1: notebook_dir is not clean. There're some unrecognized dir and file under
-    // notebook_dir
+    // scenario_1: notebook_dir is not clean. There're some unrecognized dir and file under notebook_dir
     fs.mkdirs(new Path(notebookDir, "1/2"));
     OutputStream out = fs.create(new Path(notebookDir, "1/a.json"));
     out.close();

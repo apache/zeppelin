@@ -20,11 +20,16 @@ package org.apache.zeppelin.interpreter;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
-/** Interpreter wrapper for lazy initialization */
-public class LazyOpenInterpreter extends Interpreter implements WrappedInterpreter {
+/**
+ * Interpreter wrapper for lazy initialization
+ */
+public class LazyOpenInterpreter
+    extends Interpreter
+    implements WrappedInterpreter {
   private Interpreter intp;
   volatile boolean opened = false;
 
@@ -127,8 +132,8 @@ public class LazyOpenInterpreter extends Interpreter implements WrappedInterpret
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) throws InterpreterException {
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) throws InterpreterException {
     open();
     List completion = intp.completion(buf, cursor, interpreterContext);
     return completion;
@@ -150,12 +155,12 @@ public class LazyOpenInterpreter extends Interpreter implements WrappedInterpret
   }
 
   @Override
-  public URL[] getClassloaderUrls() {
+  public URL [] getClassloaderUrls() {
     return intp.getClassloaderUrls();
   }
 
   @Override
-  public void setClassloaderUrls(URL[] urls) {
+  public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
   }
 

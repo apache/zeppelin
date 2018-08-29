@@ -17,14 +17,6 @@
 
 package org.apache.zeppelin.markdown;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.parboiled.BaseParser;
@@ -36,17 +28,29 @@ import org.pegdown.ast.TextNode;
 import org.pegdown.plugins.BlockPluginParser;
 import org.pegdown.plugins.PegDownPlugins;
 
-/** Pegdown plugin for Websequence diagram. */
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Pegdown plugin for Websequence diagram.
+ */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
   private static final String WEBSEQ_URL = "http://www.websequencediagrams.com";
 
   public PegdownWebSequencelPlugin() {
-    super(
-        PegdownParser.OPTIONS, PegdownParser.PARSING_TIMEOUT_AS_MILLIS, DefaultParseRunnerProvider);
+    super(PegdownParser.OPTIONS,
+        PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
+        DefaultParseRunnerProvider);
   }
 
-  public PegdownWebSequencelPlugin(
-      Integer opts, Long millis, ParseRunnerProvider provider, PegDownPlugins plugins) {
+  public PegdownWebSequencelPlugin(Integer opts, Long millis, ParseRunnerProvider provider,
+                                   PegDownPlugins plugins) {
     super(opts, millis, provider, plugins);
   }
 
@@ -70,14 +74,16 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
     return NodeSequence(
         startMarker(),
-        Optional(String("style="), Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
+        Optional(
+            String("style="),
+            Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
         Sequence(body(), body.append(match())),
         endMarker(),
         push(
-            new ExpImageNode(
-                "title",
+            new ExpImageNode("title",
                 createWebsequenceUrl(style.getString(), body.getString()),
-                new TextNode(""))));
+                new TextNode("")))
+    );
   }
 
   public static String createWebsequenceUrl(String style, String content) {
@@ -89,14 +95,13 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
     String webSeqUrl = "";
 
     try {
-      String query =
-          new StringBuilder()
-              .append("style=")
-              .append(style)
-              .append("&message=")
-              .append(URLEncoder.encode(content, "UTF-8"))
-              .append("&apiVersion=1")
-              .toString();
+      String query = new StringBuilder()
+          .append("style=")
+          .append(style)
+          .append("&message=")
+          .append(URLEncoder.encode(content, "UTF-8"))
+          .append("&apiVersion=1")
+          .toString();
 
       URL url = new URL(WEBSEQ_URL);
       URLConnection conn = url.openConnection();
@@ -106,8 +111,8 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
       writer.flush();
 
       StringBuilder response = new StringBuilder();
-      reader =
-          new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+      reader = new BufferedReader(
+          new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
       String line;
       while ((line = reader.readLine()) != null) {
         response.append(line);
@@ -136,6 +141,6 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[] {blockRule()};
+    return new Rule[]{blockRule()};
   }
 }

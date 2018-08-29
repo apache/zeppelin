@@ -1,14 +1,5 @@
 package org.apache.zeppelin.notebook;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -21,7 +12,20 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Hadoop FileSystem wrapper. Support both secure and no-secure mode */
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * Hadoop FileSystem wrapper. Support both secure and no-secure mode
+ */
 public class FileSystemStorage {
 
   private static Logger LOGGER = LoggerFactory.getLogger(FileSystemStorage.class);
@@ -31,22 +35,19 @@ public class FileSystemStorage {
   static {
     if (UserGroupInformation.isSecurityEnabled()) {
       ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
-      String keytab =
-          zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
-      String principal =
-          zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
+      String keytab = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB);
+      String principal = zConf.getString(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL);
       if (StringUtils.isBlank(keytab) || StringUtils.isBlank(principal)) {
-        throw new RuntimeException(
-            "keytab and principal can not be empty, keytab: "
-                + keytab
-                + ", principal: "
-                + principal);
+        throw new RuntimeException("keytab and principal can not be empty, keytab: " + keytab
+            + ", principal: " + principal);
       }
       try {
         UserGroupInformation.loginUserFromKeytab(principal, keytab);
       } catch (IOException e) {
-        throw new RuntimeException(
-            "Fail to login via keytab:" + keytab + ", principal:" + principal, e);
+        throw new RuntimeException("Fail to login via keytab:" + keytab +
+            ", principal:" + principal, e);
       }
     }
   }
@@ -80,93 +81,82 @@ public class FileSystemStorage {
   }
 
   public boolean exists(final Path path) throws IOException {
-    return callHdfsOperation(
-        new HdfsOperation<Boolean>() {
+    return callHdfsOperation(new HdfsOperation<Boolean>() {
 
-          @Override
-          public Boolean call() throws IOException {
-            return fs.exists(path);
-          }
-        });
+      @Override
+      public Boolean call() throws IOException {
+        return fs.exists(path);
+      }
+    });
   }
 
   public void tryMkDir(final Path dir) throws IOException {
-    callHdfsOperation(
-        new HdfsOperation<Void>() {
-          @Override
-          public Void call() throws IOException {
-            if (!fs.exists(dir)) {
-              fs.mkdirs(dir);
-              LOGGER.info("Create dir {} in hdfs", dir.toString());
-            }
-            if (fs.isFile(dir)) {
-              throw new IOException(
-                  dir.toString()
-                      + " is file instead of directory, please remove "
-                      + "it or specify another directory");
-            }
-            fs.mkdirs(dir);
-            return null;
-          }
-        });
+    callHdfsOperation(new HdfsOperation<Void>() {
+      @Override
+      public Void call() throws IOException {
+        if (!fs.exists(dir)) {
+          fs.mkdirs(dir);
+          LOGGER.info("Create dir {} in hdfs", dir.toString());
+        }
+        if (fs.isFile(dir)) {
+          throw new IOException(dir.toString() + " is file instead of directory, please remove " +
+              "it or specify another directory");
+        }
+        fs.mkdirs(dir);
+        return null;
+      }
+    });
   }
 
   public List<Path> list(final Path path) throws IOException {
-    return callHdfsOperation(
-        new HdfsOperation<List<Path>>() {
-          @Override
-          public List<Path> call() throws IOException {
-            List<Path> paths = new ArrayList<>();
-            for (FileStatus status : fs.globStatus(path)) {
-              paths.add(status.getPath());
-            }
-            return paths;
-          }
-        });
+    return callHdfsOperation(new HdfsOperation<List<Path>>() {
+      @Override
+      public List<Path> call() throws IOException {
+        List<Path> paths = new ArrayList<>();
+        for (FileStatus status : fs.globStatus(path)) {
+          paths.add(status.getPath());
+        }
+        return paths;
+      }
+    });
   }
 
   public boolean delete(final Path path) throws IOException {
-    return callHdfsOperation(
-        new HdfsOperation<Boolean>() {
-          @Override
-          public Boolean call() throws IOException {
-            return fs.delete(path, true);
-          }
-        });
+    return callHdfsOperation(new HdfsOperation<Boolean>() {
+      @Override
+      public Boolean call() throws IOException {
+        return fs.delete(path, true);
+      }
+    });
   }
 
   public String readFile(final Path file) throws IOException {
-    return callHdfsOperation(
-        new HdfsOperation<String>() {
-          @Override
-          public String call() throws IOException {
-            LOGGER.debug("Read from file: " + file);
-            ByteArrayOutputStream noteBytes = new ByteArrayOutputStream();
-            IOUtils.copyBytes(fs.open(file), noteBytes, hadoopConf);
-            return new String(
-                noteBytes.toString(
-                    zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
-          }
-        });
+    return callHdfsOperation(new HdfsOperation<String>() {
+      @Override
+      public String call() throws IOException {
+        LOGGER.debug("Read from file: " + file);
+        ByteArrayOutputStream noteBytes = new ByteArrayOutputStream();
+        IOUtils.copyBytes(fs.open(file), noteBytes, hadoopConf);
+        return new String(noteBytes.toString(
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
+      }
+    });
   }
 
   public void writeFile(final String content, final Path file, boolean writeTempFileFirst)
       throws IOException {
-    callHdfsOperation(
-        new HdfsOperation<Void>() {
-          @Override
-          public Void call() throws IOException {
-            InputStream in =
-                new ByteArrayInputStream(
-                    content.getBytes(
-                        zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
-            Path tmpFile = new Path(file.toString() + ".tmp");
-            IOUtils.copyBytes(in, fs.create(tmpFile), hadoopConf);
-            fs.delete(file, true);
-            fs.rename(tmpFile, file);
-            return null;
-          }
-        });
+    callHdfsOperation(new HdfsOperation<Void>() {
+      @Override
+      public Void call() throws IOException {
+        InputStream in = new ByteArrayInputStream(content.getBytes(
+            zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_ENCODING)));
+        Path tmpFile = new Path(file.toString() + ".tmp");
+        IOUtils.copyBytes(in, fs.create(tmpFile), hadoopConf);
+        fs.delete(file, true);
+        fs.rename(tmpFile, file);
+        return null;
+      }
+    });
   }
 
   private interface HdfsOperation<T> {
@@ -176,14 +166,12 @@ public class FileSystemStorage {
   public synchronized <T> T callHdfsOperation(final HdfsOperation<T> func) throws IOException {
     if (isSecurityEnabled) {
       try {
-        return UserGroupInformation.getCurrentUser()
-            .doAs(
-                new PrivilegedExceptionAction<T>() {
-                  @Override
-                  public T run() throws Exception {
-                    return func.call();
-                  }
-                });
+        return UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<T>() {
+          @Override
+          public T run() throws Exception {
+            return func.call();
+          }
+        });
       } catch (InterruptedException e) {
         throw new IOException(e);
       }
@@ -191,4 +179,5 @@ public class FileSystemStorage {
       return func.call();
     }
   }
+
 }

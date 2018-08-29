@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.elasticsearch.action;
 
-/** Runtime exception thrown when there is a problem during an action (search, get, ...). */
+/**
+ * Runtime exception thrown when there is a problem during an action (search, get, ...).
+ */
 public class ActionException extends RuntimeException {
 
   public ActionException(String message) {

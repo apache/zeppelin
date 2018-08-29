@@ -21,28 +21,34 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
 import org.apache.zeppelin.elasticsearch.action.ActionException;
 import org.apache.zeppelin.elasticsearch.action.ActionResponse;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper;
 import org.apache.zeppelin.elasticsearch.action.AggWrapper.AggregationType;
 import org.apache.zeppelin.elasticsearch.action.HitWrapper;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-/** Elasticsearch client using the HTTP API. */
+/**
+ * Elasticsearch client using the HTTP API.
+ */
 public class HttpBasedClient implements ElasticsearchClient {
   private static final String QUERY_STRING_TEMPLATE =
       "{ \"query\": { \"query_string\": { \"query\": \"_Q_\", \"analyze_wildcard\": \"true\" } } }";
@@ -112,11 +118,8 @@ public class HttpBasedClient implements ElasticsearchClient {
               } else {
                 // There are differences: to avoid problems with some special characters
                 // such as / and # in id, use a "terms" query
-                buffer
-                    .append("/_search?source=")
-                    .append(
-                        URLEncoder.encode(
-                            "{\"query\":{\"terms\":{\"_id\":[\"" + id + "\"]}}}", "UTF-8"));
+                buffer.append("/_search?source=").append(URLEncoder
+                      .encode("{\"query\":{\"terms\":{\"_id\":[\"" + id + "\"]}}}", "UTF-8"));
               }
             } else {
               buffer.append("/").append(id);
@@ -151,31 +154,28 @@ public class HttpBasedClient implements ElasticsearchClient {
       if (isSucceeded) {
         final JsonNode body = new JsonNode(result.getBody());
         if (body.getObject().has("_index")) {
-          response =
-              new ActionResponse()
-                  .succeeded(true)
-                  .hit(
-                      new HitWrapper(
-                          getFieldAsString(body, "_index"),
-                          getFieldAsString(body, "_type"),
-                          getFieldAsString(body, "_id"),
-                          getFieldAsString(body, "_source")));
+          response = new ActionResponse()
+              .succeeded(true)
+              .hit(new HitWrapper(
+                  getFieldAsString(body, "_index"),
+                  getFieldAsString(body, "_type"),
+                  getFieldAsString(body, "_id"),
+                  getFieldAsString(body, "_source")));
         } else {
           final JSONArray hits = getFieldAsArray(body.getObject(), "hits/hits");
           final JSONObject hit = (JSONObject) hits.iterator().next();
-          response =
-              new ActionResponse()
-                  .succeeded(true)
-                  .hit(
-                      new HitWrapper(
-                          hit.getString("_index"),
-                          hit.getString("_type"),
-                          hit.getString("_id"),
-                          hit.opt("_source").toString()));
+          response = new ActionResponse()
+              .succeeded(true)
+              .hit(new HitWrapper(
+                  hit.getString("_index"),
+                  hit.getString("_type"),
+                  hit.getString("_id"),
+                  hit.opt("_source").toString()));
         }
       } else {
         if (result.getStatus() == 404) {
-          response = new ActionResponse().succeeded(false);
+          response = new ActionResponse()
+              .succeeded(false);
         } else {
           throw new ActionException(result.getBody());
         }
@@ -200,15 +200,13 @@ public class HttpBasedClient implements ElasticsearchClient {
 
       if (isSucceeded) {
         final JsonNode body = new JsonNode(result.getBody());
-        response =
-            new ActionResponse()
-                .succeeded(true)
-                .hit(
-                    new HitWrapper(
-                        getFieldAsString(body, "_index"),
-                        getFieldAsString(body, "_type"),
-                        getFieldAsString(body, "_id"),
-                        null));
+        response = new ActionResponse()
+            .succeeded(true)
+            .hit(new HitWrapper(
+                getFieldAsString(body, "_index"),
+                getFieldAsString(body, "_type"),
+                getFieldAsString(body, "_id"),
+                null));
       } else {
         throw new ActionException(result.getBody());
       }
@@ -231,8 +229,7 @@ public class HttpBasedClient implements ElasticsearchClient {
       request
           .header("Accept", "application/json")
           .header("Content-Type", "application/json")
-          .body(data)
-          .getHttpRequest();
+          .body(data).getHttpRequest();
       if (StringUtils.isNotEmpty(username)) {
         request.basicAuth(username, password);
       }
@@ -241,15 +238,13 @@ public class HttpBasedClient implements ElasticsearchClient {
       final boolean isSucceeded = isSucceeded(result);
 
       if (isSucceeded) {
-        response =
-            new ActionResponse()
-                .succeeded(true)
-                .hit(
-                    new HitWrapper(
-                        getFieldAsString(result, "_index"),
-                        getFieldAsString(result, "_type"),
-                        getFieldAsString(result, "_id"),
-                        null));
+        response = new ActionResponse()
+            .succeeded(true)
+            .hit(new HitWrapper(
+                getFieldAsString(result, "_index"),
+                getFieldAsString(result, "_type"),
+                getFieldAsString(result, "_id"),
+                null));
       } else {
         throw new ActionException(result.getBody().toString());
       }
@@ -275,9 +270,9 @@ public class HttpBasedClient implements ElasticsearchClient {
     }
 
     try {
-      final HttpRequestWithBody request =
-          Unirest.post(getUrl(indices, types) + "/_search?size=" + size)
-              .header("Content-Type", "application/json");
+      final HttpRequestWithBody request = Unirest
+          .post(getUrl(indices, types) + "/_search?size=" + size)
+          .header("Content-Type", "application/json");
 
       if (StringUtils.isNoneEmpty(query)) {
         request.header("Accept", "application/json").body(query);
@@ -293,7 +288,9 @@ public class HttpBasedClient implements ElasticsearchClient {
       if (isSucceeded(result)) {
         final long total = getFieldAsLong(result, "hits/total");
 
-        response = new ActionResponse().succeeded(true).totalHits(total);
+        response = new ActionResponse()
+            .succeeded(true)
+            .totalHits(total);
 
         if (containsAggs(result)) {
           JSONObject aggregationsMap = body.getJSONObject("aggregations");
@@ -301,7 +298,7 @@ public class HttpBasedClient implements ElasticsearchClient {
             aggregationsMap = body.getJSONObject("aggs");
           }
 
-          for (final String key : aggregationsMap.keySet()) {
+          for (final String key: aggregationsMap.keySet()) {
             final JSONObject aggResult = aggregationsMap.getJSONObject(key);
             if (aggResult.has("buckets")) {
               // Multi-bucket aggregations
@@ -322,13 +319,13 @@ public class HttpBasedClient implements ElasticsearchClient {
 
           while (iter.hasNext()) {
             final JSONObject hit = (JSONObject) iter.next();
-            final Object data = hit.opt("_source") != null ? hit.opt("_source") : hit.opt("fields");
-            response.addHit(
-                new HitWrapper(
-                    hit.getString("_index"),
-                    hit.getString("_type"),
-                    hit.getString("_id"),
-                    data.toString()));
+            final Object data =
+                hit.opt("_source") != null ? hit.opt("_source") : hit.opt("fields");
+            response.addHit(new HitWrapper(
+                hit.getString("_index"),
+                hit.getString("_type"),
+                hit.getString("_id"),
+                data.toString()));
           }
         }
       } else {
@@ -342,13 +339,14 @@ public class HttpBasedClient implements ElasticsearchClient {
   }
 
   private boolean containsAggs(HttpResponse<JsonNode> result) {
-    return result.getBody() != null
-        && (result.getBody().getObject().has("aggregations")
-            || result.getBody().getObject().has("aggs"));
+    return result.getBody() != null &&
+        (result.getBody().getObject().has("aggregations") ||
+            result.getBody().getObject().has("aggs"));
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
   @Override
   public String toString() {

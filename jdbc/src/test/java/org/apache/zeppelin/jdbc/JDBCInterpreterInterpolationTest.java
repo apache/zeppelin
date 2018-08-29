@@ -5,26 +5,16 @@
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
- * <p>http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.zeppelin.jdbc;
 
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
-
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.resource.LocalResourcePool;
@@ -33,7 +23,20 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
-/** JDBC interpreter Z-variable interpolation unit tests. */
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.Properties;
+
+import static java.lang.String.format;
+import static org.junit.Assert.assertEquals;
+
+/**
+ * JDBC interpreter Z-variable interpolation unit tests.
+ */
 public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
 
   private static String jdbcConnection;
@@ -55,24 +58,22 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     Connection connection = DriverManager.getConnection(getJdbcConnection());
     Statement statement = connection.createStatement();
     statement.execute(
-        "DROP TABLE IF EXISTS test_table; "
-            + "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+          "DROP TABLE IF EXISTS test_table; " +
+          "CREATE TABLE test_table(id varchar(255), name varchar(255));");
 
     Statement insertStatement = connection.createStatement();
-    insertStatement.execute(
-        "insert into test_table(id, name) values "
-            + "('pro', 'processor'),"
-            + "('mem', 'memory'),"
-            + "('key', 'keyboard'),"
-            + "('mou', 'mouse');");
+    insertStatement.execute("insert into test_table(id, name) values " +
+                "('pro', 'processor')," +
+                "('mem', 'memory')," +
+                "('key', 'keyboard')," +
+                "('mou', 'mouse');");
     resourcePool = new LocalResourcePool("JdbcInterpolationTest");
 
-    interpreterContext =
-        InterpreterContext.builder()
-            .setParagraphId("paragraph_1")
-            .setAuthenticationInfo(new AuthenticationInfo("testUser"))
-            .setResourcePool(resourcePool)
-            .build();
+    interpreterContext = InterpreterContext.builder()
+        .setParagraphId("paragraph_1")
+        .setAuthenticationInfo(new AuthenticationInfo("testUser"))
+        .setResourcePool(resourcePool)
+        .build();
   }
 
   @Test
@@ -109,7 +110,8 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\nmem\tmemory\n", interpreterResult.message().get(0).getData());
+    assertEquals("ID\tNAME\nmem\tmemory\n",
+            interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -147,7 +149,8 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals(1, interpreterResult.message().size());
-    assertEquals("ID\tNAME\nkey\tkeyboard\n", interpreterResult.message().get(0).getData());
+    assertEquals("ID\tNAME\nkey\tkeyboard\n",
+            interpreterResult.message().get(0).getData());
   }
 
   @Test
@@ -174,7 +177,8 @@ public class JDBCInterpreterInterpolationTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals(1, interpreterResult.message().size());
-    assertEquals(
-        "ID\tNAME\nkey\tkeyboard\nmou\tmouse\n", interpreterResult.message().get(0).getData());
+    assertEquals("ID\tNAME\nkey\tkeyboard\nmou\tmouse\n", 
+                 interpreterResult.message().get(0).getData());
   }
+
 }

@@ -18,12 +18,15 @@ package org.apache.zeppelin.jupyter.nbformat;
 
 import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
-import java.util.Arrays;
-import java.util.List;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
-/** */
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ *
+ */
 public class Error extends Output {
   @SerializedName("ename")
   private String ename;

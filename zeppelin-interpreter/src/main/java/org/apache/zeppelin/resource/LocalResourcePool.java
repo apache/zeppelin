@@ -20,13 +20,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/** ResourcePool */
+/**
+ * ResourcePool
+ */
 public class LocalResourcePool implements ResourcePool {
   private final String resourcePoolId;
-  private final Map<ResourceId, Resource> resources =
-      Collections.synchronizedMap(new HashMap<ResourceId, Resource>());
+  private final Map<ResourceId, Resource> resources = Collections.synchronizedMap(
+      new HashMap<ResourceId, Resource>());
 
-  /** @param id unique id */
+  /**
+   * @param id unique id
+   */
   public LocalResourcePool(String id) {
     resourcePoolId = id;
   }

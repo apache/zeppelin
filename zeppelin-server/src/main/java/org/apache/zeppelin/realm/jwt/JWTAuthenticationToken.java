@@ -18,7 +18,9 @@ package org.apache.zeppelin.realm.jwt;
 
 import org.apache.shiro.authc.AuthenticationToken;
 
-/** Created for org.apache.zeppelin.server. */
+/**
+ * Created for org.apache.zeppelin.server.
+ */
 public class JWTAuthenticationToken implements AuthenticationToken {
   private Object userId;
   private String token;

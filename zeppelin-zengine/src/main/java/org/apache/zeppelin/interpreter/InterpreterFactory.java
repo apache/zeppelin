@@ -17,14 +17,18 @@
 
 package org.apache.zeppelin.interpreter;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * //TODO(zjffdu) considering to move to InterpreterSettingManager
  *
- * <p>Factory class for creating interpreters.
+ * Factory class for creating interpreters.
+ *
  */
 public class InterpreterFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterFactory.class);
@@ -35,8 +39,10 @@ public class InterpreterFactory {
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
-  public Interpreter getInterpreter(
-      String user, String noteId, String replName, String defaultInterpreterSetting)
+  public Interpreter getInterpreter(String user,
+                                    String noteId,
+                                    String replName,
+                                    String defaultInterpreterSetting)
       throws InterpreterNotFoundException {
 
     if (StringUtils.isBlank(replName)) {
@@ -60,9 +66,10 @@ public class InterpreterFactory {
       }
       throw new InterpreterNotFoundException("No interpreter setting named: " + group);
 
-    } else if (replNameSplits.length == 1) {
+    } else if (replNameSplits.length == 1){
       // first assume group is omitted
-      InterpreterSetting setting = interpreterSettingManager.getByName(defaultInterpreterSetting);
+      InterpreterSetting setting =
+          interpreterSettingManager.getByName(defaultInterpreterSetting);
       if (setting != null) {
         Interpreter interpreter = setting.getInterpreter(user, noteId, replName);
         if (null != interpreter) {

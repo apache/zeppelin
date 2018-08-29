@@ -20,13 +20,15 @@ package org.apache.zeppelin.shell;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Properties;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 public class ShellInterpreterTest {
 
@@ -45,7 +47,8 @@ public class ShellInterpreterTest {
   }
 
   @After
-  public void tearDown() throws Exception {}
+  public void tearDown() throws Exception {
+  }
 
   @Test
   public void test() {
@@ -62,7 +65,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testInvalidCommand() {
+  public void testInvalidCommand(){
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("invalid_command\ndir", context);
     } else {

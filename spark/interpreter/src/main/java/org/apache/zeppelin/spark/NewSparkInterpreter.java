@@ -18,13 +18,6 @@
 package org.apache.zeppelin.spark;
 
 import com.google.common.collect.Lists;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkConf;
@@ -40,9 +33,17 @@ import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 /**
- * SparkInterpreter of Java implementation. It is just wrapper of Spark211Interpreter and
- * Spark210Interpreter.
+ * SparkInterpreter of Java implementation. It is just wrapper of Spark211Interpreter
+ * and Spark210Interpreter.
  */
 public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
@@ -63,11 +64,11 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
   private static InterpreterHookRegistry hooks;
 
+
   public NewSparkInterpreter(Properties properties) {
     super(properties);
-    this.enableSupportedVersionCheck =
-        java.lang.Boolean.parseBoolean(
-            properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+    this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
+        properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
     innerInterpreterClassMap.put("2.10", "org.apache.zeppelin.spark.SparkScala210Interpreter");
     innerInterpreterClassMap.put("2.11", "org.apache.zeppelin.spark.SparkScala211Interpreter");
   }
@@ -97,25 +98,19 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
       String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
       Class clazz = Class.forName(innerIntpClassName);
-      this.innerInterpreter =
-          (BaseSparkScalaInterpreter)
-              clazz
-                  .getConstructor(SparkConf.class, List.class, Boolean.class)
-                  .newInstance(
-                      conf,
-                      getDependencyFiles(),
-                      Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
+      this.innerInterpreter = (BaseSparkScalaInterpreter)
+          clazz.getConstructor(SparkConf.class, List.class, Boolean.class)
+              .newInstance(conf, getDependencyFiles(),
+                  Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
       this.innerInterpreter.open();
 
       sc = this.innerInterpreter.sc();
       jsc = JavaSparkContext.fromSparkContext(sc);
       sparkVersion = SparkVersion.fromVersionString(sc.version());
       if (enableSupportedVersionCheck && sparkVersion.isUnsupportedVersion()) {
-        throw new Exception(
-            "This is not officially supported spark version: "
-                + sparkVersion
-                + "\nYou can set zeppelin.spark.enableSupportedVersionCheck to false if you really"
-                + " want to try this version of spark.");
+        throw new Exception("This is not officially supported spark version: " + sparkVersion
+            + "\nYou can set zeppelin.spark.enableSupportedVersionCheck to false if you really" +
+            " want to try this version of spark.");
       }
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
@@ -128,11 +123,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sparkShims = SparkShims.getInstance(sc.version(), getProperties());
       sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
 
-      z =
-          new SparkZeppelinContext(
-              sc, sparkShims, hooks, Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
-      this.innerInterpreter.bind(
-          "z", z.getClass().getCanonicalName(), z, Lists.newArrayList("@transient"));
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
+          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
+          Lists.newArrayList("@transient"));
     } catch (Exception e) {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
@@ -168,8 +162,9 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String buf, int cursor, InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(String buf,
+                                                int cursor,
+                                                InterpreterContext interpreterContext) {
     LOGGER.debug("buf: " + buf + ", cursor:" + cursor);
     return innerInterpreter.completion(buf, cursor, interpreterContext);
   }
@@ -225,9 +220,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   private List<String> getDependencyFiles() throws InterpreterException {
     List<String> depFiles = new ArrayList<>();
     // add jar from DepInterpreter
-    DepInterpreter depInterpreter =
-        getParentSparkInterpreter()
-            .getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
+    DepInterpreter depInterpreter = getParentSparkInterpreter().
+        getInterpreterInTheSameSessionByClassName(DepInterpreter.class, false);
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
@@ -263,6 +257,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
   @Override
   public boolean isUnsupportedSparkVersion() {
-    return enableSupportedVersionCheck && sparkVersion.isUnsupportedVersion();
+    return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
   }
 }

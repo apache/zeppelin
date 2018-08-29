@@ -18,8 +18,6 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.*;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -31,7 +29,14 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Notebook repository sync with remote storage */
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+
+/**
+ * Notebook repository sync with remote storage
+ */
 public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
@@ -45,7 +50,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
 
-  /** @param conf */
+  /**
+   * @param conf
+   */
   @SuppressWarnings("static-access")
   public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
     init(conf);
@@ -61,12 +68,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
-      LOG.warn(
-          "Unsupported number {} of storage classes in ZEPPELIN_NOTEBOOK_STORAGE : {}\n"
-              + "first {} will be used",
-          storageClassNames.length,
-          allStorageClassNames,
-          getMaxRepoNum());
+      LOG.warn("Unsupported number {} of storage classes in ZEPPELIN_NOTEBOOK_STORAGE : {}\n" +
+          "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
@@ -98,35 +101,37 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
     NotebookRepoWithSettings repoWithSettings;
     for (NotebookRepo repo : repos) {
-      repoWithSettings =
-          NotebookRepoWithSettings.builder(repo.getClass().getSimpleName())
-              .className(repo.getClass().getName())
-              .settings(repo.getSettings(subject))
-              .build();
+      repoWithSettings = NotebookRepoWithSettings
+                           .builder(repo.getClass().getSimpleName())
+                           .className(repo.getClass().getName())
+                           .settings(repo.getSettings(subject))
+                           .build();
       reposSetting.add(repoWithSettings);
     }
 
     return reposSetting;
   }
 
-  public NotebookRepoWithSettings updateNotebookRepo(
-      String name, Map<String, String> settings, AuthenticationInfo subject) {
+  public NotebookRepoWithSettings updateNotebookRepo(String name, Map<String, String> settings,
+                                                     AuthenticationInfo subject) {
     NotebookRepoWithSettings updatedSettings = NotebookRepoWithSettings.EMPTY;
     for (NotebookRepo repo : repos) {
       if (repo.getClass().getName().equals(name)) {
         repo.updateSettings(settings, subject);
-        updatedSettings =
-            NotebookRepoWithSettings.builder(repo.getClass().getSimpleName())
-                .className(repo.getClass().getName())
-                .settings(repo.getSettings(subject))
-                .build();
+        updatedSettings = NotebookRepoWithSettings
+                            .builder(repo.getClass().getSimpleName())
+                            .className(repo.getClass().getName())
+                            .settings(repo.getSettings(subject))
+                            .build();
         break;
       }
     }
     return updatedSettings;
   }
 
-  /** Lists Notebooks from the first repository */
+  /**
+   *  Lists Notebooks from the first repository
+   */
   @Override
   public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
     return getRepo(0).list(subject);
@@ -137,7 +142,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     return getRepo(repoIndex).list(subject);
   }
 
-  /** Returns from Notebook from the first repository */
+  /**
+   *  Returns from Notebook from the first repository
+   */
   @Override
   public Note get(String noteId, AuthenticationInfo subject) throws IOException {
     return getRepo(0).get(noteId, subject);
@@ -148,14 +155,17 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     return getRepo(repoIndex).get(noteId, subject);
   }
 
-  /** Saves to all repositories */
+  /**
+   *  Saves to all repositories
+   */
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
     getRepo(0).save(note, subject);
     if (getRepoCount() > 1) {
       try {
         getRepo(1).save(note, subject);
-      } catch (IOException e) {
+      }
+      catch (IOException e) {
         LOG.info(e.getMessage() + ": Failed to write to secondary storage");
       }
     }
@@ -188,12 +198,12 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     NotebookAuthorization auth = NotebookAuthorization.getInstance();
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List<NoteInfo> allSrcNotes = srcRepo.list(subject);
-    List<NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
-    List<NoteInfo> dstNotes = dstRepo.list(subject);
+    List <NoteInfo> allSrcNotes = srcRepo.list(subject);
+    List <NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
+    List <NoteInfo> dstNotes = dstRepo.list(subject);
 
-    Map<String, List<String>> noteIds =
-        notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo, subject);
+    Map<String, List<String>> noteIds = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
+        subject);
     List<String> pushNoteIds = noteIds.get(pushKey);
     List<String> pullNoteIds = noteIds.get(pullKey);
     List<String> delDstNoteIds = noteIds.get(delDstKey);
@@ -235,12 +245,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     sync(0, 1, subject);
   }
 
-  private void pushNotes(
-      AuthenticationInfo subject,
-      List<String> ids,
-      NotebookRepo localRepo,
-      NotebookRepo remoteRepo,
-      boolean setPermissions) {
+  private void pushNotes(AuthenticationInfo subject, List<String> ids, NotebookRepo localRepo,
+      NotebookRepo remoteRepo, boolean setPermissions) {
     for (String id : ids) {
       try {
         remoteRepo.save(localRepo.get(id, subject), subject);
@@ -257,7 +263,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
     return notebookAuthorization.getOwners(noteId).isEmpty()
         && notebookAuthorization.getReaders(noteId).isEmpty()
-        && notebookAuthorization.getRunners(noteId).isEmpty()
+            && notebookAuthorization.getRunners(noteId).isEmpty()
         && notebookAuthorization.getWriters(noteId).isEmpty();
   }
 
@@ -298,25 +304,18 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   public NotebookRepo getRepo(int repoIndex) throws IOException {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
-      throw new IOException(
-          "Requested storage index "
-              + repoIndex
-              + " isn't initialized,"
-              + " repository count is "
-              + getRepoCount());
+      throw new IOException("Requested storage index " + repoIndex
+          + " isn't initialized," + " repository count is " + getRepoCount());
     }
     return repos.get(repoIndex);
   }
 
-  private Map<String, List<String>> notesCheckDiff(
-      List<NoteInfo> sourceNotes,
-      NotebookRepo sourceRepo,
-      List<NoteInfo> destNotes,
-      NotebookRepo destRepo,
+  private Map<String, List<String>> notesCheckDiff(List<NoteInfo> sourceNotes,
+      NotebookRepo sourceRepo, List<NoteInfo> destNotes, NotebookRepo destRepo,
       AuthenticationInfo subject) {
-    List<String> pushIDs = new ArrayList<>();
-    List<String> pullIDs = new ArrayList<>();
-    List<String> delDstIDs = new ArrayList<>();
+    List <String> pushIDs = new ArrayList<>();
+    List <String> pullIDs = new ArrayList<>();
+    List <String> delDstIDs = new ArrayList<>();
 
     NoteInfo dnote;
     Date sdate, ddate;
@@ -375,7 +374,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     return map;
   }
 
-  private NoteInfo containsID(List<NoteInfo> notes, String id) {
+  private NoteInfo containsID(List <NoteInfo> notes, String id) {
     for (NoteInfo note : notes) {
       if (note.getId().equals(id)) {
         return note;
@@ -385,7 +384,6 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
   /**
    * checks latest modification date based on Paragraph fields
-   *
    * @return -Date
    */
   private Date lastModificationDate(Note note) {
@@ -413,7 +411,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   @Override
   public void close() {
     LOG.info("Closing all notebook storages");
-    for (NotebookRepo repo : repos) {
+    for (NotebookRepo repo: repos) {
       repo.close();
     }
   }
@@ -433,7 +431,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     return false;
   }
 
-  // checkpoint to all available storages
+  //checkpoint to all available storages
   @Override
   public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
@@ -446,24 +444,15 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     for (int i = 0; i < repoBound; i++) {
       try {
         if (isRevisionSupportedInRepo(i)) {
-          allRepoCheckpoints.add(
-              ((NotebookRepoWithVersionControl) getRepo(i))
+          allRepoCheckpoints
+              .add(((NotebookRepoWithVersionControl) getRepo(i))
                   .checkpoint(noteId, checkpointMsg, subject));
         }
       } catch (IOException e) {
-        LOG.warn(
-            "Couldn't checkpoint in {} storage with index {} for note {}",
-            getRepo(i).getClass().toString(),
-            i,
-            noteId);
-        errorMessage +=
-            "Error on storage class "
-                + getRepo(i).getClass().toString()
-                + " with index "
-                + i
-                + " : "
-                + e.getMessage()
-                + "\n";
+        LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}",
+          getRepo(i).getClass().toString(), i, noteId);
+        errorMessage += "Error on storage class " + getRepo(i).getClass().toString() +
+          " with index " + i + " : " + e.getMessage() + "\n";
         errorCount++;
       }
     }
@@ -511,7 +500,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
     List<NotebookRepoSettingsInfo> repoSettings = Collections.emptyList();
     try {
-      repoSettings = getRepo(0).getSettings(subject);
+      repoSettings =  getRepo(0).getSettings(subject);
     } catch (IOException e) {
       LOG.error("Cannot get notebook repo settings", e);
     }
@@ -536,8 +525,8 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     for (int i = 0; i < repoBound; i++) {
       try {
         if (isRevisionSupportedInRepo(i)) {
-          currentNote =
-              ((NotebookRepoWithVersionControl) getRepo(i)).setNoteRevision(noteId, revId, subject);
+          currentNote = ((NotebookRepoWithVersionControl) getRepo(i))
+              .setNoteRevision(noteId, revId, subject);
         }
       } catch (IOException e) {
         // already logged
@@ -550,4 +539,5 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
     return revisionNote;
   }
+
 }

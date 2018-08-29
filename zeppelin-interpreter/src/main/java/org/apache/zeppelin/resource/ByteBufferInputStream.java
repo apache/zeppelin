@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-/** InputStream from bytebuffer */
+
+/**
+ * InputStream from bytebuffer
+ */
 public class ByteBufferInputStream extends InputStream {
 
   ByteBuffer buf;

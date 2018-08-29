@@ -20,10 +20,14 @@ package org.apache.zeppelin.scheduler;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Factory class for creating schedulers */
+/**
+ * Factory class for creating schedulers
+ *
+ */
 public class SchedulerFactory implements SchedulerListener {
   private static final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
   protected ExecutorService executor;
@@ -103,10 +107,12 @@ public class SchedulerFactory implements SchedulerListener {
   @Override
   public void jobStarted(Scheduler scheduler, Job job) {
     logger.info("Job " + job.getId() + " started by scheduler " + scheduler.getName());
+
   }
 
   @Override
   public void jobFinished(Scheduler scheduler, Job job) {
     logger.info("Job " + job.getId() + " finished by scheduler " + scheduler.getName());
+
   }
 }

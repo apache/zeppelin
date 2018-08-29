@@ -20,14 +20,20 @@ package org.apache.zeppelin.tabledata;
 import java.util.Map;
 import java.util.Set;
 
-/** The Zeppelin Node Entity */
+/**
+ * The Zeppelin Node Entity
+ *
+ */
 public class Node extends GraphEntity {
 
-  /** The labels (types) attached to a node */
+  /**
+   * The labels (types) attached to a node
+   */
   private Set<String> labels;
 
   public Node() {}
 
+  
   public Node(long id, Map<String, Object> data, Set<String> labels) {
     super(id, data, labels.iterator().next());
   }
@@ -39,4 +45,5 @@ public class Node extends GraphEntity {
   public void setLabels(Set<String> labels) {
     this.labels = labels;
   }
+ 
 }

@@ -17,13 +17,15 @@
 
 package org.apache.zeppelin.scheduler;
 
+
 public abstract class JobWithProgressPoller<T> extends Job<T> {
 
   private transient JobProgressPoller progressPoller;
   private long progressUpdateIntervalMs;
 
-  public JobWithProgressPoller(
-      String jobId, String jobName, JobListener listener, long progressUpdateIntervalMs) {
+
+  public JobWithProgressPoller(String jobId, String jobName, JobListener listener,
+                               long progressUpdateIntervalMs) {
     super(jobId, jobName, listener);
     this.progressUpdateIntervalMs = progressUpdateIntervalMs;
   }

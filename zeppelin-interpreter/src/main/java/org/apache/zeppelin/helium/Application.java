@@ -16,13 +16,15 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.io.IOException;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.resource.ResourceSet;
 
+import java.io.IOException;
+
 /**
- * Base class for pluggable application (e.g. visualization) Application can access resources from
- * ResourcePool and interact with front-end using AngularDisplay system
+ * Base class for pluggable application (e.g. visualization)
+ * Application can access resources from ResourcePool and interact with front-end using
+ * AngularDisplay system
  */
 @Experimental
 public abstract class Application {
@@ -38,19 +40,22 @@ public abstract class Application {
   }
 
   /**
-   * This method can be invoked multiple times before unload(), Either just after application
-   * selected or when paragraph re-run after application load
+   * This method can be invoked multiple times before unload(),
+   * Either just after application selected or when paragraph re-run after application load
    */
   @Experimental
-  public abstract void run(ResourceSet args) throws ApplicationException, IOException;
+  public abstract void run(ResourceSet args)
+      throws ApplicationException, IOException;
 
-  /** this method is invoked just before application is removed */
+
+  /**
+   * this method is invoked just before application is removed
+   */
   @Experimental
   public abstract void unload() throws ApplicationException;
 
   /**
    * Print string on the notebook
-   *
    * @param string
    * @throws IOException
    */
@@ -61,7 +66,6 @@ public abstract class Application {
 
   /**
    * Print string on the notebook with newline
-   *
    * @param string
    * @throws IOException
    */
@@ -72,7 +76,6 @@ public abstract class Application {
 
   /**
    * Print resource on the notebook
-   *
    * @param resourceName
    * @throws IOException
    */
@@ -84,14 +87,14 @@ public abstract class Application {
   /**
    * Print resource as a javascript
    *
-   * <p>Using this method does not require print javascript inside of <script></script> tag.
-   * Javascript printed using this method will be run in the un-named function. i.e. each method
-   * call will creates different variable scope for the javascript code.
+   * Using this method does not require print javascript inside of <script></script> tag.
+   * Javascript printed using this method will be run in the un-named function.
+   * i.e. each method call will creates different variable scope for the javascript code.
    *
-   * <p>This method inject '$z' into the variable scope for convenience.
+   * This method inject '$z' into the variable scope for convenience.
    *
-   * <p>$z.scope : angularjs scope object for this application $z.id : unique id for this
-   * application instance
+   * $z.scope : angularjs scope object for this application
+   * $z.id : unique id for this application instance
    *
    * @param resourceName
    * @throws IOException
@@ -106,14 +109,14 @@ public abstract class Application {
   /**
    * Print string as a javascript
    *
-   * <p>Using this method does not require print javascript inside of <script></script> tag.
-   * Javascript printed using this method will be run in the un-named function. i.e. each method
-   * call will creates different variable scope for the javascript code.
+   * Using this method does not require print javascript inside of <script></script> tag.
+   * Javascript printed using this method will be run in the un-named function.
+   * i.e. each method call will creates different variable scope for the javascript code.
    *
-   * <p>This method inject '$z' into the variable scope for convenience.
+   * This method inject '$z' into the variable scope for convenience.
    *
-   * <p>$z.scope : angularjs scope object for this application $z.id : unique id for this
-   * application instance
+   * $z.scope : angularjs scope object for this application
+   * $z.id : unique id for this application instance
    *
    * @param js
    * @throws IOException
@@ -133,9 +136,8 @@ public abstract class Application {
     js.append("id : \"" + context.getApplicationInstanceId() + "\",\n");
     js.append("scope : angular.element(\"#app_js_" + js.hashCode() + "\").scope()\n");
     js.append("};\n");
-    js.append(
-        "$z.result = ($z.scope._devmodeResult) ? "
-            + "$z.scope._devmodeResult : $z.scope.$parent.paragraph.result;\n");
+    js.append("$z.result = ($z.scope._devmodeResult) ? " +
+        "$z.scope._devmodeResult : $z.scope.$parent.paragraph.result;\n");
     context.out.write(js.toString());
   }
 

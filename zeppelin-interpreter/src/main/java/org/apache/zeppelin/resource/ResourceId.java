@@ -19,7 +19,9 @@ package org.apache.zeppelin.resource;
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/** Identifying resource */
+/**
+ * Identifying resource
+ */
 public class ResourceId implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -67,10 +69,8 @@ public class ResourceId implements JsonSerializable {
   public boolean equals(Object o) {
     if (o instanceof ResourceId) {
       ResourceId r = (ResourceId) o;
-      return equals(r.name, name)
-          && equals(r.resourcePoolId, resourcePoolId)
-          && equals(r.noteId, noteId)
-          && equals(r.paragraphId, paragraphId);
+      return equals(r.name, name) && equals(r.resourcePoolId, resourcePoolId) &&
+          equals(r.noteId, noteId) && equals(r.paragraphId, paragraphId);
     } else {
       return false;
     }

@@ -17,23 +17,26 @@
 
 package org.apache.zeppelin.spark;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Utility and helper functions for the Spark Interpreter */
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Utility and helper functions for the Spark Interpreter
+ */
 class Utils {
   public static Logger logger = LoggerFactory.getLogger(Utils.class);
   private static final String SCALA_COMPILER_VERSION = evaluateScalaCompilerVersion();
 
   static Object invokeMethod(Object o, String name) {
-    return invokeMethod(o, name, new Class[] {}, new Object[] {});
+    return invokeMethod(o, name, new Class[]{}, new Object[]{});
   }
 
   static Object invokeMethod(Object o, String name, Class<?>[] argTypes, Object[] params) {
@@ -55,7 +58,7 @@ class Utils {
   }
 
   static Object invokeStaticMethod(Class<?> c, String name) {
-    return invokeStaticMethod(c, name, new Class[] {}, new Object[] {});
+    return invokeStaticMethod(c, name, new Class[]{}, new Object[]{});
   }
 
   static Class<?> findClass(String name) {
@@ -75,14 +78,11 @@ class Utils {
 
   static Object instantiateClass(String name, Class<?>[] argTypes, Object[] params) {
     try {
-      Constructor<?> constructor =
-          Utils.class.getClassLoader().loadClass(name).getConstructor(argTypes);
+      Constructor<?> constructor = Utils.class.getClassLoader()
+              .loadClass(name).getConstructor(argTypes);
       return constructor.newInstance(params);
-    } catch (NoSuchMethodException
-        | ClassNotFoundException
-        | IllegalAccessException
-        | InstantiationException
-        | InvocationTargetException e) {
+    } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException |
+      InstantiationException | InvocationTargetException e) {
       logger.error(e.getMessage(), e);
     }
     return null;
@@ -103,7 +103,7 @@ class Utils {
   static boolean isScala2_11() {
     return !isScala2_10();
   }
-
+  
   static boolean isCompilerAboveScala2_11_7() {
     if (isScala2_10() || SCALA_COMPILER_VERSION == null) {
       return false;
@@ -125,8 +125,8 @@ class Utils {
       Properties p = new Properties();
       Class<?> completionClass = findClass("scala.tools.nsc.interpreter.JLineCompletion");
       if (completionClass != null) {
-        try (java.io.InputStream in =
-            completionClass.getClass().getResourceAsStream("/compiler.properties")) {
+        try (java.io.InputStream in = completionClass.getClass()
+          .getResourceAsStream("/compiler.properties")) {
           p.load(in);
           version = p.getProperty("version.number");
         } catch (java.io.IOException e) {
@@ -147,7 +147,7 @@ class Utils {
       return false;
     }
   }
-
+  
   public static String buildJobGroupId(InterpreterContext context) {
     return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
   }

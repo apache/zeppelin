@@ -16,13 +16,16 @@
  */
 package org.apache.zeppelin.resource;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.junit.Test;
 
-/** Test for Resource */
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Test for Resource
+ */
 public class ResourceTest {
   @Test
   public void testSerializeDeserialize() throws IOException, ClassNotFoundException {

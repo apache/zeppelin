@@ -17,4 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
-public class ZeppelinServerTest extends AbstractTestRestApi {}
+public class ZeppelinServerTest extends AbstractTestRestApi {
+
+
+}

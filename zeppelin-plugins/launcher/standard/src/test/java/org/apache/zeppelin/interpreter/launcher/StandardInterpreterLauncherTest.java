@@ -17,16 +17,17 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.Properties;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class StandardInterpreterLauncherTest {
   @Before
@@ -45,26 +46,14 @@ public class StandardInterpreterLauncherTest {
     properties.setProperty("property_1", "value_1");
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
-    InterpreterLaunchContext context =
-        new InterpreterLaunchContext(
-            properties,
-            option,
-            null,
-            "user1",
-            "intpGroupId",
-            "groupId",
-            "groupName",
-            "name",
-            0,
-            "host");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue(client instanceof RemoteInterpreterManagedProcess);
+    assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
-    assertEquals(
-        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
+    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
         interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
     assertEquals(1, interpreterProcess.getEnv().size());
@@ -81,20 +70,9 @@ public class StandardInterpreterLauncherTest {
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
-    InterpreterLaunchContext context =
-        new InterpreterLaunchContext(
-            properties,
-            option,
-            null,
-            "user1",
-            "intpGroupId",
-            "groupId",
-            "groupName",
-            "name",
-            0,
-            "host");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
     InterpreterClient client = launcher.launch(context);
-    assertTrue(client instanceof RemoteInterpreterManagedProcess);
+    assertTrue( client instanceof RemoteInterpreterManagedProcess);
     RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
@@ -104,4 +82,5 @@ public class StandardInterpreterLauncherTest {
     assertEquals(0, interpreterProcess.getEnv().size());
     assertEquals(true, interpreterProcess.isUserImpersonated());
   }
+
 }
