@@ -17,19 +17,17 @@
 
 package org.apache.zeppelin.rinterpreter;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
-
 /**
- * KnitR is a simple wrapper around KnitRInterpreter to handle that Zeppelin prefers
- * to load interpreters through classes defined in Java with static methods that run
- * when the class is loaded.
- *
+ * KnitR is a simple wrapper around KnitRInterpreter to handle that Zeppelin prefers to load
+ * interpreters through classes defined in Java with static methods that run when the class is
+ * loaded.
  */
 public class KnitR extends Interpreter implements WrappedInterpreter {
   KnitRInterpreter intp;
@@ -38,6 +36,7 @@ public class KnitR extends Interpreter implements WrappedInterpreter {
     super(properties);
     intp = new KnitRInterpreter(properties, startSpark);
   }
+
   public KnitR(Properties properties) {
     this(properties, true);
   }
@@ -78,8 +77,8 @@ public class KnitR extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i,
-      InterpreterContext interpreterContext) throws InterpreterException {
+  public List<InterpreterCompletion> completion(
+      String s, int i, InterpreterContext interpreterContext) throws InterpreterException {
     List completion = intp.completion(s, i, interpreterContext);
     return completion;
   }
