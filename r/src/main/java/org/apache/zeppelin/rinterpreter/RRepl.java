@@ -17,17 +17,19 @@
 
 package org.apache.zeppelin.rinterpreter;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
+
 /**
- * RRepl is a simple wrapper around RReplInterpreter to handle that Zeppelin prefers to load
- * interpreters through classes defined in Java with static methods that run when the class is
- * loaded.
+ * RRepl is a simple wrapper around RReplInterpreter to handle that Zeppelin prefers
+ * to load interpreters through classes defined in Java with static methods that run
+ * when the class is loaded.
+ *
  */
 public class RRepl extends Interpreter implements WrappedInterpreter {
   RReplInterpreter intp;
@@ -36,7 +38,6 @@ public class RRepl extends Interpreter implements WrappedInterpreter {
     super(properties);
     intp = new RReplInterpreter(properties, startSpark);
   }
-
   public RRepl(Properties properties) {
     this(properties, true);
   }
@@ -77,8 +78,8 @@ public class RRepl extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(
-      String s, int i, InterpreterContext interpreterContext) throws InterpreterException {
+  public List<InterpreterCompletion> completion(String s, int i,
+      InterpreterContext interpreterContext) throws InterpreterException {
     List completion = intp.completion(s, i, interpreterContext);
     return completion;
   }
