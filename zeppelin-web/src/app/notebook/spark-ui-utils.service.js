@@ -12,15 +12,7 @@
  * limitations under the License.
  */
 
-  angular.module('zeppelinWebApp').service('Utils', function($http, baseUrlSrv, ngToast, $timeout, $sce) {
-    this.triggerClick = function(el) {
-      const self = this;
-      self.elId= el;
-      $timeout(function() {
-        angular.element(self.elId).trigger('click');
-      }, 100);
-    };
-
+  angular.module('zeppelinWebApp').service('SparkUIUtils', function($http, baseUrlSrv, ngToast, $timeout, $sce) {
     this.Constants = {
       'X-Frame-Params': 'spark.ui.allowFramingFrom',
     };

@@ -31,7 +31,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', ParagraphCtrl);
 function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                        $timeout, $compile, $http, $q, websocketMsgSrv,
                        baseUrlSrv, ngToast, noteVarShareService,
-                       heliumService, Utils) {
+                       heliumService, SparkUIUtils) {
   'ngInject';
 
   let ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
@@ -190,7 +190,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   const fetchXframeSupport = function() {
-    Utils.checkXframeSupport($scope, $scope.$parent.interpreterSettings);
+    SparkUIUtils.checkXframeSupport($scope, $scope.$parent.interpreterSettings);
   };
 
   const isTabCompletion = function() {
@@ -1919,6 +1919,6 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
   $scope.showInterpreterWebView = function(url, type) {
     const label = $scope.paragraph.runtimeInfos.jobUrl.label;
-    type ? Utils.showWebViewInIframe(url, label) : window.open(url);
+    type ? SparkUIUtils.showWebViewInIframe(url, label) : window.open(url);
   };
 }

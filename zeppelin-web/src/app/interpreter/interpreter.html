@@ -126,7 +126,7 @@ limitations under the License.
         <span style="float:right" ng-show="!valueform.$visible" ng-init="url=setting.id">
           <button class="btn btn-default btn-xs"
                   ng-show="setting.group == 'spark'"
-                  angular-popover direction="bottom" template-url="app/notebook/paragraph/popover.html"
+                  popover-trigger="'outsideClick'" popover-placement="bottom" uib-popover-template="'app/notebook/paragraph/popover.html'"
                   style="position: relative;height:20px;">
             <span class="fa fa-external-link"></span> spark ui</button>
           <button class="btn btn-default btn-xs"

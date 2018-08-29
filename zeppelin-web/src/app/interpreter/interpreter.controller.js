@@ -16,7 +16,7 @@ import {ParagraphStatus} from '../notebook/paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route, Utils) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route, SparkUIUtils) {
   'ngInject';
 
   let interpreterSettingsTmp = [];
@@ -128,7 +128,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (isDownloading) {
       $timeout(function() {
         if ($route.current.$$route.originalPath === '/interpreter') {
-          Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
+          SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
         }
       }, 2000);
     }
@@ -526,7 +526,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       .then(function(res) {
         $scope.resetNewInterpreterSetting();
         $scope.showAddNewSetting = false;
-        Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
+        SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
       }).catch(function(res) {
         const errorMsg = res.data ? res.data.message : 'Could not connect to server.';
         console.log('Error %o %o', res.status, errorMsg);
@@ -736,13 +736,13 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 
-    Utils.getInterpreterSettings($scope, checkDownloadingDependencies);
+    SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
     getAvailableInterpreters();
     getRepositories();
   };
 
   $scope.$on('interpreterSettingChange', function() {
-    Utils.checkXframeSupport($scope, $scope.interpreterSettings, 'interpreter');
+    SparkUIUtils.checkXframeSupport($scope, $scope.interpreterSettings, 'interpreter');
   });
 
   $scope.showInterpreterWebView = function(settingId, type) {
@@ -757,7 +757,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         if (res.data.body.url) {
           const url = res.data.body.url;
           type
-            ? Utils.showWebViewInIframe(url, settingId)
+            ? SparkUIUtils.showWebViewInIframe(url, settingId)
             : window.open(url);
         } else {
           BootstrapDialog.alert({
