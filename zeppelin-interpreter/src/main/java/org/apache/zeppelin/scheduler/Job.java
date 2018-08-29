@@ -78,7 +78,7 @@ public abstract class Job<T> {
   private Date dateCreated;
   private Date dateStarted;
   private Date dateFinished;
-  private volatile Status status;
+  protected volatile Status status;
 
   transient boolean aborted = false;
   private volatile String errorMessage;

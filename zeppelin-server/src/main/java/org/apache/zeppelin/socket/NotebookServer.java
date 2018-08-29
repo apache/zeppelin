@@ -702,22 +702,14 @@ public class NotebookServer extends WebSocketServlet
     String personalized = (String) fromMessage.get("personalized");
     boolean isPersonalized = personalized.equals("true") ? true : false;
 
-    if (noteId == null) {
-      return;
-    }
-
-    if (!hasParagraphOwnerPermission(conn, notebook, noteId,
-        userAndRoles, fromMessage.principal, "persoanlized")) {
-      return;
-    }
-
-    Note note = notebook.getNote(noteId);
-    if (note != null) {
-      note.setPersonalizedMode(isPersonalized);
-      AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
-      note.persist(subject);
-      broadcastNote(note);
-    }
+    getNotebookService().updatePersonalizedMode(noteId, isPersonalized,
+        getServiceContext(fromMessage), new WebSocketServiceCallback<Note>(conn) {
+          @Override
+          public void onSuccess(Note note, ServiceContext context) throws IOException {
+            super.onSuccess(note, context);
+            connectionManager.broadcastNote(note);
+          }
+        });
   }
 
   private void renameNote(NotebookSocket conn,
@@ -1577,7 +1569,7 @@ public class NotebookServer extends WebSocketServlet
   private void sendAllConfigurations(NotebookSocket conn,
                                      Message message ) throws IOException {
 
-    configurationService.getAllProperties(getServiceContext(message),
+    getConfigurationService().getAllProperties(getServiceContext(message),
         new WebSocketServiceCallback<Map<String, String>>(conn) {
           @Override
           public void onSuccess(Map<String, String> properties,
