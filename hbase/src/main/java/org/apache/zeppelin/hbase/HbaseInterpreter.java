@@ -14,11 +14,6 @@
 
 package org.apache.zeppelin.hbase;
 
-import org.jruby.embed.LocalContextScope;
-import org.jruby.embed.ScriptingContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
-
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -35,22 +29,25 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.jruby.embed.LocalContextScope;
+import org.jruby.embed.ScriptingContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Support for HBase Shell. All the commands documented here
- * http://hbase.apache.org/book.html#shell is supported.
+ * Support for HBase Shell. All the commands documented here http://hbase.apache.org/book.html#shell
+ * is supported.
  *
- * Requirements:
- * HBase Shell should be installed on the same machine. To be more specific, the following dir.
- * should be available: https://github.com/apache/hbase/tree/master/hbase-shell/src/main/ruby
- * HBase Shell should be able to connect to the HBase cluster from terminal. This makes sure
- * that the client is configured properly.
+ * <p>Requirements: HBase Shell should be installed on the same machine. To be more specific, the
+ * following dir. should be available:
+ * https://github.com/apache/hbase/tree/master/hbase-shell/src/main/ruby HBase Shell should be able
+ * to connect to the HBase cluster from terminal. This makes sure that the client is configured
+ * properly.
  *
- * The interpreter takes 3 config parameters:
- * hbase.home: Root directory where HBase is installed. Default is /usr/lib/hbase/
- * hbase.ruby.sources: Dir where shell ruby code is installed.
- *                          Path is relative to hbase.home. Default: lib/ruby
- * zeppelin.hbase.test.mode: (Testing only) Disable checks for unit and manual tests. Default: false
+ * <p>The interpreter takes 3 config parameters: hbase.home: Root directory where HBase is
+ * installed. Default is /usr/lib/hbase/ hbase.ruby.sources: Dir where shell ruby code is installed.
+ * Path is relative to hbase.home. Default: lib/ruby zeppelin.hbase.test.mode: (Testing only)
+ * Disable checks for unit and manual tests. Default: false
  */
 public class HbaseInterpreter extends Interpreter {
   public static final String HBASE_HOME = "hbase.home";
@@ -68,7 +65,7 @@ public class HbaseInterpreter extends Interpreter {
 
   @Override
   public void open() throws InterpreterException {
-    this.scriptingContainer  = new ScriptingContainer(LocalContextScope.SINGLETON);
+    this.scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETON);
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
 
@@ -82,8 +79,8 @@ public class HbaseInterpreter extends Interpreter {
 
       File f = absRubySrc.toFile();
       if (!f.exists() || !f.isDirectory()) {
-        throw new InterpreterException("HBase ruby sources is not available at '" + absRubySrc
-            + "'");
+        throw new InterpreterException(
+            "HBase ruby sources is not available at '" + absRubySrc + "'");
       }
 
       logger.info("Absolute Ruby Source:" + absRubySrc.toString());
@@ -139,20 +136,17 @@ public class HbaseInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        HbaseInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton()
+        .createOrGetFIFOScheduler(HbaseInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+  public List<InterpreterCompletion> completion(
+      String buf, int cursor, InterpreterContext interpreterContext) {
     return null;
   }
 
-  private static String getSystemDefault(
-      String envName,
-      String propertyName,
-      String defaultValue) {
+  private static String getSystemDefault(String envName, String propertyName, String defaultValue) {
 
     if (envName != null && !envName.isEmpty()) {
       String envValue = System.getenv().get(envName);

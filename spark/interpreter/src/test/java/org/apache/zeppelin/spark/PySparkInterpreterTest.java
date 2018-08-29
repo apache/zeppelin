@@ -17,8 +17,12 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.mockito.Mockito.mock;
 
 import com.google.common.io.Files;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -29,16 +33,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Properties;
-
-import static org.mockito.Mockito.mock;
-
-
 public class PySparkInterpreterTest extends PythonInterpreterTest {
 
-  private RemoteInterpreterEventClient mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
+  private RemoteInterpreterEventClient mockRemoteEventClient =
+      mock(RemoteInterpreterEventClient.class);
 
   @Override
   public void setUp() throws InterpreterException {
@@ -59,10 +57,11 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     intpGroup = new InterpreterGroup();
     intpGroup.put("note", new LinkedList<Interpreter>());
 
-    InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
-        .setIntpEventClient(mockRemoteEventClient)
-        .build();
+    InterpreterContext context =
+        InterpreterContext.builder()
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setIntpEventClient(mockRemoteEventClient)
+            .build();
     InterpreterContext.set(context);
     LazyOpenInterpreter sparkInterpreter =
         new LazyOpenInterpreter(new SparkInterpreter(properties));

@@ -20,8 +20,21 @@ package org.apache.zeppelin.elasticsearch.client;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
+import org.apache.zeppelin.elasticsearch.action.ActionResponse;
+import org.apache.zeppelin.elasticsearch.action.AggWrapper;
+import org.apache.zeppelin.elasticsearch.action.HitWrapper;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -45,96 +58,63 @@ import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregat
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
-import org.apache.zeppelin.elasticsearch.action.ActionResponse;
-import org.apache.zeppelin.elasticsearch.action.AggWrapper;
-import org.apache.zeppelin.elasticsearch.action.HitWrapper;
-
-/**
- * Elasticsearch client using the transport protocol.
- */
+/** Elasticsearch client using the transport protocol. */
 public class TransportBasedClient implements ElasticsearchClient {
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
   private final Client client;
 
   public TransportBasedClient(Properties props) throws UnknownHostException {
-    final String host =
-        props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_HOST);
-    final int port = Integer.parseInt(
-        props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_PORT));
+    final String host = props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_HOST);
+    final int port =
+        Integer.parseInt(props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_PORT));
     final String clusterName =
         props.getProperty(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME);
 
-    final Settings settings = Settings.settingsBuilder()
-        .put("cluster.name", clusterName)
-        .put(props)
-        .build();
+    final Settings settings =
+        Settings.settingsBuilder().put("cluster.name", clusterName).put(props).build();
 
-    client = TransportClient.builder().settings(settings).build()
-        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+    client =
+        TransportClient.builder()
+            .settings(settings)
+            .build()
+            .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
   }
 
   @Override
   public ActionResponse get(String index, String type, String id) {
-    final GetResponse getResp = client
-        .prepareGet(index, type, id)
-        .get();
+    final GetResponse getResp = client.prepareGet(index, type, id).get();
 
     return new ActionResponse()
         .succeeded(getResp.isExists())
-        .hit(new HitWrapper(
-            getResp.getIndex(),
-            getResp.getType(),
-            getResp.getId(),
-            getResp.getSourceAsString()));
+        .hit(
+            new HitWrapper(
+                getResp.getIndex(),
+                getResp.getType(),
+                getResp.getId(),
+                getResp.getSourceAsString()));
   }
 
   @Override
   public ActionResponse delete(String index, String type, String id) {
-    final DeleteResponse delResp = client
-        .prepareDelete(index, type, id)
-        .get();
+    final DeleteResponse delResp = client.prepareDelete(index, type, id).get();
 
     return new ActionResponse()
         .succeeded(delResp.isFound())
-        .hit(new HitWrapper(
-            delResp.getIndex(),
-            delResp.getType(),
-            delResp.getId(),
-            null));
+        .hit(new HitWrapper(delResp.getIndex(), delResp.getType(), delResp.getId(), null));
   }
 
   @Override
   public ActionResponse index(String index, String type, String id, String data) {
-    final IndexResponse idxResp = client
-        .prepareIndex(index, type, id)
-        .setSource(data)
-        .get();
+    final IndexResponse idxResp = client.prepareIndex(index, type, id).setSource(data).get();
 
     return new ActionResponse()
         .succeeded(idxResp.isCreated())
-        .hit(new HitWrapper(
-            idxResp.getIndex(),
-            idxResp.getType(),
-            idxResp.getId(),
-            null));
+        .hit(new HitWrapper(idxResp.getIndex(), idxResp.getType(), idxResp.getId(), null));
   }
 
   @Override
   public ActionResponse search(String[] indices, String[] types, String query, int size) {
-    final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(
-        client, SearchAction.INSTANCE);
+    final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(client, SearchAction.INSTANCE);
     reqBuilder.setIndices();
 
     if (indices != null) {
@@ -161,14 +141,13 @@ public class TransportBasedClient implements ElasticsearchClient {
 
     final SearchResponse searchResp = reqBuilder.get();
 
-    final ActionResponse actionResp = new ActionResponse()
-        .succeeded(true)
-        .totalHits(searchResp.getHits().getTotalHits());
+    final ActionResponse actionResp =
+        new ActionResponse().succeeded(true).totalHits(searchResp.getHits().getTotalHits());
 
     if (searchResp.getAggregations() != null) {
       setAggregations(searchResp.getAggregations(), actionResp);
     } else {
-      for (final SearchHit hit: searchResp.getHits()) {
+      for (final SearchHit hit : searchResp.getHits()) {
         // Fields can be found either in _source, or in fields (it depends on the query)
         // => specific for elasticsearch's version < 5
         //
@@ -193,11 +172,15 @@ public class TransportBasedClient implements ElasticsearchClient {
     final Aggregation agg = aggregations.asList().get(0);
 
     if (agg instanceof InternalMetricsAggregation) {
-      actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
-          XContentHelper.toString((InternalMetricsAggregation) agg).toString()));
+      actionResp.addAggregation(
+          new AggWrapper(
+              AggWrapper.AggregationType.SIMPLE,
+              XContentHelper.toString((InternalMetricsAggregation) agg).toString()));
     } else if (agg instanceof InternalSingleBucketAggregation) {
-      actionResp.addAggregation(new AggWrapper(AggWrapper.AggregationType.SIMPLE,
-          XContentHelper.toString((InternalSingleBucketAggregation) agg).toString()));
+      actionResp.addAggregation(
+          new AggWrapper(
+              AggWrapper.AggregationType.SIMPLE,
+              XContentHelper.toString((InternalSingleBucketAggregation) agg).toString()));
     } else if (agg instanceof InternalMultiBucketAggregation) {
       final Set<String> headerKeys = new HashSet<>();
       final List<Map<String, Object>> buckets = new LinkedList<>();

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.display.ui;
 
 import org.apache.zeppelin.display.Input;
@@ -27,9 +26,7 @@ import org.apache.zeppelin.display.Input;
  */
 public abstract class OptionInput<T> extends Input<T> {
 
-  /**
-   * Parameters option.
-   */
+  /** Parameters option. */
   public static class ParamOption {
     Object value;
     String displayName;
@@ -49,7 +46,6 @@ public abstract class OptionInput<T> extends Input<T> {
 
       if (value != null ? !value.equals(that.value) : that.value != null) return false;
       return displayName != null ? displayName.equals(that.displayName) : that.displayName == null;
-
     }
 
     @Override
@@ -74,7 +70,6 @@ public abstract class OptionInput<T> extends Input<T> {
     public void setDisplayName(String displayName) {
       this.displayName = displayName;
     }
-
   }
 
   protected ParamOption[] options;

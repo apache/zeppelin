@@ -17,16 +17,14 @@
 
 package org.apache.zeppelin.rest.exception;
 
-import org.apache.zeppelin.utils.ExceptionUtils;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import javax.ws.rs.WebApplicationException;
-
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import org.apache.zeppelin.utils.ExceptionUtils;
 
 public class NoteNotFoundException extends WebApplicationException {
 
   public NoteNotFoundException(String noteId) {
     super(ExceptionUtils.jsonResponseContent(NOT_FOUND, "No such note: " + noteId));
   }
-
 }

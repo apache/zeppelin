@@ -19,9 +19,7 @@ package org.apache.zeppelin.spark;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Provide reading comparing capability of spark version returned from SparkContext.version()
- */
+/** Provide reading comparing capability of spark version returned from SparkContext.version() */
 public class SparkVersion {
   private static final Logger logger = LoggerFactory.getLogger(SparkVersion.class);
 
@@ -32,7 +30,7 @@ public class SparkVersion {
   public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
   public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
 
-  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_6_0;
+  public static final SparkVersion MIN_SUPPORTED_VERSION = SPARK_1_6_0;
   public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_2_4_0;
 
   private int version;
@@ -56,8 +54,8 @@ public class SparkVersion {
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
       version = Integer.parseInt(String.format("%d%02d%02d", major, minor, patch));
     } catch (Exception e) {
-      logger.error("Can not recognize Spark version " + versionString +
-          ". Assume it's a future release", e);
+      logger.error(
+          "Can not recognize Spark version " + versionString + ". Assume it's a future release", e);
 
       // assume it is future release
       version = 99999;

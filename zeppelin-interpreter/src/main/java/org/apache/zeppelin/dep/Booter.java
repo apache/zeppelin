@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.dep;
 
+import java.nio.file.Paths;
 import org.apache.commons.lang.Validate;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.slf4j.Logger;
@@ -26,11 +27,7 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import java.nio.file.Paths;
-
-/**
- * Manage mvn repository.
- */
+/** Manage mvn repository. */
 public class Booter {
   private static Logger logger = LoggerFactory.getLogger(Booter.class);
 
@@ -84,7 +81,7 @@ public class Booter {
   }
 
   public static RemoteRepository newLocalRepository() {
-    return new RemoteRepository("local",
-        "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
+    return new RemoteRepository(
+        "local", "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
   }
 }

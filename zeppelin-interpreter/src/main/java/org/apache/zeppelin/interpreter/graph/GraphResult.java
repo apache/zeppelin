@@ -17,52 +17,40 @@
 
 package org.apache.zeppelin.interpreter.graph;
 
+import com.google.gson.Gson;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.tabledata.Node;
 import org.apache.zeppelin.tabledata.Relationship;
 
-import com.google.gson.Gson;
-
-/**
- * The intepreter result template for Networks
- *
- */
+/** The intepreter result template for Networks */
 public class GraphResult extends InterpreterResult {
 
-  /**
-   * The Graph structure parsed from the front-end
-   *
-   */
+  /** The Graph structure parsed from the front-end */
   public static class Graph {
     private Collection<Node> nodes;
-    
+
     private Collection<Relationship> edges;
-    
-    /**
-     * The node types in the whole graph, and the related colors
-     * 
-     */
+
+    /** The node types in the whole graph, and the related colors */
     private Map<String, String> labels;
-    
-    /**
-     * The relationship types in the whole graph
-     * 
-     */
+
+    /** The relationship types in the whole graph */
     private Set<String> types;
 
-    /**
-     * Is a directed graph
-     */
+    /** Is a directed graph */
     private boolean directed;
-    
+
     public Graph() {}
 
-    public Graph(Collection<Node> nodes, Collection<Relationship> edges,
-        Map<String, String> labels, Set<String> types, boolean directed) {
+    public Graph(
+        Collection<Node> nodes,
+        Collection<Relationship> edges,
+        Map<String, String> labels,
+        Set<String> types,
+        boolean directed) {
       super();
       this.setNodes(nodes);
       this.setEdges(edges);
@@ -98,7 +86,7 @@ public class GraphResult extends InterpreterResult {
     public Set<String> getTypes() {
       return types;
     }
-    
+
     public void setTypes(Set<String> types) {
       this.types = types;
     }
@@ -110,13 +98,11 @@ public class GraphResult extends InterpreterResult {
     public void setDirected(boolean directed) {
       this.directed = directed;
     }
-
   }
-  
+
   private static final Gson gson = new Gson();
 
   public GraphResult(Code code, Graph graphObject) {
     super(code, Type.NETWORK, gson.toJson(graphObject));
   }
-
 }

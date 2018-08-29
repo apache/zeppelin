@@ -17,6 +17,9 @@
 package org.apache.zeppelin.helium;
 
 import com.google.gson.Gson;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -30,13 +33,7 @@ import org.apache.zeppelin.resource.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-/**
- * Manages helium packages
- */
+/** Manages helium packages */
 public class Helium {
   private Logger logger = LoggerFactory.getLogger(Helium.class);
   private List<HeliumRegistry> registry = new LinkedList<>();
@@ -159,8 +156,8 @@ public class Helium {
    * @param refresh
    * @param packageName
    */
-  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo(boolean refresh,
-                                                                        String packageName) {
+  public Map<String, List<HeliumPackageSearchResult>> getAllPackageInfo(
+      boolean refresh, String packageName) {
     Map<String, String> enabledPackageInfo = heliumConf.getEnabledPackages();
 
     synchronized (registry) {
@@ -170,8 +167,7 @@ public class Helium {
             for (HeliumPackage pkg : r.getAll()) {
               String name = pkg.getName();
 
-              if (!StringUtils.isEmpty(packageName) &&
-                  !name.equals(packageName)) {
+              if (!StringUtils.isEmpty(packageName) && !name.equals(packageName)) {
                 continue;
               }
 
@@ -188,8 +184,7 @@ public class Helium {
         }
       } else {
         for (String name : allPackages.keySet()) {
-          if (!StringUtils.isEmpty(packageName) &&
-              !name.equals(packageName)) {
+          if (!StringUtils.isEmpty(packageName) && !name.equals(packageName)) {
             continue;
           }
 
@@ -208,12 +203,14 @@ public class Helium {
       // sort version (artifact)
       for (String name : allPackages.keySet()) {
         List<HeliumPackageSearchResult> packages = allPackages.get(name);
-        Collections.sort(packages, new Comparator<HeliumPackageSearchResult>() {
-          @Override
-          public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
-            return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
-          }
-        });
+        Collections.sort(
+            packages,
+            new Comparator<HeliumPackageSearchResult>() {
+              @Override
+              public int compare(HeliumPackageSearchResult o1, HeliumPackageSearchResult o2) {
+                return o2.getPkg().getArtifact().compareTo(o1.getPkg().getArtifact());
+              }
+            });
       }
       return allPackages;
     }
@@ -259,7 +256,8 @@ public class Helium {
     Map<String, List<HeliumPackageSearchResult>> infos = getAllPackageInfo(false, pkgName);
     List<HeliumPackageSearchResult> packages = infos.get(pkgName);
     if (StringUtils.isBlank(artifact)) {
-      return packages.get(0); /** return the FIRST package */
+      return packages.get(0);
+      /** return the FIRST package */
     } else {
       for (HeliumPackageSearchResult pkg : packages) {
         if (pkg.getPkg().getArtifact().equals(artifact)) {
@@ -364,11 +362,12 @@ public class Helium {
     for (List<HeliumPackageSearchResult> pkgs : allPackages.values()) {
       for (HeliumPackageSearchResult pkg : pkgs) {
         if (pkg.getPkg().getType() == HeliumType.APPLICATION && pkg.isEnabled()) {
-          ResourceSet resources = ApplicationLoader.findRequiredResourceSet(
-              pkg.getPkg().getResources(),
-              paragraph.getNote().getId(),
-              paragraph.getId(),
-              allResources);
+          ResourceSet resources =
+              ApplicationLoader.findRequiredResourceSet(
+                  pkg.getPkg().getResources(),
+                  paragraph.getNote().getId(),
+                  paragraph.getId(),
+                  allResources);
           if (resources == null) {
             continue;
           } else {
@@ -422,20 +421,19 @@ public class Helium {
   }
 
   private boolean canBundle(HeliumPackageSearchResult pkgInfo) {
-    return (pkgInfo.isEnabled() &&
-        HeliumPackage.isBundleType(pkgInfo.getPkg().getType()));
+    return (pkgInfo.isEnabled() && HeliumPackage.isBundleType(pkgInfo.getPkg().getType()));
   }
 
   /**
    * Get enabled package list in order
+   *
    * @return
    */
   public List<String> getVisualizationPackageOrder() {
     return heliumConf.getBundleDisplayOrder();
   }
 
-  public void setVisualizationPackageOrder(List<String> orderedPackageList)
-      throws IOException {
+  public void setVisualizationPackageOrder(List<String> orderedPackageList) throws IOException {
     heliumConf.setBundleDisplayOrder(orderedPackageList);
     saveConfig();
   }
@@ -454,14 +452,12 @@ public class Helium {
     HeliumPackage enabledPackage = result.getPkg();
 
     Map<String, Object> configSpec = enabledPackage.getConfig();
-    Map<String, Object> configPersisted =
-        getPackagePersistedConfig(enabledPackage.getArtifact());
+    Map<String, Object> configPersisted = getPackagePersistedConfig(enabledPackage.getArtifact());
 
     return createMixedConfig(configPersisted, configSpec);
   }
 
-  public Map<String, Map<String, Object>> getPackageConfig(String pkgName,
-                                                           String artifact) {
+  public Map<String, Map<String, Object>> getPackageConfig(String pkgName, String artifact) {
 
     HeliumPackageSearchResult result = getPackageInfo(pkgName, artifact);
 
@@ -472,14 +468,13 @@ public class Helium {
     HeliumPackage requestedPackage = result.getPkg();
 
     Map<String, Object> configSpec = requestedPackage.getConfig();
-    Map<String, Object> configPersisted =
-        getPackagePersistedConfig(artifact);
+    Map<String, Object> configPersisted = getPackagePersistedConfig(artifact);
 
     return createMixedConfig(configPersisted, configSpec);
   }
 
-  private static Map<String, Map<String, Object>> createMixedConfig(Map<String, Object> persisted,
-                                                                   Map<String, Object> spec) {
+  private static Map<String, Map<String, Object>> createMixedConfig(
+      Map<String, Object> persisted, Map<String, Object> spec) {
     Map<String, Map<String, Object>> mixed = new HashMap<>();
     mixed.put("confPersisted", persisted);
     mixed.put("confSpec", spec);
@@ -494,8 +489,8 @@ public class Helium {
   private ResourceSet getAllResourcesExcept(String interpreterGroupExcludsion) {
     ResourceSet resourceSet = new ResourceSet();
     for (ManagedInterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
-      if (interpreterGroupExcludsion != null &&
-          intpGroup.getId().equals(interpreterGroupExcludsion)) {
+      if (interpreterGroupExcludsion != null
+          && intpGroup.getId().equals(interpreterGroupExcludsion)) {
         continue;
       }
 
@@ -506,14 +501,15 @@ public class Helium {
           resourceSet.addAll(localPool.getAll());
         }
       } else if (remoteInterpreterProcess.isRunning()) {
-        List<String> resourceList = remoteInterpreterProcess.callRemoteFunction(
-            new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
-              @Override
-              public List<String> call(RemoteInterpreterService.Client client) throws Exception {
-                return client.resourcePoolGetAll();
-              }
-            }
-        );
+        List<String> resourceList =
+            remoteInterpreterProcess.callRemoteFunction(
+                new RemoteInterpreterProcess.RemoteFunction<List<String>>() {
+                  @Override
+                  public List<String> call(RemoteInterpreterService.Client client)
+                      throws Exception {
+                    return client.resourcePoolGetAll();
+                  }
+                });
         Gson gson = new Gson();
         for (String res : resourceList) {
           resourceSet.add(gson.fromJson(res, Resource.class));

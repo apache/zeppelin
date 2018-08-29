@@ -17,6 +17,12 @@
 
 package org.apache.zeppelin.helium;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -25,20 +31,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class ApplicationLoaderTest {
   private File tmpDir;
 
   @Before
   public void setUp() {
-    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
-        System.currentTimeMillis());
+    tmpDir =
+        new File(
+            System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
     tmpDir.mkdirs();
   }
 
@@ -58,8 +58,9 @@ public class ApplicationLoaderTest {
     ApplicationContext context1 = createContext("note1", "paragraph1", "app1");
 
     // when load application
-    MockApplication1 app = (MockApplication1) ((ClassLoaderApplication)
-        appLoader.load(pkg1, context1)).getInnerApplication();
+    MockApplication1 app =
+        (MockApplication1)
+            ((ClassLoaderApplication) appLoader.load(pkg1, context1)).getInnerApplication();
 
     // then
     assertFalse(app.isUnloaded());
@@ -74,25 +75,23 @@ public class ApplicationLoaderTest {
   }
 
   public HeliumPackage createPackageInfo(String className, String artifact) {
-    HeliumPackage app1 = new HeliumPackage(
-        HeliumType.APPLICATION,
-        "name1",
-        "desc1",
-        artifact,
-        className,
-        new String[][]{{}},
-        "license",
-        "icon");
+    HeliumPackage app1 =
+        new HeliumPackage(
+            HeliumType.APPLICATION,
+            "name1",
+            "desc1",
+            artifact,
+            className,
+            new String[][] {{}},
+            "license",
+            "icon");
     return app1;
   }
 
   public ApplicationContext createContext(String noteId, String paragraphId, String appInstanceId) {
-    ApplicationContext context1 = new ApplicationContext(
-        noteId,
-        paragraphId,
-        appInstanceId,
-        null,
-        new InterpreterOutput(null));
+    ApplicationContext context1 =
+        new ApplicationContext(
+            noteId, paragraphId, appInstanceId, null, new InterpreterOutput(null));
     return context1;
   }
 }

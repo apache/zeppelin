@@ -1,23 +1,18 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package org.apache.zeppelin.lens;
-
-import static org.junit.Assert.assertEquals;
 
 import static org.apache.zeppelin.lens.LensInterpreter.LENS_CLIENT_DBNAME;
 import static org.apache.zeppelin.lens.LensInterpreter.LENS_PERSIST_RESULTSET;
@@ -26,26 +21,21 @@ import static org.apache.zeppelin.lens.LensInterpreter.LENS_SESSION_CLUSTER_USER
 import static org.apache.zeppelin.lens.LensInterpreter.ZEPPELIN_LENS_CONCURRENT_SESSIONS;
 import static org.apache.zeppelin.lens.LensInterpreter.ZEPPELIN_LENS_RUN_CONCURRENT_SESSION;
 import static org.apache.zeppelin.lens.LensInterpreter.ZEPPELIN_MAX_ROWS;
+import static org.junit.Assert.assertEquals;
 
+import java.util.Properties;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Properties;
-
-import org.apache.zeppelin.interpreter.InterpreterResult;
-
-/**
- * Lens interpreter unit tests.
- */
+/** Lens interpreter unit tests. */
 public class LensInterpreterTest {
   @Before
-  public void setUp() throws Exception {
-  }
+  public void setUp() throws Exception {}
 
   @After
-  public void tearDown() throws Exception {
-  }
+  public void tearDown() throws Exception {}
 
   @Test
   public void test() {
@@ -59,17 +49,17 @@ public class LensInterpreterTest {
     prop.setProperty(ZEPPELIN_LENS_CONCURRENT_SESSIONS, "10");
     LensInterpreter t = new MockLensInterpreter(prop);
     t.open();
-    //simple help test
+    // simple help test
     InterpreterResult result = t.interpret("help", null);
     assertEquals(result.message().get(0).getType(), InterpreterResult.Type.TEXT);
-    //assertEquals("unable to find 'query execute' in help message", 
+    // assertEquals("unable to find 'query execute' in help message",
     //  result.message().contains("query execute"), result.message());
     t.close();
   }
-  
+
   class MockLensInterpreter extends LensInterpreter {
     MockLensInterpreter(Properties property) {
-      super(property);  
+      super(property);
     }
 
     @Override

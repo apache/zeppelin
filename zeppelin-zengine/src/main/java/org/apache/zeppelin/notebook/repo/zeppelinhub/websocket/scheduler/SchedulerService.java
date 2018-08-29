@@ -20,10 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Creates a thread pool that can schedule zeppelinhub commands.
- *
- */
+/** Creates a thread pool that can schedule zeppelinhub commands. */
 public class SchedulerService {
 
   private final ScheduledExecutorService pool;
@@ -58,5 +55,4 @@ public class SchedulerService {
   public void close() {
     pool.shutdown();
   }
-
 }

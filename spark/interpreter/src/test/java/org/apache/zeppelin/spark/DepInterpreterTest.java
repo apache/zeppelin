@@ -17,6 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -29,16 +34,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-
 public class DepInterpreterTest {
 
-  @Rule
-  public TemporaryFolder tmpDir = new TemporaryFolder();
+  @Rule public TemporaryFolder tmpDir = new TemporaryFolder();
 
   private DepInterpreter dep;
   private InterpreterContext context;
@@ -46,7 +44,9 @@ public class DepInterpreterTest {
   private Properties getTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
-    p.setProperty("zeppelin.dep.additionalRemoteRepository", "spark-packages,http://dl.bintray.com/spark-packages/maven,false;");
+    p.setProperty(
+        "zeppelin.dep.additionalRemoteRepository",
+        "spark-packages,http://dl.bintray.com/spark-packages/maven,false;");
     return p;
   }
 
@@ -63,8 +63,8 @@ public class DepInterpreterTest {
     intpGroup.get("note").add(dep);
     dep.setInterpreterGroup(intpGroup);
 
-    context = InterpreterContext.builder()
-        .build();;
+    context = InterpreterContext.builder().build();
+    ;
   }
 
   @After
@@ -75,7 +75,8 @@ public class DepInterpreterTest {
   @Test
   public void testDefault() throws InterpreterException {
     dep.getDependencyContext().reset();
-    InterpreterResult ret = dep.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    InterpreterResult ret =
+        dep.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(Code.SUCCESS, ret.code());
 
     assertEquals(1, dep.getDependencyContext().getFiles().size());

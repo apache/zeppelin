@@ -17,13 +17,12 @@
 
 package org.apache.zeppelin.dep;
 
-import org.junit.Test;
-
-import java.nio.file.Paths;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import java.nio.file.Paths;
+import org.junit.Test;
 
 public class BooterTest {
 
@@ -35,8 +34,7 @@ public class BooterTest {
 
   @Test
   public void should_not_change_absolute_path() {
-    String absolutePath
-        = Paths.get("first", "second").toAbsolutePath().toString();
+    String absolutePath = Paths.get("first", "second").toAbsolutePath().toString();
     String resolvedPath = Booter.resolveLocalRepoPath(absolutePath);
 
     assertThat(resolvedPath, equalTo(absolutePath));

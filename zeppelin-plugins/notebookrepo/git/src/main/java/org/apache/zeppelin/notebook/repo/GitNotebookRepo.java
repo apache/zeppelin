@@ -20,6 +20,10 @@ package org.apache.zeppelin.notebook.repo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -37,20 +41,14 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * NotebookRepo that hosts all the notebook FS in a single Git repo
  *
- * This impl intended to be simple and straightforward:
- *   - does not handle branches
- *   - only basic local git file repo, no remote Github push\pull. GitHub integration is
- *   implemented in @see {@link org.apache.zeppelin.notebook.repo.GitNotebookRepo}
+ * <p>This impl intended to be simple and straightforward: - does not handle branches - only basic
+ * local git file repo, no remote Github push\pull. GitHub integration is implemented in @see {@link
+ * org.apache.zeppelin.notebook.repo.GitNotebookRepo}
  *
- *   TODO(bzz): add default .gitignore
+ * <p>TODO(bzz): add default .gitignore
  */
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWithVersionControl {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
@@ -70,8 +68,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
 
   @Override
   public void init(ZeppelinConfiguration conf) throws IOException {
-    //TODO(zjffdu), it is weird that I can not call super.init directly here, as it would cause
-    //AbstractMethodError
+    // TODO(zjffdu), it is weird that I can not call super.init directly here, as it would cause
+    // AbstractMethodError
     this.conf = conf;
     setNotebookDirectory(conf.getNotebookDir());
 
@@ -117,11 +115,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   /**
-   * the idea is to:
-   * 1. stash current changes
-   * 2. remember head commit and checkout to the desired revision
-   * 3. get note and checkout back to the head
-   * 4. apply stash on top and remove it
+   * the idea is to: 1. stash current changes 2. remember head commit and checkout to the desired
+   * revision 3. get note and checkout back to the head 4. apply stash on top and remove it
    */
   @Override
   public synchronized Note get(String noteId, String revId, AuthenticationInfo subject)
@@ -149,7 +144,10 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
         ObjectId applied = git.stashApply().setStashRef(stash.getName()).call();
         ObjectId dropped = git.stashDrop().setStashRef(0).call();
         Collection<RevCommit> stashes = git.stashList().call();
-        LOG.debug("Stash applied as : {}, and dropped : {}, stash size: {}", applied, dropped,
+        LOG.debug(
+            "Stash applied as : {}, and dropped : {}, stash size: {}",
+            applied,
+            dropped,
             stashes.size());
       }
     } catch (GitAPIException e) {
@@ -164,12 +162,12 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     LOG.debug("Listing history for {}:", noteId);
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
-      for (RevCommit log: logs) {
+      for (RevCommit log : logs) {
         history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {
-      //when no initial commit exists
+      // when no initial commit exists
       LOG.warn("No Head found for {}, {}", noteId, e.getMessage());
     } catch (GitAPIException e) {
       LOG.error("Failed to get logs for {}", noteId, e);
@@ -186,13 +184,13 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     }
     return revisionNote;
   }
-  
+
   @Override
   public void close() {
     git.getRepository().close();
   }
 
-  //DI replacements for Tests
+  // DI replacements for Tests
   protected Git getGit() {
     return git;
   }
@@ -200,6 +198,4 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   void setGit(Git git) {
     this.git = git;
   }
-
 }
-

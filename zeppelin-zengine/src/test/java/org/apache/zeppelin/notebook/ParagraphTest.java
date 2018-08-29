@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -31,10 +30,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
@@ -53,10 +52,6 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
@@ -128,8 +123,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
     assertEquals(0, paragraph.getLocalProperties().size());
   }
 
-  @Rule
-  public ExpectedException expectedEx = ExpectedException.none();
+  @Rule public ExpectedException expectedEx = ExpectedException.none();
 
   @Test
   public void testInvalidProperties() {
@@ -201,7 +195,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
 
   @Test
   public void should_extract_variable_from_angular_object_registry() throws Exception {
-    //Given
+    // Given
     final String noteId = "noteId";
 
     final AngularObjectRegistry registry = mock(AngularObjectRegistry.class);
@@ -211,14 +205,15 @@ public class ParagraphTest extends AbstractInterpreterTest {
     inputs.put("age", null);
     inputs.put("job", null);
 
-    final String scriptBody = "My name is ${name} and I am ${age=20} years old. " +
-            "My occupation is ${ job = engineer | developer | artists}";
+    final String scriptBody =
+        "My name is ${name} and I am ${age=20} years old. "
+            + "My occupation is ${ job = engineer | developer | artists}";
 
     final Paragraph paragraph = new Paragraph(note, null, null);
     final String paragraphId = paragraph.getId();
 
-    final AngularObject nameAO = AngularObjectBuilder.build("name", "DuyHai DOAN", noteId,
-            paragraphId);
+    final AngularObject nameAO =
+        AngularObjectBuilder.build("name", "DuyHai DOAN", noteId, paragraphId);
 
     final AngularObject ageAO = AngularObjectBuilder.build("age", 34, noteId, null);
 
@@ -226,13 +221,14 @@ public class ParagraphTest extends AbstractInterpreterTest {
     when(registry.get("name", noteId, paragraphId)).thenReturn(nameAO);
     when(registry.get("age", noteId, null)).thenReturn(ageAO);
 
-    final String expected = "My name is DuyHai DOAN and I am 34 years old. " +
-            "My occupation is ${ job = engineer | developer | artists}";
-    //When
-    final String actual = paragraph.extractVariablesFromAngularRegistry(scriptBody, inputs,
-            registry);
+    final String expected =
+        "My name is DuyHai DOAN and I am 34 years old. "
+            + "My occupation is ${ job = engineer | developer | artists}";
+    // When
+    final String actual =
+        paragraph.extractVariablesFromAngularRegistry(scriptBody, inputs, registry);
 
-    //Then
+    // Then
     verify(registry).get("name", noteId, paragraphId);
     verify(registry).get("age", noteId, null);
     assertEquals(actual, expected);
@@ -252,7 +248,7 @@ public class ParagraphTest extends AbstractInterpreterTest {
   public void returnUnchangedResultsWithDifferentUser() throws Throwable {
     Note mockNote = mock(Note.class);
     when(mockNote.getCredentials()).thenReturn(mock(Credentials.class));
-    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote,  null, null));
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null, null));
 
     Interpreter mockInterpreter = mock(Interpreter.class);
     spyParagraph.setInterpreter(mockInterpreter);
@@ -261,10 +257,12 @@ public class ParagraphTest extends AbstractInterpreterTest {
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
     when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
     when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
-    when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
+    when(mockInterpreterGroup.getAngularObjectRegistry())
+        .thenReturn(mock(AngularObjectRegistry.class));
     when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
 
-    List<InterpreterSetting> spyInterpreterSettingList = spy(Lists.<InterpreterSetting>newArrayList());
+    List<InterpreterSetting> spyInterpreterSettingList =
+        spy(Lists.<InterpreterSetting>newArrayList());
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     InterpreterOption mockInterpreterOption = mock(InterpreterOption.class);
@@ -272,7 +270,8 @@ public class ParagraphTest extends AbstractInterpreterTest {
     when(mockInterpreterOption.permissionIsSet()).thenReturn(false);
     when(mockInterpreterSetting.getStatus()).thenReturn(Status.READY);
     when(mockInterpreterSetting.getId()).thenReturn("mock_id_1");
-    when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString())).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterSetting.getOrCreateInterpreterGroup(anyString(), anyString()))
+        .thenReturn(mockInterpreterGroup);
     when(mockInterpreterSetting.isUserAuthorized(any(List.class))).thenReturn(true);
     spyInterpreterSettingList.add(mockInterpreterSetting);
     when(mockNote.getId()).thenReturn("any_id");
@@ -281,10 +280,13 @@ public class ParagraphTest extends AbstractInterpreterTest {
 
     ParagraphJobListener mockJobListener = mock(ParagraphJobListener.class);
     doReturn(mockJobListener).when(spyParagraph).getListener();
-    doNothing().when(mockJobListener).onOutputUpdateAll(Mockito.<Paragraph>any(), Mockito.anyList());
+    doNothing()
+        .when(mockJobListener)
+        .onOutputUpdateAll(Mockito.<Paragraph>any(), Mockito.anyList());
 
     InterpreterResult mockInterpreterResult = mock(InterpreterResult.class);
-    when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
+    when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any()))
+        .thenReturn(mockInterpreterResult);
     when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
 
     // Actual test
@@ -315,25 +317,25 @@ public class ParagraphTest extends AbstractInterpreterTest {
   public void testCursorPosition() {
     Paragraph paragraph = spy(new Paragraph());
     // left = buffer, middle = cursor position into source code, right = cursor position after parse
-    List<Triple<String, Integer, Integer>> dataSet = Arrays.asList(
-        Triple.of("%jdbc schema.", 13, 7),
-        Triple.of("   %jdbc schema.", 16, 7),
-        Triple.of(" \n%jdbc schema.", 15, 7),
-        Triple.of("%jdbc schema.table.  ", 19, 13),
-        Triple.of("%jdbc schema.\n\n", 13, 7),
-        Triple.of("  %jdbc schema.tab\n\n", 18, 10),
-        Triple.of("  \n%jdbc schema.\n \n", 16, 7),
-        Triple.of("  \n%jdbc schema.\n \n", 16, 7),
-        Triple.of("  \n%jdbc\n\n schema\n \n", 17, 6),
-        Triple.of("%another\n\n schema.", 18, 7),
-        Triple.of("\n\n schema.", 10, 7),
-        Triple.of("schema.", 7, 7),
-        Triple.of("schema. \n", 7, 7),
-        Triple.of("  \n   %jdbc", 11, 0),
-        Triple.of("\n   %jdbc", 9, 0),
-        Triple.of("%jdbc  \n  schema", 16, 6),
-        Triple.of("%jdbc  \n  \n   schema", 20, 6)
-    );
+    List<Triple<String, Integer, Integer>> dataSet =
+        Arrays.asList(
+            Triple.of("%jdbc schema.", 13, 7),
+            Triple.of("   %jdbc schema.", 16, 7),
+            Triple.of(" \n%jdbc schema.", 15, 7),
+            Triple.of("%jdbc schema.table.  ", 19, 13),
+            Triple.of("%jdbc schema.\n\n", 13, 7),
+            Triple.of("  %jdbc schema.tab\n\n", 18, 10),
+            Triple.of("  \n%jdbc schema.\n \n", 16, 7),
+            Triple.of("  \n%jdbc schema.\n \n", 16, 7),
+            Triple.of("  \n%jdbc\n\n schema\n \n", 17, 6),
+            Triple.of("%another\n\n schema.", 18, 7),
+            Triple.of("\n\n schema.", 10, 7),
+            Triple.of("schema.", 7, 7),
+            Triple.of("schema. \n", 7, 7),
+            Triple.of("  \n   %jdbc", 11, 0),
+            Triple.of("\n   %jdbc", 9, 0),
+            Triple.of("%jdbc  \n  schema", 16, 6),
+            Triple.of("%jdbc  \n  \n   schema", 20, 6));
 
     for (Triple<String, Integer, Integer> data : dataSet) {
       paragraph.setText(data.getLeft());
@@ -341,5 +343,4 @@ public class ParagraphTest extends AbstractInterpreterTest {
       assertEquals(data.getRight(), actual);
     }
   }
-
 }

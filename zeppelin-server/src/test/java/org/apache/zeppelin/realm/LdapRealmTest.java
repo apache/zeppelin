@@ -24,23 +24,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.shiro.realm.ldap.LdapContextFactory;
-import org.apache.shiro.session.Session;
-import org.apache.shiro.subject.SimplePrincipalCollection;
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
+import org.apache.shiro.realm.ldap.LdapContextFactory;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.junit.Test;
 
 public class LdapRealmTest {
   @Test
@@ -58,8 +56,9 @@ public class LdapRealmTest {
 
   @Test
   public void testExpandTemplate() {
-    assertEquals("uid=foo,cn=users,dc=ods,dc=foo",
-            LdapRealm.expandTemplate("uid={0},cn=users,dc=ods,dc=foo", "foo"));
+    assertEquals(
+        "uid=foo,cn=users,dc=ods,dc=foo",
+        LdapRealm.expandTemplate("uid={0},cn=users,dc=ods,dc=foo", "foo"));
   }
 
   @Test
@@ -72,8 +71,7 @@ public class LdapRealmTest {
     // using a template
     realm.setUserSearchAttributeName(null);
     realm.setMemberAttributeValueTemplate("cn={0},ou=people,dc=hadoop,dc=apache");
-    assertEquals("cn=foo,ou=people,dc=hadoop,dc=apache",
-            realm.getUserDnForSearch("foo"));
+    assertEquals("cn=foo,ou=people,dc=hadoop,dc=apache", realm.getUserDnForSearch("foo"));
   }
 
   @Test
@@ -107,14 +105,18 @@ public class LdapRealmTest {
 
     NamingEnumeration<SearchResult> results = enumerationOf(group1, group2, group3);
     when(ldapCtx.search(any(String.class), any(String.class), any(SearchControls.class)))
-            .thenReturn(results);
+        .thenReturn(results);
 
-    Set<String> roles = realm.rolesFor(
+    Set<String> roles =
+        realm.rolesFor(
             new SimplePrincipalCollection("principal", "ldapRealm"),
-            "principal", ldapCtx, ldapContextFactory, session);
+            "principal",
+            ldapCtx,
+            ldapContextFactory,
+            session);
 
-    verify(ldapCtx).search("cn=groups,dc=apache", "(objectclass=posixGroup)",
-            realm.getGroupSearchControls());
+    verify(ldapCtx)
+        .search("cn=groups,dc=apache", "(objectclass=posixGroup)", realm.getGroupSearchControls());
 
     assertEquals(new HashSet(Arrays.asList("group-one", "zeppelin-role")), roles);
   }
@@ -133,8 +135,7 @@ public class LdapRealmTest {
       }
 
       @Override
-      public void close() throws NamingException {
-      }
+      public void close() throws NamingException {}
 
       @Override
       public boolean hasMoreElements() {

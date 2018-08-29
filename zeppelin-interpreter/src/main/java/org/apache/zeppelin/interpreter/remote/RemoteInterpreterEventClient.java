@@ -17,6 +17,11 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -38,18 +43,12 @@ import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 /**
- * This class is used to communicate with ZeppelinServer via thrift.
- * All the methods are synchronized because thrift client is not thread safe.
+ * This class is used to communicate with ZeppelinServer via thrift. All the methods are
+ * synchronized because thrift client is not thread safe.
  */
-public class RemoteInterpreterEventClient implements ResourcePoolConnector,
-    AngularObjectRegistryListener {
+public class RemoteInterpreterEventClient
+    implements ResourcePoolConnector, AngularObjectRegistryListener {
   private final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventClient.class);
   private final Gson gson = new Gson();
 
@@ -109,10 +108,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
    */
   @Override
   public synchronized Object invokeMethod(
-      ResourceId resourceId,
-      String methodName,
-      Class[] paramTypes,
-      Object[] params) {
+      ResourceId resourceId, String methodName, Class[] paramTypes, Object[] params) {
     LOGGER.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
 
     return null;
@@ -215,8 +211,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public synchronized void onInterpreterOutputUpdate(
-      String noteId, String paragraphId, int outputIndex,
-      InterpreterResult.Type type, String output) {
+      String noteId,
+      String paragraphId,
+      int outputIndex,
+      InterpreterResult.Type type,
+      String output) {
     try {
       intpEventServiceClient.updateOutput(
           new OutputUpdateEvent(noteId, paragraphId, outputIndex, type.name(), output, null));
@@ -236,7 +235,7 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   private List<org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage>
-        convertToThrift(List<InterpreterResultMessage> messages) {
+      convertToThrift(List<InterpreterResultMessage> messages) {
     List<org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage> thriftMessages =
         new ArrayList<>();
     for (InterpreterResultMessage message : messages) {
@@ -247,10 +246,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     return thriftMessages;
   }
 
-  public synchronized void runParagraphs(String noteId,
-                                         List<String> paragraphIds,
-                                         List<Integer> paragraphIndices,
-                                         String curParagraphId) {
+  public synchronized void runParagraphs(
+      String noteId,
+      List<String> paragraphIds,
+      List<Integer> paragraphIndices,
+      String curParagraphId) {
     RunParagraphsEvent event =
         new RunParagraphsEvent(noteId, paragraphIds, paragraphIndices, curParagraphId);
     try {
@@ -271,10 +271,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-
   public synchronized void onAppOutputUpdate(
-      String noteId, String paragraphId, int index, String appId,
-      InterpreterResult.Type type, String output) {
+      String noteId,
+      String paragraphId,
+      int index,
+      String appId,
+      InterpreterResult.Type type,
+      String output) {
     AppOutputUpdateEvent event =
         new AppOutputUpdateEvent(noteId, paragraphId, appId, index, type.name(), output);
     try {
@@ -284,8 +287,8 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  public synchronized void onAppStatusUpdate(String noteId, String paragraphId, String appId,
-                                             String status) {
+  public synchronized void onAppStatusUpdate(
+      String noteId, String paragraphId, String appId, String status) {
     AppStatusUpdateEvent event = new AppStatusUpdateEvent(noteId, paragraphId, appId, status);
     try {
       intpEventServiceClient.updateAppStatus(event);
@@ -321,8 +324,8 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   @Override
-  public synchronized void onRemove(String interpreterGroupId, String name, String noteId,
-                                    String paragraphId) {
+  public synchronized void onRemove(
+      String interpreterGroupId, String name, String noteId, String paragraphId) {
     try {
       intpEventServiceClient.removeAngularObject(intpGroupId, noteId, paragraphId, name);
     } catch (TException e) {

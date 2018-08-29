@@ -15,18 +15,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.service;
 
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
-/**
- *
- * @param <T>
- */
+/** @param <T> */
 public class SimpleServiceCallback<T> implements ServiceCallback<T> {
 
   private static Logger LOGGER = LoggerFactory.getLogger(SimpleServiceCallback.class);
@@ -45,5 +40,4 @@ public class SimpleServiceCallback<T> implements ServiceCallback<T> {
   public void onFailure(Exception ex, ServiceContext context) throws IOException {
     LOGGER.warn(ex.getMessage());
   }
-
 }

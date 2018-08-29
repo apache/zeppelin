@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.python;
 
+import java.io.IOException;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -24,13 +26,10 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Properties;
-
 /**
  * SQL over Pandas DataFrame interpreter for %python group
- * <p>
- * Match experience of %sparpk.sql over Spark DataFrame
+ *
+ * <p>Match experience of %sparpk.sql over Spark DataFrame
  */
 public class PythonInterpreterPandasSql extends Interpreter {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
@@ -73,9 +72,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
-
-  }
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public FormType getFormType() {
@@ -86,5 +83,4 @@ public class PythonInterpreterPandasSql extends Interpreter {
   public int getProgress(InterpreterContext context) {
     return 0;
   }
-
 }

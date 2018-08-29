@@ -23,14 +23,12 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Zeppelinhub websocket handler.
- */
+/** Zeppelinhub websocket handler. */
 public class ZeppelinhubWebsocket implements WebSocketListener {
   private Logger LOG = LoggerFactory.getLogger(ZeppelinhubWebsocket.class);
   private Session zeppelinHubSession;
   private final String token;
-  
+
   private ZeppelinhubWebsocket(String token) {
     this.token = token;
   }
@@ -38,7 +36,7 @@ public class ZeppelinhubWebsocket implements WebSocketListener {
   public static ZeppelinhubWebsocket newInstance(String token) {
     return new ZeppelinhubWebsocket(token);
   }
-  
+
   @Override
   public void onWebSocketBinary(byte[] payload, int offset, int len) {}
 
@@ -73,7 +71,7 @@ public class ZeppelinhubWebsocket implements WebSocketListener {
   private boolean isSessionOpen() {
     return ((zeppelinHubSession != null) && (zeppelinHubSession.isOpen())) ? true : false;
   }
-  
+
   private void send(String msg) {
     if (isSessionOpen()) {
       zeppelinHubSession.getRemote().sendStringByFuture(msg);

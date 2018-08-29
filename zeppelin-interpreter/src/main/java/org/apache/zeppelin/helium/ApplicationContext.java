@@ -18,9 +18,7 @@ package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 
-/**
- * ApplicationContext
- */
+/** ApplicationContext */
 public class ApplicationContext {
   private final String noteId;
   private final String paragraphId;
@@ -28,12 +26,12 @@ public class ApplicationContext {
   private final HeliumAppAngularObjectRegistry angularObjectRegistry;
   public final InterpreterOutput out;
 
-
-  public ApplicationContext(String noteId,
-                            String paragraphId,
-                            String applicationInstanceId,
-                            HeliumAppAngularObjectRegistry angularObjectRegistry,
-                            InterpreterOutput out) {
+  public ApplicationContext(
+      String noteId,
+      String paragraphId,
+      String applicationInstanceId,
+      HeliumAppAngularObjectRegistry angularObjectRegistry,
+      InterpreterOutput out) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
     this.applicationInstanceId = applicationInstanceId;

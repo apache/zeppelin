@@ -20,11 +20,10 @@ package org.apache.zeppelin.display;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 
 /**
- * Old Input type.
- * The reason I still keep Old Input is for compatibility. There's one bug in the old input forms.
- * There's 2 ways to create input forms: frontend & backend.
- * The bug is in frontend. The type would not be set correctly when input form
- * is created in frontend (Input.getInputForm).
+ * Old Input type. The reason I still keep Old Input is for compatibility. There's one bug in the
+ * old input forms. There's 2 ways to create input forms: frontend & backend. The bug is in
+ * frontend. The type would not be set correctly when input form is created in frontend
+ * (Input.getInputForm).
  */
 public class OldInput extends Input<Object> {
 
@@ -58,27 +57,21 @@ public class OldInput extends Input<Object> {
     this.options = options;
   }
 
-  /**
-   *
-   */
+  /** */
   public static class OldTextBox extends OldInput {
     public OldTextBox(String name, Object defaultValue) {
       super(name, defaultValue);
     }
   }
 
-  /**
-   *
-   */
+  /** */
   public static class OldSelect extends OldInput {
     public OldSelect(String name, Object defaultValue, ParamOption[] options) {
       super(name, defaultValue, options);
     }
   }
 
-  /**
-   *
-   */
+  /** */
   public static class OldCheckBox extends OldInput {
     public OldCheckBox(String name, Object defaultValue, ParamOption[] options) {
       super(name, defaultValue, options);

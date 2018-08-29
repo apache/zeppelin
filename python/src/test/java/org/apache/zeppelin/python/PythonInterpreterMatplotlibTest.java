@@ -17,6 +17,14 @@
 
 package org.apache.zeppelin.python;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -29,15 +37,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
 
 public class PythonInterpreterMatplotlibTest implements InterpreterOutputListener {
   private InterpreterGroup intpGroup;
@@ -64,10 +63,11 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
 
     out = new InterpreterOutput(this);
 
-    context = InterpreterContext.builder()
-        .setInterpreterOut(out)
-        .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
-        .build();
+    context =
+        InterpreterContext.builder()
+            .setInterpreterOut(out)
+            .setAngularObjectRegistry(new AngularObjectRegistry(intpGroup.getId(), null))
+            .build();
     InterpreterContext.set(context);
 
     python.open();
@@ -98,12 +98,16 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     ret = python.interpret("plt.plot([1, 2, 3])", context);
     ret = python.interpret("plt.show()", context);
 
-    assertEquals(new String(out.getOutputAt(0).toByteArray()),
-        InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(0).toByteArray()),
-        InterpreterResult.Type.TEXT, out.getOutputAt(0).getType());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()),
-        InterpreterResult.Type.HTML, out.getOutputAt(1).getType());
+    assertEquals(
+        new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(
+        new String(out.getOutputAt(0).toByteArray()),
+        InterpreterResult.Type.TEXT,
+        out.getOutputAt(0).getType());
+    assertEquals(
+        new String(out.getOutputAt(1).toByteArray()),
+        InterpreterResult.Type.HTML,
+        out.getOutputAt(1).getType());
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("data:image/png;base64"));
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("<div>"));
   }
@@ -125,8 +129,8 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     // type to HTML.
     ret = python.interpret("plt.show()", context);
 
-    assertEquals(new String(out.getOutputAt(0).toByteArray()),
-        InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(
+        new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(0, ret.message().size());
 
     // Now test that new plot is drawn. It should be identical to the
@@ -173,19 +177,12 @@ public class PythonInterpreterMatplotlibTest implements InterpreterOutputListene
     assertNotSame(msg1, msg2);
   }
 
+  @Override
+  public void onUpdateAll(InterpreterOutput out) {}
 
   @Override
-  public void onUpdateAll(InterpreterOutput out) {
-
-  }
+  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {}
 
   @Override
-  public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-
-  }
-
-  @Override
-  public void onUpdate(int index, InterpreterResultMessageOutput out) {
-
-  }
+  public void onUpdate(int index, InterpreterResultMessageOutput out) {}
 }

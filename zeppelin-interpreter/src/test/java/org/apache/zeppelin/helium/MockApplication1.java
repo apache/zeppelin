@@ -18,9 +18,7 @@ package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.resource.ResourceSet;
 
-/**
- * Mock application
- */
+/** Mock application */
 public class MockApplication1 extends Application {
   boolean unloaded;
   int run;

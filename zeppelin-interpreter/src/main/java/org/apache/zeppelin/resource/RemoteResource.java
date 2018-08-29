@@ -19,9 +19,7 @@ package org.apache.zeppelin.resource;
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 
-/**
- * Resource that can retrieve data from remote
- */
+/** Resource that can retrieve data from remote */
 public class RemoteResource extends Resource implements JsonSerializable {
   private static final Gson gson = new Gson();
 
@@ -60,24 +58,21 @@ public class RemoteResource extends Resource implements JsonSerializable {
 
   /**
    * Call a method of the object that this remote resource holds
+   *
    * @param methodName name of method to call
    * @param paramTypes method parameter types
    * @param params method parameter values
    * @return return value of the method. Null if return value is not serializable
    */
   @Override
-  public Object invokeMethod(
-      String methodName, Class [] paramTypes, Object [] params) {
+  public Object invokeMethod(String methodName, Class[] paramTypes, Object[] params) {
     ResourceId resourceId = getResourceId();
-    return resourcePoolConnector.invokeMethod(
-        resourceId,
-        methodName,
-        paramTypes,
-        params);
+    return resourcePoolConnector.invokeMethod(resourceId, methodName, paramTypes, params);
   }
 
   /**
    * Call a method of the object that this remote resource holds and save return value as a resource
+   *
    * @param methodName name of method to call
    * @param paramTypes method parameter types
    * @param params method parameter values
@@ -86,14 +81,11 @@ public class RemoteResource extends Resource implements JsonSerializable {
    */
   @Override
   public Resource invokeMethod(
-      String methodName, Class [] paramTypes, Object [] params, String returnResourceName) {
+      String methodName, Class[] paramTypes, Object[] params, String returnResourceName) {
     ResourceId resourceId = getResourceId();
-    Resource resource = resourcePoolConnector.invokeMethod(
-        resourceId,
-        methodName,
-        paramTypes,
-        params,
-        returnResourceName);
+    Resource resource =
+        resourcePoolConnector.invokeMethod(
+            resourceId, methodName, paramTypes, params, returnResourceName);
     return resource;
   }
 

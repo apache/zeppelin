@@ -43,10 +43,9 @@ import org.rauschig.jarchivelib.ArchiverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class WebDriverManager {
 
-  public final static Logger LOG = LoggerFactory.getLogger(WebDriverManager.class);
+  public static final Logger LOG = LoggerFactory.getLogger(WebDriverManager.class);
 
   private static String downLoadsDir = "";
 
@@ -82,7 +81,8 @@ public class WebDriverManager {
         profile.setPreference("app.update.enabled", false);
         profile.setPreference("dom.max_script_run_time", 0);
         profile.setPreference("dom.max_chrome_script_run_time", 0);
-        profile.setPreference("browser.helperApps.neverAsk.saveToDisk",
+        profile.setPreference(
+            "browser.helperApps.neverAsk.saveToDisk",
             "application/x-ustar,application/octet-stream,application/zip,text/csv,text/plain");
         profile.setPreference("network.proxy.type", 0);
 
@@ -123,20 +123,24 @@ public class WebDriverManager {
 
     long start = System.currentTimeMillis();
     boolean loaded = false;
-    driver.manage().timeouts().implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT,
-        TimeUnit.SECONDS);
+    driver
+        .manage()
+        .timeouts()
+        .implicitlyWait(AbstractZeppelinIT.MAX_IMPLICIT_WAIT, TimeUnit.SECONDS);
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
-                .isDisplayed();
-          }
-        });
+        (new WebDriverWait(driver, 30))
+            .until(
+                new ExpectedCondition<Boolean>() {
+                  @Override
+                  public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//i[@uib-tooltip='WebSocket Connected']"))
+                        .isDisplayed();
+                  }
+                });
         loaded = true;
         break;
       } catch (TimeoutException e) {
@@ -155,8 +159,11 @@ public class WebDriverManager {
 
   public static void downloadGeekoDriver(int firefoxVersion, String tempPath) {
     String geekoDriverUrlString =
-        "https://github.com/mozilla/geckodriver/releases/download/v" + GECKODRIVER_VERSION
-            + "/geckodriver-v" + GECKODRIVER_VERSION + "-";
+        "https://github.com/mozilla/geckodriver/releases/download/v"
+            + GECKODRIVER_VERSION
+            + "/geckodriver-v"
+            + GECKODRIVER_VERSION
+            + "-";
 
     LOG.info("Geeko version: " + firefoxVersion + ", will be downloaded to " + tempPath);
     try {
@@ -203,10 +210,12 @@ public class WebDriverManager {
       if (System.getProperty("os.name").startsWith("Mac OS")) {
         firefoxVersionCmd = "/Applications/Firefox.app/Contents/MacOS/" + firefoxVersionCmd;
       }
-      String versionString = (String) CommandExecutor
-          .executeCommandLocalHost(firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
-      return Integer
-          .valueOf(versionString.replaceAll("Mozilla Firefox", "").trim().substring(0, 2));
+      String versionString =
+          (String)
+              CommandExecutor.executeCommandLocalHost(
+                  firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
+      return Integer.valueOf(
+          versionString.replaceAll("Mozilla Firefox", "").trim().substring(0, 2));
     } catch (Exception e) {
       LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       return -1;

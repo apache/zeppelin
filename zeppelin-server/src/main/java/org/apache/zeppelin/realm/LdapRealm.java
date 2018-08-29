@@ -74,56 +74,44 @@ import org.slf4j.LoggerFactory;
  * Implementation of {@link org.apache.shiro.realm.ldap.JndiLdapRealm} that also returns each user's
  * groups. This implementation is heavily based on org.apache.isis.security.shiro.IsisLdapRealm.
  *
- * <p>This implementation saves looked up ldap groups in Shiro Session to make them
- * easy to be looked up outside of this object
+ * <p>This implementation saves looked up ldap groups in Shiro Session to make them easy to be
+ * looked up outside of this object
  *
  * <p>Sample config for <tt>shiro.ini</tt>:
  *
- * <p>
- *   [main]
- *   ldapRealm = org.apache.zeppelin.realm.LdapRealm
- *   ldapRealm.contextFactory.url = ldap://localhost:33389
- *   ldapRealm.contextFactory.authenticationMechanism = simple
- *   ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc= apache,dc=org
- *   ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
- *   ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/zeppelin.jceks
- *   ldapRealm.userDnTemplate = uid={0},ou=people,dc=hadoop,dc=apache,dc=org
- *   # Ability to set ldap paging Size if needed default is 100
- *   ldapRealm.pagingSize = 200
- *   ldapRealm.authorizationEnabled = true
- *   ldapRealm.searchBase = dc=hadoop,dc=apache,dc=org
- *   ldapRealm.userSearchBase = dc=hadoop,dc=apache,dc=org
- *   ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
- *   ldapRealm.userObjectClass = person
- *   ldapRealm.groupObjectClass = groupofnames
- *   # Allow userSearchAttribute to be customized
- *   ldapRealm.userSearchAttributeName = sAMAccountName
- *   ldapRealm.memberAttribute = member
- *   # force usernames returned from ldap to lowercase useful for AD
- *   ldapRealm.userLowerCase = true
- *   # ability set searchScopes subtree (default), one, base
- *   ldapRealm.userSearchScope = subtree;
- *   ldapRealm.groupSearchScope = subtree;
- *   ldapRealm.userSearchFilter = (&(objectclass=person)(sAMAccountName={0}))
- *   ldapRealm.groupSearchFilter = (&(objectclass=groupofnames)(member={0}))
- *   ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,dc=org
- *   # enable support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
- *   ldapRealm.groupSearchEnableMatchingRuleInChain = true
- * <p>
- *   # optional mapping from physical groups to logical application roles
- *   ldapRealm.rolesByGroup = \ LDN_USERS: user_role,\ NYK_USERS: user_role,\ HKG_USERS: user_role,
- *   \GLOBAL_ADMIN: admin_role,\ DEMOS: self-install_role
- * <p>
- *   # optional list of roles that are allowed to authenticate
- *   ldapRealm.allowedRolesForAuthentication = admin_role,user_role
- * <p>
- *   ldapRealm.permissionsByRole=\ user_role = *:ToDoItemsJdo:*:*,\*:ToDoItem:*:*;
- *   \ self-install_role = *:ToDoItemsFixturesService:install:* ; \ admin_role = *
- * <p>
- *   [urls]
- *   **=authcBasic
- * <p>
- *   securityManager.realms = $ldapRealm
+ * <p>[main] ldapRealm = org.apache.zeppelin.realm.LdapRealm ldapRealm.contextFactory.url =
+ * ldap://localhost:33389 ldapRealm.contextFactory.authenticationMechanism = simple
+ * ldapRealm.contextFactory.systemUsername = uid=guest,ou=people,dc=hadoop,dc= apache,dc=org
+ * ldapRealm.contextFactory.systemPassword = S{ALIAS=ldcSystemPassword}
+ * ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/zeppelin.jceks
+ * ldapRealm.userDnTemplate = uid={0},ou=people,dc=hadoop,dc=apache,dc=org # Ability to set ldap
+ * paging Size if needed default is 100 ldapRealm.pagingSize = 200 ldapRealm.authorizationEnabled =
+ * true ldapRealm.searchBase = dc=hadoop,dc=apache,dc=org ldapRealm.userSearchBase =
+ * dc=hadoop,dc=apache,dc=org ldapRealm.groupSearchBase = ou=groups,dc=hadoop,dc=apache,dc=org
+ * ldapRealm.userObjectClass = person ldapRealm.groupObjectClass = groupofnames # Allow
+ * userSearchAttribute to be customized ldapRealm.userSearchAttributeName = sAMAccountName
+ * ldapRealm.memberAttribute = member # force usernames returned from ldap to lowercase useful for
+ * AD ldapRealm.userLowerCase = true # ability set searchScopes subtree (default), one, base
+ * ldapRealm.userSearchScope = subtree; ldapRealm.groupSearchScope = subtree;
+ * ldapRealm.userSearchFilter = (&(objectclass=person)(sAMAccountName={0}))
+ * ldapRealm.groupSearchFilter = (&(objectclass=groupofnames)(member={0}))
+ * ldapRealm.memberAttributeValueTemplate=cn={0},ou=people,dc=hadoop,dc=apache,dc=org # enable
+ * support for nested groups using the LDAP_MATCHING_RULE_IN_CHAIN operator
+ * ldapRealm.groupSearchEnableMatchingRuleInChain = true
+ *
+ * <p># optional mapping from physical groups to logical application roles ldapRealm.rolesByGroup =
+ * \ LDN_USERS: user_role,\ NYK_USERS: user_role,\ HKG_USERS: user_role, \GLOBAL_ADMIN: admin_role,\
+ * DEMOS: self-install_role
+ *
+ * <p># optional list of roles that are allowed to authenticate
+ * ldapRealm.allowedRolesForAuthentication = admin_role,user_role
+ *
+ * <p>ldapRealm.permissionsByRole=\ user_role = *:ToDoItemsJdo:*:*,\*:ToDoItem:*:*; \
+ * self-install_role = *:ToDoItemsFixturesService:install:* ; \ admin_role = *
+ *
+ * <p>[urls] **=authcBasic
+ *
+ * <p>securityManager.realms = $ldapRealm
  */
 public class LdapRealm extends JndiLdapRealm {
 
@@ -193,8 +181,6 @@ public class LdapRealm extends JndiLdapRealm {
 
   private HashService hashService = new DefaultHashService();
 
-
-
   public void setHadoopSecurityCredentialPath(String hadoopSecurityCredentialPath) {
     this.hadoopSecurityCredentialPath = hadoopSecurityCredentialPath;
   }
@@ -218,18 +204,17 @@ public class LdapRealm extends JndiLdapRealm {
     super.onInit();
     if (!org.apache.commons.lang.StringUtils.isEmpty(this.hadoopSecurityCredentialPath)
         && getContextFactory() != null) {
-      ((JndiLdapContextFactory) getContextFactory()).setSystemPassword(
-          getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
+      ((JndiLdapContextFactory) getContextFactory())
+          .setSystemPassword(getSystemPassword(this.hadoopSecurityCredentialPath, keystorePass));
     }
   }
 
-  static String getSystemPassword(String hadoopSecurityCredentialPath,
-      String keystorePass) {
+  static String getSystemPassword(String hadoopSecurityCredentialPath, String keystorePass) {
     String password = "";
     try {
       Configuration configuration = new Configuration();
-      configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          hadoopSecurityCredentialPath);
+      configuration.set(
+          CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, hadoopSecurityCredentialPath);
       CredentialProvider provider = CredentialProviderFactory.getProviders(configuration).get(0);
       CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(keystorePass);
       if (credEntry != null) {
@@ -239,16 +224,19 @@ public class LdapRealm extends JndiLdapRealm {
       throw new ShiroException("Error from getting credential entry from keystore", e);
     }
     if (org.apache.commons.lang.StringUtils.isEmpty(password)) {
-      throw new ShiroException("Error getting SystemPassword from the provided keystore:"
-          + keystorePass + ", in path:" + hadoopSecurityCredentialPath);
+      throw new ShiroException(
+          "Error getting SystemPassword from the provided keystore:"
+              + keystorePass
+              + ", in path:"
+              + hadoopSecurityCredentialPath);
     }
     return password;
   }
 
   /**
-   * This overrides the implementation of queryForAuthenticationInfo inside JndiLdapRealm.
-   * In addition to calling the super method for authentication it also tries to validate
-   * if this user has atleast one of the allowed roles for authentication. In case the property
+   * This overrides the implementation of queryForAuthenticationInfo inside JndiLdapRealm. In
+   * addition to calling the super method for authentication it also tries to validate if this user
+   * has atleast one of the allowed roles for authentication. In case the property
    * allowedRolesForAuthentication is empty this check always returns true.
    *
    * @param token the submitted authentication token that triggered the authentication attempt.
@@ -257,8 +245,8 @@ public class LdapRealm extends JndiLdapRealm {
    * @throws NamingException if any LDAP errors occur.
    */
   @Override
-  protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
-      LdapContextFactory ldapContextFactory) throws NamingException {
+  protected AuthenticationInfo queryForAuthenticationInfo(
+      AuthenticationToken token, LdapContextFactory ldapContextFactory) throws NamingException {
     AuthenticationInfo info = super.queryForAuthenticationInfo(token, ldapContextFactory);
     // Credentials were verified. Verify that the principal has all allowedRulesForAuthentication
     if (!hasAllowedAuthenticationRules(info.getPrincipals(), ldapContextFactory)) {
@@ -268,21 +256,19 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   /**
-  * Get groups from LDAP.
-  * 
-  * @param principals
-  *            the principals of the Subject whose AuthenticationInfo should
-  *            be queried from the LDAP server.
-  * @param ldapContextFactory
-  *            factory used to retrieve LDAP connections.
-  * @return an {@link AuthorizationInfo} instance containing information
-  *         retrieved from the LDAP server.
-  * @throws NamingException
-  *             if any LDAP errors occur during the search.
-  */
+   * Get groups from LDAP.
+   *
+   * @param principals the principals of the Subject whose AuthenticationInfo should be queried from
+   *     the LDAP server.
+   * @param ldapContextFactory factory used to retrieve LDAP connections.
+   * @return an {@link AuthorizationInfo} instance containing information retrieved from the LDAP
+   *     server.
+   * @throws NamingException if any LDAP errors occur during the search.
+   */
   @Override
-  public AuthorizationInfo queryForAuthorizationInfo(final PrincipalCollection principals,
-      final LdapContextFactory ldapContextFactory) throws NamingException {
+  public AuthorizationInfo queryForAuthorizationInfo(
+      final PrincipalCollection principals, final LdapContextFactory ldapContextFactory)
+      throws NamingException {
     if (!isAuthorizationEnabled()) {
       return null;
     }
@@ -296,8 +282,9 @@ public class LdapRealm extends JndiLdapRealm {
     return simpleAuthorizationInfo;
   }
 
-  private boolean hasAllowedAuthenticationRules(PrincipalCollection principals,
-          final LdapContextFactory ldapContextFactory) throws NamingException {
+  private boolean hasAllowedAuthenticationRules(
+      PrincipalCollection principals, final LdapContextFactory ldapContextFactory)
+      throws NamingException {
     boolean allowed = allowedRolesForAuthentication.isEmpty();
     if (!allowed) {
       Set<String> roles = getRoles(principals, ldapContextFactory);
@@ -312,15 +299,20 @@ public class LdapRealm extends JndiLdapRealm {
     return allowed;
   }
 
-  private Set<String> getRoles(PrincipalCollection principals,
-          final LdapContextFactory ldapContextFactory) throws NamingException {
+  private Set<String> getRoles(
+      PrincipalCollection principals, final LdapContextFactory ldapContextFactory)
+      throws NamingException {
     final String username = (String) getAvailablePrincipal(principals);
 
     LdapContext systemLdapCtx = null;
     try {
       systemLdapCtx = ldapContextFactory.getSystemLdapContext();
-      return rolesFor(principals, username, systemLdapCtx,
-        ldapContextFactory, SecurityUtils.getSubject().getSession());
+      return rolesFor(
+          principals,
+          username,
+          systemLdapCtx,
+          ldapContextFactory,
+          SecurityUtils.getSubject().getSession());
     } catch (AuthenticationException ae) {
       ae.printStackTrace();
       return Collections.emptySet();
@@ -329,9 +321,13 @@ public class LdapRealm extends JndiLdapRealm {
     }
   }
 
-  protected Set<String> rolesFor(PrincipalCollection principals, String userNameIn,
-          final LdapContext ldapCtx, final LdapContextFactory ldapContextFactory, Session session)
-          throws NamingException {
+  protected Set<String> rolesFor(
+      PrincipalCollection principals,
+      String userNameIn,
+      final LdapContext ldapCtx,
+      final LdapContextFactory ldapContextFactory,
+      Session session)
+      throws NamingException {
     final Set<String> roleNames = new HashSet<>();
     final Set<String> groupNames = new HashSet<>();
     final String userName;
@@ -341,7 +337,7 @@ public class LdapRealm extends JndiLdapRealm {
     } else {
       userName = userNameIn;
     }
-    
+
     String userDn = getUserDnForSearch(userName);
 
     // Activate paged results
@@ -353,10 +349,10 @@ public class LdapRealm extends JndiLdapRealm {
     byte[] cookie = null;
     try {
       ldapCtx.addToEnvironment(Context.REFERRAL, "ignore");
-        
-      ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize, 
-            Control.NONCRITICAL)});
-        
+
+      ldapCtx.setRequestControls(
+          new Control[] {new PagedResultsControl(pageSize, Control.NONCRITICAL)});
+
       do {
         // ldapsearch -h localhost -p 33389 -D
         // uid=guest,ou=people,dc=hadoop,dc=apache,dc=org -w guest-password
@@ -365,19 +361,20 @@ public class LdapRealm extends JndiLdapRealm {
         SearchControls searchControls = getGroupSearchControls();
         try {
           if (groupSearchEnableMatchingRuleInChain) {
-            searchResultEnum = ldapCtx.search(
-                getGroupSearchBase(),
-                String.format(
-                    MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
-                searchControls);
+            searchResultEnum =
+                ldapCtx.search(
+                    getGroupSearchBase(),
+                    String.format(
+                        MATCHING_RULE_IN_CHAIN_FORMAT, groupObjectClass, memberAttribute, userDn),
+                    searchControls);
             while (searchResultEnum != null && searchResultEnum.hasMore()) {
               // searchResults contains all the groups in search scope
               numResults++;
               final SearchResult group = searchResultEnum.next();
 
               Attribute attribute = group.getAttributes().get(getGroupIdAttribute());
-              String groupName = attribute.get().toString();            
-              
+              String groupName = attribute.get().toString();
+
               String roleName = roleNameFor(groupName);
               if (roleName != null) {
                 roleNames.add(roleName);
@@ -392,16 +389,18 @@ public class LdapRealm extends JndiLdapRealm {
             // If group search filter is defined in Shiro config, then use it
             if (groupSearchFilter != null) {
               searchFilter = expandTemplate(groupSearchFilter, userName);
-              //searchFilter = String.format("%1$s", groupSearchFilter);
+              // searchFilter = String.format("%1$s", groupSearchFilter);
             }
             if (log.isDebugEnabled()) {
-              log.debug("Group SearchBase|SearchFilter|GroupSearchScope: " + getGroupSearchBase()
-                    + "|" + searchFilter + "|" + groupSearchScope);
+              log.debug(
+                  "Group SearchBase|SearchFilter|GroupSearchScope: "
+                      + getGroupSearchBase()
+                      + "|"
+                      + searchFilter
+                      + "|"
+                      + groupSearchScope);
             }
-            searchResultEnum = ldapCtx.search(
-                getGroupSearchBase(),
-                searchFilter,
-                searchControls);
+            searchResultEnum = ldapCtx.search(getGroupSearchBase(), searchFilter, searchControls);
             while (searchResultEnum != null && searchResultEnum.hasMore()) {
               // searchResults contains all the groups in search scope
               numResults++;
@@ -417,12 +416,11 @@ public class LdapRealm extends JndiLdapRealm {
           }
         }
         // Re-activate paged results
-        ldapCtx.setRequestControls(new Control[]{new PagedResultsControl(pageSize,
-            cookie, Control.CRITICAL)});
+        ldapCtx.setRequestControls(
+            new Control[] {new PagedResultsControl(pageSize, cookie, Control.CRITICAL)});
       } while (cookie != null);
     } catch (SizeLimitExceededException e) {
-      log.info("Only retrieved first " + numResults +
-          " groups due to SizeLimitExceededException.");
+      log.info("Only retrieved first " + numResults + " groups due to SizeLimitExceededException.");
     } catch (IOException e) {
       log.error("Unabled to setup paged results");
     }
@@ -449,9 +447,13 @@ public class LdapRealm extends JndiLdapRealm {
     }
   }
 
-  private void addRoleIfMember(final String userDn, final SearchResult group,
-      final Set<String> roleNames, final Set<String> groupNames,
-      final LdapContextFactory ldapContextFactory) throws NamingException {
+  private void addRoleIfMember(
+      final String userDn,
+      final SearchResult group,
+      final Set<String> roleNames,
+      final Set<String> groupNames,
+      final LdapContextFactory ldapContextFactory)
+      throws NamingException {
     NamingEnumeration<? extends Attribute> attributeEnum = null;
     NamingEnumeration<?> ne = null;
     try {
@@ -469,8 +471,8 @@ public class LdapRealm extends JndiLdapRealm {
         while (ne.hasMore()) {
           String attrValue = ne.next().toString();
           if (memberAttribute.equalsIgnoreCase(MEMBER_URL)) {
-            boolean dynamicGroupMember = isUserMemberOfDynamicGroup(userLdapDn, attrValue,
-                ldapContextFactory);
+            boolean dynamicGroupMember =
+                isUserMemberOfDynamicGroup(userLdapDn, attrValue, ldapContextFactory);
             if (dynamicGroupMember) {
               groupNames.add(groupName);
               String roleName = roleNameFor(groupName);
@@ -600,13 +602,11 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   /**
-  * Set Member Attribute Template for LDAP.
-  * 
-  * @param template
-  *            DN template to be used to query ldap.
-  * @throws IllegalArgumentException
-  *             if template is empty or null.
-  */
+   * Set Member Attribute Template for LDAP.
+   *
+   * @param template DN template to be used to query ldap.
+   * @throws IllegalArgumentException if template is empty or null.
+   */
   public void setMemberAttributeValueTemplate(String template) {
     if (!StringUtils.hasText(template)) {
       String msg = "User DN template cannot be null or empty.";
@@ -614,8 +614,11 @@ public class LdapRealm extends JndiLdapRealm {
     }
     int index = template.indexOf(MEMBER_SUBSTITUTION_TOKEN);
     if (index < 0) {
-      String msg = "Member attribute value template must contain the '" + MEMBER_SUBSTITUTION_TOKEN
-          + "' replacement token to understand how to " + "parse the group members.";
+      String msg =
+          "Member attribute value template must contain the '"
+              + MEMBER_SUBSTITUTION_TOKEN
+              + "' replacement token to understand how to "
+              + "parse the group members.";
       throw new IllegalArgumentException(msg);
     }
     String prefix = template.substring(0, index);
@@ -657,11 +660,10 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   /**
-  * Set User Search Attribute Name for LDAP.
-  * 
-  * @param userSearchAttributeName
-  *            userAttribute to search ldap.
-  */
+   * Set User Search Attribute Name for LDAP.
+   *
+   * @param userSearchAttributeName userAttribute to search ldap.
+   */
   public void setUserSearchAttributeName(String userSearchAttributeName) {
     if (userSearchAttributeName != null) {
       userSearchAttributeName = userSearchAttributeName.trim();
@@ -700,8 +702,9 @@ public class LdapRealm extends JndiLdapRealm {
     return perms;
   }
 
-  boolean isUserMemberOfDynamicGroup(LdapName userLdapDn, String memberUrl,
-      final LdapContextFactory ldapContextFactory) throws NamingException {
+  boolean isUserMemberOfDynamicGroup(
+      LdapName userLdapDn, String memberUrl, final LdapContextFactory ldapContextFactory)
+      throws NamingException {
     // ldap://host:port/dn?attributes?scope?filter?extensions
     if (memberUrl == null) {
       return false;
@@ -736,8 +739,11 @@ public class LdapRealm extends JndiLdapRealm {
     boolean member = false;
     NamingEnumeration<SearchResult> searchResultEnum = null;
     try {
-      searchResultEnum = systemLdapCtx.search(userLdapDn, searchFilter,
-          searchScope.equalsIgnoreCase("sub") ? SUBTREE_SCOPE : ONELEVEL_SCOPE);
+      searchResultEnum =
+          systemLdapCtx.search(
+              userLdapDn,
+              searchFilter,
+              searchScope.equalsIgnoreCase("sub") ? SUBTREE_SCOPE : ONELEVEL_SCOPE);
       if (searchResultEnum.hasMore()) {
         return true;
       }
@@ -758,11 +764,10 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   /**
-  * Set Regex for Principal LDAP.
-  * 
-  * @param regex
-  *            regex to use to search for principal in shiro.
-  */
+   * Set Regex for Principal LDAP.
+   *
+   * @param regex regex to use to search for principal in shiro.
+   */
   public void setPrincipalRegex(String regex) {
     if (regex == null || regex.trim().isEmpty()) {
       principalPattern = Pattern.compile(DEFAULT_PRINCIPAL_REGEX);
@@ -860,47 +865,44 @@ public class LdapRealm extends JndiLdapRealm {
   private String matchPrincipal(final String principal) {
     Matcher matchedPrincipal = principalPattern.matcher(principal);
     if (!matchedPrincipal.matches()) {
-      throw new IllegalArgumentException("Principal "
-          + principal + " does not match " + principalRegex);
+      throw new IllegalArgumentException(
+          "Principal " + principal + " does not match " + principalRegex);
     }
     return matchedPrincipal.group();
   }
 
   /**
-  * Returns the LDAP User Distinguished Name (DN) to use when acquiring an
-  * {@link javax.naming.ldap.LdapContext LdapContext} from the
-  * {@link LdapContextFactory}.
-  * <p/>
-  * If the the {@link #getUserDnTemplate() userDnTemplate} property has been
-  * set, this implementation will construct the User DN by substituting the
-  * specified {@code principal} into the configured template. If the
-  * {@link #getUserDnTemplate() userDnTemplate} has not been set, the method
-  * argument will be returned directly (indicating that the submitted
-  * authentication token principal <em>is</em> the User DN).
-  *
-  * @param principal
-  *            the principal to substitute into the configured
-  *            {@link #getUserDnTemplate() userDnTemplate}.
-  * @return the constructed User DN to use at runtime when acquiring an
-  *         {@link javax.naming.ldap.LdapContext}.
-  * @throws IllegalArgumentException
-  *             if the method argument is null or empty
-  * @throws IllegalStateException
-  *             if the {@link #getUserDnTemplate userDnTemplate} has not been
-  *             set.
-  * @see LdapContextFactory#getLdapContext(Object, Object)
-  */
+   * Returns the LDAP User Distinguished Name (DN) to use when acquiring an {@link
+   * javax.naming.ldap.LdapContext LdapContext} from the {@link LdapContextFactory}.
+   *
+   * <p>If the the {@link #getUserDnTemplate() userDnTemplate} property has been set, this
+   * implementation will construct the User DN by substituting the specified {@code principal} into
+   * the configured template. If the {@link #getUserDnTemplate() userDnTemplate} has not been set,
+   * the method argument will be returned directly (indicating that the submitted authentication
+   * token principal <em>is</em> the User DN).
+   *
+   * @param principal the principal to substitute into the configured {@link #getUserDnTemplate()
+   *     userDnTemplate}.
+   * @return the constructed User DN to use at runtime when acquiring an {@link
+   *     javax.naming.ldap.LdapContext}.
+   * @throws IllegalArgumentException if the method argument is null or empty
+   * @throws IllegalStateException if the {@link #getUserDnTemplate userDnTemplate} has not been
+   *     set.
+   * @see LdapContextFactory#getLdapContext(Object, Object)
+   */
   @Override
-  protected String getUserDn(final String principal) throws IllegalArgumentException,
-      IllegalStateException {
+  protected String getUserDn(final String principal)
+      throws IllegalArgumentException, IllegalStateException {
     String userDn;
     String matchedPrincipal = matchPrincipal(principal);
     String userSearchBase = getUserSearchBase();
     String userSearchAttributeName = getUserSearchAttributeName();
 
     // If not searching use the userDnTemplate and return.
-    if ((userSearchBase == null || userSearchBase.isEmpty()) || (userSearchAttributeName == null
-        && userSearchFilter == null && !"object".equalsIgnoreCase(userSearchScope))) {
+    if ((userSearchBase == null || userSearchBase.isEmpty())
+        || (userSearchAttributeName == null
+            && userSearchFilter == null
+            && !"object".equalsIgnoreCase(userSearchScope))) {
       userDn = expandTemplate(userDnTemplate, matchedPrincipal);
       if (log.isDebugEnabled()) {
         log.debug("LDAP UserDN and Principal: " + userDn + "," + principal);
@@ -915,9 +917,12 @@ public class LdapRealm extends JndiLdapRealm {
       if (userSearchAttributeName == null) {
         searchFilter = String.format("(objectclass=%1$s)", getUserObjectClass());
       } else {
-        searchFilter = String.format("(&(objectclass=%1$s)(%2$s=%3$s))", getUserObjectClass(),
-            userSearchAttributeName, expandTemplate(getUserSearchAttributeTemplate(),
-                matchedPrincipal));
+        searchFilter =
+            String.format(
+                "(&(objectclass=%1$s)(%2$s=%3$s))",
+                getUserObjectClass(),
+                userSearchAttributeName,
+                expandTemplate(getUserSearchAttributeTemplate(), matchedPrincipal));
       }
     } else {
       searchFilter = expandTemplate(userSearchFilter, matchedPrincipal);
@@ -930,8 +935,13 @@ public class LdapRealm extends JndiLdapRealm {
     try {
       systemLdapCtx = getContextFactory().getSystemLdapContext();
       if (log.isDebugEnabled()) {
-        log.debug("SearchBase,SearchFilter,UserSearchScope: " + searchBase
-            + "," + searchFilter + "," + userSearchScope);
+        log.debug(
+            "SearchBase,SearchFilter,UserSearchScope: "
+                + searchBase
+                + ","
+                + searchFilter
+                + ","
+                + userSearchScope);
       }
       searchResultEnum = systemLdapCtx.search(searchBase, searchFilter, searchControls);
       // SearchResults contains all the entries in search scope
@@ -964,16 +974,18 @@ public class LdapRealm extends JndiLdapRealm {
   }
 
   @Override
-  protected AuthenticationInfo createAuthenticationInfo(AuthenticationToken token,
-      Object ldapPrincipal, Object ldapCredentials, LdapContext ldapContext)
+  protected AuthenticationInfo createAuthenticationInfo(
+      AuthenticationToken token,
+      Object ldapPrincipal,
+      Object ldapCredentials,
+      LdapContext ldapContext)
       throws NamingException {
     HashRequest.Builder builder = new HashRequest.Builder();
-    Hash credentialsHash = hashService
-        .computeHash(builder.setSource(token.getCredentials())
-            .setAlgorithmName(HASHING_ALGORITHM).build());
-    return new SimpleAuthenticationInfo(token.getPrincipal(),
-        credentialsHash.toHex(), credentialsHash.getSalt(),
-        getName());
+    Hash credentialsHash =
+        hashService.computeHash(
+            builder.setSource(token.getCredentials()).setAlgorithmName(HASHING_ALGORITHM).build());
+    return new SimpleAuthenticationInfo(
+        token.getPrincipal(), credentialsHash.toHex(), credentialsHash.getSalt(), getName());
   }
 
   protected static final String expandTemplate(final String template, final String input) {

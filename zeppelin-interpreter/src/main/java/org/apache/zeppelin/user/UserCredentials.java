@@ -20,9 +20,7 @@ package org.apache.zeppelin.user;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * User Credentials POJO
- */
+/** User Credentials POJO */
 public class UserCredentials {
   private Map<String, UsernamePassword> userCredentials = new ConcurrentHashMap<>();
 
@@ -44,8 +42,6 @@ public class UserCredentials {
 
   @Override
   public String toString() {
-    return "UserCredentials{" +
-        "userCredentials=" + userCredentials +
-        '}';
+    return "UserCredentials{" + "userCredentials=" + userCredentials + '}';
   }
 }

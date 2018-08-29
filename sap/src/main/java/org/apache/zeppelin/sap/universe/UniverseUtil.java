@@ -17,27 +17,24 @@
 
 package org.apache.zeppelin.sap.universe;
 
+import java.util.*;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
-
-/**
- * Util class for convert request from Zeppelin to SAP
- */
+/** Util class for convert request from Zeppelin to SAP */
 public class UniverseUtil {
 
-  private static final String COMPRASION_START_TEMPLATE = "<comparisonFilter path=\"%s\" " +
-      "operator=\"%s\" id=\"%s\">\n";
+  private static final String COMPRASION_START_TEMPLATE =
+      "<comparisonFilter path=\"%s\" " + "operator=\"%s\" id=\"%s\">\n";
   private static final String COMPRASION_END_TEMPLATE = "</comparisonFilter>\n";
-  private static final String COMPARISON_FILTER = "<comparisonFilter id=\"%s\" path=\"%s\" " +
-      "operator=\"%s\"/>\n";
+  private static final String COMPARISON_FILTER =
+      "<comparisonFilter id=\"%s\" path=\"%s\" " + "operator=\"%s\"/>\n";
   private static final String CONST_OPERAND_START_TEMPLATE = "<constantOperand>\n";
   private static final String CONST_OPERAND_END_TEMPLATE = "</constantOperand>\n";
-  private static final String CONST_OPERAND_VALUE_TEMPLATE = "<value>\n" +
-      "<caption type=\"%s\">%s</caption>\n</value>\n";
-  private static final String PREDEFINED_FILTER_TEMPLATE = "<predefinedFilter path=\"%s\"" +
-      " id=\"%s\"/>\n";
+  private static final String CONST_OPERAND_VALUE_TEMPLATE =
+      "<value>\n" + "<caption type=\"%s\">%s</caption>\n</value>\n";
+  private static final String PREDEFINED_FILTER_TEMPLATE =
+      "<predefinedFilter path=\"%s\"" + " id=\"%s\"/>\n";
   private static final String OBJECT_OPERAND_TEMPLATE = "<objectOperand id=\"%s\" path=\"%s\"/>\n";
   private static final String RESULT_START_TEMPLATE = "<resultObjects>\n";
   private static final String RESULT_END_TEMPLATE = "</resultObjects>\n";
@@ -59,7 +56,6 @@ public class UniverseUtil {
   private static final String MARKER_BACKSPACE = "#backspace#";
   private static final String MARKER_LEFT_BRACE = "#left_brace#";
   private static final String MARKER_RIGHT_BRACE = "#right_brace#";
-
 
   private static final String LEFT_BRACE = "(";
   private static final String RIGHT_BRACE = ")";
@@ -120,8 +116,8 @@ public class UniverseUtil {
         limit = parseInt(arguments[length - 2]);
       } else if (arguments[length - 2].equals("limit")) {
         final String toParse = arguments[length - 1];
-        limit = parseInt(toParse.endsWith(";") ?
-            toParse.substring(0, toParse.length() - 1) : toParse);
+        limit =
+            parseInt(toParse.endsWith(";") ? toParse.substring(0, toParse.length() - 1) : toParse);
       }
       text = text.substring(0, limitIndex);
     }
@@ -149,8 +145,9 @@ public class UniverseUtil {
         pathClosed = true;
         if (wherePart) {
           operatorPosition = true;
-          if (i + 1 == array.length || (array[i + 1] != '.'
-              && isFilter(String.format("%s]", whereBuf.toString()), text.substring(i + 1)))) {
+          if (i + 1 == array.length
+              || (array[i + 1] != '.'
+                  && isFilter(String.format("%s]", whereBuf.toString()), text.substring(i + 1)))) {
             whereBuf.append(c);
             whereBuf.append(MARKER_FILTER);
             if (i + 1 == array.length) {
@@ -181,8 +178,7 @@ public class UniverseUtil {
         }
       }
 
-      if (!universePart && singleQuoteClosed
-          && buf.toString().toLowerCase().endsWith("universe")) {
+      if (!universePart && singleQuoteClosed && buf.toString().toLowerCase().endsWith("universe")) {
         universePart = true;
         continue;
       }
@@ -202,7 +198,9 @@ public class UniverseUtil {
         continue;
       }
 
-      if (!selectPart && pathClosed && singleQuoteClosed
+      if (!selectPart
+          && pathClosed
+          && singleQuoteClosed
           && buf.toString().toLowerCase().endsWith("select")) {
         if (StringUtils.isBlank(universe.toString())) {
           throw new UniverseException("Not found universe name");
@@ -218,9 +216,10 @@ public class UniverseUtil {
         }
         if (buf.toString().toLowerCase().endsWith("where") || i == array.length - 1) {
           selectPart = false;
-          select.append(parseResultObj(resultObj.toString()
-                  .replaceAll("(?i)wher$", "").replaceAll("(?i)distinc", ""),
-              nodeInfos));
+          select.append(
+              parseResultObj(
+                  resultObj.toString().replaceAll("(?i)wher$", "").replaceAll("(?i)distinc", ""),
+                  nodeInfos));
           select.append(RESULT_END_TEMPLATE);
           continue;
         }
@@ -232,7 +231,8 @@ public class UniverseUtil {
           continue;
         }
         if (pathClosed && singleQuoteClosed && c == ',') {
-          select.append(parseResultObj(resultObj.toString().replaceAll("(?i)distinc", ""), nodeInfos));
+          select.append(
+              parseResultObj(resultObj.toString().replaceAll("(?i)distinc", ""), nodeInfos));
           resultObj = new StringBuilder();
         } else {
           resultObj.append(c);
@@ -261,15 +261,17 @@ public class UniverseUtil {
                 whereBuf.append(c);
             }
           } else if (pathClosed) {
-            if ((c == 'a' || c == 'A') && i < array.length - 2 &&
-                text.substring(i, i + 3).equalsIgnoreCase("and")) {
+            if ((c == 'a' || c == 'A')
+                && i < array.length - 2
+                && text.substring(i, i + 3).equalsIgnoreCase("and")) {
               i += 2;
               whereBuf.append(MARKER_AND);
               operatorPosition = false;
               continue;
             }
-            if ((c == 'o' || c == 'O') && i < array.length - 1 &&
-                text.substring(i, i + 2).equalsIgnoreCase("or")) {
+            if ((c == 'o' || c == 'O')
+                && i < array.length - 1
+                && text.substring(i, i + 2).equalsIgnoreCase("or")) {
               i += 1;
               whereBuf.append(MARKER_OR);
               operatorPosition = false;
@@ -396,8 +398,8 @@ public class UniverseUtil {
       throw new UniverseException("Incorrect block where");
     }
 
-    UniverseQuery universeQuery = new UniverseQuery(select.toString().trim(),
-        where, universeInfo, duplicatedRows, limit);
+    UniverseQuery universeQuery =
+        new UniverseQuery(select.toString().trim(), where, universeInfo, duplicatedRows, limit);
 
     if (!universeQuery.isCorrect()) {
       throw new UniverseException("Incorrect query");
@@ -447,8 +449,9 @@ public class UniverseUtil {
           }
           stack.pop();
         } else {
-          while (!stack.empty() && !stack.peek().equals(LEFT_BRACE) &&
-              (OPERATIONS.get(nextOperation) >= OPERATIONS.get(stack.peek()))) {
+          while (!stack.empty()
+              && !stack.peek().equals(LEFT_BRACE)
+              && (OPERATIONS.get(nextOperation) >= OPERATIONS.get(stack.peek()))) {
             out.add(stack.pop());
           }
           stack.push(nextOperation);
@@ -463,10 +466,8 @@ public class UniverseUtil {
       out.add(stack.pop());
     }
     StringBuffer result = new StringBuffer();
-    if (!out.isEmpty())
-      result.append(out.remove(0));
-    while (!out.isEmpty())
-      result.append(" ").append(out.remove(0));
+    if (!out.isEmpty()) result.append(out.remove(0));
+    while (!out.isEmpty()) result.append(" ").append(out.remove(0));
 
     // result contains the reverse polish notation
     return convertWhereToXml(result.toString(), nodeInfos);
@@ -479,8 +480,8 @@ public class UniverseUtil {
       if (nodeInfo != null) {
         return String.format(RESULT_OBJ_TEMPLATE, nodeInfo.getNodePath(), nodeInfo.getId());
       }
-      throw new UniverseException(String.format("Not found information about: \"%s\"",
-          resultObj.trim()));
+      throw new UniverseException(
+          String.format("Not found information about: \"%s\"", resultObj.trim()));
     }
 
     return StringUtils.EMPTY;
@@ -503,15 +504,22 @@ public class UniverseUtil {
 
         if (token.equalsIgnoreCase(MARKER_NOT_NULL) || token.equalsIgnoreCase(MARKER_NULL)) {
           UniverseNodeInfo rightOperandInfo = nodeInfos.get(rightOperand);
-          stack.push(String.format(COMPARISON_FILTER, rightOperandInfo.getId(),
-              rightOperandInfo.getNodePath(), operator));
+          stack.push(
+              String.format(
+                  COMPARISON_FILTER,
+                  rightOperandInfo.getId(),
+                  rightOperandInfo.getNodePath(),
+                  operator));
           continue;
         }
 
         if (token.equalsIgnoreCase(MARKER_FILTER)) {
           UniverseNodeInfo rightOperandInfo = nodeInfos.get(rightOperand);
-          stack.push(String.format(PREDEFINED_FILTER_TEMPLATE, rightOperandInfo.getNodePath(),
-              rightOperandInfo.getId()));
+          stack.push(
+              String.format(
+                  PREDEFINED_FILTER_TEMPLATE,
+                  rightOperandInfo.getNodePath(),
+                  rightOperandInfo.getId()));
           continue;
         }
 
@@ -521,20 +529,26 @@ public class UniverseUtil {
           if (rightOperand.matches("^\\[.*\\]$")) {
             UniverseNodeInfo rightOperandInfo = nodeInfos.get(rightOperand);
             if (rightOperandInfo == null) {
-              throw new UniverseException(String.format("Not found information about: \"%s\"",
-                  rightOperand));
+              throw new UniverseException(
+                  String.format("Not found information about: \"%s\"", rightOperand));
             }
-            rightOperand = String.format(PREDEFINED_FILTER_TEMPLATE,
-                rightOperandInfo.getNodePath(), rightOperandInfo.getId());
+            rightOperand =
+                String.format(
+                    PREDEFINED_FILTER_TEMPLATE,
+                    rightOperandInfo.getNodePath(),
+                    rightOperandInfo.getId());
           }
           if (leftOperand.matches("^\\[.*\\]$")) {
             UniverseNodeInfo leftOperandInfo = nodeInfos.get(leftOperand);
             if (leftOperandInfo == null) {
-              throw new UniverseException(String.format("Not found information about: \"%s\"",
-                  leftOperand));
+              throw new UniverseException(
+                  String.format("Not found information about: \"%s\"", leftOperand));
             }
-            leftOperand = String.format(PREDEFINED_FILTER_TEMPLATE, leftOperandInfo.getNodePath(),
-                leftOperandInfo.getId());
+            leftOperand =
+                String.format(
+                    PREDEFINED_FILTER_TEMPLATE,
+                    leftOperandInfo.getNodePath(),
+                    leftOperandInfo.getId());
           }
           tmp.append(String.format("<%s>\n", operator));
           tmp.append(leftOperand);
@@ -548,8 +562,8 @@ public class UniverseUtil {
 
         UniverseNodeInfo leftOperandInfo = nodeInfos.get(leftOperand);
         if (leftOperandInfo == null) {
-          throw new UniverseException(String.format("Not found information about: \"%s\"",
-              leftOperand));
+          throw new UniverseException(
+              String.format("Not found information about: \"%s\"", leftOperand));
         }
         if (token.equalsIgnoreCase(MARKER_IN) || token.equalsIgnoreCase(MARKER_NOT_IN)) {
           String listValues = rightOperand.replaceAll("^\\(|\\)$", "").trim();
@@ -583,8 +597,12 @@ public class UniverseUtil {
           }
 
           if (!values.isEmpty()) {
-            tmp.append(String.format(COMPRASION_START_TEMPLATE, leftOperandInfo.getNodePath(),
-                operator, leftOperandInfo.getId()));
+            tmp.append(
+                String.format(
+                    COMPRASION_START_TEMPLATE,
+                    leftOperandInfo.getNodePath(),
+                    operator,
+                    leftOperandInfo.getId()));
             tmp.append(CONST_OPERAND_START_TEMPLATE);
             String type = isNumericList ? "Numeric" : "String";
             for (String v : values) {
@@ -602,22 +620,33 @@ public class UniverseUtil {
         if (rightOperand.startsWith("[") && rightOperand.endsWith("]")) {
           rightOperandInfo = nodeInfos.get(rightOperand);
           if (rightOperandInfo == null) {
-            throw new UniverseException(String.format("Not found information about: \"%s\"",
-                rightOperand));
+            throw new UniverseException(
+                String.format("Not found information about: \"%s\"", rightOperand));
           }
         }
         if (OPERATIONS.containsKey(token)) {
           if (rightOperandInfo != null) {
-            tmp.append(String.format(COMPRASION_START_TEMPLATE, leftOperandInfo.getNodePath(),
-                operator, leftOperandInfo.getId()));
-            tmp.append(String.format(OBJECT_OPERAND_TEMPLATE, rightOperandInfo.getId(),
-                rightOperandInfo.getNodePath()));
+            tmp.append(
+                String.format(
+                    COMPRASION_START_TEMPLATE,
+                    leftOperandInfo.getNodePath(),
+                    operator,
+                    leftOperandInfo.getId()));
+            tmp.append(
+                String.format(
+                    OBJECT_OPERAND_TEMPLATE,
+                    rightOperandInfo.getId(),
+                    rightOperandInfo.getNodePath()));
             tmp.append(COMPRASION_END_TEMPLATE);
           } else {
             String type = rightOperand.startsWith("'") ? "String" : "Numeric";
             String value = rightOperand.replaceAll("^'|'$", "");
-            tmp.append(String.format(COMPRASION_START_TEMPLATE, leftOperandInfo.getNodePath(),
-                operator, leftOperandInfo.getId()));
+            tmp.append(
+                String.format(
+                    COMPRASION_START_TEMPLATE,
+                    leftOperandInfo.getNodePath(),
+                    operator,
+                    leftOperandInfo.getId()));
             tmp.append(CONST_OPERAND_START_TEMPLATE);
             tmp.append(String.format(CONST_OPERAND_VALUE_TEMPLATE, type, value));
             tmp.append(CONST_OPERAND_END_TEMPLATE);
@@ -666,8 +695,11 @@ public class UniverseUtil {
       }
       after = after.trim();
       // check after
-      if (result && !after.startsWith("and") && !after.startsWith("or") &&
-          !after.startsWith(";") && StringUtils.isNotBlank(after)) {
+      if (result
+          && !after.startsWith("and")
+          && !after.startsWith("or")
+          && !after.startsWith(";")
+          && StringUtils.isNotBlank(after)) {
         result = false;
       }
     }

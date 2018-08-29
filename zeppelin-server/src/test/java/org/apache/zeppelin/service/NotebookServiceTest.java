@@ -17,6 +17,20 @@
 
 package org.apache.zeppelin.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -26,21 +40,6 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
 
 public class NotebookServiceTest extends AbstractTestRestApi {
 
@@ -53,8 +52,8 @@ public class NotebookServiceTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
-        "helium");
+    System.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(), "helium");
     AbstractTestRestApi.startUp(NotebookServiceTest.class.getSimpleName());
     notebookService = ZeppelinServer.notebookWsServer.getNotebookService();
   }
@@ -116,8 +115,8 @@ public class NotebookServiceTest extends AbstractTestRestApi {
 
     // clone note
     reset(callback);
-    Note clonedNote = notebookService.cloneNote(importedNote.getId(), "Cloned Note", context,
-        callback);
+    Note clonedNote =
+        notebookService.cloneNote(importedNote.getId(), "Cloned Note", context, callback);
     assertEquals(importedNote.getParagraphCount(), clonedNote.getParagraphCount());
     verify(callback).onSuccess(clonedNote, context);
   }
@@ -132,16 +131,23 @@ public class NotebookServiceTest extends AbstractTestRestApi {
 
     // add paragraph
     reset(callback);
-    Paragraph p = notebookService.insertParagraph(note1.getId(), 1, new HashMap<>(), context,
-        callback);
+    Paragraph p =
+        notebookService.insertParagraph(note1.getId(), 1, new HashMap<>(), context, callback);
     assertNotNull(p);
     verify(callback).onSuccess(p, context);
     assertEquals(2, note1.getParagraphCount());
 
     // update paragraph
     reset(callback);
-    notebookService.updateParagraph(note1.getId(), p.getId(), "my_title", "my_text",
-        new HashMap<>(), new HashMap<>(), context, callback);
+    notebookService.updateParagraph(
+        note1.getId(),
+        p.getId(),
+        "my_title",
+        "my_text",
+        new HashMap<>(),
+        new HashMap<>(),
+        context,
+        callback);
     assertEquals("my_title", p.getTitle());
     assertEquals("my_text", p.getText());
 
@@ -153,22 +159,52 @@ public class NotebookServiceTest extends AbstractTestRestApi {
 
     // run paragraph asynchronously
     reset(callback);
-    boolean runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
-        new HashMap<>(), new HashMap<>(), false, false, context, callback);
+    boolean runStatus =
+        notebookService.runParagraph(
+            note1.getId(),
+            p.getId(),
+            "my_title",
+            "1+1",
+            new HashMap<>(),
+            new HashMap<>(),
+            false,
+            false,
+            context,
+            callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
 
     // run paragraph synchronously via correct code
     reset(callback);
-    runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
-        new HashMap<>(), new HashMap<>(), false, true, context, callback);
+    runStatus =
+        notebookService.runParagraph(
+            note1.getId(),
+            p.getId(),
+            "my_title",
+            "1+1",
+            new HashMap<>(),
+            new HashMap<>(),
+            false,
+            true,
+            context,
+            callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
 
     // run paragraph synchronously via invalid code
     reset(callback);
-    runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "invalid_code",
-        new HashMap<>(), new HashMap<>(), false, true, context, callback);
+    runStatus =
+        notebookService.runParagraph(
+            note1.getId(),
+            p.getId(),
+            "my_title",
+            "invalid_code",
+            new HashMap<>(),
+            new HashMap<>(),
+            false,
+            true,
+            context,
+            callback);
     assertFalse(runStatus);
     // TODO(zjffdu) Enable it after ZEPPELIN-3699
     // assertNotNull(p.getResult());

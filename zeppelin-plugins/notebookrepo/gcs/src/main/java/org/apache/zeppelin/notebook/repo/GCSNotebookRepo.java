@@ -49,14 +49,14 @@ import org.slf4j.LoggerFactory;
 /**
  * A NotebookRepo implementation for storing notebooks in Google Cloud Storage.
  *
- * Notes are stored in the GCS "directory" specified by zeppelin.notebook.gcs.dir. This path
- * must be in the form gs://bucketName/path/to/Dir. The bucket must already exist. N.B: GCS is an
- * object store, so this "directory" should not itself be an object. Instead, it represents the base
- * path for the note.json files.
+ * <p>Notes are stored in the GCS "directory" specified by zeppelin.notebook.gcs.dir. This path must
+ * be in the form gs://bucketName/path/to/Dir. The bucket must already exist. N.B: GCS is an object
+ * store, so this "directory" should not itself be an object. Instead, it represents the base path
+ * for the note.json files.
  *
- * Authentication is provided by google-auth-library-java.
- * @see <a href="https://github.com/google/google-auth-library-java">
- *   google-auth-library-java</a>.
+ * <p>Authentication is provided by google-auth-library-java.
+ *
+ * @see <a href="https://github.com/google/google-auth-library-java">google-auth-library-java</a>.
  */
 public class GCSNotebookRepo implements NotebookRepo {
 
@@ -67,8 +67,7 @@ public class GCSNotebookRepo implements NotebookRepo {
   private Pattern noteNamePattern;
   private Storage storage;
 
-  public GCSNotebookRepo() {
-  }
+  public GCSNotebookRepo() {}
 
   @VisibleForTesting
   public GCSNotebookRepo(ZeppelinConfiguration zConf, Storage storage) throws IOException {
@@ -78,37 +77,38 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @Override
   public void init(ZeppelinConfiguration zConf) throws IOException {
-    this.encoding =  zConf.getString(ConfVars.ZEPPELIN_ENCODING);
+    this.encoding = zConf.getString(ConfVars.ZEPPELIN_ENCODING);
 
     String gcsStorageDir = zConf.getGCSStorageDir();
     if (gcsStorageDir.isEmpty()) {
       throw new IOException("GCS storage directory must be set using 'zeppelin.notebook.gcs.dir'");
     }
     if (!gcsStorageDir.startsWith("gs://")) {
-      throw new IOException(String.format(
-          "GCS storage directory '%s' must start with 'gs://'.", gcsStorageDir));
+      throw new IOException(
+          String.format("GCS storage directory '%s' must start with 'gs://'.", gcsStorageDir));
     }
     String storageDirWithoutScheme = gcsStorageDir.substring("gs://".length());
 
     // pathComponents excludes empty string if trailing slash is present
     List<String> pathComponents = Arrays.asList(storageDirWithoutScheme.split("/"));
     if (pathComponents.size() < 1) {
-      throw new IOException(String.format(
-          "GCS storage directory '%s' must be in the form gs://bucketname/path/to/dir",
-          gcsStorageDir));
+      throw new IOException(
+          String.format(
+              "GCS storage directory '%s' must be in the form gs://bucketname/path/to/dir",
+              gcsStorageDir));
     }
     this.bucketName = pathComponents.get(0);
     if (pathComponents.size() > 1) {
-      this.basePath = Optional.of(StringUtils.join(
-          pathComponents.subList(1, pathComponents.size()), "/"));
+      this.basePath =
+          Optional.of(StringUtils.join(pathComponents.subList(1, pathComponents.size()), "/"));
     } else {
       this.basePath = Optional.absent();
     }
 
     // Notes are stored at gs://bucketName/basePath/<note-id>/note.json
     if (basePath.isPresent()) {
-      this.noteNamePattern = Pattern.compile(
-          "^" + Pattern.quote(basePath.get() + "/") + "([^/]+)/note\\.json$");
+      this.noteNamePattern =
+          Pattern.compile("^" + Pattern.quote(basePath.get() + "/") + "([^/]+)/note\\.json$");
     } else {
       this.noteNamePattern = Pattern.compile("^([^/]+)/note\\.json$");
     }
@@ -130,13 +130,10 @@ public class GCSNotebookRepo implements NotebookRepo {
       List<NoteInfo> infos = new ArrayList<>();
       Iterable<Blob> blobsUnderDir;
       if (basePath.isPresent()) {
-        blobsUnderDir = storage
-          .list(bucketName, BlobListOption.prefix(this.basePath.get() + "/"))
-          .iterateAll();
+        blobsUnderDir =
+            storage.list(bucketName, BlobListOption.prefix(this.basePath.get() + "/")).iterateAll();
       } else {
-        blobsUnderDir = storage
-          .list(bucketName)
-          .iterateAll();
+        blobsUnderDir = storage.list(bucketName).iterateAll();
       }
       for (Blob b : blobsUnderDir) {
         Matcher matcher = noteNamePattern.matcher(b.getName());
@@ -172,9 +169,8 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId()))
-        .setContentType("application/json")
-        .build();
+    BlobInfo info =
+        BlobInfo.newBuilder(makeBlobId(note.getId())).setContentType("application/json").build();
     try {
       storage.create(info, note.toJson().getBytes("UTF-8"));
     } catch (StorageException se) {
@@ -198,7 +194,7 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @Override
   public void close() {
-    //no-op
+    // no-op
   }
 
   @Override

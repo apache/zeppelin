@@ -17,10 +17,14 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -29,14 +33,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-/**
- * Spark specific launcher.
- */
+/** Spark specific launcher. */
 public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
@@ -72,8 +69,12 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
     if (isYarnMode() && getDeployMode().equals("cluster")) {
       if (sparkProperties.containsKey("spark.files")) {
-        sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
-            zConf.getConfDir() + "/log4j_yarn_cluster.properties");
+        sparkProperties.put(
+            "spark.files",
+            sparkProperties.getProperty("spark.files")
+                + ","
+                + zConf.getConfDir()
+                + "/log4j_yarn_cluster.properties");
       } else {
         sparkProperties.put("spark.files", zConf.getConfDir() + "/log4j_yarn_cluster.properties");
       }
@@ -82,8 +83,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));
     }
     String useProxyUserEnv = System.getenv("ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER");
-    if (context.getOption().isUserImpersonate() && (StringUtils.isBlank(useProxyUserEnv) ||
-        !useProxyUserEnv.equals("false"))) {
+    if (context.getOption().isUserImpersonate()
+        && (StringUtils.isBlank(useProxyUserEnv) || !useProxyUserEnv.equals("false"))) {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
     Path localRepoPath =
@@ -103,7 +104,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       } catch (IOException e) {
         LOGGER.error("Cannot make a list of additional jars from localRepo: {}", localRepoPath, e);
       }
-
     }
 
     env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
@@ -113,7 +113,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     // 2. zeppelin-env.sh
     // It is encouraged to set env in interpreter setting, but just for backward compatability,
     // we also fallback to zeppelin-env.sh if it is not specified in interpreter setting.
-    for (String envName : new String[]{"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"})  {
+    for (String envName : new String[] {"SPARK_HOME", "SPARK_CONF_DIR", "HADOOP_CONF_DIR"}) {
       String envValue = getEnv(envName);
       if (envValue != null) {
         env.put(envName, envValue);
@@ -127,23 +127,19 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     if (!StringUtils.isBlank(keytab) && !StringUtils.isBlank(principal)) {
       env.put("ZEPPELIN_SERVER_KERBEROS_KEYTAB", keytab);
       env.put("ZEPPELIN_SERVER_KERBEROS_PRINCIPAL", principal);
-      LOGGER.info("Run Spark under secure mode with keytab: " + keytab +
-          ", principal: " + principal);
+      LOGGER.info(
+          "Run Spark under secure mode with keytab: " + keytab + ", principal: " + principal);
     } else {
       LOGGER.info("Run Spark under non-secure mode as no keytab and principal is specified");
     }
     LOGGER.debug("buildEnvFromProperties: " + env);
     return env;
-
   }
-
 
   /**
    * get environmental variable in the following order
    *
-   * 1. interpreter setting
-   * 2. zeppelin-env.sh
-   *
+   * <p>1. interpreter setting 2. zeppelin-env.sh
    */
   private String getEnv(String envName) {
     String env = properties.getProperty(envName);
@@ -163,8 +159,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     }
   }
 
-  private void mergeSparkProperty(Properties sparkProperties, String propertyName,
-                                  String propertyValue) {
+  private void mergeSparkProperty(
+      Properties sparkProperties, String propertyName, String propertyValue) {
     if (sparkProperties.containsKey(propertyName)) {
       String oldPropertyValue = sparkProperties.getProperty(propertyName);
       sparkProperties.setProperty(propertyName, oldPropertyValue + "," + propertyValue);
@@ -178,31 +174,31 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     File sparkRBasePath = null;
     if (sparkHome == null) {
       if (!getSparkMaster(properties).startsWith("local")) {
-        throw new RuntimeException("SPARK_HOME is not specified in interpreter-setting" +
-            " for non-local mode, if you specify it in zeppelin-env.sh, please move that into " +
-            " interpreter setting");
+        throw new RuntimeException(
+            "SPARK_HOME is not specified in interpreter-setting"
+                + " for non-local mode, if you specify it in zeppelin-env.sh, please move that into "
+                + " interpreter setting");
       }
       String zeppelinHome = zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME);
-      sparkRBasePath = new File(zeppelinHome,
-          "interpreter" + File.separator + "spark" + File.separator + "R");
+      sparkRBasePath =
+          new File(zeppelinHome, "interpreter" + File.separator + "spark" + File.separator + "R");
     } else {
       sparkRBasePath = new File(sparkHome, "R" + File.separator + "lib");
     }
 
     File sparkRPath = new File(sparkRBasePath, "sparkr.zip");
     if (sparkRPath.exists() && sparkRPath.isFile()) {
-      mergeSparkProperty(sparkProperties, "spark.yarn.dist.archives",
-          sparkRPath.getAbsolutePath() + "#sparkr");
+      mergeSparkProperty(
+          sparkProperties, "spark.yarn.dist.archives", sparkRPath.getAbsolutePath() + "#sparkr");
     } else {
       LOGGER.warn("sparkr.zip is not found, SparkR may not work.");
     }
   }
 
   /**
-   * Order to look for spark master
-   * 1. master in interpreter setting
-   * 2. spark.master interpreter setting
-   * 3. use local[*]
+   * Order to look for spark master 1. master in interpreter setting 2. spark.master interpreter
+   * setting 3. use local[*]
+   *
    * @param properties
    * @return
    */
@@ -228,8 +224,8 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
     } else {
       String deployMode = properties.getProperty("spark.submit.deployMode");
       if (deployMode == null) {
-        throw new RuntimeException("master is set as yarn, but spark.submit.deployMode " +
-            "is not specified");
+        throw new RuntimeException(
+            "master is set as yarn, but spark.submit.deployMode " + "is not specified");
       }
       if (!deployMode.equals("client") && !deployMode.equals("cluster")) {
         throw new RuntimeException("Invalid value for spark.submit.deployMode: " + deployMode);
@@ -251,5 +247,4 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       return "'" + value + "'";
     }
   }
-
 }

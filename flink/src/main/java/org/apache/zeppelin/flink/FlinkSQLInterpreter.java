@@ -17,13 +17,11 @@
 
 package org.apache.zeppelin.flink;
 
-
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-
-import java.util.Properties;
 
 public class FlinkSQLInterpreter extends Interpreter {
 
@@ -33,21 +31,18 @@ public class FlinkSQLInterpreter extends Interpreter {
     super(properties);
   }
 
-
   @Override
   public void open() throws InterpreterException {
     FlinkInterpreter flinkInterpreter =
         getInterpreterInTheSameSessionByClassName(FlinkInterpreter.class);
     FlinkZeppelinContext z = flinkInterpreter.getZeppelinContext();
     int maxRow = Integer.parseInt(getProperty("zeppelin.flink.maxResult", "1000"));
-    this.sqlScalaInterpreter = new FlinkSQLScalaInterpreter(
-        flinkInterpreter.getInnerScalaInterpreter(), z, maxRow);
+    this.sqlScalaInterpreter =
+        new FlinkSQLScalaInterpreter(flinkInterpreter.getInnerScalaInterpreter(), z, maxRow);
   }
 
   @Override
-  public void close() throws InterpreterException {
-
-  }
+  public void close() throws InterpreterException {}
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
@@ -56,9 +51,7 @@ public class FlinkSQLInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {
-
-  }
+  public void cancel(InterpreterContext context) throws InterpreterException {}
 
   @Override
   public FormType getFormType() throws InterpreterException {

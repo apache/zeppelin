@@ -19,38 +19,31 @@ package org.apache.zeppelin.rest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
-
-import javax.inject.Inject;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.service.ServiceContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithSettings;
 import org.apache.zeppelin.rest.message.NotebookRepoSettingsRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * NoteRepo rest API endpoint.
- *
- */
+/** NoteRepo rest API endpoint. */
 @Path("/notebook-repositories")
 @Produces("application/json")
 public class NotebookRepoRestApi {
@@ -65,9 +58,7 @@ public class NotebookRepoRestApi {
     this.notebookWsServer = notebookWsServer;
   }
 
-  /**
-   * List all notebook repository.
-   */
+  /** List all notebook repository. */
   @GET
   @ZeppelinApi
   public Response listRepoSettings() {
@@ -77,13 +68,11 @@ public class NotebookRepoRestApi {
     return new JsonResponse<>(Status.OK, "", settings).build();
   }
 
-  /**
-   * Reload notebook repository.
-   */
+  /** Reload notebook repository. */
   @GET
   @Path("reload")
   @ZeppelinApi
-  public Response refreshRepo(){
+  public Response refreshRepo() {
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     LOG.info("Reloading notebook repository for user {}", subject.getUser());
     try {
@@ -120,14 +109,16 @@ public class NotebookRepoRestApi {
       newSettings = NotebookRepoSettingsRequest.fromJson(payload);
     } catch (JsonSyntaxException e) {
       LOG.error("Cannot update notebook repo settings", e);
-      return new JsonResponse<>(Status.NOT_ACCEPTABLE, "",
-          ImmutableMap.of("error", "Invalid payload structure")).build();
+      return new JsonResponse<>(
+              Status.NOT_ACCEPTABLE, "", ImmutableMap.of("error", "Invalid payload structure"))
+          .build();
     }
 
     if (NotebookRepoSettingsRequest.isEmpty(newSettings)) {
       LOG.error("Invalid property");
-      return new JsonResponse<>(Status.NOT_ACCEPTABLE, "",
-          ImmutableMap.of("error", "Invalid payload")).build();
+      return new JsonResponse<>(
+              Status.NOT_ACCEPTABLE, "", ImmutableMap.of("error", "Invalid payload"))
+          .build();
     }
     LOG.info("User {} is going to change repo setting", subject.getUser());
     NotebookRepoWithSettings updatedSettings =

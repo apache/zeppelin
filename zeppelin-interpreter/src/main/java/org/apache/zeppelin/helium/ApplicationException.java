@@ -16,9 +16,7 @@
  */
 package org.apache.zeppelin.helium;
 
-/**
- * Application exception
- */
+/** Application exception */
 public class ApplicationException extends Exception {
   public ApplicationException(String s) {
     super(s);
@@ -28,9 +26,7 @@ public class ApplicationException extends Exception {
     super(e);
   }
 
-  public ApplicationException() {
-
-  }
+  public ApplicationException() {}
 
   public ApplicationException(String message, Throwable cause) {
     super(message, cause);
