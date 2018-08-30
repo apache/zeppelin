@@ -87,9 +87,6 @@ class SparkScala210Interpreter(override val conf: SparkConf,
 
   override def close(): Unit = {
     super.close()
-    if (sparkILoop != null) {
-      callMethod(sparkILoop, "org$apache$spark$repl$SparkILoop$$closeInterpreter")
-    }
   }
 
   def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result =
