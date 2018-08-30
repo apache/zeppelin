@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark
 
 
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{JobProgressUtil, SparkConf, SparkContext}
@@ -59,6 +60,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected val interpreterOutput: InterpreterOutputStream
 
+
   protected def open(): Unit = {
     /* Required for scoped mode.
      * In scoped mode multiple scala compiler (repl) generates class in the same directory.
@@ -77,6 +79,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
      *
      */
     System.setProperty("scala.repl.name.line", ("$line" + this.hashCode).replace('-', '0'))
+
+    BaseSparkScalaInterpreter.sessionNum.incrementAndGet()
   }
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
@@ -152,19 +156,20 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind(name, tpe, value, modifier.asScala.toList)
 
   protected def close(): Unit = {
-    if (sc != null) {
-      sc.stop()
+    if (BaseSparkScalaInterpreter.sessionNum.decrementAndGet() == 0) {
+      if (sc != null) {
+        sc.stop()
+      }
+      if (sparkHttpServer != null) {
+        sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
+      }
+      sc = null
+      sqlContext = null
+      if (sparkSession != null) {
+        sparkSession.getClass.getMethod("stop").invoke(sparkSession)
+        sparkSession = null
+      }
     }
-    if (sparkHttpServer != null) {
-      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-    }
-    sc = null
-    sqlContext = null
-    if (sparkSession != null) {
-      sparkSession.getClass.getMethod("stop").invoke(sparkSession)
-      sparkSession = null
-    }
-
   }
 
   protected def createSparkContext(): Unit = {
@@ -375,4 +380,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   protected def getUserFiles(): Seq[String] = {
     depFiles.asScala.filter(!_.endsWith(".jar"))
   }
+}
+
+object BaseSparkScalaInterpreter {
+  val sessionNum = new AtomicInteger(0)
 }
