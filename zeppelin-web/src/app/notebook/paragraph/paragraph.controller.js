@@ -930,7 +930,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
             $scope.editor.execCommand('startAutocomplete');
           } else {
             ace.config.loadModule('ace/ext/language_tools', function() {
-              $scope.editor.insertSnippet('\t');
+              $scope.editor.indent();
             });
           }
         },
