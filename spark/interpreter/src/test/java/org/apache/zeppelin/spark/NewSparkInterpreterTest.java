@@ -34,6 +34,7 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -67,7 +68,12 @@ public class NewSparkInterpreterTest {
   // catch the interpreter output in onUpdate
   private InterpreterResultMessageOutput messageOutput;
 
-  private RemoteInterpreterEventClient mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
+  private RemoteInterpreterEventClient mockRemoteEventClient;
+
+  @Before
+  public void setUp() {
+    mockRemoteEventClient = mock(RemoteInterpreterEventClient.class);
+  }
 
   @Test
   public void testSparkInterpreter() throws IOException, InterruptedException, InterpreterException {
@@ -517,6 +523,45 @@ public class NewSparkInterpreterTest {
 
     // spark job url is not sent
     verify(mockRemoteEventClient, never()).onParaInfosReceived(any(Map.class));
+  }
+
+  @Test
+  public void testScopedMode() throws InterpreterException {
+    Properties properties = new Properties();
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    properties.setProperty("zeppelin.spark.maxResult", "100");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.useNew", "true");
+
+    SparkInterpreter interpreter1 = new SparkInterpreter(properties);
+    SparkInterpreter interpreter2 = new SparkInterpreter(properties);
+
+    InterpreterGroup interpreterGroup = new InterpreterGroup();
+    interpreter1.setInterpreterGroup(interpreterGroup);
+    interpreter2.setInterpreterGroup(interpreterGroup);
+
+    interpreterGroup.addInterpreterToSession(interpreter1, "session_1");
+    interpreterGroup.addInterpreterToSession(interpreter2, "session_2");
+
+    InterpreterContext.set(getInterpreterContext());
+    interpreter1.open();
+    interpreter2.open();
+
+    InterpreterContext context = getInterpreterContext();
+
+    InterpreterResult result1 = interpreter1.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result1.code());
+
+    InterpreterResult result2 = interpreter2.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
+
+    // interpreter2 continue to work after interpreter1 is closed
+    interpreter1.close();
+
+    result2 = interpreter2.interpret("sc.range(1, 10).sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result2.code());
+    interpreter2.close();
   }
 
   @After
