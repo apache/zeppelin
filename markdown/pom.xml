@@ -42,9 +42,8 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter</artifactId>
+      <artifactId>zeppelin-interpreter-api</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency> 
 
     <dependency>
@@ -76,6 +75,12 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -92,6 +97,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -24,7 +24,7 @@
         <artifactId>interpreter-parent</artifactId>
         <groupId>org.apache.zeppelin</groupId>
         <version>0.9.0-SNAPSHOT</version>
-        <relativePath>../interpreter-parent</relativePath>
+        <relativePath>../interpreter-parent/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,13 +39,17 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>zeppelin-interpreter</artifactId>
+            <artifactId>zeppelin-interpreter-api</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -54,6 +58,21 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -72,6 +91,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

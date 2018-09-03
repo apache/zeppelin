@@ -32,34 +32,21 @@
   <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Interpreter Parent</name>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>zeppelin-interpreter</artifactId>
-        <version>${project.version}</version>
-      </dependency>
 
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-interpreter-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>zeppelin-interpreter</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
@@ -74,43 +61,36 @@
           </executions>
         </plugin>
 
+        <!-- generate interpreter shade jar and put it under folder interpreter/${interpreter.name}-->
         <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${plugin.shade.version}</version>
+          <configuration>
+            <filters>
+              <filter>
+                <artifact>*:*</artifact>
+                <excludes>
+                  <exclude>META-INF/*.SF</exclude>
+                  <exclude>META-INF/*.DSA</exclude>
+                  <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+              </filter>
+            </filters>
+            <transformers>
+              <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                <resource>reference.conf</resource>
+              </transformer>
+            </transformers>
+            <outputFile>${project.basedir}/../interpreter/${interpreter.name}/${project.artifactId}-${project.version}.jar</outputFile>
+          </configuration>
           <executions>
             <execution>
-              <id>copy-dependencies</id>
               <phase>package</phase>
               <goals>
-                <goal>copy-dependencies</goal>
+                <goal>shade</goal>
               </goals>
-              <configuration>
-                <outputDirectory>${project.build.directory}/../../interpreter/${interpreter.name}</outputDirectory>
-                <overWriteReleases>false</overWriteReleases>
-                <overWriteSnapshots>false</overWriteSnapshots>
-                <overWriteIfNewer>true</overWriteIfNewer>
-                <includeScope>runtime</includeScope>
-              </configuration>
-            </execution>
-            <execution>
-              <id>copy-artifact</id>
-              <phase>package</phase>
-              <goals>
-                <goal>copy</goal>
-              </goals>
-              <configuration>
-                <outputDirectory>${project.build.directory}/../../interpreter/${interpreter.name}</outputDirectory>
-                <overWriteReleases>false</overWriteReleases>
-                <overWriteSnapshots>false</overWriteSnapshots>
-                <overWriteIfNewer>true</overWriteIfNewer>
-                <artifactItems>
-                  <artifactItem>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>${project.artifactId}</artifactId>
-                    <version>${project.version}</version>
-                    <type>${project.packaging}</type>
-                  </artifactItem>
-                </artifactItems>
-              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -132,6 +112,22 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${plugin.clean.version}</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/../interpreter/${interpreter.name}</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

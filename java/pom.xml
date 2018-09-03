@@ -47,9 +47,8 @@
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter</artifactId>
+      <artifactId>zeppelin-interpreter-api</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -75,6 +74,9 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
