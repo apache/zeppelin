@@ -48,15 +48,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.zeppelin</groupId>
-            <artifactId>zeppelin-interpreter</artifactId>
+            <artifactId>zeppelin-interpreter-api</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-              <exclusion>
-                <groupId>jline</groupId>
-                <artifactId>jline</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -183,6 +176,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

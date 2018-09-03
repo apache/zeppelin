@@ -359,6 +359,7 @@
               <resource>reference.conf</resource>
             </transformer>
           </transformers>
+          <outputFile>${project.basedir}/../../interpreter/spark/dep/${project.artifactId}-${project.version}.jar</outputFile>
         </configuration>
         <executions>
           <execution>
@@ -383,42 +384,6 @@
             </goals>
             <configuration>
               <skip>true</skip>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>copy-spark-interpreter-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../../interpreter/spark/dep</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeGroupIds>org.datanucleus</includeGroupIds>
-            </configuration>
-          </execution>
-          <execution>
-            <id>copy-artifact</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../../interpreter/spark/dep</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>
             </configuration>
           </execution>
         </executions>
