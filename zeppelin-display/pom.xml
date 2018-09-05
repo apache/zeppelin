@@ -69,6 +69,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>interpreter-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
