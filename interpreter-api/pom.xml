@@ -29,11 +29,11 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-interpreter</artifactId>
+  <artifactId>interpreter-api</artifactId>
   <packaging>jar</packaging>
   <version>0.9.0-SNAPSHOT</version>
-  <name>Zeppelin: Interpreter</name>
-  <description>Zeppelin Interpreter</description>
+  <name>Zeppelin: Interpreter API</name>
+  <description>Zeppelin Interpreter API</description>
 
   <properties>
     <!--library versions-->
@@ -55,23 +55,12 @@
   </properties>
 
   <dependencies>
+    <!-- atomix reactive Java framework for building fault-tolerant distributed systems. -->
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>interpreter-api</artifactId>
-      <version>${project.version}</version>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix</artifactId>
+      <version>${atomix.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>atomix</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>atomix-raft</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.atomix</groupId>
-          <artifactId>atomix-primary-backup</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-math3</artifactId>
@@ -114,52 +103,56 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-raft</artifactId>
+      <version>${atomix.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-primary-backup</artifactId>
+      <version>${atomix.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.danilopianini</groupId>
-      <artifactId>gson-extras</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-      <version>${commons.exec.version}</version>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-pool2</artifactId>
-      <version>${commons.pool2.version}</version>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-handler</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-common</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-buffer</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-x86_64</classifier>
+      <version>${atomix.netty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-unix-common</artifactId>
+      <version>${atomix.netty.version}</version>
     </dependency>
 
     <!-- Aether :: maven dependency resolution -->
@@ -181,124 +174,6 @@
           <artifactId>maven-model</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-api</artifactId>
-      <version>${aether.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-util</artifactId>
-      <version>${aether.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-impl</artifactId>
-      <version>${aether.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk15on</artifactId>
-      <version>1.52</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-aether-provider</artifactId>
-      <version>${maven.aeither.provider.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.sonatype.aether</groupId>
-          <artifactId>aether-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.sonatype.aether</groupId>
-          <artifactId>aether-spi</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.sonatype.aether</groupId>
-          <artifactId>aether-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.sonatype.aether</groupId>
-          <artifactId>aether-impl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-connector-file</artifactId>
-      <version>${aether.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-connector-wagon</artifactId>
-      <version>${aether.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-provider-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-provider-api</artifactId>
-      <version>${wagon.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.plexus</groupId>
-          <artifactId>plexus-utils</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-http-lightweight</artifactId>
-      <version>${wagon.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-http-shared</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-http</artifactId>
-      <version>${wagon.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>${jline.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -322,8 +197,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
-      
-      <!-- [ZEPPELIN-3610] Exclude dependent packages introduced by the raft algorithm library from the test environment to avoid conflicts-->
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${plugin.surefire.version}</version>
@@ -362,7 +236,6 @@
         </configuration>
       </plugin>
 
-      <!-- [ZEPPELIN-3610] Modify the imported package path with shade plugins to avoid package conflicts-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -375,52 +248,15 @@
             <configuration>
               <artifactSet>
                 <excludes>
-                  <exclude>org.apache.thrift:libthrift</exclude>
-                  <exclude>org.apache.httpcomponents:httpclient</exclude>
-                  <exclude>commons-codec:commons-codec</exclude>
-                  <exclude>org.apache.httpcomponents:httpcore</exclude>
-                  <exclude>com.google.code.gson:gson</exclude>
-                  <exclude>org.danilopianini:gson-extras</exclude>
-                  <exclude>commons-configuration:commons-configuration</exclude>
-                  <exclude>commons-logging:commons-logging</exclude>
-                  <exclude>org.apache.commons:commons-exec</exclude>
-                  <exclude>org.apache.commons:commons-pool2</exclude>
-                  <exclude>commons-lang:commons-lang</exclude>
-                  <exclude>org.slf4j:slf4j-api</exclude>
-                  <exclude>org.slf4j:slf4j-log4j12</exclude>
-                  <exclude>log4j:log4j</exclude>
                   <exclude>org.apache.maven:maven-plugin-api</exclude>
                   <exclude>org.apache.maven:maven-artifact</exclude>
-                  <exclude>org.sonatype.aether:aether-api</exclude>
-                  <exclude>org.sonatype.aether:aether-util</exclude>
-                  <exclude>org.sonatype.aether:aether-impl</exclude>
-                  <exclude>org.sonatype.aether:aether-spi</exclude>
-                  <exclude>org.bouncycastle:bcpkix-jdk15on</exclude>
-                  <exclude>org.bouncycastle:bcprov-jdk15on</exclude>
                   <exclude>org.apache.maven:maven-aether-provider</exclude>
                   <exclude>org.apache.maven:maven-model</exclude>
                   <exclude>org.apache.maven:maven-model-builder</exclude>
-                  <exclude>org.codehaus.plexus:plexus-interpolation</exclude>
-                  <exclude>org.apache.maven:maven-repository-metadata</exclude>
-                  <exclude>org.codehaus.plexus:plexus-component-annotations</exclude>
-                  <exclude>org.sonatype.aether:aether-connector-file</exclude>
-                  <exclude>org.sonatype.aether:aether-connector-wagon</exclude>
-                  <exclude>org.codehaus.plexus:plexus-classworlds</exclude>
-                  <exclude>org.codehaus.plexus:plexus-utils</exclude>
-                  <exclude>org.sonatype.sisu:sisu-inject-plexus</exclude>
-                  <exclude>org.sonatype.sisu:sisu-inject-bean</exclude>
-                  <exclude>org.sonatype.sisu:sisu-guice:no_aop</exclude>
                   <exclude>org.apache.maven.wagon:wagon-provider-api</exclude>
                   <exclude>org.apache.maven.wagon:wagon-http-lightweight</exclude>
                   <exclude>org.apache.maven.wagon:wagon-http</exclude>
                   <exclude>org.apache.maven.wagon:wagon-http-shared</exclude>
-                  <exclude>commons-httpclient:commons-httpclient</exclude>
-                  <exclude>commons-io:commons-io</exclude>
-                  <exclude>org.jsoup:jsoup</exclude>
-                  <exclude>jline:jline</exclude>
-                  <exclude>junit:junit</exclude>
-                  <exclude>org.hamcrest:hamcrest-all</exclude>
-                  <exclude>org.mockito:mockito-all</exclude>
                 </excludes>
               </artifactSet>
               <filters>
@@ -463,6 +299,7 @@
                   <pattern>com.google.errorprone.annotations</pattern>
                   <shadedPattern>atomix.dependency.com.google.errorprone.annotations</shadedPattern>
                 </relocation>
+                <!---->
                 <!--com.google.j2objc:j2objc-annotations:1.1-->
                 <relocation>
                   <pattern>com.google.j2objc.annotations</pattern>
@@ -523,7 +360,6 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 
