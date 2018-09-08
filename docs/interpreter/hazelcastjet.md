@@ -138,3 +138,6 @@ public class DisplayNetworkFromDAGExample {
 }
 ```
 
+Note
+- By clicking on a node of the graph, the node type is displayed (either Source, Sink or Transform). This is also visually represented with colors (Sources and Sinks are blue, Transforms are orange).
+- By clicking on an edge of the graph, the following details are shown: routing (UNICAST, PARTITIONED, ISOLATED, BROADCAST), distributed (true or false), priority (int).
