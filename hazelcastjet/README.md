@@ -15,3 +15,5 @@ Current interpreter implementation supports the static REPL. It compiles the cod
  * If there is any error during compilation, it can catch and redirect to Zeppelin.
  
  * `JavaInterpreterUtils` contains useful methods to print out Java collections and leverage Zeppelin's built in visualization. 
+ 
+ * `HazelcastJetInterpreterUtils` contains useful methods to print out Hazelcast specific classes (such as DAG) and leverage Zeppelin's built in visualization.
