@@ -305,6 +305,25 @@
   <description>Remote principal repository for interpreter's additional dependency loading</description>
 </property>
 
+<!--
+<property>
+  <name>zeppelin.interpreter.dep.mvnRepo.proxyHost</name>
+  <value>proxy.host</value>
+  <description>Host of proxy for remote principal repository</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.dep.mvnRepo.proxyPort</name>
+  <value>1111</value>
+  <description>Port of proxy for remote principal repository</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.dep.mvnRepo.proxyType</name>
+  <value>http</value>
+  <description>Proxy type for remote principal repository</description>
+</property>
+-->
 <property>
   <name>zeppelin.dep.localrepo</name>
   <value>local-repo</value>

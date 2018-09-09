@@ -52,6 +52,9 @@
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
 # export ZEPPELIN_INTERPRETER_DEP_MVNREPO       # Remote principal repository for interpreter's additional dependency loading
+# export ZEPPELIN_INTERPRETER_DEP_MVN_PROXYHOST # Host of proxy for remote principal repository
+# export ZEPPELIN_INTERPRETER_DEP_MVN_PROXYPORT # Port of proxy for remote principal repository
+# export ZEPPELIN_INTERPRETER_DEP_MVN_PROXYTYPE # Proxy type for remote principal repository
 # export ZEPPELIN_HELIUM_NODE_INSTALLER_URL     # Remote Node installer url for Helium dependency loader
 # export ZEPPELIN_HELIUM_NPM_INSTALLER_URL      # Remote Npm installer url for Helium dependency loader
 # export ZEPPELIN_HELIUM_YARNPKG_INSTALLER_URL  # Remote Yarn package installer url for Helium dependency loader

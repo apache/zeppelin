@@ -494,6 +494,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO);
   }
 
+  public String getInterpreterMvnRepoProxyHost() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST);
+  }
+
+  public int getInterpreterMvnRepoProxyPort() {
+    return getInt(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST);
+  }
+
+  public String getInterpreterMvnRepoProxyType(){
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST);
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }
@@ -697,6 +709,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
         "http://repo1.maven.org/maven2/"),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST("zeppelin.interpreter.dep.mvnRepo.proxyHost",
+            null),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYPORT("zeppelin.interpreter.dep.mvnRepo.proxyPort",
+            null),
+    ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYTYPE("zeppelin.interpreter.dep.mvnRepo.proxyType",
+            "http"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 60000),
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
     ZEPPELIN_INTERPRETER_GROUP_DEFAULT("zeppelin.interpreter.group.default", "spark"),

@@ -24,9 +24,11 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
 
 import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
  * Manage mvn repository.
@@ -71,16 +73,47 @@ public class Booter {
     return Paths.get(home).resolve(localRepoPath).toAbsolutePath().toString();
   }
 
+  /**
+   * Check for environment variable and java property with precedence of the environment variable
+   * @param environmentVariableName
+   * @param javaPropertyName
+   * @return
+   * The environment variable, if not set the system property, or null
+   */
+  private static String getEnvironmentVariable(
+          String environmentVariableName,
+          String javaPropertyName) {
+    String propertyValue = System.getenv(environmentVariableName);
+    return propertyValue == null ? System.getProperty(javaPropertyName) : propertyValue;
+  }
+
   public static RemoteRepository newCentralRepository() {
-    String mvnRepo = System.getenv("ZEPPELIN_INTERPRETER_DEP_MVNREPO");
-    if (mvnRepo == null) {
-      mvnRepo = System.getProperty("zeppelin.interpreter.dep.mvnRepo");
-    }
+
+    String mvnRepo = getEnvironmentVariable(
+            "ZEPPELIN_INTERPRETER_DEP_MVNREPO",
+            "zeppelin.interpreter.dep.mvnRepo");
     if (mvnRepo == null) {
       mvnRepo = "http://repo1.maven.org/maven2/";
     }
+    RemoteRepository remoteRepository = new RemoteRepository("central", "default", mvnRepo);
 
-    return new RemoteRepository("central", "default", mvnRepo);
+    String proxyHost = getEnvironmentVariable(
+            "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST",
+            "zeppelin.interpreter.dep.mvnRepo.proxyHost");
+    String proxyPort = getEnvironmentVariable(
+            "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYPORT",
+            "zeppelin.interpreter.dep.mvnRepo.proxyPort");
+
+    if (proxyHost != null && proxyPort != null) {
+      String proxyType = Optional.ofNullable(getEnvironmentVariable(
+              "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYTYPE",
+              "zeppelin.interpreter.dep.mvnRepo.proxyType")).orElse(Proxy.TYPE_HTTP);
+
+      Proxy proxy = new Proxy(proxyType, proxyHost, Integer.valueOf(proxyPort), null);
+      remoteRepository.setProxy(proxy);
+    }
+
+    return remoteRepository;
   }
 
   public static RemoteRepository newLocalRepository() {
