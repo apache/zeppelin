@@ -740,7 +740,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     let newParagraphConfig = angular.copy(paragraph.config);
     newParagraphConfig.results = newParagraphConfig.results || [];
     newParagraphConfig.results[resultIndex] = config;
-    if ($scope.revisionView === true) {
+    if ($scope.revisionView === true || !$scope.userHasWritePermission()) {
       // local update without commit
       updateData({
         type: $scope.type,
@@ -750,6 +750,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     } else {
       return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
     }
+  };
+
+  $scope.userHasWritePermission = function() {
+    let writers = $scope.permissions.writers;
+    let userName = $scope.ticket.screenUsername;
+    return !writers || writers.length === 0 || writers.includes(userName);
   };
 
   $scope.toggleGraphSetting = function() {
