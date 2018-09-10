@@ -560,7 +560,10 @@ public class Notebook {
         return;
       }
 
+      LOGGER.info("Start schedule run note: " + noteId
+              + ", cronExpr:\"" + note.getConfig().get("cron") + "\"");
       note.runAll();
+      LOGGER.info("End schedule run note: " + noteId);
 
       boolean releaseResource = false;
       String cronExecutingUser = null;

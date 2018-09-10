@@ -780,7 +780,7 @@ public class NotebookServer extends WebSocketServlet
             broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
           }
         });
-    
+
   }
 
   private void restoreNote(NotebookSocket conn,
@@ -1590,10 +1590,12 @@ public class NotebookServer extends WebSocketServlet
 
     if (p.isTerminated()) {
       if (p.getStatus() == Status.FINISHED) {
-        LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
+        LOG.info("Note {}, job {} is finished successfully, status: {}",
+                p.getNote().getId(), p.getId(), p.getStatus());
       } else {
-        LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
-            p.getStatus(), p.getException(), p.getReturn());
+        LOG.warn("Note {}. job {} is finished, status: {}, exception: {}, "
+                + "result\n@@@@@ Result start @@@@@\n{}\n@@@@@ Result end @@@@@",
+                p.getNote().getId(), p.getId(), p.getStatus(), p.getException(), p.getReturn());
       }
 
       try {

@@ -450,6 +450,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         p.settings.setParams(settings.getParams());
       }
 
+      LOGGER.info("End of Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+          getId(), intpText, note.getId(), subject.getUser());
+
       return res;
     } finally {
       InterpreterContext.remove();
