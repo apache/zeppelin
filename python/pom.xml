@@ -23,7 +23,7 @@
     <artifactId>interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.9.0-SNAPSHOT</version>
-    <relativePath>../interpreter-parent</relativePath>
+    <relativePath>../interpreter-parent/pom.xml</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
@@ -36,6 +36,7 @@
     <interpreter.name>python</interpreter.name>
     <python.py4j.version>0.10.7</python.py4j.version>
     <grpc.version>1.4.0</grpc.version>
+    <interpreter.jar.name>python-interpreter-with-py4j</interpreter.jar.name>
   </properties>
 
   <dependencies>
@@ -43,7 +44,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -159,21 +159,48 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>${python.test.exclude}</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
+
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <!--
+      shade for python interpreter is different from other interpreter, it depends on zeppelin-interpreter instead of
+      zeppelin-interpreter-api. Because spark interpreter depends on python interpreter and spark's py4j conflict with python interpreter's py4j.
+      python interpreter would generate 2 versions of jars, one is shaded jar which is used for running python interpreter, another is normal jar
+      which is used by spark interpreter as dependency.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${plugin.shade.version}</version>
+        <configuration>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+            </filter>
+          </filters>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+              <resource>reference.conf</resource>
+            </transformer>
+          </transformers>
+          <outputFile>${project.build.directory}/../../interpreter/python/${interpreter.jar.name}-${project.version}.jar</outputFile>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>

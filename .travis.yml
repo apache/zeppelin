@@ -41,7 +41,7 @@ addons:
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
-    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode'
+    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j'
 
 matrix:
   include:
@@ -82,7 +82,7 @@ matrix:
     # Test interpreter modules
     - jdk: "oraclejdk8"
       dist: trusty
-      env: BUILD_PLUGINS="false" PYTHON="3" SPARKR="true" SCALA_VER="2.10" PROFILE="-Pscala-2.10" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: BUILD_PLUGINS="false" PYTHON="3" SPARKR="true" SCALA_VER="2.10" PROFILE="-Pscala-2.10" BUILD_FLAG="package -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Run ZeppelinSparkClusterTest & SparkIntegrationTest in one build would exceed the time limitation of travis, so running them separately
 
