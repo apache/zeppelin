@@ -751,14 +751,20 @@ public class NotebookRestApi extends AbstractRestApi {
       throws IOException, IllegalArgumentException {
     LOG.info("run paragraph job asynchronously {} {} {}", noteId, paragraphId, message);
 
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    checkIfParagraphIsNotNull(paragraph);
+
     Map<String, Object> params = new HashMap<>();
     if (!StringUtils.isEmpty(message)) {
       RunParagraphWithParametersRequest request =
           RunParagraphWithParametersRequest.fromJson(message);
       params = request.getParams();
     }
-    notebookService.runParagraph(noteId, paragraphId, "", "", params,
-        new HashMap<>(), false, false, getServiceContext(), new RestServiceCallback<>());
+    notebookService.runParagraph(noteId, paragraphId, paragraph.getTitle(),
+            paragraph.getText(), params, new HashMap<>(),
+            false, false, getServiceContext(), new RestServiceCallback<>());
     return new JsonResponse<>(Status.OK).build();
   }
 
