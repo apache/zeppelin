@@ -127,7 +127,8 @@ public class SecurityUtilsTest {
         .getVarName(), String.valueOf(true));
     setupPrincipalName(expectedName);
     assertEquals(expectedName.toLowerCase(), SecurityUtils.getPrincipal());
-
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
+        .getVarName(), String.valueOf(false));
   }
 
   private void setupPrincipalName(String expectedName) {

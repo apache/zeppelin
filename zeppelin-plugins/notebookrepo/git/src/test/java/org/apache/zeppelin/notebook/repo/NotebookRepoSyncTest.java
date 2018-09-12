@@ -17,6 +17,16 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -24,17 +34,12 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -46,25 +51,11 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-
-//TODO(zjffdu) move it to zeppelin-zengine
-public class NotebookRepoSyncTest implements ParagraphJobListener {
+// TODO(zjffdu) move it to zeppelin-zengine
+public class NotebookRepoSyncTest {
 
   private File mainZepDir;
   private ZeppelinConfiguration conf;
-  private SchedulerFactory schedulerFactory;
   private File mainNotebookDir;
   private File secNotebookDir;
   private Notebook notebookSync;
@@ -104,8 +95,6 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
 
     ConfigStorage.reset();
 
-    this.schedulerFactory = SchedulerFactory.singleton();
-
     depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
     interpreterSettingManager = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
@@ -115,8 +104,15 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
-            notebookAuthorization, credentials);
+    notebookSync =
+        new Notebook(
+            conf,
+            notebookRepoSync,
+            factory,
+            interpreterSettingManager,
+            search,
+            notebookAuthorization,
+            credentials);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -244,8 +240,15 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
-            notebookAuthorization, credentials);
+    notebookSync =
+        new Notebook(
+            conf,
+            notebookRepoSync,
+            factory,
+            interpreterSettingManager,
+            search,
+            notebookAuthorization,
+            credentials);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
@@ -292,8 +295,15 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, interpreterSettingManager, this, search,
-            notebookAuthorization, credentials);
+    Notebook vNotebookSync =
+        new Notebook(
+            vConf,
+            vRepoSync,
+            factory,
+            interpreterSettingManager,
+            search,
+            notebookAuthorization,
+            credentials);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
@@ -409,32 +419,4 @@ public class NotebookRepoSyncTest implements ParagraphJobListener {
         file.delete();
       }
   }
-
-
-
-  @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-  }
-
-  @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-  }
-
-  @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-  }
-
-  @Override
-  public void onProgressUpdate(Paragraph paragraph, int progress) {
-  }
-
-  @Override
-  public void onStatusChange(Paragraph paragraph, Status before, Status after) {
-
-  }
-
-
 }

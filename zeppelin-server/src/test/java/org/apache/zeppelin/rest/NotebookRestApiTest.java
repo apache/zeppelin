@@ -57,6 +57,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   @BeforeClass
   public static void init() throws Exception {
     startUp(NotebookRestApiTest.class.getSimpleName());
+    ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
   }
 
   @AfterClass

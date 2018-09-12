@@ -52,7 +52,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -75,9 +74,6 @@ import org.slf4j.LoggerFactory;
 public class Notebook implements NoteEventListener {
   private static final Logger logger = LoggerFactory.getLogger(Notebook.class);
 
-  @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
-  private SchedulerFactory schedulerFactory;
-
   private InterpreterFactory replFactory;
   private InterpreterSettingManager interpreterSettingManager;
   /**
@@ -93,7 +89,7 @@ public class Notebook implements NoteEventListener {
   private SearchService noteSearchService;
   private NotebookAuthorization notebookAuthorization;
   private final List<NotebookEventListener> notebookEventListeners =
-      Collections.synchronizedList(new LinkedList<NotebookEventListener>());
+      Collections.synchronizedList(new LinkedList<>());
   private Credentials credentials;
 
   /**
@@ -103,17 +99,19 @@ public class Notebook implements NoteEventListener {
    * @throws IOException
    * @throws SchedulerException
    */
-  public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
-      SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
-      InterpreterSettingManager interpreterSettingManager, ParagraphJobListener paragraphJobListener,
-      SearchService noteSearchService, NotebookAuthorization notebookAuthorization,
-      Credentials credentials) throws IOException, SchedulerException {
+  public Notebook(
+      ZeppelinConfiguration conf,
+      NotebookRepo notebookRepo,
+      InterpreterFactory replFactory,
+      InterpreterSettingManager interpreterSettingManager,
+      SearchService noteSearchService,
+      NotebookAuthorization notebookAuthorization,
+      Credentials credentials)
+      throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
-    this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
-    this.paragraphJobListener = paragraphJobListener;
     this.noteSearchService = noteSearchService;
     this.notebookAuthorization = notebookAuthorization;
     this.credentials = credentials;
@@ -131,6 +129,14 @@ public class Notebook implements NoteEventListener {
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
+  }
+
+  /**
+   * This method will be called only NotebookService to register {@link *
+   * org.apache.zeppelin.notebook.ParagraphJobListener}.
+   */
+  public void setParagraphJobListener(ParagraphJobListener paragraphJobListener) {
+    this.paragraphJobListener = paragraphJobListener;
   }
 
   /**
