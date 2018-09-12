@@ -23,6 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -37,9 +39,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
@@ -106,6 +112,17 @@ public class NotebookServiceTest {
         };
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
+    Interpreter mockInterpreter = mock(Interpreter.class);
+    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any())).thenReturn(mockInterpreter);
+    when(mockInterpreter.interpret(eq("invalid_code"), any())).thenReturn(new InterpreterResult(Code.ERROR, "failed"));
+    when(mockInterpreter.interpret(eq("1+1"), any())).thenReturn(new InterpreterResult(Code.SUCCESS, "succeed"));
+    doCallRealMethod().when(mockInterpreter).getScheduler();
+    when(mockInterpreter.getFormType()).thenReturn(FormType.NATIVE);
+    ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
+    when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
+    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
+    when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
+    when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
     Credentials credentials = new Credentials(false, null, null);
@@ -121,14 +138,9 @@ public class NotebookServiceTest {
     notebookService = new NotebookService(notebook);
 
     String interpreterName = "test";
-    InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
     when(mockInterpreterSettingManager.getDefaultInterpreterSetting())
         .thenReturn(mockInterpreterSetting);
-
-    Interpreter mockInterpreter = mock(Interpreter.class);
-    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any()))
-        .thenReturn(mockInterpreter);
   }
 
   @Test
