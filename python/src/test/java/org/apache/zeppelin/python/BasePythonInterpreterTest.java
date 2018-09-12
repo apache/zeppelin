@@ -240,8 +240,7 @@ public abstract class BasePythonInterpreterTest {
     assertEquals("count", completions.get(0).getValue());
   }
 
-  // TODO(jl): Enable it again after fixing it
-  // @Test
+  @Test
   public void testZeppelinContext() throws InterpreterException, InterruptedException, IOException {
     // TextBox
     InterpreterContext context = getInterpreterContext();
