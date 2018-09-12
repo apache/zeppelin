@@ -89,8 +89,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     interpreter = null;
   }
 
-  // TODO(jl): Enabled it after fixing it
-  // @Test
+  @Test
   public void testPySpark() throws InterruptedException, InterpreterException, IOException {
     IPySparkInterpreterTest.testPySpark(interpreter, mockRemoteEventClient);
   }

@@ -101,8 +101,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     intpGroup = null;
   }
 
-  // TODO(jl): Enabled it after fixing it
-  // @Test
+  @Test
   public void testIPySpark() throws InterruptedException, InterpreterException, IOException {
     testPySpark(interpreter, mockIntpEventClient);
   }
