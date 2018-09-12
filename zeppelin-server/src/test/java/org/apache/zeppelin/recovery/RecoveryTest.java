@@ -108,6 +108,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
+    note1.persist(AuthenticationInfo.ANONYMOUS);
 
     // restart the python interpreter
     ZeppelinServer.notebook.getInterpreterSettingManager().restart(
@@ -144,6 +145,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
+    note1.persist(AuthenticationInfo.ANONYMOUS);
 
     // shutdown zeppelin and restart it
     shutDown();
