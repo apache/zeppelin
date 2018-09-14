@@ -87,14 +87,20 @@ public class NotebookRestApi extends AbstractRestApi {
   private JobManagerService jobManagerService;
 
   @Inject
-  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
+  public NotebookRestApi(
+      Notebook notebook,
+      NotebookServer notebookServer,
+      NotebookService notebookService,
+      SearchService search,
+      NotebookAuthorization notebookAuthorization,
+      ZeppelinConfiguration zConf) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
-    this.notebookService = new NotebookService(notebook);
+    this.notebookService = notebookService;
     this.jobManagerService = new JobManagerService(notebook);
     this.noteSearchService = search;
-    this.notebookAuthorization = notebook.getNotebookAuthorization();
-    this.zConf = notebook.getConf();
+    this.notebookAuthorization = notebookAuthorization;
+    this.zConf = zConf;
   }
 
   /**

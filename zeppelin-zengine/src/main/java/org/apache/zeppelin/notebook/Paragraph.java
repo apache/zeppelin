@@ -491,33 +491,42 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private InterpreterContext getInterpreterContext() {
     final Paragraph self = this;
 
-    return getInterpreterContext(new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-        ((ParagraphJobListener) getListener()).onOutputAppend(self, index, new String(line));
-      }
+    return getInterpreterContext(
+        new InterpreterOutput(
+            new InterpreterOutputListener() {
+              ParagraphJobListener paragraphJobListener = (ParagraphJobListener) getListener();
 
-      @Override
-      public void onUpdate(int index, InterpreterResultMessageOutput out) {
-        try {
-          ((ParagraphJobListener) getListener())
-              .onOutputUpdate(self, index, out.toInterpreterResultMessage());
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
+              @Override
+              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+                if (null != paragraphJobListener) {
+                  paragraphJobListener.onOutputAppend(self, index, new String(line));
+                }
+              }
 
-      @Override
-      public void onUpdateAll(InterpreterOutput out) {
-        try {
-          List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
-          ((ParagraphJobListener) getListener()).onOutputUpdateAll(self, messages);
-          updateParagraphResult(messages);
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
+              @Override
+              public void onUpdate(int index, InterpreterResultMessageOutput out) {
+                try {
+                  if (null != paragraphJobListener) {
+                    paragraphJobListener.onOutputUpdate(
+                        self, index, out.toInterpreterResultMessage());
+                  }
+                } catch (IOException e) {
+                  LOGGER.error(e.getMessage(), e);
+                }
+              }
 
-      }
+              @Override
+              public void onUpdateAll(InterpreterOutput out) {
+                try {
+                  List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
+                  if (null != paragraphJobListener) {
+                    paragraphJobListener.onOutputUpdateAll(self, messages);
+                  }
+                  updateParagraphResult(messages);
+                } catch (IOException e) {
+                  LOGGER.error(e.getMessage(), e);
+                }
+              }
 
       private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
         // update paragraph results

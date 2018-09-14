@@ -55,6 +55,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
+    ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
   }
 
   @AfterClass
@@ -107,6 +108,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
+    note1.persist(AuthenticationInfo.ANONYMOUS);
 
     // restart the python interpreter
     ZeppelinServer.notebook.getInterpreterSettingManager().restart(
@@ -143,6 +145,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
+    note1.persist(AuthenticationInfo.ANONYMOUS);
 
     // shutdown zeppelin and restart it
     shutDown();

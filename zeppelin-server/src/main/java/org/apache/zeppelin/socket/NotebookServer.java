@@ -143,6 +143,28 @@ public class NotebookServer extends WebSocketServlet
 
   public NotebookServer() {
     this.connectionManager = new ConnectionManager();
+    // TODO(jl): Replace this code with @PostConstruct after finishing injection
+    new Thread(
+        () -> {
+          Logger innerLogger = LoggerFactory.getLogger("NotebookServerRegister");
+          innerLogger.info("Started registration thread");
+          try {
+            NotebookService notebookService = null;
+            while (null == notebookService) {
+              try {
+                notebookService = getNotebookService();
+              } catch (IllegalStateException ignored) {
+                // ignored
+              }
+              Thread.sleep(100);
+            }
+            getNotebookService().injectNotebookServer(this);
+            innerLogger.info("Completed registration thread");
+          } catch (InterruptedException e) {
+            innerLogger.info("Interrupted. will stop registration process");
+          }
+        }, "NotebookServerRegister")
+      .start();
   }
 
   private Notebook notebook() {
@@ -151,14 +173,14 @@ public class NotebookServer extends WebSocketServlet
 
   public synchronized NotebookService getNotebookService() {
     if (this.notebookService == null) {
-      this.notebookService = new NotebookService(notebook());
+      this.notebookService = NotebookService.getInstance();
     }
     return this.notebookService;
   }
 
   public synchronized ConfigurationService getConfigurationService() {
     if (this.configurationService == null) {
-      this.configurationService = new ConfigurationService(notebook().getConf());
+      this.configurationService = ConfigurationService.getInstance();
     }
     return this.configurationService;
   }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
 import java.util.EnumSet;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -29,6 +30,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.servlet.DispatcherType;
+import javax.ws.rs.ApplicationPath;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.realm.Realm;
@@ -48,14 +50,13 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.AdminService;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.InterpreterService;
+import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.http.HttpVersion;
@@ -73,12 +74,16 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.glassfish.hk2.api.Immediate;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Main class of Zeppelin. */
+@ApplicationPath("/api")
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
@@ -88,16 +93,14 @@ public class ZeppelinServer extends ResourceConfig {
   public static Helium helium;
 
   private final InterpreterSettingManager interpreterSettingManager;
-  private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
-  private ConfigStorage configStorage;
   private SearchService noteSearchService;
   private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
-  private InterpreterService interpreterService;
 
-  public ZeppelinServer() throws Exception {
+  @Inject
+  public ZeppelinServer(ServiceLocator serviceLocator) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     if (conf.getShiroPath().length() > 0) {
       try {
@@ -153,7 +156,6 @@ public class ZeppelinServer extends ResourceConfig {
               new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
     }
 
-    this.schedulerFactory = SchedulerFactory.singleton();
     this.interpreterSettingManager =
         new InterpreterSettingManager(conf, notebookWsServer, notebookWsServer, notebookWsServer);
     this.replFactory = new InterpreterFactory(interpreterSettingManager);
@@ -167,14 +169,11 @@ public class ZeppelinServer extends ResourceConfig {
         new Notebook(
             conf,
             notebookRepo,
-            schedulerFactory,
             replFactory,
             interpreterSettingManager,
-            notebookWsServer,
             noteSearchService,
             notebookAuthorization,
             credentials);
-    this.configStorage = ConfigStorage.getInstance(conf);
 
     ZeppelinServer.helium =
         new Helium(
@@ -199,7 +198,6 @@ public class ZeppelinServer extends ResourceConfig {
 
     notebook.addNotebookEventListener(heliumApplicationFactory);
     notebook.addNotebookEventListener(notebookWsServer.getNotebookInformationListener());
-    this.interpreterService = new InterpreterService(conf, interpreterSettingManager);
 
     // Register MBean
     if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
@@ -220,6 +218,8 @@ public class ZeppelinServer extends ResourceConfig {
       }
     }
 
+    ServiceLocatorUtilities.enableImmediateScope(serviceLocator);
+
     register(
         new AbstractBinder() {
           @Override
@@ -231,14 +231,16 @@ public class ZeppelinServer extends ResourceConfig {
             bind(helium).to(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class).in(Singleton.class);
             bind(interpreterSettingManager).to(InterpreterSettingManager.class).in(Singleton.class);
-            bind(InterpreterService.class).to(InterpreterService.class).in(Singleton.class);
+            bind(InterpreterService.class).to(InterpreterService.class).in(Immediate.class);
             bind(credentials).to(Credentials.class).in(Singleton.class);
             bind(GsonProvider.class).to(GsonProvider.class).in(Singleton.class);
             bind(WebApplicationExceptionMapper.class)
                 .to(WebApplicationExceptionMapper.class)
                 .in(Singleton.class);
-            bind(AdminService.class).to(AdminService.class).in(Singleton.class);
-            bind(ConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
+            bind(AdminService.class).to(AdminService.class).in(Immediate.class);
+            bind(notebookAuthorization).to(NotebookAuthorization.class).in(Singleton.class);
+            bind(ConfigurationService.class).to(ConfigurationService.class).in(Immediate.class);
+            bind(NotebookService.class).to(NotebookService.class).in(Immediate.class);
           }
         });
     packages("org.apache.zeppelin.rest");
