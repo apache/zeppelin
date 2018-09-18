@@ -475,16 +475,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       return true;
     }
 
-    Job job = scheduler.removeFromWaitingQueue(getId());
-    if (job != null) {
-      job.setStatus(Status.ABORT);
-    } else {
-      try {
-        interpreter.cancel(getInterpreterContext(null));
-      } catch (InterpreterException e) {
-        throw new RuntimeException(e);
-      }
-    }
     return true;
   }
 

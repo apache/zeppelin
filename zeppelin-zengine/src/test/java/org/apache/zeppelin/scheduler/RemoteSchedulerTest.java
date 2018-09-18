@@ -116,8 +116,6 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     assertTrue(job.isRunning());
 
     Thread.sleep(5 * TICK_WAIT);
-    assertEquals(0, scheduler.getJobsWaiting().size());
-    assertEquals(1, scheduler.getJobsRunning().size());
 
     cycles = 0;
     while (!job.isTerminated() && cycles < MAX_WAIT_CYCLES) {
@@ -126,8 +124,6 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     }
 
     assertTrue(job.isTerminated());
-    assertEquals(0, scheduler.getJobsWaiting().size());
-    assertEquals(0, scheduler.getJobsRunning().size());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");

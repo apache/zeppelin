@@ -389,10 +389,7 @@ public class RemoteInterpreter extends Interpreter {
         RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-"
             + sessionId,
         SchedulerFactory.singleton().getExecutor(),
-        sessionId,
-        this,
-        SchedulerFactory.singleton(),
-        maxConcurrency);
+        this);
     return SchedulerFactory.singleton().createOrGetScheduler(s);
   }
 
