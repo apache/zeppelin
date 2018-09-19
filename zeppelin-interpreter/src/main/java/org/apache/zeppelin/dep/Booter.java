@@ -26,7 +26,6 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.Proxy;
 import org.sonatype.aether.repository.RemoteRepository;
-
 import java.nio.file.Paths;
 import java.util.Optional;
 
@@ -74,13 +73,14 @@ public class Booter {
   }
 
   /**
-   * Check for environment variable and java property with precedence of the environment variable
+   * Check for environment variable and java property with precedence of the environment variable.
+   *
    * @param environmentVariableName
    * @param javaPropertyName
    * @return
    * The environment variable, if not set the system property, or null
    */
-  private static String getEnvironmentVariable(
+  private static String getEnviromentVariableOrProperty(
           String environmentVariableName,
           String javaPropertyName) {
     String propertyValue = System.getenv(environmentVariableName);
@@ -89,7 +89,7 @@ public class Booter {
 
   public static RemoteRepository newCentralRepository() {
 
-    String mvnRepo = getEnvironmentVariable(
+    String mvnRepo = getEnviromentVariableOrProperty(
             "ZEPPELIN_INTERPRETER_DEP_MVNREPO",
             "zeppelin.interpreter.dep.mvnRepo");
     if (mvnRepo == null) {
@@ -97,15 +97,16 @@ public class Booter {
     }
     RemoteRepository remoteRepository = new RemoteRepository("central", "default", mvnRepo);
 
-    String proxyHost = getEnvironmentVariable(
+    String proxyHost = getEnviromentVariableOrProperty(
             "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYHOST",
             "zeppelin.interpreter.dep.mvnRepo.proxyHost");
-    String proxyPort = getEnvironmentVariable(
-            "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYPORT",
-            "zeppelin.interpreter.dep.mvnRepo.proxyPort");
 
-    if (proxyHost != null && proxyPort != null) {
-      String proxyType = Optional.ofNullable(getEnvironmentVariable(
+    if (proxyHost != null) {
+      String proxyPort = Optional.ofNullable(getEnviromentVariableOrProperty(
+              "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYPORT",
+              "zeppelin.interpreter.dep.mvnRepo.proxyPort")).orElse("8080");
+
+      String proxyType = Optional.ofNullable(getEnviromentVariableOrProperty(
               "ZEPPELIN_INTERPRETER_DEP_MVNREPO_PROXYTYPE",
               "zeppelin.interpreter.dep.mvnRepo.proxyType")).orElse(Proxy.TYPE_HTTP);
 
