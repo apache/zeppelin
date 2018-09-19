@@ -372,8 +372,16 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     val sparkJars = conf.getOption("spark.jars").map(_.split(","))
       .map(_.filter(_.nonEmpty)).toSeq.flatten
     val depJars = depFiles.asScala.filter(_.endsWith(".jar"))
-    val result = sparkJars ++ depJars
+    // add zeppelin spark interpreter jar
+    val zeppelinInterpreterJarURL = getClass.getProtectionDomain.getCodeSource.getLocation
+    // zeppelinInterpreterJarURL might be a folder when under unit testing
+    val result = if (new File(zeppelinInterpreterJarURL.getFile).isDirectory) {
+      sparkJars ++ depJars
+    } else {
+      sparkJars ++ depJars ++ Seq(zeppelinInterpreterJarURL.getFile)
+    }
     conf.set("spark.jars", result.mkString(","))
+    LOGGER.debug("User jar for spark repl: " + conf.get("spark.jars"))
     result
   }
 
