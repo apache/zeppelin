@@ -25,8 +25,8 @@ function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
     setNotes: function(notesList) {
       // a flat list to boost searching
       notes.flatList = _.map(notesList, (note) => {
-        note.isTrash = note.name
-          ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
+        note.isTrash = note.path
+          ? note.path.split('/')[0] === TRASH_FOLDER_ID : false;
         return note;
       });
 
@@ -34,8 +34,8 @@ function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
       notes.root = {children: []};
       notes.flatFolderMap = {};
       _.reduce(notesList, function(root, note) {
-        let noteName = note.name || note.id;
-        let nodes = noteName.match(/([^\/][^\/]*)/g);
+        let notePath = note.path || note.id;
+        let nodes = notePath.match(/([^\/][^\/]*)/g);
 
         // recursively add nodes
         addNode(root, nodes, note.id);

@@ -56,9 +56,9 @@ function NoteCreateCtrl($scope, noteListFactory, $routeParams, websocketMsgSrv) 
   vm.newNoteName = function(path) {
     let newCount = 1;
     angular.forEach(vm.notes.flatList, function(noteName) {
-      noteName = noteName.name;
-      if (noteName.match(/^Untitled Note [0-9]*$/)) {
-        let lastCount = noteName.substr(14) * 1;
+      noteName = noteName.path;
+      if (noteName.match(/^\/Untitled Note [0-9]*$/)) {
+        let lastCount = noteName.substr(15) * 1;
         if (newCount <= lastCount) {
           newCount = lastCount + 1;
         }
@@ -76,7 +76,7 @@ function NoteCreateCtrl($scope, noteListFactory, $routeParams, websocketMsgSrv) 
     let regexp = new RegExp('^' + noteNamePrefix + ' .+');
 
     angular.forEach(vm.notes.flatList, function(noteName) {
-      noteName = noteName.name;
+      noteName = noteName.path;
       if (noteName.match(regexp)) {
         let lastCopyCount = noteName.substr(lastIndex).trim();
         newCloneName = noteNamePrefix;

@@ -95,7 +95,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
   private transient String scriptText;
-  private transient InterpreterFactory interpreterFactory;
   private transient Interpreter interpreter;
   private transient Note note;
   private transient AuthenticationInfo subject;
@@ -110,23 +109,19 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     super(generateId(), null);
   }
 
-  public Paragraph(String paragraphId, Note note, JobListener listener,
-      InterpreterFactory interpreterFactory) {
+  public Paragraph(String paragraphId, Note note, JobListener listener) {
     super(paragraphId, generateId(), listener);
     this.note = note;
-    this.interpreterFactory = interpreterFactory;
   }
 
-  public Paragraph(Note note, JobListener listener, InterpreterFactory interpreterFactory) {
+  public Paragraph(Note note, JobListener listener) {
     super(generateId(), listener);
     this.note = note;
-    this.interpreterFactory = interpreterFactory;
   }
 
   // used for clone paragraph
   public Paragraph(Paragraph p2) {
     super(p2.getId(), null);
-    this.interpreterFactory = p2.interpreterFactory;
     this.note = p2.note;
     this.settings.setParams(Maps.newHashMap(p2.settings.getParams()));
     this.settings.setForms(Maps.newLinkedHashMap(p2.settings.getForms()));
@@ -273,7 +268,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public Interpreter getBindedInterpreter() throws InterpreterNotFoundException {
-    return this.interpreterFactory.getInterpreter(user, note.getId(), intpText,
+    return this.note.getInterpreterFactory().getInterpreter(user, note.getId(), intpText,
         note.getDefaultInterpreterGroup());
   }
 
@@ -310,10 +305,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     }
 
     return cursor;
-  }
-
-  public void setInterpreterFactory(InterpreterFactory factory) {
-    this.interpreterFactory = factory;
   }
 
   @Override
@@ -381,14 +372,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   @Override
   protected InterpreterResult jobRun() throws Throwable {
-    LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
-            getId(), intpText, note.getId(), subject.getUser());
     this.runtimeInfos.clear();
     this.interpreter = getBindedInterpreter();
     if (this.interpreter == null) {
       LOGGER.error("Can not find interpreter name " + intpText);
       throw new RuntimeException("Can not find interpreter for " + intpText);
     }
+    LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+        getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
     InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
         interpreter.getInterpreterGroup()).getInterpreterSetting();
     if (interpreterSetting != null) {
@@ -643,7 +634,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   public boolean isValidInterpreter(String replName) {
     try {
-      return interpreterFactory.getInterpreter(user, note.getId(), replName,
+      return note.getInterpreterFactory().getInterpreter(user, note.getId(), replName,
           note.getDefaultInterpreterGroup()) != null;
     } catch (InterpreterNotFoundException e) {
       return false;

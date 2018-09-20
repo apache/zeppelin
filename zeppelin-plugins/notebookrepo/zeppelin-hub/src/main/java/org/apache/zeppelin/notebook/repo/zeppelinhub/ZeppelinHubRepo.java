@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -174,22 +175,26 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
   
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+  public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
     if (!isSubjectValid(subject)) {
-      return Collections.emptyList();
+      return Collections.emptyMap();
     }
     String token = getUserToken(subject.getUser());
     String response = restApiClient.get(token, StringUtils.EMPTY);
     List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {}.getType());
     if (notes == null) {
-      return Collections.emptyList();
+      return Collections.emptyMap();
     }
     LOG.info("ZeppelinHub REST API listing notes ");
-    return notes;
+    Map<String, NoteInfo> notesInfo = new HashMap<>();
+    for (NoteInfo noteInfo : notes) {
+      notesInfo.put(noteInfo.getId(), noteInfo);
+    }
+    return notesInfo;
   }
 
   @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String noteName, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
@@ -215,7 +220,17 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+  public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       throw new IOException("Zeppelinhub failed to remove note");
     }
@@ -225,13 +240,18 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
+  public void remove(String folderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
   public void close() {
     websocketClient.stop();
     restApiClient.close();
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Revision.EMPTY;
@@ -246,7 +266,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note get(String noteId, String revId, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
     if (StringUtils.isBlank(noteId) || StringUtils.isBlank(revId) || !isSubjectValid(subject)) {
       return EMPTY_NOTE;
     }
@@ -263,7 +283,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
+  public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) {
     if (StringUtils.isBlank(noteId) || !isSubjectValid(subject)) {
       return Collections.emptyList();
     }
@@ -376,7 +396,7 @@ public class ZeppelinHubRepo implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
+  public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject)
       throws IOException {
     // Auto-generated method stub
     return null;

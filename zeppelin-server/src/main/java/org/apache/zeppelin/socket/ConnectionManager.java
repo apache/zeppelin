@@ -27,6 +27,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -350,7 +351,7 @@ public class ConnectionManager {
     }
   }
 
-  public void broadcastNoteListExcept(List<Map<String, String>> notesInfo,
+  public void broadcastNoteListExcept(List<NoteInfo> notesInfo,
                                       AuthenticationInfo subject) {
     Set<String> userAndRoles;
     NotebookAuthorization authInfo = NotebookAuthorization.getInstance();

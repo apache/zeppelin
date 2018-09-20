@@ -90,7 +90,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetNoteInfo() throws IOException {
     LOG.info("testGetNoteInfo");
     // Create note to get info
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -99,7 +99,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
     String paragraphText = "%md This is my new paragraph in my new note";
     paragraph.setText(paragraphText);
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
 
     String sourceNoteId = note.getId();
     GetMethod get = httpGet("/notebook/" + sourceNoteId);
@@ -212,7 +212,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testDeleteNote() throws IOException {
     LOG.info("testDeleteNote");
     //Create note and get ID
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testDeletedNote", anonymous);
     String noteId = note.getId();
     testDeleteNote(noteId);
   }
@@ -226,7 +226,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testExportNote() throws IOException {
     LOG.info("testExportNote");
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testExportNote", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for export");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -234,7 +234,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String sourceNoteId = note.getId();
     // Call export Note REST API
     GetMethod get = httpGet("/notebook/export/" + sourceNoteId);
@@ -258,7 +258,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String noteName = "source note for import";
     LOG.info("testImportNote");
     // create test note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testImportNotebook", anonymous);
     assertNotNull("can't create new note", note);
     note.setName(noteName);
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -266,10 +266,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String sourceNoteId = note.getId();
     // get note content as JSON
     String oldJson = getNoteContent(sourceNoteId);
+    // delete it first then import it
+    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     // call note post
     PostMethod importPost = httpPost("/notebook/import/", oldJson);
     assertThat(importPost, isAllowed());
@@ -284,7 +286,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
         .size());
     // cleanup
-    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
     ZeppelinServer.notebook.removeNote(newNote.getId(), anonymous);
     importPost.releaseConnection();
   }
@@ -326,7 +327,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testCloneNote() throws IOException, IllegalArgumentException {
     LOG.info("testCloneNote");
     // Create note to clone
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testCloneNote", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("source note for clone");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -334,7 +335,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     config.put("enabled", true);
     paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String sourceNoteId = note.getId();
 
     String noteName = "clone Note Name";
@@ -379,7 +380,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testNoteJobs() throws IOException, InterruptedException {
     LOG.info("testNoteJobs");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testNoteJobs", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -389,7 +390,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
 
     paragraph.setText("%md This is test paragraph.");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
     note.runAll();
@@ -434,7 +435,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testGetNoteJob() throws IOException, InterruptedException {
     LOG.info("testGetNoteJob");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testGetNoteJob", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -445,7 +446,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     paragraph.setText("%sh sleep 1");
     paragraph.setAuthenticationInfo(anonymous);
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
     note.runAll();
@@ -482,7 +483,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testRunParagraphWithParams() throws IOException, InterruptedException {
     LOG.info("testRunParagraphWithParams");
     // Create note to run test.
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testRunParagraphWithParams", anonymous);
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -492,7 +493,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setConfig(config);
 
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
     note.runAll();
@@ -517,7 +518,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testJobs() throws InterruptedException, IOException{
     // create a note and a paragraph
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testJobs", anonymous);
 
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -559,7 +560,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   public void testCronDisable() throws InterruptedException, IOException{
     // create a note and a paragraph
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_CRON_ENABLE.getVarName(), "false");
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testCronDisable", anonymous);
 
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -599,13 +600,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testRegressionZEPPELIN_527() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testRegressionZEPPELIN_527", anonymous);
 
     note.setName("note for run test");
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
 
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
 
     GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
     assertThat("test note jobs run:", getNoteJobs, isAllowed());
@@ -621,7 +622,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testInsertParagraph() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testInsertParagraph", anonymous);
 
     String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
@@ -679,7 +680,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testUpdateParagraph() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testUpdateParagraph", anonymous);
 
     String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
@@ -722,12 +723,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetParagraph() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testGetParagraph", anonymous);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("hello");
     p.setText("world");
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
 
     GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p.getId());
     LOG.info("testGetParagraph response\n" + get.getResponseBodyAsString());
@@ -751,7 +752,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testMoveParagraph() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testMoveParagraph", anonymous);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
@@ -761,7 +762,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     p2.setTitle("title2");
     p2.setText("text2");
 
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
 
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph/" + p2.getId() +
             "/move/" + 0, "");
@@ -785,13 +786,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testDeleteParagraph() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1_testDeleteParagraph", anonymous);
 
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setTitle("title1");
     p.setText("text1");
 
-    note.persist(anonymous);
+    ZeppelinServer.notebook.saveNote(note, anonymous);
 
     DeleteMethod delete = httpDelete("/notebook/" + note.getId() + "/paragraph/" + p.getId());
     assertThat("Test delete method: ", delete, isAllowed());
@@ -805,12 +806,13 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testTitleSearch() throws IOException {
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+  public void testTitleSearch() throws IOException, InterruptedException {
+    Note note = ZeppelinServer.notebook.createNote("note1_testTitleSearch", anonymous);
     String jsonRequest = "{\"title\": \"testTitleSearchOfParagraph\", " +
             "\"text\": \"ThisIsToTestSearchMethodWithTitle \"}";
     PostMethod postNoteText = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
     postNoteText.releaseConnection();
+    Thread.sleep(1000);
 
     GetMethod searchNote = httpGet("/notebook/search?q='testTitleSearchOfParagraph'");
     searchNote.addRequestHeader("Origin", "http://localhost");

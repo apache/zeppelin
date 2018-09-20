@@ -232,10 +232,9 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     post.releaseConnection();
   }
 
-  @Test
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // when: create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -282,7 +281,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   @Test
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     // when: create new note
-    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();

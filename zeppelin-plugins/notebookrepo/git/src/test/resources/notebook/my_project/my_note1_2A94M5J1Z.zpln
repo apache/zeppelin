@@ -359,8 +359,8 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Zeppelin Tutorial",
   "id": "2A94M5J1Z",
+  "name": "my_note1",
   "angularObjects": {},
   "config": {
     "looknfeel": "default"

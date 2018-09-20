@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * new IndexReader every time. Index is thread-safe, as re-uses single IndexWriter, which is
  * thread-safe.
  */
-public class LuceneSearch implements SearchService {
+public class LuceneSearch extends SearchService {
   private static final Logger logger = LoggerFactory.getLogger(LuceneSearch.class);
 
   private static final String SEARCH_FIELD_TEXT = "contents";
@@ -85,6 +85,7 @@ public class LuceneSearch implements SearchService {
   private IndexWriter indexWriter;
 
   public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
+    super("LuceneSearch-Thread");
     this.zeppelinConfiguration = zeppelinConfiguration;
     if (zeppelinConfiguration.isZeppelinSearchUseDisk()) {
       try {
@@ -361,8 +362,8 @@ public class LuceneSearch implements SearchService {
    * @see org.apache.zeppelin.search.Search#deleteIndexDocs(org.apache.zeppelin.notebook.Note)
    */
   @Override
-  public void deleteIndexDocs(Note note) {
-    deleteDoc(note, null);
+  public void deleteIndexDocs(String noteId) {
+    deleteDoc(noteId, null);
   }
 
   /* (non-Javadoc)
@@ -370,22 +371,18 @@ public class LuceneSearch implements SearchService {
    *  #deleteIndexDoc(org.apache.zeppelin.notebook.Note, org.apache.zeppelin.notebook.Paragraph)
    */
   @Override
-  public void deleteIndexDoc(Note note, Paragraph p) {
-    deleteDoc(note, p);
+  public void deleteIndexDoc(String noteId, Paragraph p) {
+    deleteDoc(noteId, p);
   }
 
-  private void deleteDoc(Note note, Paragraph p) {
-    if (null == note) {
-      logger.error("Trying to delete note by reference to NULL");
-      return;
-    }
-    String fullNoteOrJustParagraph = formatDeleteId(note.getId(), p);
-    logger.debug("Deleting note {}, out of: {}", note.getId(), indexWriter.numDocs());
+  private void deleteDoc(String noteId, Paragraph p) {
+    String fullNoteOrJustParagraph = formatDeleteId(noteId, p);
+    logger.debug("Deleting note {}, out of: {}", noteId, indexWriter.numDocs());
     try {
       indexWriter.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, fullNoteOrJustParagraph)));
       indexWriter.commit();
     } catch (IOException e) {
-      logger.error("Failed to delete {} from index by '{}'", note, fullNoteOrJustParagraph, e);
+      logger.error("Failed to delete {} from index by '{}'", noteId, fullNoteOrJustParagraph, e);
     }
     logger.debug("Done, index contains {} docs now" + indexWriter.numDocs());
   }
