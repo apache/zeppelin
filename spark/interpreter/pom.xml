@@ -85,7 +85,7 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
