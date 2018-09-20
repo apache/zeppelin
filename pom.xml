@@ -339,6 +339,7 @@
   </dependencyManagement>
 
   <build>
+
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -581,27 +582,6 @@
         </plugin>
 
         <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>${plugin.dependency.version}</version>
-          <executions>
-            <execution>
-              <id>copy-dependencies</id>
-              <phase>process-test-resources</phase>
-              <goals>
-                <goal>copy-dependencies</goal>
-              </goals>
-              <configuration>
-                <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                <overWriteReleases>false</overWriteReleases>
-                <overWriteSnapshots>false</overWriteSnapshots>
-                <overWriteIfNewer>true</overWriteIfNewer>
-                <includeScope>runtime</includeScope>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-
-        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${plugin.surefire.version}</version>
           <configuration combine.children="append">
@@ -746,6 +726,27 @@
           </configuration>
         </plugin>
 
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${plugin.dependency.version}</version>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                <overWriteReleases>false</overWriteReleases>
+                <overWriteSnapshots>false</overWriteSnapshots>
+                <overWriteIfNewer>true</overWriteIfNewer>
+                <includeScope>runtime</includeScope>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        
       </plugins>
     </pluginManagement>
   </build>
