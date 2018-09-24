@@ -37,7 +37,7 @@ When you click the ```+Create``` button on the interpreter page, the interpreter
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_create.png" width="280px">
 
 ## What are the interpreter settings?
-The interpreter settings are the configuration of a given interpreter on the Zeppelin server. For example, certain properties need to be set for the Hive JDBC interpreter to connect to the Hive server.
+The interpreter settings are the configuration of a given interpreter on the Zeppelin server. For example, certain properties need to be set for the Apache Hive JDBC interpreter to connect to the Hive server.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/interpreter_setting.png" width="500px">
 
@@ -94,7 +94,7 @@ Each interpreter belongs to a single group and is registered together. All relev
 ## Interpreter binding mode
 
 In the Interpreter Settings, one can choose one of the 'shared', 'scoped', or 'isolated' interpreter binding modes.
-In 'shared' mode, every notebook bound to the Interpreter Setting will share a single Interpreter instance. In 'scoped' mode, each notebook will create new a interpreter instance in the same interpreter process. In 'isolated' mode, each notebook will create new a interpreter process.
+In 'shared' mode, every notebook bound to the Interpreter Setting will share a single Interpreter instance. In 'scoped' mode, each notebook will create a new interpreter instance in the same interpreter process. In 'isolated' mode, each notebook will create new a interpreter process.
 
 For more information, please consult [Interpreter Binding Mode](./interpreter_binding_mode.html).
 
@@ -138,10 +138,10 @@ Zeppelin's interpreter setting is shared by all users and notes, if you want to 
 This approach works, but is not particularly convenient. `ConfInterpreter` can provide more fine-grained control on interpreter settings and more flexibility. 
 
 `ConfInterpreter` is a generic interpreter that can be used by any interpreter. The input format should be the property file format.
-It can be used to make custom settings for any interpreter. However, it requires being run before the interpreter process is launched. When the interpreter process is launched is determined by the interpreter mode setting.
-So users need to understand the ([interpreter mode setting ](../usage/interpreter/interpreter_bindings_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g. If we set the Spark interpreter setting as isolated per note, then, under this setting, each note will launch one interpreter process. 
+It can be used to make custom settings for any interpreter. However, `ConfInterpreter` needs to be run before that interpreter process is launched. When that interpreter process is launched is determined by the interpreter mode setting.
+So users need to understand the ([interpreter mode setting ](../usage/interpreter/interpreter_bindings_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g., if we set the Spark interpreter setting as isolated per note, then, under this setting, each note will launch one interpreter process. 
 In this scenario, users need to put `ConfInterpreter` as the first paragraph as in the below example. Otherwise, the customized setting cannot be applied (actually it would report ERROR)
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/conf_interpreter.png" width="500px">
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/conf_interpreter.png" width="700px">
 
 
 ## Interpreter Process Recovery
