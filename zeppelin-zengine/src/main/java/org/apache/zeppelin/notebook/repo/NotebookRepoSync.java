@@ -23,6 +23,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -83,6 +84,27 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       defaultNotebookRepo.init(conf);
       repos.add(defaultNotebookRepo);
     }
+
+    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
+    boolean convertToNew = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_CONVERT);
+    boolean deleteOld = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_DELETE_OLD);
+    if (convertToNew) {
+      NotebookRepo newNotebookRepo = repos.get(0);
+      OldNotebookRepo oldNotebookRepo =
+          PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
+      oldNotebookRepo.init(conf);
+      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
+      LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
+      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
+        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
+        note.setPath(note.getName());
+        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+        if (deleteOld) {
+          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
+        }
+      }
+    }
+
     // sync for anonymous mode on start
     if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
       try {

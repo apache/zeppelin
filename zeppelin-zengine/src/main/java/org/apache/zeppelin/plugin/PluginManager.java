@@ -22,6 +22,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.OldNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class for loading Plugins
@@ -89,8 +89,54 @@ public class PluginManager {
     return notebookRepo;
   }
 
+  private String getOldNotebookRepoClassName(String notebookRepoClassName) {
+    int pos = notebookRepoClassName.lastIndexOf(".");
+    return notebookRepoClassName.substring(0, pos) + ".Old" + notebookRepoClassName.substring(pos + 1);
+  }
+
+  /**
+   * This is a temporary class which is used for loading old implemention of NotebookRepo.
+   *
+   * @param notebookRepoClassName
+   * @return
+   * @throws IOException
+   */
+  public OldNotebookRepo loadOldNotebookRepo(String notebookRepoClassName) throws IOException {
+    LOGGER.info("Loading OldNotebookRepo Plugin: " + notebookRepoClassName);
+    // load plugin from classpath directly when it is test.
+    // otherwise load it from plugin folder
+    String isTest = System.getenv("IS_ZEPPELIN_TEST");
+    if (isTest != null && isTest.equals("true")) {
+      try {
+        OldNotebookRepo notebookRepo = (OldNotebookRepo)
+            (Class.forName(notebookRepoClassName).newInstance());
+        return notebookRepo;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
+      }
+    }
+
+    String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
+    URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "NotebookRepo", simpleClassName);
+    if (pluginClassLoader == null) {
+      return null;
+    }
+    OldNotebookRepo notebookRepo = null;
+    try {
+      notebookRepoClassName = getOldNotebookRepoClassName(notebookRepoClassName);
+      notebookRepo = (OldNotebookRepo) (Class.forName(notebookRepoClassName, true, pluginClassLoader)).newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      LOGGER.warn("Fail to instantiate notebookrepo from plugin classpath:" + notebookRepoClassName, e);
+    }
+
+    if (notebookRepo == null) {
+      LOGGER.warn("Unable to load NotebookRepo Plugin: " + notebookRepoClassName);
+    }
+    return notebookRepo;
+  }
+
   public synchronized InterpreterLauncher loadInterpreterLauncher(String launcherPlugin,
-                                                     RecoveryStorage recoveryStorage)
+                                                                  RecoveryStorage recoveryStorage)
       throws IOException {
 
     if (cachedLaunchers.containsKey(launcherPlugin)) {
