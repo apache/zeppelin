@@ -164,6 +164,18 @@ export default class Nvd3ChartVisualization extends Visualization {
     let rowIndexValue = {};
 
     for (let k in rows) {
+    let rowKeys = Object.keys(rows);
+    let isNumberKey = false;
+
+    rowKeys.sort(function(a, b) {
+      if (!isNaN(a) && !isNaN(b) && typeof Number(a) === 'number' && typeof Number(b) === 'number') {
+        isNumberKey = true;
+        return a-b;
+      }
+    });
+    rowKeys = isNumberKey ? rowKeys : Object.keys(rows);
+    for (let i=0; i<rowKeys.length; i++) {
+      let k = rowKeys[i];
       if (rows.hasOwnProperty(k)) {
         traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
           // console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
