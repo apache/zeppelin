@@ -84,7 +84,7 @@ public class Notebook implements NoteEventListener {
   private final FolderView folders = new FolderView();
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
-  private org.quartz.Scheduler quartzSched;
+  org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
 
   private NotebookRepo notebookRepo;

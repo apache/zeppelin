@@ -46,10 +46,7 @@ import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Request;
-import org.junit.runner.Result;
-import org.mockito.internal.runners.JUnit44RunnerImpl;
+import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
@@ -701,9 +698,9 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
 
-    final int jobsBeforeRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+    final int jobsBeforeRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.<JobKey>anyGroup()).size();
     notebook.refreshCron(note.getId());
-    final int jobsAfterRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+    final int jobsAfterRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.<JobKey>anyGroup()).size();
 
     assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
 
