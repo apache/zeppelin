@@ -46,23 +46,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-interpreter-api</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-    
-    <dependency>
       <groupId>org.checkerframework</groupId>
       <artifactId>jdk7</artifactId>
       <version>${checkerframework.jdk7.version}</version>
@@ -87,6 +70,10 @@
       		<groupId>ch.qos.logback</groupId>
       		<artifactId>logback-core</artifactId>
       	</exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
     </exclusions>
     </dependency>
 
