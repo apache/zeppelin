@@ -48,7 +48,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Cluster Raft client protocol.
+ * Protocol for intercommunication between Raft clients for each server in the cluster.
+ * Communication protocol for handling sessions, queries, commands, and services within the cluster.
  */
 public class LocalRaftClientProtocol extends LocalRaftProtocol implements RaftClientProtocol {
   private Function<HeartbeatRequest, CompletableFuture<HeartbeatResponse>> heartbeatHandler;

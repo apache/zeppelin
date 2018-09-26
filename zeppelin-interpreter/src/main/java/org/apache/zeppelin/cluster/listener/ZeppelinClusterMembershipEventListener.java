@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Zeppelin ClusterMembershipEventListener
+ * Entity capable of receiving device cluster-related events.
+ * Listen for new zeppelin servers to join or leave the cluster,
+ * Monitor whether the metadata in the cluster server changes
  */
 public class ZeppelinClusterMembershipEventListener implements ClusterMembershipEventListener {
   private static Logger logger

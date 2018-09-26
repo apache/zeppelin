@@ -62,7 +62,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Raft server messaging protocol.
+ * Raft server messaging protocol between Raft Servers for each server in the cluster.
  */
 public class RaftServerMessagingProtocol extends RaftMessagingProtocol
     implements RaftServerProtocol {

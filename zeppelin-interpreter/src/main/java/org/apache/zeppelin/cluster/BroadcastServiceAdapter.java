@@ -22,6 +22,9 @@ import java.util.function.Consumer;
 
 /**
  * Broadcast Service Adapter
+ * Service for broadcast messaging between nodes.
+ * The broadcast service is an unreliable broadcast messaging service backed by multicast.
+ * This service provides no guaranteed regarding reliability or order of messages.
  */
 public class BroadcastServiceAdapter implements BroadcastService {
   @Override

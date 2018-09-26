@@ -33,7 +33,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * Cluster State Machine
+ * Cluster State Machine for Zeppelin
+ * The cluster state is implemented as a snapshot state machine.
+ * The state machine stores the service and process metadata information of the cluster.
+ * Metadata information can be manipulated by put, get, remove, index, and snapshot.
  */
 public class ClusterStateMachine extends AbstractPrimitiveService {
   private static Logger logger = LoggerFactory.getLogger(ClusterStateMachine.class);

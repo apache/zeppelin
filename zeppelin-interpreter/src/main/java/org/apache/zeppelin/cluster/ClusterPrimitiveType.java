@@ -25,6 +25,8 @@ import io.atomix.primitive.service.ServiceConfig;
 
 /**
  * Cluster primitive type
+ * Creating a custom distributed primitive is defining the primitive type.
+ * To create a new type, implement the PrimitiveType interface
  */
 public class ClusterPrimitiveType implements PrimitiveType {
   public static final ClusterPrimitiveType INSTANCE = new ClusterPrimitiveType();
