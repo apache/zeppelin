@@ -794,6 +794,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),
+    ZEPPELIN_SERVER_SPNEGO_KEYTAB("zeppelin.server.spnego.keytab", ""),
+    ZEPPELIN_SERVER_SPNEGO_PRINCIPAL("zeppelin.server.spnego.principal", ""),
 
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
