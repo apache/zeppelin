@@ -45,10 +45,9 @@
     <wagon.version>1.0</wagon.version>
     <jline.version>2.12.1</jline.version>
     <atomix.version>3.0.0-rc4</atomix.version>
-    <atomix.netty.version>4.1.11.Final</atomix.netty.version>
     <commons-math3.version>3.1.1</commons-math3.version>
     <guava.version>20.0</guava.version>
-    <commons-lang3.version>3.4</commons-lang3.version>
+    <commons-lang3.version>3.7</commons-lang3.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
@@ -60,34 +59,6 @@
       <artifactId>atomix</artifactId>
       <version>${atomix.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-handler</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-common</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-buffer</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-epoll</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty-transport-native-unix-common</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-math3</artifactId>
@@ -113,49 +84,6 @@
       <groupId>io.atomix</groupId>
       <artifactId>atomix-primary-backup</artifactId>
       <version>${atomix.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport</artifactId>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec</artifactId>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-common</artifactId>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-buffer</artifactId>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport-native-epoll</artifactId>
-      <classifier>linux-x86_64</classifier>
-      <version>${atomix.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport-native-unix-common</artifactId>
-      <version>${atomix.netty.version}</version>
     </dependency>
 
     <dependency>
