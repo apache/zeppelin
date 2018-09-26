@@ -71,17 +71,6 @@ public class LuceneSearchTest {
     noteSearchService.close();
   }
 
-  @Test
-  public void canIndexNotebook() throws IOException {
-    // give
-    Note note1 = newNoteWithParagraph("Notebook1", "test");
-    Note note2 = newNoteWithParagraph("Notebook2", "not test");
-    List<Note> notebook = Arrays.asList(note1, note2);
-
-    // when
-    noteSearchService.addIndexDocs(notebook);
-  }
-
 //  @Test
   public void canIndexAndQuery() throws IOException, InterruptedException {
     // given
@@ -116,11 +105,11 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndQueryByParagraphTitle() throws IOException {
+  public void canIndexAndQueryByParagraphTitle() throws IOException, InterruptedException {
     // given
     Note note1 = newNoteWithParagraph("Notebook1", "test", "testingTitleSearch");
     Note note2 = newNoteWithParagraph("Notebook2", "not test", "notTestingTitleSearch");
-    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.drainEvents();
 
     // when
     List<Map<String, String>> results = noteSearchService.query("testingTitleSearch");
@@ -163,11 +152,11 @@ public class LuceneSearchTest {
   }
 
   @Test
-  public void canIndexAndReIndex() throws IOException {
+  public void canIndexAndReIndex() throws IOException, InterruptedException {
     // given
     Note note1 = newNoteWithParagraph("Notebook1", "test");
     Note note2 = newNoteWithParagraphs("Notebook2", "not test", "not test at all");
-    noteSearchService.addIndexDocs(Arrays.asList(note1, note2));
+    noteSearchService.drainEvents();
 
     // when
     Paragraph p2 = note2.getLastParagraph();
