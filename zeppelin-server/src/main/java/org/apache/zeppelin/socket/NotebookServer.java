@@ -2170,7 +2170,7 @@ public class NotebookServer extends WebSocketServlet
       AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
       paragraph.setAuthenticationInfo(subject);
 
-      noteIns.run(paragraphId);
+      noteIns.run(paragraphId, true);
 
     } catch (Exception e) {
       throw e;
