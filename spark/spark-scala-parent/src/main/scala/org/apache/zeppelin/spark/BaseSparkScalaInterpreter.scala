@@ -102,6 +102,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
               errorMsg.contains("value toDS is not a member of org.apache.spark.rdd.RDD")) {
               // prepend "import sqlContext.implicits._" due to
               // https://issues.scala-lang.org/browse/SI-6649
+              context.out.clear()
               scalaInterpret("import sqlContext.implicits._\n" + code)
             } else {
               scala.tools.nsc.interpreter.IR.Error
