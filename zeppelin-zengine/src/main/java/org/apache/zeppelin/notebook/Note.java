@@ -195,6 +195,10 @@ public class Note implements JsonSerializable {
   }
 
   public String getDefaultInterpreterGroup() {
+    if (defaultInterpreterGroup == null) {
+      defaultInterpreterGroup = ZeppelinConfiguration.create()
+          .getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT);
+    }
     return defaultInterpreterGroup;
   }
 
