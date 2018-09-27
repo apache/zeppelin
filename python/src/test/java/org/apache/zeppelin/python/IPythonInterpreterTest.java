@@ -214,7 +214,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     List<InterpreterResultMessage> interpreterResultMessages =
         context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum: 3000"));
+    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum size 3000"));
 
     // next call continue work
     result = interpreter.interpret("print(1)", context);

@@ -44,12 +44,65 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
     <jline.version>2.12.1</jline.version>
+    <atomix.version>3.0.0-rc4</atomix.version>
+    <commons-math3.version>3.1.1</commons-math3.version>
+    <guava.version>20.0</guava.version>
+    <commons-lang3.version>3.7</commons-lang3.version>
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix</artifactId>
+      <version>${atomix.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-math3</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-raft</artifactId>
+      <version>${atomix.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-primary-backup</artifactId>
+      <version>${atomix.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>${commons-math3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.thrift</groupId>
