@@ -910,8 +910,7 @@ public abstract class BaseZeppelinContext {
    */
   @ZeppelinApi
   public void setEventClient(RemoteEventClientWrapper eventClient) {
-    if (BaseZeppelinContext.eventClient == null) {
-      BaseZeppelinContext.eventClient = eventClient;
-    }
+    BaseZeppelinContext.eventClient = eventClient;
   }
+
 }

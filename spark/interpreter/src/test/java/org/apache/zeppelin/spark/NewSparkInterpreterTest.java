@@ -90,6 +90,7 @@ public class NewSparkInterpreterTest {
     mockRemoteEventClient = mock(RemoteEventClient.class);
     InterpreterContext context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
+        .setEventClient(mockRemoteEventClient)
         .build();
     InterpreterContext.set(context);
 

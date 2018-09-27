@@ -368,6 +368,9 @@ public class IPythonInterpreterTest {
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
+    for (InterpreterResultMessage message : interpreterResultMessages) {
+      LOGGER.info("Data:" + message.getData());
+    }
     assertEquals(2, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
     assertTrue(interpreterResultMessages.get(0).getData().contains("Loading BokehJS"));
