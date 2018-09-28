@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,11 @@ public class SchedulerFactory implements SchedulerListener {
   }
 
   SchedulerFactory() throws Exception {
-    executor = ExecutorFactory.singleton().createOrGet("SchedulerFactory", 100);
+    ZeppelinConfiguration zConf = ZeppelinConfiguration.create();
+    int threadPoolSize =
+        zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE);
+    logger.info("Scheduler Thread Pool Size: " + threadPoolSize);
+    executor = ExecutorFactory.singleton().createOrGet("SchedulerFactory", threadPoolSize);
   }
 
   public void destroy() {

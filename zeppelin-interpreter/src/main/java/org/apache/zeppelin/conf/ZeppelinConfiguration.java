@@ -710,6 +710,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,"
         + "scalding,jdbc,hbase,bigquery,beam,pig,scio,groovy,neo4j"),
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
+    ZEPPELIN_INTERPRETER_SCHEDULER_POOL_SIZE("zeppelin.scheduler.threadpool.size", 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
