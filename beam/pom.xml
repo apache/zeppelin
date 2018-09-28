@@ -238,13 +238,7 @@
       <artifactId>commons-exec</artifactId>
       <version>${commons.exec.version}</version>
     </dependency>
-  
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-  
+
   </dependencies>
 
   <build>
