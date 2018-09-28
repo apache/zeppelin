@@ -38,13 +38,6 @@
     </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>zeppelin-interpreter-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.zeppelin</groupId>
             <artifactId>zeppelin-java</artifactId>
@@ -56,18 +49,6 @@
             <artifactId>hazelcast-jet</artifactId>
             <version>0.6.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>

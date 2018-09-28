@@ -65,12 +65,6 @@
       <artifactId>jersey-common</artifactId>
       <version>${jersey.common.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
