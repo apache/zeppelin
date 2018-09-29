@@ -22,8 +22,9 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteRemoteInterpreterManagedProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteRemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   @Override
-  public InterpreterClient launch(InterpreterLaunchContext context) throws IOException {
+  public RemoteInterpreterProcess launch(InterpreterLaunchContext context) throws IOException {
     LOGGER.info("Launching Interpreter: " + context.getInterpreterSettingGroup());
     this.properties = context.getProperties();
     InterpreterOption option = context.getOption();
@@ -54,7 +55,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
     int connectTimeout = getConnectTimeout();
 
     if (option.isExistingProcess()) {
-      return new RemoteInterpreterRunningProcess(
+      return new RemoteRemoteInterpreterRunningProcess(
           context.getInterpreterSettingName(),
           connectTimeout,
           option.getHost(),
@@ -62,7 +63,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
     } else {
       // try to recover it first
       if (zConf.isRecoveryEnabled()) {
-        InterpreterClient recoveredClient =
+        RemoteInterpreterProcess recoveredClient =
             recoveryStorage.getInterpreterClient(context.getInterpreterGroupId());
         if (recoveredClient != null) {
           if (recoveredClient.isRunning()) {
@@ -79,7 +80,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
       // create new remote process
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
-      return new RemoteInterpreterManagedProcess(
+      return new RemoteRemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           context.getZeppelinServerRPCPort(), context.getZeppelinServerHost(), zConf.getInterpreterPortRange(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,

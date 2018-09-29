@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.interpreter.remote;
 
-import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +23,18 @@ import org.slf4j.LoggerFactory;
 /**
  * This class connects to existing process
  */
-public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
-  private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
+public class RemoteRemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
+  private final Logger LOGGER = LoggerFactory.getLogger(RemoteRemoteInterpreterRunningProcess.class);
+
   private final String host;
   private final int port;
   private final String interpreterSettingName;
 
-  public RemoteInterpreterRunningProcess(
+  public RemoteRemoteInterpreterRunningProcess(
       String interpreterSettingName,
       int connectTimeout,
       String host,
-      int port
-  ) {
+      int port) {
     super(connectTimeout);
     this.interpreterSettingName = interpreterSettingName;
     this.host = host;
@@ -68,7 +67,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
     // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
     if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
       if (isRunning()) {
-        logger.info("Kill interpreter process");
+        LOGGER.info("Kill interpreter process");
         try {
           callRemoteFunction(new RemoteFunction<Void>() {
             @Override
@@ -78,7 +77,7 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
             }
           });
         } catch (Exception e) {
-          logger.warn("ignore the exception when shutting down interpreter process.", e);
+          LOGGER.warn("ignore the exception when shutting down interpreter process.", e);
         }
       }
     }

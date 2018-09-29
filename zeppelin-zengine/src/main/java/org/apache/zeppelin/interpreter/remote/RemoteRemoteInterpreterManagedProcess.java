@@ -26,7 +26,6 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +38,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * This class manages start / stop of remote interpreter process
  */
-public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
+public class RemoteRemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     implements ExecuteResultHandler {
-  private static final Logger logger = LoggerFactory.getLogger(
-      RemoteInterpreterManagedProcess.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+      RemoteRemoteInterpreterManagedProcess.class);
 
   private final String interpreterRunner;
   private final int zeppelinServerRPCPort;
@@ -58,10 +57,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private final String interpreterSettingName;
   private final String interpreterGroupId;
   private final boolean isUserImpersonated;
-
   private Map<String, String> env;
 
-  public RemoteInterpreterManagedProcess(
+  public RemoteRemoteInterpreterManagedProcess(
       String intpRunner,
       int zeppelinServerRPCPort,
       String zeppelinServerRPCHost,
@@ -98,7 +96,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
   @Override
   public void start(String userName) throws IOException {
-    // start server process
+    // start interpreter process
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
@@ -122,7 +120,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     executor = new DefaultExecutor();
 
     ByteArrayOutputStream cmdOut = new ByteArrayOutputStream();
-    ProcessLogOutputStream processOutput = new ProcessLogOutputStream(logger);
+    ProcessLogOutputStream processOutput = new ProcessLogOutputStream(LOGGER);
     processOutput.setOutputStream(cmdOut);
 
     executor.setStreamHandler(new PumpStreamHandler(processOutput));
@@ -133,8 +131,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       Map procEnv = EnvironmentUtils.getProcEnvironment();
       procEnv.putAll(env);
 
-      logger.info("Run interpreter process {}", cmdLine);
-      executor.execute(cmdLine, procEnv, this);
+      LOGGER.info("Run interpreter process {}", cmdLine);
+      executor.execute(cmdLine, procEnv, RemoteRemoteInterpreterManagedProcess.this);
     } catch (IOException e) {
       running.set(false);
       throw new RuntimeException(e);
@@ -147,46 +145,45 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
         }
       }
       if (!running.get()) {
-        throw new IOException(new String(
+        LOGGER.error(new String(
             String.format("Interpreter Process creation is time out in %d seconds",
-                getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
+                getConnectTimeout() / 1000) + "\n" + "You can increase timeout threshold via " +
                 "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
                 cmdOut.toString()));
+      } else {
+        LOGGER.info("Interpreter Process for InterpreterGroup: " + interpreterGroupId +
+            " is launched successfully");
       }
     } catch (InterruptedException e) {
-      logger.error("Remote interpreter is not accessible");
+      LOGGER.error("Remote interpreter is not accessible");
     }
     processOutput.setOutputStream(null);
   }
 
   public void stop() {
     if (isRunning()) {
-      logger.info("Kill interpreter process");
+      LOGGER.info("Kill interpreter process");
       try {
-        callRemoteFunction(new RemoteFunction<Void>() {
-          @Override
-          public Void call(RemoteInterpreterService.Client client) throws Exception {
-            client.shutdown();
-            return null;
-          }
-        });
+        callRemoteFunction(
+            client -> {
+              client.shutdown();
+              return null;
+            });
       } catch (Exception e) {
-        logger.warn("ignore the exception when shutting down");
+        LOGGER.warn("ignore the exception when shutting down");
       }
-      watchdog.destroyProcess();
     }
-
+    watchdog.destroyProcess();
     executor = null;
     watchdog = null;
     running.set(false);
-    logger.info("Remote process terminated");
+    LOGGER.info("Remote process terminated");
   }
 
   @Override
   public void onProcessComplete(int exitValue) {
-    logger.info("Interpreter process exited {}", exitValue);
+    LOGGER.info("Interpreter process exited {}", exitValue);
     running.set(false);
-
   }
 
   @Override
@@ -201,8 +198,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
 
   @Override
   public void onProcessFailed(ExecuteException e) {
-    logger.info("Interpreter process failed {}", e);
-    running.set(false);
+    LOGGER.info("Interpreter process failed {}", e);
+    synchronized (running) {
+      running.set(false);
+      running.notify();
+    }
   }
 
   @VisibleForTesting
@@ -253,7 +253,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
 
     @Override
-    public void write(byte [] b) throws IOException {
+    public void write(byte[] b) throws IOException {
       super.write(b);
 
       if (out != null) {
@@ -266,7 +266,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     }
 
     @Override
-    public void write(byte [] b, int offset, int len) throws IOException {
+    public void write(byte[] b, int offset, int len) throws IOException {
       super.write(b, offset, len);
 
       if (out != null) {

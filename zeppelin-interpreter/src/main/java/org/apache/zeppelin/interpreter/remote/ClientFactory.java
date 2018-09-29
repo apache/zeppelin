@@ -32,7 +32,7 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 
 /**
- *
+ * Factory class for Thrift Client
  */
 public class ClientFactory extends BasePooledObjectFactory<Client>{
   private String host;
@@ -53,7 +53,7 @@ public class ClientFactory extends BasePooledObjectFactory<Client>{
       throw new InterpreterException(e);
     }
 
-    TProtocol protocol = new  TBinaryProtocol(transport);
+    TProtocol protocol = new TBinaryProtocol(transport);
     Client client = new RemoteInterpreterService.Client(protocol);
 
     synchronized (clientSocketMap) {

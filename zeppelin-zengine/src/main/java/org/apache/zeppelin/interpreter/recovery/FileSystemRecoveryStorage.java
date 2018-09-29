@@ -23,9 +23,8 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteRemoteInterpreterRunningProcess;
 import org.apache.zeppelin.notebook.FileSystemStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +65,12 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   }
 
   @Override
-  public void onInterpreterClientStart(InterpreterClient client) throws IOException {
+  public void onInterpreterClientStart(RemoteInterpreterProcess client) throws IOException {
     save(client.getInterpreterSettingName());
   }
 
   @Override
-  public void onInterpreterClientStop(InterpreterClient client) throws IOException {
+  public void onInterpreterClientStop(RemoteInterpreterProcess client) throws IOException {
     save(client.getInterpreterSettingName());
   }
 
@@ -93,8 +92,8 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
   }
 
   @Override
-  public Map<String, InterpreterClient> restore() throws IOException {
-    Map<String, InterpreterClient> clients = new HashMap<>();
+  public Map<String, RemoteInterpreterProcess> restore() throws IOException {
+    Map<String, RemoteInterpreterProcess> clients = new HashMap<>();
     List<Path> paths = fs.list(new Path(recoveryDir + "/*.recovery"));
 
     for (Path path : paths) {
@@ -109,7 +108,7 @@ public class FileSystemRecoveryStorage extends RecoveryStorage {
           String[] hostPort = tokens[1].split(":");
           int connectTimeout =
               zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-          RemoteInterpreterRunningProcess client = new RemoteInterpreterRunningProcess(
+          RemoteRemoteInterpreterRunningProcess client = new RemoteRemoteInterpreterRunningProcess(
               interpreterSettingName, connectTimeout, hostPort[0], Integer.parseInt(hostPort[1]));
           // interpreterSettingManager may be null when this class is used when it is used
           // stop-interpreter.sh

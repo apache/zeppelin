@@ -24,16 +24,11 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter;
-import org.apache.zeppelin.interpreter.remote.mock.GetEnvPropertyInterpreter;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -48,5 +49,5 @@ public abstract class InterpreterLauncher {
     return connectTimeout;
   }
 
-  public abstract InterpreterClient launch(InterpreterLaunchContext context) throws IOException;
+  public abstract RemoteInterpreterProcess launch(InterpreterLaunchContext context) throws IOException;
 }

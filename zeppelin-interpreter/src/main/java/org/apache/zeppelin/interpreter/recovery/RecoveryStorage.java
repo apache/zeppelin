@@ -18,7 +18,7 @@
 package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,25 +31,25 @@ import java.util.Map;
 public abstract class RecoveryStorage {
 
   protected ZeppelinConfiguration zConf;
-  protected Map<String, InterpreterClient> restoredClients;
+  protected Map<String, RemoteInterpreterProcess> restoredClients;
 
   public RecoveryStorage(ZeppelinConfiguration zConf) throws IOException {
     this.zConf = zConf;
   }
 
   /**
-   * Update RecoveryStorage when new InterpreterClient is started
+   * Update RecoveryStorage when new RemoteInterpreterProcess is started
    * @param client
    * @throws IOException
    */
-  public abstract void onInterpreterClientStart(InterpreterClient client) throws IOException;
+  public abstract void onInterpreterClientStart(RemoteInterpreterProcess client) throws IOException;
 
   /**
-   * Update RecoveryStorage when InterpreterClient is stopped
+   * Update RecoveryStorage when RemoteInterpreterProcess is stopped
    * @param client
    * @throws IOException
    */
-  public abstract void onInterpreterClientStop(InterpreterClient client) throws IOException;
+  public abstract void onInterpreterClientStop(RemoteInterpreterProcess client) throws IOException;
 
   /**
    *
@@ -58,7 +58,7 @@ public abstract class RecoveryStorage {
    * @return
    * @throws IOException
    */
-  public abstract Map<String, InterpreterClient> restore() throws IOException;
+  public abstract Map<String, RemoteInterpreterProcess> restore() throws IOException;
 
 
   /**
@@ -70,7 +70,7 @@ public abstract class RecoveryStorage {
     this.restoredClients = restore();
   }
 
-  public InterpreterClient getInterpreterClient(String interpreterGroupId) {
+  public RemoteInterpreterProcess getInterpreterClient(String interpreterGroupId) {
     if (restoredClients.containsKey(interpreterGroupId)) {
       return restoredClients.get(interpreterGroupId);
     } else {

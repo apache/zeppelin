@@ -32,6 +32,7 @@ import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLaunchContext;
 import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager;
@@ -39,7 +40,6 @@ import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.slf4j.Logger;
@@ -716,9 +716,9 @@ public class InterpreterSetting {
     InterpreterLaunchContext launchContext = new
         InterpreterLaunchContext(properties, option, interpreterRunner, userName,
         interpreterGroupId, id, group, name, interpreterEventServer.getPort(), interpreterEventServer.getHost());
-    RemoteInterpreterProcess process = (RemoteInterpreterProcess) launcher.launch(launchContext);
-    recoveryStorage.onInterpreterClientStart(process);
-    return process;
+    RemoteInterpreterProcess intpClient = launcher.launch(launchContext);
+    recoveryStorage.onInterpreterClientStart(intpClient);
+    return intpClient;
   }
 
   List<Interpreter> getOrCreateSession(String user, String noteId) {

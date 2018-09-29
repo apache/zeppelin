@@ -19,7 +19,7 @@ package org.apache.zeppelin.interpreter.recovery;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 
 import java.io.IOException;
 import java.util.Map;
@@ -38,17 +38,17 @@ public class NullRecoveryStorage extends RecoveryStorage {
   }
 
   @Override
-  public void onInterpreterClientStart(InterpreterClient client) throws IOException {
+  public void onInterpreterClientStart(RemoteInterpreterProcess client) throws IOException {
 
   }
 
   @Override
-  public void onInterpreterClientStop(InterpreterClient client) throws IOException {
+  public void onInterpreterClientStop(RemoteInterpreterProcess client) throws IOException {
 
   }
 
   @Override
-  public Map<String, InterpreterClient> restore() throws IOException {
+  public Map<String, RemoteInterpreterProcess> restore() throws IOException {
     return null;
   }
 }
