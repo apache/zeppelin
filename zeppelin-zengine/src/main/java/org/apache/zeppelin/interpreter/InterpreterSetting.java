@@ -381,13 +381,13 @@ public class InterpreterSetting {
     if (option.isExistingProcess) {
       key = Constants.EXISTING_PROCESS;
     } else if (getOption().isProcess()) {
-      key = (option.perUserIsolated() ? user : "") + ":" + (option.perNoteIsolated() ? noteId : "");
+      key = (option.perUserIsolated() ? user : "") + "-" + (option.perNoteIsolated() ? noteId : "");
     } else {
       key = SHARED_PROCESS;
     }
 
     //TODO(zjffdu) we encode interpreter setting id into groupId, this is not a good design
-    return id + ":" + key;
+    return id + "-" + key;
   }
 
   private String getInterpreterSessionId(String user, String noteId) {

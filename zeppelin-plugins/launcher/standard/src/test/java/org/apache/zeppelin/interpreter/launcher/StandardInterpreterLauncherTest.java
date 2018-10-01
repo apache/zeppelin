@@ -56,7 +56,7 @@ public class StandardInterpreterLauncherTest {
     assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
         interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertEquals(1, interpreterProcess.getEnv().size());
+    assertEquals(2, interpreterProcess.getEnv().size());
     assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
     assertEquals(true, interpreterProcess.isUserImpersonated());
   }
@@ -79,7 +79,7 @@ public class StandardInterpreterLauncherTest {
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
     assertEquals(10000, interpreterProcess.getConnectTimeout());
     assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertEquals(0, interpreterProcess.getEnv().size());
+    assertEquals(1, interpreterProcess.getEnv().size());
     assertEquals(true, interpreterProcess.isUserImpersonated());
   }
 

@@ -101,6 +101,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
         env.put("FLINK_LIB_DIR", flinkHome + "/lib");
       }
     }
+    env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());
     return env;
   }
 }
