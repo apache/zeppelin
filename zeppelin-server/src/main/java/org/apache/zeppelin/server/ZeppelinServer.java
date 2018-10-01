@@ -31,6 +31,8 @@ import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
+import org.apache.zeppelin.cluster.ClusterManager;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -42,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.interpreter.thrift.ClusterManagerService;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
@@ -159,6 +162,10 @@ public class ZeppelinServer extends ResourceConfig {
                 .to(NoteEventListener.class)
                 .to(WebSocketServlet.class)
                 .in(Singleton.class);
+            bindAsContract(ClusterManagerServer.class)
+                .to(ClusterManager.class)
+                .to(ClusterManagerService.Iface.class)
+                .in(Singleton.class);
             if (conf.isZeppelinNotebookCronEnable()) {
               bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
             } else {
@@ -185,6 +192,9 @@ public class ZeppelinServer extends ResourceConfig {
 
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
+
+    // Cluster Manager Server
+    setupClusterManagerServer(sharedServiceLocator);
 
     // JMX Enable
     Stream.of("ZEPPELIN_JMX_ENABLE")
@@ -343,6 +353,12 @@ public class ZeppelinServer extends ResourceConfig {
     final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
+  }
+
+  private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
+    InterpreterFactory interpreterFactory
+        = sharedServiceLocator.getService(InterpreterFactory.class);
+    sharedServiceLocator.getService(ClusterManagerServer.class).start(interpreterFactory);
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {
