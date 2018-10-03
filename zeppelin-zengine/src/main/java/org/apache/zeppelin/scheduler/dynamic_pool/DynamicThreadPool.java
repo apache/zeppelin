@@ -14,37 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest.message;
 
-import com.google.gson.Gson;
+package org.apache.zeppelin.scheduler.dynamic_pool;
 
-import org.apache.zeppelin.common.JsonSerializable;
+public interface DynamicThreadPool {
 
-/**
- *  CronRequest rest api request message.
- */
-public class CronRequest implements JsonSerializable {
-  private static final Gson gson = new Gson();
-
-  String cron;
-  Integer poolSize;
-
-  public CronRequest (){
-  }
-
-  public String getCronString() {
-    return cron;
-  }
-
-  public Integer getPoolSize() {
-    return poolSize;
-  }
-
-  public String toJson() {
-    return gson.toJson(this);
-  }
-
-  public static CronRequest fromJson(String json) {
-    return gson.fromJson(json, CronRequest.class);
-  }
+  void doResize(Integer threadPoolSize);
 }

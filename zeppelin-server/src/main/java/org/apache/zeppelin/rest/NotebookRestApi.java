@@ -21,6 +21,7 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import javax.inject.Inject;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -40,6 +41,8 @@ import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RenameNoteRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
+import org.apache.zeppelin.scheduler.dynamic_pool.DynamicThreadPool;
+import org.apache.zeppelin.scheduler.dynamic_pool.DynamicThreadPoolRepository;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.JobManagerService;
@@ -49,6 +52,7 @@ import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -425,7 +429,7 @@ public class NotebookRestApi extends AbstractRestApi {
   }
 
   /**
-   * Rename note REST API
+   * Rename note REST API.
    *
    * @param message - JSON containing new name
    * @return JSON with status.OK
@@ -869,6 +873,83 @@ public class NotebookRestApi extends AbstractRestApi {
     notebook.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
+  }
+
+  /**
+   * Change quartz thread pool size REST API.
+   *
+   * @param message - JSON with poolSize value.
+   * @return JSON with status.OK
+   * @throws IllegalArgumentException
+   * @throws SchedulerException
+   */
+  @PUT
+  @Path("cron/settings/update/poolSize")
+  @ZeppelinApi
+  public Response changeCronJob(String message)
+      throws IllegalArgumentException, SchedulerException {
+    CronRequest request = CronRequest.fromJson(message);
+
+    LOG.info("Change cron pool size with msg={}", message);
+    DynamicThreadPool threadPool =
+        DynamicThreadPoolRepository.getInstance().lookup(notebook.getSchedulerName());
+    if (threadPool == null) {
+      throw new BadRequestException("Thread pool size is constant.");
+    }
+    if (request.getPoolSize() < 1) {
+      throw new BadRequestException("Wrong pool size.");
+    }
+    threadPool.doResize(request.getPoolSize());
+    return new JsonResponse<>(Status.OK).build();
+  }
+
+  /**
+   * Get scheduler settings REST API.
+   *
+   * @return JSON with status.OK
+   */
+  @GET
+  @Path("cron/settings")
+  @ZeppelinApi
+  public Response getCronJobInfo() {
+    try {
+      Map<String, String> settings = notebook.getSchedulerInfo();
+      if (settings == null) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      } else {
+        return new JsonResponse<>(Status.OK, "", settings).build();
+      }
+    } catch (SchedulerException | NullPointerException e) {
+      LOG.error("Exception in NotebookRestApi while creating ", e);
+      return new JsonResponse<>(
+              Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e))
+          .build();
+    }
+  }
+
+  /**
+   * Get scheduler setting by the setting id REST API.
+   *
+   * @return JSON with status.OK
+   */
+  @GET
+  @Path("cron/settings/{settingId}")
+  @ZeppelinApi
+  public Response getQuartzSetting(@PathParam("settingId") String settingId) {
+    try {
+      Map<String, String> settings = notebook.getSchedulerInfo();
+      String setting = settings.get(settingId);
+      if (setting == null) {
+        return new JsonResponse<>(Status.NOT_FOUND).build();
+      } else {
+        return new JsonResponse<>(Status.OK, "", setting).build();
+      }
+    } catch (SchedulerException | NullPointerException e) {
+      LOG.error("Exception in NotebookRestApi while creating ", e);
+      return new JsonResponse<>(
+              Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e))
+          .build();
+    }
   }
 
   /**

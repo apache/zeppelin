@@ -170,11 +170,17 @@ public abstract class AbstractTestRestApi {
   private static void start(boolean withAuth,
                             String testClassName,
                             boolean withKnox,
+                            boolean withDynamicPool,
                             boolean cleanData)
           throws Exception {
-    LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
-        withAuth, testClassName, withKnox);
-    
+    LOG.info(
+        "Starting ZeppelinServer withAuth: {}, testClassName: {},"
+            + " withKnox: {}, withDynamicPool: {}",
+        withAuth,
+        testClassName,
+        withKnox,
+        withDynamicPool);
+
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -206,6 +212,10 @@ public abstract class AbstractTestRestApi {
 
       LOG.info("Staring test Zeppelin up...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
+      if (withDynamicPool) {
+        System.setProperty("org.quartz.properties", "./quartz.properties");
+      }
 
       if (withAuth) {
         isRunningWithAuth = true;
@@ -250,20 +260,24 @@ public abstract class AbstractTestRestApi {
     }
   }
 
+  protected static void startUpWithDynamicPoolEnable(String testClassName) throws Exception {
+    start(false, testClassName, false, true, true);
+  }
+
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
-    start(true, testClassName, true, true);
+    start(true, testClassName, true, false, true);
   }
-  
+
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
-    start(true, testClassName, false, true);
-  }
-  
-  protected static void startUp(String testClassName) throws Exception {
-    start(false, testClassName, false, true);
+    start(true, testClassName, false, false, true);
   }
 
   protected static void startUp(String testClassName, boolean cleanData) throws Exception {
-    start(false, testClassName, false, cleanData);
+    start(false, testClassName, false, false, cleanData);
+  }
+
+  protected static void startUp(String testClassName) throws Exception {
+    start(false, testClassName, false, false, true);
   }
 
   private static String getHostname() {
@@ -311,7 +325,7 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-      
+
       if (isRunningWithAuth) {
         isRunningWithAuth = false;
         System
@@ -348,7 +362,7 @@ public abstract class AbstractTestRestApi {
   protected static GetMethod httpGet(String path) throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
-  
+
   protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
@@ -458,7 +472,7 @@ public abstract class AbstractTestRestApi {
     }
     return true;
   }
-  
+
   protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
     return new TypeSafeMatcher<HttpMethodBase>() {
       WeakReference<HttpMethodBase> method;
