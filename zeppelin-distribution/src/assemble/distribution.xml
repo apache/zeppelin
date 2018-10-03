@@ -97,6 +97,37 @@
     <fileSet>
       <outputDirectory>/lib/interpreter</outputDirectory>
       <directory>../zeppelin-interpreter/target/lib</directory>
+      <excludes>
+        <exclude>asm-5.0.4.jar</exclude>
+        <exclude>atomix-cluster-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-primary-backup-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-utils-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-primitive-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-raft-3.0.0-rc4.jar</exclude>
+        <exclude>atomix-storage-3.0.0-rc4.jar</exclude>
+        <exclude>config-1.3.2.jar</exclude>
+        <exclude>fast-classpath-scanner-2.21.jar</exclude>
+        <exclude>guava-22.0.jar</exclude>
+        <exclude>kryo-4.0.2.jar</exclude>
+        <exclude>minlog-1.3.0.jar</exclude>
+        <exclude>netty-buffer-4.1.27.Final.jar</exclude>
+        <exclude>netty-common-4.1.27.Final.jar</exclude>
+        <exclude>netty-codec-4.1.27.Final.jar</exclude>
+        <exclude>netty-handler-4.1.27.Final.jar</exclude>
+        <exclude>netty-resolver-4.1.27.Final.jar</exclude>
+        <exclude>netty-transport-4.1.27.Final.jar</exclude>
+        <exclude>netty-transport-native-unix-common-4.1.27.Final.jar</exclude>
+        <exclude>netty-transport-native-epoll-4.1.27.Final-linux-x86_64.jar</exclude>
+        <exclude>objenesis-2.5.1.jar</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/lib/interpreter</outputDirectory>
+      <directory>../zeppelin-interpreter-api/target</directory>
+      <includes>
+        <include>zeppelin-interpreter-api-*.jar</include>
+      </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>
