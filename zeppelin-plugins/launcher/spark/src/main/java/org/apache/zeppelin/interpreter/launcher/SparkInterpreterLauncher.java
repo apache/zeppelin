@@ -47,7 +47,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   @Override
   protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) {
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = super.buildEnvFromProperties(context);
     Properties sparkProperties = new Properties();
     String sparkMaster = getSparkMaster(properties);
     for (String key : properties.stringPropertyNames()) {
