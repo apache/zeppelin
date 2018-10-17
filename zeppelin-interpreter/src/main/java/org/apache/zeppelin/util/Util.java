@@ -39,7 +39,7 @@ public class Util {
     try {
       projectProperties.load(Util.class.getResourceAsStream("/project.properties"));
       gitProperties.load(Util.class.getResourceAsStream("/git.properties"));
-    } catch (IOException e) {
+    } catch (Exception e) {
       //Fail to read project.properties
     }
   }
