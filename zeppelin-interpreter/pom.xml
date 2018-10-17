@@ -43,7 +43,7 @@
     <aether.version>1.12</aether.version>
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
-    <jline.version>2.12.1</jline.version>
+    <jline.version>2.14.3</jline.version>
     <atomix.version>3.0.0-rc4</atomix.version>
     <commons-math3.version>3.1.1</commons-math3.version>
     <guava.version>20.0</guava.version>

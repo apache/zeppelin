@@ -193,6 +193,15 @@
     <profiles>
 
         <profile>
+            <id>spark-2.4</id>
+            <properties>
+                <spark.version>2.4.0</spark.version>
+                <protobuf.version>2.5.0</protobuf.version>
+                <spark.py4j.version>0.10.7</spark.py4j.version>
+            </properties>
+        </profile>
+
+        <profile>
             <id>spark-2.3</id>
             <properties>
                 <spark.version>2.3.0</spark.version>
