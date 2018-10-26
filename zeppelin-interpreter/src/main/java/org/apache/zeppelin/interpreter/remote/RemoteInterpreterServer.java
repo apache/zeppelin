@@ -142,6 +142,8 @@ public class RemoteInterpreterServer extends Thread
                                  String interpreterGroupId,
                                  boolean isTest)
       throws TTransportException, IOException {
+    logger.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
+            intpEventServerHost, intpEventServerPort);
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       if (!isTest) {
@@ -171,7 +173,6 @@ public class RemoteInterpreterServer extends Thread
     }
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
-    logger.info("Starting remote interpreter server on port {}", port);
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
   }
 
