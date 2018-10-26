@@ -147,7 +147,6 @@ public class RemoteScheduler extends AbstractScheduler {
 
     public synchronized Status getStatus() {
       if (!remoteInterpreter.isOpened()) {
-        LOGGER.info("status:" + getLastStatus());
         return getLastStatus();
       }
       Status status = Status.valueOf(remoteInterpreter.getStatus(job.getId()));

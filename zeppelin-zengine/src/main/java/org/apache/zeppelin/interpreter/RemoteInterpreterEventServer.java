@@ -87,24 +87,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     this.appListener = interpreterSettingManager.getAppEventListener();
   }
 
-  public void run() {
-    TServerSocket tSocket = null;
-    try {
-      tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
-      port = tSocket.getServerSocket().getLocalPort();
-      host = RemoteInterpreterUtils.findAvailableHostAddress();
-    } catch (IOException e1) {
-      throw new RuntimeException(e1);
-    }
-
-    LOGGER.info("InterpreterEventServer will start. Port: {}", port);
-    RemoteInterpreterEventService.Processor processor =
-        new RemoteInterpreterEventService.Processor(this);
-    this.thriftServer = new TThreadPoolServer(
-        new TThreadPoolServer.Args(tSocket).processor(processor));
-    this.thriftServer.serve();
-  }
-
   public void start() throws IOException {
     Thread startingThread = new Thread() {
       @Override
@@ -118,7 +100,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           throw new RuntimeException(e1);
         }
 
-        LOGGER.info("InterpreterEventServer will start. Port: {}", port);
+        LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
         RemoteInterpreterEventService.Processor processor =
             new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
         thriftServer = new TThreadPoolServer(
@@ -142,7 +124,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (thriftServer != null && !thriftServer.isServing()) {
       throw new IOException("Fail to start InterpreterEventServer in 30 seconds.");
     }
-    LOGGER.info("InterpreterEventServer is started");
+    LOGGER.info("RemoteInterpreterEventServer is started");
 
     runner = new AppendOutputRunner(listener);
     appendFuture = appendService.scheduleWithFixedDelay(
@@ -156,6 +138,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (appendFuture != null) {
       appendFuture.cancel(true);
     }
+    LOGGER.info("RemoteInterpreterEventServer is stopped");
   }
 
 
@@ -252,6 +235,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   @Override
   public void addAngularObject(String intpGroupId, String json) throws TException {
+    LOGGER.debug("Add AngularObject, interpreterGroupId: " + intpGroupId + ", json: " + json);
     AngularObject angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
