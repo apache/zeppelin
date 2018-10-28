@@ -477,8 +477,25 @@ public class InterpreterSetting {
 
   public void close() {
     LOGGER.info("Close InterpreterSetting: " + name);
-    for (ManagedInterpreterGroup intpGroup : interpreterGroups.values()) {
-      intpGroup.close();
+    List<Thread> closeThreads = new LinkedList<>();
+    for (final ManagedInterpreterGroup group : interpreterGroups.values()) {
+      Thread t =
+              new Thread() {
+                public void run() {
+                  group.close();
+                }
+              };
+      t.setName(String.format("%s-close", group.getInterpreterSetting().getGroup()));
+      t.start();
+      closeThreads.add(t);
+    }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        LOGGER.error("Can't close managedInterpreterGroup", e);
+      }
     }
     interpreterGroups.clear();
   }

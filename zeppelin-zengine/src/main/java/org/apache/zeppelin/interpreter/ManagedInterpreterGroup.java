@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -28,8 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ManagedInterpreterGroup runs under zeppelin server
@@ -82,18 +83,36 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   /**
    * Close all interpreter instances in this group
    */
-  public synchronized void close() {
+  public void close() {
     LOGGER.info("Close InterpreterGroup: " + id);
-    for (String sessionId : sessions.keySet()) {
-      close(sessionId);
+    List<Thread> closeThreads = new LinkedList<>();
+    for (final String sessionId : sessions.keySet()) {
+      Thread t =
+              new Thread() {
+                public void run() {
+                  close(sessionId);
+                }
+              };
+      t.setName(String.format("%s-close", sessionId));
+      t.start();
+      closeThreads.add(t);
     }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        LOGGER.error("Can't close interpreterGroup", e);
+      }
+    }
+    sessions.clear();
   }
 
   /**
    * Close all interpreter instances in this session
    * @param sessionId
    */
-  public synchronized void close(String sessionId) {
+  public void close(String sessionId) {
     LOGGER.info("Close Session: " + sessionId + " for interpreter setting: " +
         interpreterSetting.getName());
     close(sessions.remove(sessionId));
@@ -118,23 +137,57 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     if (interpreters == null) {
       return;
     }
+    List<Thread> closeThreads = new LinkedList<>();
+    for (final Interpreter interpreter : interpreters) {
+      Thread t =
+              new Thread() {
+                public void run() {
+                  Scheduler scheduler = interpreter.getScheduler();
 
-    for (Interpreter interpreter : interpreters) {
-      Scheduler scheduler = interpreter.getScheduler();
-      for (Job job : scheduler.getAllJobs()) {
-        job.abort();
-        job.setStatus(Job.Status.ABORT);
-        LOGGER.info("Job " + job.getJobName() + " aborted ");
-      }
+                  List<Thread> abortedJobsThreads = new LinkedList<>();
+                  for (final Job job : scheduler.getAllJobs()) {
+                    Thread t =
+                            new Thread() {
+                              public void run() {
+                                job.abort();
+                                job.setStatus(Job.Status.ABORT);
+                                LOGGER.info("Job " + job.getJobName() + " aborted ");
+                              }
+                            };
+                    t.setName(String.format("%s-abort", job.getJobName()));
+                    t.start();
+                    abortedJobsThreads.add(t);
+                  }
 
+                  for (Thread t : abortedJobsThreads) {
+                    try {
+                      t.join();
+                    } catch (InterruptedException e) {
+                      LOGGER.error("Can't abort job", e);
+                    }
+                  }
+
+                  try {
+                    LOGGER.info("Trying to close interpreter " + interpreter.toString() + " " + interpreter.getClassName());
+                    interpreter.close();
+                  } catch (InterpreterException e) {
+                    LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+                  }
+                  if (scheduler != null) {
+                    SchedulerFactory.singleton().removeScheduler(scheduler.getName());
+                  }
+                }
+              };
+      t.setName(String.format("%s-close", interpreter.getClassName()));
+      t.start();
+      closeThreads.add(t);
+    }
+
+    for (Thread t : closeThreads) {
       try {
-        interpreter.close();
-      } catch (InterpreterException e) {
-        LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
-      }
-      //TODO(zjffdu) move the close of schedule to Interpreter
-      if (null != scheduler) {
-        SchedulerFactory.singleton().removeScheduler(scheduler.getName());
+        t.join();
+      } catch (InterruptedException e) {
+        LOGGER.error("Can't close interpreter", e);
       }
     }
   }
