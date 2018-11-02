@@ -125,22 +125,8 @@
               </excludes>
             </relocation>
             <relocation>
-              <pattern>com</pattern>
-              <shadedPattern>${shaded.dependency.prefix}.com</shadedPattern>
-              <excludes>
-                <exclude>**/pom.xml</exclude>
-                <!-- Not the com/ packages that are a part of particular jdk implementations -->
-                <exclude>com/sun/tools/*</exclude>
-                <exclude>com/sun/javadoc/*</exclude>
-                <exclude>com/sun/security/*</exclude>
-                <exclude>com/sun/jndi/*</exclude>
-                <exclude>com/sun/management/*</exclude>
-                <exclude>com/sun/tools/**/*</exclude>
-                <exclude>com/sun/javadoc/**/*</exclude>
-                <exclude>com/sun/security/**/*</exclude>
-                <exclude>com/sun/jndi/**/*</exclude>
-                <exclude>com/sun/management/**/*</exclude>
-              </excludes>
+              <pattern>com.google</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.com.google</shadedPattern>
             </relocation>
             <relocation>
               <pattern>io</pattern>

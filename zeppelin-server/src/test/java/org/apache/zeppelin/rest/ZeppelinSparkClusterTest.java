@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   //ci timeout.
   //TODO(zjffdu) remove this after we upgrade it to junit 4.13 (ZEPPELIN-3341)
   private static Set<String> verifiedSparkVersions = new HashSet<>();
-  
+
 
   private String sparkVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
@@ -170,6 +171,9 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("2", p.getReturn().message().get(0).getData());
 
+    // test code completion
+    List<InterpreterCompletion> completions = note.completion(p.getId(), "sc.", 2);
+    assertTrue(completions.size() > 0);
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
