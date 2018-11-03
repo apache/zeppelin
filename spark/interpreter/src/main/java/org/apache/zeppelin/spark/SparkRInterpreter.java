@@ -164,7 +164,8 @@ public class SparkRInterpreter extends Interpreter {
       }
       if (useKnitr()) {
         zeppelinR.setInterpreterOutput(null);
-        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
+        Object value = zeppelinR.eval(lines);
+        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + value + "\n```");
         zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
         String html = zeppelinR.getS0(".zres");
 
