@@ -21,9 +21,9 @@ To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](htt
 ## Getting Started
 
 ### Install binary package
-Please go to [install](https://zeppelin.apache.org/docs/latest/install/install.html) to install Apache Zeppelin from binary package.
+Please go to [install](http://zeppelin.apache.org/docs/latest/quickstart/install.html) to install Apache Zeppelin from binary package.
 
 ### Build from source
-Please check [Build from source](https://zeppelin.apache.org/docs/latest/install/build.html) to build Zeppelin from source.
+Please check [Build from source](http://zeppelin.apache.org/docs/latest/setup/basics/how_to_build.html) to build Zeppelin from source.
 
 
