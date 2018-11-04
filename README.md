@@ -15,15 +15,15 @@ Core feature:
    * Built-in Apache Spark support
 
 
-To know more about Zeppelin, visit our web site [http://zeppelin.apache.org](https://zeppelin.apache.org)
+To know more about Zeppelin, visit our web site [https://zeppelin.apache.org](https://zeppelin.apache.org)
 
 
 ## Getting Started
 
 ### Install binary package
-Please go to [install](http://zeppelin.apache.org/docs/latest/quickstart/install.html) to install Apache Zeppelin from binary package.
+Please go to [install](https://zeppelin.apache.org/docs/latest/quickstart/install.html) to install Apache Zeppelin from binary package.
 
 ### Build from source
-Please check [Build from source](http://zeppelin.apache.org/docs/latest/setup/basics/how_to_build.html) to build Zeppelin from source.
+Please check [Build from source](https://zeppelin.apache.org/docs/latest/setup/basics/how_to_build.html) to build Zeppelin from source.
 
 
