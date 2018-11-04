@@ -70,7 +70,7 @@ If you're unsure about the options, use the same commands that creates official 
 # update all pom.xml to use scala 2.11
 ./dev/change_scala_version.sh 2.11
 # build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
-mvn clean package -DskipTests -Pspark-2.1 -Phadoop-2.6 -Pscala-2.11
+mvn clean package -DskipTests -Pspark-2.3 -Phadoop-2.6 -Pscala-2.11
 ```
 
 #### 3. Done
