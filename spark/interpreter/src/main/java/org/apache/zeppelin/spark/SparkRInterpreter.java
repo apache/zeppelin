@@ -140,7 +140,6 @@ public class SparkRInterpreter extends Interpreter {
       setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
           "\", \"" + jobDesc + "\", TRUE)";
     }
-    lines = setJobGroup + "\n" + lines;
     if (sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_3_0)) {
       // setLocalProperty is only available from spark 2.3.0
       String setPoolStmt = "setLocalProperty('spark.scheduler.pool', NULL)";
@@ -148,7 +147,7 @@ public class SparkRInterpreter extends Interpreter {
         setPoolStmt = "setLocalProperty('spark.scheduler.pool', '" +
             interpreterContext.getLocalProperties().get("pool") + "')";
       }
-      lines = setPoolStmt + "\n" + lines;
+      setJobGroup = setJobGroup + "\n" + setPoolStmt;
     }
     try {
       // render output with knitr
@@ -158,8 +157,9 @@ public class SparkRInterpreter extends Interpreter {
       }
       if (useKnitr()) {
         zeppelinR.setInterpreterOutput(null);
-        Object value = zeppelinR.eval(lines);
-        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + value + "\n```");
+        zeppelinR.eval(setJobGroup);
+        zeppelinR.eval(".zvalue <- eval(parse(text=" + lines + "))");
+        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n.zvalue\n```");
         zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
         String html = zeppelinR.getS0(".zres");
 
