@@ -154,7 +154,6 @@ public class SparkRInterpreter extends Interpreter {
       setJobGroup = "dummy__ <- setJobGroup(sc, \"" + jobGroup +
           "\", \"" + jobDesc + "\", TRUE)";
     }
-    lines = setJobGroup + "\n" + lines;
 
     try {
       // render output with knitr
@@ -164,8 +163,9 @@ public class SparkRInterpreter extends Interpreter {
       }
       if (useKnitr()) {
         zeppelinR.setInterpreterOutput(null);
-        Object value = zeppelinR.eval(lines);
-        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + value + "\n```");
+        zeppelinR.eval(setJobGroup);
+        zeppelinR.eval(".zvalue <- eval(parse(text=" + lines + "))");
+        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n.zvalue\n```");
         zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
         String html = zeppelinR.getS0(".zres");
 
