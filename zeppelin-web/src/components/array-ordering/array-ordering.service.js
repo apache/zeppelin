@@ -27,10 +27,10 @@ function ArrayOrderingService(TRASH_FOLDER_ID) {
   };
 
   this.getNoteName = function(note) {
-    if (note.path === undefined || note.path.trim() === '') {
+    if (note.name === undefined || note.name.trim() === '') {
       return 'Note ' + note.id;
     } else {
-      return note.path;
+      return note.name;
     }
   };
 
