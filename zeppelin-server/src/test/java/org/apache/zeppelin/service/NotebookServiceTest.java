@@ -19,6 +19,8 @@
 package org.apache.zeppelin.service;
 
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -63,6 +65,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -74,6 +77,8 @@ public class NotebookServiceTest {
       new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<>());
 
   private ServiceCallback callback = mock(ServiceCallback.class);
+
+  private Gson gson = new Gson();
 
 
   @Before
@@ -319,6 +324,14 @@ public class NotebookServiceTest {
         new HashMap<>(), new HashMap<>(), false, true, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
+
+    // run all paragraphs
+    reset(callback);
+    notebookService.runAllParagraphs(
+            note1.getId(),
+            gson.fromJson(gson.toJson(note1.getParagraphs()), new TypeToken<List>(){}.getType()),
+            context, callback);
+    verify(callback, times(2)).onSuccess(any(), any());
 
     // run paragraph synchronously via invalid code
     //TODO(zjffdu) must sleep for a while, otherwise will get wrong status. This should be due to
