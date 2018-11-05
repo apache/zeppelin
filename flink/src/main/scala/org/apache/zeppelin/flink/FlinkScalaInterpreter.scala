@@ -213,10 +213,18 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
     if (cluster != null) {
       cluster match {
-        case Some(Left(Left(legacyMiniCluster))) => legacyMiniCluster.close()
-        case Some(Left(Right(newMiniCluster))) => newMiniCluster.close()
-        case Some(Right(yarnCluster)) => yarnCluster.shutdown()
-        case _ =>
+        case Some(Left(Left(legacyMiniCluster))) =>
+          LOGGER.info("Shutdown LegacyMiniCluster")
+          legacyMiniCluster.close()
+        case Some(Left(Right(newMiniCluster))) =>
+          LOGGER.info("Shutdown NewMiniCluster")
+          newMiniCluster.close()
+        case Some(Right(yarnCluster)) =>
+          LOGGER.info("Shutdown YarnCluster")
+          yarnCluster.shutDownCluster()
+          yarnCluster.shutdown()
+        case e =>
+          LOGGER.error("Unrecognized cluster type: " + e.getClass.getSimpleName)
       }
     }
   }
