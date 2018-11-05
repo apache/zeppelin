@@ -317,7 +317,7 @@ Or, if you want to simultaneously use your local git storage with GCS, use the f
 ### Google Cloud API Authentication
 
 Note: On Google App Engine, Google Cloud Shell, and Google Compute Engine, these
-steps are not necessary, as build-in credentials are used by default.
+steps are not necessary if you are using the default built in service account.
 
 For more information, see [Application Default Credentials](https://cloud.google.com/docs/authentication/production)
 
@@ -351,11 +351,25 @@ for authentication with GCS, you will need a JSON service account key file.
    `/path/to/my/key.json`), and give it appropriate permissions. Ensure at
    least the user running the zeppelin daemon can read it.
 
-Then, point `GOOGLE_APPLICATION_CREDENTIALS` at your new key file in **zeppelin-env.sh**. For example:
+ If you wish to set this as your default credential file to access Google Services,
+ point `GOOGLE_APPLICATION_CREDENTIALS` at your new key file in **zeppelin-env.sh**. For example:
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key.json
 ```
+If you do not want to use this key file as default credential file and want to specify a custom key
+file for authentication with GCS, update the following property :
+
+```xml
+<property>
+  <name>zeppelin.notebook.google.credentialsJsonFilePath</name>
+  <value>path/to/key.json</value>
+  <description>
+    Path to GCS credential key file for authentication with Google Storage.
+ </description>
+</property>
+```
+
 
 </br>
 ## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>

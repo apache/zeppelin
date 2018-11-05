@@ -85,6 +85,15 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.gcs.credentialsJsonFilePath</name>
+  <value>path/to/key.json</value>
+  <description>
+    Path to GCS credential key file for authentication with Google Storage.
+ </description>
+</property>
+
+
+<property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
