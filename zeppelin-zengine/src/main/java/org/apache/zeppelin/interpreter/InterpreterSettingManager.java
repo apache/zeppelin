@@ -79,6 +79,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -849,24 +850,18 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   }
 
   public void close() {
-    List<Thread> closeThreads = new LinkedList<>();
-    for (final InterpreterSetting intpSetting : interpreterSettings.values()) {
-      Thread t =
-          new Thread() {
-            public void run() {
-              intpSetting.close();
-            }
-          };
-      t.setName(String.format("%s-close", intpSetting.getId()));
-      t.start();
-      closeThreads.add(t);
-    }
+    List<Thread> closeThreads = interpreterSettings.values().stream()
+            .map(intpSetting-> new Thread(intpSetting::close, intpSetting.getId() + "-close"))
+            .peek(Thread::start)
+            .collect(Collectors.toList());
 
     for (Thread t : closeThreads) {
       try {
         t.join();
       } catch (InterruptedException e) {
-        LOGGER.error("Can't close interpreterGroup", e);
+        LOGGER.error("Can't wait close interpreterGroup threads", e);
+        Thread.currentThread().interrupt();
+        break;
       }
     }
   }

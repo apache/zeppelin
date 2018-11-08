@@ -58,6 +58,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE;
 import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT;
@@ -477,27 +478,20 @@ public class InterpreterSetting {
 
   public void close() {
     LOGGER.info("Close InterpreterSetting: " + name);
-    List<Thread> closeThreads = new LinkedList<>();
-    for (final ManagedInterpreterGroup group : interpreterGroups.values()) {
-      Thread t =
-              new Thread() {
-        public void run() {
-          group.close();
-        }
-      };
-      t.setName(String.format("%s-close", group.getInterpreterSetting().getGroup()));
-      t.start();
-      closeThreads.add(t);
-    }
-
+    List<Thread> closeThreads = interpreterGroups.values().stream()
+            .map(g -> new Thread(g::close, name + "-close"))
+            .peek(Thread::start)
+            .collect(Collectors.toList());
+    interpreterGroups.clear();
     for (Thread t : closeThreads) {
       try {
         t.join();
       } catch (InterruptedException e) {
-        LOGGER.error("Can't close managedInterpreterGroup", e);
+        LOGGER.error("Can't wait InterpreterSetting close threads", e);
+        Thread.currentThread().interrupt();
+        break;
       }
     }
-    interpreterGroups.clear();
   }
 
   public void setProperties(Object object) {
