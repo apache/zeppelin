@@ -481,10 +481,10 @@ public class InterpreterSetting {
     for (final ManagedInterpreterGroup group : interpreterGroups.values()) {
       Thread t =
               new Thread() {
-                public void run() {
-                  group.close();
-                }
-              };
+        public void run() {
+          group.close();
+        }
+      };
       t.setName(String.format("%s-close", group.getInterpreterSetting().getGroup()));
       t.start();
       closeThreads.add(t);

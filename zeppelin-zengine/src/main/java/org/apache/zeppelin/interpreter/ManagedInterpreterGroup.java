@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ManagedInterpreterGroup runs under zeppelin server
@@ -89,10 +88,10 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     for (final String sessionId : sessions.keySet()) {
       Thread t =
               new Thread() {
-                public void run() {
-                  close(sessionId);
-                }
-              };
+        public void run() {
+          close(sessionId);
+        }
+      };
       t.setName(String.format("%s-close", sessionId));
       t.start();
       closeThreads.add(t);
@@ -141,43 +140,49 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     for (final Interpreter interpreter : interpreters) {
       Thread t =
               new Thread() {
-                public void run() {
-                  Scheduler scheduler = interpreter.getScheduler();
+        public void run() {
+          Scheduler scheduler = interpreter.getScheduler();
 
-                  List<Thread> abortedJobsThreads = new LinkedList<>();
-                  for (final Job job : scheduler.getAllJobs()) {
-                    Thread t =
-                            new Thread() {
-                              public void run() {
-                                job.abort();
-                                job.setStatus(Job.Status.ABORT);
-                                LOGGER.info("Job " + job.getJobName() + " aborted ");
-                              }
-                            };
-                    t.setName(String.format("%s-abort", job.getJobName()));
-                    t.start();
-                    abortedJobsThreads.add(t);
-                  }
+          List<Thread> abortedJobsThreads = new LinkedList<>();
+          for (final Job job : scheduler.getAllJobs()) {
+            Thread t =
+                    new Thread() {
+              public void run() {
+                job.abort();
+                job.setStatus(Job.Status.ABORT);
+                LOGGER.info("Job " + job.getJobName() + " aborted ");
+              }
+            };
+            t.setName(String.format("%s-abort", job.getJobName()));
+            t.start();
+            abortedJobsThreads.add(t);
+          }
 
-                  for (Thread t : abortedJobsThreads) {
-                    try {
-                      t.join();
-                    } catch (InterruptedException e) {
-                      LOGGER.error("Can't abort job", e);
-                    }
-                  }
+          for (Thread t : abortedJobsThreads) {
+            try {
+              t.join();
+            } catch (InterruptedException e) {
+              LOGGER.error("Can't abort job", e);
+            }
+          }
 
-                  try {
-                    LOGGER.info("Trying to close interpreter " + interpreter.toString() + " " + interpreter.getClassName());
-                    interpreter.close();
-                  } catch (InterpreterException e) {
-                    LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
-                  }
-                  if (scheduler != null) {
-                    SchedulerFactory.singleton().removeScheduler(scheduler.getName());
-                  }
-                }
-              };
+          try {
+            LOGGER.info(
+                    String.format(
+                            "Trying to close interpreter %s %s",
+                            interpreter.toString(),
+                            interpreter.getClassName()
+                    )
+            );
+            interpreter.close();
+          } catch (InterpreterException e) {
+            LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+          }
+          if (scheduler != null) {
+            SchedulerFactory.singleton().removeScheduler(scheduler.getName());
+          }
+        }
+      };
       t.setName(String.format("%s-close", interpreter.getClassName()));
       t.start();
       closeThreads.add(t);
