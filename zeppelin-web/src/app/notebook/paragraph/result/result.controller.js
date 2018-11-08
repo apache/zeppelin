@@ -683,8 +683,18 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
           builtInViz.instance.render(transformed);
           builtInViz.instance.renderSetting(visualizationSettingTargetEl);
           builtInViz.instance.activate();
-          angular.element(window).resize(() => {
-            builtInViz.instance.resize();
+
+          let eventID = builtInViz.instance.targetEl.id;
+          if (!eventID) {
+            eventID = builtInViz.instance.targetEl[0].id;
+          }
+
+          $scope.addEvent({
+            eventID: eventID,
+            eventType: 'resize',
+            element: window,
+            onDestroyElement: builtInViz.instance.targetEl,
+            handler: () => builtInViz.instance.resize(),
           });
         } catch (err) {
           console.error('Graph drawing error %o', err);
