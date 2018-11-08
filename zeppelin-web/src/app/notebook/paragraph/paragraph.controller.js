@@ -1674,6 +1674,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.changeColWidth($scope.paragraph, Math.max(1, $scope.paragraph.config.colWidth - 1));
       } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
         $scope.changeColWidth($scope.paragraph, Math.min(12, $scope.paragraph.config.colWidth + 1));
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 83) { // Ctrl + Shift + S
+        $scope.toggleSelection(paragraphId);
+        $scope.$apply();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
         if ($scope.paragraph.config.title) {
           $scope.hideTitle($scope.paragraph);
@@ -1905,6 +1908,40 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.$on('checkOccurrences', function() {
     if (searchRanges.length > 0) {
       $scope.$emit('occurrencesExists', searchRanges.length);
+    }
+  });
+
+  $scope.$on('multipleAction', function(event, type, ids, data) {
+    if (!ids.has($scope.paragraph.id)) {
+      return;
+    }
+
+    switch (type) {
+      case 'clearOutput':
+        $scope.clearParagraphOutput($scope.paragraph);
+        break;
+
+      case 'toggleTable':
+        $scope.paragraph.config.tableHide = data.toggleTableStatus;
+        commitParagraph($scope.paragraph);
+        break;
+
+      case 'toggleEditor':
+        if (data.toggleEditorStatus) {
+          $scope.openEditor($scope.paragraph);
+        } else {
+          $scope.closeEditor($scope.paragraph);
+        }
+        break;
+
+      case 'toggleEnableRun':
+        $scope.paragraph.config.enabled = data.toggleEnableRunStatus;
+        commitParagraph($scope.paragraph);
+        break;
+
+      case 'delete':
+        websocketMsgSrv.removeParagraph($scope.paragraph.id);
+        break;
     }
   });
 }
