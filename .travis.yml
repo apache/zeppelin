@@ -17,6 +17,9 @@ language: java
 
 sudo: false
 
+before_cache:
+    - sudo chown -R travis:travis $HOME/.m2
+
 cache:
   apt: true
   directories:
@@ -94,15 +97,15 @@ matrix:
       dist: trusty
       env: PYTHON="3" PROFILE="-Pspark-1.6" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl zeppelin-zengine,spark/interpreter,spark/spark-dependencies" TEST_PROJECTS="-Dtest=SparkIntegrationTest,org.apache.zeppelin.spark.* -DfailIfNoTests=false"
 
-    # Test spark module for 2.1.0 with scala 2.11
-    - jdk: "openjdk7"
-      dist: trusty
-      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.1 -Phadoop2 -Pscala-2.11 -Pr" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies,r" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.rinterpreter.*,org.apache.spark.api.r.* -DfailIfNoTests=false"
-
-    # Test spark module for 2.0.2 with scala 2.11
+    # Test spark module for 2.4.0 with scala 2.11
     - jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.0 -Phadoop3 -Pscala-2.11 -Pr" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies,r" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.rinterpreter.*,org.apache.spark.api.r.* -DfailIfNoTests=false"
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.4 -Phadoop2 -Pscala-2.11 -Pr" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies,r" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.rinterpreter.*,org.apache.spark.api.r.* -DfailIfNoTests=false"
+
+    # Test spark module for 2.3.2 with scala 2.11
+    - jdk: "oraclejdk8"
+      dist: trusty
+      env: PYTHON="2" SCALA_VER="2.11" PROFILE="-Pspark-2.3 -Phadoop3 -Pscala-2.11 -Pr" SPARKR="true" BUILD_FLAG="package -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat -am" MODULES="-pl spark/interpreter,spark/spark-dependencies,r" TEST_PROJECTS="-Dtest=org.apache.zeppelin.spark.*,org.apache.zeppelin.rinterpreter.*,org.apache.spark.api.r.* -DfailIfNoTests=false"
 
     # Test python/pyspark with python 2, livy 0.5
     - sudo: required
