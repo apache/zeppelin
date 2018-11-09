@@ -64,7 +64,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   //ci timeout.
   //TODO(zjffdu) remove this after we upgrade it to junit 4.13 (ZEPPELIN-3341)
   private static Set<String> verifiedSparkVersions = new HashSet<>();
-  
+
 
   private String sparkVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
@@ -83,10 +83,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"2.2.1"},
-        {"2.1.2"},
-        {"2.0.2"},
-        {"1.6.3"}
+            {"2.4.0"},
+            {"2.3.2"},
+            {"2.2.1"},
+            {"2.1.2"},
+            {"2.0.2"},
+            {"1.6.3"}
     });
   }
 
