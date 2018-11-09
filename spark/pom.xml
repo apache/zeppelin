@@ -205,7 +205,7 @@
             <properties>
                 <spark.version>2.3.2</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
-                <py4j.version>0.10.6</py4j.version>
+                <py4j.version>0.10.7</py4j.version>
             </properties>
         </profile>
 
