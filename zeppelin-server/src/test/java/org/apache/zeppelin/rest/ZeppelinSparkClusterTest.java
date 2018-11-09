@@ -84,10 +84,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"2.2.1"},
-        {"2.1.2"},
-        {"2.0.2"},
-        {"1.6.3"}
+            {"2.4.0"},
+            {"2.3.2"},
+            {"2.2.1"},
+            {"2.1.2"},
+            {"2.0.2"},
+            {"1.6.3"}
     });
   }
 
