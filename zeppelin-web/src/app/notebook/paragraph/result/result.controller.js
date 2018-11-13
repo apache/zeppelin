@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
-
 import DatasetFactory from '../../../tabledata/datasetfactory';
 import TableVisualization from '../../../visualization/builtins/visualization-table';
 import BarchartVisualization from '../../../visualization/builtins/visualization-barchart';
@@ -33,7 +31,7 @@ angular.module('zeppelinWebApp').controller('ResultCtrl', ResultCtrl);
 
 function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location,
                     $timeout, $compile, $http, $q, $templateCache, $templateRequest, $sce, websocketMsgSrv,
-                    baseUrlSrv, ngToast, saveAsService, noteVarShareService, heliumService,
+                    baseUrlSrv, ngToast, noteVarShareService, heliumService,
                     uiGridConstants) {
   'ngInject';
 
@@ -856,43 +854,6 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     paragraph.config.colWidth = width;
 
     commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
-  };
-
-  $scope.exportToDSV = function(delimiter) {
-    let dsv = '';
-    let dateFinished = moment(paragraph.dateFinished).format('YYYY-MM-DD hh:mm:ss A');
-    let exportedFileName = paragraph.title ? paragraph.title + '_' + dateFinished : 'data_' + dateFinished;
-
-    for (let titleIndex in tableData.columns) {
-      if (tableData.columns.hasOwnProperty(titleIndex)) {
-        dsv += tableData.columns[titleIndex].name + delimiter;
-      }
-    }
-    dsv = dsv.substring(0, dsv.length - 1) + '\n';
-    for (let r in tableData.rows) {
-      if (tableData.rows.hasOwnProperty(r)) {
-        let row = tableData.rows[r];
-        let dsvRow = '';
-        for (let index in row) {
-          if (row.hasOwnProperty(index)) {
-            let stringValue = (row[index]).toString();
-            if (stringValue.indexOf(delimiter) > -1) {
-              dsvRow += '"' + stringValue + '"' + delimiter;
-            } else {
-              dsvRow += row[index] + delimiter;
-            }
-          }
-        }
-        dsv += dsvRow.substring(0, dsvRow.length - 1) + '\n';
-      }
-    }
-    let extension = '';
-    if (delimiter === '\t') {
-      extension = 'tsv';
-    } else if (delimiter === ',') {
-      extension = 'csv';
-    }
-    saveAsService.saveAs(dsv, exportedFileName, extension);
   };
 
   $scope.getBase64ImageSrc = function(base64Data) {

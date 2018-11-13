@@ -73,26 +73,6 @@ limitations under the License.
   </ul>
 </div>
 
-<div class="btn-group"
-     ng-if="(type == 'TABLE' || type == 'NETWORK') && !asIframe && !viewOnly"
-     style="margin-bottom: 10px;">
-  <button type="button" class="btn btn-default btn-sm"
-          style="margin-left:10px"
-          ng-click="exportToDSV(',')"
-          uib-tooltip="Download Data as CSV" tooltip-placement="bottom">
-    <i class="fa fa-download"></i>
-  </button>
-  <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
-          data-toggle="dropdown">
-    <span class="caret" style="margin: 0px;"></span>
-    <span class="sr-only">Toggle Dropdown</span>
-  </button>
-  <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
-    <li ng-click="exportToDSV(',')"><a>CSV</a></li>
-    <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
-  </ul>
-</div>
-
 <span
    ng-if="(type == 'TABLE' || type == 'NETWORK') && !config.helium.activeApp && !asIframe && !viewOnly"
    style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
