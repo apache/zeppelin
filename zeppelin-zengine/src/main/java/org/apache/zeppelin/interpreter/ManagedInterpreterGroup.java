@@ -84,21 +84,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
    */
   public void close() {
     LOGGER.info("Close InterpreterGroup: " + id);
-    List<Thread> closeThreads = sessions.keySet().stream()
-            .map(sessionId -> new Thread(() -> close(sessionId), id + "-close"))
-            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
-                    LOGGER.error("InterpreterGroup close error", e)))
-            .peek(Thread::start)
-            .collect(Collectors.toList());
-
-    for (Thread t : closeThreads) {
-      try {
-        t.join();
-      } catch (InterruptedException e) {
-        LOGGER.error("Can't wait session close threads", e);
-        Thread.currentThread().interrupt();
-        break;
-      }
+    for (String sessionId : sessions.keySet()) {
+      close(sessionId);
     }
   }
 
@@ -166,6 +153,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     } catch (InterpreterException e) {
       LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
     }
+
+    //TODO(zjffdu) move the close of schedule to Interpreter
     SchedulerFactory.singleton().removeScheduler(scheduler.getName());
   }
 
