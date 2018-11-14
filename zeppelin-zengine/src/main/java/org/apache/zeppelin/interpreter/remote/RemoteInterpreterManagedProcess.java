@@ -173,9 +173,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       } catch (Exception e) {
         logger.warn("ignore the exception when shutting down");
       }
-      if (watchdog != null) {
-        watchdog.destroyProcess();
-      }
+      watchdog.destroyProcess();
     }
 
     executor = null;
