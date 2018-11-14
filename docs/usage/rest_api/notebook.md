@@ -132,7 +132,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
@@ -344,7 +344,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
@@ -455,7 +455,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td>sample JSON response</td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
@@ -636,7 +636,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "20151218-100330\_1754029574"
 }</pre></td>
