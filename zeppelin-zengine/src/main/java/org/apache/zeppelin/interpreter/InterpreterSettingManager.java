@@ -852,6 +852,8 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   public void close() {
     List<Thread> closeThreads = interpreterSettings.values().stream()
             .map(intpSetting-> new Thread(intpSetting::close, intpSetting.getId() + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("interpreterGroup close error", e)))
             .peek(Thread::start)
             .collect(Collectors.toList());
 

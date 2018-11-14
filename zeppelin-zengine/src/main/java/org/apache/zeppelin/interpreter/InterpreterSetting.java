@@ -480,6 +480,8 @@ public class InterpreterSetting {
     LOGGER.info("Close InterpreterSetting: " + name);
     List<Thread> closeThreads = interpreterGroups.values().stream()
             .map(g -> new Thread(g::close, name + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("InterpreterSetting close error", e)))
             .peek(Thread::start)
             .collect(Collectors.toList());
     interpreterGroups.clear();

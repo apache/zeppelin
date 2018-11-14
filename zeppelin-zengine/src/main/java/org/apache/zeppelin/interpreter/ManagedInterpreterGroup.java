@@ -86,6 +86,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     LOGGER.info("Close InterpreterGroup: " + id);
     List<Thread> closeThreads = sessions.keySet().stream()
             .map(sessionId -> new Thread(() -> close(sessionId), id + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("InterpreterGroup close error", e)))
             .peek(Thread::start)
             .collect(Collectors.toList());
 
@@ -133,6 +135,8 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
             .map(interpreter -> new Thread(() ->
                     closeInterpreter(interpreter),
                     interpreter.getClass().getSimpleName() + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("Interpreter close error", e)))
             .peek(Thread::start)
             .collect(Collectors.toList());
 
