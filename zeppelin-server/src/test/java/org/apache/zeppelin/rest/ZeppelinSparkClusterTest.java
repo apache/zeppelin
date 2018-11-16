@@ -136,8 +136,18 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private void waitForFinish(Paragraph p) {
     while (p.getStatus() != Status.FINISHED
-        && p.getStatus() != Status.ERROR
-        && p.getStatus() != Status.ABORT) {
+            && p.getStatus() != Status.ERROR
+            && p.getStatus() != Status.ABORT) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
+      }
+    }
+  }
+
+  private void waitForRunning(Paragraph p) {
+    while (p.getStatus() != Status.RUNNING) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -147,7 +157,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void scalaOutputTest() throws IOException {
+  public void scalaOutputTest() throws IOException, InterruptedException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
@@ -176,6 +186,15 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     // test code completion
     List<InterpreterCompletion> completions = note.completion(p.getId(), "sc.", 2);
     assertTrue(completions.size() > 0);
+
+    // test cancel
+    p.setText("%spark sc.range(1,10).map(e=>{Thread.sleep(1000); e}).collect()");
+    note.run(p.getId(), false);
+    waitForRunning(p);
+    p.abort();
+    waitForFinish(p);
+    assertEquals(Status.ABORT, p.getStatus());
+
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
