@@ -461,9 +461,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     if (interpreter == null) {
       return true;
     }
-    Scheduler scheduler = interpreter.getScheduler();
-    if (scheduler == null) {
-      return true;
+    try {
+      interpreter.cancel(getInterpreterContext(null));
+    } catch (InterpreterException e) {
+      throw new RuntimeException(e);
     }
 
     return true;
