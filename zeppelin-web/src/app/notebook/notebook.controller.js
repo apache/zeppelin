@@ -1361,13 +1361,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col);
   };
 
-  $scope.$on('setConnectedStatus', function(event, param) {
-    if (connectedOnce && param) {
-      initNotebook();
-    }
-    connectedOnce = true;
-  });
-
   $scope.$on('moveParagraphUp', function(event, paragraph) {
     let newIndex = -1;
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
