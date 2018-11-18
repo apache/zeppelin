@@ -30,7 +30,10 @@
 #   # with custom check interval
 #   python travis_check.py Leemoonsoo 1f2549a 5,60,60
 
-import os, sys, getopt, traceback, json, requests, time
+import os, sys, getopt, traceback, json, requests, time, urllib3, re
+
+# disable SNIMissingWarning. see https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
+urllib3.disable_warnings()
 
 author = sys.argv[1]
 commit = sys.argv[2]
@@ -70,6 +73,51 @@ def getBuildStatus(author, commit):
 def status(index, msg, jobId):
     return '{:20}'.format("[" + str(index+1) + "] " + msg) + "https://travis-ci.org/" + author + "/zeppelin/jobs/" + str(jobId)
 
+
+# load full build log and summarize
+def logSummary(url):
+    # test start pattern "Running org.apache.zeppelin.scheduler.ParallelSchedulerTest"
+    testStartPattern = re.compile("^Running[ ](.*)")
+    # test end pattern "Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.554 sec - in org.apache.zeppelin.scheduler.JobTest"
+    testEndPattern = re.compile("^Tests [^0-9]*([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)[^-]*[-][ ]in[ ](.*)")
+
+    tests = {}
+    resp = requests.get(url=url)
+    lines = resp.text.splitlines()
+    lastNonEmptyLine = ""
+    indent = '{:10}'.format("")
+
+    for line in lines:
+        if not len(line.strip()) == 0:
+            lastNonEmptyLine = line
+
+        mStart = testStartPattern.match(line)
+        if mStart:
+            testName = mStart.group(1)
+            tests[testName] = {
+              "start": mStart
+            }
+            continue
+
+        mEnd = testEndPattern.match(line)
+        if mEnd:
+            testName = mEnd.group(5)
+            tests[testName]["end"] = mEnd
+            continue
+
+    for testName, test in tests.items():
+        if not "end" in test:
+           print(indent + "Test " + testName + " never finished")
+        else:
+           failures = int(test["end"].group(2))
+           errors = int(test["end"].group(3))
+           if failures > 0 or errors > 0:
+               print(indent + test["end"].group(0))
+
+    if not lastNonEmptyLine.startswith("Done"):
+        print(indent + lastNonEmptyLine)
+    print(indent + "Please check full log at " + url)
+
 def printBuildStatus(build):
     failure = 0
     running = 0
@@ -88,11 +136,13 @@ def printBuildStatus(build):
             if result == None:
                 print(status(index, "Not completed", jobId))
                 failure = failure + 1
+                logSummary("https://api.travis-ci.org/v3/job/" + str(jobId) + "/log.txt")
             elif result == 0:
                 print(status(index, "OK", jobId))
             else:
                 print(status(index, "Error " + str(result), jobId))
                 failure = failure + 1
+                logSummary("https://api.travis-ci.org/v3/job/" + str(jobId) + "/log.txt")
         else:
             print(status(index, "Unknown state", jobId))
             failure = failure + 1
