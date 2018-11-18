@@ -665,6 +665,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT);
   }
 
+  public String getK8sKubectlCmd() {
+    return getString(ConfVars.ZEPPELIN_K8S_KUBECTL);
+  }
+
   public String getK8sNamespace() {
     return getString(ConfVars.ZEPPELIN_K8S_NAMESPACE);
   }
@@ -824,6 +828,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
     ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
+    ZEPPELIN_K8S_KUBECTL("zeppelin.k8s.kubectl", "kubectl"),  // kubectl command
     ZEPPELIN_K8S_NAMESPACE("zeppelin.k8s.namespace", "default"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
 

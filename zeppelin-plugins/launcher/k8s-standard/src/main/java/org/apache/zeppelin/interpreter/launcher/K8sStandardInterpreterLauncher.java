@@ -18,7 +18,6 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonSyntaxException;
 import com.hubspot.jinjava.Jinjava;
@@ -29,7 +28,6 @@ import io.kubernetes.client.Configuration;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1PodStatus;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.util.Config;
 import io.kubernetes.client.util.Watch;
