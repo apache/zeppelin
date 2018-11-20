@@ -22,7 +22,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -92,28 +91,15 @@ public class KubectlTest {
   }
 
   @Test
-  public void testExecSpecAndGetJson() throws IOException {
+  public void testExecSpecAndGet() throws IOException {
     // given
     Kubectl kubectl = new Kubectl("cat");
     String spec = "{'k1': 'v1', 'k2': 2}";
 
     // when
-    Map<String, Object> result = kubectl.execAndGetJson(new String[]{}, spec);
+    String result = kubectl.execAndGet(new String[]{}, spec);
 
     // then
-    assertEquals("v1", result.get("k1"));
-    assertEquals(2.0, result.get("k2"));
-  }
-
-  @Test(expected = com.google.gson.JsonSyntaxException.class)
-  public void testExecSpecAndGetJsonInvalidOutput() throws IOException {
-    // given
-    Kubectl kubectl = new Kubectl("cat");
-    String spec = "Not a json format";
-
-    // when
-    Map<String, Object> result = kubectl.execAndGetJson(new String[]{}, spec);
-
-    // then throw JsonSyntaxException
+    assertEquals(spec, result);
   }
 }

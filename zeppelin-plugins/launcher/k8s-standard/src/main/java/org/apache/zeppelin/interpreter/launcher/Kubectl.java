@@ -19,7 +19,8 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
@@ -27,46 +28,83 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Kubectl {
+  private final Logger logger = LoggerFactory.getLogger(Kubectl.class);
   private final String kubectlCmd;
   private final Gson gson = new Gson();
+  private String namespace;
 
   public Kubectl(String kubectlCmd) {
     this.kubectlCmd = kubectlCmd;
   }
 
-  public Map<String, Object> apply(String spec) throws IOException {
-    return execAndGetJson(new String[]{"apply", "-o", "json", "-f", "-"}, spec);
+  /**
+   * Override namespace. Otherwise use namespace provided in schema
+   * @param namespace
+   */
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
   }
 
-  public Map<String, Object> delete(String spec) throws IOException {
-    return execAndGetJson(new String[]{"delete", "-o", "json", "-f", "-"}, spec);
+  public String getNamespace() {
+    return namespace;
   }
 
-  Map<String, Object> execAndGetJson(String [] args) throws IOException {
-    return execAndGetJson(args, "");
+  public String apply(String spec) throws IOException {
+    return execAndGet(new String[]{"apply", "-f", "-"}, spec);
+  }
+
+  public String delete(String spec) throws IOException {
+    return execAndGet(new String[]{"delete", "-f", "-"}, spec);
+  }
+
+  public String wait(String resource, String waitFor, int timeoutSec) throws IOException {
+    return execAndGet(new String[]{
+            "wait",
+            resource,
+            String.format("--for=%s", waitFor),
+            String.format("--timeout=%ds", timeoutSec)});
+  }
+
+  String execAndGet(String [] args) throws IOException {
+    return execAndGet(args, "");
   }
 
   @VisibleForTesting
-  Map<String, Object> execAndGetJson(String [] args, String stdin) throws IOException {
+  String execAndGet(String [] args, String stdin) throws IOException {
     InputStream ins = IOUtils.toInputStream(stdin);
     ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+    ArrayList<String> argsToOverride = new ArrayList<>(Arrays.asList(args));
 
-    int exitCode = execute(
-        args,
-        ins,
-        stdout,
-        stderr
-    );
+    // set namespace
+    if (namespace != null) {
+      argsToOverride.add("--namespace=" + namespace);
+    }
 
-    if (exitCode == 0) {
-      String output = new String(stdout.toByteArray());
-      return gson.fromJson(output, new TypeToken<Map<String, Object>>() {}.getType());
-    } else {
-      throw new IOException(String.format("non zero return code (%d)", exitCode));
+    logger.info("kubectl " + argsToOverride + "\n" + stdin);
+
+    try {
+      int exitCode = execute(
+              argsToOverride.toArray(new String[0]),
+              ins,
+              stdout,
+              stderr
+      );
+
+      if (exitCode == 0) {
+        String output = new String(stdout.toByteArray());
+        return output;
+      } else {
+        String output = new String(stderr.toByteArray());
+        throw new IOException(String.format("non zero return code (%d). %s", exitCode, output));
+      }
+    } catch (Exception e) {
+      String output = new String(stderr.toByteArray());
+      throw new IOException(output, e);
     }
   }
 

@@ -53,8 +53,22 @@ public class K8sStandardInterpreterLauncherTest {
     properties.setProperty("CALLBACK_PORT", "12320");
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "sh", "name", 0, "host");
+    InterpreterLaunchContext context = new InterpreterLaunchContext(
+            properties,
+            option,
+            null,
+            "user1",
+            "intpGroupId",
+            "groupId",
+            "sh",
+            "name",
+            0,
+            "host");
     InterpreterClient client = launcher.launch(context);
+    K8sRemoteInterpreterProcess k8sintp = (K8sRemoteInterpreterProcess) client;
+    k8sintp.start("user");
+    // assertTrue(k8sintp.isRunning());
+    // k8sintp.stop();
   }
 
   /*

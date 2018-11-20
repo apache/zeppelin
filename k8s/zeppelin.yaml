@@ -1,0 +1,32 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: default
+  name: zeppelin-server
+  labels:
+    app: zeppelin-server
+spec:
+  automountServiceAccountToken: true
+  containers:
+  - name: zeppelin-server
+    image: apache/zeppelin:0.8.0
+    command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
+    env:
+    - name: ZEPPELIN_HOME
+      value: /zeppelin
+    - name: ZEPPELIN_SERVER_RPC_PORTRANGE
+      value: 12320:12320
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: default
+  name: zeppelin-server    # keep Service name the same to Pod name.
+spec:
+  ports:
+    - name: http
+      port: 8080
+    - name: rpc            # port name is referenced in the code. So it shouldn't be changed.
+      port: 12320
+  selector:
+    app: zeppelin-server
