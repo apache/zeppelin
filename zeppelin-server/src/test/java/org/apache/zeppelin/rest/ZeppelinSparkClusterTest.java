@@ -118,7 +118,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             new InterpreterProperty("zeppelin.spark.useNew", "true"));
     sparkProperties.put("zeppelin.spark.test",
             new InterpreterProperty("zeppelin.spark.test", "true"));
-
+    sparkProperties.put("spark.serializer",
+            new InterpreterProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer"));
     ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
   }
 
