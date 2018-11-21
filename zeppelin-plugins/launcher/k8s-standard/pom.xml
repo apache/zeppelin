@@ -37,7 +37,7 @@
     <description>Launcher implementation to run interpreters on Kubernetes</description>
 
     <properties>
-        <plugin.name>Launcher/StandardInterpreterLauncher</plugin.name>
+        <plugin.name>Launcher/K8sStandardInterpreterLauncher</plugin.name>
     </properties>
 
     <dependencies>
