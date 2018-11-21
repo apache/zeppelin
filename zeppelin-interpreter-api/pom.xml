@@ -66,6 +66,8 @@
               <exclude>commons-logging:commons-logging</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
+              <exclude>com.esotericsoftware:kryo</exclude>
+              <exclude>com.esotericsoftware:reflectasm</exclude>
             </excludes>
           </artifactSet>
           <filters>
