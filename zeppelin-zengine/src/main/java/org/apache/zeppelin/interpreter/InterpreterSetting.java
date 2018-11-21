@@ -636,11 +636,21 @@ public class InterpreterSetting {
   }
 
   public String getLauncherPlugin() {
-    if (group.equals("spark")) {
-      return "SparkInterpreterLauncher";
+    if (isRunningOnKubernetes()) {
+      return "K8sStandardInterpreterLauncher";
     } else {
-      return "StandardInterpreterLauncher";
+      if (group.equals("spark")) {
+        return "SparkInterpreterLauncher";
+      } else {
+        return "StandardInterpreterLauncher";
+      }
     }
+  }
+
+  private boolean isRunningOnKubernetes() {
+    String mode = conf.getK8sMode();
+    return ("auto".equalsIgnoreCase(mode) && new File("/var/run/secrets/kubernetes.io").exists())
+        || "on".equalsIgnoreCase(mode);
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {
