@@ -9,7 +9,7 @@ spec:
   automountServiceAccountToken: true
   containers:
   - name: zeppelin-server
-    image: apache/zeppelin:0.8.0
+    image: apache/zeppelin:0.9.0-SNAPSHOT
     command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
     env:
     - name: ZEPPELIN_HOME
@@ -30,3 +30,25 @@ spec:
       port: 12320
   selector:
     app: zeppelin-server
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: zeppelin-server-role
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create", "get", "update", "patch", "list", "delete", "watch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: zeppelin-server-role-binding
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: zeppelin-server-role
+  apiGroup: rbac.authorization.k8s.io
