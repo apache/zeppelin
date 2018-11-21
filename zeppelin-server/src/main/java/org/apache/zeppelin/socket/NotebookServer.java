@@ -408,6 +408,11 @@ public class NotebookServer extends WebSocketServlet
       }
     } catch (Exception e) {
       LOG.error("Can't handle message: " + msg, e);
+      try {
+        conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info", e.getMessage())));
+      } catch (IOException iox) {
+        LOG.error("Fail to send error info", iox);
+      }
     }
   }
 
@@ -788,7 +793,7 @@ public class NotebookServer extends WebSocketServlet
             broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
           }
         });
-    
+
   }
 
   private void restoreNote(NotebookSocket conn,

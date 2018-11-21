@@ -262,7 +262,7 @@ public class NotebookService {
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setCronSupported(notebook.getConf());
-      if (isRelative) {
+      if (isRelative && !note.getParentPath().equals("/")) {
         newNotePath = note.getParentPath() + "/" + newNotePath;
       } else {
         if (!newNotePath.startsWith("/")) {

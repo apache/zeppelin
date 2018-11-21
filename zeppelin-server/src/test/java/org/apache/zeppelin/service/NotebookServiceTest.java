@@ -160,9 +160,15 @@ public class NotebookServiceTest {
     assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
 
     // create another note
-    Note note2 = notebookService.createNote("/folder_4/note2", "test", context, callback);
+    Note note2 = notebookService.createNote("/note2", "test", context, callback);
     assertEquals("note2", note2.getName());
     verify(callback).onSuccess(note2, context);
+
+    // rename note
+    reset(callback);
+    notebookService.renameNote(note2.getId(), "new_note2", true, context, callback);
+    verify(callback).onSuccess(note2, context);
+    assertEquals("new_note2", note2.getName());
 
     // list note
     reset(callback);
@@ -172,7 +178,7 @@ public class NotebookServiceTest {
 
     // delete note
     reset(callback);
-    notebookService.removeNote(note1.getId(), context, callback);
+    notebookService.removeNote(note2.getId(), context, callback);
     verify(callback).onSuccess("Delete note successfully", context);
 
     // list note again
@@ -182,7 +188,7 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(notesInfo, context);
 
     // delete folder
-    notesInfo = notebookService.removeFolder("/folder_4", context, callback);
+    notesInfo = notebookService.removeFolder("/folder_3", context, callback);
     verify(callback).onSuccess(notesInfo, context);
 
     // list note again
