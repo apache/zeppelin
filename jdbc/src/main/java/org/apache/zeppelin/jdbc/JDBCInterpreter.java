@@ -43,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -864,11 +865,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     Connection connection = null;
     try {
-      if (interpreterContext != null) {
-        connection = getConnection(propertyKey, interpreterContext);
-      }
+      connection = getConnection(propertyKey, interpreterContext);
     } catch (ClassNotFoundException | SQLException | IOException e) {
       logger.warn("SQLCompleter will created without use connection");
+    }
+
+    if (connection == null) {
+      return Collections.emptyList();
     }
 
     sqlCompleter = createOrUpdateSqlCompleter(sqlCompleter, connection, propertyKey, buf, cursor);
