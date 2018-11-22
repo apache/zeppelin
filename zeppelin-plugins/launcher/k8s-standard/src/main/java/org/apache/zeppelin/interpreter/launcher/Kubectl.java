@@ -108,7 +108,8 @@ public class Kubectl {
       argsToOverride.add("--namespace=" + namespace);
     }
 
-    logger.info("kubectl " + argsToOverride + "\n" + stdin);
+    logger.info("kubectl " + argsToOverride);
+    logger.debug(stdin);
 
     try {
       int exitCode = execute(
