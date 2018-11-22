@@ -43,6 +43,7 @@ metadata:
     uid: {{OWNER_UID}}
   {% endif %}
 spec:
+  clusterIP: None
   ports:
     - name: intp
       port: 12321
