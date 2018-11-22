@@ -154,9 +154,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     if (portForward) {
       return "localhost";
     } else {
-      return String.format("%s.%s.svc.cluster.local",
-          getPodName(), // service name and pod name is the same
-          kubectl.getNamespace());
+      return getInterpreterPodDnsName();
     }
   }
 
@@ -250,9 +248,58 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     var.put("INTP_REPO", "/tmp/local-repo");                          // interpreter.sh -l
     var.put("OWNER_UID", ownerUID());
     var.put("OWNER_NAME", ownerName());
+
+    if (isSpark()) {
+      var.put("SPARK_IMAGE", "spark:2.4.0");
+      var.put("SPARK_SUBMIT_OPTIONS", buildSparkSubmitOptions());
+    }
+
     var.putAll(Maps.fromProperties(properties));          // interpreter properties override template variables
     return var;
   }
+
+  private boolean isSpark() {
+    return "spark".equalsIgnoreCase(interpreterGroupName);
+  }
+
+  private String buildSparkSubmitOptions() {
+    StringBuilder options = new StringBuilder();
+
+    options.append("--master k8s://https://kubernetes.default.svc");
+    options.append(" --deploy-mode client");
+    options.append(" --conf spark.executor.instances=1");
+    options.append(" --conf spark.driver.pod.name=" + getPodName());
+    options.append(" --conf spark.kubernetes.container.image=spark:2.4.0");
+    options.append(" --conf spark.driver.bindAddress=0.0.0.0");
+    options.append(" --conf spark.driver.host=" + getInterpreterPodDnsName());
+    options.append(" --conf spark.driver.port=" + String.format("%d", getSparkDriverPort()));
+    options.append(" --conf spark.blockManager.port=" + String.format("%d", getSparkBlockmanagerPort()));
+
+    return options.toString();
+  }
+
+  private String getInterpreterPodDnsName() {
+    return String.format("%s.%s.svc.cluster.local",
+        getPodName(), // service name and pod name is the same
+        kubectl.getNamespace());
+  }
+
+  /**
+   * See xxx-interpreter-pod.yaml
+   * @return
+   */
+  private int getSparkDriverPort() {
+    return 22321;
+  }
+
+  /**
+   * See xxx-interpreter-pod.yaml
+   * @return
+   */
+  private int getSparkBlockmanagerPort() {
+    return 22322;
+  }
+
 
   /**
    * Get UID of owner (zeppelin-server pod) for garbage collection

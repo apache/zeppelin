@@ -17,7 +17,11 @@ metadata:
     uid: {{OWNER_UID}}
   {% endif %}
 spec:
+  {% if SPARK_IMAGE is defined %}
+  automountServiceAccountToken: true
+  {% else %}
   automountServiceAccountToken: false
+  {% endif %}
   restartPolicy: Never
   terminationGracePeriodSeconds: 10
   containers:
@@ -27,6 +31,25 @@ spec:
     env:
     - name: ZEPPELIN_HOME
       value: /zeppelin
+  {% if SPARK_IMAGE is defined %}
+    - name: SPARK_HOME
+      value: /spark
+    - name: SPARK_SUBMIT_OPTIONS
+      value: {{SPARK_SUBMIT_OPTIONS}}
+    volumeMounts:
+    - name: spark-home
+      mountPath: /spark
+  initContainers:
+  - name: spark-home-init
+    image: {{SPARK_IMAGE}}
+    command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
+    volumeMounts:
+    - name: spark-home
+      mountPath: /spark
+  volumes:
+  - name: spark-home
+    emptyDir: {}
+  {% endif %}
 ---
 kind: Service
 apiVersion: v1
@@ -47,5 +70,36 @@ spec:
   ports:
     - name: intp
       port: 12321
+    {% if SPARK_IMAGE is defined %}
+    - name: spark-driver
+      port: 22321
+    - name: spark-blockmanager
+      port: 22322
+    {% endif %}
   selector:
     app: {{POD_NAME}}
+
+{% if SPARK_IMAGE is defined %}
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{POD_NAME}}
+  namespace: {{NAMESPACE}}
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["create", "get", "update", "list", "delete", "watch" ]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{POD_NAME}}
+subjects:
+- kind: ServiceAccount
+  name: default
+roleRef:
+  kind: Role
+  name: {{POD_NAME}}
+  apiGroup: rbac.authorization.k8s.io
+{% endif %}
