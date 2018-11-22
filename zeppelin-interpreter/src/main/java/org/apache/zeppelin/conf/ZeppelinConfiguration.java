@@ -669,12 +669,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_K8S_MODE);
   }
 
+  public boolean getK8sPortForward() {
+    return getBoolean(ConfVars.ZEPPELIN_K8S_PORTFORWARD);
+  }
+
   public String getK8sKubectlCmd() {
     return getString(ConfVars.ZEPPELIN_K8S_KUBECTL);
   }
 
-  public String getK8sNamespace() {
-    return getString(ConfVars.ZEPPELIN_K8S_NAMESPACE);
+  public String getK8sContainerImage() {
+    return getString(ConfVars.ZEPPELIN_K8S_CONTAINER_IMAGE);
   }
 
   public String getK8sTemplatesDir() {
@@ -833,8 +837,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
     ZEPPELIN_K8S_MODE("zeppelin.k8s.mode", "auto"),           // auto | on | off
+    ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_KUBECTL("zeppelin.k8s.kubectl", "kubectl"),  // kubectl command
-    ZEPPELIN_K8S_NAMESPACE("zeppelin.k8s.namespace", "default"),
+    ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
 
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),

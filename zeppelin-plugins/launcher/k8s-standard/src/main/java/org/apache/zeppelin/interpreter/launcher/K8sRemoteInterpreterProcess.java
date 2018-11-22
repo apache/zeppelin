@@ -5,22 +5,26 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final Logger logger = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
+  private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
   private final Kubectl kubectl;
   private final String interpreterGroupId;
   private final String interpreterGroupName;
   private final String interpreterSettingName;
   private final File specTempaltes;
+  private final String containerImage;
   private final Properties properties;
   private final Map<String, String> envs;
   private final String zeppelinServiceHost;
@@ -28,10 +32,17 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final int podCreateTimeoutSec = 180;
 
   private final Gson gson = new Gson();
+  private final String podName;
+  private final boolean portForward;
+  private ExecuteWatchdog portForwardWatchdog;
+  private int podPort = K8S_INTERPRETER_SERVICE_PORT;
+
+  private AtomicBoolean started = new AtomicBoolean(false);
 
   public K8sRemoteInterpreterProcess(
           Kubectl kubectl,
           File specTemplates,
+          String containerImage,
           String interpreterGroupId,
           String interpreterGroupName,
           String interpreterSettingName,
@@ -39,10 +50,12 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           Map<String, String> envs,
           String zeppelinServiceHost,
           String zeppelinServiceRpcPort,
+          boolean portForward,
           int connectTimeout) {
     super(connectTimeout);
     this.kubectl = kubectl;
     this.specTempaltes = specTemplates;
+    this.containerImage = containerImage;
     this.interpreterGroupId = interpreterGroupId;
     this.interpreterGroupName = interpreterGroupName;
     this.interpreterSettingName = interpreterSettingName;
@@ -50,6 +63,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.envs = envs;
     this.zeppelinServiceHost = zeppelinServiceHost;
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
+    this.portForward = portForward;
+    this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
   }
 
 
@@ -58,7 +73,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * @return
    */
   private String getPodName() {
-    return interpreterGroupId.toLowerCase();
+    return podName;
   }
 
   @Override
@@ -71,6 +86,46 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     // create new pod
     apply(specTempaltes, false);
     kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", podCreateTimeoutSec);
+
+    if (portForward) {
+      podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+      portForwardWatchdog = kubectl.portForward(
+          String.format("pod/%s", getPodName()),
+          new String[] {
+              String.format("%s:%s", podPort, K8S_INTERPRETER_SERVICE_PORT)
+          });
+    }
+
+    long startTime = System.currentTimeMillis();
+
+    // wait until interpreter send started message through thrift rpc
+    synchronized (started) {
+      if (!started.get()) {
+        try {
+          started.wait(getConnectTimeout());
+        } catch (InterruptedException e) {
+          logger.error("Remote interpreter is not accessible");
+        }
+      }
+    }
+
+    if (!started.get()) {
+      logger.info(
+          String.format("Interpreter pod creation is time out in %d seconds",
+              getConnectTimeout()/1000));
+    }
+
+    // waits for interpreter thrift rpc server ready
+    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
+      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
+        break;
+      } else {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
   }
 
   @Override
@@ -78,27 +133,45 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     // delete pod
     try {
       apply(specTempaltes, true);
+    } catch (IOException e) {
+      logger.info("Error on removing interpreter pod", e);
+    }
+
+    try {
       kubectl.wait(String.format("pod/%s", getPodName()), "delete", 60);
     } catch (IOException e) {
-      logger.error("Error on removing interpreter pod", e);
+      logger.debug("Error on waiting pod delete", e);
+    }
+
+
+    if (portForwardWatchdog != null) {
+      portForwardWatchdog.destroyProcess();
     }
   }
 
   @Override
   public String getHost() {
-    return String.format("%s.%s.svc.cluster.local",
-            getPodName(), // service name and pod name is the same
-            kubectl.getNamespace());
+    if (portForward) {
+      return "localhost";
+    } else {
+      return String.format("%s.%s.svc.cluster.local",
+          getPodName(), // service name and pod name is the same
+          kubectl.getNamespace());
+    }
   }
 
   @Override
   public int getPort() {
-    return 12321;
+    return podPort;
   }
 
   @Override
   public boolean isRunning() {
     try {
+      if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort())) {
+        return true;
+      }
+
       String ret = kubectl.execAndGet(new String[]{
               "get",
               String.format("pods/%s", getPodName()),
@@ -120,8 +193,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         return false;
       }
 
-      return "Running".equals(status.get("phase"));
-    } catch (IOException e) {
+      return "Running".equals(status.get("phase")) && started.get();
+    } catch (Exception e) {
       logger.error("Can't get pod status", e);
       return false;
     }
@@ -167,7 +240,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     var.put("NAMESPACE", kubectl.getNamespace());
     var.put("POD_NAME", getPodName());
     var.put("CONTAINER_NAME", interpreterGroupName.toLowerCase());
-    var.put("CONTAINER_IMAGE", "apache/zeppelin:0.8.0");
+    var.put("CONTAINER_IMAGE", containerImage);
     var.put("INTP_PORT", "12321");                                    // interpreter.sh -r
     var.put("INTP_ID", interpreterGroupId);                           // interpreter.sh -i
     var.put("INTP_NAME", interpreterGroupName);                       // interpreter.sh -d
@@ -177,5 +250,28 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     var.put("INTP_REPO", "/tmp/local-repo");                          // interpreter.sh -l
     var.putAll(Maps.fromProperties(properties));          // interpreter properties override template variables
     return var;
+  }
+
+  private String getRandomString(int length) {
+    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+
+    StringBuilder sb = new StringBuilder();
+    Random random = new Random();
+    for (int i = 0; i < length; i++) {
+      char c = chars[random.nextInt(chars.length)];
+      sb.append(c);
+    }
+    String randomStr = sb.toString();
+
+    return randomStr;
+  }
+
+  @Override
+  public void processStarted(int port, String host) {
+    logger.info("Interpreter pod created {}:{}", host, port);
+    synchronized (started) {
+      started.set(true);
+      started.notify();
+    }
   }
 }

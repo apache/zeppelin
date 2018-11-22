@@ -21,10 +21,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
+
+import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -67,6 +65,31 @@ public class Kubectl {
             resource,
             String.format("--for=%s", waitFor),
             String.format("--timeout=%ds", timeoutSec)});
+  }
+
+  public ExecuteWatchdog portForward(String resource, String [] ports) throws IOException {
+    DefaultExecutor executor = new DefaultExecutor();
+    CommandLine cmd = new CommandLine(kubectlCmd);
+    cmd.addArguments("port-forward");
+    cmd.addArguments(resource);
+    cmd.addArguments(ports);
+
+    ExecuteWatchdog watchdog = new ExecuteWatchdog(-1);
+    executor.setWatchdog(watchdog);
+
+    executor.execute(cmd, new ExecuteResultHandler() {
+      @Override
+      public void onProcessComplete(int i) {
+        logger.info("Port-forward stopped");
+      }
+
+      @Override
+      public void onProcessFailed(ExecuteException e) {
+        logger.debug("port-forward process exit", e);
+      }
+    });
+
+    return watchdog;
   }
 
   String execAndGet(String [] args) throws IOException {

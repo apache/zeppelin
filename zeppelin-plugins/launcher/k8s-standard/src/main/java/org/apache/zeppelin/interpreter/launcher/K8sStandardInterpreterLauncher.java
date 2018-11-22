@@ -125,6 +125,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     return new K8sRemoteInterpreterProcess(
             kubectl,
             new File(zConf.getK8sTemplatesDir(), "interpreter"),
+            zConf.getK8sContainerImage(),
             context.getInterpreterGroupId(),
             context.getInterpreterSettingGroup(),
             context.getInterpreterSettingName(),
@@ -132,6 +133,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             buildEnvFromProperties(context),
             getZeppelinServiceHost(),
             getZeppelinServiceRpcPort(),
+            zConf.getK8sPortForward(),
             connectTimeout);
   }
 

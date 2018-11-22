@@ -25,14 +25,19 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 
 public class K8sSpecTemplate extends HashMap<String, Object> {
-  private final Jinjava jinja = new Jinjava();
-
   public String render(File templateFile) throws IOException {
     String template = FileUtils.readFileToString(templateFile, Charset.defaultCharset());
     return render(template);
   }
 
   public String render(String template) {
-    return jinja.render(template, this);
+    ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+    try {
+      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+      Jinjava jinja = new Jinjava();
+      return jinja.render(template, this);
+    } finally {
+      Thread.currentThread().setContextClassLoader(oldCl);
+    }
   }
 }
