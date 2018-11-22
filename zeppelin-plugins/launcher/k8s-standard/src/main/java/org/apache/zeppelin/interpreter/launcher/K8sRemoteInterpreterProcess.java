@@ -248,8 +248,22 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     var.put("CALLBACK_PORT", zeppelinServiceRpcPort);                 // interpreter.sh -p
     var.put("INTP_SETTING", interpreterSettingName);                  // interpreter.sh -g
     var.put("INTP_REPO", "/tmp/local-repo");                          // interpreter.sh -l
+    var.put("OWNER_UID", ownerUID());
+    var.put("OWNER_NAME", ownerName());
     var.putAll(Maps.fromProperties(properties));          // interpreter properties override template variables
     return var;
+  }
+
+  /**
+   * Get UID of owner (zeppelin-server pod) for garbage collection
+   * https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/
+   */
+  private String ownerUID() {
+    return System.getenv("POD_UID");
+  }
+
+  private String ownerName() {
+    return System.getenv("POD_NAME");
   }
 
   private String getRandomString(int length) {

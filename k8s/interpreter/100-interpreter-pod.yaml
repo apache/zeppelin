@@ -7,6 +7,15 @@ metadata:
     app: {{POD_NAME}}
     interpreterGroupId: {{INTP_ID}}
     interpreterSettingName: {{INTP_SETTING}}
+  {% if OWNER_UID is defined and OWNER_UID %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{OWNER_NAME}}
+    uid: {{OWNER_UID}}
+  {% endif %}
 spec:
   automountServiceAccountToken: false
   restartPolicy: Never
@@ -24,6 +33,15 @@ apiVersion: v1
 metadata:
   namespace: {{NAMESPACE}}
   name: {{POD_NAME}}             # keep Service name the same to Pod name.
+  {% if OWNER_UID is defined and OWNER_UID %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{OWNER_NAME}}
+    uid: {{OWNER_UID}}
+  {% endif %}
 spec:
   ports:
     - name: intp

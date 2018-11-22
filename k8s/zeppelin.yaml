@@ -16,6 +16,16 @@ spec:
       value: /zeppelin
     - name: ZEPPELIN_SERVER_RPC_PORTRANGE
       value: 12320:12320
+    - name: POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
 ---
 kind: Service
 apiVersion: v1
