@@ -35,6 +35,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final Gson gson = new Gson();
   private final String podName;
   private final boolean portForward;
+  private final String sparkImage;
   private ExecuteWatchdog portForwardWatchdog;
   private int podPort = K8S_INTERPRETER_SERVICE_PORT;
 
@@ -52,6 +53,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String zeppelinServiceHost,
           String zeppelinServiceRpcPort,
           boolean portForward,
+          String sparkImage,
           int connectTimeout) {
     super(connectTimeout);
     this.kubectl = kubectl;
@@ -65,6 +67,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.zeppelinServiceHost = zeppelinServiceHost;
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
     this.portForward = portForward;
+    this.sparkImage = sparkImage;
     this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
   }
 
@@ -258,7 +261,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
 
     if (isSpark()) {
-      k8sProperties.put("zeppelin.k8s.spark.image", "spark:2.4.0");
+      k8sProperties.put("zeppelin.k8s.spark.container.image", sparkImage);
       envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions());
       envs.put("SPARK_HOME", envs.getOrDefault("SPARK_HOME", "/spark"));
     }

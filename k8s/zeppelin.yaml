@@ -26,6 +26,8 @@ spec:
         fieldRef:
           apiVersion: v1
           fieldPath: metadata.name
+    - name: ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE
+      value: spark:2.4.0
 ---
 kind: Service
 apiVersion: v1

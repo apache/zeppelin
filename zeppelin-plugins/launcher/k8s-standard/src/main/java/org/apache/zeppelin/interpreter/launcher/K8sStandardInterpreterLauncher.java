@@ -134,6 +134,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
             getZeppelinServiceHost(),
             getZeppelinServiceRpcPort(),
             zConf.getK8sPortForward(),
+            zConf.getK8sSparkContainerImage(),
             connectTimeout);
   }
 

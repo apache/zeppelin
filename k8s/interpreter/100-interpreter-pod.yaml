@@ -39,7 +39,7 @@ spec:
       mountPath: /spark
   initContainers:
   - name: spark-home-init
-    image: {{zeppelin.k8s.spark.image}}
+    image: {{zeppelin.k8s.spark.container.image}}
     command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
     volumeMounts:
     - name: spark-home
