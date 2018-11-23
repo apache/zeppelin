@@ -1,23 +1,23 @@
 kind: Pod
 apiVersion: v1
 metadata:
-  namespace: {{NAMESPACE}}
-  name: {{POD_NAME}}
+  namespace: {{zeppelin.k8s.namespace}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}
   labels:
-    app: {{POD_NAME}}
-    interpreterGroupId: {{INTP_ID}}
-    interpreterSettingName: {{INTP_SETTING}}
-  {% if OWNER_UID is defined and OWNER_UID %}
+    app: {{zeppelin.k8s.interpreter.pod.name}}
+    interpreterGroupId: {{zeppelin.k8s.interpreter.group.id}}
+    interpreterSettingName: {{zeppelin.k8s.interpreter.setting.name}}
+  {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
     controller: false
     blockOwnerDeletion: false
     kind: Pod
-    name: {{OWNER_NAME}}
-    uid: {{OWNER_UID}}
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
   {% endif %}
 spec:
-  {% if SPARK_IMAGE is defined %}
+  {% if zeppelin.k8s.interpreter.group.name == "spark" %}
   automountServiceAccountToken: true
   {% else %}
   automountServiceAccountToken: false
@@ -25,23 +25,21 @@ spec:
   restartPolicy: Never
   terminationGracePeriodSeconds: 10
   containers:
-  - name: {{CONTAINER_NAME}}
-    image: {{CONTAINER_IMAGE}}
-    command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/interpreter.sh -d $(ZEPPELIN_HOME)/interpreter/{{INTP_NAME}} -r {{INTP_PORT}}:{{INTP_PORT}} -c {{CALLBACK_HOST}} -p {{CALLBACK_PORT}} -i {{INTP_ID}} -l {{INTP_REPO}} -g {{INTP_SETTING}}"]
+  - name: {{zeppelin.k8s.interpreter.container.name}}
+    image: {{zeppelin.k8s.interpreter.container.image}}
+    command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/interpreter.sh -d $(ZEPPELIN_HOME)/interpreter/{{zeppelin.k8s.interpreter.group.name}} -r {{zeppelin.k8s.interpreter.rpc.portRange}} -c {{zeppelin.k8s.server.rpc.host}} -p {{zeppelin.k8s.server.rpc.portRange}} -i {{zeppelin.k8s.interpreter.group.id}} -l {{zeppelin.k8s.interpreter.localRepo}} -g {{zeppelin.k8s.interpreter.setting.name}}"]
     env:
-    - name: ZEPPELIN_HOME
-      value: /zeppelin
-  {% if SPARK_IMAGE is defined %}
-    - name: SPARK_HOME
-      value: /spark
-    - name: SPARK_SUBMIT_OPTIONS
-      value: {{SPARK_SUBMIT_OPTIONS}}
+  {% for key, value in zeppelin.k8s.envs.items() %}
+    - name: {{key}}
+      value: {{value}}
+  {% endfor %}
+  {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     volumeMounts:
     - name: spark-home
       mountPath: /spark
   initContainers:
   - name: spark-home-init
-    image: {{SPARK_IMAGE}}
+    image: {{zeppelin.k8s.spark.image}}
     command: ["sh", "-c", "cp -r /opt/spark/* /spark/"]
     volumeMounts:
     - name: spark-home
@@ -54,38 +52,37 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  namespace: {{NAMESPACE}}
-  name: {{POD_NAME}}             # keep Service name the same to Pod name.
-  {% if OWNER_UID is defined and OWNER_UID %}
+  namespace: {{zeppelin.k8s.namespace}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}             # keep Service name the same to Pod name.
+  {% if zeppelin.k8s.server.uid is defined %}
   ownerReferences:
   - apiVersion: v1
     controller: false
     blockOwnerDeletion: false
     kind: Pod
-    name: {{OWNER_NAME}}
-    uid: {{OWNER_UID}}
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
   {% endif %}
 spec:
   clusterIP: None
   ports:
     - name: intp
       port: 12321
-    {% if SPARK_IMAGE is defined %}
+    {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     - name: spark-driver
       port: 22321
     - name: spark-blockmanager
       port: 22322
     {% endif %}
   selector:
-    app: {{POD_NAME}}
-
-{% if SPARK_IMAGE is defined %}
+    app: {{zeppelin.k8s.interpreter.pod.name}}
+{% if zeppelin.k8s.interpreter.group.name == "spark" %}
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{POD_NAME}}
-  namespace: {{NAMESPACE}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}
+  namespace: {{zeppelin.k8s.namespace}}
 rules:
 - apiGroups: [""]
   resources: ["pods", "services"]
@@ -94,12 +91,12 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{POD_NAME}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}
 subjects:
 - kind: ServiceAccount
   name: default
 roleRef:
   kind: Role
-  name: {{POD_NAME}}
+  name: {{zeppelin.k8s.interpreter.pod.name}}
   apiGroup: rbac.authorization.k8s.io
 {% endif %}

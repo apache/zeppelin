@@ -1,5 +1,6 @@
 package org.apache.zeppelin.interpreter.launcher;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -60,7 +61,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.interpreterGroupName = interpreterGroupName;
     this.interpreterSettingName = interpreterSettingName;
     this.properties = properties;
-    this.envs = envs;
+    this.envs = new HashMap(envs);
     this.zeppelinServiceHost = zeppelinServiceHost;
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
     this.portForward = portForward;
@@ -220,7 +221,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     } else if (path.isFile()) {
       logger.info("Apply " + path.getAbsolutePath());
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
-      specTemplate.putAll(getTemplateBindings());
+      specTemplate.loadProperties(getTemplateBindings());
 
       String spec = specTemplate.render(path);
       if (delete) {
@@ -233,30 +234,43 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
   }
 
-  Map<String, Object> getTemplateBindings() throws IOException {
-    HashMap<String, Object> var = new HashMap<String, Object>();
-    var.put("NAMESPACE", kubectl.getNamespace());
-    var.put("POD_NAME", getPodName());
-    var.put("CONTAINER_NAME", interpreterGroupName.toLowerCase());
-    var.put("CONTAINER_IMAGE", containerImage);
-    var.put("INTP_PORT", "12321");                                    // interpreter.sh -r
-    var.put("INTP_ID", interpreterGroupId);                           // interpreter.sh -i
-    var.put("INTP_NAME", interpreterGroupName);                       // interpreter.sh -d
-    var.put("CALLBACK_HOST", zeppelinServiceHost);                    // interpreter.sh -c
-    var.put("CALLBACK_PORT", zeppelinServiceRpcPort);                 // interpreter.sh -p
-    var.put("INTP_SETTING", interpreterSettingName);                  // interpreter.sh -g
-    var.put("INTP_REPO", "/tmp/local-repo");                          // interpreter.sh -l
-    var.put("OWNER_UID", ownerUID());
-    var.put("OWNER_NAME", ownerName());
+  Properties getTemplateBindings() throws IOException {
+    Properties k8sProperties = new Properties();
 
-    if (isSpark()) {
-      var.put("SPARK_IMAGE", "spark:2.4.0");
-      var.put("SPARK_SUBMIT_OPTIONS", buildSparkSubmitOptions());
+    // k8s template properties
+    k8sProperties.put("zeppelin.k8s.namespace", kubectl.getNamespace());
+    k8sProperties.put("zeppelin.k8s.interpreter.pod.name", getPodName());
+    k8sProperties.put("zeppelin.k8s.interpreter.container.name", interpreterGroupName.toLowerCase());
+    k8sProperties.put("zeppelin.k8s.interpreter.container.image", containerImage);
+    k8sProperties.put("zeppelin.k8s.interpreter.group.id", interpreterGroupId);
+    k8sProperties.put("zeppelin.k8s.interpreter.group.name", interpreterGroupName);
+    k8sProperties.put("zeppelin.k8s.interpreter.setting.name", interpreterSettingName);
+    k8sProperties.put("zeppelin.k8s.interpreter.localRepo", "/tmp/local-repo");
+    k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", "12321:12321");
+    k8sProperties.put("zeppelin.k8s.server.rpc.host", zeppelinServiceHost);
+    k8sProperties.put("zeppelin.k8s.server.rpc.portRange", zeppelinServiceRpcPort);
+    if (ownerUID() != null && ownerName() != null) {
+      k8sProperties.put("zeppelin.k8s.server.uid", ownerUID());
+      k8sProperties.put("zeppelin.k8s.server.pod.name", ownerName());
     }
 
-    var.putAll(Maps.fromProperties(properties));          // interpreter properties override template variables
-    return var;
+    // environment variables
+    envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
+
+    if (isSpark()) {
+      k8sProperties.put("zeppelin.k8s.spark.image", "spark:2.4.0");
+      envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions());
+      envs.put("SPARK_HOME", envs.getOrDefault("SPARK_HOME", "/spark"));
+    }
+
+    k8sProperties.put("zeppelin.k8s.envs", envs);
+
+    // interpreter properties overrides the values
+    k8sProperties.putAll(Maps.fromProperties(properties));
+    return k8sProperties;
   }
+
+
 
   private boolean isSpark() {
     return "spark".equalsIgnoreCase(interpreterGroupName);
@@ -265,7 +279,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private String buildSparkSubmitOptions() {
     StringBuilder options = new StringBuilder();
 
-    options.append("--master k8s://https://kubernetes.default.svc");
+    options.append(" --master k8s://https://kubernetes.default.svc");
     options.append(" --deploy-mode client");
     options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
     options.append(" --conf spark.executor.instances=1");
