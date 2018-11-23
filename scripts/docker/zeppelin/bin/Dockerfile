@@ -92,6 +92,15 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
 
+COPY log4j.properties ${Z_HOME}/conf/
+
+# Install kubectl
+RUN apt-get install -y apt-transport-https && \
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+    apt-get update && \
+    apt-get install -y kubectl
+
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
