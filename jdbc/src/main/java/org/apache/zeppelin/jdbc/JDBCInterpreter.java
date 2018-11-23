@@ -136,12 +136,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
   private static final String CONCURRENT_EXECUTION_COUNT =
           "zeppelin.jdbc.concurrent.max_connection";
   private static final String DBCP_STRING = "jdbc:apache:commons:dbcp:";
+  private static final String MAX_ROWS_KEY = "zeppelin.jdbc.maxRows";
 
   private final HashMap<String, Properties> basePropretiesMap;
   private final HashMap<String, JDBCUserConfigurations> jdbcUserConfigurationsMap;
   private final HashMap<String, SqlCompleter> sqlCompletersMap;
 
   private int maxLineResults;
+  private int maxRows;
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -209,6 +211,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     logger.debug("JDBC PropretiesMap: {}", basePropretiesMap);
 
     setMaxLineResults();
+    setMaxRows();
   }
 
   protected boolean isKerboseEnabled() {
@@ -226,6 +229,14 @@ public class JDBCInterpreter extends KerberosInterpreter {
         basePropretiesMap.get(COMMON_KEY).containsKey(MAX_LINE_KEY)) {
       maxLineResults = Integer.valueOf(basePropretiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY));
     }
+  }
+
+  /**
+   * Fetch MAX_ROWS_KEYS value from property file and set it to
+   * "maxRows" value.
+   */
+  private void setMaxRows() {
+    maxRows = Integer.valueOf(getProperty(MAX_ROWS_KEY, "1000"));
   }
 
   private SqlCompleter createOrUpdateSqlCompleter(SqlCompleter sqlCompleter,
@@ -705,7 +716,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
         statement.setFetchSize(getMaxResult());
-        statement.setMaxRows(getMaxResult() + 1);
+        statement.setMaxRows(maxRows);
 
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
