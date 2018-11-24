@@ -309,7 +309,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     options.append(" --deploy-mode client");
     options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
     options.append(" --conf spark.executor.instances=1");
-    options.append(" --conf spark.driver.pod.name=" + getPodName());
+    options.append(" --conf spark.kubernetes.driver.pod.name=" + getPodName());
     options.append(" --conf spark.kubernetes.container.image=" + sparkImage);
     options.append(" --conf spark.driver.bindAddress=0.0.0.0");
     options.append(" --conf spark.driver.host=" + getInterpreterPodDnsName());
