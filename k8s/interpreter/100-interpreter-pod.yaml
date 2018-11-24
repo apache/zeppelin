@@ -89,6 +89,8 @@ spec:
       port: 22321
     - name: spark-blockmanager
       port: 22322
+    - name: spark-ui
+      port: 4040
     {% endif %}
   selector:
     app: {{zeppelin.k8s.interpreter.pod.name}}
