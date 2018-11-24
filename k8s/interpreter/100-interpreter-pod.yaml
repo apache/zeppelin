@@ -106,6 +106,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{zeppelin.k8s.interpreter.pod.name}}
   namespace: {{zeppelin.k8s.namespace}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
 rules:
 - apiGroups: [""]
   resources: ["pods", "services"]
@@ -115,6 +124,15 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{zeppelin.k8s.interpreter.pod.name}}
+  {% if zeppelin.k8s.server.uid is defined %}
+  ownerReferences:
+  - apiVersion: v1
+    controller: false
+    blockOwnerDeletion: false
+    kind: Pod
+    name: {{zeppelin.k8s.server.pod.name}}
+    uid: {{zeppelin.k8s.server.uid}}
+  {% endif %}
 subjects:
 - kind: ServiceAccount
   name: default
