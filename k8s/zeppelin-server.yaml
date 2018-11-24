@@ -79,6 +79,8 @@ spec:
     image: apache/zeppelin:0.9.0-SNAPSHOT
     command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
     env:
+    - name: ZEPPELIN_K8S_CONTAINER_IMAGE
+      value: apache/zeppelin:0.9.0-SNAPSHOT
     - name: ZEPPELIN_HOME
       value: /zeppelin
     - name: ZEPPELIN_SERVER_RPC_PORTRANGE
