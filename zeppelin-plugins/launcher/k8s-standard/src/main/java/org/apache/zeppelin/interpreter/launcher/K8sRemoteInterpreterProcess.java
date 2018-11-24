@@ -1,5 +1,6 @@
 package org.apache.zeppelin.interpreter.launcher;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -76,7 +77,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * Get interpreter pod name
    * @return
    */
-  private String getPodName() {
+  @VisibleForTesting
+  String getPodName() {
     return podName;
   }
 
@@ -237,6 +239,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     }
   }
 
+  @VisibleForTesting
   Properties getTemplateBindings() throws IOException {
     Properties k8sProperties = new Properties();
 
@@ -249,7 +252,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     k8sProperties.put("zeppelin.k8s.interpreter.group.name", interpreterGroupName);
     k8sProperties.put("zeppelin.k8s.interpreter.setting.name", interpreterSettingName);
     k8sProperties.put("zeppelin.k8s.interpreter.localRepo", "/tmp/local-repo");
-    k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", "12321:12321");
+    k8sProperties.put("zeppelin.k8s.interpreter.rpc.portRange", String.format("%d:%d", getPort(), getPort()));
     k8sProperties.put("zeppelin.k8s.server.rpc.host", zeppelinServiceHost);
     k8sProperties.put("zeppelin.k8s.server.rpc.portRange", zeppelinServiceRpcPort);
     if (ownerUID() != null && ownerName() != null) {
@@ -282,11 +285,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     return k8sProperties;
   }
 
-  private boolean isSpark() {
+  @VisibleForTesting
+  boolean isSpark() {
     return "spark".equalsIgnoreCase(interpreterGroupName);
   }
 
-  private String buildSparkSubmitOptions() {
+  @VisibleForTesting
+  String buildSparkSubmitOptions() {
     StringBuilder options = new StringBuilder();
 
     options.append(" --master k8s://https://kubernetes.default.svc");
@@ -294,7 +299,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
     options.append(" --conf spark.executor.instances=1");
     options.append(" --conf spark.driver.pod.name=" + getPodName());
-    options.append(" --conf spark.kubernetes.container.image=spark:2.4.0");
+    options.append(" --conf spark.kubernetes.container.image=" + sparkImage);
     options.append(" --conf spark.driver.bindAddress=0.0.0.0");
     options.append(" --conf spark.driver.host=" + getInterpreterPodDnsName());
     options.append(" --conf spark.driver.port=" + String.format("%d", getSparkDriverPort()));
@@ -313,7 +318,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * See xxx-interpreter-pod.yaml
    * @return
    */
-  private int getSparkDriverPort() {
+  @VisibleForTesting
+  int getSparkDriverPort() {
     return 22321;
   }
 
@@ -321,7 +327,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    * See xxx-interpreter-pod.yaml
    * @return
    */
-  private int getSparkBlockmanagerPort() {
+  @VisibleForTesting
+  int getSparkBlockmanagerPort() {
     return 22322;
   }
 

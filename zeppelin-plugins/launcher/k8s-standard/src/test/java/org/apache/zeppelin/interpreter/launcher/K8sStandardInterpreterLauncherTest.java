@@ -19,17 +19,18 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
+ * In the future, test may use minikube on travis for end-to-end test
  * https://github.com/LiliC/travis-minikube
  * https://blog.travis-ci.com/2017-10-26-running-kubernetes-on-travis-ci-with-minikube
  */
@@ -42,10 +43,13 @@ public class K8sStandardInterpreterLauncherTest {
   }
 
   @Test
-  public void testTemplate() throws IOException {
+  public void testK8sLauncher() throws IOException {
     // given
+    Kubectl kubectl = mock(Kubectl.class);
+    when(kubectl.getNamespace()).thenReturn("default");
+
     ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
+    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null, kubectl);
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
@@ -64,36 +68,11 @@ public class K8sStandardInterpreterLauncherTest {
             "name",
             0,
             "host");
-    InterpreterClient client = launcher.launch(context);
-    K8sRemoteInterpreterProcess k8sintp = (K8sRemoteInterpreterProcess) client;
-    k8sintp.start("user");
-    // assertTrue(k8sintp.isRunning());
-    // k8sintp.stop();
-  }
 
-  /*
-  @Test
-  public void testLauncher() throws IOException {
-    ZeppelinConfiguration zConf = new ZeppelinConfiguration();
-    K8sStandardInterpreterLauncher launcher = new K8sStandardInterpreterLauncher(zConf, null);
-    Properties properties = new Properties();
-    properties.setProperty("ENV_1", "VALUE_1");
-    properties.setProperty("property_1", "value_1");
-    InterpreterOption option = new InterpreterOption();
-    option.setUserImpersonate(true);
-    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null, "user1", "intpGroupId", "groupId", "groupName", "name", 0, "host");
+    // when
     InterpreterClient client = launcher.launch(context);
-    assertTrue( client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
-    assertEquals("name", interpreterProcess.getInterpreterSettingName());
-    assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
-    assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());
-    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getIntValue(),
-        interpreterProcess.getConnectTimeout());
-    assertEquals(zConf.getInterpreterRemoteRunnerPath(), interpreterProcess.getInterpreterRunner());
-    assertEquals(2, interpreterProcess.getEnv().size());
-    assertEquals("VALUE_1", interpreterProcess.getEnv().get("ENV_1"));
-    assertEquals(true, interpreterProcess.isUserImpersonated());
+
+    // then
+    assertTrue(client instanceof K8sRemoteInterpreterProcess);
   }
-    */
 }

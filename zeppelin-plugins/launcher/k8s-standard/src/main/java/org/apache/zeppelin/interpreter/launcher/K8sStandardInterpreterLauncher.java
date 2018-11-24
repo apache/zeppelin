@@ -23,6 +23,8 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
@@ -47,6 +49,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     super(zConf, recoveryStorage);
     kubectl = new Kubectl(zConf.getK8sKubectlCmd());
     kubectl.setNamespace(getNamespace());
+  }
+
+  @VisibleForTesting
+  K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage, Kubectl kubectl) {
+    super(zConf, recoveryStorage);
+    this.kubectl = kubectl;
   }
 
 
