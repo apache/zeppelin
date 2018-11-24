@@ -78,6 +78,11 @@ spec:
   - name: zeppelin-server
     image: apache/zeppelin:0.9.0-SNAPSHOT
     command: ["sh", "-c", "$(ZEPPELIN_HOME)/bin/zeppelin.sh"]
+    lifecycle:
+      preStop:
+        exec:
+          # SIGTERM triggers a quick exit; gracefully terminate instead
+          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | awk '{print $2}' | xargs kill"]
     env:
     - name: ZEPPELIN_K8S_CONTAINER_IMAGE
       value: apache/zeppelin:0.9.0-SNAPSHOT
