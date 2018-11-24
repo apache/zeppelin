@@ -86,14 +86,6 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
-RUN echo "$LOG_TAG Download Zeppelin binary" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
-
-COPY log4j.properties ${Z_HOME}/conf/
-
 # Install kubectl
 RUN apt-get install -y apt-transport-https && \
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
@@ -104,6 +96,14 @@ RUN apt-get install -y apt-transport-https && \
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
+
+RUN echo "$LOG_TAG Download Zeppelin binary" && \
+    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+
+COPY log4j.properties ${Z_HOME}/conf/
 
 EXPOSE 8080
 
