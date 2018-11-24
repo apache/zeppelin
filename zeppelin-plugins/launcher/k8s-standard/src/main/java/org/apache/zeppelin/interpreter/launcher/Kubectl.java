@@ -26,6 +26,7 @@ import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +61,20 @@ public class Kubectl {
   }
 
   public String wait(String resource, String waitFor, int timeoutSec) throws IOException {
-    return execAndGet(new String[]{
-            "wait",
-            resource,
-            String.format("--for=%s", waitFor),
-            String.format("--timeout=%ds", timeoutSec)});
+    try {
+      return execAndGet(new String[]{
+          "wait",
+          resource,
+          String.format("--for=%s", waitFor),
+          String.format("--timeout=%ds", timeoutSec)});
+    } catch (IOException e) {
+      if ("delete".equals(waitFor) && e.getMessage().contains("NotFound")) {
+        logger.info("{} Not found. Maybe already deleted.", resource);
+        return "";
+      } else {
+        throw e;
+      }
+    }
   }
 
   public ExecuteWatchdog portForward(String resource, String [] ports) throws IOException {
