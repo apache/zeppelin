@@ -188,7 +188,7 @@ public class K8sRemoteInterpreterProcessTest {
     String sparkSubmitOptions = envs.get("SPARK_SUBMIT_OPTIONS");
     assertTrue(sparkSubmitOptions.startsWith("my options "));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.namespace=" + kubectl.getNamespace()));
-    assertTrue(sparkSubmitOptions.contains("spark.driver.pod.name=" + intp.getPodName()));
+    assertTrue(sparkSubmitOptions.contains("spark.kubernetes.driver.pod.name=" + intp.getPodName()));
     assertTrue(sparkSubmitOptions.contains("spark.kubernetes.container.image=spark-container:1.0"));
     assertTrue(sparkSubmitOptions.contains("spark.driver.host=" + intp.getHost()));
     assertTrue(sparkSubmitOptions.contains("spark.driver.port=" + intp.getSparkDriverPort()));
