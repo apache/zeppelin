@@ -110,6 +110,8 @@ spec:
         configMapKeyRef:
           name: zeppelin-server-conf
           key: serviceDomain
+    - name: MASTER   # default value of master property for spark interpreter.
+      value: k8s://https://kubernetes.default.svc
   - name: zeppelin-server-gateway
     image: nginx:1.14.0
     command: [ "/bin/sh", "-c" ]

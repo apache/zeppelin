@@ -267,7 +267,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     if (isSpark()) {
       int webUiPort = 4040;
       k8sProperties.put("zeppelin.k8s.spark.container.image", sparkImage);
-      envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions());
+      if (isSparkOnKubernetes(properties)) {
+        envs.put("SPARK_SUBMIT_OPTIONS", envs.getOrDefault("SPARK_SUBMIT_OPTIONS", "") + buildSparkSubmitOptions());
+      }
       envs.put("SPARK_HOME", envs.getOrDefault("SPARK_HOME", "/spark"));
 
       // configure interpreter property "zeppelin.spark.uiWebUrl" if not defined, to enable spark ui through reverse proxy
@@ -288,6 +290,15 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   @VisibleForTesting
   boolean isSpark() {
     return "spark".equalsIgnoreCase(interpreterGroupName);
+  }
+
+  boolean isSparkOnKubernetes(Properties interpreteProperties) {
+    String propertySparkMaster = (String) interpreteProperties.getOrDefault("master", "");
+    if (propertySparkMaster.startsWith("k8s://")) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @VisibleForTesting

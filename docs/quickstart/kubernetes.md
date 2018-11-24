@@ -56,7 +56,7 @@ Get `zeppelin-server.yaml` from github repository or find it from Zeppelin distr
 $ curl -s -O https://raw.githubusercontent.com/apache/zeppelin/master/k8s/zeppelin-server.yaml
 
 # or get it from Zeppelin distribution package.
-$ ls <zeppelin-distribution/k8s/zeppelin-server.yaml
+$ ls <zeppelin-distribution>/k8s/zeppelin-server.yaml
 ```
 
 Start zeppelin on kubernetes cluster,
@@ -113,7 +113,7 @@ And then start your spark interpreter
 sc.parallelize(1 to 100).count
 ...
 ```
-Spark executors will be automatically created in your Kubernetes cluster.
+While `master` property of SparkInterpreter starts with `k8s://` (default `k8s://https://kubernetes.default.svc` when Zeppelin started using zeppelin-server.yaml), Spark executors will be automatically created in your Kubernetes cluster.
 Spark UI is accessible by clicking `SPARK JOB` on the Paragraph. 
 
 Check [here](https://spark.apache.org/docs/latest/running-on-kubernetes.html) to know more about Running Spark on Kubernetes.
