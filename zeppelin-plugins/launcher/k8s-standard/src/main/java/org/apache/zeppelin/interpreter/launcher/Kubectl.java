@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Kubectl {
-  private final Logger logger = LoggerFactory.getLogger(Kubectl.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(Kubectl.class);
   private final String kubectlCmd;
   private final Gson gson = new Gson();
   private String namespace;
@@ -69,7 +69,7 @@ public class Kubectl {
           String.format("--timeout=%ds", timeoutSec)});
     } catch (IOException e) {
       if ("delete".equals(waitFor) && e.getMessage().contains("NotFound")) {
-        logger.info("{} Not found. Maybe already deleted.", resource);
+        LOGGER.info("{} Not found. Maybe already deleted.", resource);
         return "";
       } else {
         throw e;
@@ -90,12 +90,12 @@ public class Kubectl {
     executor.execute(cmd, new ExecuteResultHandler() {
       @Override
       public void onProcessComplete(int i) {
-        logger.info("Port-forward stopped");
+        LOGGER.info("Port-forward stopped");
       }
 
       @Override
       public void onProcessFailed(ExecuteException e) {
-        logger.debug("port-forward process exit", e);
+        LOGGER.debug("port-forward process exit", e);
       }
     });
 
@@ -118,8 +118,8 @@ public class Kubectl {
       argsToOverride.add("--namespace=" + namespace);
     }
 
-    logger.info("kubectl " + argsToOverride);
-    logger.debug(stdin);
+    LOGGER.info("kubectl " + argsToOverride);
+    LOGGER.debug(stdin);
 
     try {
       int exitCode = execute(

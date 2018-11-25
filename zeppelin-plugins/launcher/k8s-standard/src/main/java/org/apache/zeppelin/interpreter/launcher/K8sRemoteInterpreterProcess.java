@@ -1,7 +1,6 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -12,14 +11,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
-  private static final Logger logger = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
   private final Kubectl kubectl;
   private final String interpreterGroupId;
@@ -110,13 +108,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         try {
           started.wait(getConnectTimeout());
         } catch (InterruptedException e) {
-          logger.error("Remote interpreter is not accessible");
+          LOGGER.error("Remote interpreter is not accessible");
         }
       }
     }
 
     if (!started.get()) {
-      logger.info(
+      LOGGER.info(
           String.format("Interpreter pod creation is time out in %d seconds",
               getConnectTimeout()/1000));
     }
@@ -140,13 +138,13 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     try {
       apply(specTempaltes, true);
     } catch (IOException e) {
-      logger.info("Error on removing interpreter pod", e);
+      LOGGER.info("Error on removing interpreter pod", e);
     }
 
     try {
       kubectl.wait(String.format("pod/%s", getPodName()), "delete", 60);
     } catch (IOException e) {
-      logger.debug("Error on waiting pod delete", e);
+      LOGGER.debug("Error on waiting pod delete", e);
     }
 
 
@@ -199,7 +197,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
       return "Running".equals(status.get("phase")) && started.get();
     } catch (Exception e) {
-      logger.error("Can't get pod status", e);
+      LOGGER.error("Can't get pod status", e);
       return false;
     }
   }
@@ -210,7 +208,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
    */
   void apply(File path, boolean delete) throws IOException {
     if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
-      logger.info("Skip " + path.getAbsolutePath());
+      LOGGER.info("Skip " + path.getAbsolutePath());
     }
 
     if (path.isDirectory()) {
@@ -224,7 +222,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         apply(f, delete);
       }
     } else if (path.isFile()) {
-      logger.info("Apply " + path.getAbsolutePath());
+      LOGGER.info("Apply " + path.getAbsolutePath());
       K8sSpecTemplate specTemplate = new K8sSpecTemplate();
       specTemplate.loadProperties(getTemplateBindings());
 
@@ -235,7 +233,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
         kubectl.apply(spec);
       }
     } else {
-      logger.error("Can't apply " + path.getAbsolutePath());
+      LOGGER.error("Can't apply " + path.getAbsolutePath());
     }
   }
 
@@ -372,7 +370,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   @Override
   public void processStarted(int port, String host) {
-    logger.info("Interpreter pod created {}:{}", host, port);
+    LOGGER.info("Interpreter pod created {}:{}", host, port);
     synchronized (started) {
       started.set(true);
       started.notify();
