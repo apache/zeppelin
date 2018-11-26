@@ -55,9 +55,9 @@ public class Neo4jCypherInterpreterTest {
   private static final String REL_KNOWS = "KNOWS";
 
   private static final String CYPHER_FOREACH =
-          "FOREACH (x in range(1,1000) | CREATE (:%s{name: \"name\" + x, age: %s}))";
-  private static final String CHPHER_UNWIND = "UNWIND range(1,1000) as x "
-        + "MATCH (n), (m) WHERE id(n) = x AND id(m) = toInt(rand() * 1000) "
+          "FOREACH (x in range(1,100) | CREATE (:%s{name: \"name\" + x, age: %s, address: point({ longitude: 56.7, latitude: 12.78, height: 8 }), birth: date('1984-04-04')}))";
+  private static final String CHPHER_UNWIND = "UNWIND range(1,100) as x "
+        + "MATCH (n), (m) WHERE id(n) = x AND id(m) = toInt(rand() * 100) "
         + "CREATE (n)-[:%s]->(m)";
 
   @BeforeClass
