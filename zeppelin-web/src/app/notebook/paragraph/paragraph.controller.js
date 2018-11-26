@@ -45,6 +45,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   $scope.editor = null;
   $scope.cursorPosition = null;
   $scope.diffMatchPatch = new DiffMatchPatch();
+  $scope.isNoteRunning = false;
 
   // transactional info for spell execution
   $scope.spellTransaction = {
@@ -147,10 +148,19 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.paragraph.config = {};
     }
 
+    $scope.isNoteRunning = !!(note && note.hasOwnProperty('info') &&
+      note.info.hasOwnProperty('isRunning')
+      && note.info.isRunning === true);
+
     noteVarShareService.put($scope.paragraph.id + '_paragraphScope', paragraphScope);
 
     initializeDefault($scope.paragraph.config);
   };
+
+  $scope.$on('noteRunningStatus', function(event, status) {
+    $scope.isNoteRunning = status;
+    $scope.editor.setReadOnly(status);
+  });
 
   const initializeDefault = function(config) {
     let forms = $scope.paragraph.settings.forms;
@@ -250,7 +260,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       console.log('editor isnt loaded yet, returning');
       return;
     }
-    if ($scope.revisionView === true) {
+    if ($scope.revisionView === true || $scope.isNoteRunning === true) {
       $scope.editor.setReadOnly(true);
     } else {
       $scope.editor.setReadOnly(false);
@@ -266,6 +276,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.cancelParagraph = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     console.log('Cancel %o', paragraph.id);
     websocketMsgSrv.cancelParagraphRun(paragraph.id);
   };
@@ -430,6 +443,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.toggleEnableDisable = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     paragraph.config.enabled = !paragraph.config.enabled;
     commitParagraph(paragraph);
   };
@@ -472,15 +488,24 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.runParagraphFromButton = function() {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     // we come here from the view, so we don't need to call `$digest()`
     $scope.runParagraph($scope.getEditorValue(), false, false);
   };
 
   $scope.runAllToThis = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     $scope.$emit('runAllAbove', paragraph, true);
   };
 
   $scope.runAllFromThis = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     $scope.$emit('runAllBelowAndCurrent', paragraph, true);
   };
 
@@ -519,18 +544,30 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.moveUp = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     $scope.$emit('moveParagraphUp', paragraph);
   };
 
   $scope.moveDown = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     $scope.$emit('moveParagraphDown', paragraph);
   };
 
   $scope.insertNew = function(position) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     $scope.$emit('insertParagraph', $scope.paragraph.id, position);
   };
 
   $scope.copyPara = function(position) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     let editorValue = $scope.getEditorValue();
     if (editorValue) {
       $scope.copyParagraph(editorValue, position);
@@ -563,6 +600,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   };
 
   $scope.removeParagraph = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
     if ($scope.note.paragraphs.length === 1) {
       BootstrapDialog.alert({
         closable: true,
@@ -738,7 +778,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
-      $scope.editor.setReadOnly($scope.isRunning($scope.paragraph));
+      $scope.editor.setReadOnly($scope.isRunning($scope.paragraph) || $scope.isNoteRunning);
       $scope.editor.setHighlightActiveLine($scope.paragraphFocused);
 
       if ($scope.paragraphFocused) {
@@ -1488,7 +1528,8 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.paragraph.settings = newPara.settings;
     $scope.paragraph.runtimeInfos = newPara.runtimeInfos;
     if ($scope.editor) {
-      $scope.editor.setReadOnly($scope.isRunning(newPara));
+      let isReadOnly = $scope.isRunning(newPara) || $scope.isNoteRunning;
+      $scope.editor.setReadOnly(isReadOnly);
     }
 
     if (!$scope.asIframe) {
