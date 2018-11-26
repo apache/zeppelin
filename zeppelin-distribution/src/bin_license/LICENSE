@@ -291,7 +291,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
     (BSD 3 Clause) highlightjs v9.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/9.4.0/LICENSE
     (BSD 3 Clause) hamcrest v1.3 (http://hamcrest.org/JavaHamcrest/) - http://opensource.org/licenses/BSD-3-Clause
-    (BSD Style) JLine v2.12.1 (https://github.com/jline/jline2) - https://github.com/jline/jline2/blob/master/LICENSE.txt
+    (BSD Style) JLine v2.14.3 (https://github.com/jline/jline2) - https://github.com/jline/jline2/blob/master/LICENSE.txt
     (BSD New license) Google Auth Library for Java - Credentials (com.google.auth:google-auth-library-credentials:0.4.0 - https://github.com/google/google-auth-library-java/google-auth-library-credentials)
     (BSD New license) Google Auth Library for Java - OAuth2 HTTP (com.google.auth:google-auth-library-oauth2-http:0.4.0 - https://github.com/google/google-auth-library-java/google-auth-library-oauth2-http)
     (New BSD license) Protocol Buffer Java API (com.google.protobuf:protobuf-java-util:3.0.0-beta-2 - https://developers.google.com/protocol-buffers/)

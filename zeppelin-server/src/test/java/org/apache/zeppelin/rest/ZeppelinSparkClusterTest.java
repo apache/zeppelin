@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   //ci timeout.
   //TODO(zjffdu) remove this after we upgrade it to junit 4.13 (ZEPPELIN-3341)
   private static Set<String> verifiedSparkVersions = new HashSet<>();
-  
+
 
   private String sparkVersion;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
@@ -83,10 +84,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"2.2.1"},
-        {"2.1.2"},
-        {"2.0.2"},
-        {"1.6.3"}
+            {"2.4.0"},
+            {"2.3.2"},
+            {"2.2.1"},
+            {"2.1.2"},
+            {"2.0.2"},
+            {"1.6.3"}
     });
   }
 
@@ -115,7 +118,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             new InterpreterProperty("zeppelin.spark.useNew", "true"));
     sparkProperties.put("zeppelin.spark.test",
             new InterpreterProperty("zeppelin.spark.test", "true"));
-
+    sparkProperties.put("spark.serializer",
+            new InterpreterProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer"));
     ZeppelinServer.notebook.getInterpreterSettingManager().restart(sparkIntpSetting.getId());
   }
 
@@ -133,8 +137,18 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private void waitForFinish(Paragraph p) {
     while (p.getStatus() != Status.FINISHED
-        && p.getStatus() != Status.ERROR
-        && p.getStatus() != Status.ABORT) {
+            && p.getStatus() != Status.ERROR
+            && p.getStatus() != Status.ABORT) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
+      }
+    }
+  }
+
+  private void waitForRunning(Paragraph p) {
+    while (p.getStatus() != Status.RUNNING) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -144,7 +158,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void scalaOutputTest() throws IOException {
+  public void scalaOutputTest() throws IOException, InterruptedException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
@@ -169,6 +183,18 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("2", p.getReturn().message().get(0).getData());
+
+    // test code completion
+    List<InterpreterCompletion> completions = note.completion(p.getId(), "sc.", 2);
+    assertTrue(completions.size() > 0);
+
+    // test cancel
+    p.setText("%spark sc.range(1,10).map(e=>{Thread.sleep(1000); e}).collect()");
+    note.run(p.getId(), false);
+    waitForRunning(p);
+    p.abort();
+    waitForFinish(p);
+    assertEquals(Status.ABORT, p.getStatus());
 
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }

@@ -315,7 +315,7 @@ The role of registered interpreters, settings and interpreters group are describ
       <td>
         <pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": {
     "id": "2AYW25ANY",

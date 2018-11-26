@@ -208,6 +208,11 @@
           </filesets>
         </configuration>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${plugin.resource.version}</version>
+      </plugin>
     </plugins>
   </build>
 

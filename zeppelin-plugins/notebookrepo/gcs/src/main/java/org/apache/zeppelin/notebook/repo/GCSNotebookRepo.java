@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -29,6 +31,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.gson.JsonParseException;
+
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +58,9 @@ import org.slf4j.LoggerFactory;
  * object store, so this "directory" should not itself be an object. Instead, it represents the base
  * path for the note.json files.
  *
- * Authentication is provided by google-auth-library-java.
+ * Authentication is provided by google-auth-library-java. A custom json key file path
+ * can be specified by zeppelin.notebook.google.credentialsJsonFilePath to connect with GCS
+ * If not specified the GOOGLE_APPLICATION_CREDENTIALS will be used to connect to GCS.
  * @see <a href="https://github.com/google/google-auth-library-java">
  *   google-auth-library-java</a>.
  */
@@ -113,7 +119,12 @@ public class GCSNotebookRepo implements NotebookRepo {
       this.notePathPattern = Pattern.compile("^(.+\\.zpln)$");
     }
 
-    this.storage = StorageOptions.getDefaultInstance().getService();
+    Credentials credentials = GoogleCredentials.getApplicationDefault();
+    String credentialJsonPath = zConf.getString(ConfVars.ZEPPELIN_NOTEBOOK_GCS_CREDENTIALS_FILE);
+    if (credentialJsonPath != null) {
+      credentials = GoogleCredentials.fromStream(new FileInputStream(credentialJsonPath));
+    }
+    this.storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
   }
 
   private BlobId makeBlobId(String noteId, String notePath) throws IOException {

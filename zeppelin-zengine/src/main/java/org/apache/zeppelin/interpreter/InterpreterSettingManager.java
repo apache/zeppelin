@@ -76,10 +76,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -850,23 +850,20 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   }
 
   public void close() {
-    List<Thread> closeThreads = new LinkedList<>();
-    for (final InterpreterSetting intpSetting : interpreterSettings.values()) {
-      Thread t =
-          new Thread() {
-            public void run() {
-              intpSetting.close();
-            }
-          };
-      t.start();
-      closeThreads.add(t);
-    }
+    List<Thread> closeThreads = interpreterSettings.values().stream()
+            .map(intpSetting-> new Thread(intpSetting::close, intpSetting.getId() + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("interpreterGroup close error", e)))
+            .peek(Thread::start)
+            .collect(Collectors.toList());
 
     for (Thread t : closeThreads) {
       try {
         t.join();
       } catch (InterruptedException e) {
-        LOGGER.error("Can't close interpreterGroup", e);
+        LOGGER.error("Can't wait close interpreterGroup threads", e);
+        Thread.currentThread().interrupt();
+        break;
       }
     }
   }
