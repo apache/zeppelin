@@ -584,4 +584,33 @@
   <description>Notebook cron folders</description>
 </property>
 -->
+
+<property>
+  <name>zeppelin.k8s.mode</name>
+  <value>auto</value>
+  <description>Run interpreters on Kubernetes. 'auto|on|off'</description>
+</configuration>
+
+<property>
+  <name>zeppelin.k8s.portforward</name>
+  <value>false</value>
+  <description>Port forward to interpreter rpc port. Set 'true' only on local development when zeppelin.k8s.mode 'on'</description>
+</configuration>
+
+<property>
+  <name>zeppelin.k8s.container.image</name>
+  <value>apache/zeppelin:0.9.0-SNAPSHOT</value>
+  <description>Docker image for interpreters</description>
+</configuration>
+
+<property>
+  <name>zeppelin.k8s.spark.container.image</name>
+  <value>apache/spark:latest</value>
+  <description>Docker image for Spark executors</description>
+</configuration>
+
+<property>
+  <name>zeppelin.k8s.template.dir</name>
+  <value>k8s</value>
+  <description>Kubernetes yaml spec files</description>
 </configuration>
