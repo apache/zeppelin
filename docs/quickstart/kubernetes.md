@@ -21,7 +21,7 @@ limitations under the License.
 
 # Zeppelin on Kubernetes
 
-Zeppelin can run on clusters managed by [Kubernetes](https://kubernetes.io/). When Zeppelin runs in Pod, it creates pods for individual interpreter. Also Spark interpreter auto configured to use Spark on Kubernetes.
+Zeppelin can run on clusters managed by [Kubernetes](https://kubernetes.io/). When Zeppelin runs in Pod, it creates pods for individual interpreter. Also Spark interpreter auto configured to use Spark on Kubernetes in client mode.
 
 Key benefits are
 
@@ -165,3 +165,13 @@ $ docker build -t <tag> .
 ```
 
 Finally, set custom image `<tag>` just created to `image` and `ZEPPELIN_K8S_CONTAINER_IMAGE` env variable of `zeppelin-server` container spec in `zeppelin-server.yaml` file.
+
+Currently, single docker image is being used in both Zeppelin server and Interpreter pods. Therefore,
+
+| Pod | Number of instances | Image | Note |
+| --- | --- | --- | --- |
+| Zeppelin Server | 1 | Zeppelin docker image | User creates/deletes with kubectl command |
+| Zeppelin Interpreters | n | Zeppelin docker image | Zeppelin Server creates/deletes |
+| Spark executors | m | Spark docker image | Spark Interpreter creates/deletes |
+
+Currently, size of Zeppelin docker image is quite big. Zeppelin project is planning to provides lightweight images for each individual interpreter in the future.

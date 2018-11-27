@@ -60,6 +60,13 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   /**
    * Check if i'm running inside of kubernetes or not.
+   * It should return truth regardless of ZeppelinConfiguration.getK8sMode().
+   *
+   * Normally, unless Zeppelin is running on Kubernetes, K8sStandardInterpreterLauncher shouldn't even have initialized.
+   * However, when ZeppelinConfiguration.getK8sMode() is force 'on', InterpreterSetting.getLauncherPlugin() will try
+   * to use K8sStandardInterpreterLauncher. This is useful for development. It allows Zeppelin server running on your
+   * IDE and creates your interpreters in Kubernetes. So any code changes on Zeppelin server or kubernetes yaml spec
+   * can be applied without re-building docker image.
    * @return
    */
   boolean isRunningOnKubernetes() {

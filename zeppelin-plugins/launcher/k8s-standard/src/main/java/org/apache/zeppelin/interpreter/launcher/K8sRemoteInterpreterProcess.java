@@ -29,7 +29,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private final Map<String, String> envs;
   private final String zeppelinServiceHost;
   private final String zeppelinServiceRpcPort;
-  private final int podCreateTimeoutSec = 180;
 
   private final Gson gson = new Gson();
   private final String podName;
@@ -53,7 +52,8 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
           String zeppelinServiceRpcPort,
           boolean portForward,
           String sparkImage,
-          int connectTimeout) {
+          int connectTimeout
+  ) {
     super(connectTimeout);
     this.kubectl = kubectl;
     this.specTempaltes = specTemplates;
@@ -89,7 +89,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   public void start(String userName) throws IOException {
     // create new pod
     apply(specTempaltes, false);
-    kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", podCreateTimeoutSec);
+    kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", getConnectTimeout()/1000);
 
     if (portForward) {
       podPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
@@ -305,6 +305,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     options.append(" --master k8s://https://kubernetes.default.svc");
     options.append(" --deploy-mode client");
+    if (properties.containsKey("spark.driver.memory")) {
+      options.append(" --driver-memory " + properties.get("spark.driver.memory"));
+    }
     options.append(" --conf spark.kubernetes.namespace=" + kubectl.getNamespace());
     options.append(" --conf spark.executor.instances=1");
     options.append(" --conf spark.kubernetes.driver.pod.name=" + getPodName());
