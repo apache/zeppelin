@@ -19,7 +19,15 @@ kind: ConfigMap
 metadata:
   name: zeppelin-server-conf
 data:
-  serviceDomain: localtest.me:8080
+  # 'serviceDomain' is a Domain name to use for accessing Zeppelin UI.
+  # Should point IP address of 'zeppelin-server' service.
+  #
+  # Wildcard subdomain need to be point the same IP address to access service inside of Pod (such as SparkUI).
+  # i.e. if service domain is 'local.zeppelin-project.org', DNS configuration should make 'local.zeppelin-project.org' and '*.local.zeppelin-project.org' point the same address.
+  #
+  # Default value is 'local.zeppelin-project.org' while it points 127.0.0.1 and `kubectl port-forward zeppelin-server` will give localhost to connects.
+  # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
+  serviceDomain: local.zeppelin-project.org:8080
   sparkContainerImage: spark:2.4.0
   nginx.conf: |
     daemon off;
