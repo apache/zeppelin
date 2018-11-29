@@ -55,7 +55,9 @@ public class Neo4jCypherInterpreterTest {
   private static final String REL_KNOWS = "KNOWS";
 
   private static final String CYPHER_FOREACH =
-          "FOREACH (x in range(1,100) | CREATE (:%s{name: \"name\" + x, age: %s, address: point({ longitude: 56.7, latitude: 12.78, height: 8 }), birth: date('1984-04-04')}))";
+          "FOREACH (x in range(1,100) | CREATE (:%s{name: \"name\" + x, age: %s, " +
+                  "address: point({ longitude: 56.7, latitude: 12.78, height: 8 }), " +
+                  "birth: date('1984-04-04')}))";
   private static final String CHPHER_UNWIND = "UNWIND range(1,100) as x "
         + "MATCH (n), (m) WHERE id(n) = x AND id(m) = toInt(rand() * 100) "
         + "CREATE (n)-[:%s]->(m)";
@@ -73,7 +75,7 @@ public class Neo4jCypherInterpreterTest {
   public static void tearDownNeo4jServer() throws Exception {
     server.close();
   }
-  
+
   @Before
   public void setUpZeppelin() {
     Properties p = new Properties();
@@ -83,7 +85,7 @@ public class Neo4jCypherInterpreterTest {
     interpreter = new Neo4jCypherInterpreter(p);
     context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
-        .build();;
+        .build();
   }
 
   @After
@@ -99,7 +101,7 @@ public class Neo4jCypherInterpreterTest {
     assertEquals(Code.SUCCESS, result.code());
     final String tableResult = "colA\tcolB\tcolC\n\"a\"\t\"b\"\t[1,2,3]\n";
     assertEquals(tableResult, result.toString().replace("%table ", StringUtils.EMPTY));
-    
+
     result = interpreter.interpret(
             "return 'a' as colA, 'b' as colB, [{key: \"value\"}, {key: 1}] as colC", context);
     assertEquals(Code.SUCCESS, result.code());
@@ -191,7 +193,7 @@ public class Neo4jCypherInterpreterTest {
     assertEquals(row.get(header.indexOf(objectKey)), "value2");
     assertEquals(row.get(header.indexOf(objectListKey)),
             "[{\"inner\":\"Map1\"},{\"inner\":\"Map2\"}]");
-    
+
     final String jsonListWithoutListKeyQuery = "WITH [{key: \"value\"},"
             + "{key: \"value2\", listKey: [{inner: \"Map1\"}, {inner: \"Map2\"}]}] "
             + "AS array UNWIND array AS object RETURN object";
