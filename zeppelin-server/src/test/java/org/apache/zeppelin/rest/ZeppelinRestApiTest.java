@@ -393,7 +393,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
-    note.runAll();
+    note.runAll(anonymous, true);
     // wait until job is finished or timeout.
     int timeout = 1;
     while (!paragraph.isTerminated()) {
@@ -449,7 +449,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
-    note.runAll();
+    note.runAll(anonymous, true);
     // assume that status of the paragraph is running
     GetMethod get = httpGet("/notebook/job/" + noteId);
     assertThat("test get note job: ", get, isAllowed());
@@ -496,7 +496,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.saveNote(note, anonymous);
     String noteId = note.getId();
 
-    note.runAll();
+    note.runAll(anonymous, true);
 
     // Call Run paragraph REST API
     PostMethod postParagraph = httpPost("/notebook/job/" + noteId + "/" + paragraph.getId(),
