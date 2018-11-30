@@ -240,6 +240,14 @@ public class NotebookServer extends WebSocketServlet
         throw new Exception("Anonymous access not allowed ");
       }
 
+      if (Message.isDisabledForRunningNotes(messagereceived.op)) {
+        Note note = notebook.getNote((String) messagereceived.get("noteId"));
+        if (note != null && note.isRunning()) {
+          throw new Exception("Note is now running sequentially. Can not be performed: " +
+                  messagereceived.op);
+        }
+      }
+
       if (StringUtils.isEmpty(conn.getUser())) {
         connectionManager.addUserConnection(messagereceived.principal, conn);
       }
@@ -1642,6 +1650,14 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
     // TODO
+  }
+
+  @Override
+  public void noteRunningStatusChange(String noteId, boolean newStatus) {
+    connectionManager.broadcast(
+        noteId,
+        new Message(OP.NOTE_RUNNING_STATUS
+        ).put("status", newStatus));
   }
 
   private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)

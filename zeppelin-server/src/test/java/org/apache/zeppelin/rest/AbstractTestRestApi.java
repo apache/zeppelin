@@ -246,6 +246,7 @@ public abstract class AbstractTestRestApi {
       if (started == false) {
         throw new RuntimeException("Can not start Zeppelin server");
       }
+      ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
       LOG.info("Test Zeppelin stared.");
     }
   }
