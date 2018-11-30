@@ -366,10 +366,10 @@ If both are defined, then the **environment variables** will take priority.
     <td>GitHub remote name. Default is `origin`</td>
   </tr>
   <tr>
-    <td><h6 class="properties">ZEPPELIN_K8S_MODE</h6></td>
-    <td><h6 class="properties">zeppelin.k8s.mode</h6></td>
+    <td><h6 class="properties">ZEPPELIN_RUN_MODE</h6></td>
+    <td><h6 class="properties">zeppelin.run.mode</h6></td>
     <td>auto</td>
-    <td>Run interpreters on Kubernetes. 'auto|on|off'. 'auto' autodetect environment. 'on' is useful for developer while it allows run Zeppelin server on your IDE and Interpreter on Kubernetes cluster</td>
+    <td>Run mode. 'auto|local|k8s'. 'auto' autodetect environment. 'local' runs interpreter as a local process. k8s runs interpreter on Kubernetes cluster</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_K8S_PORTFORWARD</h6></td>

@@ -586,9 +586,9 @@
 -->
 
 <property>
-  <name>zeppelin.k8s.mode</name>
+  <name>zeppelin.run.mode</name>
   <value>auto</value>
-  <description>Run interpreters on Kubernetes. 'auto|on|off'</description>
+  <description>'auto|local|k8s'</description>
 </configuration>
 
 <property>

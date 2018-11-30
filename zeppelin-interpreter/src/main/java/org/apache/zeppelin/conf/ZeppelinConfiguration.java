@@ -48,6 +48,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   private Map<String, String> properties = new HashMap<>();
 
+  public enum RUN_MODE {
+    LOCAL,
+    K8S
+  }
+
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
     setDelimiterParsingDisabled(true);
     load(url);
@@ -665,8 +670,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT);
   }
 
-  public String getK8sMode() {
-    return getString(ConfVars.ZEPPELIN_K8S_MODE);
+  public RUN_MODE getRunMode() {
+    String mode = getString(ConfVars.ZEPPELIN_RUN_MODE);
+    if ("auto".equalsIgnoreCase(mode)) { // auto detect
+      if (new File("/var/run/secrets/kubernetes.io").exists()) {
+        return RUN_MODE.K8S;
+      } else {
+        return RUN_MODE.LOCAL;
+      }
+    } else {
+      return RUN_MODE.valueOf(mode.toUpperCase());
+    }
   }
 
   public boolean getK8sPortForward() {
@@ -840,7 +854,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
     ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
-    ZEPPELIN_K8S_MODE("zeppelin.k8s.mode", "auto"),              // auto | on | off
+    ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s
+
     ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_KUBECTL("zeppelin.k8s.kubectl", "kubectl"),     // kubectl command
     ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),

@@ -648,9 +648,7 @@ public class InterpreterSetting {
   }
 
   private boolean isRunningOnKubernetes() {
-    String mode = conf.getK8sMode();
-    return ("auto".equalsIgnoreCase(mode) && new File("/var/run/secrets/kubernetes.io").exists())
-        || "on".equalsIgnoreCase(mode);
+    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {
