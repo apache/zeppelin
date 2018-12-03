@@ -223,10 +223,10 @@ public class ZeppelinServer extends ResourceConfig {
             bind(NotebookService.class).to(NotebookService.class).in(Immediate.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(SecurityService.class).to(ShiroSecurityService.class).in(Singleton.class);
+              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
             } else {
               // TODO(jl): Will be added more type
-              bind(SecurityService.class).to(NoSecurityService.class).in(Singleton.class);
+              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
             }
           }
         });
