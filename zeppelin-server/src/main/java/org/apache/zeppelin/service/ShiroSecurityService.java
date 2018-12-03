@@ -17,23 +17,18 @@
 package org.apache.zeppelin.service;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Inject;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -43,6 +38,7 @@ import javax.naming.ldap.LdapContext;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
@@ -65,6 +61,33 @@ import org.slf4j.LoggerFactory;
 public class ShiroSecurityService implements SecurityService {
 
   private final Logger LOGGER = LoggerFactory.getLogger(ShiroSecurityService.class);
+
+  @Inject
+  public ShiroSecurityService(ZeppelinConfiguration zeppelinConfiguration) throws Exception {
+    if (zeppelinConfiguration.getShiroPath().length() > 0) {
+      try {
+        Collection<Realm> realms =
+            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
+                .getRealms();
+        if (realms.size() > 1) {
+          Boolean isIniRealmEnabled = false;
+          for (Object realm : realms) {
+            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+              isIniRealmEnabled = true;
+              break;
+            }
+          }
+          if (isIniRealmEnabled) {
+            throw new Exception(
+                "IniRealm/password based auth mechanisms should be exclusive. "
+                    + "Consider removing [users] block from shiro.ini");
+          }
+        }
+      } catch (UnavailableSecurityManagerException e) {
+        LOGGER.error("Failed to initialise shiro configuraion", e);
+      }
+    }
+  }
 
   /**
    * Return the authenticated user if any otherwise returns "anonymous".

@@ -48,76 +48,12 @@ public class ShiroSecurityServiceTest {
   org.apache.shiro.subject.Subject subject;
 
   ShiroSecurityService shiroSecurityService;
+  ZeppelinConfiguration zeppelinConfiguration;
 
   @Before
-  public void setup() {
-    shiroSecurityService = new ShiroSecurityService();
-  }
-
-  @Test
-  public void isInvalid() throws URISyntaxException, UnknownHostException {
-    assertFalse(shiroSecurityService.isValidOrigin("http://127.0.1.1", ZeppelinConfiguration.create()));
-  }
-
-  @Test
-  public void isInvalidFromConfig()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(shiroSecurityService.isValidOrigin("http://otherinvalidhost.com",
-          new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
-  }
-
-  @Test
-  public void isLocalhost() throws URISyntaxException, UnknownHostException {
-    assertTrue(shiroSecurityService.isValidOrigin("http://localhost", ZeppelinConfiguration.create()));
-  }
-
-  @Test
-  public void isLocalMachine() throws URISyntaxException, UnknownHostException {
-    String origin = "http://" + InetAddress.getLocalHost().getHostName();
-    assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-               shiroSecurityService.isValidOrigin(origin, ZeppelinConfiguration.create()));
-  }
-
-  @Test
-  public void isValidFromConfig()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(shiroSecurityService.isValidOrigin("http://otherhost.com",
-           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
-  }
-
-  @Test
-  public void isValidFromStar()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(shiroSecurityService.isValidOrigin("http://anyhost.com",
-           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
-  }
-
-  @Test
-  public void nullOrigin()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(shiroSecurityService.isValidOrigin(null,
-          new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
-  }
-
-  @Test
-  public void nullOriginWithStar()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(shiroSecurityService.isValidOrigin(null,
-        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
-  }
-
-  @Test
-  public void emptyOrigin()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(shiroSecurityService.isValidOrigin("",
-          new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
-  }
-
-  @Test
-  public void notAURIOrigin()
-          throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(shiroSecurityService.isValidOrigin("test123",
-          new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+  public void setup() throws Exception {
+    zeppelinConfiguration = ZeppelinConfiguration.create();
+    shiroSecurityService = new ShiroSecurityService(zeppelinConfiguration);
   }
 
   @Test

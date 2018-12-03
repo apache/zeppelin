@@ -104,29 +104,6 @@ public class ZeppelinServer extends ResourceConfig {
   @Inject
   public ZeppelinServer(ServiceLocator serviceLocator) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    if (conf.getShiroPath().length() > 0) {
-      try {
-        Collection<Realm> realms =
-            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-                .getRealms();
-        if (realms.size() > 1) {
-          Boolean isIniRealmEnabled = false;
-          for (Object realm : realms) {
-            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-              isIniRealmEnabled = true;
-              break;
-            }
-          }
-          if (isIniRealmEnabled) {
-            throw new Exception(
-                "IniRealm/password based auth mechanisms should be exclusive. "
-                    + "Consider removing [users] block from shiro.ini");
-          }
-        }
-      } catch (UnavailableSecurityManagerException e) {
-        LOG.error("Failed to initialise shiro configuraion", e);
-      }
-    }
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
