@@ -17,27 +17,26 @@
 package org.apache.zeppelin.rest;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.ticket.TicketContainer;
-import org.apache.zeppelin.utils.SecurityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.ShiroSecurityService;
+import org.apache.zeppelin.ticket.TicketContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Zeppelin security rest api endpoint.
@@ -47,6 +46,13 @@ import java.util.Map;
 public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
   private static final Gson gson = new Gson();
+
+  private final ShiroSecurityService securityService;
+
+  @Inject
+  public SecurityRestApi(ShiroSecurityService securityService) {
+    this.securityService = securityService;
+  }
 
   /**
    * Get ticket
@@ -61,8 +67,8 @@ public class SecurityRestApi {
   @ZeppelinApi
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    String principal = SecurityUtils.getPrincipal();
-    HashSet<String> roles = SecurityUtils.getAssociatedRoles();
+    String principal = securityService.getPrincipal();
+    Set<String> roles = securityService.getAssociatedRoles();
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
@@ -94,24 +100,23 @@ public class SecurityRestApi {
   public Response getUserList(@PathParam("searchText") final String searchText) {
 
     final int numUsersToFetch = 5;
-    List<String> usersList = SecurityUtils.getMatchedUsers(searchText, numUsersToFetch);
-    List<String> rolesList = SecurityUtils.getMatchedRoles();
+    List<String> usersList = securityService.getMatchedUsers(searchText, numUsersToFetch);
+    List<String> rolesList = securityService.getMatchedRoles();
 
     List<String> autoSuggestUserList = new ArrayList<>();
     List<String> autoSuggestRoleList = new ArrayList<>();
     Collections.sort(usersList);
     Collections.sort(rolesList);
-    Collections.sort(usersList, new Comparator<String>() {
-      @Override
-      public int compare(String o1, String o2) {
-        if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
+    Collections.sort(
+        usersList,
+        (o1, o2) -> {
+          if (o1.matches(searchText + "(.*)") && o2.matches(searchText + "(.*)")) {
+            return 0;
+          } else if (o1.matches(searchText + "(.*)")) {
+            return -1;
+          }
           return 0;
-        } else if (o1.matches(searchText + "(.*)")) {
-          return -1;
-        }
-        return 0;
-      }
-    });
+        });
     int maxLength = 0;
     for (String user : usersList) {
       if (StringUtils.containsIgnoreCase(user, searchText)) {

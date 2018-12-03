@@ -22,6 +22,7 @@ import com.google.gson.JsonSyntaxException;
 
 import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,6 @@ import org.apache.zeppelin.rest.message.NotebookRepoSettingsRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.SecurityUtils;
 
 /**
  * NoteRepo rest API endpoint.
@@ -58,11 +58,14 @@ public class NotebookRepoRestApi {
 
   private NotebookRepoSync noteRepos;
   private NotebookServer notebookWsServer;
+  private SecurityService securityService;
 
   @Inject
-  public NotebookRepoRestApi(NotebookRepoSync noteRepos, NotebookServer notebookWsServer) {
+  public NotebookRepoRestApi(NotebookRepoSync noteRepos, NotebookServer notebookWsServer,
+      SecurityService securityService) {
     this.noteRepos = noteRepos;
     this.notebookWsServer = notebookWsServer;
+    this.securityService = securityService;
   }
 
   /**
@@ -71,7 +74,7 @@ public class NotebookRepoRestApi {
   @GET
   @ZeppelinApi
   public Response listRepoSettings() {
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
     LOG.info("Getting list of NoteRepo with Settings for user {}", subject.getUser());
     List<NotebookRepoWithSettings> settings = noteRepos.getNotebookRepos(subject);
     return new JsonResponse<>(Status.OK, "", settings).build();
@@ -84,7 +87,7 @@ public class NotebookRepoRestApi {
   @Path("reload")
   @ZeppelinApi
   public Response refreshRepo(){
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
     LOG.info("Reloading notebook repository for user {}", subject.getUser());
     try {
       notebookWsServer.broadcastReloadedNoteList(null, getServiceContext());
@@ -95,10 +98,10 @@ public class NotebookRepoRestApi {
   }
 
   private ServiceContext getServiceContext() {
-    AuthenticationInfo authInfo = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo authInfo = new AuthenticationInfo(securityService.getPrincipal());
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
+    userAndRoles.add(securityService.getPrincipal());
+    userAndRoles.addAll(securityService.getAssociatedRoles());
     return new ServiceContext(authInfo, userAndRoles);
   }
 
@@ -114,7 +117,7 @@ public class NotebookRepoRestApi {
     if (StringUtils.isBlank(payload)) {
       return new JsonResponse<>(Status.NOT_FOUND, "", Collections.emptyMap()).build();
     }
-    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
     NotebookRepoSettingsRequest newSettings;
     try {
       newSettings = NotebookRepoSettingsRequest.fromJson(payload);

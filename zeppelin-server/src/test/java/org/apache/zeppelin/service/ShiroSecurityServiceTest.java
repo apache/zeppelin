@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.security;
+package org.apache.zeppelin.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,7 +31,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,73 +43,80 @@ import sun.security.acl.PrincipalImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(org.apache.shiro.SecurityUtils.class)
-public class SecurityUtilsTest {
+public class ShiroSecurityServiceTest {
   @Mock
   org.apache.shiro.subject.Subject subject;
 
+  ShiroSecurityService shiroSecurityService;
+
+  @Before
+  public void setup() {
+    shiroSecurityService = new ShiroSecurityService();
+  }
+
   @Test
   public void isInvalid() throws URISyntaxException, UnknownHostException {
-    assertFalse(SecurityUtils.isValidOrigin("http://127.0.1.1", ZeppelinConfiguration.create()));
+    assertFalse(shiroSecurityService.isValidOrigin("http://127.0.1.1", ZeppelinConfiguration.create()));
   }
 
   @Test
   public void isInvalidFromConfig()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(SecurityUtils.isValidOrigin("http://otherinvalidhost.com",
+    assertFalse(shiroSecurityService.isValidOrigin("http://otherinvalidhost.com",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
   public void isLocalhost() throws URISyntaxException, UnknownHostException {
-    assertTrue(SecurityUtils.isValidOrigin("http://localhost", ZeppelinConfiguration.create()));
+    assertTrue(shiroSecurityService.isValidOrigin("http://localhost", ZeppelinConfiguration.create()));
   }
 
   @Test
   public void isLocalMachine() throws URISyntaxException, UnknownHostException {
     String origin = "http://" + InetAddress.getLocalHost().getHostName();
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
-               SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create()));
+               shiroSecurityService.isValidOrigin(origin, ZeppelinConfiguration.create()));
   }
 
   @Test
   public void isValidFromConfig()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(SecurityUtils.isValidOrigin("http://otherhost.com",
+    assertTrue(shiroSecurityService.isValidOrigin("http://otherhost.com",
            new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
   public void isValidFromStar()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(SecurityUtils.isValidOrigin("http://anyhost.com",
+    assertTrue(shiroSecurityService.isValidOrigin("http://anyhost.com",
            new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
   }
 
   @Test
   public void nullOrigin()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(SecurityUtils.isValidOrigin(null,
+    assertFalse(shiroSecurityService.isValidOrigin(null,
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
   public void nullOriginWithStar()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertTrue(SecurityUtils.isValidOrigin(null,
+    assertTrue(shiroSecurityService.isValidOrigin(null,
         new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
   }
 
   @Test
   public void emptyOrigin()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(SecurityUtils.isValidOrigin("",
+    assertFalse(shiroSecurityService.isValidOrigin("",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
   @Test
   public void notAURIOrigin()
           throws URISyntaxException, UnknownHostException, ConfigurationException {
-    assertFalse(SecurityUtils.isValidOrigin("test123",
+    assertFalse(shiroSecurityService.isValidOrigin("test123",
           new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
   }
 
@@ -117,7 +124,7 @@ public class SecurityUtilsTest {
   public void canGetPrincipalName()  {
     String expectedName = "java.security.Principal.getName()";
     setupPrincipalName(expectedName);
-    assertEquals(expectedName, SecurityUtils.getPrincipal());
+    assertEquals(expectedName, shiroSecurityService.getPrincipal());
   }
 
   @Test
@@ -126,13 +133,12 @@ public class SecurityUtilsTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
         .getVarName(), String.valueOf(true));
     setupPrincipalName(expectedName);
-    assertEquals(expectedName.toLowerCase(), SecurityUtils.getPrincipal());
+    assertEquals(expectedName.toLowerCase(), shiroSecurityService.getPrincipal());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_USERNAME_FORCE_LOWERCASE
         .getVarName(), String.valueOf(false));
   }
 
   private void setupPrincipalName(String expectedName) {
-    SecurityUtils.setIsEnabled(true);
     PowerMockito.mockStatic(org.apache.shiro.SecurityUtils.class);
     when(org.apache.shiro.SecurityUtils.getSubject()).thenReturn(subject);
     when(subject.isAuthenticated()).thenReturn(true);
