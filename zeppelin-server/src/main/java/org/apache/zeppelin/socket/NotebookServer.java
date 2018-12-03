@@ -60,8 +60,8 @@ import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
@@ -188,7 +188,7 @@ public class NotebookServer extends WebSocketServlet
 
   public boolean checkOrigin(HttpServletRequest request, String origin) {
     try {
-      return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
+      return CorsUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException | URISyntaxException e) {
       LOG.error(e.toString(), e);
     }

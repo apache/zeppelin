@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.ConfigurationService;
+import org.apache.zeppelin.service.SecurityService;
 
 /** Configurations Rest API Endpoint. */
 @Path("/configurations")
@@ -37,7 +38,9 @@ public class ConfigurationsRestApi extends AbstractRestApi {
   private ConfigurationService configurationService;
 
   @Inject
-  public ConfigurationsRestApi(ConfigurationService configurationService) {
+  public ConfigurationsRestApi(
+      SecurityService securityService, ConfigurationService configurationService) {
+    super(securityService);
     this.configurationService = configurationService;
   }
 
