@@ -145,6 +145,7 @@ public class ShiroSecurityService implements SecurityService {
    * @param numUsersToFetch
    * @return
    */
+  @Override
   public List<String> getMatchedUsers(String searchText, int numUsersToFetch) {
     List<String> usersList = new ArrayList<>();
     try {
@@ -178,6 +179,7 @@ public class ShiroSecurityService implements SecurityService {
    *
    * @return
    */
+  @Override
   public List<String> getMatchedRoles() {
     List<String> rolesList = new ArrayList<>();
     try {

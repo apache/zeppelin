@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.service;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class NoSecurityService implements SecurityService {
@@ -43,5 +45,15 @@ public class NoSecurityService implements SecurityService {
   @Override
   public boolean isAuthenticated() {
     return false;
+  }
+
+  @Override
+  public List<String> getMatchedUsers(String searchText, int numUsersToFetch) {
+    return Lists.newArrayList();
+  }
+
+  @Override
+  public List<String> getMatchedRoles() {
+    return Lists.newArrayList();
   }
 }

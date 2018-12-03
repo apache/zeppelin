@@ -18,6 +18,7 @@
 package org.apache.zeppelin.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface SecurityService {
@@ -29,4 +30,8 @@ public interface SecurityService {
   Collection getRealmsList();
 
   boolean isAuthenticated();
+
+  List<String> getMatchedUsers(String searchText, int numUsersToFetch);
+
+  List<String> getMatchedRoles();
 }
