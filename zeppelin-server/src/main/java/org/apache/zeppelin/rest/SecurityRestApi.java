@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.ShiroSecurityService;
+import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +47,10 @@ public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
   private static final Gson gson = new Gson();
 
-  private final ShiroSecurityService securityService;
+  private final SecurityService securityService;
 
   @Inject
-  public SecurityRestApi(ShiroSecurityService securityService) {
+  public SecurityRestApi(SecurityService securityService) {
     this.securityService = securityService;
   }
 
