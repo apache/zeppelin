@@ -122,6 +122,35 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testRunParagraphSynchronously() throws IOException {
+    Note note1 = ZeppelinServer.notebook.createNote("note1", anonymous);
+    note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+
+    Paragraph p = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+
+    // run non-blank paragraph
+    String title = "title";
+    String text = "%sh\n sleep 1";
+    p.setTitle(title);
+    p.setText(text);
+
+    PostMethod post = httpPost("/notebook/run/" + note1.getId() + "/" + p.getId(), "");
+    assertThat(post, isAllowed());
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
+        new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals(resp.get("status"), "OK");
+    post.releaseConnection();
+    assertNotEquals(p.getStatus(), Job.Status.READY);
+
+    // Check if the paragraph is emptied
+    assertEquals(title, p.getTitle());
+    assertEquals(text, p.getText());
+
+    // cleanup
+    ZeppelinServer.notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  @Test
   public void testRunAllParagraph_AllSuccess() throws IOException {
     Note note1 = ZeppelinServer.notebook.createNote("note1", anonymous);
     // 2 paragraphs
