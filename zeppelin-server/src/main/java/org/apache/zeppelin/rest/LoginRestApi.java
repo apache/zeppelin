@@ -34,6 +34,7 @@ import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -45,6 +46,8 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
+import org.apache.zeppelin.realm.kerberos.KerberosRealm;
+import org.apache.zeppelin.realm.kerberos.KerberosToken;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -72,7 +75,6 @@ public class LoginRestApi {
   @GET
   @ZeppelinApi
   public Response getLogin(@Context HttpHeaders headers) {
-    LOG.info("VR46: inside getLogin()");
     JsonResponse response = null;
     if (isKnoxSSOEnabled()) {
       KnoxJwtRealm knoxJwtRealm = getJTWRealm();
@@ -110,9 +112,7 @@ public class LoginRestApi {
           }
           if (null == response) {
             LOG.warn("No Kerberos token received");
-            Map<String, String> data = new HashMap<>();
-            data.put(KerberosAuthenticator.WWW_AUTHENTICATE, KerberosAuthenticator.NEGOTIATE);
-            response = new JsonResponse(Status.UNAUTHORIZED, "", data);
+            response = new JsonResponse(Status.UNAUTHORIZED, "", null);
           }
           return response.build();
         } catch (AuthenticationException e){
@@ -124,7 +124,7 @@ public class LoginRestApi {
   }
 
   private KerberosRealm getKerberosRealm() {
-    Collection realmsList = SecurityUtils.getRealmsList();
+    Collection realmsList = securityService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();

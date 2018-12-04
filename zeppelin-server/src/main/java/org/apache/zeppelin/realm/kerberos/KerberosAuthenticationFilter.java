@@ -17,13 +17,16 @@
 package org.apache.zeppelin.realm.kerberos;
 
 import org.apache.hadoop.security.authentication.server.AuthenticationHandler;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.filter.authc.PassThruAuthenticationFilter;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Created for org.apache.zeppelin.server
@@ -31,21 +34,6 @@ import java.io.IOException;
 public class KerberosAuthenticationFilter extends PassThruAuthenticationFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(KerberosAuthenticationFilter.class);
-
-  /**
-   * <p>Initializes the authentication filter and signer secret provider.</p>
-   * It instantiates and initializes the specified {@link
-   * AuthenticationHandler}. Currently, Zeppelin supports only Kerberos type
-   * AuthenticationHandler.
-   *
-   * @throws ServletException thrown if the filter or the authentication handler
-   *                          could not be initialized properly.
-   */
-  @Override
-  protected void onFilterConfigSet() throws Exception {
-    super.onFilterConfigSet();
-    LOG.info("VR46 - inside onFilterConfigSet()");
-  }
 
   @Override
   protected void saveRequestAndRedirectToLogin(ServletRequest request, ServletResponse response) {
@@ -70,7 +58,11 @@ public class KerberosAuthenticationFilter extends PassThruAuthenticationFilter {
                                FilterChain filterChain)
       throws IOException, ServletException {
     KerberosRealm kerberosRealm = null;
-    for (Object realm : SecurityUtils.getRealmsList()) {
+    DefaultWebSecurityManager defaultWebSecurityManager;
+    String key = ThreadContext.SECURITY_MANAGER_KEY;
+    defaultWebSecurityManager = (DefaultWebSecurityManager) ThreadContext.get(key);
+    Collection<Realm> realms = defaultWebSecurityManager.getRealms();
+    for (Object realm : realms) {
       if (realm instanceof KerberosRealm) {
         kerberosRealm = (KerberosRealm) realm;
         break;

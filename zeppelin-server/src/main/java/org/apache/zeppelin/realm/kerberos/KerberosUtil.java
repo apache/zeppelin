@@ -31,7 +31,10 @@ import javax.security.auth.kerberos.KerberosTicket;
 import javax.security.auth.kerberos.KeyTab;
 
 /**
- * Created by prabhjyot.singh on 03/12/18.
+ * Created for {@link KerberosRealm}, from
+ * org.apache.hadoop.security.authentication.util.KerberosUtil
+ *
+ * TODO(vr): This should be removed once we move to Apache Hadoop 2.8+
  */
 public class KerberosUtil {
 

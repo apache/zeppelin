@@ -29,11 +29,9 @@ import org.apache.hadoop.security.authentication.util.*;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.SimpleAccount;
-import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.ietf.jgss.GSSException;
@@ -58,37 +56,41 @@ import java.io.IOException;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  * The {@link KerberosRealm} implements the Kerberos SPNEGO
- * authentication mechanism for HTTP.
+ * authentication mechanism for HTTP via Shiro.
  * <p>
- * The supported configuration properties are:
- * <ul>
- * <li>kerberos.principal: the Kerberos principal to used by the server. As
- * stated by the Kerberos SPNEGO specification, it should be
- * <code>HTTP/${HOSTNAME}@{REALM}</code>. The realm can be omitted from the
- * principal as the JDK GSS libraries will use the realm name of the configured
- * default realm.
- * It does not have a default value.</li>
- * <li>kerberos.keytab: the keytab file containing the credentials for the
- * Kerberos principal.
- * It does not have a default value.</li>
- * <li>kerberos.name.rules: kerberos names rules to resolve principal names, see
- * {@link KerberosName#setRules(String)}</li>
- * </ul>
+ * The Shiro configuration section should be configured as:
+ * [main]
+ * krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
+ * krbRealm.principal=HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+ * krbRealm.keytab=/etc/security/keytabs/spnego.service.keytab
+ * krbRealm.nameRules=DEFAULT
+ * krbRealm.signatureSecretFile=/etc/security/http_secret
+ * krbRealm.tokenValidity=36000
+ * krbRealm.cookieDomain=domain.com
+ * krbRealm.cookiePath=/
+ * authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
+ *
  */
 public class KerberosRealm extends AuthorizingRealm {
   public static final Logger LOG = LoggerFactory.getLogger(KerberosRealm.class);
 
-  /**
-   * Constant for the property that specifies the configuration prefix.
-   */
-  private static final String CONFIG_PREFIX = "config.prefix";
+  // Configs to set in shiro.ini
+  private String principal = null;
+  private String keytab = null;
+  private String nameRules = "DEFAULT";
+  private long tokenMaxInactiveInterval = -1;
+  private long tokenValidity = 36000; // 10 hours
+  private String cookieDomain = null;
+  private String cookiePath = "/";
+  private boolean isCookiePersistent = false;
+  private String signatureSecretFile = null;
+  private String signatureSecretProvider = "file";
 
   /**
    * Constant for the property that specifies the authentication handler to use.
@@ -105,6 +107,8 @@ public class KerberosRealm extends AuthorizingRealm {
   /**
    * Constant for the configuration property
    * that indicates the max inactive interval of the generated token.
+   * Currently this is NOT being used
+   * TODO(vr): Enable this when we move to Apache Hadoop 2.8+
    */
   private static final String AUTH_TOKEN_MAX_INACTIVE_INTERVAL = "token.max-inactive-interval";
 
@@ -131,32 +135,6 @@ public class KerberosRealm extends AuthorizingRealm {
   private static final String COOKIE_PERSISTENT = "cookie.persistent";
 
   /**
-   * Constant for the configuration property that indicates the name of the
-   * SignerSecretProvider class to use.
-   * Possible values are: "file"
-   * We are NOT supporting "random", "zookeeper", or a classname, at the moment
-   * If not specified, the "file" implementation will be used with
-   * SIGNATURE_SECRET_FILE; and if that's not specified, the "random"
-   * implementation will be used.
-   */
-  private static final String SIGNER_SECRET_PROVIDER = "signer.secret.provider";
-
-  private static Signer signer = null;
-  private SignerSecretProvider secretProvider = null;
-  private boolean destroySecretProvider = true;
-
-  // Configs to set in shiro.ini
-  private String signatureSecretFile = null;
-  private long tokenMaxInactiveInterval = -1;
-  private long tokenValidity = 36000; // 10 hours
-  private String cookieDomain = null;
-  private String cookiePath = "/";
-  private boolean isCookiePersistent = false;
-  private String principal = null;
-  private String keytab = null;
-  private String nameRules = "DEFAULT";
-
-  /**
    * Constant that identifies the authentication mechanism.
    */
   public static final String TYPE = "kerberos";
@@ -179,16 +157,24 @@ public class KerberosRealm extends AuthorizingRealm {
    */
   public static final String NAME_RULES = TYPE + ".name.rules";
 
-  private static final String type = TYPE;
-  private String rules;
-  private GSSManager gssManager;
-  private Subject serverSubject = new Subject();
-  private Properties config = null;
-
   /**
-   * Configuration object needed by for hadoop classes
+   * Constant for the configuration property that indicates the name of the
+   * SignerSecretProvider class to use.
+   * Possible values are: "file", "random"
+   * We are NOT supporting "zookeeper", or a custom classname, at the moment.
+   * If not specified, the "file" implementation will be used with
+   * SIGNATURE_SECRET_FILE; and if that's not specified, the "random"
+   * implementation will be used.
    */
-  private Configuration hadoopConfig;
+  private static final String SIGNER_SECRET_PROVIDER = "signer.secret.provider";
+
+  private static Signer signer = null;
+  private SignerSecretProvider secretProvider = null;
+  private boolean destroySecretProvider = true;
+
+  private GSSManager gssManager = null;
+  private Subject serverSubject = null;
+  private Properties config = null;
 
   /**
    * Hadoop Groups implementation.
@@ -206,13 +192,12 @@ public class KerberosRealm extends AuthorizingRealm {
    * It creates a Kerberos context using the principal and keytab specified in
    * the Shiro configuration.
    * <p>
-   * This method should be called only once; is invoked in {@link KerberosAuthenticationFilter}
+   * This method should be called only once.
    *
    * @throws RuntimeException thrown if the handler could not be initialized.
    */
   @Override
   protected void onInit() {
-    LOG.info("VR46 - inside onInit()");
     super.onInit();
     config = getConfiguration();
     try {
@@ -242,6 +227,8 @@ public class KerberosRealm extends AuthorizingRealm {
         spnegoPrincipals = new String[]{principal};
       }
       KeyTab keytabInstance = KeyTab.getInstance(keytabFile);
+
+      serverSubject = new Subject();
       serverSubject.getPrivateCredentials().add(keytabInstance);
       for (String spnegoPrincipal : spnegoPrincipals) {
         Principal krbPrincipal = new KerberosPrincipal(spnegoPrincipal);
@@ -250,39 +237,43 @@ public class KerberosRealm extends AuthorizingRealm {
         serverSubject.getPrincipals().add(krbPrincipal);
       }
 
-      if (rules == null || rules.trim().length() == 0) {
+      if (nameRules == null || nameRules.trim().length() == 0) {
         LOG.warn("No auth_to_local rules defined, DEFAULT will be used.");
-        rules = "DEFAULT";
+        nameRules = "DEFAULT";
       }
 
-      KerberosName.setRules(rules);
+      KerberosName.setRules(nameRules);
 
-      try {
-        gssManager = Subject.doAs(serverSubject,
-            new PrivilegedExceptionAction<GSSManager>() {
-              @Override
-              public GSSManager run(){
-                return GSSManager.getInstance();
-              }
-            });
-      } catch (PrivilegedActionException ex) {
-        throw ex.getException();
+      if (null == gssManager) {
+        try {
+          gssManager = Subject.doAs(serverSubject,
+              new PrivilegedExceptionAction<GSSManager>() {
+                @Override
+                public GSSManager run() {
+                  return GSSManager.getInstance();
+                }
+              });
+          LOG.trace("SPNEGO gssManager initialized.");
+        } catch (PrivilegedActionException ex) {
+          throw ex.getException();
+        }
       }
 
-      initializeSecretProvider();
+      if (null == signer) {
+        initializeSecretProvider();
+      }
 
-      hadoopConfig = new Configuration();
+      Configuration hadoopConfig = new Configuration();
       hadoopGroups = new Groups(hadoopConfig);
 
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
-    LOG.info("VR46 - exit onInit()");
   }
 
-  protected void initializeSecretProvider() throws ServletException {
+  private void initializeSecretProvider() throws ServletException {
     try {
-      secretProvider = constructSecretProvider(false);
+      secretProvider = constructSecretProvider(true);
       destroySecretProvider = true;
       signer = new Signer(secretProvider);
     } catch (Exception ex) {
@@ -290,35 +281,40 @@ public class KerberosRealm extends AuthorizingRealm {
     }
   }
 
-  public SignerSecretProvider constructSecretProvider(
-      boolean disallowFallbackToRandomSecretProvider) throws Exception {
-    // Default Signature provider type is file
-    String name = "file";
-    if (!disallowFallbackToRandomSecretProvider
+  private SignerSecretProvider constructSecretProvider(
+      boolean fallbackToRandomSecretProvider) throws Exception {
+    SignerSecretProvider provider;
+    String secretProvider = config.getProperty(SIGNER_SECRET_PROVIDER);
+
+    if (fallbackToRandomSecretProvider
         && config.getProperty(SIGNATURE_SECRET_FILE) == null) {
-      name = "random";
+      secretProvider = "random";
     }
 
-    SignerSecretProvider provider;
-    if ("file".equals(name)) {
-      provider = new FileSignerSecretProvider();
+    if ("file".equals(secretProvider)) {
       try {
+        provider = new FileSignerSecretProvider();
         provider.init(config, null, tokenValidity);
+        LOG.info("File based secret signer initialized.");
       } catch (Exception e) {
-        if (!disallowFallbackToRandomSecretProvider) {
+        if (fallbackToRandomSecretProvider) {
           LOG.info("Unable to initialize FileSignerSecretProvider, " +
               "falling back to use random secrets.");
           provider = new RandomSignerSecretProvider();
           provider.init(config, null, tokenValidity);
+          LOG.info("Random secret signer initialized.");
         } else {
-          throw e;
+          throw new RuntimeException("Can't initialize File based secret signer. Reason: "
+          + e);
         }
       }
-    } else if ("random".equals(name)) {
+    } else if ("random".equals(secretProvider)) {
       provider = new RandomSignerSecretProvider();
       provider.init(config, null, tokenValidity);
+      LOG.info("Random secret signer initialized.");
     } else {
-      throw new RuntimeException("Custom Signer not implemented yet. Use 'file' or 'random'.");
+      throw new RuntimeException(
+          "Custom secret signer not implemented yet. Use 'file' or 'random'.");
     }
     return provider;
   }
@@ -336,15 +332,20 @@ public class KerberosRealm extends AuthorizingRealm {
    */
   public boolean managementOperation(AuthenticationToken token,
                                      HttpServletRequest request,
-                                     HttpServletResponse response)
-      throws IOException, AuthenticationException {
+                                     HttpServletResponse response) {
     return true;
   }
 
+  /**
+   * Returns the group mapping for the provided user as per Hadoop {@link Groups} Mapping
+   *
+   * @param principals list of principals to file to find group for
+   * @return AuthorizationInfo
+   */
   @Override
   public AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals)
       throws AuthorizationException {
-    Set<String> roles = mapGroupPrincipals(principals.toString());
+    Set<String> roles = mapGroupPrincipals(principals.getPrimaryPrincipal().toString());
     return new SimpleAuthorizationInfo(roles);
   }
 
@@ -379,21 +380,22 @@ public class KerberosRealm extends AuthorizingRealm {
     return groups;
   }
 
+  /**
+   * This is called when Kerberos authentication is done and a {@link KerberosToken} has
+   * been acquired.
+   * This function returns a Shiro {@link SimpleAccount} based on the {@link KerberosToken}
+   * provided. Null otherwise.
+   */
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(
       org.apache.shiro.authc.AuthenticationToken authenticationToken)
       throws org.apache.shiro.authc.AuthenticationException {
-    LOG.debug("VR46 - inside doGetAuthenticationInfo()");
     if (null != authenticationToken) {
       KerberosToken kerberosToken = (KerberosToken) authenticationToken;
-      //  try {
       SimpleAccount account = new SimpleAccount(kerberosToken.getPrincipal(),
           kerberosToken.getCredentials(), kerberosToken.getClass().getName());
-      //account.addRole(mapGroupPrincipals(getName(upToken)));
+      account.addRole(mapGroupPrincipals((String)kerberosToken.getPrincipal()));
       return account;
-      // } catch (ParseException e) {
-      //   LOG.error("ParseException in doGetAuthenticationInfo", e);
-      // }
     }
     return null;
   }
@@ -427,6 +429,9 @@ public class KerberosRealm extends AuthorizingRealm {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Got token {} from httpRequest {}", token,
               getRequestURL(httpRequest));
+          if (null != token) {
+            LOG.debug("token.isExpired() = " + token.isExpired());
+          }
         }
       } catch (AuthenticationException ex) {
         LOG.warn("AuthenticationToken ignored: " + ex.getMessage());
@@ -437,13 +442,14 @@ public class KerberosRealm extends AuthorizingRealm {
         token = null;
       }
       if (managementOperation(token, httpRequest, httpResponse)) {
-        if (token == null) {
+        if (token == null || token.isExpired()) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Request [{}] triggering authentication. handler: {}",
                 getRequestURL(httpRequest), this.getClass());
           }
           token = authenticate(httpRequest, httpResponse);
           if (token != null && token != AuthenticationToken.ANONYMOUS) {
+//            TODO(vr): uncomment when we move to Hadoop 2.8+
 //            if (token.getMaxInactives() > 0) {
 //              token.setMaxInactives(System.currentTimeMillis()
 //                  + getTokenMaxInactiveInterval() * 1000);
@@ -486,6 +492,7 @@ public class KerberosRealm extends AuthorizingRealm {
           // If the token is an old one, renew the its tokenMaxInactiveInterval.
           if (!newToken && !isCookiePersistent()
               && getTokenMaxInactiveInterval() > 0) {
+//            TODO(vr): uncomment when we move to Hadoop 2.8+
 //            token.setMaxInactives(System.currentTimeMillis()
 //                + getTokenMaxInactiveInterval() * 1000);
             token.setExpires(token.getExpires());
@@ -497,9 +504,9 @@ public class KerberosRealm extends AuthorizingRealm {
             createAuthCookie(httpResponse, signedToken, getCookieDomain(),
                 getCookiePath(), token.getExpires(),
                 isCookiePersistent(), isHttps);
-            KerberosToken kerberosToken = new KerberosToken(token.getUserName(), token.toString());
-            SecurityUtils.getSubject().login(kerberosToken);
           }
+          KerberosToken kerberosToken = new KerberosToken(token.getUserName(), token.toString());
+          SecurityUtils.getSubject().login(kerberosToken);
           doFilter(filterChain, httpRequest, httpResponse);
         }
       } else {
@@ -634,7 +641,7 @@ public class KerberosRealm extends AuthorizingRealm {
         String clientPrincipal = gssContext.getSrcName().toString();
         KerberosName kerberosName = new KerberosName(clientPrincipal);
         String userName = kerberosName.getShortName();
-        token = new AuthenticationToken(userName, clientPrincipal, getType());
+        token = new AuthenticationToken(userName, clientPrincipal, TYPE);
         response.setStatus(HttpServletResponse.SC_OK);
         LOG.trace("SPNEGO completed for client principal [{}]",
             clientPrincipal);
@@ -684,7 +691,7 @@ public class KerberosRealm extends AuthorizingRealm {
    * @throws IOException             thrown if an IO error occurred.
    * @throws AuthenticationException thrown if the token is invalid or if it has expired.
    */
-  protected AuthenticationToken getToken(HttpServletRequest request)
+  private AuthenticationToken getToken(HttpServletRequest request)
       throws AuthenticationException {
     AuthenticationToken token;
     Cookie[] cookies = request.getCookies();
@@ -692,7 +699,7 @@ public class KerberosRealm extends AuthorizingRealm {
     return token;
   }
 
-  public static AuthenticationToken getTokenFromCookies(Cookie[] cookies)
+  private static AuthenticationToken getTokenFromCookies(Cookie[] cookies)
       throws AuthenticationException {
     AuthenticationToken token = null;
     String tokenStr = null;
@@ -725,6 +732,17 @@ public class KerberosRealm extends AuthorizingRealm {
     return token;
   }
 
+  /**
+   * A parallel implementation to getTokenFromCookies, this handles
+   * javax.ws.rs.core.HttpHeaders.Cookies kind.
+   *
+   * Used in {@link org.apache.zeppelin.rest.LoginRestApi}::getLogin()
+   *
+   * @param cookies - Cookie(s) map read from HttpHeaders
+   * @return {@link KerberosToken} if available in AUTHORIZATION cookie
+   *
+   * @throws org.apache.shiro.authc.AuthenticationException
+   */
   public static KerberosToken getKerberosTokenFromCookies(
       Map<String, javax.ws.rs.core.Cookie> cookies)
       throws org.apache.shiro.authc.AuthenticationException {
@@ -774,7 +792,7 @@ public class KerberosRealm extends AuthorizingRealm {
    * false  Otherwise
    */
   protected static boolean verifyTokenType(AuthenticationToken token) {
-    return getType().equals(token.getType());
+    return TYPE.equals(token.getType());
   }
 
   /**
@@ -842,14 +860,19 @@ public class KerberosRealm extends AuthorizingRealm {
     resp.addHeader("Set-Cookie", sb.toString());
   }
 
+  /**
+   * Returns a {@link Properties} config object after dumping all {@link KerberosRealm} bean
+   * properties received from shiro.ini
+   *
+   */
   protected Properties getConfiguration() {
     Properties props = new Properties();
     props.put(COOKIE_DOMAIN, cookieDomain);
     props.put(COOKIE_PATH, cookiePath);
     props.put(COOKIE_PERSISTENT, isCookiePersistent);
-    props.put(SIGNER_SECRET_PROVIDER, "file");
+    props.put(SIGNER_SECRET_PROVIDER, signatureSecretProvider);
     props.put(SIGNATURE_SECRET_FILE, signatureSecretFile);
-    props.put(AUTH_TYPE, type);
+    props.put(AUTH_TYPE, TYPE);
     props.put(AUTH_TOKEN_VALIDITY, tokenValidity);
     props.put(AUTH_TOKEN_MAX_INACTIVE_INTERVAL, tokenMaxInactiveInterval);
     props.put(PRINCIPAL, principal);
@@ -951,6 +974,14 @@ public class KerberosRealm extends AuthorizingRealm {
     this.signatureSecretFile = signatureSecretFile;
   }
 
+  public String getSignatureSecretProvider() {
+    return signatureSecretProvider;
+  }
+
+  public void setSignatureSecretProvider(String signatureSecretProvider) {
+    this.signatureSecretProvider = signatureSecretProvider;
+  }
+
   /**
    * Releases any resources initialized by the authentication handler.
    * <p>
@@ -964,33 +995,5 @@ public class KerberosRealm extends AuthorizingRealm {
       secretProvider.destroy();
       secretProvider = null;
     }
-  }
-
-  /**
-   * Returns the authentication type of the authentication handler, 'kerberos'.
-   * <p>
-   *
-   * @return the authentication type of the authentication handler, 'kerberos'.
-   */
-  public static String getType() {
-    return type;
-  }
-
-  /**
-   * Returns the Kerberos principals used by the authentication handler.
-   *
-   * @return the Kerberos principals used by the authentication handler.
-   */
-  protected Set<KerberosPrincipal> getPrincipals() {
-    return serverSubject.getPrincipals(KerberosPrincipal.class);
-  }
-
-  /**
-   * Returns the keytab used by the authentication handler.
-   *
-   * @return the keytab used by the authentication handler.
-   */
-  protected String getKeytab() {
-    return keytab;
   }
 }
