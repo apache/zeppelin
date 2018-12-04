@@ -314,26 +314,6 @@ public class NotebookService {
   }
 
   public boolean runParagraph(String noteId,
-                               String paragraphId,
-                               Map<String, Object> params,
-                               Map<String, Object> config,
-                               boolean failIfDisabled,
-                               boolean blocking,
-                               ServiceContext context,
-                               ServiceCallback<Paragraph> callback) throws IOException {
-    return runParagraph(noteId,
-        paragraphId,
-        null,
-        null,
-        params,
-        config,
-        failIfDisabled,
-        blocking,
-        context,
-        callback);
-  }
-
-  public boolean runParagraph(String noteId,
                               String paragraphId,
                               String title,
                               String text,
@@ -362,15 +342,20 @@ public class NotebookService {
       callback.onFailure(new IOException("paragraph is disabled."), context);
       return false;
     }
-    if (text != null) {
-      p.setText(text);
-    }
-    if (title != null) {
-      p.setTitle(title);
-    }
+    p.setText(text);
+    p.setTitle(title);
     p.setAuthenticationInfo(context.getAutheInfo());
     p.settings.setParams(params);
     p.setConfig(config);
+
+    if (note.isPersonalizedMode()) {
+      p = note.getParagraph(paragraphId);
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(context.getAutheInfo());
+      p.settings.setParams(params);
+      p.setConfig(config);
+    }
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
