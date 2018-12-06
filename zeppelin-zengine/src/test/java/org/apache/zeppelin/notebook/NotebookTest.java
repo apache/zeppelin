@@ -355,7 +355,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     p3.setText("%mock1 p3");
 
     // when
-    note.runAll();
+    note.runAll(anonymous, true);
 
     assertEquals("repl1: p1", p1.getResult().message().get(0).getData());
     assertNull(p2.getResult());
@@ -720,7 +720,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     String simpleText = "hello world";
     p.setText(simpleText);
 
-    note.runAll();
+    note.runAll(anonymous, true);
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -754,7 +754,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll();
+    note.runAll(anonymous, true);
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -799,7 +799,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll();
+    note.runAll(anonymous, true);
 
     // Force paragraph to have String type object
     p.setResult("Exception");
@@ -827,7 +827,7 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    note.runAll();
+    note.runAll(anonymous, true);
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -1499,6 +1499,11 @@ public class NotebookTest extends AbstractInterpreterTest implements JobListener
 
       @Override
       public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
+
+      }
+
+      @Override
+      public void noteRunningStatusChange(String noteId, boolean newStatus) {
 
       }
 

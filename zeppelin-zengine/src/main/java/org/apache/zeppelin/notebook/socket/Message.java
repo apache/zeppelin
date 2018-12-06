@@ -18,6 +18,10 @@
 package org.apache.zeppelin.notebook.socket;
 
 import com.google.gson.Gson;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.zeppelin.common.JsonSerializable;
 
 import java.util.HashMap;
@@ -186,8 +190,25 @@ public class Message implements JsonSerializable {
     PARAS_INFO,                   // [s-c] paragraph runtime infos
     SAVE_NOTE_FORMS,              // save note forms
     REMOVE_NOTE_FORMS,            // remove note forms
+    NOTE_RUNNING_STATUS,          // [s-c] sequential run status will be change
     NOTICE                        // [s-c] Notice
   }
+
+  // these messages will be ignored during the sequential run of the note
+  private static final Set<OP> disabledForRunningNoteMessages = Collections
+      .unmodifiableSet(new HashSet<>(Arrays.asList(
+          OP.COMMIT_PARAGRAPH,
+          OP.RUN_PARAGRAPH,
+          OP.RUN_PARAGRAPH_USING_SPELL,
+          OP.RUN_ALL_PARAGRAPHS,
+          OP.PARAGRAPH_CLEAR_OUTPUT,
+          OP.PARAGRAPH_CLEAR_ALL_OUTPUT,
+          OP.INSERT_PARAGRAPH,
+          OP.MOVE_PARAGRAPH,
+          OP.COPY_PARAGRAPH,
+          OP.PARAGRAPH_REMOVE,
+          OP.MOVE_NOTE_TO_TRASH,
+          OP.DEL_NOTE)));
 
   private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
@@ -213,6 +234,10 @@ public class Message implements JsonSerializable {
 
   public <T> T getType(String key) {
     return (T) data.get(key);
+  }
+
+  public static boolean isDisabledForRunningNotes(OP eventType) {
+    return disabledForRunningNoteMessages.contains(eventType);
   }
 
   @Override

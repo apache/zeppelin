@@ -424,6 +424,11 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
       }
 
       @Override
+      public void noteRunningStatusChange(String noteId, boolean newStatus) {
+
+      }
+
+      @Override
       public void onProgressUpdate(Job job, int progress) {
       }
 

@@ -31,4 +31,7 @@ public interface ParagraphJobListener extends JobListener {
   public void onOutputAppend(Paragraph paragraph, int idx, String output);
   public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
   public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
+
+  //TODO(savalek) Temporary solution. Need to refactor cron to be able to notify frontend directly.
+  void noteRunningStatusChange(String noteId, boolean newStatus);
 }

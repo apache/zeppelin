@@ -191,6 +191,14 @@ public class NotebookServer extends WebSocketServlet
         throw new Exception("Anonymous access not allowed ");
       }
 
+      if (Message.isDisabledForRunningNotes(messagereceived.op)) {
+        Note note = notebook.getNote((String) messagereceived.get("noteId"));
+        if (note != null && note.isRunning()) {
+          throw new Exception("Note is now running sequentially. Can not be performed: " +
+              messagereceived.op);
+        }
+      }
+
       HashSet<String> userAndRoles = new HashSet<>();
       userAndRoles.add(messagereceived.principal);
       if (!messagereceived.roles.equals("")) {
@@ -1727,25 +1735,31 @@ public class NotebookServer extends WebSocketServlet
         gson.fromJson(String.valueOf(fromMessage.data.get("paragraphs")),
             new TypeToken<List<Map<String, Object>>>() {}.getType());
 
-    for (Map<String, Object> raw : paragraphs) {
-      String paragraphId = (String) raw.get("id");
-      if (paragraphId == null) {
-        continue;
+    Note note = notebook.getNote(noteId);
+
+    note.setRunning(true);
+    try {
+      for (Map<String, Object> raw : paragraphs) {
+        String paragraphId = (String) raw.get("id");
+        if (paragraphId == null) {
+          continue;
+        }
+
+        String text = (String) raw.get("paragraph");
+        String title = (String) raw.get("title");
+        Map<String, Object> params = (Map<String, Object>) raw.get("params");
+        Map<String, Object> config = (Map<String, Object>) raw.get("config");
+
+        Paragraph p = setParagraphUsingMessage(note, fromMessage,
+            paragraphId, text, title, params, config);
+
+        if (p.isEnabled() && !persistAndExecuteSingleParagraph(conn, note, p, true)) {
+          // stop execution when one paragraph fails.
+          break;
+        }
       }
-
-      String text = (String) raw.get("paragraph");
-      String title = (String) raw.get("title");
-      Map<String, Object> params = (Map<String, Object>) raw.get("params");
-      Map<String, Object> config = (Map<String, Object>) raw.get("config");
-
-      Note note = notebook.getNote(noteId);
-      Paragraph p = setParagraphUsingMessage(note, fromMessage,
-          paragraphId, text, title, params, config);
-
-      if (p.isEnabled() && !persistAndExecuteSingleParagraph(conn, note, p, true)) {
-        // stop execution when one paragraph fails.
-        break;
-      }
+    } finally {
+      note.setRunning(false);
     }
   }
 
@@ -2364,6 +2378,13 @@ public class NotebookServer extends WebSocketServlet
     @Override
     public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
       // TODO
+    }
+
+    @Override
+    public void noteRunningStatusChange(String noteId, boolean newStatus) {
+      notebookServer.broadcast(
+          noteId,
+          new Message(OP.NOTE_RUNNING_STATUS).put("status", newStatus));
     }
   }
 

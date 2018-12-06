@@ -232,6 +232,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
+                ng-class="{'disabled':isNoteRunning()}"
                 tooltip-placement="bottom" uib-tooltip="Remove this note permanently"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
@@ -242,6 +243,7 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="moveNoteToTrash(note.id)"
                 ng-hide="viewOnly"
+                ng-class="{'disabled':isNoteRunning()}"
                 tooltip-placement="bottom" uib-tooltip="Move this note to trash"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
