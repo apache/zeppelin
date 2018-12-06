@@ -177,7 +177,6 @@ public class LoginRestApi {
     try {
       logoutCurrentUser();
       currentUser.getSession(true);
-      LOG.info("Try to login");
       currentUser.login(token);
 
       Set<String> roles = securityService.getAssociatedRoles();
@@ -221,14 +220,14 @@ public class LoginRestApi {
   @ZeppelinApi
   public Response postLogin(@FormParam("userName") String userName,
       @FormParam("password") String password) {
-    LOG.info("userName:" + userName);
+    LOG.debug("userName:" + userName);
     JsonResponse response = null;
     // ticket set to anonymous for anonymous user. Simplify testing.
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
     if (currentUser.isAuthenticated()) {
       currentUser.logout();
     }
-    LOG.info("currentUser: " + currentUser);
+    LOG.debug("currentUser: " + currentUser);
     if (!currentUser.isAuthenticated()) {
 
       UsernamePasswordToken token = new UsernamePasswordToken(userName, password);

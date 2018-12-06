@@ -250,7 +250,7 @@ authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
 ### HTTP SPNEGO Authentication
 HTTP SPNEGO (Simple and Protected GSS-API NEGOtiation) is the standard way to support Kerberos Ticket based user authentication for Web Services. Based on [Apache Hadoop Auth](https://hadoop.apache.org/docs/current/hadoop-auth/index.html), Zeppelin supports ability to authenticate users by accepting and validating their Kerberos Ticket.
 
-When HTTP SPNEGO Authentication is enabled for Zeppelin, the [Apache Hadoop Groups Mapping](https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html) configuration will used internally to determine group membership of user who is tyring to log in. Role-based access permission can be set based on groups as seen by Hadoop.
+When HTTP SPNEGO Authentication is enabled for Zeppelin, the [Apache Hadoop Groups Mapping](https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html) configuration will used internally to determine group membership of user who is trying to log in. Role-based access permission can be set based on groups as seen by Hadoop.
 
 To enable this, apply the following change in `conf/shiro.ini` under `[main]` section.
 
