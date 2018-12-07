@@ -90,7 +90,7 @@ spec:
       preStop:
         exec:
           # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | awk '{print $2}' | xargs kill"]
+          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.server.ZeppelinServer | grep -v grep | awk '{print $2}' | xargs kill"]
     env:
     - name: ZEPPELIN_K8S_CONTAINER_IMAGE
       value: apache/zeppelin:0.9.0-SNAPSHOT
@@ -120,9 +120,16 @@ spec:
           key: serviceDomain
     - name: MASTER   # default value of master property for spark interpreter.
       value: k8s://https://kubernetes.default.svc
+    # volumeMounts:
+    #  - name: zeppelin-server-notebook-volume     # configure this to persist notebook
+    #    mountPath: /zeppelin/notebook
+    #  - name: zeppelin-server-conf                # configure this to persist Zeppelin configuration
+    #    mountPath: /zeppelin/conf
+    #  - name: zeppelin-server-custom-k8s          # configure this to mount customized Kubernetes spec for interpreter
+    #    mountPath: /zeppelin/k8s
   - name: zeppelin-server-gateway
     image: nginx:1.14.0
-    command: [ "/bin/sh", "-c" ]
+    command: ["/bin/sh", "-c"]
     args:
       - cp -f /tmp/conf/nginx.conf /etc/nginx/nginx.conf;
         sed -i -e "s/SERVICE_DOMAIN/$(cat /tmp/conf/serviceDomain)/g" /etc/nginx/nginx.conf;
@@ -136,8 +143,8 @@ spec:
       preStop:
         exec:
           # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["/usr/sbin/nginx","-s","quit"]
-  - name: dnsmasq
+          command: ["/usr/sbin/nginx", "-s", "quit"]
+  - name: dnsmasq  # nginx requires dns resolver for dynamic dns resolution
     image: "janeczku/go-dnsmasq:release-1.0.5"
     args:
       - --listen

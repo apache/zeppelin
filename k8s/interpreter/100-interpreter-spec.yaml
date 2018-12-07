@@ -48,7 +48,7 @@ spec:
       preStop:
         exec:
           # SIGTERM triggers a quick exit; gracefully terminate instead
-          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer | awk '{print $2}' | xargs kill"]
+          command: ["sh", "-c", "ps -ef | grep org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer | grep -v grep | awk '{print $2}' | xargs kill"]
     env:
   {% for key, value in zeppelin.k8s.envs.items() %}
     - name: {{key}}
