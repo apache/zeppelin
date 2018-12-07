@@ -1200,6 +1200,31 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     return true;
   };
 
+  $scope.userHasWritePermission = function() {
+    let owners = $scope.permissions.owners;
+    let writers = $scope.permissions.writers;
+
+    if (owners.length === 0 || writers.length === 0) {
+      return true;
+    }
+
+    let userName = $rootScope.ticket.principal;
+    let userRoles = $rootScope.ticket.roles;
+
+    userRoles = userRoles.substr(1, userRoles.length - 2).replace(/"/g, '').split(',');
+    let userNameAndRoles = [];
+    userNameAndRoles.push(userName);
+    if (userRoles !== null) {
+      userNameAndRoles = userRoles.concat(userNameAndRoles);
+    }
+
+    if (owners.concat(writers).some((name) => userNameAndRoles.includes(name))) {
+      return true;
+    }
+
+    return false;
+  };
+
   $scope.toggleNotePersonalizedMode = function() {
     let personalizedMode = $scope.note.config.personalizedMode;
     if ($scope.isOwner) {
