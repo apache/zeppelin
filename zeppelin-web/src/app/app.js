@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-import "babel-polyfill";
-import "core-js/modules/es7.promise.finally";
+import 'babel-polyfill';
+import 'core-js/modules/es7.promise.finally';
 import 'headroom.js';
 import 'headroom.js/dist/angular.headroom';
 
