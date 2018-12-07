@@ -365,6 +365,36 @@ If both are defined, then the **environment variables** will take priority.
     <td>token</td>
     <td>GitHub remote name. Default is `origin`</td>
   </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_RUN_MODE</h6></td>
+    <td><h6 class="properties">zeppelin.run.mode</h6></td>
+    <td>auto</td>
+    <td>Run mode. 'auto|local|k8s'. 'auto' autodetect environment. 'local' runs interpreter as a local process. k8s runs interpreter on Kubernetes cluster</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_PORTFORWARD</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.portforward</h6></td>
+    <td>false</td>
+    <td>Port forward to interpreter rpc port. Set 'true' only on local development when zeppelin.k8s.mode 'on'. Don't use 'true' on production environment</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_CONTAINER_IMAGE</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.container.image</h6></td>
+    <td>apache/zeppelin:{{ site.ZEPPELIN_VERSION }}</td>
+    <td>Docker image for interpreters</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.spark.container.image</h6></td>
+    <td>apache/spark:latest</td>
+    <td>Docker image for Spark executors</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_K8S_TEMPLATE_DIR</h6></td>
+    <td><h6 class="properties">zeppelin.k8s.template.dir</h6></td>
+    <td>k8s</td>
+    <td>Kubernetes yaml spec files</td>
+  </tr>  
 </table>
 
 
