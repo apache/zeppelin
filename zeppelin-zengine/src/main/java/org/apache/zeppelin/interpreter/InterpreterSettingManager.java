@@ -894,12 +894,17 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   @ManagedAttribute
-  public Set<String> getRunningInterpreters() {
-    Set<String> runningInterpreters = Sets.newHashSet();
+  public List<Map<String, String>> getRunningInterpreters() {
+    List<Map<String, String>> runningInterpreters = new ArrayList<>();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
       for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
-        if (null != mig.getRemoteInterpreterProcess()) {
-          runningInterpreters.add(entry.getKey());
+        if (mig.getRemoteInterpreterProcess() != null) {
+          Map<String, String> interpreterInfo = new HashMap<>();
+          interpreterInfo.put("name", mig.getId());
+          interpreterInfo.put("group", mig.getInterpreterSetting().getGroup());
+          interpreterInfo.put("host", mig.getInterpreterProcess().getHost());
+          interpreterInfo.put("port", String.valueOf(mig.getInterpreterProcess().getPort()));
+          runningInterpreters.add(interpreterInfo);
         }
       }
     }

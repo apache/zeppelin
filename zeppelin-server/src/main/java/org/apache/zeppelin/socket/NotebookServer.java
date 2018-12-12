@@ -20,6 +20,7 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import java.util.Collection;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
@@ -49,10 +50,13 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Note;
@@ -1852,6 +1856,87 @@ public class NotebookServer extends WebSocketServlet
   }
 
   @ManagedOperation
+  public List<Map<String, String>> getParagraphsInfo(String noteId) {
+    Note note = notebook().getNote(noteId);
+    return note.generateParagraphsInfo();
+  }
+
+  /**
+   * Extract running paragraphs info grouped by running interpreters.
+   */
+  @ManagedOperation
+  public Map<String, Object> getRunningInterpretersParagraphInfo() {
+    Map<String, Object> runningInterpretersWithParagraphInfo = new HashMap<>();
+    notebook().getAllNotes().stream()
+        .map(Note::getParagraphs)
+        .flatMap(Collection::stream)
+        .filter(Paragraph::isRunning)
+        .forEach(p -> addBindedInterpreterInfo(runningInterpretersWithParagraphInfo, p));
+    return runningInterpretersWithParagraphInfo;
+  }
+
+  /**
+   * Update running interpreter info with paragraph data.
+   */
+  private void addBindedInterpreterInfo(
+      Map<String, Object> runningInterpretersWithParagraphInfo, Paragraph paragraph) {
+    List<Map<String, String>> runningInterpreters = notebook()
+        .getInterpreterSettingManager()
+        .getRunningInterpreters();
+
+    for (Map<String, String> runningInterpreterInfo : runningInterpreters) {
+      RemoteInterpreterProcess process = null;
+      try {
+        process = ((ManagedInterpreterGroup) paragraph.getBindedInterpreter()
+            .getInterpreterGroup()).getInterpreterProcess();
+      } catch (InterpreterNotFoundException e) {
+        LOG.error("Failed to get binded interpreter to paragraph {}", paragraph, e);
+      }
+      if (process != null
+          && process.getPort() == Integer.valueOf(runningInterpreterInfo.get("port"))
+          && process.getHost().equals(runningInterpreterInfo.get("host"))) {
+
+        Map<String, Object> interpreterInfoBeforeUpdate =
+            (Map<String, Object>) runningInterpretersWithParagraphInfo
+                .get(runningInterpreterInfo.get("name"));
+        if (interpreterInfoBeforeUpdate == null) {
+          // create interpreter info
+          interpreterInfoBeforeUpdate = new HashMap<>();
+          interpreterInfoBeforeUpdate.put("group", runningInterpreterInfo.get("group"));
+          interpreterInfoBeforeUpdate.put("port", runningInterpreterInfo.get("port"));
+          interpreterInfoBeforeUpdate.put("host", runningInterpreterInfo.get("host"));
+
+          // set running interpreter paragraphs
+          List<Map<String, String>> paragraphsInfo = new ArrayList<>();
+          interpreterInfoBeforeUpdate.put("paragraphs", paragraphsInfo);
+        }
+        // update interpreter info
+        List<Map<String, String>> paragraphsInfoBeforeUpdate =
+            (List<Map<String, String>>) interpreterInfoBeforeUpdate.get("paragraphs");
+        addParagraphInfo(paragraphsInfoBeforeUpdate, paragraph);
+
+        runningInterpretersWithParagraphInfo
+            .put(runningInterpreterInfo.get("name"), interpreterInfoBeforeUpdate);
+      }
+    }
+  }
+
+  /**
+   * Add paragraph info to interpreter paragraph info list.
+   */
+  private void addParagraphInfo(List<Map<String, String>> paragraphsInfoBeforeUpdate,
+      Paragraph paragraph) {
+    Note parentNote = paragraph.getNote();
+    Map<String, String> newParagraphInfo = new HashMap<>();
+    newParagraphInfo.put("interpreterText", paragraph.getIntpText());
+    newParagraphInfo.put("noteName", parentNote.getName());
+    newParagraphInfo.put("noteId", parentNote.getId());
+    newParagraphInfo.put("id", paragraph.getId());
+    newParagraphInfo.put("user", paragraph.getUser());
+    paragraphsInfoBeforeUpdate.add(newParagraphInfo);
+  }
+
+  @Override
   public void sendMessage(String message) {
     Message m = new Message(OP.NOTICE);
     m.data.put("notice", message);

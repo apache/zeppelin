@@ -507,6 +507,130 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
+### List of running interpreters
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method returns all the running interpreters available on the server.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/running```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": [
+   {
+     "port": "37395",
+     "name": "python-shared_process",
+     "host": "192.168.88.13",
+     "group": "python"
+   },
+   {
+     "port": "45105",
+     "name": "spark-shared_process",
+     "host":"192.168.88.13",
+     "group":"spark"
+   },
+   {
+     "port": "41281",
+     "name":"sh-shared_process",
+     "host":"192.168.88.13",
+     "group":"sh"
+   },
+   { "port": "40873",
+     "name": "md-shared_process",
+     "host": "192.168.88.13",
+     "group":"md"
+   }
+  ]
+}
+        </pre>
+      </td>
+    </tr>
+  </table>
+
+<br/>
+###  Get paragraph info of running interpreters
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method lists the running paragraphs grouped by interpreters.
+          The body field of the returned JSON contain information about paragraphs.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/running/jobs```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response (python is configured with isolated per Note setting) </td>
+      <td><pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "lastResponseUnixTime": 1544653922027,
+    "runningInterpreters": {
+      "python--2DX6CWH35": {
+        "port": "37799",
+        "host": "192.168.88.13",
+        "paragraphs": [
+          {
+            "interpreterText": "python",
+            "noteName": "Processes",
+            "noteId": "2DX6CWH35",
+            "id": "paragraph_1544653814070_1471435369",
+            "user": "anonymous"
+          }
+        ],
+        "group": "python"
+      },
+      "sh-shared_process": {
+        "port": "33857",
+        "host": "192.168.88.13",
+        "paragraphs": [
+          {
+            "interpreterText": "sh",
+            "noteName": "Processes",
+            "noteId": "2DX6CWH35",
+            "id": "paragraph_1544653826296_1659478713",
+            "user":"anonymous"
+          }
+        ],
+        "group":"sh"
+      }
+    }
+   }
+}</pre></td>
+    </tr>
+  </table>
+
+<br/>
 ### Add a new repository for dependency resolving
 
   <table class="table-configuration">

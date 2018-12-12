@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Maps;
+import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -333,5 +334,35 @@ public class InterpreterRestApi {
     }
 
     return new JsonResponse<>(Status.OK).build();
+  }
+
+  /**
+   * Get all running interpreters.
+   */
+  @GET
+  @Path("running")
+  @ZeppelinApi
+  public Response listRunningInterpreters() {
+    return new JsonResponse<>(
+        Status.OK,
+        "",
+        interpreterSettingManager.getRunningInterpreters()
+    ).build();
+  }
+
+  /**
+   * Get info about the running paragraphs grouped by their interpreters.
+   *
+   * @return JSON with status.OK
+   */
+  @GET
+  @Path("running/jobs")
+  @ZeppelinApi
+  public Response getRunning() {
+    Map<String, Object> response = new HashMap<>();
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("runningInterpreters", notebookServer.getRunningInterpretersParagraphInfo());
+
+    return new JsonResponse<>(Status.OK, "", response).build();
   }
 }
