@@ -103,7 +103,7 @@ class Utils {
   static boolean isScala2_11() {
     return !isScala2_10();
   }
-  
+
   static boolean isCompilerAboveScala2_11_7() {
     if (isScala2_10() || SCALA_COMPILER_VERSION == null) {
       return false;
@@ -147,9 +147,11 @@ class Utils {
       return false;
     }
   }
-  
+
   public static String buildJobGroupId(InterpreterContext context) {
-    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
+    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId() + "\n" +
+            context.getParagraphText().substring(0,
+                    context.getParagraphText().length() > 200 ? 200 : context.getParagraphText().length());
   }
 
   public static String buildJobDesc(InterpreterContext context) {

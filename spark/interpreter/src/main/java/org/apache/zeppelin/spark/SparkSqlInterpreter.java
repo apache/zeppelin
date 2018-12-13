@@ -78,7 +78,6 @@ public class SparkSqlInterpreter extends Interpreter {
       Method method = sqlc.getClass().getMethod("sql", String.class);
       String msg = sparkInterpreter.getZeppelinContext().showData(
           method.invoke(sqlc, effectiveSQL));
-      sc.clearJobGroup();
       return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
@@ -88,6 +87,8 @@ public class SparkSqlInterpreter extends Interpreter {
       String msg = e.getMessage()
               + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
       return new InterpreterResult(Code.ERROR, msg);
+    } finally {
+      sc.clearJobGroup();
     }
   }
 
