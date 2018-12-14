@@ -40,14 +40,19 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.helium.Helium;
 import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
@@ -89,15 +94,15 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-  public static Notebook notebook;
+  public static Notebook notebook; // REMOVE
   public static Server jettyWebServer;
   public static NotebookServer notebookWsServer;
-  public static Helium helium;
+  public static Helium helium; // REMOVE
 
-  private final InterpreterSettingManager interpreterSettingManager;
-  private InterpreterFactory replFactory;
-  private SearchService noteSearchService;
-  private NotebookRepoSync notebookRepo;
+  // private final InterpreterSettingManager interpreterSettingManager;
+  // private InterpreterFactory replFactory;
+//  private SearchService noteSearchService;
+//  private NotebookRepoSync notebookRepo;
   private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
 
@@ -107,44 +112,16 @@ public class ZeppelinServer extends ResourceConfig {
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
-    HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory();
-    HeliumBundleFactory heliumBundleFactory;
-
-    if (isBinaryPackage(conf)) {
-      /* In binary package, zeppelin-web/src/app/visualization and zeppelin-web/src/app/tabledata
-       * are copied to lib/node_modules/zeppelin-vis, lib/node_modules/zeppelin-tabledata directory.
-       * Check zeppelin/zeppelin-distribution/src/assemble/distribution.xml to see how they're
-       * packaged into binary package.
-       */
-      heliumBundleFactory =
-          new HeliumBundleFactory(
-              conf,
-              null,
-              new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
-              new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata")),
-              new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis")),
-              new File(conf.getRelativeDir("lib/node_modules/zeppelin-spell")));
-    } else {
-      heliumBundleFactory =
-          new HeliumBundleFactory(
-              conf,
-              null,
-              new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO)),
-              new File(conf.getRelativeDir("zeppelin-web/src/app/tabledata")),
-              new File(conf.getRelativeDir("zeppelin-web/src/app/visualization")),
-              new File(conf.getRelativeDir("zeppelin-web/src/app/spell")));
-    }
-
-    this.interpreterSettingManager =
-        new InterpreterSettingManager(conf, notebookWsServer, notebookWsServer, notebookWsServer);
-    this.replFactory = new InterpreterFactory(interpreterSettingManager);
+    /*this.interpreterSettingManager =
+        new InterpreterSettingManager(conf, notebookWsServer, notebookWsServer, notebookWsServer);*/
+    /*this.replFactory = new InterpreterFactory(interpreterSettingManager);
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch(conf);
+    this.noteSearchService = new LuceneSearch(conf);*/
     this.notebookAuthorization = NotebookAuthorization.getInstance();
     this.credentials =
         new Credentials(
             conf.credentialsPersist(), conf.getCredentialsPath(), conf.getCredentialsEncryptKey());
-    notebook =
+    /*notebook =
         new Notebook(
             conf,
             notebookRepo,
@@ -152,7 +129,10 @@ public class ZeppelinServer extends ResourceConfig {
             interpreterSettingManager,
             noteSearchService,
             notebookAuthorization,
-            credentials);
+            credentials);*/
+
+    /*HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory(notebook, notebookWsServer);
+    HeliumBundleFactory heliumBundleFactory = new HeliumBundleFactory(conf);
 
     ZeppelinServer.helium =
         new Helium(
@@ -161,22 +141,9 @@ public class ZeppelinServer extends ResourceConfig {
             new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
             heliumBundleFactory,
             heliumApplicationFactory,
-            interpreterSettingManager);
+            interpreterSettingManager);*/
 
-    // create bundle
-    try {
-      heliumBundleFactory.buildAllPackages(helium.getBundlePackagesToBundle());
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-    }
-
-    // to update notebook from application event from remote process.
-    heliumApplicationFactory.setNotebook(notebook);
-    // to update fire websocket event on application event.
-    heliumApplicationFactory.setApplicationEventListener(notebookWsServer);
-
-    notebook.addNotebookEventListener(heliumApplicationFactory);
-    notebook.addNotebookEventListener(notebookWsServer);
+    //notebook.addNotebookEventListener(notebookWsServer);
 
 
     // Register MBean
@@ -186,10 +153,10 @@ public class ZeppelinServer extends ResourceConfig {
         mBeanServer.registerMBean(
             notebookWsServer,
             new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
-        mBeanServer.registerMBean(
+        /*mBeanServer.registerMBean(
             interpreterSettingManager,
             new ObjectName(
-                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));*/
       } catch (InstanceAlreadyExistsException
           | MBeanRegistrationException
           | MalformedObjectNameException
@@ -204,13 +171,26 @@ public class ZeppelinServer extends ResourceConfig {
         new AbstractBinder() {
           @Override
           protected void configure() {
-            bind(notebookRepo).to(NotebookRepoSync.class).in(Singleton.class);
+            bind(InterpreterFactory.class).to(InterpreterFactory.class).in(Singleton.class);
+            bind(NotebookRepoSync.class).to(NotebookRepoSync.class).in(Singleton.class);
+            bind(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
+            //bind(Notebook.class).to(NotebookRepoSync.class).in(Singleton.class);
+            bind(notebookWsServer).to(AngularObjectRegistryListener.class).in(Singleton.class);
+            bind(notebookWsServer).to(RemoteInterpreterProcessListener.class).in(Singleton.class);
+            bind(notebookWsServer).to(ApplicationEventListener.class).in(Singleton.class);
             bind(notebookWsServer).to(NotebookServer.class).in(Singleton.class);
-            bind(notebook).to(Notebook.class).in(Singleton.class);
-            bind(noteSearchService).to(SearchService.class).in(Singleton.class);
-            bind(helium).to(Helium.class).in(Singleton.class);
+            bind(notebookWsServer)
+                .named("NotebookServer")
+                .to(NoteEventListener.class)
+                .in(Singleton.class);
+            // bind(notebook).to(Notebook.class).in(Singleton.class);
+            bind(Notebook.class).to(Notebook.class).in(Singleton.class);
+            //bind(noteSearchService).to(SearchService.class).in(Singleton.class);
+            bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+            bind(Helium.class).to(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class).in(Singleton.class);
-            bind(interpreterSettingManager).to(InterpreterSettingManager.class).in(Singleton.class);
+            //bind(interpreterSettingManager).to(InterpreterSettingManager.class).in(Singleton.class);
+            bind(InterpreterSettingManager.class).to(InterpreterSettingManager.class).in(Singleton.class);
             bind(InterpreterService.class).to(InterpreterService.class).in(Immediate.class);
             bind(credentials).to(Credentials.class).in(Singleton.class);
             bind(GsonProvider.class).to(GsonProvider.class).in(Singleton.class);
@@ -228,6 +208,8 @@ public class ZeppelinServer extends ResourceConfig {
               // TODO(jl): Will be added more type
               bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
             }
+            bind(HeliumBundleFactory.class).to(HeliumBundleFactory.class).in(Singleton.class);
+            bind(HeliumApplicationFactory.class).to(HeliumApplicationFactory.class).in(Singleton.class);
           }
         });
     packages("org.apache.zeppelin.rest");
@@ -275,9 +257,9 @@ public class ZeppelinServer extends ResourceConfig {
                 try {
                   jettyWebServer.stop();
                   if (!conf.isRecoveryEnabled()) {
-                    ZeppelinServer.notebook.getInterpreterSettingManager().close();
+                    //ZeppelinServer.notebook.getInterpreterSettingManager().close();
                   }
-                  notebook.close();
+                  //notebook.close();
                   Thread.sleep(3000);
                 } catch (Exception e) {
                   LOG.error("Error while stopping servlet container", e);
@@ -299,7 +281,7 @@ public class ZeppelinServer extends ResourceConfig {
 
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
-      ZeppelinServer.notebook.getInterpreterSettingManager().close();
+      //ZeppelinServer.notebook.getInterpreterSettingManager().close();
     }
   }
 
@@ -439,14 +421,5 @@ public class ZeppelinServer extends ResourceConfig {
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
 
     return webApp;
-  }
-
-  /**
-   * Check if it is source build or binary package.
-   *
-   * @return
-   */
-  private static boolean isBinaryPackage(ZeppelinConfiguration conf) {
-    return !new File(conf.getRelativeDir("zeppelin-web")).isDirectory();
   }
 }

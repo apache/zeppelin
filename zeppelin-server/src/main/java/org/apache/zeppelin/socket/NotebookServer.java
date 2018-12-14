@@ -157,7 +157,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   private Notebook notebook() {
-    return ZeppelinServer.notebook;
+    return getNotebookService().getNotebook();
   }
 
   public synchronized NotebookService getNotebookService() {

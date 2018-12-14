@@ -102,8 +102,8 @@ public class ShiroSecurityService implements SecurityService {
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
       if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
-        LOGGER.debug(
-            "Converting principal name " + principal + " to lower case:" + principal.toLowerCase());
+        LOGGER.debug("Converting principal name " + principal
+            + " to lower case:" + principal.toLowerCase());
         principal = principal.toLowerCase();
       }
     } else {

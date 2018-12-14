@@ -111,7 +111,7 @@ public class NotebookServiceTest {
             searchService,
             notebookAuthorization,
             credentials);
-    notebookService = new NotebookService(notebook);
+    notebookService = new NotebookService(notebook, notebookAuthorization, zeppelinConfiguration);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);

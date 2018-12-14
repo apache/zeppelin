@@ -281,6 +281,7 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
+/*
     if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
       // restart interpreter to stop all interpreter processes
       List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
@@ -326,6 +327,7 @@ public abstract class AbstractTestRestApi {
         FileUtils.deleteDirectory(confDir);
       }
     }
+*/
   }
 
   protected static boolean checkIfServerIsRunning() {

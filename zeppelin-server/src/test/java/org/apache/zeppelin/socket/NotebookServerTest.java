@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashSet;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -45,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
@@ -72,7 +72,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     notebook = ZeppelinServer.notebook;
     notebookServer = spy(ZeppelinServer.notebookWsServer);
-    NotebookService notebookService = new NotebookService(notebook);
+    NotebookService notebookService =
+        new NotebookService(
+            notebook, NotebookAuthorization.getInstance(), ZeppelinConfiguration.create());
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);
     when(notebookServer.getConfigurationService()).thenReturn(configurationService);

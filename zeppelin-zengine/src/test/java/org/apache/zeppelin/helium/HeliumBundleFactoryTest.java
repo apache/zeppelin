@@ -59,12 +59,12 @@ public class HeliumBundleFactoryTest {
 
     conf = new ZeppelinConfiguration();
 
-    hbf = new HeliumBundleFactory(conf,
-        nodeInstallationDir,
-        tmpDir,
-        new File(moduleDir, "tabledata"),
-        new File(moduleDir, "visualization"),
-        new File(moduleDir, "spell"));
+//    hbf = new HeliumBundleFactory(conf,
+//        nodeInstallationDir,
+//        tmpDir,
+//        new File(moduleDir, "tabledata"),
+//        new File(moduleDir, "visualization"),
+//        new File(moduleDir, "spell"));
     hbf.installNodeAndNpm();
     hbf.copyFrameworkModulesToInstallPath(true);
   }

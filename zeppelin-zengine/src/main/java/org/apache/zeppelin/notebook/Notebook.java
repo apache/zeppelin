@@ -19,6 +19,20 @@ package org.apache.zeppelin.notebook;
 
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -51,19 +65,6 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
  * High level api of Notebook related operations, such as create, move & delete note/folder.
  * It will also do other thing which is caused by these operation, such as update index,
@@ -93,6 +94,7 @@ public class Notebook {
    * @throws IOException
    * @throws SchedulerException
    */
+  @Inject
   public Notebook(
       ZeppelinConfiguration conf,
       NotebookRepo notebookRepo,
@@ -100,7 +102,8 @@ public class Notebook {
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
       NotebookAuthorization notebookAuthorization,
-      Credentials credentials) throws IOException, SchedulerException {
+      Credentials credentials)
+      throws IOException, SchedulerException {
     this.noteManager = new NoteManager(notebookRepo);
     this.conf = conf;
     this.notebookRepo = notebookRepo;
@@ -117,6 +120,28 @@ public class Notebook {
     this.noteEventListeners.add(this.noteSearchService);
     this.noteEventListeners.add(this.notebookAuthorization);
     this.noteEventListeners.add(this.interpreterSettingManager);
+  }
+
+  @Inject
+  public Notebook(
+      ZeppelinConfiguration conf,
+      NotebookRepo notebookRepo,
+      InterpreterFactory replFactory,
+      InterpreterSettingManager interpreterSettingManager,
+      SearchService noteSearchService,
+      NotebookAuthorization notebookAuthorization,
+      Credentials credentials,
+      @Named("NotebookServer") NoteEventListener notebookWsServer)
+      throws IOException, SchedulerException {
+    this(
+        conf,
+        notebookRepo,
+        replFactory,
+        interpreterSettingManager,
+        noteSearchService,
+        notebookAuthorization,
+        credentials);
+    this.noteEventListeners.add(notebookWsServer);
   }
 
   /**
