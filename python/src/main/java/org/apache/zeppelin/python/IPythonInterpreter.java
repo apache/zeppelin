@@ -175,7 +175,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         return "Fail to run pip freeze.\n" +
             IOUtils.toString(new FileInputStream(stderrFile));
       }
-      try(FileInputStream in = new FileInputStream(stdoutFile)) {
+      try (FileInputStream in = new FileInputStream(stdoutFile)) {
         String freezeOutput = IOUtils.toString(in);
         if (!freezeOutput.contains("jupyter-client=")) {
           return "jupyter-client is not installed.";
