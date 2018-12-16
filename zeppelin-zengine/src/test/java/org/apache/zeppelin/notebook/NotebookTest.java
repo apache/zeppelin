@@ -93,8 +93,8 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebookRepo = new InMemoryNotebookRepo();
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-//    notebook = new Notebook(conf, notebookRepo, interpreterFactory, interpreterSettingManager, search,
-//        notebookAuthorization, credentials);
+    notebook = new Notebook(conf, notebookRepo, interpreterFactory, interpreterSettingManager, search,
+        notebookAuthorization, credentials);
     notebook.setParagraphJobListener(this);
 
   }
@@ -110,17 +110,17 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
-//    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
-//        interpreterSettingManager, null,
-//        notebookAuthorization, credentials);
-    //assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
+    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+        interpreterSettingManager, null,
+        notebookAuthorization, credentials);
+    assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
-//    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
-//        interpreterSettingManager, null,
-//        notebookAuthorization, credentials);
-//    assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
-//        notebook.isRevisionSupported());
+    notebook = new Notebook(conf, notebookRepo, interpreterFactory,
+        interpreterSettingManager, null,
+        notebookAuthorization, credentials);
+    assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
+        notebook.isRevisionSupported());
   }
 
   public static class DummyNotebookRepo implements NotebookRepo {

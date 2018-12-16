@@ -60,10 +60,10 @@ public class LuceneSearchTest {
     InterpreterSetting defaultInterpreterSetting = mock(InterpreterSetting.class);
     when(defaultInterpreterSetting.getName()).thenReturn("test");
     when(interpreterSettingManager.getDefaultInterpreterSetting()).thenReturn(defaultInterpreterSetting);
-//    notebook = new Notebook(ZeppelinConfiguration.create(), mock(NotebookRepo.class),
-//        mock(InterpreterFactory.class), interpreterSettingManager,
-//        noteSearchService, mock(NotebookAuthorization.class),
-//        mock(Credentials.class));
+    notebook = new Notebook(ZeppelinConfiguration.create(), mock(NotebookRepo.class),
+        mock(InterpreterFactory.class), interpreterSettingManager,
+        noteSearchService, mock(NotebookAuthorization.class),
+        mock(Credentials.class));
   }
 
   @After
