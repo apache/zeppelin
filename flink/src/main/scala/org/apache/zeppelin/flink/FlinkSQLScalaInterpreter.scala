@@ -30,7 +30,7 @@ class FlinkSQLScalaInterpreter(scalaInterpreter: FlinkScalaInterpreter,
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
     try {
-      val table: Table = this.btenv.sql(code)
+      val table: Table = this.btenv.sqlQuery(code)
       val result = z.showData(table)
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, result)
     } catch {
