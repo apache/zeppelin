@@ -595,37 +595,42 @@ The role of registered interpreters, settings and interpreters group are describ
   "message": "",
   "body": {
     "lastResponseUnixTime": 1544653922027,
-    "runningInterpreters": {
-      "python--2DX6CWH35": {
-        "port": "37799",
-        "host": "192.168.88.13",
-        "paragraphs": [
-          {
-            "interpreterText": "python",
-            "noteName": "Processes",
-            "noteId": "2DX6CWH35",
-            "id": "paragraph_1544653814070_1471435369",
-            "user": "anonymous"
-          }
-        ],
-        "group": "python"
+    "runningInterpreters": [
+      {
+        "name": "python--2DX6CWH35",
+        "group": "python",
+        "host": "172.30.13.213",
+        "port": "33757",
+        "interpreterText": "python",
+        "noteName": "Processes",
+        "noteId": "2DX6CWH35",
+        "id": "paragraph_1544653814070_1471435369",
+        "user": "anonymous"
       },
-      "sh-shared_process": {
-        "port": "33857",
-        "host": "192.168.88.13",
-        "paragraphs": [
-          {
-            "interpreterText": "sh",
-            "noteName": "Processes",
-            "noteId": "2DX6CWH35",
-            "id": "paragraph_1544653826296_1659478713",
-            "user":"anonymous"
-          }
-        ],
-        "group":"sh"
+      {
+        "name": "spark-shared_process",
+        "group": "spark",
+        "host": "172.30.13.213",
+        "port": "42861",
+        "interpreterText": "spark.pyspark",
+        "noteName": "Processes",
+        "noteId": "2DX6CWH35",
+        "id": "paragraph_1544653819987_-1635354679",
+        "user":"anonymous"
+      },
+      {
+        "name": "sh-shared_process",
+        "group": "sh",
+        "host": "172.30.13.213",
+        "port": "38089",
+        "interpreterText": "sh",
+        "noteName": "Processes",
+        "noteId": "2DX6CWH35",
+        "id": "paragraph_1544653826296_1659478713",
+        "user":"anonymous"
       }
-    }
-   }
+    ]
+  }
 }</pre></td>
     </tr>
   </table>

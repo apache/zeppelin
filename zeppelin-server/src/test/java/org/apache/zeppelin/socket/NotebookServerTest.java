@@ -446,7 +446,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     interpreterInfo.put("port", "1111");
     fakeRunningInterpreterList.add(interpreterInfo);
 
-    when(intpSettingManager.getRunningInterpreters()).thenReturn(fakeRunningInterpreterList);
+    when(intpSettingManager.getRunningInterpretersInfo()).thenReturn(fakeRunningInterpreterList);
 
     final Note note = ZeppelinServer.notebook.createNote("testNote", anonymous);
     final Paragraph fakeParagraph = spy(new Paragraph(note, mock(ParagraphJobListener.class)));
@@ -464,17 +464,19 @@ public class NotebookServerTest extends AbstractTestRestApi {
     when(bindedInterpreter.getInterpreterGroup()).thenReturn(fakeMIG);
     when(fakeParagraph.getBindedInterpreter()).thenReturn(bindedInterpreter);
     when(fakeParagraph.isRunning()).thenReturn(true);
+    when(fakeParagraph.getUser()).thenReturn(String.valueOf(anonymous));
+    when(fakeParagraph.getIntpText()).thenReturn("fake");
 
-    Map<String, Object> result = notebookServer.getRunningInterpretersParagraphInfo();
+    List<Map<String, String>> result = notebookServer.getRunningInterpretersParagraphInfo();
     LOG.info("Running interpreters paragraph info is {}", result);
-    Map<String, Object> resultInterpreterInfo = (Map<String, Object>) result.get("fake");
+
+    assertTrue(!result.isEmpty());
+    assertEquals(1, result.size());
+    Map<String, String> resultInterpreterInfo = result.get(0);
     assertEquals("1111", resultInterpreterInfo.get("port"));
     assertEquals("1.1.1.1", resultInterpreterInfo.get("host"));
-
-    Map<String, String> paragraphInfo =
-        ((List<Map<String, String>>) resultInterpreterInfo.get("paragraphs")).get(0);
-    assertEquals(fakeParagraph.getNote().getName(), paragraphInfo.get("noteName"));
-    assertEquals(fakeParagraph.getUser(), paragraphInfo.get("user"));
+    assertEquals(fakeParagraph.getNote().getName(), resultInterpreterInfo.get("noteName"));
+    assertEquals(fakeParagraph.getUser(), resultInterpreterInfo.get("user"));
 
     // clean
     ZeppelinServer.notebook.removeNote(note.getId(), anonymous);

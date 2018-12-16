@@ -346,7 +346,7 @@ public class InterpreterRestApi {
     return new JsonResponse<>(
         Status.OK,
         "",
-        interpreterSettingManager.getRunningInterpreters()
+        interpreterSettingManager.getRunningInterpretersInfo()
     ).build();
   }
 

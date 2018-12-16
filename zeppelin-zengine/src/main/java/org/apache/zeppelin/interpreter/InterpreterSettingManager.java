@@ -25,7 +25,9 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -79,6 +81,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -894,21 +897,18 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   @ManagedAttribute
-  public List<Map<String, String>> getRunningInterpreters() {
-    List<Map<String, String>> runningInterpreters = new ArrayList<>();
-    for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
-      for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
-        if (mig.getRemoteInterpreterProcess() != null) {
-          Map<String, String> interpreterInfo = new HashMap<>();
-          interpreterInfo.put("name", mig.getId());
-          interpreterInfo.put("group", mig.getInterpreterSetting().getGroup());
-          interpreterInfo.put("host", mig.getInterpreterProcess().getHost());
-          interpreterInfo.put("port", String.valueOf(mig.getInterpreterProcess().getPort()));
-          runningInterpreters.add(interpreterInfo);
-        }
-      }
-    }
-    return runningInterpreters;
+  public List<Map<String, String>> getRunningInterpretersInfo() {
+    return interpreterSettings.values().stream()
+        .map(InterpreterSetting::getAllInterpreterGroups)
+        .flatMap(Collection::stream)
+        .filter(mig -> mig.getInterpreterProcess() != null)
+        .map(mig -> ImmutableMap.<String, String>builder()
+            .put("name", mig.getId())
+            .put("group", mig.getInterpreterSetting().getGroup())
+            .put("host", mig.getInterpreterProcess().getHost())
+            .put("port", String.valueOf(mig.getInterpreterProcess().getPort()))
+            .build())
+        .collect(Collectors.toList());
   }
 
   @Override
