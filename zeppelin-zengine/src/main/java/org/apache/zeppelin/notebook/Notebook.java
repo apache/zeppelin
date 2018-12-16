@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.notebook;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.TestUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -73,6 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Notebook {
   private static final Logger LOGGER = LoggerFactory.getLogger(Notebook.class);
+  private static AtomicReference<Notebook> self = new AtomicReference<>();
 
   private NoteManager noteManager;
 
@@ -142,6 +146,16 @@ public class Notebook {
         notebookAuthorization,
         credentials);
     this.noteEventListeners.add(notebookWsServer);
+    Notebook.self.set(this);
+  }
+
+  /**
+   * This is only for testing. This has a logic to check if the caller's classname ends with "Test"
+   */
+  @VisibleForTesting
+  public static Notebook getInstance() {
+    TestUtils.checkCalledByTestMethod();
+    return Notebook.self.get();
   }
 
   /**

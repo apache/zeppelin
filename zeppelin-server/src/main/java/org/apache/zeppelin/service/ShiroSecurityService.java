@@ -53,7 +53,6 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.realm.LdapRealm;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +61,11 @@ public class ShiroSecurityService implements SecurityService {
 
   private final Logger LOGGER = LoggerFactory.getLogger(ShiroSecurityService.class);
 
+  private final ZeppelinConfiguration zeppelinConfiguration;
+
   @Inject
   public ShiroSecurityService(ZeppelinConfiguration zeppelinConfiguration) throws Exception {
+    this.zeppelinConfiguration = zeppelinConfiguration;
     if (zeppelinConfiguration.getShiroPath().length() > 0) {
       try {
         Collection<Realm> realms =
@@ -101,7 +103,7 @@ public class ShiroSecurityService implements SecurityService {
     String principal;
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
-      if (ZeppelinServer.notebook.getConf().isUsernameForceLowerCase()) {
+      if (zeppelinConfiguration.isUsernameForceLowerCase()) {
         LOGGER.debug("Converting principal name " + principal
             + " to lower case:" + principal.toLowerCase());
         principal = principal.toLowerCase();

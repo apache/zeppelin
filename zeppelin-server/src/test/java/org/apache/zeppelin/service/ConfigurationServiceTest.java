@@ -21,6 +21,7 @@ package org.apache.zeppelin.service;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -50,7 +51,7 @@ public class ConfigurationServiceTest extends AbstractTestRestApi {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HELIUM_REGISTRY.getVarName(),
         "helium");
     AbstractTestRestApi.startUp(ConfigurationServiceTest.class.getSimpleName());
-    configurationService = ZeppelinServer.notebookWsServer.getConfigurationService();
+    configurationService = NotebookServer.getInstance().getConfigurationService();
   }
 
   @AfterClass

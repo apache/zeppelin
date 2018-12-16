@@ -122,7 +122,8 @@ public class HeliumBundleFactory {
 
     this.gson = new Gson();
 
-    if (!new File(conf.getRelativeDir("zeppelin-web")).isDirectory()) {
+    File zeppelinWebPath = new File(conf.getRelativeDir("zeppelin-web"));
+    if (!zeppelinWebPath.isDirectory()) {
       this.tabledataModulePath =
           new File(conf.getRelativeDir("lib/node_modules/zeppelin-tabledata"));
       this.visualizationModulePath = new File(conf.getRelativeDir("lib/node_modules/zeppelin-vis"));

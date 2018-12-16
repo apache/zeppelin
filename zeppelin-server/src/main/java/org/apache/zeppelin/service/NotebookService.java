@@ -78,13 +78,9 @@ public class NotebookService {
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
       DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-  private static NotebookService self;
-
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
   private NotebookAuthorization notebookAuthorization;
-  private NotebookServer notebookServer;
-  private CountDownLatch notebookServerInjected;
 
   @Inject
   public NotebookService(
@@ -94,56 +90,6 @@ public class NotebookService {
     this.notebook = notebook;
     this.notebookAuthorization = notebookAuthorization;
     this.zConf = zeppelinConfiguration;
-    NotebookService.self = this;
-    notebookServerInjected = new CountDownLatch(1);
-  }
-
-  //TODO(jl): ...
-  public Notebook getNotebook() {
-    return notebook;
-  }
-
-  /**
-   * This is a temporal trick to connect injected class to non-injected class like {@link
-   * org.apache.zeppelin.socket.NotebookServer}. This will be removed after refactoring of
-   * Notebook\* classes.
-   *
-   * @return NotebookService
-   */
-  public static NotebookService getInstance() {
-    if (null == NotebookService.self) {
-      throw new IllegalStateException("NotebookService should be called after injection");
-    } else {
-      return NotebookService.self;
-    }
-  }
-
-  /**
-   * Only NotebookServer will call this method to register itself. This will be
-   * changed @PostConstruct. Please see {@link NotebookServer#NotebookServer()}
-   *
-   * @param notebookServer NotebookServer instance to be injected
-   */
-  public void injectNotebookServer(NotebookServer notebookServer) {
-    this.notebookServer = notebookServer;
-    // Notebook was initialized by injection, thus it should be not null
-    notebook.setParagraphJobListener(notebookServer);
-    notebookServerInjected.countDown();
-  }
-
-  /**
-   * This is a conservative to avoid timing issue between registering it and using it.
-   *
-   * @return NotebookServer instance
-   */
-  public NotebookServer getNotebookServer() {
-    try {
-      notebookServerInjected.await();
-      return notebookServer;
-    } catch (InterruptedException e) {
-      LOGGER.info("Interrupted. getNotebookServer will return null");
-      return null;
-    }
   }
 
   public Note getHomeNote(ServiceContext context,

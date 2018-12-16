@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -78,7 +79,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager()
+    assertEquals(Notebook.getInstance().getInterpreterSettingManager()
                     .getInterpreterSettingTemplates().size(), body.entrySet().size());
     get.releaseConnection();
   }
@@ -234,7 +235,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
   public void testInterpreterRestart() throws IOException, InterruptedException {
     // when: create new note
-    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
+    Note note = Notebook.getInstance().createNote("note1", anonymous);
     note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -251,7 +252,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
     // when: restart interpreter
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager()
+    for (InterpreterSetting setting : Notebook.getInstance().getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         // call restart interpreter API
@@ -275,13 +276,13 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     // then
     assertEquals(p.getReturn().message().get(0).getData(),
             getSimulatedMarkdownResult("markdown restarted"));
-    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    Notebook.getInstance().removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
     // when: create new note
-    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
+    Note note = Notebook.getInstance().createNote("note1", anonymous);
     note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     Paragraph p = note.getLastParagraph();
     Map config = p.getConfig();
@@ -299,7 +300,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // when: get md interpreter
     InterpreterSetting mdIntpSetting = null;
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager()
+    for (InterpreterSetting setting : Notebook.getInstance().getInterpreterSettingManager()
             .getInterpreterSettings(note.getId())) {
       if (setting.getName().equals("md")) {
         mdIntpSetting = setting;
@@ -327,7 +328,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
     assertThat("shared interpreter restart:", put, isAllowed());
     put.releaseConnection();
 
-    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
+    Notebook.getInstance().removeNote(note.getId(), anonymous);
   }
 
   @Test

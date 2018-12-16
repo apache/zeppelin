@@ -83,7 +83,7 @@ public class ShiroSecurityServiceTest {
     Notebook notebook = Mockito.mock(Notebook.class);
     try {
       setFinalStatic(ZeppelinServer.class.getDeclaredField("notebook"), notebook);
-      when(ZeppelinServer.notebook.getConf())
+      when(Notebook.getInstance().getConf())
           .thenReturn(new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml")));
     } catch (NoSuchFieldException e) {
       e.printStackTrace();

@@ -35,6 +35,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -246,7 +247,7 @@ public abstract class AbstractTestRestApi {
       if (started == false) {
         throw new RuntimeException("Can not start Zeppelin server");
       }
-      ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
+      //ZeppelinServer.notebook.setParagraphJobListener(NotebookServer.getInstance());
       LOG.info("Test Zeppelin stared.");
     }
   }
@@ -281,14 +282,14 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
-/*
-    if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
+
+    if (!WAS_RUNNING && Notebook.getInstance() != null) {
       // restart interpreter to stop all interpreter processes
-      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
+      List<InterpreterSetting> settingList = Notebook.getInstance().getInterpreterSettingManager()
               .get();
-      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (!Notebook.getInstance().getConf().isRecoveryEnabled()) {
         for (InterpreterSetting setting : settingList) {
-          ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+          Notebook.getInstance().getInterpreterSettingManager().restart(setting.getId());
         }
       }
       if (shiroIni != null) {
@@ -320,14 +321,14 @@ public abstract class AbstractTestRestApi {
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (deleteConfDir && !Notebook.getInstance().getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
         // id will change after zeppelin restart, then we can not recover interpreter process
         // properly
         FileUtils.deleteDirectory(confDir);
       }
     }
-*/
+
   }
 
   protected static boolean checkIfServerIsRunning() {

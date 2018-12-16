@@ -94,9 +94,9 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-  public static Notebook notebook; // REMOVE
+  //public static Notebook notebook; // REMOVE
   public static Server jettyWebServer;
-  public static NotebookServer notebookWsServer;
+  //public static NotebookServer notebookWsServer;
   public static Helium helium; // REMOVE
 
   // private final InterpreterSettingManager interpreterSettingManager;
@@ -147,23 +147,23 @@ public class ZeppelinServer extends ResourceConfig {
 
 
     // Register MBean
-    if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
+    /*if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
       MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
       try {
         mBeanServer.registerMBean(
             notebookWsServer,
             new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
-        /*mBeanServer.registerMBean(
+        mBeanServer.registerMBean(
             interpreterSettingManager,
             new ObjectName(
-                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));*/
+                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
       } catch (InstanceAlreadyExistsException
           | MBeanRegistrationException
           | MalformedObjectNameException
           | NotCompliantMBeanException e) {
         LOG.error("Failed to register MBeans", e);
       }
-    }
+    }*/
 
     ServiceLocatorUtilities.enableImmediateScope(serviceLocator);
 
@@ -175,11 +175,11 @@ public class ZeppelinServer extends ResourceConfig {
             bind(NotebookRepoSync.class).to(NotebookRepoSync.class).in(Singleton.class);
             bind(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             //bind(Notebook.class).to(NotebookRepoSync.class).in(Singleton.class);
-            bind(notebookWsServer).to(AngularObjectRegistryListener.class).in(Singleton.class);
-            bind(notebookWsServer).to(RemoteInterpreterProcessListener.class).in(Singleton.class);
-            bind(notebookWsServer).to(ApplicationEventListener.class).in(Singleton.class);
-            bind(notebookWsServer).to(NotebookServer.class).in(Singleton.class);
-            bind(notebookWsServer)
+            bind(NotebookServer.class).to(AngularObjectRegistryListener.class).in(Singleton.class);
+            bind(NotebookServer.class).to(RemoteInterpreterProcessListener.class).in(Singleton.class);
+            bind(NotebookServer.class).to(ApplicationEventListener.class).in(Singleton.class);
+            bind(NotebookServer.class).to(NotebookServer.class).in(Singleton.class);
+            bind(NotebookServer.class)
                 .named("NotebookServer")
                 .to(NoteEventListener.class)
                 .in(Singleton.class);
@@ -257,7 +257,7 @@ public class ZeppelinServer extends ResourceConfig {
                 try {
                   jettyWebServer.stop();
                   if (!conf.isRecoveryEnabled()) {
-                    //ZeppelinServer.notebook.getInterpreterSettingManager().close();
+                    //Notebook.getInstance().getInterpreterSettingManager().close();
                   }
                   //notebook.close();
                   Thread.sleep(3000);
@@ -281,7 +281,7 @@ public class ZeppelinServer extends ResourceConfig {
 
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
-      //ZeppelinServer.notebook.getInterpreterSettingManager().close();
+      //Notebook.getInstance().getInterpreterSettingManager().close();
     }
   }
 
@@ -340,9 +340,8 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static void setupNotebookServer(WebAppContext webapp, ZeppelinConfiguration conf) {
-    notebookWsServer = new NotebookServer();
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
+    final ServletHolder servletHolder = new ServletHolder(NotebookServer.class);
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
     final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
