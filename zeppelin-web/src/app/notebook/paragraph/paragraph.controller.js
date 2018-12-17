@@ -1671,7 +1671,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
   });
 
   $scope.$on('scrollIntoView', function(event, data) {
-    if (data.paragraphId === $scope.paragraph.id) {
+    if (data.id === $scope.paragraph.id) {
       $scope.scrollIntoView(data.id);
     }
   });
