@@ -19,8 +19,6 @@ package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang.StringUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,9 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -146,6 +146,7 @@ public class Notebook {
         notebookAuthorization,
         credentials);
     this.noteEventListeners.add(notebookWsServer);
+    this.paragraphJobListener = (ParagraphJobListener) notebookWsServer;
     Notebook.self.set(this);
   }
 
