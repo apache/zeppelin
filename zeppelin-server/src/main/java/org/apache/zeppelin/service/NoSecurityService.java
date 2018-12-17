@@ -53,7 +53,7 @@ public class NoSecurityService implements SecurityService {
   }
 
   @Override
-  public List<String> getMatchedRoles() {
+  public List<String> getMatchedRoles(String searchText, int numUsersToFetch) {
     return Lists.newArrayList();
   }
 }

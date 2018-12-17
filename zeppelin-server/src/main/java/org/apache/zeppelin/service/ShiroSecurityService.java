@@ -53,6 +53,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.realm.ActiveDirectoryGroupRealm;
 import org.apache.zeppelin.realm.LdapRealm;
+import org.apache.zeppelin.realm.UserRoleSearchable;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +155,9 @@ public class ShiroSecurityService implements SecurityService {
         for (Realm realm : realmsList) {
           String name = realm.getClass().getName();
           LOGGER.debug("RealmClass.getName: " + name);
-          if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+          if (realm instanceof UserRoleSearchable) {
+            usersList.addAll(((UserRoleSearchable)realm).searchForUser(searchText, numUsersToFetch));
+          } else if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
             usersList.addAll(getUserList((IniRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
             usersList.addAll(getUserList((JndiLdapRealm) realm, searchText, numUsersToFetch));
@@ -180,7 +183,7 @@ public class ShiroSecurityService implements SecurityService {
    * @return
    */
   @Override
-  public List<String> getMatchedRoles() {
+  public List<String> getMatchedRoles(String searchText, int numUsersToFetch) {
     List<String> rolesList = new ArrayList<>();
     try {
       Collection realmsList = getRealmsList();
@@ -189,7 +192,9 @@ public class ShiroSecurityService implements SecurityService {
           Realm realm = iterator.next();
           String name = realm.getClass().getName();
           LOGGER.debug("RealmClass.getName: " + name);
-          if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+          if (realm instanceof UserRoleSearchable) {
+            rolesList.addAll(((UserRoleSearchable)realm).searchForRole(searchText, numUsersToFetch));
+          } else if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
             rolesList.addAll(getRolesList((IniRealm) realm));
           } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
             rolesList.addAll(getRolesList((LdapRealm) realm));

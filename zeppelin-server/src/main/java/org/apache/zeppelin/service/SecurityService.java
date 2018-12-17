@@ -33,5 +33,5 @@ public interface SecurityService {
 
   List<String> getMatchedUsers(String searchText, int numUsersToFetch);
 
-  List<String> getMatchedRoles();
+  List<String> getMatchedRoles(String searchText, int numUsersToFetch);
 }

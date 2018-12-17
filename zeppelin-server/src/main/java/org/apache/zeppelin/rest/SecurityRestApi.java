@@ -101,7 +101,7 @@ public class SecurityRestApi {
 
     final int numUsersToFetch = 5;
     List<String> usersList = securityService.getMatchedUsers(searchText, numUsersToFetch);
-    List<String> rolesList = securityService.getMatchedRoles();
+    List<String> rolesList = securityService.getMatchedRoles(searchText, numUsersToFetch);
 
     List<String> autoSuggestUserList = new ArrayList<>();
     List<String> autoSuggestRoleList = new ArrayList<>();
