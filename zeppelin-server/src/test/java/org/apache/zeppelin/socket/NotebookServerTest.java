@@ -96,7 +96,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkOrigin() throws UnknownHostException {
-    NotebookServer server = new NotebookServer(notebookProvider, () -> notebookService);
+    NotebookServer server = new NotebookServer();
+    server.setNotebookProvider(notebookProvider);
+    server.setNotebookServiceProvider(() -> notebookService);
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
@@ -105,7 +107,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkInvalidOrigin(){
-    NotebookServer server = new NotebookServer(notebookProvider, () -> notebookService);
+    NotebookServer server = new NotebookServer();
+    server.setNotebookProvider(notebookProvider);
+    server.setNotebookServiceProvider(() -> notebookService);
     assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
   }
 
@@ -281,7 +285,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("paragraphId", "paragraphId");
 
     final Notebook notebook = mock(Notebook.class);
-    final NotebookServer server = new NotebookServer(() -> notebook, () -> notebookService);
+    final NotebookServer server = new NotebookServer();
+    server.setNotebookProvider(() -> notebook);
+    server.setNotebookServiceProvider(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
     when(notebook.getNote("noteId")).thenReturn(note);
@@ -334,7 +340,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("paragraphId", "paragraphId");
 
     final Notebook notebook = mock(Notebook.class);
-    final NotebookServer server = new NotebookServer(() -> notebook, () -> notebookService);
+    final NotebookServer server = new NotebookServer();
+    server.setNotebookProvider(() -> notebook);
+    server.setNotebookServiceProvider(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);
     final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);

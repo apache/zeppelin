@@ -86,16 +86,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Zeppelin websocket service.
+ * Zeppelin websocket service. This class used setter injection because all servlet should have
+ * no-parameter constructor
  */
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
-    AngularObjectRegistryListener,
-    RemoteInterpreterProcessListener,
-    ApplicationEventListener,
-    ParagraphJobListener,
-    NoteEventListener,
-    NotebookServerMBean {
+        AngularObjectRegistryListener,
+        RemoteInterpreterProcessListener,
+        ApplicationEventListener,
+        ParagraphJobListener,
+        NoteEventListener,
+        NotebookServerMBean {
 
   /**
    * Job manager service type.
@@ -135,13 +136,23 @@ public class NotebookServer extends WebSocketServlet
   private Provider<Notebook> notebookProvider;
   private Provider<NotebookService> notebookServiceProvider;
 
-  @Inject
-  public NotebookServer(
-      Provider<Notebook> notebookProvider, Provider<NotebookService> notebookServiceProvider) {
+  public NotebookServer() {
     this.connectionManager = new ConnectionManager();
-    this.notebookProvider = notebookProvider;
-    this.notebookServiceProvider = notebookServiceProvider;
     NotebookServer.self.set(this);
+  }
+
+  @Inject
+  public void setNotebookProvider(
+      Provider<Notebook> notebookProvider) {
+    this.notebookProvider = notebookProvider;
+    LOG.info("Injected NotebookProvider");
+  }
+
+  @Inject
+  public void setNotebookServiceProvider(
+      Provider<NotebookService> notebookServiceProvider) {
+    this.notebookServiceProvider = notebookServiceProvider;
+    LOG.info("Injected NotebookProvider");
   }
 
   public static NotebookServer getInstance() {
