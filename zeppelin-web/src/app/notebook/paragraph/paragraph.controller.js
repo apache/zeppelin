@@ -1196,17 +1196,16 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.scrollIntoView = function (paragraphId) {
-
+  $scope.scrollIntoView = function(paragraphId) {
     let documentHeight = angular.element(document).height();
-
     let columnPosition = angular.element('#' + paragraphId + '_paragraphColumn').offset();
     let calculatedCursorPosition = columnPosition.top;
-
     let scrollTargetPos = calculatedCursorPosition;
+
     if (scrollTargetPos < 0) {
       scrollTargetPos = 0;
     }
+
     if (scrollTargetPos > documentHeight) {
       scrollTargetPos = documentHeight;
     }
@@ -1671,7 +1670,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   });
 
-  $scope.$on('scrollIntoView', function (event, data) {
+  $scope.$on('scrollIntoView', function(event, data) {
     if (data.paragraphId === $scope.paragraph.id) {
       $scope.scrollIntoView(data.id);
     }

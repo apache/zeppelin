@@ -360,7 +360,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.$on('updateProgress', function(event, data) {
-    const paragraph = $scope.note.paragraphs.find(p => p.id === data.id);
+    const paragraph = $scope.note.paragraphs.find((p) => p.id === data.id);
     if (paragraph && isParagraphRunning(paragraph)) {
       const index = $scope.needScrollIntoViewParagraphIds.indexOf(data.id);
       if (index !== -1) {
@@ -368,7 +368,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         $scope.$broadcast('scrollIntoView', data);
       }
     }
-
   });
 
   $scope.visitRevision = function(revision) {
@@ -402,7 +401,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
               params: p.settings.params,
             };
           });
-          $scope.needScrollIntoViewParagraphIds = paragraphs.map(p => p.id);
+          $scope.needScrollIntoViewParagraphIds = paragraphs.map((p) => p.id);
           websocketMsgSrv.runAllParagraphs(noteId, paragraphs);
         }
       },
