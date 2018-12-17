@@ -98,7 +98,6 @@ public class Notebook {
    * @throws IOException
    * @throws SchedulerException
    */
-  @Inject
   public Notebook(
       ZeppelinConfiguration conf,
       NotebookRepo notebookRepo,
@@ -145,7 +144,9 @@ public class Notebook {
         noteSearchService,
         notebookAuthorization,
         credentials);
-    this.noteEventListeners.add(notebookWsServer);
+    if (null != notebookWsServer) {
+      this.noteEventListeners.add(notebookWsServer);
+    }
     this.paragraphJobListener = (ParagraphJobListener) notebookWsServer;
     Notebook.self.set(this);
   }
