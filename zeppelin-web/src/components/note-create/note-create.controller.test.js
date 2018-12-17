@@ -16,11 +16,11 @@ describe('Controller: NoteCreateCtrl', function() {
 
   it('should create a new name from current name when cloneNoteName is called', function() {
     let notesList = [
-      {name: 'dsds 1', id: '1'},
-      {name: 'dsds 2', id: '2'},
-      {name: 'test name', id: '3'},
-      {name: 'aa bb cc', id: '4'},
-      {name: 'Untitled Note 6', id: '4'},
+      {path: 'dsds 1', id: '1'},
+      {path: 'dsds 2', id: '2'},
+      {path: 'test name', id: '3'},
+      {path: 'aa bb cc', id: '4'},
+      {path: 'Untitled Note 6', id: '4'},
     ];
 
     noteList.setNotes(notesList);

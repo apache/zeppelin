@@ -242,12 +242,13 @@ module.exports = function makeWebpackConfig () {
   }
 
   if (isTest) {
-    config.module.postLoaders = [
+    config.module.rules = [
       {
         // COVERAGE
         test: /\.js$/,
         exclude: /(node_modules|bower_components|\.test\.js)/,
-        loader: 'istanbul-instrumenter'
+        loader: 'istanbul-instrumenter',
+        enforce: 'post'
       }
     ]
   }
