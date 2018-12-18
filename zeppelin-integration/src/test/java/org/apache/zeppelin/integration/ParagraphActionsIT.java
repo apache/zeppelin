@@ -229,6 +229,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           getParagraphStatus(1), CoreMatchers.equalTo("READY")
       );
 
+      driver.navigate().refresh();
+      ZeppelinITUtils.sleep(3000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {

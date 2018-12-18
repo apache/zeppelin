@@ -290,6 +290,10 @@ public class NewSparkInterpreterTest {
     assertEquals(1, completions.size());
     assertEquals("range", completions.get(0).name);
 
+    // cursor in middle of code
+    completions = interpreter.completion("sc.ra\n1+1", 5, getInterpreterContext());
+    assertEquals(1, completions.size());
+    assertEquals("range", completions.get(0).name);
 
     // Zeppelin-Display
     result = interpreter.interpret("import org.apache.zeppelin.display.angular.notebookscope._\n" +

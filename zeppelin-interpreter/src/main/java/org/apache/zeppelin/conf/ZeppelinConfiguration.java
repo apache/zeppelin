@@ -738,6 +738,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // whether homescreen notebook will be hidden from notebook list or not
     ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE("zeppelin.notebook.homescreen.hide", false),
     ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR("zeppelin.notebook.gcs.dir", ""),
+    ZEPPELIN_NOTEBOOK_GCS_CREDENTIALS_FILE("zeppelin.notebook.google.credentialsJsonFilePath", null),
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_ENDPOINT("zeppelin.notebook.s3.endpoint", "s3.amazonaws.com"),
     ZEPPELIN_NOTEBOOK_S3_TIMEOUT("zeppelin.notebook.s3.timeout", "120000"),

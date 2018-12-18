@@ -440,32 +440,6 @@
       </plugin>
 
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${plugin.resource.version}</version>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/site</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/../_tools/site</directory>
-                  <filtering>true</filtering>
-                  <includes>
-                    <include>**/*</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${plugin.jar.version}</version>
         <configuration>
@@ -619,23 +593,6 @@
         </plugin>
 
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>${plugin.clean.version}</version>
-          <configuration>
-            <filesets>
-              <fileset>
-                <directory>interpreter</directory>
-                <followSymlinks>false</followSymlinks>
-                <excludes>
-                  <exclude>lib/**</exclude>
-                </excludes>
-              </fileset>
-            </filesets>
-          </configuration>
-        </plugin>
-
-        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>xml-maven-plugin</artifactId>
           <version>1.0.1</version>
@@ -747,7 +704,33 @@
             </execution>
           </executions>
         </plugin>
-        
+
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${plugin.resource.version}</version>
+          <executions>
+            <execution>
+              <id>copy-resources</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${basedir}/target/site</outputDirectory>
+                <resources>
+                  <resource>
+                    <directory>${basedir}/../_tools/site</directory>
+                    <filtering>true</filtering>
+                    <includes>
+                      <include>**/*</include>
+                    </includes>
+                  </resource>
+                </resources>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
       </plugins>
     </pluginManagement>
   </build>

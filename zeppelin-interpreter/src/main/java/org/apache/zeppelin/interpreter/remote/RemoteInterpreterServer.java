@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -343,9 +344,7 @@ public class RemoteInterpreterServer extends Thread
     for (Object key : properties.keySet()) {
       if (!RemoteInterpreterUtils.isEnvString((String) key)) {
         String value = properties.getProperty((String) key);
-        if (value == null || value.isEmpty()) {
-          System.clearProperty((String) key);
-        } else {
+        if (!StringUtils.isBlank(value)) {
           System.setProperty((String) key, properties.getProperty((String) key));
         }
       }
@@ -470,7 +469,7 @@ public class RemoteInterpreterServer extends Thread
         context.getGui(),
         context.getNoteGui());
   }
-  
+
   class InterpretJobListener implements JobListener {
 
     @Override

@@ -604,32 +604,21 @@ public class Note implements JsonSerializable {
     }
   }
 
-  /**
-   * Run all paragraphs sequentially. Only used for CronJob
-   */
-  public synchronized void runAll() {
-    String cronExecutingUser = (String) getConfig().get("cronExecutingUser");
-    String cronExecutingRoles = (String) getConfig().get("cronExecutingRoles");
-    if (null == cronExecutingUser) {
-      cronExecutingUser = "anonymous";
-    }
-    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
-        cronExecutingUser,
-        StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
-        null);
-    runAll(authenticationInfo, true);
-  }
-
   public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
-    for (Paragraph p : getParagraphs()) {
-      if (!p.isEnabled()) {
-        continue;
+    setRunning(true);
+    try {
+      for (Paragraph p : getParagraphs()) {
+        if (!p.isEnabled()) {
+          continue;
+        }
+        p.setAuthenticationInfo(authenticationInfo);
+        if (!run(p.getId(), blocking)) {
+          logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+          break;
+        }
       }
-      p.setAuthenticationInfo(authenticationInfo);
-      if (!run(p.getId(), blocking)) {
-        logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
-        break;
-      }
+    } finally {
+      setRunning(false);
     }
   }
 
@@ -651,7 +640,7 @@ public class Note implements JsonSerializable {
   /**
    * Return true if there is a running or pending paragraph
    */
-  boolean isRunningOrPending() {
+  boolean haveRunningOrPendingParagraphs() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         Status status = p.getStatus();
@@ -787,6 +776,19 @@ public class Note implements JsonSerializable {
     this.info = info;
   }
 
+  public void setRunning(boolean runStatus) {
+    Map<String, Object> infoMap = getInfo();
+    boolean oldStatus = (boolean) infoMap.getOrDefault("isRunning", false);
+    if (oldStatus != runStatus) {
+      infoMap.put("isRunning", runStatus);
+      paragraphJobListener.noteRunningStatusChange(this.id, runStatus);
+    }
+  }
+
+  public boolean isRunning() {
+    return (boolean) getInfo().getOrDefault("isRunning", false);
+  }
+
   @Override
   public String toString() {
     if (this.path != null) {
@@ -804,6 +806,7 @@ public class Note implements JsonSerializable {
   public static Note fromJson(String json) {
     Note note = gson.fromJson(json, Note.class);
     convertOldInput(note);
+    note.info.remove("isRunning");
     note.postProcessParagraphs();
     return note;
   }

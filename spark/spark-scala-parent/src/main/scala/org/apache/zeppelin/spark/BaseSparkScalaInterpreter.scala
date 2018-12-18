@@ -138,7 +138,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   protected def completion(buf: String,
                            cursor: Int,
                            context: InterpreterContext): java.util.List[InterpreterCompletion] = {
-    val completions = scalaCompleter.complete(buf, cursor).candidates
+    val completions = scalaCompleter.complete(buf.substring(0, cursor), cursor).candidates
       .map(e => new InterpreterCompletion(e, e, null))
     scala.collection.JavaConversions.seqAsJavaList(completions)
   }

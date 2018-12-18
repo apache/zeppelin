@@ -70,7 +70,7 @@ If you're unsure about the options, use the same commands that creates official 
 # update all pom.xml to use scala 2.11
 ./dev/change_scala_version.sh 2.11
 # build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
-mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pr -Pscala-2.11
+mvn clean package -DskipTests -Pspark-2.3 -Phadoop-2.6 -Pscala-2.11
 ```
 
 #### 3. Done
@@ -98,35 +98,25 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-2.3
+-Pspark-2.2
 -Pspark-2.1
 -Pspark-2.0
 -Pspark-1.6
--Pspark-1.5
--Pspark-1.4
--Pcassandra-spark-1.5
--Pcassandra-spark-1.4
--Pcassandra-spark-1.3
--Pcassandra-spark-1.2
--Pcassandra-spark-1.1
 ```
 
 minor version can be adjusted by `-Dspark.version=x.x.x`
 
 
-##### `-Phadoop-[version]`
+##### `-Phadoop[version]`
 
-set hadoop major version
+set hadoop major version (default hadoop2)
 
 Available profiles are
 
 ```
--Phadoop-0.23
--Phadoop-1
--Phadoop-2.2
--Phadoop-2.3
--Phadoop-2.4
--Phadoop-2.6
--Phadoop-2.7
+-Phadoop2
+-Phadoop3
 ```
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
@@ -144,26 +134,12 @@ Available profiles are
 ##### `-Pr` (optional)
 
 enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
+Note that, this enables R interpreter which is different from sparkR included in Spark interpreter by default.
 
 ##### `-Pvendor-repo` (optional)
 
-enable 3rd party vendor repository (cloudera)
+enable 3rd party vendor repository (Cloudera, Hortonworks)
 
-
-##### `-Pmapr[version]` (optional)
-
-For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.6`, `-Pspark-2.0`, etc.) as needed.
-The correct Maven artifacts can be found for every version of MapR at http://doc.mapr.com
-
-Available profiles are
-
-```
--Pmapr3
--Pmapr40
--Pmapr41
--Pmapr50
--Pmapr51
-```
 
 #### -Pexamples (optional)
 
@@ -176,23 +152,17 @@ Here are some examples with several options:
 ```bash
 # build with spark-2.1, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.1 -Pscala-2.11 -DskipTests
 
 # build with spark-2.0, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.0 -Pscala-2.11 -DskipTests
 
 # build with spark-1.6, scala-2.10
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
-
-# spark-cassandra integration
-mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests -DskipTests
+mvn clean package -Pspark-1.6 -DskipTests
 
 # with CDH
-mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
-
-# with MapR
-mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
+mvn clean package -Pspark-1.6 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
 ```
 
 Ignite Interpreter
@@ -350,10 +320,10 @@ mvn clean package -Pbuild-distr
 To build a distribution with specific profiles, run:
 
 ```sh
-mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4
+mvn clean package -Pbuild-distr -Pspark-2.3 -Phadoop-2.4
 ```
 
-The profiles `-Pspark-1.5 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
+The profiles `-Pspark-2.3 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 

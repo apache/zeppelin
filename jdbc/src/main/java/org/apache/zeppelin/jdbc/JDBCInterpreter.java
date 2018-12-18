@@ -718,7 +718,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
               getProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, propertyKey));
           
           if (StringUtils.isNotBlank(statementPrecode)) {
-            statement.execute(statementPrecode);
+            String noteId = interpreterContext.getNoteId();
+            String contextStatementPrecode = statementPrecode
+                .replace("#{noteId}", noteId != null ? noteId : "")
+                .replace("#{user}", user);
+            statement.execute(contextStatementPrecode);
           }
 
           boolean isResultSetAvailable = statement.execute(sqlToExecute);

@@ -176,7 +176,7 @@
 .paragraph .control {
   position: absolute;
   float: right;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0);
   color: #999;
   margin-top: 1px;
   margin-right: 5px;
@@ -199,6 +199,29 @@
   z-index: 10003;
 }
 
+.paragraph .check-button {
+  display: none;
+  position: absolute;
+  cursor: pointer;
+  right: -2px;
+  top: 7px;
+  font-size: 18px;
+  opacity: 0.4;
+  width: 22px;
+  height: 22px;
+}
+
+.paragraph .check-button-display-always,
+.paragraph:hover .check-button {
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .paragraph .check-button {
+    top: 0 !important;
+  }
+}
+
 /*
   Paragraph Menu
 */
@@ -210,6 +233,11 @@
 .dropdown-menu .shortcut-icon {
   padding-right: 7px;
   float: left;
+}
+
+.item-disable {
+  color: rgba(128, 128, 128, 0.61) !important;
+  cursor: default !important;
 }
 
 .dropdown-menu .shortcut-keys {

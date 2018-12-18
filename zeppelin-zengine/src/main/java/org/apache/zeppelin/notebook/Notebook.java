@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -549,7 +550,7 @@ public class Notebook {
 
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
-      if (note.isRunningOrPending()) {
+      if (note.haveRunningOrPendingParagraphs()) {
         LOGGER.warn("execution of the cron job is skipped because there is a running or pending " +
             "paragraph (note id: {})", noteId);
         return;
@@ -560,7 +561,10 @@ public class Notebook {
         return;
       }
 
-      note.runAll();
+      LOGGER.info("Start schedule run note: {}, cronExpr:\"{}\"", noteId,
+          note.getConfig().get("cron"));
+      runAll(note);
+      LOGGER.info("End schedule run note: {}", noteId);
 
       boolean releaseResource = false;
       String cronExecutingUser = null;
@@ -586,6 +590,19 @@ public class Notebook {
           }
         }
       }
+    }
+
+    void runAll(Note note) {
+      String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");
+      String cronExecutingRoles = (String) note.getConfig().get("cronExecutingRoles");
+      if (null == cronExecutingUser) {
+        cronExecutingUser = "anonymous";
+      }
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo(
+          cronExecutingUser,
+          StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
+          null);
+      note.runAll(authenticationInfo, true);
     }
   }
 

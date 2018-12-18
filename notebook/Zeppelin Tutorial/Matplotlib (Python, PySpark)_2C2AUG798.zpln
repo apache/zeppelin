@@ -751,7 +751,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Matplotlib (Python | PySpark)",
+  "name": "Matplotlib (Python, PySpark)",
   "id": "2C2AUG798",
   "angularObjects": {
     "2C6WUGPNH:shared_process": [],

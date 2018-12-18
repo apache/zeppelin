@@ -240,6 +240,14 @@ public class NotebookServer extends WebSocketServlet
         throw new Exception("Anonymous access not allowed ");
       }
 
+      if (Message.isDisabledForRunningNotes(messagereceived.op)) {
+        Note note = notebook.getNote((String) messagereceived.get("noteId"));
+        if (note != null && note.isRunning()) {
+          throw new Exception("Note is now running sequentially. Can not be performed: " +
+                  messagereceived.op);
+        }
+      }
+
       if (StringUtils.isEmpty(conn.getUser())) {
         connectionManager.addUserConnection(messagereceived.principal, conn);
       }
@@ -780,7 +788,7 @@ public class NotebookServer extends WebSocketServlet
             broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
           }
         });
-    
+
   }
 
   private void restoreNote(NotebookSocket conn,
@@ -1590,10 +1598,12 @@ public class NotebookServer extends WebSocketServlet
 
     if (p.isTerminated()) {
       if (p.getStatus() == Status.FINISHED) {
-        LOG.info("Job {} is finished successfully, status: {}", p.getId(), p.getStatus());
+        LOG.info("Note {}, job {} is finished successfully, status: {}",
+                p.getNote().getId(), p.getId(), p.getStatus());
       } else {
-        LOG.warn("Job {} is finished, status: {}, exception: {}, result: {}", p.getId(),
-            p.getStatus(), p.getException(), p.getReturn());
+        LOG.warn("Note {}. job {} is finished, status: {}, exception: {}, "
+                + "result\n@@@@@ Result start @@@@@\n{}\n@@@@@ Result end @@@@@",
+                p.getNote().getId(), p.getId(), p.getStatus(), p.getException(), p.getReturn());
       }
 
       try {
@@ -1642,6 +1652,14 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
     // TODO
+  }
+
+  @Override
+  public void noteRunningStatusChange(String noteId, boolean newStatus) {
+    connectionManager.broadcast(
+        noteId,
+        new Message(OP.NOTE_RUNNING_STATUS
+        ).put("status", newStatus));
   }
 
   private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)
