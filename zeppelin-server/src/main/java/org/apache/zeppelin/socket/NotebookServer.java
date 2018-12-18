@@ -152,7 +152,7 @@ public class NotebookServer extends WebSocketServlet
   public void setNotebookServiceProvider(
       Provider<NotebookService> notebookServiceProvider) {
     this.notebookServiceProvider = notebookServiceProvider;
-    LOG.info("Injected NotebookProvider");
+    LOG.info("Injected NotebookServiceProvider");
   }
 
   public static NotebookServer getInstance() {

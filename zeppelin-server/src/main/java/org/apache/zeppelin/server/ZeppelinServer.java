@@ -81,7 +81,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.glassfish.hk2.api.Immediate;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -191,16 +190,16 @@ public class ZeppelinServer extends ResourceConfig {
             bind(conf).to(ZeppelinConfiguration.class).in(Singleton.class);
             //bind(interpreterSettingManager).to(InterpreterSettingManager.class).in(Singleton.class);
             bind(InterpreterSettingManager.class).to(InterpreterSettingManager.class).in(Singleton.class);
-            bind(InterpreterService.class).to(InterpreterService.class).in(Immediate.class);
+            bind(InterpreterService.class).to(InterpreterService.class).in(Singleton.class);
             bind(credentials).to(Credentials.class).in(Singleton.class);
             bind(GsonProvider.class).to(GsonProvider.class).in(Singleton.class);
             bind(WebApplicationExceptionMapper.class)
                 .to(WebApplicationExceptionMapper.class)
                 .in(Singleton.class);
-            bind(AdminService.class).to(AdminService.class).in(Immediate.class);
+            bind(AdminService.class).to(AdminService.class).in(Singleton.class);
             bind(notebookAuthorization).to(NotebookAuthorization.class).in(Singleton.class);
-            bind(ConfigurationService.class).to(ConfigurationService.class).in(Immediate.class);
-            bind(NotebookService.class).to(NotebookService.class).in(Immediate.class);
+            bind(ConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
+            bind(NotebookService.class).to(NotebookService.class).in(Singleton.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
               bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
