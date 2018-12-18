@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.ServerEndpoint;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -82,6 +83,7 @@ import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +91,7 @@ import org.slf4j.LoggerFactory;
  * Zeppelin websocket service. This class used setter injection because all servlet should have
  * no-parameter constructor
  */
+@ServerEndpoint("/ws")
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
         AngularObjectRegistryListener,
@@ -127,32 +130,48 @@ public class NotebookServer extends WebSocketServlet
   private static AtomicReference<NotebookServer> self = new AtomicReference<>();
 
   private ConnectionManager connectionManager;
-  private NotebookService notebookService;
-  private ConfigurationService configurationService;
-  private JobManagerService jobManagerService;
 
   private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
   private Provider<Notebook> notebookProvider;
   private Provider<NotebookService> notebookServiceProvider;
+  private Provider<ConfigurationService> configurationServiceProvider;
+  private Provider<JobManagerService> jobManagerServiceProvider;
 
   public NotebookServer() {
     this.connectionManager = new ConnectionManager();
     NotebookServer.self.set(this);
+    LOG.info("NotebookServer instantiated: {}", this);
   }
 
   @Inject
-  public void setNotebookProvider(
-      Provider<Notebook> notebookProvider) {
+  public void setServiceLocator(ServiceLocator serviceLocator) {
+    LOG.info("Injected ServiceLocator: {}", serviceLocator);
+  }
+
+  @Inject
+  public void setNotebook(Provider<Notebook> notebookProvider) {
     this.notebookProvider = notebookProvider;
     LOG.info("Injected NotebookProvider");
   }
 
   @Inject
-  public void setNotebookServiceProvider(
+  public void setNotebookService(
       Provider<NotebookService> notebookServiceProvider) {
     this.notebookServiceProvider = notebookServiceProvider;
     LOG.info("Injected NotebookServiceProvider");
+  }
+
+  @Inject
+  public void setConfigurationService(
+      Provider<ConfigurationService> configurationServiceProvider) {
+    this.configurationServiceProvider = configurationServiceProvider;
+  }
+
+  @Inject
+  public void setJobManagerService(
+      Provider<JobManagerService> jobManagerServiceProvider) {
+    this.jobManagerServiceProvider = jobManagerServiceProvider;
   }
 
   public static NotebookServer getInstance() {
@@ -164,22 +183,16 @@ public class NotebookServer extends WebSocketServlet
     return notebookProvider.get();
   }
 
-  public synchronized NotebookService getNotebookService() {
+  public NotebookService getNotebookService() {
     return notebookServiceProvider.get();
   }
 
-  public synchronized ConfigurationService getConfigurationService() {
-    if (this.configurationService == null) {
-      this.configurationService = ConfigurationService.getInstance();
-    }
-    return this.configurationService;
+  public ConfigurationService getConfigurationService() {
+    return configurationServiceProvider.get();
   }
 
   public synchronized JobManagerService getJobManagerService() {
-    if (this.jobManagerService == null) {
-      this.jobManagerService = new JobManagerService(getNotebook());
-    }
-    return this.jobManagerService;
+    return jobManagerServiceProvider.get();
   }
 
   @Override

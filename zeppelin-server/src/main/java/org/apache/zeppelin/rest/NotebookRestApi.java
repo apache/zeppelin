@@ -95,12 +95,13 @@ public class NotebookRestApi extends AbstractRestApi {
       SearchService search,
       NotebookAuthorization notebookAuthorization,
       ZeppelinConfiguration zConf,
-      SecurityService securityService) {
+      SecurityService securityService,
+      JobManagerService jobManagerService) {
     super(securityService);
     this.notebook = notebook;
     this.notebookServer = notebookServer;
     this.notebookService = notebookService;
-    this.jobManagerService = new JobManagerService(notebook);
+    this.jobManagerService = jobManagerService;
     this.noteSearchService = search;
     this.notebookAuthorization = notebookAuthorization;
     this.zConf = zConf;

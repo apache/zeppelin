@@ -18,25 +18,14 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.util.Collection;
 import java.util.EnumSet;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 import javax.servlet.DispatcherType;
-import javax.ws.rs.ApplicationPath;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -60,12 +49,13 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.AdminService;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.InterpreterService;
+import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NoSecurityService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.ShiroSecurityService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.service.ShiroSecurityService;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -81,15 +71,17 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.glassfish.hk2.api.Immediate;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Main class of Zeppelin. */
-@ApplicationPath("/api")
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
@@ -97,6 +89,8 @@ public class ZeppelinServer extends ResourceConfig {
   public static Server jettyWebServer;
   //public static NotebookServer notebookWsServer;
   public static Helium helium; // REMOVE
+
+  public static ServiceLocator sharedServiceLocator;
 
   // private final InterpreterSettingManager interpreterSettingManager;
   // private InterpreterFactory replFactory;
@@ -166,53 +160,33 @@ public class ZeppelinServer extends ResourceConfig {
 
     ServiceLocatorUtilities.enableImmediateScope(serviceLocator);
 
+    /*register(null);*/
+    packages("org.apache.zeppelin.rest");
     register(
         new AbstractBinder() {
           @Override
           protected void configure() {
-            bind(InterpreterFactory.class).to(InterpreterFactory.class).in(Singleton.class);
-            bind(NotebookRepoSync.class).to(NotebookRepoSync.class).in(Singleton.class);
-            bind(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
-            //bind(Notebook.class).to(NotebookRepoSync.class).in(Singleton.class);
-            bind(NotebookServer.class).to(AngularObjectRegistryListener.class).in(Singleton.class);
-            bind(NotebookServer.class).to(RemoteInterpreterProcessListener.class).in(Singleton.class);
-            bind(NotebookServer.class).to(ApplicationEventListener.class).in(Singleton.class);
-            bind(NotebookServer.class).to(NotebookServer.class).in(Singleton.class);
-            bind(NotebookServer.class)
-                .named("NotebookServer")
-                .to(NoteEventListener.class)
-                .in(Singleton.class);
-            // bind(notebook).to(Notebook.class).in(Singleton.class);
-            bind(Notebook.class).to(Notebook.class).in(Singleton.class);
-            //bind(noteSearchService).to(SearchService.class).in(Singleton.class);
-            bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
-            bind(Helium.class).to(Helium.class).in(Singleton.class);
-            bind(conf).to(ZeppelinConfiguration.class).in(Singleton.class);
-            //bind(interpreterSettingManager).to(InterpreterSettingManager.class).in(Singleton.class);
-            bind(InterpreterSettingManager.class).to(InterpreterSettingManager.class).in(Singleton.class);
-            bind(InterpreterService.class).to(InterpreterService.class).in(Singleton.class);
-            bind(credentials).to(Credentials.class).in(Singleton.class);
-            bind(GsonProvider.class).to(GsonProvider.class).in(Singleton.class);
-            bind(WebApplicationExceptionMapper.class)
-                .to(WebApplicationExceptionMapper.class)
-                .in(Singleton.class);
-            bind(AdminService.class).to(AdminService.class).in(Singleton.class);
-            bind(notebookAuthorization).to(NotebookAuthorization.class).in(Singleton.class);
-            bind(ConfigurationService.class).to(ConfigurationService.class).in(Singleton.class);
-            bind(NotebookService.class).to(NotebookService.class).in(Singleton.class);
-            // TODO(jl): Will make it more beautiful
-            if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
-            } else {
-              // TODO(jl): Will be added more type
-              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
-            }
-            bind(HeliumBundleFactory.class).to(HeliumBundleFactory.class).in(Singleton.class);
-            bind(HeliumApplicationFactory.class).to(HeliumApplicationFactory.class).in(Singleton.class);
+
           }
         });
-    packages("org.apache.zeppelin.rest");
   }
+
+  /*@Override
+  public Set<Class<?>> getClasses() {
+    Set<Class<?>> classes = Sets.newHashSet();
+    classes.add(AdminRestApi.class);
+    classes.add(ConfigurationsRestApi.class);
+    classes.add(CredentialRestApi.class);
+    classes.add(HeliumRestApi.class);
+    classes.add(InterpreterRestApi.class);
+    classes.add(LoginRestApi.class);
+    classes.add(NotebookRepoRestApi.class);
+    classes.add(NotebookRestApi.class);
+    classes.add(SecurityRestApi.class);
+    classes.add(ZeppelinRestApi.class);
+
+    return classes;
+  }*/
 
   public static void main(String[] args) throws InterruptedException {
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -226,11 +200,74 @@ public class ZeppelinServer extends ResourceConfig {
     // Web UI
     final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
+    sharedServiceLocator =
+        ServiceLocatorUtilities.bind(
+            "shared-locator",
+            new AbstractBinder() {
+              @Override
+              protected void configure() {
+                NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+                Credentials credentials =
+                    new Credentials(
+                        conf.credentialsPersist(),
+                        conf.getCredentialsPath(),
+                        conf.getCredentialsEncryptKey());
+
+                bindAsContract(InterpreterFactory.class);
+                bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class);
+                bind(LuceneSearch.class).to(SearchService.class).in(Immediate.class);
+                bindAsContract(Helium.class);
+                bind(conf).to(ZeppelinConfiguration.class);
+                bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
+                bindAsContract(InterpreterService.class);
+                bind(credentials).to(Credentials.class);
+                bindAsContract(GsonProvider.class);
+                bindAsContract(WebApplicationExceptionMapper.class);
+                bindAsContract(AdminService.class);
+                bind(notebookAuthorization).to(NotebookAuthorization.class);
+                // TODO(jl): Will make it more beautiful
+                if (!StringUtils.isBlank(conf.getShiroPath())) {
+                  bind(ShiroSecurityService.class).to(SecurityService.class).in(Immediate.class);
+                } else {
+                  // TODO(jl): Will be added more type
+                  bind(NoSecurityService.class).to(SecurityService.class).in(Immediate.class);
+                }
+                bindAsContract(HeliumBundleFactory.class);
+                bindAsContract(HeliumApplicationFactory.class);
+                bindAsContract(ConfigurationService.class);
+                bindAsContract(NotebookService.class);
+                bindAsContract(JobManagerService.class);
+                bindAsContract(Notebook.class);
+                bindAsContract(NotebookServer.class)
+                    .to(AngularObjectRegistryListener.class)
+                    .to(RemoteInterpreterProcessListener.class)
+                    .to(ApplicationEventListener.class)
+                    .to(NoteEventListener.class)
+                    .to(WebSocketServlet.class)
+                    .in(Singleton.class);
+              }
+            });
+    ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
+
+    //webApp.setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
+    webApp.addEventListener(new ServletContextListener() {
+      @Override
+      public void contextInitialized(ServletContextEvent servletContextEvent) {
+        servletContextEvent.getServletContext().setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
+      }
+
+      @Override
+      public void contextDestroyed(ServletContextEvent servletContextEvent) {
+
+      }
+    });
+
+
     // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
 
     // Notebook server
-    setupNotebookServer(webApp, conf);
+    setupNotebookServer(webApp, conf, sharedServiceLocator);
 
     // Below is commented since zeppelin-docs module is removed.
     // final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
@@ -338,9 +375,11 @@ public class ZeppelinServer extends ResourceConfig {
     cf.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
   }
 
-  private static void setupNotebookServer(WebAppContext webapp, ZeppelinConfiguration conf) {
+  private static void setupNotebookServer(
+      WebAppContext webapp, ZeppelinConfiguration conf, ServiceLocator serviceLocator) {
     String maxTextMessageSize = conf.getWebsocketMaxTextMessageSize();
-    final ServletHolder servletHolder = new ServletHolder(NotebookServer.class);
+    final ServletHolder servletHolder =
+        new ServletHolder(serviceLocator.getService(NotebookServer.class));
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
     final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -376,7 +415,6 @@ public class ZeppelinServer extends ResourceConfig {
     servletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
     servletHolder.setName("rest");
     servletHolder.setForcedPath("rest");
-
     webapp.setSessionHandler(new SessionHandler());
     webapp.addServlet(servletHolder, "/api/*");
 

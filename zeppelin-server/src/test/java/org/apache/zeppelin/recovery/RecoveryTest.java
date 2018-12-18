@@ -22,30 +22,31 @@ import static org.junit.Assert.assertThat;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.io.FileUtils;
-import org.apache.zeppelin.notebook.Notebook;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Map;
-
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage;
 import org.apache.zeppelin.interpreter.recovery.StopInterpreter;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class RecoveryTest extends AbstractTestRestApi {
   private Gson gson = new Gson();
   private static File recoveryDir = null;
+
+  private Notebook notebook;
 
   @BeforeClass
   public static void init() throws Exception {
@@ -64,9 +65,14 @@ public class RecoveryTest extends AbstractTestRestApi {
     FileUtils.deleteDirectory(recoveryDir);
   }
 
+  @Before
+  public void setUp() {
+    notebook = ZeppelinServer.sharedServiceLocator.getService(Notebook.class);
+  }
+
   @Test
   public void testRecovery() throws Exception {
-    Note note1 = Notebook.getInstance().createNote("note1", AuthenticationInfo.ANONYMOUS);
+    Note note1 = notebook.createNote("note1", AuthenticationInfo.ANONYMOUS);
 
     // run python interpreter and create new variable `user`
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -97,7 +103,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   public void testRecovery_2() throws Exception {
-    Note note1 = Notebook.getInstance().createNote("note2", AuthenticationInfo.ANONYMOUS);
+    Note note1 = notebook.createNote("note2", AuthenticationInfo.ANONYMOUS);
 
     // run python interpreter and create new variable `user`
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -133,7 +139,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   public void testRecovery_3() throws Exception {
-    Note note1 = Notebook.getInstance().createNote("note3", AuthenticationInfo.ANONYMOUS);
+    Note note1 = notebook.createNote("note3", AuthenticationInfo.ANONYMOUS);
 
     // run python interpreter and create new variable `user`
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);

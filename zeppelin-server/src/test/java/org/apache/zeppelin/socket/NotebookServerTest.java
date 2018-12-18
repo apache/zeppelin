@@ -63,7 +63,6 @@ import org.junit.Test;
 /** Basic REST API tests for notebookServer. */
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
-  private static Provider<Notebook> notebookProvider;
   private static NotebookServer notebookServer;
   private static NotebookService notebookService;
   private HttpServletRequest mockRequest;
@@ -73,7 +72,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     notebook = Notebook.getInstance();
-    notebookProvider = () -> notebook;
     notebookServer = spy(NotebookServer.getInstance());
     notebookService =
         new NotebookService(
@@ -97,8 +95,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void checkOrigin() throws UnknownHostException {
     NotebookServer server = new NotebookServer();
-    server.setNotebookProvider(notebookProvider);
-    server.setNotebookServiceProvider(() -> notebookService);
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
@@ -108,8 +106,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void checkInvalidOrigin(){
     NotebookServer server = new NotebookServer();
-    server.setNotebookProvider(notebookProvider);
-    server.setNotebookServiceProvider(() -> notebookService);
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
   }
 
@@ -286,8 +284,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     final Notebook notebook = mock(Notebook.class);
     final NotebookServer server = new NotebookServer();
-    server.setNotebookProvider(() -> notebook);
-    server.setNotebookServiceProvider(() -> notebookService);
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
 
     when(notebook.getNote("noteId")).thenReturn(note);
@@ -341,8 +339,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     final Notebook notebook = mock(Notebook.class);
     final NotebookServer server = new NotebookServer();
-    server.setNotebookProvider(() -> notebook);
-    server.setNotebookServiceProvider(() -> notebookService);
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);
     final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);

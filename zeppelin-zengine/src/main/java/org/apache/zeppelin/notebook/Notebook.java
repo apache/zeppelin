@@ -134,7 +134,7 @@ public class Notebook {
       SearchService noteSearchService,
       NotebookAuthorization notebookAuthorization,
       Credentials credentials,
-      @Named("NotebookServer") NoteEventListener notebookWsServer)
+      NoteEventListener noteEventListener)
       throws IOException, SchedulerException {
     this(
         conf,
@@ -144,10 +144,10 @@ public class Notebook {
         noteSearchService,
         notebookAuthorization,
         credentials);
-    if (null != notebookWsServer) {
-      this.noteEventListeners.add(notebookWsServer);
+    if (null != noteEventListener) {
+      this.noteEventListeners.add(noteEventListener);
     }
-    this.paragraphJobListener = (ParagraphJobListener) notebookWsServer;
+    this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
     Notebook.self.set(this);
   }
 
