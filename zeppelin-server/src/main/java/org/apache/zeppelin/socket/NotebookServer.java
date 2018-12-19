@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.ServerEndpoint;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -91,7 +90,6 @@ import org.slf4j.LoggerFactory;
  * Zeppelin websocket service. This class used setter injection because all servlet should have
  * no-parameter constructor
  */
-@ServerEndpoint("/ws")
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
         AngularObjectRegistryListener,
