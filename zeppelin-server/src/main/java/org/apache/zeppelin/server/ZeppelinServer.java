@@ -74,6 +74,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.Immediate;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -200,54 +201,54 @@ public class ZeppelinServer extends ResourceConfig {
     // Web UI
     final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
-    sharedServiceLocator =
-        ServiceLocatorUtilities.bind(
-            "shared-locator",
-            new AbstractBinder() {
-              @Override
-              protected void configure() {
-                NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-                Credentials credentials =
-                    new Credentials(
-                        conf.credentialsPersist(),
-                        conf.getCredentialsPath(),
-                        conf.getCredentialsEncryptKey());
-
-                bindAsContract(InterpreterFactory.class);
-                bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class);
-                bind(LuceneSearch.class).to(SearchService.class).in(Immediate.class);
-                bindAsContract(Helium.class);
-                bind(conf).to(ZeppelinConfiguration.class);
-                bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
-                bindAsContract(InterpreterService.class);
-                bind(credentials).to(Credentials.class);
-                bindAsContract(GsonProvider.class);
-                bindAsContract(WebApplicationExceptionMapper.class);
-                bindAsContract(AdminService.class);
-                bind(notebookAuthorization).to(NotebookAuthorization.class);
-                // TODO(jl): Will make it more beautiful
-                if (!StringUtils.isBlank(conf.getShiroPath())) {
-                  bind(ShiroSecurityService.class).to(SecurityService.class).in(Immediate.class);
-                } else {
-                  // TODO(jl): Will be added more type
-                  bind(NoSecurityService.class).to(SecurityService.class).in(Immediate.class);
-                }
-                bindAsContract(HeliumBundleFactory.class);
-                bindAsContract(HeliumApplicationFactory.class);
-                bindAsContract(ConfigurationService.class);
-                bindAsContract(NotebookService.class);
-                bindAsContract(JobManagerService.class);
-                bindAsContract(Notebook.class);
-                bindAsContract(NotebookServer.class)
-                    .to(AngularObjectRegistryListener.class)
-                    .to(RemoteInterpreterProcessListener.class)
-                    .to(ApplicationEventListener.class)
-                    .to(NoteEventListener.class)
-                    .to(WebSocketServlet.class)
-                    .in(Singleton.class);
-              }
-            });
+    sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
+    ServiceLocatorUtilities.bind(
+        sharedServiceLocator,
+        new AbstractBinder() {
+          @Override
+          protected void configure() {
+            NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+            Credentials credentials =
+                new Credentials(
+                    conf.credentialsPersist(),
+                    conf.getCredentialsPath(),
+                    conf.getCredentialsEncryptKey());
+
+            bindAsContract(InterpreterFactory.class);
+            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class);
+            bind(LuceneSearch.class).to(SearchService.class).in(Immediate.class);
+            bindAsContract(Helium.class);
+            bind(conf).to(ZeppelinConfiguration.class);
+            bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
+            bindAsContract(InterpreterService.class);
+            bind(credentials).to(Credentials.class);
+            bindAsContract(GsonProvider.class);
+            bindAsContract(WebApplicationExceptionMapper.class);
+            bindAsContract(AdminService.class);
+            bind(notebookAuthorization).to(NotebookAuthorization.class);
+            // TODO(jl): Will make it more beautiful
+            if (!StringUtils.isBlank(conf.getShiroPath())) {
+              bind(ShiroSecurityService.class).to(SecurityService.class).in(Immediate.class);
+            } else {
+              // TODO(jl): Will be added more type
+              bind(NoSecurityService.class).to(SecurityService.class).in(Immediate.class);
+            }
+            bindAsContract(HeliumBundleFactory.class);
+            bindAsContract(HeliumApplicationFactory.class);
+            bindAsContract(ConfigurationService.class);
+            bindAsContract(NotebookService.class);
+            bindAsContract(JobManagerService.class);
+            bindAsContract(Notebook.class).in(Immediate.class);
+            bindAsContract(NotebookServer.class)
+                .to(AngularObjectRegistryListener.class)
+                .to(RemoteInterpreterProcessListener.class)
+                .to(ApplicationEventListener.class)
+                .to(NoteEventListener.class)
+                .to(WebSocketServlet.class)
+                .in(Immediate.class);
+          }
+        });
 
     //webApp.setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
     webApp.addEventListener(new ServletContextListener() {

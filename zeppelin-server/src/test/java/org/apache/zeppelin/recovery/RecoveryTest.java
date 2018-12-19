@@ -139,7 +139,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   public void testRecovery_3() throws Exception {
-    Note note1 = notebook.createNote("note3", AuthenticationInfo.ANONYMOUS);
+    Note note1 = Notebook.getInstance().createNote("note3", AuthenticationInfo.ANONYMOUS);
 
     // run python interpreter and create new variable `user`
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
