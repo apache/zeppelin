@@ -385,6 +385,7 @@
           <formats>
             <format>html</format>
           </formats>
+          <skip>true</skip>
         </configuration>
         <executions>
           <execution>
@@ -393,8 +394,6 @@
             <goals>
               <goal>cobertura</goal>
             </goals>
-            <configuration>
-            </configuration>
           </execution>
         </executions>
       </plugin>

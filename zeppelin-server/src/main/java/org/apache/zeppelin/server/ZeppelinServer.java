@@ -220,7 +220,7 @@ public class ZeppelinServer extends ResourceConfig {
             bind(LuceneSearch.class).to(SearchService.class);
             bindAsContract(Helium.class);
             bind(conf).to(ZeppelinConfiguration.class);
-            bindAsContract(InterpreterSettingManager.class);
+            bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
             bindAsContract(InterpreterService.class);
             bind(credentials).to(Credentials.class);
             bindAsContract(GsonProvider.class);
@@ -229,10 +229,10 @@ public class ZeppelinServer extends ResourceConfig {
             bind(notebookAuthorization).to(NotebookAuthorization.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(ShiroSecurityService.class).to(SecurityService.class);
+              bind(ShiroSecurityService.class).to(SecurityService.class).in(Immediate.class);;
             } else {
               // TODO(jl): Will be added more type
-              bind(NoSecurityService.class).to(SecurityService.class);
+              bind(NoSecurityService.class).to(SecurityService.class).in(Immediate.class);;
             }
             bindAsContract(HeliumBundleFactory.class);
             bindAsContract(HeliumApplicationFactory.class);
