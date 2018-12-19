@@ -14,12 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.util;
+package org.apache.zeppelin.utils;
 
 import java.util.Arrays;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.glassfish.hk2.api.ServiceLocator;
 
 public class TestUtils {
-  public static void checkCalledByTestMethod() {
+  public static <T> T getInstance(Class<T> clazz) {
+    checkCalledByTestMethod();
+    return getInstance(ZeppelinServer.sharedServiceLocator, clazz);
+  }
+
+  static <T> T getInstance(ServiceLocator serviceLocator, Class<T> clazz) {
+    return serviceLocator.getService(clazz);
+  }
+
+  static void checkCalledByTestMethod() {
     StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
     // The first element of [0] indicates 'java.lang.Thread.getStackTrace'.
     // The second element of [1] indicates this method.
@@ -28,9 +39,5 @@ public class TestUtils {
         .noneMatch(stackTraceElement -> stackTraceElement.getClassName().endsWith("Test"))) {
       throw new RuntimeException("This method shouldn't be used in production");
     }
-  }
-
-  public static void main(String[] args) {
-    TestUtils.checkCalledByTestMethod();
   }
 }

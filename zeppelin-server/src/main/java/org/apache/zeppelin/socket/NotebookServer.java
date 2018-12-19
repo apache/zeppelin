@@ -77,9 +77,9 @@ import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.TestUtils;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
+import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -173,8 +173,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public static NotebookServer getInstance() {
-    TestUtils.checkCalledByTestMethod();
-    return NotebookServer.self.get();
+    return TestUtils.getInstance(NotebookServer.class);
   }
 
   public Notebook getNotebook() {

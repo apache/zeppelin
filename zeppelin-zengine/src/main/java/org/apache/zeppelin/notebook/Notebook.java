@@ -54,7 +54,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.apache.zeppelin.util.TestUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -149,15 +148,6 @@ public class Notebook {
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
     Notebook.self.set(this);
-  }
-
-  /**
-   * This is only for testing. This has a logic to check if the caller's classname ends with "Test"
-   */
-  @VisibleForTesting
-  public static Notebook getInstance() {
-    TestUtils.checkCalledByTestMethod();
-    return Notebook.self.get();
   }
 
   /**

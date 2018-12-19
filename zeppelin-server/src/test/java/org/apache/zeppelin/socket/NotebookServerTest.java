@@ -54,6 +54,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,7 +72,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
-    notebook = Notebook.getInstance();
+    notebook = TestUtils.getInstance(Notebook.class);
     notebookServer = spy(NotebookServer.getInstance());
     notebookService =
         new NotebookService(

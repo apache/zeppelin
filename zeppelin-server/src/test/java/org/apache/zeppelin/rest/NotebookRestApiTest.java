@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -59,7 +60,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
   @BeforeClass
   public static void init() throws Exception {
     startUp(NotebookRestApiTest.class.getSimpleName());
-    Notebook.getInstance().setParagraphJobListener(NotebookServer.getInstance());
+    TestUtils.getInstance(Notebook.class).setParagraphJobListener(NotebookServer.getInstance());
   }
 
   @AfterClass
@@ -74,7 +75,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
 
   @Test
   public void testGetNoteParagraphJobStatus() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     String paragraphId = note1.getLastParagraph().getId();
@@ -90,12 +91,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(paragraphStatus.get("status"), "READY");
 
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testRunParagraphJob() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Paragraph p = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -120,12 +121,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertNotEquals(p.getStatus(), Job.Status.READY);
 
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testRunParagraphSynchronously() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     Paragraph p = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -149,12 +150,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(text, p.getText());
 
     // cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testRunAllParagraph_AllSuccess() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     // 2 paragraphs
     // P1:
     //    %python
@@ -182,12 +183,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(Job.Status.FINISHED, p2.getStatus());
     assertEquals("abc\n", p2.getReturn().message().get(0).getData());
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testRunAllParagraph_FirstFailed() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     // 2 paragraphs
     // P1:
     //    %python
@@ -216,12 +217,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(Job.Status.READY, p2.getStatus());
 
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 
   @Test
   public void testCloneNote() throws IOException {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     PostMethod post = httpPost("/notebook/" + note1.getId(), "");
     LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
     assertThat(post, isAllowed());
@@ -240,14 +241,14 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
-    Notebook.getInstance().removeNote(clonedNoteId, anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(clonedNoteId, anonymous);
   }
 
   @Test
   public void testRenameNote() throws IOException {
     String oldName = "old_name";
-    Note note = Notebook.getInstance().createNote(oldName, anonymous);
+    Note note = TestUtils.getInstance(Notebook.class).createNote(oldName, anonymous);
     assertEquals(note.getName(), oldName);
     String noteId = note.getId();
 
@@ -261,12 +262,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals(note.getName(), newName);
 
     //cleanup
-    Notebook.getInstance().removeNote(noteId, anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
   }
 
   @Test
   public void testUpdateParagraphConfig() throws IOException {
-    Note note = Notebook.getInstance().createNote("note1", anonymous);
+    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     String noteId = note.getId();
     Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     assertNull(p.getConfig().get("colWidth"));
@@ -284,17 +285,17 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     put.releaseConnection();
 
     assertEquals(config.get("colWidth"), 6.0);
-    note = Notebook.getInstance().getNote(noteId);
+    note = TestUtils.getInstance(Notebook.class).getNote(noteId);
     assertEquals(note.getParagraph(paragraphId).getConfig().get("colWidth"), 6.0);
 
     //cleanup
-    Notebook.getInstance().removeNote(noteId, anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(noteId, anonymous);
   }
 
   @Test
   public void testClearAllParagraphOutput() throws IOException {
     // Create note and set result explicitly
-    Note note = Notebook.getInstance().createNote("note1", anonymous);
+    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,
             InterpreterResult.Type.TEXT, "result");
@@ -326,12 +327,12 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
 
     //cleanup
-    Notebook.getInstance().removeNote(note.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testRunWithServerRestart() throws Exception {
-    Note note1 = Notebook.getInstance().createNote("note1", anonymous);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
     // 2 paragraphs
     // P1:
     //    %python
@@ -360,7 +361,7 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     AbstractTestRestApi.shutDown(false);
     startUp(NotebookRestApiTest.class.getSimpleName(), false);
 
-    note1 = Notebook.getInstance().getNote(note1.getId());
+    note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
     p1 = note1.getParagraph(p1.getId());
     p2 = note1.getParagraph(p2.getId());
 
@@ -377,6 +378,6 @@ public class NotebookRestApiTest extends AbstractTestRestApi {
     assertEquals("abc\n", p2.getReturn().message().get(0).getData());
 
     //cleanup
-    Notebook.getInstance().removeNote(note1.getId(), anonymous);
+    TestUtils.getInstance(Notebook.class).removeNote(note1.getId(), anonymous);
   }
 }

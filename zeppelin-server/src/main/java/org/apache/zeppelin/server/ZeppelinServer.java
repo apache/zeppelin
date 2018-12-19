@@ -239,14 +239,14 @@ public class ZeppelinServer extends ResourceConfig {
             bindAsContract(ConfigurationService.class);
             bindAsContract(NotebookService.class);
             bindAsContract(JobManagerService.class);
-            bindAsContract(Notebook.class).in(Immediate.class);
+            bindAsContract(Notebook.class).in(Singleton.class);
             bindAsContract(NotebookServer.class)
                 .to(AngularObjectRegistryListener.class)
                 .to(RemoteInterpreterProcessListener.class)
                 .to(ApplicationEventListener.class)
                 .to(NoteEventListener.class)
                 .to(WebSocketServlet.class)
-                .in(Immediate.class);
+                .in(Singleton.class);
           }
         });
 
@@ -294,7 +294,7 @@ public class ZeppelinServer extends ResourceConfig {
                 try {
                   jettyWebServer.stop();
                   if (!conf.isRecoveryEnabled()) {
-                    //Notebook.getInstance().getInterpreterSettingManager().close();
+                    //TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
                   }
                   //notebook.close();
                   Thread.sleep(3000);
@@ -318,7 +318,7 @@ public class ZeppelinServer extends ResourceConfig {
 
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
-      //Notebook.getInstance().getInterpreterSettingManager().close();
+      //TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
     }
   }
 

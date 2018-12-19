@@ -37,6 +37,7 @@ import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -56,7 +57,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_RECOVERY_DIR.getVarName(),
             recoveryDir.getAbsolutePath());
     startUp(RecoveryTest.class.getSimpleName());
-    //Notebook.getInstance().setParagraphJobListener(NotebookServer.getInstance());
+    //TestUtils.getInstance(Notebook.class).setParagraphJobListener(NotebookServer.getInstance());
   }
 
   @AfterClass
@@ -84,14 +85,14 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
-    Notebook.getInstance().saveNote(note1, AuthenticationInfo.ANONYMOUS);
+    TestUtils.getInstance(Notebook.class).saveNote(note1, AuthenticationInfo.ANONYMOUS);
 
     // shutdown zeppelin and restart it
     shutDown();
     startUp(RecoveryTest.class.getSimpleName(), false);
 
     // run the paragraph again, but change the text to print variable `user`
-    note1 = Notebook.getInstance().getNote(note1.getId());
+    note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
     p1 = note1.getParagraph(p1.getId());
     p1.setText("%python print(user)");
     post = httpPost("/notebook/job/" + note1.getId(), "");
@@ -115,9 +116,9 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
-    Notebook.getInstance().saveNote(note1, AuthenticationInfo.ANONYMOUS);
+    TestUtils.getInstance(Notebook.class).saveNote(note1, AuthenticationInfo.ANONYMOUS);
     // restart the python interpreter
-    Notebook.getInstance().getInterpreterSettingManager().restart(
+    TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(
         ((ManagedInterpreterGroup) p1.getBindedInterpreter().getInterpreterGroup())
             .getInterpreterSetting().getId()
     );
@@ -128,7 +129,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
     // run the paragraph again, but change the text to print variable `user`.
     // can not recover the python interpreter, because it has been shutdown.
-    note1 = Notebook.getInstance().getNote(note1.getId());
+    note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
     p1 = note1.getParagraph(p1.getId());
     p1.setText("%python print(user)");
     post = httpPost("/notebook/job/" + note1.getId(), "");
@@ -139,7 +140,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
   @Test
   public void testRecovery_3() throws Exception {
-    Note note1 = Notebook.getInstance().createNote("note3", AuthenticationInfo.ANONYMOUS);
+    Note note1 = TestUtils.getInstance(Notebook.class).createNote("note3", AuthenticationInfo.ANONYMOUS);
 
     // run python interpreter and create new variable `user`
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -151,7 +152,7 @@ public class RecoveryTest extends AbstractTestRestApi {
     assertEquals(resp.get("status"), "OK");
     post.releaseConnection();
     assertEquals(Job.Status.FINISHED, p1.getStatus());
-    Notebook.getInstance().saveNote(note1, AuthenticationInfo.ANONYMOUS);
+    TestUtils.getInstance(Notebook.class).saveNote(note1, AuthenticationInfo.ANONYMOUS);
 
     // shutdown zeppelin and restart it
     shutDown();
@@ -161,7 +162,7 @@ public class RecoveryTest extends AbstractTestRestApi {
 
     // run the paragraph again, but change the text to print variable `user`.
     // can not recover the python interpreter, because it has been shutdown.
-    note1 = Notebook.getInstance().getNote(note1.getId());
+    note1 = TestUtils.getInstance(Notebook.class).getNote(note1.getId());
     p1 = note1.getParagraph(p1.getId());
     p1.setText("%python print(user)");
     post = httpPost("/notebook/job/" + note1.getId(), "");
