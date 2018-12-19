@@ -66,7 +66,19 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   private static final String ROLE_NAMES_DELIMETER = ",";
 
   final String keystorePass = "activeDirectoryRealm.systemPassword";
+
+  private String userSearchAttributeName = "sAMAccountName";
+
   private String hadoopSecurityCredentialPath;
+
+  public String getUserSearchAttributeName() {
+    return userSearchAttributeName;
+  }
+
+  public void setUserSearchAttributeName(String userSearchAttributeName) {
+    this.userSearchAttributeName = userSearchAttributeName;
+  }
+
 
   public void setHadoopSecurityCredentialPath(String hadoopSecurityCredentialPath) {
     this.hadoopSecurityCredentialPath = hadoopSecurityCredentialPath;
@@ -247,7 +259,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchCtls.setCountLimit(numUsersToFetch);
 
-    String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + containString + "*))";
+    String searchFilter = String.format("(&(objectClass=*)(%s=*%s*))", this.getUserSearchAttributeName(), containString);
+
     Object[] searchArguments = new Object[]{containString};
 
     NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
@@ -265,7 +278,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
         NamingEnumeration ae = attrs.getAll();
         while (ae.hasMore()) {
           Attribute attr = (Attribute) ae.next();
-          if (attr.getID().toLowerCase().equals("cn")) {
+          if (attr.getID().toLowerCase().equals(this.getUserSearchAttributeName().toLowerCase())) {
             userNameList.addAll(LdapUtils.getAllAttributeValues(attr));
           }
         }
@@ -295,7 +308,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
       userPrincipalName = userPrincipalName.split("@")[0];
     }
 
-    String searchFilter = "(&(objectClass=*)(sAMAccountName=" + userPrincipalName + "))";
+    String searchFilter = String.format("(&(objectClass=*)(%s=%s))", this.getUserSearchAttributeName(), userPrincipalName);
     Object[] searchArguments = new Object[]{userPrincipalName};
 
     NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
