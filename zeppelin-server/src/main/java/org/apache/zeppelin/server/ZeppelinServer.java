@@ -89,7 +89,7 @@ public class ZeppelinServer extends ResourceConfig {
   //public static Notebook notebook; // REMOVE
   public static Server jettyWebServer;
   //public static NotebookServer notebookWsServer;
-  public static Helium helium; // REMOVE
+  //public static Helium helium; // REMOVE
 
   public static ServiceLocator sharedServiceLocator;
 
@@ -215,17 +215,17 @@ public class ZeppelinServer extends ResourceConfig {
                     conf.getCredentialsPath(),
                     conf.getCredentialsEncryptKey());
 
-            bindAsContract(InterpreterFactory.class);
-            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class);
-            bind(LuceneSearch.class).to(SearchService.class);
-            bindAsContract(Helium.class);
+            bindAsContract(InterpreterFactory.class).in(Singleton.class);
+            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);;
+            bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+            bindAsContract(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class);
             bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
-            bindAsContract(InterpreterService.class);
+            bindAsContract(InterpreterService.class).in(Singleton.class);
             bind(credentials).to(Credentials.class);
-            bindAsContract(GsonProvider.class);
-            bindAsContract(WebApplicationExceptionMapper.class);
-            bindAsContract(AdminService.class);
+            bindAsContract(GsonProvider.class).in(Singleton.class);
+            bindAsContract(WebApplicationExceptionMapper.class).in(Singleton.class);
+            bindAsContract(AdminService.class).in(Singleton.class);
             bind(notebookAuthorization).to(NotebookAuthorization.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
@@ -234,11 +234,11 @@ public class ZeppelinServer extends ResourceConfig {
               // TODO(jl): Will be added more type
               bind(NoSecurityService.class).to(SecurityService.class).in(Immediate.class);;
             }
-            bindAsContract(HeliumBundleFactory.class);
-            bindAsContract(HeliumApplicationFactory.class);
-            bindAsContract(ConfigurationService.class);
-            bindAsContract(NotebookService.class);
-            bindAsContract(JobManagerService.class);
+            bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
+            bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
+            bindAsContract(ConfigurationService.class).in(Singleton.class);
+            bindAsContract(NotebookService.class).in(Singleton.class);
+            bindAsContract(JobManagerService.class).in(Singleton.class);
             bindAsContract(Notebook.class).in(Singleton.class);
             bindAsContract(NotebookServer.class)
                 .to(AngularObjectRegistryListener.class)
