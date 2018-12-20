@@ -220,7 +220,7 @@ public class ZeppelinServer extends ResourceConfig {
             bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class);
-            bindAsContract(InterpreterSettingManager.class).in(Immediate.class);
+            bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
             bindAsContract(InterpreterService.class).in(Singleton.class);
             bind(credentials).to(Credentials.class);
             bindAsContract(GsonProvider.class).in(Singleton.class);
