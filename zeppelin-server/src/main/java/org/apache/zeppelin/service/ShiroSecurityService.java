@@ -65,6 +65,7 @@ public class ShiroSecurityService implements SecurityService {
 
   @Inject
   public ShiroSecurityService(ZeppelinConfiguration zeppelinConfiguration) throws Exception {
+    LOGGER.info("NoSecurityService is initialized");
     this.zeppelinConfiguration = zeppelinConfiguration;
     if (zeppelinConfiguration.getShiroPath().length() > 0) {
       try {
