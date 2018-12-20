@@ -42,7 +42,7 @@ public class TestUtils {
     // The second element of [1] indicates this method.
     // The third element of [2] indicates a caller of this method.
     if (Arrays.stream(stackTraceElements)
-        .noneMatch(stackTraceElement -> stackTraceElement.getClassName().endsWith("Test"))) {
+        .noneMatch(stackTraceElement -> stackTraceElement.getClassName().contains("Test"))) {
       throw new RuntimeException("This method shouldn't be used in production");
     }
   }
