@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -74,6 +75,7 @@ import org.slf4j.LoggerFactory;
  */
 @Path("/notebook")
 @Produces("application/json")
+@Singleton
 public class NotebookRestApi extends AbstractRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   private static Gson gson = new Gson();

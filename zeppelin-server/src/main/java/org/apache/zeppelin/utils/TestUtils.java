@@ -19,11 +19,17 @@ package org.apache.zeppelin.utils;
 import java.util.Arrays;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 
 public class TestUtils {
   public static <T> T getInstance(Class<T> clazz) {
     checkCalledByTestMethod();
     return getInstance(ZeppelinServer.sharedServiceLocator, clazz);
+  }
+
+  public static void clearInstances() {
+    checkCalledByTestMethod();
+    ServiceLocatorFactory.getInstance().destroy("shared-locator");
   }
 
   static <T> T getInstance(ServiceLocator serviceLocator, Class<T> clazz) {

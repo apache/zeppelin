@@ -21,6 +21,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.service.ServiceContext;
@@ -53,6 +54,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
  */
 @Path("/notebook-repositories")
 @Produces("application/json")
+@Singleton
 public class NotebookRepoRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoRestApi.class);
 

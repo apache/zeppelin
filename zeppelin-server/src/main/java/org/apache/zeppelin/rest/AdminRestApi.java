@@ -20,6 +20,7 @@ package org.apache.zeppelin.rest;
 import com.google.common.collect.Lists;
 import java.util.List;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /** This rest apis support some of feature related admin. e.g. changin log level. */
 @Path("/admin")
+@Singleton
 public class AdminRestApi {
   private static final Logger logger = LoggerFactory.getLogger(AdminRestApi.class);
 

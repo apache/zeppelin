@@ -161,6 +161,7 @@ public abstract class AbstractTestRestApi {
     @Override
     public void run() {
       try {
+        TestUtils.clearInstances();
         ZeppelinServer.main(new String[]{""});
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
