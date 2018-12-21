@@ -52,6 +52,7 @@ import org.sonatype.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -1080,6 +1081,25 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     List<Note> user2Notes = notebook.getAllNotes(user2AndRoles);
     assertEquals(user2Notes.size(), 1);
     assertEquals(user2Notes.get(0).getId(), note.getId());
+  }
+
+  @Test
+  public void testInterpreterSettingConfig() throws InterruptedException,
+      IOException, InterpreterException {
+    Note note = new Note("testInterpreterSettingConfig", "config_test",
+        interpreterFactory, interpreterSettingManager, null, null, new ArrayList<>());
+
+    // create three paragraphs
+    Paragraph p1 = note.addNewParagraph(anonymous);
+    Map<String, Object> config = p1.getConfig();
+    assertTrue(config.containsKey("fontSize"));
+    assertTrue(config.containsKey("colWidth"));
+    assertTrue(config.containsKey("runOnSelectionChange"));
+    assertTrue(config.containsKey("title"));
+    assertEquals(config.get("fontSize"), 9.0);
+    assertEquals(config.get("colWidth"), 12.0);
+    assertEquals(config.get("runOnSelectionChange"), false);
+    assertEquals(config.get("title"), true);
   }
 
   @Test

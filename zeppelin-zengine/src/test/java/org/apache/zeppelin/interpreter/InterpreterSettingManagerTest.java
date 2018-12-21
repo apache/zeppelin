@@ -46,7 +46,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
   @Test
   public void testInitInterpreterSettingManager() throws IOException, RepositoryException {
-    assertEquals(5, interpreterSettingManager.get().size());
+    assertEquals(6, interpreterSettingManager.get().size());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
@@ -76,7 +76,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // Load it again
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
-    assertEquals(5, interpreterSettingManager2.get().size());
+    assertEquals(6, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test");
     assertEquals("test", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
@@ -112,7 +112,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     }
 
     interpreterSettingManager.createNewSetting("test3", "test", new ArrayList<Dependency>(), option, properties);
-    assertEquals(6, interpreterSettingManager.get().size());
+    assertEquals(7, interpreterSettingManager.get().size());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
@@ -134,7 +134,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     // load it again, it should be saved in interpreter-setting.json. So we can restore it properly
     InterpreterSettingManager interpreterSettingManager2 = new InterpreterSettingManager(conf,
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
-    assertEquals(6, interpreterSettingManager2.get().size());
+    assertEquals(7, interpreterSettingManager2.get().size());
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
@@ -181,12 +181,12 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
 
     // remove interpreter setting
     interpreterSettingManager.remove(interpreterSetting.getId());
-    assertEquals(5, interpreterSettingManager.get().size());
+    assertEquals(6, interpreterSettingManager.get().size());
 
     // load it again
     InterpreterSettingManager interpreterSettingManager3 = new InterpreterSettingManager(new ZeppelinConfiguration(),
         mock(AngularObjectRegistryListener.class), mock(RemoteInterpreterProcessListener.class), mock(ApplicationEventListener.class));
-    assertEquals(5, interpreterSettingManager3.get().size());
+    assertEquals(6, interpreterSettingManager3.get().size());
 
   }
 

@@ -401,6 +401,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
               registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
+      interpreterInfo.setConfig(registeredInterpreter.getConfig());
       group = registeredInterpreter.getGroup();
       runner = registeredInterpreter.getRunner();
       // use defaultOption if it is not specified in interpreter-setting.json
@@ -492,6 +493,22 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       LOGGER.debug("Couldn't get interpreter editor setting");
     }
     return editor;
+  }
+
+  public Map<String, Object> getConfigSetting(String interpreterGroupId) {
+    InterpreterSetting interpreterSetting = get(interpreterGroupId);
+    if (null != interpreterSetting) {
+      List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
+      for (InterpreterInfo intpInfo : interpreterInfos) {
+        if (intpInfo.isDefaultInterpreter() || (interpreterInfos.size() == 1)) {
+          if (intpInfo.getConfig() != null) {
+            return intpInfo.getConfig();
+          }
+        }
+      }
+    }
+
+    return new HashMap<String, Object>();
   }
 
   public List<ManagedInterpreterGroup> getAllInterpreterGroup() {

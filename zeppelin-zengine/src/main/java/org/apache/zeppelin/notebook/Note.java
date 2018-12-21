@@ -365,6 +365,11 @@ public class Note implements JsonSerializable {
    */
   public Paragraph insertNewParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph paragraph = new Paragraph(this, paragraphJobListener);
+    if (null != interpreterSettingManager) {
+      Map<String, Object> config =
+          interpreterSettingManager.getConfigSetting(defaultInterpreterGroup);
+      paragraph.setConfig(config);
+    }
     paragraph.setAuthenticationInfo(authenticationInfo);
     setParagraphMagic(paragraph, index);
     insertParagraph(paragraph, index);

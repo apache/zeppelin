@@ -120,6 +120,30 @@
         "users": [],
         "isUserImpersonate": false
       }
+    },
+
+    "2C5EERVGA" : {
+      "group": "config_test",
+      "name": "config_test",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
+      "properties": {
+      },
+      "config": {
+        "fontSize": 9,
+        "colWidth": 12,
+        "runOnSelectionChange": false,
+        "title": true
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
     }
   },
   "interpreterBindings": {
