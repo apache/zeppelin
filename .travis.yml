@@ -77,7 +77,7 @@ matrix:
       dist: trusty
       addons:
         firefox: "31.0"
-      env: CI="true" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -pl ${INTERPRETERS}" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-integration -DfailIfNoTests=false"
+      env: BUILD_PLUGINS="true" CI="true" PYTHON="2" SCALA_VER="2.10" SPARK_VER="1.6.3" HADOOP_VER="2.6" PROFILE="-Pspark-1.6 -Phadoop2 -Phelium-dev -Pexamples -Pintegration -Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -pl ${INTERPRETERS}" TEST_FLAG="verify -DskipRat" TEST_PROJECTS="-pl zeppelin-integration -DfailIfNoTests=false"
 
     # Test interpreter modules
     - jdk: "oraclejdk8"
