@@ -79,6 +79,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
   @BeforeClass
   public static void startUp() {
     try {
+      LOG.info("{} started", InterpreterModeActionsIT.class.getSimpleName());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(), new File("../").getAbsolutePath());
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
       shiroPath = conf.getRelativeDir(String.format("%s/shiro.ini", conf.getConfDir()));
@@ -124,6 +125,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
     }
     ZeppelinITUtils.restartZeppelin();
     driver.quit();
+    LOG.info("{} finished", InterpreterModeActionsIT.class.getSimpleName());
   }
 
   private void authenticationUser(String userName, String password) {
