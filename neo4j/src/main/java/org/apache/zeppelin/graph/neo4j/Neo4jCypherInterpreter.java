@@ -201,20 +201,6 @@ public class Neo4jCypherInterpreter extends Interpreter {
           value = val.asList();
         } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.MAP())) {
           value = val.asMap();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.POINT())) {
-          value = val.asPoint();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DATE())) {
-          value = val.asLocalDate();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.TIME())) {
-          value = val.asOffsetTime();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.LOCAL_TIME())) {
-          value = val.asLocalTime();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.LOCAL_DATE_TIME())) {
-          value = val.asLocalDateTime();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DATE_TIME())) {
-          value = val.asZonedDateTime();
-        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DURATION())) {
-          value = val.asIsoDuration();
         }
       }
       if (value instanceof Collection) {
