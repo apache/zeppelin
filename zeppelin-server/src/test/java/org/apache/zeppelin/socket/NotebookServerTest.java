@@ -323,9 +323,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(mdRegistry, never()).addAndNotifyRemoteProcess(varName, value, "noteId", null);
 
     verify(otherConn).send(mdMsg1);
-
-    // reset it to original notebook
-    //ZeppelinServer.notebook = originalNotebook;
   }
 
   @Test

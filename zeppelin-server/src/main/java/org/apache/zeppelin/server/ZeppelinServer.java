@@ -72,7 +72,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.glassfish.hk2.api.Immediate;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
@@ -86,108 +85,17 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-  //public static Notebook notebook; // REMOVE
   public static Server jettyWebServer;
-  //public static NotebookServer notebookWsServer;
-  //public static Helium helium; // REMOVE
-
   public static ServiceLocator sharedServiceLocator;
 
-  // private final InterpreterSettingManager interpreterSettingManager;
-  // private InterpreterFactory replFactory;
-//  private SearchService noteSearchService;
-//  private NotebookRepoSync notebookRepo;
-  private NotebookAuthorization notebookAuthorization;
-  private Credentials credentials;
-
   @Inject
-  public ZeppelinServer(ServiceLocator serviceLocator) throws Exception {
+  public ZeppelinServer() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
-    /*this.interpreterSettingManager =
-        new InterpreterSettingManager(conf, notebookWsServer, notebookWsServer, notebookWsServer);*/
-    /*this.replFactory = new InterpreterFactory(interpreterSettingManager);
-    this.notebookRepo = new NotebookRepoSync(conf);
-    this.noteSearchService = new LuceneSearch(conf);*/
-    this.notebookAuthorization = NotebookAuthorization.getInstance();
-    this.credentials =
-        new Credentials(
-            conf.credentialsPersist(), conf.getCredentialsPath(), conf.getCredentialsEncryptKey());
-    /*notebook =
-        new Notebook(
-            conf,
-            notebookRepo,
-            replFactory,
-            interpreterSettingManager,
-            noteSearchService,
-            notebookAuthorization,
-            credentials);*/
-
-    /*HeliumApplicationFactory heliumApplicationFactory = new HeliumApplicationFactory(notebook, notebookWsServer);
-    HeliumBundleFactory heliumBundleFactory = new HeliumBundleFactory(conf);
-
-    ZeppelinServer.helium =
-        new Helium(
-            conf.getHeliumConfPath(),
-            conf.getHeliumRegistry(),
-            new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
-            heliumBundleFactory,
-            heliumApplicationFactory,
-            interpreterSettingManager);*/
-
-    //notebook.addNotebookEventListener(notebookWsServer);
-
-
-    // Register MBean
-    /*if ("true".equals(System.getenv("ZEPPELIN_JMX_ENABLE"))) {
-      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-      try {
-        mBeanServer.registerMBean(
-            notebookWsServer,
-            new ObjectName("org.apache.zeppelin:type=" + NotebookServer.class.getSimpleName()));
-        mBeanServer.registerMBean(
-            interpreterSettingManager,
-            new ObjectName(
-                "org.apache.zeppelin:type=" + InterpreterSettingManager.class.getSimpleName()));
-      } catch (InstanceAlreadyExistsException
-          | MBeanRegistrationException
-          | MalformedObjectNameException
-          | NotCompliantMBeanException e) {
-        LOG.error("Failed to register MBeans", e);
-      }
-    }*/
-
-    ServiceLocatorUtilities.enableImmediateScope(serviceLocator);
-
-    /*register(null);*/
     packages("org.apache.zeppelin.rest");
-    register(
-        new AbstractBinder() {
-          @Override
-          protected void configure() {
-
-          }
-        });
   }
-
-  /*@Override
-  public Set<Class<?>> getClasses() {
-    Set<Class<?>> classes = Sets.newHashSet();
-    classes.add(AdminRestApi.class);
-    classes.add(ConfigurationsRestApi.class);
-    classes.add(CredentialRestApi.class);
-    classes.add(HeliumRestApi.class);
-    classes.add(InterpreterRestApi.class);
-    classes.add(LoginRestApi.class);
-    classes.add(NotebookRepoRestApi.class);
-    classes.add(NotebookRestApi.class);
-    classes.add(SecurityRestApi.class);
-    classes.add(ZeppelinRestApi.class);
-
-    return classes;
-  }*/
 
   public static void main(String[] args) throws InterruptedException {
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -216,7 +124,7 @@ public class ZeppelinServer extends ResourceConfig {
                     conf.getCredentialsEncryptKey());
 
             bindAsContract(InterpreterFactory.class).in(Singleton.class);
-            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);;
+            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Singleton.class);
             bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
             bindAsContract(Helium.class).in(Singleton.class);
             bind(conf).to(ZeppelinConfiguration.class);
@@ -229,10 +137,10 @@ public class ZeppelinServer extends ResourceConfig {
             bind(notebookAuthorization).to(NotebookAuthorization.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);;
+              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
             } else {
               // TODO(jl): Will be added more type
-              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);;
+              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
             }
             bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
             bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
@@ -250,28 +158,24 @@ public class ZeppelinServer extends ResourceConfig {
           }
         });
 
-    //webApp.setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
-    webApp.addEventListener(new ServletContextListener() {
-      @Override
-      public void contextInitialized(ServletContextEvent servletContextEvent) {
-        servletContextEvent.getServletContext().setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
-      }
+    webApp.addEventListener(
+        new ServletContextListener() {
+          @Override
+          public void contextInitialized(ServletContextEvent servletContextEvent) {
+            servletContextEvent
+                .getServletContext()
+                .setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
+          }
 
-      @Override
-      public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
-      }
-    });
-
+          @Override
+          public void contextDestroyed(ServletContextEvent servletContextEvent) {}
+        });
 
     // Create `ZeppelinServer` using reflection and setup REST Api
     setupRestApiContextHandler(webApp, conf);
 
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
-
-    // Below is commented since zeppelin-docs module is removed.
-    // final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     LOG.info("Starting zeppelin server");
     try {
@@ -287,23 +191,24 @@ public class ZeppelinServer extends ResourceConfig {
 
     Runtime.getRuntime()
         .addShutdownHook(
-            new Thread() {
-              @Override
-              public void run() {
-                LOG.info("Shutting down Zeppelin Server ... ");
-                try {
-                  jettyWebServer.stop();
-                  if (!conf.isRecoveryEnabled()) {
-                    sharedServiceLocator.getService(Notebook.class).getInterpreterSettingManager().close();
+            new Thread(
+                () -> {
+                  LOG.info("Shutting down Zeppelin Server ... ");
+                  try {
+                    jettyWebServer.stop();
+                    if (!conf.isRecoveryEnabled()) {
+                      sharedServiceLocator
+                          .getService(Notebook.class)
+                          .getInterpreterSettingManager()
+                          .close();
+                    }
+                    sharedServiceLocator.getService(Notebook.class).close();
+                    Thread.sleep(3000);
+                  } catch (Exception e) {
+                    LOG.error("Error while stopping servlet container", e);
                   }
-                  //notebook.close();
-                  Thread.sleep(3000);
-                } catch (Exception e) {
-                  LOG.error("Error while stopping servlet container", e);
-                }
-                LOG.info("Bye");
-              }
-            });
+                  LOG.info("Bye");
+                }));
 
     // when zeppelin is started inside of ide (especially for eclipse)
     // for graceful shutdown, input any key in console window
@@ -337,9 +242,6 @@ public class ZeppelinServer extends ResourceConfig {
 
       HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
       SecureRequestCustomizer src = new SecureRequestCustomizer();
-      // Only with Jetty 9.3.x
-      // src.setStsMaxAge(2000);
-      // src.setStsIncludeSubDomains(true);
       httpsConfig.addCustomizer(src);
 
       connector =

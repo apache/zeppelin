@@ -19,7 +19,12 @@ package org.apache.zeppelin.realm;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -34,22 +39,13 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.zeppelin.common.JsonSerializable;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserSessionContainer;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.utils.ZeppelinhubUtils;
-import org.apache.zeppelin.server.ZeppelinServer;
 
 /**
  * A {@code Realm} implementation that uses the ZeppelinHub to authenticate users.
@@ -229,6 +225,7 @@ public class ZeppelinHubRealm extends AuthorizingRealm {
     ServiceContext context = new ServiceContext(
         new org.apache.zeppelin.user.AuthenticationInfo(username), userAndRoles);
     try {
+      // This can failed to get NotebookServer instance with very rare cases
       NotebookServer.getInstance().broadcastReloadedNoteList(null, context);
     } catch (IOException e) {
       LOG.error("Fail to broadcastReloadedNoteList", e);

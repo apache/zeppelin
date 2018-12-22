@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,10 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -75,7 +72,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Notebook {
   private static final Logger LOGGER = LoggerFactory.getLogger(Notebook.class);
-  private static AtomicReference<Notebook> self = new AtomicReference<>();
 
   private NoteManager noteManager;
 
@@ -147,7 +143,6 @@ public class Notebook {
       this.noteEventListeners.add(noteEventListener);
     }
     this.paragraphJobListener = (ParagraphJobListener) noteEventListener;
-    Notebook.self.set(this);
   }
 
   /**
