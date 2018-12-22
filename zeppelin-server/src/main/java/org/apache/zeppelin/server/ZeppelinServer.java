@@ -294,7 +294,7 @@ public class ZeppelinServer extends ResourceConfig {
                 try {
                   jettyWebServer.stop();
                   if (!conf.isRecoveryEnabled()) {
-                    //TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
+                    sharedServiceLocator.getService(Notebook.class).getInterpreterSettingManager().close();
                   }
                   //notebook.close();
                   Thread.sleep(3000);
@@ -318,7 +318,7 @@ public class ZeppelinServer extends ResourceConfig {
 
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
-      //TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
+      sharedServiceLocator.getService(Notebook.class).getInterpreterSettingManager().close();
     }
   }
 
