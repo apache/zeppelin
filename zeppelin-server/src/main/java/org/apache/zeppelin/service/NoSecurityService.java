@@ -23,9 +23,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NoSecurityService implements SecurityService {
+  private static Logger logger = LoggerFactory.getLogger(NoSecurityService.class);
   private final String ANONYMOUS = "anonymous";
+
+  @Inject
+  public NoSecurityService() {
+    logger.info("NoSecurityService is initialized");
+  }
 
   @Override
   public String getPrincipal() {

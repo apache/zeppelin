@@ -21,6 +21,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import org.apache.zeppelin.server.JsonResponse;
  */
 @Path("/helium")
 @Produces("application/json")
+@Singleton
 public class HeliumRestApi {
   Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
 

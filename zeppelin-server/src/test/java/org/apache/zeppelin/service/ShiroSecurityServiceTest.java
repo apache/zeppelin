@@ -31,6 +31,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,13 +83,8 @@ public class ShiroSecurityServiceTest {
 
     Notebook notebook = Mockito.mock(Notebook.class);
     try {
-      setFinalStatic(ZeppelinServer.class.getDeclaredField("notebook"), notebook);
-      when(ZeppelinServer.notebook.getConf())
+      when(notebook.getConf())
           .thenReturn(new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml")));
-    } catch (NoSuchFieldException e) {
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }

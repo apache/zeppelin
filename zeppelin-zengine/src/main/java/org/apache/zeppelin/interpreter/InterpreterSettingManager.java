@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.util.Set;
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -126,6 +127,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   private ConfigStorage configStorage;
   private RemoteInterpreterEventServer interpreterEventServer;
 
+  @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener

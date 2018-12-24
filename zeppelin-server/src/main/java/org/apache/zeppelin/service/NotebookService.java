@@ -19,7 +19,18 @@
 package org.apache.zeppelin.service;
 
 
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
+
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -51,18 +62,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
-
 
 /**
  * Service class for Notebook related operations. It use {@link Notebook} which provides
@@ -79,64 +78,18 @@ public class NotebookService {
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
       DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-  private static NotebookService self;
-
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
   private NotebookAuthorization notebookAuthorization;
-  private NotebookServer notebookServer;
-  private CountDownLatch notebookServerInjected;
 
   @Inject
-  public NotebookService(Notebook notebook) {
+  public NotebookService(
+      Notebook notebook,
+      NotebookAuthorization notebookAuthorization,
+      ZeppelinConfiguration zeppelinConfiguration) {
     this.notebook = notebook;
-    this.notebookAuthorization = notebook.getNotebookAuthorization();
-    this.zConf = notebook.getConf();
-    NotebookService.self = this;
-    notebookServerInjected = new CountDownLatch(1);
-  }
-
-  /**
-   * This is a temporal trick to connect injected class to non-injected class like {@link
-   * org.apache.zeppelin.socket.NotebookServer}. This will be removed after refactoring of
-   * Notebook\* classes.
-   *
-   * @return NotebookService
-   */
-  public static NotebookService getInstance() {
-    if (null == NotebookService.self) {
-      throw new IllegalStateException("NotebookService should be called after injection");
-    } else {
-      return NotebookService.self;
-    }
-  }
-
-  /**
-   * Only NotebookServer will call this method to register itself. This will be
-   * changed @PostConstruct. Please see {@link NotebookServer#NotebookServer()}
-   *
-   * @param notebookServer NotebookServer instance to be injected
-   */
-  public void injectNotebookServer(NotebookServer notebookServer) {
-    this.notebookServer = notebookServer;
-    // Notebook was initialized by injection, thus it should be not null
-    notebook.setParagraphJobListener(notebookServer);
-    notebookServerInjected.countDown();
-  }
-
-  /**
-   * This is a conservative to avoid timing issue between registering it and using it.
-   *
-   * @return NotebookServer instance
-   */
-  public NotebookServer getNotebookServer() {
-    try {
-      notebookServerInjected.await();
-      return notebookServer;
-    } catch (InterruptedException e) {
-      LOGGER.info("Interrupted. getNotebookServer will return null");
-      return null;
-    }
+    this.notebookAuthorization = notebookAuthorization;
+    this.zConf = zeppelinConfiguration;
   }
 
   public Note getHomeNote(ServiceContext context,

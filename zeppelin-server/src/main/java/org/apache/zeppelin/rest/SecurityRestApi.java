@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 @Path("/security")
 @Produces("application/json")
+@Singleton
 public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
   private static final Gson gson = new Gson();

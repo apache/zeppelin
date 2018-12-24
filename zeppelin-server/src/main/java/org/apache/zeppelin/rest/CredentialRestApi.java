@@ -23,6 +23,7 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 /** Credential Rest API. */
 @Path("/credential")
 @Produces("application/json")
+@Singleton
 public class CredentialRestApi {
   Logger logger = LoggerFactory.getLogger(CredentialRestApi.class);
   private Credentials credentials;

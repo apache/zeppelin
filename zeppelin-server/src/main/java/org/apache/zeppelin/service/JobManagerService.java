@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.service;
 
+import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -39,6 +40,7 @@ public class JobManagerService {
 
   private Notebook notebook;
 
+  @Inject
   public JobManagerService(Notebook notebook) {
     this.notebook = notebook;
   }

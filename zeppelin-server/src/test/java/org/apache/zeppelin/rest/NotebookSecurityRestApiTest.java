@@ -24,24 +24,22 @@ import static org.junit.Assert.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.server.ZeppelinServer;
 
 public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
   Gson gson = new Gson();
@@ -110,7 +108,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     userTryRemoveNote(noteId, "user2", "password3", isForbidden());
     userTryRemoveNote(noteId, "user1", "password2", isAllowed());
     
-    Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
+    Note deletedNote = TestUtils.getInstance(Notebook.class).getNote(noteId);
     assertNull("Deleted note should be null", deletedNote);
   }
 
@@ -161,11 +159,13 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
     PostMethod post = httpPost("/notebook/", jsonRequest, user, pwd);
     assertThat("test note create method:", post, isAllowed());
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> resp =
+        gson.fromJson(
+            post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {}.getType());
     post.releaseConnection();
-    String newNoteId =  (String) resp.get("body");
-    Note newNote = ZeppelinServer.notebook.getNote(newNoteId);
+    String newNoteId = (String) resp.get("body");
+    Notebook notebook = TestUtils.getInstance(Notebook.class);
+    Note newNote = notebook.getNote(newNoteId);
     assertNotNull("Can not find new note by id", newNote);
     return newNoteId;
   }
@@ -176,7 +176,7 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     delete.releaseConnection();
     // make sure note is deleted
     if (!noteId.isEmpty()) {
-      Note deletedNote = ZeppelinServer.notebook.getNote(noteId);
+      Note deletedNote = TestUtils.getInstance(Notebook.class).getNote(noteId);
       assertNull("Deleted note should be null", deletedNote);
     }
   }

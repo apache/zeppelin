@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
  */
 @Path("/login")
 @Produces("application/json")
+@Singleton
 public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
   private static final Gson gson = new Gson();
