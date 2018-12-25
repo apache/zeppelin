@@ -43,10 +43,8 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -61,7 +59,6 @@ import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.JobWithProgressPoller;
-import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
@@ -106,6 +103,14 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
+  private static String  PARAGRAPH_CONFIG_FONTSIZE = "fontSize";
+  private static int     PARAGRAPH_CONFIG_FONTSIZE_DEFAULT = 9;
+  private static String  PARAGRAPH_CONFIG_COLWIDTH = "colWidth";
+  private static int     PARAGRAPH_CONFIG_COLWIDTH_DEFAULT = 12;
+  private static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
+  private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
+  private static String  PARAGRAPH_CONFIG_TITLE = "title";
+  private static boolean PARAGRAPH_CONFIG_TITLE_DEFAULT = false;
 
   @VisibleForTesting
   Paragraph() {
@@ -603,8 +608,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       newConfig = getDefaultConfigSetting();
     }
 
-    List<String> keysToRemove = Arrays.asList("fontSize", "colWidth",
-        "runOnSelectionChange", "title");
+    List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_FONTSIZE,
+        PARAGRAPH_CONFIG_COLWIDTH, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
+        PARAGRAPH_CONFIG_TITLE);
     for (String removeKey : keysToRemove) {
       if ((false == newConfig.containsKey(removeKey))
           && (true == config.containsKey(removeKey))) {
@@ -618,10 +624,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // default parameters of the interpreter
   private Map<String, Object> getDefaultConfigSetting() {
     Map<String, Object> config = new HashMap<>();
-    config.put("fontSize", 9);
-    config.put("colWidth", 12);
-    config.put("runOnSelectionChange", true);
-    config.put("title", false);
+    config.put(PARAGRAPH_CONFIG_FONTSIZE, PARAGRAPH_CONFIG_FONTSIZE_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_COLWIDTH, PARAGRAPH_CONFIG_COLWIDTH_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_TITLE_DEFAULT);
 
     return config;
   }
