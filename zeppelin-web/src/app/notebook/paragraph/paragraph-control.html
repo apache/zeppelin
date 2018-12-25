@@ -15,7 +15,7 @@ limitations under the License.
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
   <span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
-      <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
+      <a href="{{paragraph.runtimeInfos.jobUrl.values['jobUrl']}}" target="_blank" style="text-decoration: none;"
          tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}
@@ -25,11 +25,12 @@ limitations under the License.
       <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
             data-toggle="dropdown" type="button">
         <span class="fa fa-tasks"></span>
-        {{paragraph.runtimeInfos.jobUrl.label}}S
+        {{paragraph.runtimeInfos.jobUrl.label}}
       </span>
       <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
-        <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values">
-          <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+        <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="value in paragraph.runtimeInfos.jobUrl.values">
+          <a ng-if="value.jobLabel === undefined" href="{{value['jobUrl']}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+          <a ng-if="value.jobLabel !== undefined" href="{{value['jobUrl']}}" target="_blank"><span class="fa fa-external-link-square"></span> {{value['jobLabel']}} </a>
         </li>
       </ul>
     </span>
@@ -54,20 +55,6 @@ limitations under the License.
           ng-click="cancelParagraph(paragraph)"
           ng-class="{'item-disable' : isNoteRunning}"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-    <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
-      <a href="{{paragraph.runtimeInfos.jobUrl[0]}}" target="_blank"><span class="fa fa-tasks"></span> Spark job </a>
-    </span>
-    <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.length > 1">
-      <span class="fa fa-tasks" style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="Run this paragraph (Shift+Enter)"
-          data-toggle="dropdown"
-          type="button">  Spark Jobs
-      </span>
-      <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
-         <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl">
-           <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
-         </li>
-      </ul>
-    </span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer" tooltip-placement="top"
           uib-tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide')}} editor (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+E)"
           ng-click="toggleEditor(paragraph)"></span>

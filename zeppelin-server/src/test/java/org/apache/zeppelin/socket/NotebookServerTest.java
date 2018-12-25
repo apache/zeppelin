@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -417,6 +418,54 @@ public class NotebookServerTest extends AbstractTestRestApi {
               createdNote.getId()).getId(), defaultInterpreterId);
     }
     notebook.removeNote(createdNote.getId(), anonymous);
+  }
+
+  @Test
+  public void testRuntimeInfos() {
+    // mock note
+    String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
+        "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
+        "paragraphs import\"," + "\"progressUpdateIntervalMs\":500," +
+        "\"config\":{},\"settings\":{}}]," +
+        "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
+        "{}}}}";
+    Message messageReceived = notebookServer.deserializeMessage(msg);
+    Note note = null;
+    try {
+      note = notebookServer.importNote(null, messageReceived);
+    } catch (NullPointerException e) {
+      //broadcastNoteList(); failed nothing to worry.
+      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+          "worry ", e);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    assertNotEquals(null, notebook.getNote(note.getId()));
+    assertNotEquals(null, note.getParagraph(0));
+
+    String nodeId = note.getId();
+    String paragraphId = note.getParagraph(0).getId();
+
+    // update RuntimeInfos
+    Map<String, String> infos = new java.util.HashMap<>();
+    infos.put("jobUrl", "jobUrl_value");
+    infos.put("jobLabel", "jobLabel_value");
+    infos.put("label", "SPARK JOB");
+    infos.put("tooltip", "View in Spark web UI");
+    infos.put("noteId", nodeId);
+    infos.put("paraId", paragraphId);
+
+    notebookServer.onParaInfosReceived(nodeId, paragraphId, "spark", infos);
+    Paragraph paragraph = note.getParagraph(paragraphId);
+
+    // check RuntimeInfos
+    assertTrue(paragraph.getRuntimeInfos().containsKey("jobUrl"));
+    List<Map<String, String>> list = paragraph.getRuntimeInfos().get("jobUrl").getValue();
+    assertEquals(1, list.size());
+    assertEquals(2, list.get(0).size());
+    assertEquals(list.get(0).get("jobUrl"), "jobUrl_value");
+    assertEquals(list.get(0).get("jobLabel"), "jobLabel_value");
   }
 
   private NotebookSocket createWebSocket() {
