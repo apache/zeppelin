@@ -248,6 +248,10 @@ public class Note implements JsonSerializable {
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
+  InterpreterSettingManager getInterpreterSettingManager() {
+    return this.interpreterSettingManager;
+  }
+
   void setParagraphJobListener(ParagraphJobListener paragraphJobListener) {
     this.paragraphJobListener = paragraphJobListener;
   }
@@ -366,6 +370,8 @@ public class Note implements JsonSerializable {
   public Paragraph insertNewParagraph(int index, AuthenticationInfo authenticationInfo) {
     Paragraph paragraph = new Paragraph(this, paragraphJobListener);
     if (null != interpreterSettingManager) {
+      // Set the default parameter configuration for the paragraph
+      // based on `interpreter-setting.json` config
       Map<String, Object> config =
           interpreterSettingManager.getConfigSetting(defaultInterpreterGroup);
       paragraph.setConfig(config);

@@ -495,20 +495,22 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     return editor;
   }
 
+  // Get configuration parameters from `interpreter-setting.json`
+  // based on the interpreter group ID
   public Map<String, Object> getConfigSetting(String interpreterGroupId) {
     InterpreterSetting interpreterSetting = get(interpreterGroupId);
     if (null != interpreterSetting) {
       List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
+      int infoSize = interpreterInfos.size();
       for (InterpreterInfo intpInfo : interpreterInfos) {
-        if (intpInfo.isDefaultInterpreter() || (interpreterInfos.size() == 1)) {
-          if (intpInfo.getConfig() != null) {
-            return intpInfo.getConfig();
-          }
+        if ((intpInfo.isDefaultInterpreter() || (infoSize == 1))
+            && (intpInfo.getConfig() != null)) {
+          return intpInfo.getConfig();
         }
       }
     }
 
-    return new HashMap<String, Object>();
+    return new HashMap<>();
   }
 
   public List<ManagedInterpreterGroup> getAllInterpreterGroup() {

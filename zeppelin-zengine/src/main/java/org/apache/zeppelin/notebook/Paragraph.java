@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,7 @@ import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -52,6 +54,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -344,6 +347,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     try {
       this.interpreter = getBindedInterpreter();
       setStatus(Status.READY);
+
       if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
         setAuthenticationInfo(getAuthenticationInfo());
         interpreter.getScheduler().submit(this);
@@ -448,6 +452,21 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       if (null != p) {
         p.setResult(res);
         p.settings.setParams(settings.getParams());
+      }
+
+      // After the paragraph is executed,
+      // need to apply the paragraph to the configuration in the
+      // `interpreter-setting.json` config
+      InterpreterSettingManager intpSettingManager
+          = this.note.getInterpreterSettingManager();
+      if (null != intpSettingManager) {
+        InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
+        if (intpGroup instanceof ManagedInterpreterGroup) {
+          String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
+          Map<String, Object> config
+              = intpSettingManager.getConfigSetting(name);
+          applyConfigSetting(config);
+        }
       }
 
       return res;
@@ -567,6 +586,44 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   public void setConfig(Map<String, Object> config) {
     this.config = config;
+  }
+
+  // apply the `interpreter-setting.json` config
+  // When creating a paragraph, it will update some of the configuration
+  // parameters of the paragraph from the web side.
+  // Need to deal with 2 situations
+  // 1. The interpreter does not have a config configuration set,
+  //    so newConfig is equal to null, Need to be processed using the
+  //    default parameters of the interpreter
+  // 2. The user manually modified the  interpreter types of this paragraph.
+  //    Need to delete the existing configuration of this paragraph,
+  //    update with the specified interpreter configuration
+  public void applyConfigSetting(Map<String, Object> newConfig) {
+    if (null == newConfig || 0 == newConfig.size()) {
+      newConfig = getDefaultConfigSetting();
+    }
+
+    List<String> keysToRemove = Arrays.asList("fontSize", "colWidth",
+        "runOnSelectionChange", "title");
+    for (String removeKey : keysToRemove) {
+      if ((false == newConfig.containsKey(removeKey))
+          && (true == config.containsKey(removeKey))) {
+        this.config.remove(removeKey);
+      }
+    }
+
+    this.config.putAll(newConfig);
+  }
+
+  // default parameters of the interpreter
+  private Map<String, Object> getDefaultConfigSetting() {
+    Map<String, Object> config = new HashMap<>();
+    config.put("fontSize", 9);
+    config.put("colWidth", 12);
+    config.put("runOnSelectionChange", true);
+    config.put("title", false);
+
+    return config;
   }
 
   public void setReturn(InterpreterResult value, Throwable t) {
