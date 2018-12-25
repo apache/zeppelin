@@ -80,6 +80,9 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.TestUtils;
+import org.eclipse.jetty.util.annotation.ManagedAttribute;
+import org.eclipse.jetty.util.annotation.ManagedObject;
+import org.eclipse.jetty.util.annotation.ManagedOperation;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -90,14 +93,14 @@ import org.slf4j.LoggerFactory;
  * Zeppelin websocket service. This class used setter injection because all servlet should have
  * no-parameter constructor
  */
+@ManagedObject
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener,
         AngularObjectRegistryListener,
         RemoteInterpreterProcessListener,
         ApplicationEventListener,
         ParagraphJobListener,
-        NoteEventListener,
-        NotebookServerMBean {
+        NoteEventListener {
 
   /**
    * Job manager service type.
@@ -1843,12 +1846,12 @@ public class NotebookServer extends WebSocketServlet
         });
   }
 
-  @Override
+  @ManagedAttribute
   public Set<String> getConnectedUsers() {
     return connectionManager.getConnectedUsers();
   }
 
-  @Override
+  @ManagedOperation
   public void sendMessage(String message) {
     Message m = new Message(OP.NOTICE);
     m.data.put("notice", message);
