@@ -401,7 +401,9 @@ public class InterpreterSettingManager implements NoteEventListener {
       //TODO(zjffdu) merge RegisteredInterpreter & InterpreterInfo
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
-              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
+              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor(),
+              registeredInterpreter.getConfig());
+      interpreterInfo.setConfig(registeredInterpreter.getConfig());
       group = registeredInterpreter.getGroup();
       runner = registeredInterpreter.getRunner();
       // use defaultOption if it is not specified in interpreter-setting.json
@@ -493,6 +495,24 @@ public class InterpreterSettingManager implements NoteEventListener {
       LOGGER.debug("Couldn't get interpreter editor setting");
     }
     return editor;
+  }
+
+  // Get configuration parameters from `interpreter-setting.json`
+  // based on the interpreter group ID
+  public Map<String, Object> getConfigSetting(String interpreterGroupId) {
+    InterpreterSetting interpreterSetting = get(interpreterGroupId);
+    if (null != interpreterSetting) {
+      List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
+      int infoSize = interpreterInfos.size();
+      for (InterpreterInfo intpInfo : interpreterInfos) {
+        if ((intpInfo.isDefaultInterpreter() || (infoSize == 1))
+            && (intpInfo.getConfig() != null)) {
+          return intpInfo.getConfig();
+        }
+      }
+    }
+
+    return new HashMap<>();
   }
 
   public List<ManagedInterpreterGroup> getAllInterpreterGroup() {

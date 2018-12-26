@@ -52,6 +52,7 @@ import org.sonatype.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -1080,6 +1081,50 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     List<Note> user2Notes = notebook.getAllNotes(user2AndRoles);
     assertEquals(user2Notes.size(), 1);
     assertEquals(user2Notes.get(0).getId(), note.getId());
+  }
+
+  @Test
+  public void testInterpreterSettingConfig() {
+    LOGGER.info("testInterpreterSettingConfig >>> ");
+    Note note = new Note("testInterpreterSettingConfig", "config_test",
+        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>());
+
+    // create paragraphs
+    Paragraph p1 = note.addNewParagraph(anonymous);
+    Map<String, Object> config = p1.getConfig();
+    assertTrue(config.containsKey("runOnSelectionChange"));
+    assertTrue(config.containsKey("title"));
+    assertEquals(config.get("runOnSelectionChange"), false);
+    assertEquals(config.get("title"), true);
+
+    // The config_test interpreter sets the default parameters
+    // in interpreter/config_test/interpreter-setting.json
+    //    "config": {
+    //      "runOnSelectionChange": false,
+    //      "title": true
+    //    },
+    p1.setText("%config_test sleep 1000");
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+
+    // wait until first paragraph finishes and second paragraph starts
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+
+    // Check if the config_test interpreter default parameter takes effect
+    LOGGER.info("p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get("runOnSelectionChange"), false);
+    assertEquals(config.get("title"), true);
+
+    // The mock1 interpreter does not set default parameters
+    p1.setText("%mock1 sleep 1000");
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+
+    // wait until first paragraph finishes and second paragraph starts
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+
+    // Check if the mock1 interpreter parameter is updated
+    LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get("runOnSelectionChange"), true);
+    assertEquals(config.get("title"), false);
   }
 
   @Test

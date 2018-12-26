@@ -419,6 +419,7 @@ public abstract class Interpreter {
     private boolean defaultInterpreter;
     private Map<String, DefaultInterpreterProperty> properties;
     private Map<String, Object> editor;
+    private Map<String, Object> config;
     private String path;
     private InterpreterOption option;
     private InterpreterRunner runner;
@@ -485,6 +486,14 @@ public abstract class Interpreter {
 
     public InterpreterRunner getRunner() {
       return runner;
+    }
+
+    public Map<String, Object> getConfig() {
+      return config;
+    }
+
+    public void setConfig(Map<String, Object> config) {
+      this.config = config;
     }
   }
 
