@@ -120,8 +120,6 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
       "completionKey": "TAB"
     },
     "config": {
-      "fontSize": 9,
-      "colWidth": 12,
       "runOnSelectionChange": true/false,
       "title": true/false
     }

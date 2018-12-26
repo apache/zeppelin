@@ -7,8 +7,6 @@
     "properties": {
     },
     "config": {
-      "fontSize": 9,
-      "colWidth": 12,
       "runOnSelectionChange": false,
       "title": true
     },

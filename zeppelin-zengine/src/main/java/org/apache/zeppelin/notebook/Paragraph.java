@@ -94,6 +94,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
+  private transient Boolean configSettingNeedUpdate = true;
   private transient String scriptText;
   private transient Interpreter interpreter;
   private transient Note note;
@@ -103,10 +104,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
-  private static String  PARAGRAPH_CONFIG_FONTSIZE = "fontSize";
-  private static int     PARAGRAPH_CONFIG_FONTSIZE_DEFAULT = 9;
-  private static String  PARAGRAPH_CONFIG_COLWIDTH = "colWidth";
-  private static int     PARAGRAPH_CONFIG_COLWIDTH_DEFAULT = 12;
   private static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
   private static String  PARAGRAPH_CONFIG_TITLE = "title";
@@ -169,6 +166,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return p;
   }
 
+  private void setIntpText(String newIntptext) {
+    if (null == intpText || !this.intpText.equals(newIntptext)) {
+      this.configSettingNeedUpdate = true;
+    }
+    this.intpText = newIntptext;
+  }
+
   public void clearUserParagraphs() {
     userParagraphMap.clear();
   }
@@ -199,7 +203,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
-        this.intpText = matcher.group(2);
+        setIntpText(matcher.group(2));
 
         if (matcher.groupCount() == 3 && matcher.group(3) != null) {
           String localPropertiesText = matcher.group(3);
@@ -225,7 +229,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
           this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
         }
       } else {
-        this.intpText = "";
+        setIntpText("");
         this.scriptText = this.text.trim();
       }
     }
@@ -462,15 +466,18 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       // After the paragraph is executed,
       // need to apply the paragraph to the configuration in the
       // `interpreter-setting.json` config
-      InterpreterSettingManager intpSettingManager
-          = this.note.getInterpreterSettingManager();
-      if (null != intpSettingManager) {
-        InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
-        if (intpGroup instanceof ManagedInterpreterGroup) {
-          String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
-          Map<String, Object> config
-              = intpSettingManager.getConfigSetting(name);
-          applyConfigSetting(config);
+      if (this.configSettingNeedUpdate) {
+        this.configSettingNeedUpdate = false;
+        InterpreterSettingManager intpSettingManager
+            = this.note.getInterpreterSettingManager();
+        if (null != intpSettingManager) {
+          InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
+          if (null != intpGroup && intpGroup instanceof ManagedInterpreterGroup) {
+            String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
+            Map<String, Object> config
+                = intpSettingManager.getConfigSetting(name);
+            applyConfigSetting(config);
+          }
         }
       }
 
@@ -608,8 +615,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       newConfig = getDefaultConfigSetting();
     }
 
-    List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_FONTSIZE,
-        PARAGRAPH_CONFIG_COLWIDTH, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
+    List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
         PARAGRAPH_CONFIG_TITLE);
     for (String removeKey : keysToRemove) {
       if ((false == newConfig.containsKey(removeKey))
@@ -624,8 +630,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // default parameters of the interpreter
   private Map<String, Object> getDefaultConfigSetting() {
     Map<String, Object> config = new HashMap<>();
-    config.put(PARAGRAPH_CONFIG_FONTSIZE, PARAGRAPH_CONFIG_FONTSIZE_DEFAULT);
-    config.put(PARAGRAPH_CONFIG_COLWIDTH, PARAGRAPH_CONFIG_COLWIDTH_DEFAULT);
     config.put(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT);
     config.put(PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_TITLE_DEFAULT);
 

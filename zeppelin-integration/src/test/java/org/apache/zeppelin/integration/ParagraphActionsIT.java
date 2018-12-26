@@ -549,6 +549,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               CoreMatchers.equalTo("Hello world"));
 
       runParagraph(1);
+      ZeppelinITUtils.sleep(1000, false);
       waitForParagraph(1, "FINISHED");
       collector.checkThat("Only after running the paragraph, we can see the newly updated output",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'text plainTextContent')]")).getText(),

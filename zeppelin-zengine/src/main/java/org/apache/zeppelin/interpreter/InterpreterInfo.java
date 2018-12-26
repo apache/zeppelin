@@ -33,11 +33,12 @@ public class InterpreterInfo {
   private Map<String, Object> config;
 
   public InterpreterInfo(String className, String name, boolean defaultInterpreter,
-      Map<String, Object> editor) {
+                         Map<String, Object> editor, Map<String, Object> config) {
     this.className = className;
     this.name = name;
     this.defaultInterpreter = defaultInterpreter;
     this.editor = editor;
+    this.config = config;
   }
 
   public String getName() {

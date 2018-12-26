@@ -400,7 +400,8 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       //TODO(zjffdu) merge RegisteredInterpreter & InterpreterInfo
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
-              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
+              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor(),
+              registeredInterpreter.getConfig());
       interpreterInfo.setConfig(registeredInterpreter.getConfig());
       group = registeredInterpreter.getGroup();
       runner = registeredInterpreter.getRunner();
