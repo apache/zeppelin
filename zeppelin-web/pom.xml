@@ -111,7 +111,7 @@
             <phase>test</phase>
             <configuration>
               <skip>${web.e2e.disabled}</skip>
-              <arguments>run test</arguments>
+              <arguments>run karma-test</arguments>
             </configuration>
           </execution>
 

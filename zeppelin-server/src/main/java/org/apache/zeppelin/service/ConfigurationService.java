@@ -27,31 +27,13 @@ import java.io.IOException;
 import java.util.Map;
 
 public class ConfigurationService {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationService.class);
-  private static ConfigurationService self;
 
   private ZeppelinConfiguration zConf;
 
   @Inject
   public ConfigurationService(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
-    ConfigurationService.self = this;
-  }
-
-  /**
-   * This is a temporal trick to connect injected class to non-injected class like {@link
-   * org.apache.zeppelin.socket.NotebookServer}. This will be removed after refactoring of Notebook*
-   * classes.
-   *
-   * @return ConfigurationService
-   */
-  public static ConfigurationService getInstance() {
-    if (null == ConfigurationService.self) {
-      throw new IllegalStateException("ConfigurationService should be called after injection");
-    } else {
-      return ConfigurationService.self;
-    }
   }
 
   public Map<String, String> getAllProperties(ServiceContext context,

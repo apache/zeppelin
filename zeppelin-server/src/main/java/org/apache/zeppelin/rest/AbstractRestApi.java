@@ -18,22 +18,27 @@
 package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Sets;
+import java.io.IOException;
+import java.util.Set;
+import javax.ws.rs.WebApplicationException;
+import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.utils.SecurityUtils;
-
-import javax.ws.rs.WebApplicationException;
-import java.io.IOException;
-import java.util.Set;
 
 public class AbstractRestApi {
 
+  protected SecurityService securityService;
+
+  protected AbstractRestApi(SecurityService securityService) {
+    this.securityService = securityService;
+  }
+
   protected ServiceContext getServiceContext() {
-    AuthenticationInfo authInfo = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    AuthenticationInfo authInfo = new AuthenticationInfo(securityService.getPrincipal());
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(SecurityUtils.getPrincipal());
-    userAndRoles.addAll(SecurityUtils.getAssociatedRoles());
+    userAndRoles.add(securityService.getPrincipal());
+    userAndRoles.addAll(securityService.getAssociatedRoles());
     return new ServiceContext(authInfo, userAndRoles);
   }
 

@@ -26,6 +26,8 @@ import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.zeppelin.helium.Helium;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,14 +43,15 @@ import java.util.Set;
 import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.helium.HeliumRegistry;
 import org.apache.zeppelin.helium.HeliumType;
-import org.apache.zeppelin.server.ZeppelinServer;
 
 public class HeliumRestApiTest extends AbstractTestRestApi {
-  Gson gson = new Gson();
+  private Gson gson = new Gson();
+  private static Helium helium;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
+    helium = TestUtils.getInstance(Helium.class);
   }
 
   @AfterClass
@@ -59,33 +62,34 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
   @Before
   public void setUp() throws IOException {
     HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
-    ZeppelinServer.helium.clear();
-    ZeppelinServer.helium.addRegistry(registry);
+    helium.clear();
 
     registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name1",
-                "desc1",
-                "artifact1",
-                "className1",
-                new String[][]{},
-                "",
-                ""));
+        HeliumType.APPLICATION,
+        "name1",
+        "desc1",
+        "artifact1",
+        "className1",
+        new String[][]{},
+        "",
+        ""));
 
     registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name2",
-                "desc2",
-                "artifact2",
-                "className2",
-                new String[][]{},
-                "",
-                ""));
+        HeliumType.APPLICATION,
+        "name2",
+        "desc2",
+        "artifact2",
+        "className2",
+        new String[][]{},
+        "",
+        ""));
+
+    helium.addRegistry(registry);
   }
 
   @After
   public void tearDown() {
-    ZeppelinServer.helium.clear();
+    helium.clear();
   }
 
   @Test
@@ -96,7 +100,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
             new TypeToken<Map<String, Object>>() { }.getType());
     Map<String, Set<String>> body = (Map<String, Set<String>>) resp.get("body");
 
-    assertEquals(body.size(), 2);
+    assertEquals(2, body.size());
     assertTrue(body.containsKey("name1"));
     assertTrue(body.containsKey("name2"));
   }
@@ -112,7 +116,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertEquals(body1.size(), 0);
 
     // Enable "name1" package
-    ZeppelinServer.helium.enable("name1", "artifact1");
+    helium.enable("name1", "artifact1");
 
     GetMethod get2 = httpGet("/helium/enabledPackage");
     assertThat(get2, isAllowed());
@@ -196,7 +200,7 @@ public class HeliumRestApiTest extends AbstractTestRestApi {
     assertEquals(body1.size(), 0);
 
     //We assume allPackages list has been refreshed before sorting
-    ZeppelinServer.helium.getAllPackageInfo();
+    helium.getAllPackageInfo();
 
     String postRequestJson = "[name2, name1]";
     PostMethod post = httpPost("/helium/order/visualization", postRequestJson);

@@ -17,20 +17,17 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.io.Files;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -44,10 +41,6 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-
-import org.apache.zeppelin.notebook.ParagraphJobListener;
-import org.apache.zeppelin.scheduler.Job.Status;
-
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -109,7 +102,7 @@ public class NotebookRepoSyncTest {
     notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
     notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials);
+        notebookAuthorization, credentials, null);
     anonymous = new AuthenticationInfo("anonymous");
   }
 
@@ -249,7 +242,7 @@ public class NotebookRepoSyncTest {
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials);
+        notebookAuthorization, credentials, null);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
@@ -297,7 +290,7 @@ public class NotebookRepoSyncTest {
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
     Notebook vNotebookSync = new Notebook(vConf, vRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials);
+        notebookAuthorization, credentials, null);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);

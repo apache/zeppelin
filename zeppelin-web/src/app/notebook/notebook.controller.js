@@ -1696,14 +1696,16 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   let content = document.getElementById('content');
-  $scope.addEvent({
-    eventID: content.id,
-    eventType: 'resize',
-    element: window,
-    onDestroyElement: content,
-    handler: () => {
-      const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
-      angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
-    },
-  });
+  if (content && content.id) {
+    $scope.addEvent({
+      eventID: content.id,
+      eventType: 'resize',
+      element: window,
+      onDestroyElement: content,
+      handler: () => {
+        const actionbarHeight = document.getElementById('actionbar').lastElementChild.clientHeight;
+        angular.element(document.getElementById('content')).css('padding-top', actionbarHeight - 20);
+      },
+    });
+  }
 }

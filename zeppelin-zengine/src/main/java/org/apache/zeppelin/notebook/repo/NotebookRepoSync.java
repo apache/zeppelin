@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook.repo;
 
 import com.google.common.collect.Lists;
+import javax.inject.Inject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -52,6 +53,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
    * @param conf
    */
   @SuppressWarnings("static-access")
+  @Inject
   public NotebookRepoSync(ZeppelinConfiguration conf) throws IOException {
     init(conf);
   }

@@ -781,7 +781,9 @@ public class Note implements JsonSerializable {
     boolean oldStatus = (boolean) infoMap.getOrDefault("isRunning", false);
     if (oldStatus != runStatus) {
       infoMap.put("isRunning", runStatus);
-      paragraphJobListener.noteRunningStatusChange(this.id, runStatus);
+      if (paragraphJobListener != null) {
+        paragraphJobListener.noteRunningStatusChange(this.id, runStatus);
+      }
     }
   }
 

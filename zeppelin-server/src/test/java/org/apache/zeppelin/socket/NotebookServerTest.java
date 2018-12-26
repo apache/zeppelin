@@ -34,8 +34,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashSet;
 import java.util.List;
+import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -45,15 +45,16 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -64,15 +65,18 @@ import org.junit.Test;
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
+  private static NotebookService notebookService;
   private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
   @BeforeClass
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
-    notebook = ZeppelinServer.notebook;
-    notebookServer = spy(ZeppelinServer.notebookWsServer);
-    NotebookService notebookService = new NotebookService(notebook);
+    notebook = TestUtils.getInstance(Notebook.class);
+    notebookServer = spy(NotebookServer.getInstance());
+    notebookService =
+        new NotebookService(
+            notebook, NotebookAuthorization.getInstance(), ZeppelinConfiguration.create());
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);
     when(notebookServer.getConfigurationService()).thenReturn(configurationService);
@@ -92,6 +96,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void checkOrigin() throws UnknownHostException {
     NotebookServer server = new NotebookServer();
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
@@ -101,6 +107,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void checkInvalidOrigin(){
     NotebookServer server = new NotebookServer();
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     assertFalse(server.checkOrigin(mockRequest, "http://evillocalhost:8080"));
   }
 
@@ -275,11 +283,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("value", value)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
     final Notebook notebook = mock(Notebook.class);
+    final NotebookServer server = new NotebookServer();
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
-    Notebook originalNotebook = ZeppelinServer.notebook;
-    ZeppelinServer.notebook = notebook;
 
     when(notebook.getNote("noteId")).thenReturn(note);
     final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
@@ -315,9 +323,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(mdRegistry, never()).addAndNotifyRemoteProcess(varName, value, "noteId", null);
 
     verify(otherConn).send(mdMsg1);
-
-    // reset it to original notebook
-    ZeppelinServer.notebook = originalNotebook;
   }
 
   @Test
@@ -330,10 +335,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
             .put("name", varName)
             .put("paragraphId", "paragraphId");
 
-    final NotebookServer server = new NotebookServer();
     final Notebook notebook = mock(Notebook.class);
-    Notebook originalNotebook = ZeppelinServer.notebook;
-    ZeppelinServer.notebook = notebook;
+    final NotebookServer server = new NotebookServer();
+    server.setNotebook(() -> notebook);
+    server.setNotebookService(() -> notebookService);
     final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
     when(notebook.getNote("noteId")).thenReturn(note);
     final Paragraph paragraph = mock(Paragraph.class, RETURNS_DEEP_STUBS);
@@ -366,9 +371,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(mdRegistry, never()).removeAndNotifyRemoteProcess(varName, "noteId", null);
 
     verify(otherConn).send(mdMsg1);
-
-    // reset it to original notebook
-    ZeppelinServer.notebook = originalNotebook;
   }
 
   @Test

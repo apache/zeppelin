@@ -16,12 +16,8 @@
  */
 package org.apache.zeppelin.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -30,9 +26,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.utils.CorsUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Cors filter.
@@ -47,7 +44,7 @@ public class CorsFilter implements Filter {
     String origin = "";
 
     try {
-      if (SecurityUtils.isValidOrigin(sourceHost, ZeppelinConfiguration.create())) {
+      if (CorsUtils.isValidOrigin(sourceHost, ZeppelinConfiguration.create())) {
         origin = sourceHost;
       }
     } catch (URISyntaxException e) {
@@ -85,5 +82,5 @@ public class CorsFilter implements Filter {
   public void destroy() {}
 
   @Override
-  public void init(FilterConfig filterConfig) throws ServletException {}
+  public void init(FilterConfig filterConfig) {}
 }

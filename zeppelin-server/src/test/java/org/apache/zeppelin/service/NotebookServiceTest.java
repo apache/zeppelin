@@ -18,9 +18,29 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Maps;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -38,36 +58,12 @@ import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class NotebookServiceTest {
 
@@ -110,8 +106,9 @@ public class NotebookServiceTest {
             mockInterpreterSettingManager,
             searchService,
             notebookAuthorization,
-            credentials);
-    notebookService = new NotebookService(notebook);
+            credentials,
+            null);
+    notebookService = new NotebookService(notebook, notebookAuthorization, zeppelinConfiguration);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
@@ -160,9 +157,15 @@ public class NotebookServiceTest {
     assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
 
     // create another note
-    Note note2 = notebookService.createNote("/folder_4/note2", "test", context, callback);
+    Note note2 = notebookService.createNote("/note2", "test", context, callback);
     assertEquals("note2", note2.getName());
     verify(callback).onSuccess(note2, context);
+
+    // rename note
+    reset(callback);
+    notebookService.renameNote(note2.getId(), "new_note2", true, context, callback);
+    verify(callback).onSuccess(note2, context);
+    assertEquals("new_note2", note2.getName());
 
     // list note
     reset(callback);
@@ -172,7 +175,7 @@ public class NotebookServiceTest {
 
     // delete note
     reset(callback);
-    notebookService.removeNote(note1.getId(), context, callback);
+    notebookService.removeNote(note2.getId(), context, callback);
     verify(callback).onSuccess("Delete note successfully", context);
 
     // list note again
@@ -182,7 +185,7 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(notesInfo, context);
 
     // delete folder
-    notesInfo = notebookService.removeFolder("/folder_4", context, callback);
+    notesInfo = notebookService.removeFolder("/folder_3", context, callback);
     verify(callback).onSuccess(notesInfo, context);
 
     // list note again

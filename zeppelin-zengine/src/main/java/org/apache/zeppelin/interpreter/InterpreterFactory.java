@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import com.google.common.base.Preconditions;
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public class InterpreterFactory {
 
   private final InterpreterSettingManager interpreterSettingManager;
 
+  @Inject
   public InterpreterFactory(InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
   }

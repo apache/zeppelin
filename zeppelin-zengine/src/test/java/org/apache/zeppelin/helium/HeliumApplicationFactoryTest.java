@@ -50,7 +50,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   public void setUp() throws Exception {
     super.setUp();
 
-    heliumAppFactory = new HeliumApplicationFactory();
     // set AppEventListener properly
     for (InterpreterSetting interpreterSetting : interpreterSettingManager.get()) {
       interpreterSetting.setAppEventListener(heliumAppFactory);
@@ -59,7 +58,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
     SearchService search = mock(SearchService.class);
     notebookRepo = mock(NotebookRepo.class);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
-    notebook =
+    /*notebook =
         new Notebook(
             conf,
             notebookRepo,
@@ -67,10 +66,9 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             interpreterSettingManager,
             search,
             notebookAuthorization,
-            new Credentials(false, null, null));
+            new Credentials(false, null, null));*/
 
-
-    heliumAppFactory.setNotebook(notebook);
+    heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
     notebook.addNotebookEventListener(heliumAppFactory);
 
