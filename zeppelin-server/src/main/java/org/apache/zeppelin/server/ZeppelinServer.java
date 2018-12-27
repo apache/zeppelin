@@ -224,7 +224,7 @@ public class ZeppelinServer extends ResourceConfig {
 
                 LOG.info("JMX Enabled with port: {}", port);
               } catch (Exception e) {
-                LOG.info("Error while setting JMX", e);
+                LOG.warn("Error while setting JMX", e);
               }
             });
 
