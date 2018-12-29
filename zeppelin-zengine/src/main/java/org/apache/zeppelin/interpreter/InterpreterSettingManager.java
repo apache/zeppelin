@@ -54,6 +54,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
+import org.eclipse.jetty.util.annotation.ManagedAttribute;
+import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.Proxy;
@@ -77,7 +79,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -88,8 +89,8 @@ import java.util.stream.Collectors;
  * (load/create/update/remove/get)
  * TODO(zjffdu) We could move it into another separated component.
  */
-public class InterpreterSettingManager implements InterpreterSettingManagerMBean,
-    NoteEventListener {
+@ManagedObject("interpreterSettingManager")
+public class InterpreterSettingManager implements NoteEventListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -870,7 +871,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
-  @Override
+  @ManagedAttribute
   public Set<String> getRunningInterpreters() {
     Set<String> runningInterpreters = Sets.newHashSet();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {

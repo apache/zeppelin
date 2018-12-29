@@ -18,9 +18,13 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.EnumSet;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.management.remote.JMXServiceURL;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -57,6 +61,8 @@ import org.apache.zeppelin.service.ShiroSecurityService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.jmx.ConnectorServer;
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -177,6 +183,51 @@ public class ZeppelinServer extends ResourceConfig {
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
 
+    // JMX Enable
+    Stream.of("ZEPPELIN_JMX_ENABLE")
+        .map(System::getenv)
+        .map(Boolean::parseBoolean)
+        .filter(Boolean::booleanValue)
+        .map(jmxEnabled -> "ZEPPELIN_JMX_PORT")
+        .map(System::getenv)
+        .map(
+            portString -> {
+              try {
+                return Integer.parseInt(portString);
+              } catch (Exception e) {
+                return null;
+              }
+            })
+        .filter(Objects::nonNull)
+        .forEach(
+            port -> {
+              try {
+                MBeanContainer mbeanContainer =
+                    new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+                jettyWebServer.addEventListener(mbeanContainer);
+                jettyWebServer.addBean(mbeanContainer);
+
+                JMXServiceURL jmxURL =
+                    new JMXServiceURL(
+                        String.format(
+                            "service:jmx:rmi://0.0.0.0:%d/jndi/rmi://0.0.0.0:%d/jmxrmi",
+                            port, port));
+                ConnectorServer jmxServer =
+                    new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
+                jettyWebServer.addBean(jmxServer);
+
+                // Add JMX Beans
+                // TODO(jl): Need to investigate more about injection and jmx
+                jettyWebServer.addBean(
+                    sharedServiceLocator.getService(InterpreterSettingManager.class));
+                jettyWebServer.addBean(sharedServiceLocator.getService(NotebookServer.class));
+
+                LOG.info("JMX Enabled with port: {}", port);
+              } catch (Exception e) {
+                LOG.warn("Error while setting JMX", e);
+              }
+            });
+
     LOG.info("Starting zeppelin server");
     try {
       jettyWebServer.start(); // Instantiates ZeppelinServer
@@ -197,10 +248,7 @@ public class ZeppelinServer extends ResourceConfig {
                   try {
                     jettyWebServer.stop();
                     if (!conf.isRecoveryEnabled()) {
-                      sharedServiceLocator
-                          .getService(Notebook.class)
-                          .getInterpreterSettingManager()
-                          .close();
+                      sharedServiceLocator.getService(InterpreterSettingManager.class).close();
                     }
                     sharedServiceLocator.getService(Notebook.class).close();
                     Thread.sleep(3000);
@@ -223,7 +271,7 @@ public class ZeppelinServer extends ResourceConfig {
 
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
-      sharedServiceLocator.getService(Notebook.class).getInterpreterSettingManager().close();
+      sharedServiceLocator.getService(InterpreterSettingManager.class).close();
     }
   }
 
