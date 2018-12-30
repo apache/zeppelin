@@ -87,6 +87,12 @@ If you're interested in contribution, please check [Contributing to Apache Zeppe
 
 ### Build profiles
 
+#### Security layer
+
+##### `-Poidc`
+
+To build zeppelin with OpenId Connect layer.
+
 #### Spark Interpreter
 
 To build with a specific Spark version, Hadoop version or specific features, define one or more of the following profiles and options:
@@ -174,9 +180,9 @@ Bulid examples under zeppelin-examples directory
 Here are some examples with several options:
 
 ```bash
-# build with spark-2.1, scala-2.11
+# build with spark-2.1, scala-2.11 and OIDC
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pscala-2.11 -DskipTests -Poidc
 
 # build with spark-2.0, scala-2.11
 ./dev/change_scala_version.sh 2.11
