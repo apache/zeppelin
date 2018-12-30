@@ -81,10 +81,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -896,18 +894,22 @@ public class InterpreterSettingManager implements NoteEventListener {
     }
   }
 
+  public Map<String, String> extractProcessInfo(ManagedInterpreterGroup mig) {
+    HashMap<String, String> info = new HashMap<>();
+    info.put("name", mig.getId());
+    info.put("group", mig.getInterpreterSetting().getGroup());
+    info.put("host", mig.getInterpreterProcess().getHost());
+    info.put("port", String.valueOf(mig.getInterpreterProcess().getPort()));
+    return info;
+  }
+
   @ManagedAttribute
   public List<Map<String, String>> getRunningInterpretersInfo() {
     return interpreterSettings.values().stream()
         .map(InterpreterSetting::getAllInterpreterGroups)
         .flatMap(Collection::stream)
         .filter(mig -> mig.getInterpreterProcess() != null)
-        .map(mig -> ImmutableMap.<String, String>builder()
-            .put("name", mig.getId())
-            .put("group", mig.getInterpreterSetting().getGroup())
-            .put("host", mig.getInterpreterProcess().getHost())
-            .put("port", String.valueOf(mig.getInterpreterProcess().getPort()))
-            .build())
+        .map(this::extractProcessInfo)
         .collect(Collectors.toList());
   }
 

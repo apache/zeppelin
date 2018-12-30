@@ -17,12 +17,10 @@
 package org.apache.zeppelin.socket;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -59,7 +57,6 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.Note;
@@ -1860,54 +1857,47 @@ public class NotebookServer extends WebSocketServlet
 
   @ManagedOperation
   public List<Map<String, String>> getParagraphsInfo(String noteId) {
-    Note note = notebook().getNote(noteId);
+    Note note = getNotebook().getNote(noteId);
     return note.generateParagraphsInfo();
   }
 
   /**
-   * Extract running paragraphs info grouped by running interpreters.
+   * Extract info about running interpreters with additional paragraph info.
    */
   @ManagedOperation
   public List<Map<String, String>> getRunningInterpretersParagraphInfo() {
-    return notebook().getAllNotes().stream()
+    return getNotebook().getAllNotes().stream()
         .map(Note::getParagraphs)
         .flatMap(Collection::stream)
         .filter(Paragraph::isRunning)
-        .map(this::addBindedInterpreterInfo)
-        .flatMap(Collection::stream)
+        .map(this::extractParagraphInfo)
         .collect(Collectors.toList());
   }
 
   /**
-   * Update running interpreter info with paragraph data.
+   * Extract paragraph's interpreter info with paragraph data.
    */
-  private List<Map<String, String>> addBindedInterpreterInfo(Paragraph paragraph) {
+  private Map<String, String> extractParagraphInfo(Paragraph paragraph) {
     try {
-      final RemoteInterpreterProcess process = ((ManagedInterpreterGroup) paragraph
-          .getBindedInterpreter().getInterpreterGroup()).getInterpreterProcess();
-      return notebook().getInterpreterSettingManager().getRunningInterpretersInfo().stream()
-          // find interpreter with same port and host
-          .filter(interpreterInfo ->
-              Integer.valueOf(interpreterInfo.get("port")) == process.getPort()
-              && interpreterInfo.get("host").equals(process.getHost()))
-          .map(interpreterInfo -> ImmutableMap.<String, String>builder()
-              //add all info about interpreter
-              .putAll(interpreterInfo)
-              // add paragraph info
-              .put("interpreterText", paragraph.getIntpText())
-              .put("noteName", paragraph.getNote().getName())
-              .put("noteId", paragraph.getNote().getId())
-              .put("id", paragraph.getId())
-              .put("user", paragraph.getUser())
-              .build())
-          .collect(Collectors.toList());
+      final ManagedInterpreterGroup process = (ManagedInterpreterGroup) paragraph
+          .getBindedInterpreter().getInterpreterGroup();
+      // add all info about binded interpreter
+      HashMap<String, String> info = new HashMap<>(
+          getNotebook().getInterpreterSettingManager().extractProcessInfo(process));
+      // add paragraph info
+      info.put("interpreterText", paragraph.getIntpText());
+      info.put("noteName", paragraph.getNote().getName());
+      info.put("noteId", paragraph.getNote().getId());
+      info.put("id", paragraph.getId());
+      info.put("user", paragraph.getUser());
+      return info;
     } catch (InterpreterNotFoundException e) {
       LOG.error("Failed to get binded interpreter for paragraph {}", paragraph, e);
+      return new HashMap<>();
     }
-    return Collections.emptyList();
   }
 
-  @Override
+  @ManagedOperation
   public void sendMessage(String message) {
     Message m = new Message(OP.NOTICE);
     m.data.put("notice", message);
