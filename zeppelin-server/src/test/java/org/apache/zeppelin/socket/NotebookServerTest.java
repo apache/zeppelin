@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.anyString;
@@ -36,7 +37,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -244,6 +244,165 @@ public class NotebookServerTest extends AbstractTestRestApi {
     // expect object is broadcasted except for where the update is created
     verify(sock1, times(0)).send(anyString());
     verify(sock2, times(1)).send(anyString());
+
+    notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  @Test
+  public void testAngularObjectSaveToNote()
+      throws IOException, InterruptedException {
+    // create a notebook
+    Note note1 = notebook.createNote("note1", "angular", anonymous);
+
+    // get reference to interpreterGroup
+    InterpreterGroup interpreterGroup = null;
+    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
+        .getInterpreterSettings(note1.getId());
+    for (InterpreterSetting setting : settings) {
+      if (setting.getName().equals("angular")) {
+        interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
+        break;
+      }
+    }
+
+    // start interpreter process
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
+    p1.setAuthenticationInfo(anonymous);
+    note1.run(p1.getId());
+
+    // wait for paragraph finished
+    while (true) {
+      if (p1.getStatus() == Job.Status.FINISHED) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
+    Thread.sleep(1000);
+
+    // create two sockets and open it
+    NotebookSocket sock1 = createWebSocket();
+
+    notebookServer.onOpen(sock1);
+    verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
+    // open the same notebook from sockets
+    notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+
+    reset(sock1);
+
+    // bind object from sock1
+    notebookServer.onMessage(sock1,
+        new Message(OP.ANGULAR_OBJECT_CLIENT_BIND)
+            .put("noteId", note1.getId())
+            .put("paragraphId", p1.getId())
+            .put("name", "COMMAND_TYPE")
+            .put("value", "COMMAND_TYPE_VALUE")
+            .put("interpreterGroupId", interpreterGroup.getId()).toJson());
+    List<AngularObject> list = note1.getAngularObjects("angular-shared_process");
+    assertEquals(list.size(), 1);
+    assertEquals(list.get(0).getNoteId(), note1.getId());
+    assertEquals(list.get(0).getParagraphId(), p1.getId());
+    assertEquals(list.get(0).getName(), "COMMAND_TYPE");
+    assertEquals(list.get(0).get(), "COMMAND_TYPE_VALUE");
+    // Check if the interpreterGroup AngularObjectRegistry is updated
+    Map<String, Map<String, AngularObject>> mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
+    AngularObject ao = mapRegistry.get(note1.getId()+"_"+p1.getId()).get("COMMAND_TYPE");
+    assertEquals(ao.getName(), "COMMAND_TYPE");
+    assertEquals(ao.get(), "COMMAND_TYPE_VALUE");
+
+    // update bind object from sock1
+    notebookServer.onMessage(sock1,
+        new Message(OP.ANGULAR_OBJECT_UPDATED)
+            .put("noteId", note1.getId())
+            .put("paragraphId", p1.getId())
+            .put("name", "COMMAND_TYPE")
+            .put("value", "COMMAND_TYPE_VALUE_UPDATE")
+            .put("interpreterGroupId", interpreterGroup.getId()).toJson());
+    list = note1.getAngularObjects("angular-shared_process");
+    assertEquals(list.size(), 1);
+    assertEquals(list.get(0).getNoteId(), note1.getId());
+    assertEquals(list.get(0).getParagraphId(), p1.getId());
+    assertEquals(list.get(0).getName(), "COMMAND_TYPE");
+    assertEquals(list.get(0).get(), "COMMAND_TYPE_VALUE_UPDATE");
+    // Check if the interpreterGroup AngularObjectRegistry is updated
+    mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
+    AngularObject ao1 = mapRegistry.get(note1.getId()+"_"+p1.getId()).get("COMMAND_TYPE");
+    assertEquals(ao1.getName(), "COMMAND_TYPE");
+    assertEquals(ao1.get(), "COMMAND_TYPE_VALUE_UPDATE");
+
+    // unbind object from sock1
+    notebookServer.onMessage(sock1,
+        new Message(OP.ANGULAR_OBJECT_CLIENT_UNBIND)
+            .put("noteId", note1.getId())
+            .put("paragraphId", p1.getId())
+            .put("name", "COMMAND_TYPE")
+            .put("value", "COMMAND_TYPE_VALUE")
+            .put("interpreterGroupId", interpreterGroup.getId()).toJson());
+    list = note1.getAngularObjects("angular-shared_process");
+    assertEquals(list.size(), 0);
+    // Check if the interpreterGroup AngularObjectRegistry is delete
+    mapRegistry = interpreterGroup.getAngularObjectRegistry().getRegistry();
+    AngularObject ao2 = mapRegistry.get(note1.getId()+"_"+p1.getId()).get("COMMAND_TYPE");
+    assertNull(ao2);
+
+    notebook.removeNote(note1.getId(), anonymous);
+  }
+
+  @Test
+  public void testLoadAngularObjectFromNote() throws IOException, InterruptedException {
+    // create a notebook
+    Note note1 = notebook.createNote("note1", anonymous);
+
+    // get reference to interpreterGroup
+    InterpreterGroup interpreterGroup = null;
+    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
+        .getInterpreterSettings(note1.getId());
+    for (InterpreterSetting setting : settings) {
+      if (setting.getName().equals("angular")) {
+        interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
+        break;
+      }
+    }
+
+    // start interpreter process
+    Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%angular <h2>Bind here : {{COMMAND_TYPE}}</h2>");
+    p1.setAuthenticationInfo(anonymous);
+    note1.run(p1.getId());
+
+    // wait for paragraph finished
+    while (true) {
+      if (p1.getStatus() == Job.Status.FINISHED) {
+        break;
+      }
+      Thread.sleep(100);
+    }
+    // sleep for 1 second to make sure job running thread finish to fire event. See ZEPPELIN-3277
+    Thread.sleep(1000);
+
+    // set note AngularObject
+    AngularObject ao = new AngularObject("COMMAND_TYPE", "COMMAND_TYPE_VALUE", note1.getId(), p1.getId(), null);
+    note1.addOrUpdateAngularObject("angular-shared_process", ao);
+
+    // create sockets and open it
+    NotebookSocket sock1 = createWebSocket();
+    notebookServer.onOpen(sock1);
+
+    // Check the AngularObjectRegistry of the interpreterGroup before executing GET_NOTE
+    Map<String, Map<String, AngularObject>> mapRegistry1 = interpreterGroup.getAngularObjectRegistry().getRegistry();
+    assertEquals(mapRegistry1.size(), 0);
+
+    // open the notebook from sockets, AngularObjectRegistry that triggers the update of the interpreterGroup
+    notebookServer.onMessage(sock1, new Message(OP.GET_NOTE).put("id", note1.getId()).toJson());
+    Thread.sleep(1000);
+
+    // After executing GET_NOTE, check the AngularObjectRegistry of the interpreterGroup
+    Map<String, Map<String, AngularObject>> mapRegistry2 = interpreterGroup.getAngularObjectRegistry().getRegistry();
+    assertEquals(mapRegistry1.size(), 2);
+    AngularObject ao1 = mapRegistry2.get(note1.getId()+"_"+p1.getId()).get("COMMAND_TYPE");
+    assertEquals(ao1.getName(), "COMMAND_TYPE");
+    assertEquals(ao1.get(), "COMMAND_TYPE_VALUE");
 
     notebook.removeNote(note1.getId(), anonymous);
   }
