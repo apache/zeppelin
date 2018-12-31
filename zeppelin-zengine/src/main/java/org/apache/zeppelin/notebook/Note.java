@@ -31,6 +31,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.notebook.utility.IdHashes;
@@ -287,6 +288,87 @@ public class Note implements JsonSerializable {
 
   Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
+  }
+
+  public List<AngularObject> getAngularObjects(String intpGroupId) {
+    if (!angularObjects.containsKey(intpGroupId)) {
+      return new ArrayList<>();
+    }
+    return angularObjects.get(intpGroupId);
+  }
+
+  /**
+   * Add or update the note AngularObject.
+   */
+  public void addOrUpdateAngularObject(String intpGroupId, AngularObject angularObject) {
+    List<AngularObject> angularObjectList;
+    if (!angularObjects.containsKey(intpGroupId)) {
+      angularObjectList = new ArrayList<>();
+      angularObjects.put(intpGroupId, angularObjectList);
+    } else {
+      angularObjectList = angularObjects.get(intpGroupId);
+
+      // Delete existing AngularObject
+      Iterator<AngularObject> iter = angularObjectList.iterator();
+      while(iter.hasNext()){
+        String noteId = "", paragraphId = "", name = "";
+        Object object = iter.next();
+        if (object instanceof AngularObject) {
+          AngularObject ao = (AngularObject)object;
+          noteId = ao.getNoteId();
+          paragraphId = ao.getParagraphId();
+          name = ao.getName();
+        } else if (object instanceof RemoteAngularObject) {
+          RemoteAngularObject rao = (RemoteAngularObject)object;
+          noteId = rao.getNoteId();
+          paragraphId = rao.getParagraphId();
+          name = rao.getName();
+        } else {
+          continue;
+        }
+        if (StringUtils.equals(noteId, angularObject.getNoteId())
+            && StringUtils.equals(paragraphId, angularObject.getParagraphId())
+            && StringUtils.equals(name, angularObject.getName())) {
+          iter.remove();
+        }
+      }
+    }
+
+    angularObjectList.add(angularObject);
+  }
+
+  /**
+   * Delete the note AngularObject.
+   */
+  public void deleteAngularObject(String intpGroupId, AngularObject angularObject) {
+    List<AngularObject> angularObjectList;
+    if (!angularObjects.containsKey(intpGroupId)) {
+      return;
+    } else {
+      angularObjectList = angularObjects.get(intpGroupId);
+
+      // Delete existing AngularObject
+      Iterator<AngularObject> iter = angularObjectList.iterator();
+      while(iter.hasNext()){
+        String noteId = "", paragraphId = "";
+        Object object = iter.next();
+        if (object instanceof AngularObject) {
+          AngularObject ao = (AngularObject)object;
+          noteId = ao.getNoteId();
+          paragraphId = ao.getParagraphId();
+        } else if (object instanceof RemoteAngularObject) {
+          RemoteAngularObject rao = (RemoteAngularObject)object;
+          noteId = rao.getNoteId();
+          paragraphId = rao.getParagraphId();
+        } else {
+          continue;
+        }
+        if (StringUtils.equals(noteId, angularObject.getNoteId())
+            && StringUtils.equals(paragraphId, angularObject.getParagraphId())) {
+          iter.remove();
+        }
+      }
+    }
   }
 
   /**

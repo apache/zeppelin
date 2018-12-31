@@ -608,8 +608,7 @@ public class NotebookServer extends WebSocketServlet
     return true;
   }
 
-  private void getNote(NotebookSocket conn,
-                       Message fromMessage) throws IOException {
+  private void getNote(NotebookSocket conn, Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
       return;
@@ -620,9 +619,35 @@ public class NotebookServer extends WebSocketServlet
           public void onSuccess(Note note, ServiceContext context) throws IOException {
             connectionManager.addNoteConnection(note.getId(), conn);
             conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+            updateAngularObjectRegistry(conn, note);
             sendAllAngularObjects(note, context.getAutheInfo().getUser(), conn);
           }
         });
+  }
+
+  /**
+   * Update the AngularObject object in the note to InterpreterGroup and AngularObjectRegistry.
+   */
+  private void updateAngularObjectRegistry(NotebookSocket conn, Note note) {
+    for(Paragraph paragraph : note.getParagraphs()) {
+      InterpreterGroup interpreterGroup = null;
+      try {
+        interpreterGroup = findInterpreterGroupForParagraph(note, paragraph.getId());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      RemoteAngularObjectRegistry registry = (RemoteAngularObjectRegistry)
+          interpreterGroup.getAngularObjectRegistry();
+
+      List<AngularObject> angularObjects = note.getAngularObjects(interpreterGroup.getId());
+      for (AngularObject ao : angularObjects) {
+        if (StringUtils.equals(ao.getNoteId(), note.getId())
+            && StringUtils.equals(ao.getParagraphId(), paragraph.getId())) {
+          pushAngularObjectToRemoteRegistry(ao.getNoteId(), ao.getParagraphId(),
+              ao.getName(), ao.get(), registry, interpreterGroup.getId(), conn);
+        }
+      }
+    }
   }
 
   private void getHomeNote(NotebookSocket conn,
@@ -1033,7 +1058,8 @@ public class NotebookServer extends WebSocketServlet
   }
 
   /**
-   * When angular object updated from client.
+   * 1. When angular object updated from client.
+   * 2. Save AngularObject to note.
    *
    * @param conn        the web socket.
    * @param fromMessage the message.
@@ -1057,13 +1083,16 @@ public class NotebookServer extends WebSocketServlet
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId).put("noteId", noteId)
                     .put("paragraphId", ao.getParagraphId()), conn);
+            Note note = getNotebook().getNote(noteId);
+            note.addOrUpdateAngularObject(interpreterGroupId, ao);
           }
         });
   }
 
   /**
-   * Push the given Angular variable to the target interpreter angular registry given a noteId
-   * and a paragraph id.
+   * 1. Push the given Angular variable to the target interpreter angular
+   *    registry given a noteId and a paragraph id.
+   * 2. Save AngularObject to note.
    */
   protected void angularObjectClientBind(NotebookSocket conn,
                                          Message fromMessage) throws Exception {
@@ -1082,18 +1111,19 @@ public class NotebookServer extends WebSocketServlet
       final InterpreterGroup interpreterGroup = findInterpreterGroupForParagraph(note, paragraphId);
       final RemoteAngularObjectRegistry registry = (RemoteAngularObjectRegistry)
           interpreterGroup.getAngularObjectRegistry();
-      pushAngularObjectToRemoteRegistry(noteId, paragraphId, varName, varValue, registry,
+      AngularObject ao = pushAngularObjectToRemoteRegistry(noteId, paragraphId, varName, varValue, registry,
           interpreterGroup.getId(), conn);
+      note.addOrUpdateAngularObject(interpreterGroup.getId(), ao);
     }
   }
 
   /**
-   * Remove the given Angular variable to the target interpreter(s) angular registry given a noteId
-   * and an optional list of paragraph id(s).
+   * 1. Remove the given Angular variable to the target interpreter(s) angular
+   *    registry given a noteId and an optional list of paragraph id(s).
+   * 2. Delete AngularObject from note.
    */
   protected void angularObjectClientUnbind(NotebookSocket conn,
-                                           Message fromMessage)
-      throws Exception {
+                                           Message fromMessage) throws Exception {
     String noteId = fromMessage.getType("noteId");
     String varName = fromMessage.getType("name");
     String paragraphId = fromMessage.getType("paragraphId");
@@ -1108,9 +1138,9 @@ public class NotebookServer extends WebSocketServlet
       final InterpreterGroup interpreterGroup = findInterpreterGroupForParagraph(note, paragraphId);
       final RemoteAngularObjectRegistry registry = (RemoteAngularObjectRegistry)
           interpreterGroup.getAngularObjectRegistry();
-      removeAngularFromRemoteRegistry(noteId, paragraphId, varName, registry,
+      AngularObject ao = removeAngularFromRemoteRegistry(noteId, paragraphId, varName, registry,
           interpreterGroup.getId(), conn);
-
+      note.deleteAngularObject(interpreterGroup.getId(), ao);
     }
   }
 
@@ -1123,7 +1153,7 @@ public class NotebookServer extends WebSocketServlet
     return paragraph.getBindedInterpreter().getInterpreterGroup();
   }
 
-  private void pushAngularObjectToRemoteRegistry(String noteId, String paragraphId, String varName,
+  private AngularObject pushAngularObjectToRemoteRegistry(String noteId, String paragraphId, String varName,
                                                  Object varValue,
                                                  RemoteAngularObjectRegistry remoteRegistry,
                                                  String interpreterGroupId,
@@ -1135,9 +1165,11 @@ public class NotebookServer extends WebSocketServlet
         .put("angularObject", ao)
         .put("interpreterGroupId", interpreterGroupId).put("noteId", noteId)
         .put("paragraphId", paragraphId), conn);
+
+    return ao;
   }
 
-  private void removeAngularFromRemoteRegistry(String noteId, String paragraphId, String varName,
+  private AngularObject removeAngularFromRemoteRegistry(String noteId, String paragraphId, String varName,
                                                RemoteAngularObjectRegistry remoteRegistry,
                                                String interpreterGroupId,
                                                NotebookSocket conn) {
@@ -1147,6 +1179,8 @@ public class NotebookServer extends WebSocketServlet
         .put("angularObject", ao)
         .put("interpreterGroupId", interpreterGroupId).put("noteId", noteId)
         .put("paragraphId", paragraphId), conn);
+
+    return ao;
   }
 
   private void moveParagraph(NotebookSocket conn,
