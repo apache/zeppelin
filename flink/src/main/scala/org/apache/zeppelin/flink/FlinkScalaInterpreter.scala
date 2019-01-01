@@ -26,7 +26,7 @@ import org.apache.flink.api.scala.FlinkShell._
 import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
 import org.apache.flink.client.program.ClusterClient
 import org.apache.flink.configuration.GlobalConfiguration
-import org.apache.flink.runtime.minicluster.{MiniCluster, StandaloneMiniCluster}
+import org.apache.flink.runtime.minicluster.MiniCluster
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.TableEnvironment
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
@@ -45,8 +45,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
   lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
   private var flinkILoop: FlinkILoop = _
-  private var cluster: Option[Either[Either[StandaloneMiniCluster, MiniCluster],
-    ClusterClient[_]]] = _
+  private var cluster: Option[Either[MiniCluster, ClusterClient[_]]] = _
   private var scalaCompleter: ScalaCompleter = _
   private val interpreterOutput = new InterpreterOutputStream(LOGGER)
 
@@ -68,8 +67,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     val (iLoop, cluster) = try {
       val (host, port, cluster) = fetchConnectionInfo(configuration, config)
       val conf = cluster match {
-        case Some(Left(Left(miniCluster))) => miniCluster.getConfiguration
-        case Some(Left(Right(_))) => configuration
+        case Some(Left(miniCluster)) => configuration
         case Some(Right(yarnCluster)) => yarnCluster.getFlinkConfiguration
         case None => configuration
       }
@@ -213,10 +211,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
     }
     if (cluster != null) {
       cluster match {
-        case Some(Left(Left(legacyMiniCluster))) =>
-          LOGGER.info("Shutdown LegacyMiniCluster")
-          legacyMiniCluster.close()
-        case Some(Left(Right(newMiniCluster))) =>
+        case Some(Left(newMiniCluster)) =>
           LOGGER.info("Shutdown NewMiniCluster")
           newMiniCluster.close()
         case Some(Right(yarnCluster)) =>
