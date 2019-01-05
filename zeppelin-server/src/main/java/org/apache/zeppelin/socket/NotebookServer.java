@@ -1708,16 +1708,20 @@ public class NotebookServer extends WebSocketServlet
 
   @Override
   public void onUpdate(String interpreterGroupId, AngularObject object) {
-    if (getNotebook() == null || object.getNoteId() == null) {
+    if (getNotebook() == null) {
       return;
     }
 
-    Note note = getNotebook().getNote(object.getNoteId());
-    if (null != note) {
+    List<Note> notes = getNotebook().getAllNotes();
+    for (Note note : notes) {
+      if (object.getNoteId() != null && !note.getId().equals(object.getNoteId())) {
+        continue;
+      }
+
       List<InterpreterSetting> intpSettings =
           getNotebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
       if (intpSettings.isEmpty()) {
-        return;
+        continue;
       }
 
       connectionManager.broadcast(note.getId(), new Message(OP.ANGULAR_OBJECT_UPDATE)
