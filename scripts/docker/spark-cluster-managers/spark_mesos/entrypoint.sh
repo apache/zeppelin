@@ -20,6 +20,8 @@ export SPARK_MASTER_WEBUI_PORT=8080
 export SPARK_WORKER_PORT=8888
 export SPARK_WORKER_WEBUI_PORT=8081
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAVA_HOME/jre/lib/amd64/server/
+export MASTER=mesos://127.0.1.1:5050
+export MESOS_NATIVE_JAVA_LIBRARY=/usr/lib/libmesos.so
 
 # spark configuration
 cp $SPARK_HOME/conf/spark-env.sh.template $SPARK_HOME/conf/spark-env.sh
@@ -35,7 +37,7 @@ cd $SPARK_HOME/sbin
 ./start-slave.sh spark://`hostname`:$SPARK_MASTER_PORT
 
 # start mesos
-mesos-master --ip=0.0.0.0 --work_dir=/var/lib/mesos &> /var/log/mesos_master.log &
+mesos-master --ip=0.0.0.0 --work_dir=/var/lib/mesos --hostname=`hostname -I | cut -d' ' -f1` &> /var/log/mesos_master.log &
 mesos-slave --master=0.0.0.0:5050 --work_dir=/var/lib/mesos --launcher=posix &> /var/log/mesos_slave.log &
 
 CMD=${1:-"exit 0"}
