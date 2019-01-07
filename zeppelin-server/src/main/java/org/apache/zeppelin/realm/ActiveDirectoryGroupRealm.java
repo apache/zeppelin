@@ -265,7 +265,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
         NamingEnumeration ae = attrs.getAll();
         while (ae.hasMore()) {
           Attribute attr = (Attribute) ae.next();
-          if (attr.getID().toLowerCase().equals("cn")) {
+          if (attr.getID().toLowerCase().equals("userprincipalname")) {
             userNameList.addAll(LdapUtils.getAllAttributeValues(attr));
           }
         }
