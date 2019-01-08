@@ -520,7 +520,7 @@ table.table-striped {
 }
 
 /*
-  Overwrite github-markdown-css for Markdown interpreter
+  Override github-markdown-css for Markdown interpreter
 */
 
 .markdown-body h1,
@@ -529,24 +529,24 @@ table.table-striped {
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
 }
 
 .markdown-body {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 
 .markdown-body h2 {
-  font-size: 26px;
+  font-size: 26px !important;
 }
 
 .markdown-body h3 {
-  font-size: 20px;
+  font-size: 20px !important;
 }
 
 .markdown-body h4 {
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 .network-labels {
