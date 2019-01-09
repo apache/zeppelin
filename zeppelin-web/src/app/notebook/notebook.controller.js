@@ -393,6 +393,19 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
+  $scope.stopNoteExecution = function(noteId) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Stop running note?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.stopNoteExecution(noteId);
+        }
+      },
+    });
+  };
+
   $scope.saveNote = function() {
     if ($scope.note && $scope.note.paragraphs) {
       _.forEach($scope.note.paragraphs, function(par) {

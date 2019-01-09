@@ -31,10 +31,20 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="runAllParagraphs(note.id)"
-              ng-class="{'disabled':isNoteRunning()}"
+              ng-if=!isNoteRunning()
               tooltip-placement="bottom" uib-tooltip="Run all paragraphs"
               ng-disabled="revisionView">
         <i class="icon-control-play"></i>
+      </button>
+        <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click=stopNoteExecution(note.id)
+              style="color: red"
+              ng-if=isNoteRunning()
+              tooltip-placement="bottom"
+              uib-tooltip="Stop execution"
+              ng-disabled="revisionView">
+        <i class="icon-control-pause"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"

@@ -210,6 +210,15 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       });
     },
 
+    stopNoteExecution: function(noteId) {
+      websocketEvents.sendNewEvent({
+        op: 'STOP_NOTE_EXECUTION',
+        data: {
+          noteId: noteId,
+        },
+      });
+    },
+
     removeParagraph: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },

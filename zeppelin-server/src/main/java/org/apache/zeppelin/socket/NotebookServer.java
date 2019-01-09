@@ -324,6 +324,9 @@ public class NotebookServer extends WebSocketServlet
         case RUN_ALL_PARAGRAPHS:
           runAllParagraphs(conn, messagereceived);
           break;
+        case STOP_NOTE_EXECUTION:
+          stopNoteExecution(conn, messagereceived);
+          break;
         case CANCEL_PARAGRAPH:
           cancelParagraph(conn, messagereceived);
           break;
@@ -1219,6 +1222,13 @@ public class NotebookServer extends WebSocketServlet
 
     getNotebookService().runAllParagraphs(noteId, paragraphs, getServiceContext(fromMessage),
         new WebSocketServiceCallback<Paragraph>(conn));
+  }
+
+  private void stopNoteExecution(NotebookSocket conn,
+                                Message fromMessage) throws IOException {
+    final String noteId = (String) fromMessage.get("noteId");
+    getNotebookService().stopNoteExecution(noteId, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<Note>(conn));
   }
 
   private void broadcastSpellExecution(NotebookSocket conn,

@@ -605,7 +605,14 @@ public class Note implements JsonSerializable {
   }
 
   public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
-    setRunning(true);
+    synchronized (this) {
+      if (isRunning()) {
+        logger.warn("Can't run note because it already is running");
+        return;
+      }
+      setRunning(true);
+    }
+
     try {
       for (Paragraph p : getParagraphs()) {
         if (!p.isEnabled()) {
@@ -776,7 +783,7 @@ public class Note implements JsonSerializable {
     this.info = info;
   }
 
-  public void setRunning(boolean runStatus) {
+  public synchronized void setRunning(boolean runStatus) {
     Map<String, Object> infoMap = getInfo();
     boolean oldStatus = (boolean) infoMap.getOrDefault("isRunning", false);
     if (oldStatus != runStatus) {
@@ -787,7 +794,7 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public boolean isRunning() {
+  public synchronized boolean isRunning() {
     return (boolean) getInfo().getOrDefault("isRunning", false);
   }
 

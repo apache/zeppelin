@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.function.Supplier;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -334,6 +335,11 @@ public class NotebookServiceTest {
             note1.getId(),
             gson.fromJson(gson.toJson(note1.getParagraphs()), new TypeToken<List>(){}.getType()),
             context, callback);
+    try {
+      waitUntil(5000, () -> !note1.isRunning());
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     verify(callback, times(2)).onSuccess(any(), any());
 
     // run paragraph synchronously via invalid code
@@ -379,6 +385,15 @@ public class NotebookServiceTest {
       fail("Should fail");
     } catch (IOException e) {
       assertEquals("Note name can not contain '..'", e.getMessage());
+    }
+  }
+
+  private void waitUntil(int maxWaitTime, Supplier<Boolean> condition)
+      throws InterruptedException {
+    long startTime = System.currentTimeMillis();
+    while (!condition.get()) {
+      Thread.sleep(100);
+      assertTrue(System.currentTimeMillis() - startTime < maxWaitTime);
     }
   }
 }

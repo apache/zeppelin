@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import javax.inject.Inject;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -77,6 +79,8 @@ public class NotebookService {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookService.class);
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
       DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+
+  private static Executor noteExecutor = Executors.newCachedThreadPool();
 
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
@@ -340,27 +344,63 @@ public class NotebookService {
       return;
     }
 
-    note.setRunning(true);
-    try {
-      for (Map<String, Object> raw : paragraphs) {
-        String paragraphId = (String) raw.get("id");
-        if (paragraphId == null) {
-          continue;
-        }
-        String text = (String) raw.get("paragraph");
-        String title = (String) raw.get("title");
-        Map<String, Object> params = (Map<String, Object>) raw.get("params");
-        Map<String, Object> config = (Map<String, Object>) raw.get("config");
-
-        if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
-                context, callback)) {
-          // stop execution when one paragraph fails.
-          break;
-        }
+    synchronized (note) {
+      if (note.isRunning()) {
+        LOGGER.warn("Can't run note because it already is running");
+        return;
       }
-    } finally {
-      note.setRunning(false);
+      note.setRunning(true);
     }
+
+    noteExecutor.execute(() -> {
+      try {
+        for (Map<String, Object> raw : paragraphs) {
+          String paragraphId = (String) raw.get("id");
+          if (paragraphId == null) {
+            continue;
+          }
+          String text = (String) raw.get("paragraph");
+          String title = (String) raw.get("title");
+          Map<String, Object> params = (Map<String, Object>) raw.get("params");
+          Map<String, Object> config = (Map<String, Object>) raw.get("config");
+
+          if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+              context, callback)) {
+            // stop execution when one paragraph fails.
+            break;
+          }
+        }
+      } catch (IOException e) {
+        LOGGER.error("Can't run paragraph", e);
+      } finally {
+        note.setRunning(false);
+      }
+    });
+
+  }
+
+
+  public void stopNoteExecution(String noteId,
+                               ServiceContext context,
+                               ServiceCallback<Note> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.STOP_NOTE_EXECUTION, context,
+        callback)) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return;
+    }
+
+    for (Paragraph paragraph : note.getParagraphs()) {
+      if (paragraph.isRunning()) {
+        paragraph.abort();
+        break;
+      }
+    }
+    callback.onSuccess(note, context);
   }
 
   public void cancelParagraph(String noteId,
