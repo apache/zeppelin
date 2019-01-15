@@ -364,8 +364,8 @@ public class NotebookService {
           Map<String, Object> params = (Map<String, Object>) raw.get("params");
           Map<String, Object> config = (Map<String, Object>) raw.get("config");
 
-          if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
-              context, callback)) {
+          if (note.isExecutionAborted() || !runParagraph(noteId, paragraphId, title, text,
+              params, config, false, true, context, callback)) {
             // stop execution when one paragraph fails.
             break;
           }
@@ -394,6 +394,10 @@ public class NotebookService {
       return;
     }
 
+    // prevent the run of new paragraphs
+    note.abortExecution();
+
+    // abort running paragraphs
     for (Paragraph paragraph : note.getParagraphs()) {
       if (paragraph.isRunning()) {
         paragraph.abort();

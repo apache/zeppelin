@@ -86,6 +86,7 @@ public class Note implements JsonSerializable {
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
+  private transient boolean executionAborted = false;
   private transient String path;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -619,8 +620,9 @@ public class Note implements JsonSerializable {
           continue;
         }
         p.setAuthenticationInfo(authenticationInfo);
-        if (!run(p.getId(), blocking)) {
-          logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
+        if (this.executionAborted || !run(p.getId(), blocking)) {
+          logger.warn("Skip running the remain notes because {} ", this.executionAborted ?
+              "note executions is aborted" : "paragraph " + p.getId() + " fails");
           break;
         }
       }
@@ -658,6 +660,14 @@ public class Note implements JsonSerializable {
     }
 
     return false;
+  }
+
+  public boolean isExecutionAborted() {
+    return this.executionAborted;
+  }
+
+  public void abortExecution() {
+    this.executionAborted = true;
   }
 
   public boolean isTrash() {
@@ -785,6 +795,7 @@ public class Note implements JsonSerializable {
 
   public synchronized void setRunning(boolean runStatus) {
     Map<String, Object> infoMap = getInfo();
+    this.executionAborted = false;
     boolean oldStatus = (boolean) infoMap.getOrDefault("isRunning", false);
     if (oldStatus != runStatus) {
       infoMap.put("isRunning", runStatus);
