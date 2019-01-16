@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -86,7 +87,7 @@ public class Note implements JsonSerializable {
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
-  private transient boolean executionAborted = false;
+  private transient final AtomicBoolean executionAborted = new AtomicBoolean();
   private transient String path;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
@@ -620,8 +621,8 @@ public class Note implements JsonSerializable {
           continue;
         }
         p.setAuthenticationInfo(authenticationInfo);
-        if (this.executionAborted || !run(p.getId(), blocking)) {
-          logger.warn("Skip running the remain notes because {} ", this.executionAborted ?
+        if (this.executionAborted.get() || !run(p.getId(), blocking)) {
+          logger.warn("Skip running the remain notes because {} ", this.executionAborted.get() ?
               "note executions is aborted" : "paragraph " + p.getId() + " fails");
           break;
         }
@@ -663,11 +664,11 @@ public class Note implements JsonSerializable {
   }
 
   public boolean isExecutionAborted() {
-    return this.executionAborted;
+    return this.executionAborted.get();
   }
 
   public void abortExecution() {
-    this.executionAborted = true;
+    this.executionAborted.set(true);
   }
 
   public boolean isTrash() {
@@ -795,7 +796,7 @@ public class Note implements JsonSerializable {
 
   public synchronized void setRunning(boolean runStatus) {
     Map<String, Object> infoMap = getInfo();
-    this.executionAborted = false;
+    this.executionAborted.set(false);
     boolean oldStatus = (boolean) infoMap.getOrDefault("isRunning", false);
     if (oldStatus != runStatus) {
       infoMap.put("isRunning", runStatus);
