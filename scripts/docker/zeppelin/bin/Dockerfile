@@ -52,7 +52,7 @@ RUN echo "$LOG_TAG Install miniconda2 related packages" && \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
     git mercurial subversion && \
     echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-4.3.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda2-4.2.12-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
 ENV PATH /opt/conda/bin:$PATH
@@ -67,8 +67,12 @@ RUN echo "$LOG_TAG Install python related packages" && \
     apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
     # for tkinter
     apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev && \
-    pip install numpy && \
-    pip install matplotlib
+    conda config --set always_yes yes --set changeps1 no && \
+    conda update -q conda && \
+    conda info -a && \
+    conda config --add channels conda-forge && \
+    conda install -q numpy=1.12.1 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10 && \
+    pip install -q ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
