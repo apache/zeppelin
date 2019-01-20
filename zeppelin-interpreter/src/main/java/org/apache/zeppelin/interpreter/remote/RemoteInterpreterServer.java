@@ -73,8 +73,6 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -280,19 +278,6 @@ public class RemoteInterpreterServer extends Thread
     RemoteInterpreterServer remoteInterpreterServer =
         new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange);
     remoteInterpreterServer.start();
-
-    // add signal handler
-    Signal.handle(new Signal("TERM"), new SignalHandler() {
-      @Override
-      public void handle(Signal signal) {
-        try {
-          remoteInterpreterServer.shutdown();
-        } catch (TException e) {
-          logger.error("Error on shutdown RemoteInterpreterServer", e);
-        }
-      }
-    });
-
     remoteInterpreterServer.join();
     System.exit(0);
   }

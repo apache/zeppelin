@@ -95,9 +95,6 @@
       <directory>../plugins</directory>
     </fileSet>
     <fileSet>
-      <directory>../k8s</directory>
-    </fileSet>
-    <fileSet>
       <outputDirectory>/lib/interpreter</outputDirectory>
       <directory>../zeppelin-interpreter/target/lib</directory>
     </fileSet>

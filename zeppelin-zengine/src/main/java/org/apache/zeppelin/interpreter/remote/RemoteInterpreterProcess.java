@@ -137,9 +137,4 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   public interface RemoteFunction<T> {
     T call(Client client) throws Exception;
   }
-
-  /**
-   * called by RemoteInterpreterEventServer to notify that RemoteInterpreter Process is started
-   */
-  public abstract void processStarted(int port, String host);
 }

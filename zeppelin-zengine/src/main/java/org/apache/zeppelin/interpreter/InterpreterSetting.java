@@ -649,19 +649,11 @@ public class InterpreterSetting {
   }
 
   public String getLauncherPlugin() {
-    if (isRunningOnKubernetes()) {
-      return "K8sStandardInterpreterLauncher";
+    if (group.equals("spark")) {
+      return "SparkInterpreterLauncher";
     } else {
-      if (group.equals("spark")) {
-        return "SparkInterpreterLauncher";
-      } else {
-        return "StandardInterpreterLauncher";
-      }
+      return "StandardInterpreterLauncher";
     }
-  }
-
-  private boolean isRunningOnKubernetes() {
-    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {
