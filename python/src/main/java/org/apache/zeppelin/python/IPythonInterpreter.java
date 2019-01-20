@@ -161,12 +161,10 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
    */
   public String checkIPythonPrerequisite(String pythonExec) {
     ProcessBuilder processBuilder = new ProcessBuilder(pythonExec, "-m", "pip", "freeze");
-    File stderrFile = null;
-    File stdoutFile = null;
     try {
-      stderrFile = File.createTempFile("zeppelin", ".txt");
+      File stderrFile = File.createTempFile("zeppelin", ".txt");
       processBuilder.redirectError(stderrFile);
-      stdoutFile = File.createTempFile("zeppelin", ".txt");
+      File stdoutFile = File.createTempFile("zeppelin", ".txt");
       processBuilder.redirectOutput(stdoutFile);
 
       Process proc = processBuilder.start();
@@ -175,31 +173,26 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         return "Fail to run pip freeze.\n" +
             IOUtils.toString(new FileInputStream(stderrFile));
       }
-      try(FileInputStream in = new FileInputStream(stdoutFile)) {
-        String freezeOutput = IOUtils.toString(in);
-        if (!freezeOutput.contains("jupyter-client=")) {
-          return "jupyter-client is not installed.";
-        }
-        if (!freezeOutput.contains("ipykernel=")) {
-          return "ipykernel is not installed";
-        }
-        if (!freezeOutput.contains("ipython=")) {
-          return "ipython is not installed";
-        }
-        if (!freezeOutput.contains("grpcio=")) {
-          return "grpcio is not installed";
-        }
-        if (!freezeOutput.contains("protobuf=")) {
-          return "protobuf is not installed";
-        }
-        LOGGER.info("IPython prerequisite is met");
+      String freezeOutput = IOUtils.toString(new FileInputStream(stdoutFile));
+      if (!freezeOutput.contains("jupyter-client=")) {
+        return "jupyter-client is not installed.";
       }
+      if (!freezeOutput.contains("ipykernel=")) {
+        return "ipykernel is not installed";
+      }
+      if (!freezeOutput.contains("ipython=")) {
+        return "ipython is not installed";
+      }
+      if (!freezeOutput.contains("grpcio=")) {
+        return "grpcio is not installed";
+      }
+      if (!freezeOutput.contains("protobuf=")) {
+        return "protobuf is not installed";
+      }
+      LOGGER.info("IPython prerequisite is met");
     } catch (Exception e) {
       LOGGER.warn("Fail to checkIPythonPrerequisite", e);
       return "Fail to checkIPythonPrerequisite: " + ExceptionUtils.getStackTrace(e);
-    } finally {
-      FileUtils.deleteQuietly(stderrFile);
-      FileUtils.deleteQuietly(stdoutFile);
     }
     return "";
   }
