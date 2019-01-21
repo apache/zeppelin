@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -53,8 +52,6 @@ import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -955,37 +952,46 @@ public class NotebookService {
   }
 
   public void spell(String noteId,
-                    Message message,
+                    String paragraphId,
+                    String title,
+                    String text,
+                    Object results,
+                    String errorMessage,
+                    String dateStarted,
+                    String dateFinished,
+                    String status,
+                    Map<String, Object> params,
+                    Map<String, Object> config,
                     ServiceContext context,
                     ServiceCallback<Paragraph> callback) throws IOException {
 
     try {
+      // Duplicated code will be rewritten in future
       if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_PARAGRAPH_USING_SPELL, context,
-          callback)) {
+              callback)) {
         return;
       }
-
-      String paragraphId = (String) message.get("id");
-      if (paragraphId == null) {
-        return;
-      }
-
-      String text = (String) message.get("paragraph");
-      String title = (String) message.get("title");
-      Job.Status status = Job.Status.valueOf((String) message.get("status"));
-      Map<String, Object> params = (Map<String, Object>) message.get("params");
-      Map<String, Object> config = (Map<String, Object>) message.get("config");
-
       Note note = notebook.getNote(noteId);
-      Paragraph p = setParagraphUsingMessage(note, message, paragraphId,
-          text, title, params, config);
-      p.setResult((InterpreterResult) message.get("results"));
-      p.setErrorMessage((String) message.get("errorMessage"));
-      p.setStatusWithoutNotification(status);
+      if (note == null) {
+        callback.onFailure(new NoteNotFoundException(noteId), context);
+        return;
+      }
+      Paragraph p = note.getParagraph(paragraphId);
+      if (p == null) {
+        callback.onFailure(new ParagraphNotFoundException(paragraphId), context);
+        return;
+      }
+
+      p.setText(text);
+      p.setTitle(title);
+      p.setAuthenticationInfo(context.getAutheInfo());
+      p.settings.setParams(params);
+      p.setConfig(config);
+      p.setResult((InterpreterResult) results);
+      p.setErrorMessage(errorMessage);
+      p.setStatusWithoutNotification(Job.Status.valueOf(status));
 
       // Spell uses ISO 8601 formatted string generated from moment
-      String dateStarted = (String) message.get("dateStarted");
-      String dateFinished = (String) message.get("dateFinished");
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
       try {
@@ -1006,7 +1012,6 @@ public class NotebookService {
     } catch (IOException e) {
       callback.onFailure(new IOException("Fail to run spell", e), context);
     }
-
   }
 
   private void addNewParagraphIfLastParagraphIsExecuted(Note note, Paragraph p) {
@@ -1019,30 +1024,6 @@ public class NotebookService {
     }
   }
 
-
-  private Paragraph setParagraphUsingMessage(Note note, Message fromMessage, String paragraphId,
-                                             String text, String title, Map<String, Object> params,
-                                             Map<String, Object> config) {
-    Paragraph p = note.getParagraph(paragraphId);
-    p.setText(text);
-    p.setTitle(title);
-    AuthenticationInfo subject =
-        new AuthenticationInfo(fromMessage.principal, fromMessage.roles, fromMessage.ticket);
-    p.setAuthenticationInfo(subject);
-    p.settings.setParams(params);
-    p.setConfig(config);
-
-    if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
-      p.setText(text);
-      p.setTitle(title);
-      p.setAuthenticationInfo(subject);
-      p.settings.setParams(params);
-      p.setConfig(config);
-    }
-
-    return p;
-  }
 
   public void updateAngularObject(String noteId, String paragraphId, String interpreterGroupId,
                                   String varName, Object varValue,

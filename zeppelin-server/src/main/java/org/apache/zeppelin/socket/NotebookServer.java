@@ -68,6 +68,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
@@ -1225,14 +1226,28 @@ public class NotebookServer extends WebSocketServlet
                                        Message fromMessage) throws IOException {
 
     String noteId = connectionManager.getAssociatedNoteId(conn);
-    getNotebookService().spell(noteId, fromMessage,
-        getServiceContext(fromMessage), new WebSocketServiceCallback<Paragraph>(conn) {
+    String paragraphId = (String) fromMessage.get("id");
+    String text = (String) fromMessage.get("paragraph");
+    String title = (String) fromMessage.get("title");
+    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
+    Object results = fromMessage.get("results");
+    String errorMessage = (String) fromMessage.get("errorMessage");
+    String status = (String) fromMessage.get("status");
+
+    // Spell uses ISO 8601 formatted string generated from moment
+    String dateStarted = (String) fromMessage.get("dateStarted");
+    String dateFinished = (String) fromMessage.get("dateFinished");
+    getNotebookService().spell(noteId, paragraphId, title, text,
+        results, errorMessage, dateStarted, dateFinished,
+        status, params, config, getServiceContext(fromMessage),
+        new WebSocketServiceCallback<Paragraph>(conn) {
           @Override
           public void onSuccess(Paragraph p, ServiceContext context) throws IOException {
             super.onSuccess(p, context);
             // broadcast to other clients only
             connectionManager.broadcastExcept(p.getNote().getId(),
-                new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
+                    new Message(OP.RUN_PARAGRAPH_USING_SPELL).put("paragraph", p), conn);
           }
         });
   }
