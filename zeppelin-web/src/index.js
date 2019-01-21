@@ -76,3 +76,5 @@ import './components/login/login.controller.js';
 import './components/note-action/note-action.service.js';
 import './components/note-rename/note-rename.controller.js';
 import './components/note-rename/note-rename.service.js';
+import './app/notebook/spark-ui-utils.service.js';
+import './app/utils/customStopEvent.directive.js';

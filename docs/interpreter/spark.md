@@ -389,3 +389,49 @@ This is to make the server communicate with KDC.
 
 4. That's it. Play with Zeppelin!
 
+### Shows the Spark Web UI Inline in Zeppelin Notebook (Secure/Non-Secure)
+
+#### Short Description
+After running a paragraph via Spark interpreter, we will be showing a **Spark UI** link. On clicking it, we show the Spark UI with the respective running job inside the modal.
+
+#### Paragraph Code
+##### Zeppelin UI -> Create Notebook -> Paragraph
+
+    %spark
+    sc.parallelize(1 to 3).collect().foreach(println)
+
+####  Configuration
+##### Zeppelin UI -> Notebooks -> Interpreter  -> Spark  interpreter Config -> Edit
+Add the below property to Spark interpreter config:
+
+<table class="table-configuration">
+  <tr>
+    <th>Key</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>`spark.ui.allowFramingFrom`</td>
+    <td>`host:port` </td>
+  </tr>
+</table>
+
+#### Problem
+When clicking on the Spark Job link the blank modal used to opened.
+
+To fix the following add the **X-FRAME-OPTIONS** in YARN configuration
+#####  YARN -> Configs  -> Advanced -> Custom Yarn Site -> Add Property
+
+<table class="table-configuration">
+  <tr>
+    <th>Key</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>`yarn.resourcemanager.webapp.xfs-filter.xframe-options`</td>
+    <td>`ALLOW-FORM <Instance>`</td>
+  </tr>
+</table>
+
+
+#### Results
+Now clicking the Spark Web UI link on the paragraph we can see the Spark job running **'Spark Web UI'** inside the modal in Zeppelin Notebook.

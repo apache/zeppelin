@@ -16,7 +16,7 @@ import {ParagraphStatus} from '../notebook/paragraph/paragraph.status';
 
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl);
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route, SparkUIUtils) {
   'ngInject';
 
   let interpreterSettingsTmp = [];
@@ -108,26 +108,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
   });
 
-  let getInterpreterSettings = function() {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
-      .then(function(res) {
-        $scope.interpreterSettings = res.data.body;
-        checkDownloadingDependencies();
-      }).catch(function(res) {
-        if (res.status === 401) {
-          ngToast.danger({
-            content: 'You don\'t have permission on this page',
-            verticalPosition: 'bottom',
-            timeout: '3000',
-          });
-          setTimeout(function() {
-            window.location = baseUrlSrv.getBase();
-          }, 3000);
-        }
-        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
-      });
-  };
-
   const checkDownloadingDependencies = function() {
     let isDownloading = false;
     for (let index = 0; index < $scope.interpreterSettings.length; index++) {
@@ -148,7 +128,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (isDownloading) {
       $timeout(function() {
         if ($route.current.$$route.originalPath === '/interpreter') {
-          getInterpreterSettings();
+          SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
         }
       }, 2000);
     }
@@ -545,9 +525,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
       .then(function(res) {
         $scope.resetNewInterpreterSetting();
-        getInterpreterSettings();
         $scope.showAddNewSetting = false;
-        checkDownloadingDependencies();
+        SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
       }).catch(function(res) {
         const errorMsg = res.data ? res.data.message : 'Could not connect to server.';
         console.log('Error %o %o', res.status, errorMsg);
@@ -757,9 +736,37 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     $scope.resetNewInterpreterSetting();
     $scope.resetNewRepositorySetting();
 
-    getInterpreterSettings();
+    SparkUIUtils.getInterpreterSettings($scope, checkDownloadingDependencies);
     getAvailableInterpreters();
     getRepositories();
+  };
+
+  $scope.$on('interpreterSettingChange', function() {
+    SparkUIUtils.checkXframeSupport($scope, $scope.interpreterSettings, 'interpreter');
+  });
+
+  $scope.showInterpreterWebView = function(settingId, type) {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
+      .then(function(res) {
+        if (res.data.body === undefined) {
+          BootstrapDialog.alert({
+            message: `No ${settingId} application running`,
+          });
+          return;
+        }
+        if (res.data.body.url) {
+          const url = res.data.body.url;
+          type
+            ? SparkUIUtils.showWebViewInIframe(url, settingId)
+            : window.open(url);
+        } else {
+          BootstrapDialog.alert({
+            message: _.escape(res.data.body.message),
+          });
+        }
+      }).catch(function(res) {
+        console.log('Error %o %o', res.status, res.data ? res.data.message : '');
+      });
   };
 
   $scope.getInterpreterBindingModeDocsLink = function() {

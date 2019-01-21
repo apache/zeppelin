@@ -95,6 +95,13 @@
       "editOnDblClick": false,
       "completionKey": "TAB",
       "completionSupport": true
+    },
+    "spark.ui.allowFramingFrom": {
+      "envName": null,
+      "propertyName": "spark.ui.allowFramingFrom",
+      "defaultValue": true,
+      "description": "Allow framing for spark interpreter",
+      "type": "string"
     }
   },
   {

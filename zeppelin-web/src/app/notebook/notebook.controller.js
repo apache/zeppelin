@@ -21,7 +21,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', NotebookCtrl);
 function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
                       $http, websocketMsgSrv, baseUrlSrv, $timeout, saveAsService,
                       ngToast, noteActionService, noteVarShareService, TRASH_FOLDER_ID,
-                      heliumService) {
+                      heliumService, SparkUIUtils) {
   'ngInject';
 
   ngToast.dismiss();
@@ -158,6 +158,10 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       }],
     });
   };
+
+  /** fetch all interpreter setting */
+  SparkUIUtils.getInterpreterSettings($scope);
+
 
   /** Init the new controller */
   const initNotebook = function() {

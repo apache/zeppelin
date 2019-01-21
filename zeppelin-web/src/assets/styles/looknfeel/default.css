@@ -36,3 +36,17 @@ body {
 .ng-toast.ng-toast--top {
   top: 100px;
 }
+@media (min-width: 992px) {
+  .modal-xl > .modal-dialog {
+    width: 95%;
+    width: 95%vh;
+    height: 95%;
+    height: 95%vh;
+    margin: 30px auto;
+  }
+}
+.link {
+  text-decoration: none;
+  cursor: pointer;
+  color:#3071A9;
+}

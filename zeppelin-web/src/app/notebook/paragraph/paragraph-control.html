@@ -14,22 +14,23 @@ limitations under the License.
 
 <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
   <span>
-    <span ng-show="paragraph.runtimeInfos.jobUrl.values.length == 1">
-      <a href="{{paragraph.runtimeInfos.jobUrl.values[0]}}" target="_blank" style="text-decoration: none;"
-         tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" >
+    <span ng-if="paragraph.runtimeInfos.jobUrl.values.length == 1" ng-init="url = paragraph.runtimeInfos.jobUrl.values[0]">
+      <span class="link" tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
+        popover-trigger="'outsideClick'" popover-placement="bottom" uib-popover-template="'app/notebook/paragraph/popover.html'" style="position: relative;height:20px;">
         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}
-      </a>
+      </span>
     </span>
-    <span class="dropdown" ng-show="paragraph.runtimeInfos.jobUrl.values.length > 1">
-      <span style="cursor:pointer;color:#3071A9" tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}"
-            data-toggle="dropdown" type="button">
-        <span class="fa fa-tasks"></span>
+    <span class="dropdown" ng-if="paragraph.runtimeInfos.jobUrl.values.length > 1">
+      <span class="link" tooltip-placement="top" uib-tooltip="{{paragraph.runtimeInfos.jobUrl.tooltip}}" data-toggle="dropdown" type="button">
+         <span class="fa fa-tasks"></span>
         {{paragraph.runtimeInfos.jobUrl.label}}S
       </span>
       <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
-        <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values">
-          <a href="{{url}}" target="_blank"><span class="fa fa-external-link-square"></span> Jobs #{{$index}}</a>
+        <li ng-class="{'option-disabled': !noteOperationsAllowed()}" ng-repeat="url in paragraph.runtimeInfos.jobUrl.values" custom-stop-event>
+          <span class="link" popover-trigger="'outsideClick'" popover-placement="bottom" uib-popover-template="'app/notebook/paragraph/popover.html'" style="position: relative;">
+            <span class="fa fa-external-link-square"></span> Jobs #{{$index}}
+          </span>
         </li>
       </ul>
     </span>
