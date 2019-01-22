@@ -20,6 +20,9 @@ package org.apache.zeppelin.notebook;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.common.JsonSerializable;
@@ -57,6 +60,7 @@ import java.util.Map;
  */
 public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
+  private static final Executor noteExecutor = Executors.newCachedThreadPool();
   private static Gson gson = new GsonBuilder()
       .setPrettyPrinting()
       .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
@@ -606,7 +610,14 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
+  public void runAllParagraphs(AuthenticationInfo authenticationInfo, boolean blockingParagraph) {
+    runParagraphs(authenticationInfo, true, blockingParagraph, getParagraphs());
+  }
+
+  public void runParagraphs(AuthenticationInfo authenticationInfo,
+      boolean blocking,
+      boolean blockingParagraph,
+      List<Paragraph> paragraphs) {
     synchronized (this) {
       if (isRunning()) {
         logger.warn("Can't run note because it already is running");
@@ -615,20 +626,32 @@ public class Note implements JsonSerializable {
       setRunning(true);
     }
 
-    try {
-      for (Paragraph p : getParagraphs()) {
-        if (!p.isEnabled()) {
-          continue;
+    CountDownLatch cdlLock = new CountDownLatch(1);
+
+    noteExecutor.execute(() -> {
+      try {
+        for (Paragraph p : paragraphs) {
+          if (!p.isEnabled()) {
+            continue;
+          }
+          p.setAuthenticationInfo(authenticationInfo);
+          if (this.executionAborted.get() || !run(p.getId(), blockingParagraph)) {
+            logger.warn("Skip running the remain notes because {} ", this.executionAborted.get() ?
+                "note executions is aborted" : "paragraph " + p.getId() + " fails");
+            break;
+          }
         }
-        p.setAuthenticationInfo(authenticationInfo);
-        if (this.executionAborted.get() || !run(p.getId(), blocking)) {
-          logger.warn("Skip running the remain notes because {} ", this.executionAborted.get() ?
-              "note executions is aborted" : "paragraph " + p.getId() + " fails");
-          break;
-        }
+      } finally {
+        setRunning(false);
+        cdlLock.countDown();
       }
-    } finally {
-      setRunning(false);
+    });
+
+    if (blocking) {
+      try {
+        cdlLock.await();
+      } catch (InterruptedException ignore) {
+      }
     }
   }
 

@@ -23,7 +23,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -451,7 +450,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 p3");
 
     // when
-    note.runAll(anonymous, true);
+    note.runAllParagraphs(anonymous, true);
 
     assertEquals("repl1: p1", p1.getReturn().message().get(0).getData());
     assertNull(p2.getReturn());
@@ -809,7 +808,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     String simpleText = "hello world";
     p.setText(simpleText);
 
-    note.runAll(anonymous, true);
+    note.runAllParagraphs(anonymous, true);
 
     String exportedNoteJson = notebook.exportNote(note.getId());
 
@@ -841,7 +840,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     p.setText("hello world");
-    note.runAll(anonymous, true);
+    note.runAllParagraphs(anonymous, true);
 
     p.setStatus(Status.RUNNING);
     Note cloneNote = notebook.cloneNote(note.getId(), "clone note", anonymous);
@@ -877,7 +876,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     for (InterpreterGroup intpGroup : interpreterSettingManager.getAllInterpreterGroup()) {
       intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
     }
-    note.runAll(anonymous, true);
+    note.runAllParagraphs(anonymous, true);
 
     assertEquals(2, interpreterSettingManager.getAllResources().size());
 
@@ -1096,7 +1095,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     p3.setText("%mock1 sleep 1000");
 
 
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+    note.runAllParagraphs(AuthenticationInfo.ANONYMOUS, false);
 
     // wait until first paragraph finishes and second paragraph starts
     while (p1.getStatus() != Status.FINISHED || p2.getStatus() != Status.RUNNING) Thread.yield();

@@ -587,7 +587,7 @@ public class Notebook {
         return;
       }
 
-      runAll(note);
+      runNote(note);
 
       boolean releaseResource = false;
       String cronExecutingUser = null;
@@ -615,7 +615,7 @@ public class Notebook {
       }
     }
 
-    void runAll(Note note) {
+    void runNote(Note note) {
       String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");
       String cronExecutingRoles = (String) note.getConfig().get("cronExecutingRoles");
       if (null == cronExecutingUser) {
@@ -625,7 +625,7 @@ public class Notebook {
           cronExecutingUser,
           StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
           null);
-      note.runAll(authenticationInfo, true);
+      note.runAllParagraphs(authenticationInfo, true);
     }
   }
 
