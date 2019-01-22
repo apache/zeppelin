@@ -39,16 +39,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.collaborativeModeUsers = [];
   $scope.looknfeelOption = ['default', 'simple', 'report'];
   $scope.noteFormTitle = null;
-  $scope.cronOption = [
-    {name: 'None', value: undefined},
-    {name: '1m', value: '0 0/1 * * * ?'},
-    {name: '5m', value: '0 0/5 * * * ?'},
-    {name: '1h', value: '0 0 0/1 * * ?'},
-    {name: '3h', value: '0 0 0/3 * * ?'},
-    {name: '6h', value: '0 0 0/6 * * ?'},
-    {name: '12h', value: '0 0 0/12 * * ?'},
-    {name: '1d', value: '0 0 0 * * ?'},
-  ];
 
   $scope.formatRevisionDate = function(date) {
     return moment.unix(date).format('MMMM Do YYYY, h:mm a');
@@ -122,19 +112,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     angular.element(config.onDestroyElement).scope().$on('$destroy', () => {
       removeEventByID(config.eventID);
     });
-  };
-
-  $scope.getCronOptionNameFromValue = function(value) {
-    if (!value) {
-      return '';
-    }
-
-    for (let o in $scope.cronOption) {
-      if ($scope.cronOption[o].value === value) {
-        return $scope.cronOption[o].name;
-      }
-    }
-    return value;
   };
 
   $scope.blockAnonUsers = function() {

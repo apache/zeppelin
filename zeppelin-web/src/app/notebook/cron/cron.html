@@ -1,0 +1,128 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="labelBtn btn-group" ng-if="note.config.isZeppelinNotebookCronEnable">
+  <div class="btn btn-default btn-xs dropdown-toggle"
+       type="button"
+       data-toggle="dropdown"
+       ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
+       tooltip-placement="bottom" uib-tooltip="Run scheduler"
+       ng-disabled="revisionView || isTrash(note)">
+    <span class="fa fa-clock-o"></span> {{note.config.cron}}
+  </div>
+
+  <!--cron menu-->
+  <ul class="dropdown-menu cron-dropdown-menu" ng-click="$event.stopPropagation()"
+      style="padding: 0; margin: 0; overflow: visible">
+    <li style="margin: 0; padding: 0">
+      <div class="cron-div" style="width: 560px" data-ng-checked="generateCronExpression()">
+
+        <!--Cron time periods (Hourly, Daily, ...)-->
+        <div class="cron-period-type-div">
+          <div class="radio" ng-repeat="period in cron.timePeriod.list">
+            <label>
+              <input type="radio" ng-value="period" ng-model="cron.timePeriod.selected" ng-change="cronPeriodTypeChange(period)"/>
+              {{period}}
+            </label>
+          </div>
+        </div>
+
+        <div class="cron-config-div">
+
+          <!--time-->
+          <div ng-if="cron.timeVisible" style="display: inline-block; padding-bottom: 10px">
+            <span style="padding-right: 5px">{{cron.spanText.timePrefix}}</span>
+
+            <!--hours-->
+            <select class="form-control input-sm" data-ng-model="cron.selectedHour">
+              <option ng-repeat="x in [].constructor(24) track by $index">{{$index > 9 ? $index : '0' + $index}}</option>
+            </select>
+            <span style="font-weight: bold">:</span>
+
+            <!--minutes-->
+            <select class="form-control input-sm" data-ng-model="cron.selectedMinute">
+              <option ng-repeat="x in [].constructor(60) track by $index">{{$index > 9 ? $index : '0' + $index}}</option>
+            </select>
+          </div>
+
+
+          <!--day of month-->
+          <div style="display: inline-block" ng-if="cron.dayOfMonthVisible">
+            <span style="padding: 0 5px">{{cron.spanText.dayOfMonthPrefix}}</span>
+            <select class="form-control input-sm" data-ng-model="cron.selectedDayOfMonth">
+              <option
+                ng-repeat="x in [].constructor(31) track by $index">{{generateDayOfMonth($index + 1)}}</option>
+            </select>
+            <span ng-if="cron.spanText.dayOfMonthPostfix" style="padding: 0 5px">{{cron.spanText.dayOfMonthPostfix}}</span>
+          </div>
+
+          <!--periods-->
+          <div style="display: inline-block; float: left" ng-if="cron.periodVisible">
+            <span style="padding-right: 5px">{{cron.spanText.periodPrefix}}</span>
+            <select class="form-control input-sm" data-ng-model="cron.selectedPeriod">
+              <option ng-repeat="inter in getAvailablePeriods()">{{inter}}</option>
+            </select>
+            <span style="padding-left: 5px">{{cron.spanText.periodPostfix}}</span>
+          </div>
+
+
+          <!--days of week-->
+          <span ng-if="cron.dayOfWeekVisible" style="padding-left: 5px">every week on</span>
+          <div class="checkbox" ng-if="cron.dayOfWeekVisible"
+               data-ng-model="cron.selectedHourInterval">
+            <label class="day-of-week-label" ng-repeat="dayOfWeek in cron.daysOfWeek">
+              <input class="big-checkbox" type="checkbox" ng-model="dayOfWeek.checked"/>
+              <span>{{dayOfWeek.name}}</span>
+            </label>
+          </div>
+
+          <!--cron expression-->
+          <div ng-if="cron.cronExpressionVisible"
+               style="padding-top: 6px; display: block; text-align: center">
+                  <span>Enter custom <a target="_blank" rel="noopener noreferrer"
+                                        href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger">cron expression</a>: </span>
+            <div>
+              <input style="margin: 20px auto; width: 300px; font-weight: normal"
+                     placeholder="example: 0 0/15 10,12,13 ? * MON-FRI"
+                     ng-model="cron.dirtyExpression"
+                     ng-change="verifyCustomExpression(cron.dirtyExpression)" type="text"
+                     class="form-control"/>
+              <span class="glyphicon btn-md"
+                    ng-class="{'glyphicon-ok' : cron.isValidCronExpression, 'glyphicon-warning-sign' : !cron.isValidCronExpression}"
+                    tooltip-placement="right"
+                    uib-tooltip="Expression is {{cron.isValidCronExpression ? 'valid' : 'invalid!'}}"></span>
+            </div>
+          </div>
+
+          <!--buttons-->
+          <div style="position: absolute; bottom: 5px; right: 5px">
+            <!--disable button-->
+            <button type="button" class="btn btn-danger"
+                    style="margin-right: 5px"
+                    ng-if="note.config.cron !== undefined"
+                    ng-click="dropCron()">Disable
+            </button>
+            <!--save button-->
+            <button type="button" class="btn btn-primary"
+                    ng-class="{'disabled' : !cron.isValidCronExpression || note.config.cron === cron.dirtyExpression}"
+                    ng-click="saveExpression()">{{note.config.cron === undefined ? 'Enable' :
+              'Save changes'}}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>

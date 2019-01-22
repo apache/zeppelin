@@ -886,6 +886,23 @@ public class NotebookRestApi extends AbstractRestApi {
   }
 
   /**
+   * Check valid cron expression REST API.
+   *
+   * @return JSON with status.OK
+   * @throws IllegalArgumentException
+   */
+  @GET
+  @Path("cron/check_valid")
+  @ZeppelinApi
+  public Response checkCronExpression(@QueryParam("cronExpression") String expression)
+          throws IllegalArgumentException {
+    if (!CronExpression.isValidExpression(expression)) {
+      return new JsonResponse<>(Status.OK, "invalid").build();
+    }
+    return new JsonResponse<>(Status.OK, "valid").build();
+  }
+
+  /**
    * Remove cron job REST API.
    *
    * @param noteId ID of Note

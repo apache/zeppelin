@@ -1,0 +1,74 @@
+.cron-period-type-div {
+  display: inline-block;
+  padding: 2px 10px;
+  float: left;
+  height: 150px;
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
+  border-right: 2px solid #7b7b7b3d;
+  background-color: #eff4ff;
+}
+
+.cron-config-div {
+  padding: 10px 10px;
+  margin: 0;
+  display: inline-block;
+  height: 150px;
+  width: 468px;
+  border-bottom-right-radius: 4px;
+  border-top-right-radius: 4px;
+  background-color: #fff4f3;
+}
+
+.cron-config-div .form-control {
+  width: auto;
+  display: inline-block;
+}
+
+.cron-period-type-div label {
+  font-size: 14px;
+}
+
+.cron-period-type-div>.radio input[type="radio"] {
+  margin-top: 1px;
+}
+
+.day-of-week-label {
+  float: left;
+  padding-bottom: 25px;
+  width: 100px;
+  height: 20px;
+}
+
+.day-of-week-label span {
+  margin-top: 4px !important;
+  font-size: 14px !important;
+  display: inline-block;
+}
+
+.cron-div span {
+  font-weight: normal;
+  font-size: 16px;
+}
+
+.cron-div .glyphicon-warning-sign {
+  color: #afaf00;
+}
+
+.cron-div .glyphicon-ok {
+  color: green;
+}
+
+.cron-div .glyphicon-ok,
+.cron-div .glyphicon-warning-sign {
+  position: relative;
+  left: 10px;
+  top: 5px;
+  font-size: 24px;
+}
+
+.big-checkbox {
+  padding: 0;
+  width: 15px;
+  height: 15px;
+}

@@ -259,50 +259,10 @@ limitations under the License.
           <i class="icon-eye"> {{collaborativeModeUsers.length}}</i>
         </button>
       </span>
-
-      <span ng-hide="viewOnly">
-      <div class="labelBtn btn-group" ng-if="note.config.isZeppelinNotebookCronEnable">
-        <div class="btn btn-default btn-xs dropdown-toggle"
-             type="button"
-             data-toggle="dropdown"
-             ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
-             tooltip-placement="bottom" uib-tooltip="Run scheduler"
-             ng-disabled="revisionView || isTrash(note)">
-          <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
-        </div>
-        <ul class="dropdown-menu" role="menu" style="width:300px">
-          <li>
-            <div class="cron-preset-container">
-              Run note with cron scheduler.
-              Either choose from preset or write your own <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger" target="_blank">cron expression</a>.
-              <div>
-                <span>- Preset</span>
-                <a class="cron-preset" ng-repeat="cr in cronOption"
-                   type="button"
-                   ng-click="setCronScheduler(cr.value)"
-                   dropdown-input ng-class="{ 'selected' : cr.value == note.config.cron}">{{cr.name}}</a>
-              </div>
-              <div>
-                <span>- Cron expression</span>
-                <input type="text"
-                       ng-model="note.config.cron"
-                       ng-change="setCronScheduler(note.config.cron)"
-                       dropdown-input ng-model-options="{ debounce: 1000 }" />
-                <p ng-show="note.info.cron" class="text-danger cron-info">
-                  {{note.info.cron}}
-                </p>
-              </div>
-              <div>
-                <span>- After execution stop the interpreter </span>
-                <input type="checkbox"
-                       ng-model="note.config.releaseresource"
-                       ng-click="setReleaseResource(note.config.releaseresource)"/>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </span>
+      <span ng-controller="CronCtrl"
+            ng-init="init(note.config.cron)"
+            ng-hide="viewOnly"
+            ng-include src="'app/notebook/cron/cron.html'"></span>
     </div>
 
 
