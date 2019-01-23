@@ -31,6 +31,7 @@ Please check the below table before you download Zeppelin package.
 <table class="table-configuration" style="text-align:center" id="comparing-version">
   <tr>
     <th style="width:10%">Zeppelin</th>
+    <th style="width:22%">0.8.1</th>
     <th style="width:22%">0.8.0</th>
     <th style="width:22%">0.7.3</th>
     <th style="width:22%">0.7.1 - 0.7.2</th>
@@ -41,6 +42,9 @@ Please check the below table before you download Zeppelin package.
   <tr>
     <td rowspan="2">
       <h6><a href="http://spark.apache.org/" target="_blank">Spark</a><h6>
+    </td>
+    <td rowspan="2">
+        1.5.x, 1.6.x, 2.0.x, 2.1.x, 2.2.x, 2.3.x, <strong>2.4.0</strong>
     </td>
     <td rowspan="2">
         1.5.x, 1.6.x, 2.0.x, 2.1.x, 2.2.x, <strong>2.3.1</strong>
@@ -139,11 +143,24 @@ Please check the below table before you download Zeppelin package.
       <a href="http://tajo.apache.org/" target="_blank">Tajo</a>
       are available
     </td>
+    <td>
+      <a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a>,
+      <a href="https://www.mysql.com/" target="_blank">MySQL</a>,
+      <a href="https://mariadb.org/" target="_blank">MariaDB</a>,
+      <a href="https://aws.amazon.com/documentation/redshift/" target="_blank">Redshift</a>,
+      <br/>
+      <a href="https://hive.apache.org/" target="_blank">Hive</a>,
+      <a href="https://phoenix.apache.org/" target="_blank">Phoenix</a>,
+      <a href="https://drill.apache.org/" target="_blank">Drill</a>,
+      <a href="http://tajo.apache.org/" target="_blank">Tajo</a>
+      are available
+    </td>
   </tr>
   <tr>
     <td>
       <h6><a href="https://pig.apache.org/" target="_blank">Pig</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -156,6 +173,7 @@ Please check the below table before you download Zeppelin package.
       <h6 style="display: inline;"><a href="https://beam.apache.org/" target="_blank">Beam</a></h6>
       <i class="fa fa-info-circle" data-toggle="tooltip" title="Not included in binary package. Use interpreter install script or build from source with -Pbeam to use this interpreter"></i>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -167,6 +185,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6 style="display: inline;"><a href="https://github.com/spotify/scio/" target="_blank">Scio</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -183,12 +202,14 @@ Please check the below table before you download Zeppelin package.
     <td>O</td>
     <td>O</td>
     <td>O</td>
+    <td>O</td>
     <td>N/A</td>
   </tr>
   <tr>
     <td>
       <h6><a href="https://www.python.org/" target="_blank">Python</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -200,6 +221,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://livy.io/" target="_blank">Livy</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -211,6 +233,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html" target="_blank">HDFS</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -222,6 +245,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://www.alluxio.org/" target="_blank">Alluxio</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -233,6 +257,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://hbase.apache.org/" target="_blank">Hbase</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -245,6 +270,7 @@ Please check the below table before you download Zeppelin package.
       <h6 style="display: inline;"><a href="https://github.com/twitter/scalding" target="_blank">Scalding</a></h6>
       <i class="fa fa-info-circle" data-toggle="tooltip" title="Not included in binary package. Use interpreter install script or build from source with -Pscalding to use this interpreter"></i>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -256,6 +282,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://www.elastic.co/products/elasticsearch" target="_blank">Elasticsearch</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -267,6 +294,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://angularjs.org/" target="_blank">Angular</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -278,6 +306,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://pegdown.org/" target="_blank">Markdown</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -289,6 +318,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://commons.apache.org/" target="_blank">Shell</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -300,6 +330,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://flink.apache.org/" target="_blank">Flink</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -311,6 +342,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://cassandra.apache.org/" target="_blank">Cassandra</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -323,6 +355,7 @@ Please check the below table before you download Zeppelin package.
       <h6 style="display: inline;"><a href="http://geode.incubator.apache.org/" target="_blank">Geode</a></h6>
       <i class="fa fa-info-circle" data-toggle="tooltip" title="Not included in binary package. Use interpreter install script or build from source with -Pgeode to use this interpreter"></i>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -334,6 +367,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://ignite.apache.org/" target="_blank">Ignite</a></h6>
     </td>
+    <td>1.9.0</td>
 	<td>1.9.0</td>
     <td>1.9.0</td>
     <td>1.9.0</td>
@@ -345,6 +379,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://kylin.apache.org/" target="_blank">Kylin</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -356,6 +391,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="https://lens.apache.org/" target="_blank">Lens</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
@@ -367,6 +403,7 @@ Please check the below table before you download Zeppelin package.
     <td>
       <h6><a href="http://www.postgresql.org/" target="_blank">PostgreSQL</a></h6>
     </td>
+    <td>O</td>
 	<td>O</td>
     <td>O</td>
     <td>O</td>
