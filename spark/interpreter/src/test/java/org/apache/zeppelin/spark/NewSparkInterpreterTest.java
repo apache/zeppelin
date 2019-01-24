@@ -84,6 +84,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     InterpreterContext context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
@@ -375,6 +377,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.useNew", "true");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     // download spark-avro jar
     URL website = new URL("http://repo1.maven.org/maven2/com/databricks/spark-avro_2.11/3.2.0/spark-avro_2.11-3.2.0.jar");
@@ -404,6 +408,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     interpreter = new SparkInterpreter(properties);
@@ -433,6 +439,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     InterpreterContext.set(getInterpreterContext());
     interpreter = new SparkInterpreter(properties);
@@ -460,6 +468,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.scheduler.mode", "FAIR");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -489,6 +499,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.ui.enabled", "false");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -514,6 +526,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.ui.hidden", "true");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -537,6 +551,8 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.useNew", "true");
+    // disable color output for easy testing
+    properties.setProperty("zeppelin.spark.scala.color", "false");
 
     SparkInterpreter interpreter1 = new SparkInterpreter(properties);
     SparkInterpreter interpreter2 = new SparkInterpreter(properties);

@@ -160,6 +160,10 @@ You can also set other Spark properties which are not listed in the table. For a
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
+  <td>zeppelin.spark.scala.color</td>
+    <td>true</td>
+    <td>Whether to enable color output of spark scala interpreter</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.

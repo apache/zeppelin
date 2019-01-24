@@ -45,6 +45,10 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
 
   public SparkInterpreter(Properties properties) {
     super(properties);
+    // set scala.color
+    if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.scala.color", "true"))) {
+      System.setProperty("scala.color", "true");
+    }
     if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.useNew", "false"))) {
       delegation = new NewSparkInterpreter(properties);
     } else {
