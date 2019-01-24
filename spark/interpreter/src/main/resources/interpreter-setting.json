@@ -88,6 +88,13 @@
         "defaultValue": false,
         "description": "Whether to hide spark ui in zeppelin ui",
         "type": "checkbox"
+      },
+      "zeppelin.spark.scala.color": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.scala.color",
+        "defaultValue": true,
+        "description": "Whether to enable color output of spark scala interpreter",
+        "type": "checkbox"
       }
     },
     "editor": {

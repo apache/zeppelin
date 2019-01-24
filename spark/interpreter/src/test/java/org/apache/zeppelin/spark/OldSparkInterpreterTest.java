@@ -85,6 +85,8 @@ public class OldSparkInterpreterTest {
     p.setProperty("zeppelin.spark.importImplicit", "true");
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     p.setProperty("zeppelin.spark.property_1", "value_1");
+    // disable color output for easy testing
+    p.setProperty("zeppelin.spark.scala.color", "false");
     return p;
   }
 
