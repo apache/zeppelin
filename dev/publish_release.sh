@@ -54,7 +54,6 @@ NEXUS_PROFILE="153446d1ac37c4"
 function cleanup() {
   echo "Remove working directory and maven local repository"
   rm -rf ${WORKING_DIR}
-  rm -rf ${tmp_repo}
 }
 
 function curl_error() {
@@ -126,14 +125,13 @@ function publish_to_maven() {
 
   echo "Created Nexus staging repository: ${staged_repo_id}"
 
-  mkdir /tmp/zeppelin-repo-${RELEASE_VERSION}
-  tmp_repo=/tmp/zeppelin-repo-${RELEASE_VERSION}
+  rm -rf $HOME/.m2/repository/org/apache/zeppelin
 
   # build with scala-2.10
   echo "mvn clean install -DskipTests \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.10 -Pbeam \
+    -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.10 -Pbeam \
+  mvn clean install -DskipTests -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.10 failed."
@@ -144,23 +142,22 @@ function publish_to_maven() {
   "${BASEDIR}/change_scala_version.sh" 2.11
 
   echo "mvn clean install -DskipTests \
-    -Dmaven.repo.local=${tmp_repo} -Pscala-2.11 \
+    -Pscala-2.11 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Dmaven.repo.local="${tmp_repo}" -Pscala-2.11 \
+  mvn clean install -DskipTests -Pscala-2.11 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.11 failed."
     exit 1
   fi
 
-  pushd "${tmp_repo}/org/apache/zeppelin"
+  pushd "${HOME}/.m2/repository/org/apache/zeppelin"
   find . -type f | grep -v '\.jar$' | grep -v '\.pom$' |grep -v '\.war$' | xargs rm
 
   echo "Creating hash and signature files"
   for file in $(find . -type f); do
     echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --output "${file}.asc" \
       --detach-sig --armor "${file}"
-    md5 -q "${file}" > "${file}.md5"
     ${SHASUM} -a 1 "${file}" | cut -f1 -d' ' > "${file}.sha1"
   done
 
