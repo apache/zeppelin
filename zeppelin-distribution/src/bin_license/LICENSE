@@ -15,7 +15,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Http Components (org.apache.httpcomponents:httpclient:4.3.6 - https://github.com/apache/httpclient)
     (Apache 2.0) Http Components (org.apache.httpcomponents:httpasyncclient:4.0.2 - https://github.com/apache/httpclient)
     (Apache 2.0) Apache Commons Lang (org.apache.commons:commons-lang:2.5 - http://commons.apache.org/proper/commons-lang/)
-    (Apache 2.0) Apache Commons Lang 3 (org.apache.commons:commons-lang3:3.4 - http://commons.apache.org/proper/commons-lang/)
+    (Apache 2.0) Apache Commons Lang 3 (org.apache.commons:commons-lang3:3.7 - http://commons.apache.org/proper/commons-lang/)
     (Apache 2.0) Apache Commons Math 3 (org.apache.commons:commons-math3:3.6.1 - http://commons.apache.org/proper/commons-math/)
     (Apache 2.0) Apache Commons Net (commons-net:commons-net:2.2 - http://commons.apache.org/proper/commons-net/)
     (Apache 2.0) Apache Commons Pool2 (commons-exec:commons-pool2:2.3 - https://commons.apache.org/proper/commons-pool/)
