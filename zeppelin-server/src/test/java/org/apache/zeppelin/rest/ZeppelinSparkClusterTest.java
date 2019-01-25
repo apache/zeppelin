@@ -145,7 +145,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertTrue(p.getResult().message().get(0).getData().contains("error: "));
   }
 
-
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
@@ -154,6 +153,30 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("55", p.getResult().message().get(0).getData());
+  }
+
+  @Test
+  public void sparkReadJSONTest() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Paragraph p = note.addNewParagraph(anonymous);
+    p.setText("%spark val jsonStr = \"\"\"{ \"metadata\": { \"key\": 84896, \"value\": 54 }}\"\"\"\n" +
+            "spark.read.json(Seq(jsonStr).toDS)");
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    assertTrue(p.getResult().message().get(0).getData().contains(
+            "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]\n"));
+  }
+
+  @Test
+  public void sparkReadCSVTest() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote(anonymous);
+    Paragraph p = note.addNewParagraph(anonymous);
+    p.setText("%spark val csvStr = \"\"\"84896,54\"\"\"\n" +
+            "spark.read.csv(Seq(csvStr).toDS)");
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    assertTrue(p.getResult().message().get(0).getData().contains(
+            "org.apache.spark.sql.DataFrame = [_c0: string, _c1: string]\n"));
   }
 
   @Test
