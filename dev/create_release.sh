@@ -55,11 +55,7 @@ function make_source_package() {
   echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --armor \
     --output "zeppelin-${RELEASE_VERSION}.tgz.asc" \
     --detach-sig "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 \
-    --print-md MD5 "zeppelin-${RELEASE_VERSION}.tgz" > \
-    "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.md5"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 \
-    --print-md SHA512 "zeppelin-${RELEASE_VERSION}.tgz" > \
+  ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}.tgz" > \
     "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.sha512"
 }
 
@@ -89,15 +85,11 @@ function make_binary_release() {
   echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --armor \
     --output "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc" \
     --detach-sig "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --print-md MD5 \
-    "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" > \
-    "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5"
   ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" > \
     "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512"
 
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" "${WORKING_DIR}/"
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc" "${WORKING_DIR}/"
-  mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5" "${WORKING_DIR}/"
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512" "${WORKING_DIR}/"
 
   # clean up build dir
@@ -106,8 +98,8 @@ function make_binary_release() {
 
 git_clone
 make_source_package
-make_binary_release all "-Pspark-2.1 -Phadoop-2.6 -Pscala-${SCALA_VERSION}"
-make_binary_release netinst "-Pspark-2.1 -Phadoop-2.6 -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
+make_binary_release all "-Pspark-2.3 -Phadoop-2.6 -Pscala-${SCALA_VERSION}"
+make_binary_release netinst "-Pspark-2.3 -Phadoop-2.6 -Pscala-${SCALA_VERSION} -pl zeppelin-interpreter,zeppelin-zengine,:zeppelin-display_${SCALA_VERSION},:zeppelin-spark-dependencies_${SCALA_VERSION},:zeppelin-spark_${SCALA_VERSION},zeppelin-web,zeppelin-server,zeppelin-distribution -am"
 
 # remove non release files and dirs
 rm -rf "${WORKING_DIR}/zeppelin"

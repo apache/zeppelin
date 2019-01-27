@@ -70,9 +70,9 @@ mvn clean package -DskipTests -Phadoop-2.6 -Dhadoop.version=2.6.0 -P build-distr
 If you want to connect to HBase running on a cluster, you'll need to follow the next step.
 
 ### Export HBASE_HOME
-In **conf/zeppelin-env.sh**, export `HBASE_HOME` environment variable with your HBase installation path. This ensures `hbase-site.xml` can be loaded.
+In `conf/zeppelin-env.sh`, export `HBASE_HOME` environment variable with your HBase installation path. This ensures `hbase-site.xml` can be loaded.
 
-for example
+For example
 
 ```bash
 export HBASE_HOME=/usr/lib/hbase

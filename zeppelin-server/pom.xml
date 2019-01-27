@@ -227,6 +227,13 @@
       <artifactId>jetty-webapp</artifactId>
       <version>${jetty.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-jmx</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
       <artifactId>websocket-server</artifactId>
@@ -368,19 +375,10 @@
       </dependency>
 
       <dependency>
-        <groupId>org.apache.zeppelin</groupId>
-        <artifactId>zeppelin-zengine</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
         <groupId>org.bitbucket.cowwoc</groupId>
         <artifactId>diff-match-patch</artifactId>
         <version>1.1</version>
       </dependency>
-
   </dependencies>
   <build>
     <plugins>
@@ -452,14 +450,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-          <skip>false</skip>
-        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -138,7 +138,7 @@ public class RemoteInterpreterUtils {
   public static String getInterpreterSettingId(String intpGrpId) {
     String settingId = null;
     if (intpGrpId != null) {
-      int indexOfColon = intpGrpId.indexOf(":");
+      int indexOfColon = intpGrpId.indexOf("-");
       settingId = intpGrpId.substring(0, indexOfColon);
     }
     return settingId;

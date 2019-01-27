@@ -67,7 +67,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job = new Job("jobId", "jobName", null, 200) {
+    Job job = new Job("jobId", "jobName", null) {
       Object results;
 
       @Override
@@ -116,8 +116,6 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     assertTrue(job.isRunning());
 
     Thread.sleep(5 * TICK_WAIT);
-    assertEquals(0, scheduler.getJobsWaiting().size());
-    assertEquals(1, scheduler.getJobsRunning().size());
 
     cycles = 0;
     while (!job.isTerminated() && cycles < MAX_WAIT_CYCLES) {
@@ -126,8 +124,6 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     }
 
     assertTrue(job.isTerminated());
-    assertEquals(0, scheduler.getJobsWaiting().size());
-    assertEquals(0, scheduler.getJobsRunning().size());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");
@@ -140,7 +136,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
     Scheduler scheduler = intpA.getScheduler();
 
-    Job job1 = new Job("jobId1", "jobName1", null, 200) {
+    Job job1 = new Job("jobId1", "jobName1", null) {
       Object results;
       InterpreterContext context = InterpreterContext.builder()
           .setNoteId("noteId")
@@ -187,7 +183,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
       }
     };
 
-    Job job2 = new Job("jobId2", "jobName2", null, 200) {
+    Job job2 = new Job("jobId2", "jobName2", null) {
       public Object results;
       InterpreterContext context = InterpreterContext.builder()
           .setNoteId("noteId")
@@ -278,11 +274,6 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
 
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
-
-  }
-
-  @Override
-  public void onMetaInfosReceived(String settingId, Map<String, String> metaInfos) {
 
   }
 

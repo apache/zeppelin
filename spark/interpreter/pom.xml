@@ -53,7 +53,7 @@
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
 
-    
+
   </properties>
 
   <dependencies>
@@ -71,7 +71,7 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-scala-2.10</artifactId>
+      <artifactId>zeppelin-interpreter-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -79,6 +79,7 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -286,6 +287,11 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
@@ -471,7 +477,6 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>${plugin.shade.version}</version>
         <configuration>
-          <!--<createDependencyReducedPom>false</createDependencyReducedPom>-->
           <filters>
             <filter>
               <artifact>*:*</artifact>
@@ -483,6 +488,17 @@
               </excludes>
             </filter>
           </filters>
+
+          <artifactSet>
+            <excludes>
+              <exclude>org.scala-lang:scala-library</exclude>
+              <exclude>org.scala-lang:scala-compiler</exclude>
+              <exclude>org.scala-lang:scala-reflect</exclude>
+              <exclude>commons-lang:commons-lang</exclude>
+              <exclude>org.apache.commons:commons-compress</exclude>
+            </excludes>
+          </artifactSet>
+
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
             <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -499,14 +515,11 @@
               <shadedPattern>org.apache.zeppelin.com.google</shadedPattern>
             </relocation>
             <relocation>
-              <pattern>py4j.</pattern>
-              <shadedPattern>org.apache.zeppelin.py4j.</shadedPattern>
-            </relocation>
-            <relocation>
               <pattern>com.facebook.fb303</pattern>
               <shadedPattern>org.apache.zeppelin.com.facebook.fb303</shadedPattern>
             </relocation>
           </relocations>
+          <outputFile>${project.basedir}/../../interpreter/${interpreter.name}/${project.artifactId}-${project.version}.jar</outputFile>
         </configuration>
         <executions>
           <execution>
@@ -590,4 +603,51 @@
     </plugins>
   </build>
 
+  <profiles>
+
+    <profile>
+      <id>spark-2.2</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.10</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>spark-2.1</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.10</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>spark-2.0</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.10</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>spark-1.6</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.zeppelin</groupId>
+          <artifactId>spark-scala-2.10</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+  </profiles>
 </project>

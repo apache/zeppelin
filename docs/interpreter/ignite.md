@@ -42,8 +42,8 @@ In order to use Ignite interpreters, you may install Apache Ignite in some simpl
 
 > **Tip. If you want to run Ignite examples on the cli not IDE, you can export executable Jar file from IDE. Then run it by using below command.**
 
-```
-$ nohup java -jar </path/to/your Jar file name>
+```bash
+nohup java -jar </path/to/your Jar file name>
 ```
 
 ## Configuring Ignite Interpreter
@@ -96,7 +96,7 @@ In order to execute SQL query, use ` %ignite.ignitesql ` prefix. <br>
 Supposing you are running `org.apache.ignite.examples.streaming.wordcount.StreamWords`, then you can use "words" cache( Of course you have to specify this cache name to the Ignite interpreter setting section `ignite.jdbc.url` of Zeppelin ).
 For example, you can select top 10 words in the words cache using the following query
 
-```
+```sql
 %ignite.ignitesql
 select _val, count(_val) as cnt from String group by _val order by cnt desc limit 10
 ```
@@ -105,7 +105,7 @@ select _val, count(_val) as cnt from String group by _val order by cnt desc limi
 
 As long as your Ignite version and Zeppelin Ignite version is same, you can also use scala code. Please check the Zeppelin Ignite version before you download your own Ignite.
 
-```
+```scala
 %ignite
 import org.apache.ignite._
 import org.apache.ignite.cache.affinity._

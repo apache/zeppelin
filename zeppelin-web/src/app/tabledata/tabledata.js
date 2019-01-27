@@ -32,10 +32,10 @@ export default class TableData extends Dataset {
 
     let columnNames = [];
     let rows = [];
-    let array = [];
     let textRows = paragraphResult.msg.split('\n');
     let comment = '';
     let commentRow = false;
+    const float64MaxDigits = 16;
 
     for (let i = 0; i < textRows.length; i++) {
       let textRow = textRows[i];
@@ -53,23 +53,22 @@ export default class TableData extends Dataset {
       }
       let textCols = textRow.split('\t');
       let cols = [];
-      let cols2 = [];
       for (let j = 0; j < textCols.length; j++) {
         let col = textCols[j];
         if (i === 0) {
           columnNames.push({name: col, index: j, aggr: 'sum'});
         } else {
           let valueOfCol;
-          if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
-            col = valueOfCol;
+          if (!(col[0] === '0' || col[0] === '+' || col.length > float64MaxDigits)) {
+            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
+              col = valueOfCol;
+            }
           }
           cols.push(col);
-          cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
         }
       }
       if (i !== 0) {
         rows.push(cols);
-        array.push(cols2);
       }
     }
     this.comment = comment;

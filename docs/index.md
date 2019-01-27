@@ -134,7 +134,7 @@ limitations under the License.
   * [BigQuery](./interpreter/bigquery.html)
   * [Cassandra](./interpreter/cassandra.html)
   * [Elasticsearch](./interpreter/elasticsearch.html)
-  * [flink](./interpreter/flink.html)
+  * [Flink](./interpreter/flink.html)
   * [Geode](./interpreter/geode.html)
   * [Groovy](./interpreter/groovy.html)
   * [HBase](./interpreter/hbase.html)
@@ -145,7 +145,8 @@ limitations under the License.
   * [Kylin](./interpreter/kylin.html)
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
-  * [markdown](./interpreter/markdown.html)
+  * [Mahout](./interpreter/mahout.html)
+  * [Markdown](./interpreter/markdown.html)
   * [Neo4j](./interpreter/neo4j.html)
   * [Pig](./interpreter/pig.html)
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
@@ -154,7 +155,7 @@ limitations under the License.
   * [SAP](./interpreter/sap.html)
   * [Scalding](./interpreter/scalding.html)
   * [Scio](./interpreter/scio.html)
-  * [Shell](./interpreter/Shell.html)
+  * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
   
 #### External Resources

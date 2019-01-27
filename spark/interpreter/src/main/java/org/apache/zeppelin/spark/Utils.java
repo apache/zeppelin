@@ -152,6 +152,10 @@ class Utils {
     return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
   }
 
+  public static String buildJobDesc(InterpreterContext context) {
+    return "Started by: " + getUserName(context.getAuthenticationInfo());
+  }
+
   public static String getNoteId(String jobgroupId) {
     int indexOf = jobgroupId.indexOf("-");
     int secondIndex = jobgroupId.indexOf("-", indexOf + 1);

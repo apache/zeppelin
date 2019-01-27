@@ -17,12 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
+import org.apache.zeppelin.interpreter.ResultMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,14 @@ public abstract class SparkShims {
 
   private static SparkShims sparkShims;
 
-  private static SparkShims loadShims(String sparkVersion) throws ReflectiveOperationException {
+  protected Properties properties;
+
+  public SparkShims(Properties properties) {
+    this.properties = properties;
+  }
+
+  private static SparkShims loadShims(String sparkVersion, Properties properties)
+      throws ReflectiveOperationException {
     Class<?> sparkShimsClass;
     if ("2".equals(sparkVersion)) {
       LOGGER.info("Initializing shims for Spark 2.x");
@@ -60,15 +66,15 @@ public abstract class SparkShims {
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark1Shims");
     }
 
-    Constructor c = sparkShimsClass.getConstructor();
-    return (SparkShims) c.newInstance();
+    Constructor c = sparkShimsClass.getConstructor(Properties.class);
+    return (SparkShims) c.newInstance(properties);
   }
 
-  public static SparkShims getInstance(String sparkVersion) {
+  public static SparkShims getInstance(String sparkVersion, Properties properties) {
     if (sparkShims == null) {
       String sparkMajorVersion = getSparkMajorVersion(sparkVersion);
       try {
-        sparkShims = loadShims(sparkMajorVersion);
+        sparkShims = loadShims(sparkMajorVersion, properties);
       } catch (ReflectiveOperationException e) {
         throw new RuntimeException(e);
       }
@@ -88,6 +94,9 @@ public abstract class SparkShims {
                                           String sparkWebUrl,
                                           InterpreterContext context);
 
+  public abstract String showDataFrame(Object obj, int maxResult);
+
+
   protected String getNoteId(String jobgroupId) {
     int indexOf = jobgroupId.indexOf("-");
     int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
@@ -103,24 +112,20 @@ public abstract class SparkShims {
   protected void buildSparkJobUrl(String master,
                                   String sparkWebUrl,
                                   int jobId,
-                                  Properties jobProperties,
                                   InterpreterContext context) {
-    String uiEnabled = jobProperties.getProperty("spark.ui.enabled");
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
-    // Button visible if Spark UI property not set, set as invalid boolean or true
-    boolean showSparkUI =
-        uiEnabled == null || !uiEnabled.trim().toLowerCase().equals("false");
     String version = VersionInfo.getVersion();
     if (master.toLowerCase().contains("yarn") && !supportYarn6615(version)) {
       jobUrl = sparkWebUrl + "/jobs";
     }
-    if (showSparkUI && jobUrl != null) {
-      Map<String, String> infos = new java.util.HashMap<String, String>();
-      infos.put("jobUrl", jobUrl);
-      infos.put("label", "SPARK JOB");
-      infos.put("tooltip", "View in Spark web UI");
-      context.getIntpEventClient().onParaInfosReceived(infos);
-    }
+
+    Map<String, String> infos = new java.util.HashMap<String, String>();
+    infos.put("jobUrl", jobUrl);
+    infos.put("label", "SPARK JOB");
+    infos.put("tooltip", "View in Spark web UI");
+    infos.put("noteId", context.getNoteId());
+    infos.put("paraId", context.getParagraphId());
+    context.getIntpEventClient().onParaInfosReceived(infos);
   }
 
   /**
@@ -139,5 +144,10 @@ public abstract class SparkShims {
             && VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) > 0)
         || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0_ALPHA4, version) <= 0)
         || (VersionUtil.compareVersions(HADOOP_VERSION_3_0_0, version) <= 0);
+  }
+
+  @VisibleForTesting
+  public static void reset() {
+    sparkShims = null;
   }
 }

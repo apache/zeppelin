@@ -37,7 +37,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-interpreter</artifactId>
+      <artifactId>zeppelin-interpreter-api</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>

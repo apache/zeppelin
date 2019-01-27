@@ -38,7 +38,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     You can install NGINX server with same box where zeppelin installed or separate box where it is dedicated to serve as proxy server.
 
-    ```
+    ```bash
     $ apt-get install nginx
     ```
     > **NOTE :** On pre 1.3.13 version of NGINX, Proxy for Websocket may not fully works. Please use latest version of NGINX. See: [NGINX documentation](https://www.nginx.com/blog/websocket-nginx/).
@@ -47,7 +47,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     In most cases, NGINX configuration located under `/etc/nginx/sites-available`. Create your own configuration or add your existing configuration at `/etc/nginx/sites-available`.
 
-    ```
+    ```bash
     $ cd /etc/nginx/sites-available
     $ touch my-zeppelin-auth-setting
     ```
@@ -95,7 +95,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     Then make a symbolic link to this file from `/etc/nginx/sites-enabled/` to enable configuration above when NGINX reloads.
 
-    ```
+    ```bash
     $ ln -s /etc/nginx/sites-enabled/my-zeppelin-auth-setting /etc/nginx/sites-available/my-zeppelin-auth-setting
     ```
 
@@ -103,17 +103,17 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     Now you need to setup `.htpasswd` file to serve list of authenticated user credentials for NGINX server.
 
-    ```
+    ```bash
     $ cd /etc/nginx
     $ htpasswd -c htpasswd [YOUR-ID]
-    $ NEW passwd: [YOUR-PASSWORD]
-    $ RE-type new passwd: [YOUR-PASSWORD-AGAIN]
+    NEW passwd: [YOUR-PASSWORD]
+    RE-type new passwd: [YOUR-PASSWORD-AGAIN]
     ```
     Or you can use your own apache `.htpasswd` files in other location for setting up property: `auth_basic_user_file`
 
     Restart NGINX server.
 
-    ```
+    ```bash
     $ service nginx restart
     ```
     Then check HTTP Basic Authentication works in browser. If you can see regular basic auth popup and then able to login with credential you entered into `.htpasswd` you are good to go.

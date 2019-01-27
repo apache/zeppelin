@@ -58,8 +58,6 @@ public class PythonCondaInterpreterTest {
     group.put("note", Arrays.asList(python, conda));
     python.setInterpreterGroup(group);
     conda.setInterpreterGroup(group);
-
-    doReturn(python).when(conda).getPythonInterpreter();
   }
 
   private void setMockCondaEnvList() throws IOException, InterruptedException {

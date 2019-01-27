@@ -51,7 +51,7 @@ If you haven't installed Git and Maven yet, check the [Build requirements](#buil
 
 #### 1. Clone the Apache Zeppelin repository
 
-```
+```bash
 git clone https://github.com/apache/zeppelin.git
 ```
 
@@ -60,7 +60,7 @@ git clone https://github.com/apache/zeppelin.git
 
 You can build Zeppelin with following maven command:
 
-```
+```bash
 mvn clean package -DskipTests [Options]
 ```
 
@@ -70,7 +70,7 @@ If you're unsure about the options, use the same commands that creates official 
 # update all pom.xml to use scala 2.11
 ./dev/change_scala_version.sh 2.11
 # build zeppelin with all interpreters and include latest version of Apache spark support for local mode.
-mvn clean package -DskipTests -Pspark-2.0 -Phadoop-2.4 -Pr -Pscala-2.11
+mvn clean package -DskipTests -Pspark-2.3 -Phadoop-2.6 -Pscala-2.11
 ```
 
 #### 3. Done
@@ -98,35 +98,25 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-2.3
+-Pspark-2.2
 -Pspark-2.1
 -Pspark-2.0
 -Pspark-1.6
--Pspark-1.5
--Pspark-1.4
--Pcassandra-spark-1.5
--Pcassandra-spark-1.4
--Pcassandra-spark-1.3
--Pcassandra-spark-1.2
--Pcassandra-spark-1.1
 ```
 
 minor version can be adjusted by `-Dspark.version=x.x.x`
 
 
-##### `-Phadoop-[version]`
+##### `-Phadoop[version]`
 
-set hadoop major version
+set hadoop major version (default hadoop2)
 
 Available profiles are
 
 ```
--Phadoop-0.23
--Phadoop-1
--Phadoop-2.2
--Phadoop-2.3
--Phadoop-2.4
--Phadoop-2.6
--Phadoop-2.7
+-Phadoop2
+-Phadoop3
 ```
 
 minor version can be adjusted by `-Dhadoop.version=x.x.x`
@@ -144,26 +134,12 @@ Available profiles are
 ##### `-Pr` (optional)
 
 enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
+Note that, this enables R interpreter which is different from sparkR included in Spark interpreter by default.
 
 ##### `-Pvendor-repo` (optional)
 
-enable 3rd party vendor repository (cloudera)
+enable 3rd party vendor repository (Cloudera, Hortonworks)
 
-
-##### `-Pmapr[version]` (optional)
-
-For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (`-Pspark-1.6`, `-Pspark-2.0`, etc.) as needed.
-The correct Maven artifacts can be found for every version of MapR at http://doc.mapr.com
-
-Available profiles are
-
-```
--Pmapr3
--Pmapr40
--Pmapr41
--Pmapr50
--Pmapr51
-```
 
 #### -Pexamples (optional)
 
@@ -176,23 +152,17 @@ Here are some examples with several options:
 ```bash
 # build with spark-2.1, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.1 -Phadoop-2.4 -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.1 -Pscala-2.11 -DskipTests
 
 # build with spark-2.0, scala-2.11
 ./dev/change_scala_version.sh 2.11
-mvn clean package -Pspark-2.0 -Phadoop-2.4 -Pscala-2.11 -DskipTests
+mvn clean package -Pspark-2.0 -Pscala-2.11 -DskipTests
 
 # build with spark-1.6, scala-2.10
-mvn clean package -Pspark-1.6 -Phadoop-2.4 -DskipTests
-
-# spark-cassandra integration
-mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests -DskipTests
+mvn clean package -Pspark-1.6 -DskipTests
 
 # with CDH
-mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
-
-# with MapR
-mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
+mvn clean package -Pspark-1.6 -Dhadoop.version=2.6.0-cdh5.5.0 -Pvendor-repo -DskipTests
 ```
 
 Ignite Interpreter
@@ -248,7 +218,7 @@ plugin.frontend.yarnDownloadRoot # default https://github.com/yarnpkg/yarn/relea
 If you don't have requirements prepared, install it.
 (The installation method may vary according to your environment, example is for Ubuntu.)
 
-```
+```bash
 sudo apt-get update
 sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
@@ -261,7 +231,8 @@ sudo apt-get install r-cran-evaluate
 
 
 ### Install maven
-```
+
+```bash
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
 sudo tar -zxf apache-maven-3.3.9-bin.tar.gz -C /usr/local/
 sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
@@ -280,7 +251,7 @@ If you're behind the proxy, you'll need to configure maven and npm to pass throu
 
 First of all, configure maven in your `~/.m2/settings.xml`.
 
-```
+```xml
 <settings>
   <proxies>
     <proxy>
@@ -309,7 +280,7 @@ First of all, configure maven in your `~/.m2/settings.xml`.
 
 Then, next commands will configure npm.
 
-```
+```bash
 npm config set proxy http://localhost:3128
 npm config set https-proxy http://localhost:3128
 npm config set registry "http://registry.npmjs.org/"
@@ -318,7 +289,7 @@ npm config set strict-ssl false
 
 Configure git as well
 
-```
+```bash
 git config --global http.proxy http://localhost:3128
 git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://
@@ -349,10 +320,10 @@ mvn clean package -Pbuild-distr
 To build a distribution with specific profiles, run:
 
 ```sh
-mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4
+mvn clean package -Pbuild-distr -Pspark-2.3 -Phadoop-2.4
 ```
 
-The profiles `-Pspark-1.5 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
+The profiles `-Pspark-2.3 -Phadoop-2.4` can be adjusted if you wish to build to a specific spark versions.  
 
 The archive is generated under _`zeppelin-distribution/target`_ directory
 

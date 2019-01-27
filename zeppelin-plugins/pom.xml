@@ -43,9 +43,12 @@
         <module>notebookrepo/github</module>
         <module>notebookrepo/azure</module>
         <module>notebookrepo/gcs</module>
-        <module>notebookrepo/mongodb</module>
         <module>notebookrepo/zeppelin-hub</module>
         <module>notebookrepo/filesystem</module>
+
+        <module>launcher/standard</module>
+        <module>launcher/k8s-standard</module>
+        <module>launcher/spark</module>
     </modules>
 
     <dependencies>

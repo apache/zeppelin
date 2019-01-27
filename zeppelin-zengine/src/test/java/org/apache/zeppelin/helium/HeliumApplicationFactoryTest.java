@@ -16,24 +16,22 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ParagraphJobListener;
-//import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
@@ -41,17 +39,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-
-public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implements JobListenerFactory {
-
-  private SchedulerFactory schedulerFactory;
   private NotebookRepo notebookRepo;
   private Notebook notebook;
   private HeliumApplicationFactory heliumAppFactory;
@@ -59,11 +48,8 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "mock1,mock2");
     super.setUp();
 
-    this.schedulerFactory = SchedulerFactory.singleton();
-    heliumAppFactory = new HeliumApplicationFactory();
     // set AppEventListener properly
     for (InterpreterSetting interpreterSetting : interpreterSettingManager.get()) {
       interpreterSetting.setAppEventListener(heliumAppFactory);
@@ -72,18 +58,17 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     SearchService search = mock(SearchService.class);
     notebookRepo = mock(NotebookRepo.class);
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
-    notebook = new Notebook(
-        conf,
-        notebookRepo,
-        schedulerFactory,
-        interpreterFactory,
-        interpreterSettingManager,
-        this,
-        search,
-        notebookAuthorization,
-        new Credentials(false, null, null));
+    /*notebook =
+        new Notebook(
+            conf,
+            notebookRepo,
+            interpreterFactory,
+            interpreterSettingManager,
+            search,
+            notebookAuthorization,
+            new Credentials(false, null, null));*/
 
-    heliumAppFactory.setNotebook(notebook);
+    heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
     notebook.addNotebookEventListener(heliumAppFactory);
 
@@ -108,8 +93,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note1.getId(),interpreterSettingManager.getInterpreterSettingIds());
+    Note note1 = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -117,9 +101,9 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
-    assertEquals("repl1: job", p1.getResult().message().get(0).getData());
+    assertEquals("repl1: job", p1.getReturn().message().get(0).getData());
 
     // when
     assertEquals(0, p1.getAllApplicationStates().size());
@@ -154,16 +138,14 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
-    interpreterSettingManager.setInterpreterBinding("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
-
+    Note note1 = notebook.createNote("note1", anonymous);
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
     // make sure interpreter process running
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -194,8 +176,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
+    Note note1 = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
 
@@ -203,7 +184,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
 
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
@@ -211,9 +192,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     while (app.getStatus() != ApplicationState.Status.LOADED) {
       Thread.yield();
     }
-
-    // when unbind interpreter
-    notebook.bindInterpretersToNote("user", note1.getId(), new LinkedList<String>());
 
     // then
     assertEquals(ApplicationState.Status.UNLOADED, app.getStatus());
@@ -225,7 +203,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
   @Test
   public void testInterpreterUnbindOfNullReplParagraph() throws IOException {
     // create note
-    Note note1 = notebook.createNote(anonymous);
+    Note note1 = notebook.createNote("note1", anonymous);
 
     // add paragraph with invalid magic
     Paragraph p1 = note1.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -239,10 +217,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     } catch (InterpreterNotFoundException e) {
 
     }
-
-    // Unbind all interpreter from note
-    // NullPointerException shouldn't occur here
-    notebook.bindInterpretersToNote("user", note1.getId(), new LinkedList<String>());
 
     // remove note
     notebook.removeNote(note1.getId(), anonymous);
@@ -260,8 +234,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
         new String[][]{},
         "", "");
 
-    Note note1 = notebook.createNote(anonymous);
-    notebook.bindInterpretersToNote("user", note1.getId(), interpreterSettingManager.getInterpreterSettingIds());
+    Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
     for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
       if (setting.getName().equals("mock1")) {
@@ -276,7 +249,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
     p1.setText("%mock1 job");
     p1.setAuthenticationInfo(anonymous);
     note1.run(p1.getId());
-    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p1.isTerminated()==false || p1.getReturn()==null) Thread.yield();
     assertEquals(0, p1.getAllApplicationStates().size());
     String appId = heliumAppFactory.loadAndRun(pkg1, p1);
     ApplicationState app = p1.getApplicationState(appId);
@@ -297,35 +270,5 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest implem
 
     // clean
     notebook.removeNote(note1.getId(), anonymous);
-  }
-
-  @Override
-  public ParagraphJobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener() {
-      @Override
-      public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-
-      }
-
-      @Override
-      public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg) {
-
-      }
-
-      @Override
-      public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-
-      }
-
-      @Override
-      public void onProgressUpdate(Job job, int progress) {
-
-      }
-
-      @Override
-      public void onStatusChange(Job job, Job.Status before, Job.Status after) {
-
-      }
-    };
   }
 }

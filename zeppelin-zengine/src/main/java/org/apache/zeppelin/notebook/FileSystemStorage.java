@@ -62,6 +62,8 @@ public class FileSystemStorage {
     this.hadoopConf = new Configuration();
     // disable checksum for local file system. because interpreter.json may be updated by
     // non-hadoop filesystem api
+    // disable caching for file:// scheme to avoid getting LocalFS which does CRC checks
+    this.hadoopConf.setBoolean("fs.file.impl.disable.cache", true);
     this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
 
@@ -121,6 +123,34 @@ public class FileSystemStorage {
     });
   }
 
+  // recursive search path, (TODO zjffdu, list folder in sub folder on demand, instead of load all
+  // data when zeppelin server start)
+  public List<Path> listAll(final Path path) throws IOException {
+    return callHdfsOperation(new HdfsOperation<List<Path>>() {
+      @Override
+      public List<Path> call() throws IOException {
+        List<Path> paths = new ArrayList<>();
+        collectNoteFiles(path, paths);
+        return paths;
+      }
+
+      private void collectNoteFiles(Path folder, List<Path> noteFiles) throws IOException {
+        FileStatus[] paths = fs.listStatus(folder);
+        for (FileStatus path : paths) {
+          if (path.isDirectory()) {
+            collectNoteFiles(path.getPath(), noteFiles);
+          } else {
+            if (path.getPath().getName().endsWith(".zpln")) {
+              noteFiles.add(path.getPath());
+            } else {
+              LOGGER.warn("Unknown file: " + path.getPath());
+            }
+          }
+        }
+      }
+    });
+  }
+
   public boolean delete(final Path path) throws IOException {
     return callHdfsOperation(new HdfsOperation<Boolean>() {
       @Override
@@ -156,6 +186,13 @@ public class FileSystemStorage {
         fs.rename(tmpFile, file);
         return null;
       }
+    });
+  }
+
+  public void move(Path src, Path dest) throws IOException {
+    callHdfsOperation(() -> {
+      fs.rename(src, dest);
+      return null;
     });
   }
 

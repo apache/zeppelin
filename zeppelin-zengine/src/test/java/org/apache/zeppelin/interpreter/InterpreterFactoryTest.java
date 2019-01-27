@@ -17,53 +17,44 @@
 
 package org.apache.zeppelin.interpreter;
 
-import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class InterpreterFactoryTest extends AbstractInterpreterTest {
 
   @Test
-  public void testGetFactory() throws IOException, InterpreterException {
-    // no default interpreter because there's no interpreter setting binded to this note
-    try {
-      interpreterFactory.getInterpreter("user1", "note1", "");
-      fail("Should throw InterpreterNotFoundException");
-    } catch (InterpreterNotFoundException e) {
+  public void testGetFactory() throws InterpreterException {
 
-    }
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "") instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "");
-    // EchoInterpreter is the default interpreter because mock1 is the default interpreter group
-
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "", "test") instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "", "test");
+    // EchoInterpreter is the default interpreter because test is the default interpreter group
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test") instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "double_echo", "test");
+    assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
+
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test", "test");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2") instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2", "test");
     assertEquals(EchoInterpreter.class.getName(), remoteInterpreter.getClassName());
 
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo") instanceof RemoteInterpreter);
-    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test") instanceof RemoteInterpreter);
+    remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test2.double_echo", "test");
     assertEquals(DoubleEchoInterpreter.class.getName(), remoteInterpreter.getClassName());
   }
 
   @Test
-  public void testUnknownRepl1() throws IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
+  public void testUnknownRepl1() {
     try {
-      interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl");
+      interpreterFactory.getInterpreter("user1", "note1", "test.unknown_repl", "test");
       fail("should fail due to no such interpreter");
     } catch (InterpreterNotFoundException e) {
       assertEquals("No such interpreter: test.unknown_repl", e.getMessage());
@@ -71,13 +62,12 @@ public class InterpreterFactoryTest extends AbstractInterpreterTest {
   }
 
   @Test
-  public void testUnknownRepl2() throws IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
+  public void testUnknownRepl2() {
     try {
-      interpreterFactory.getInterpreter("user1", "note1", "unknown_repl");
+      interpreterFactory.getInterpreter("user1", "note1", "unknown_repl", "test");
       fail("should fail due to no such interpreter");
     } catch (InterpreterNotFoundException e) {
-      assertEquals("Either no interpreter named unknown_repl or it is not binded to this note", e.getMessage());
+      assertEquals("No such interpreter: unknown_repl", e.getMessage());
     }
   }
 }

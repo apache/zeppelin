@@ -21,8 +21,6 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,29 +35,12 @@ import java.util.Properties;
 public class PythonInterpreterPandasSql extends Interpreter {
   private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreterPandasSql.class);
 
-  private String SQL_BOOTSTRAP_FILE_PY = "/python/bootstrap_sql.py";
+  private String SQL_BOOTSTRAP_FILE_PY = "python/bootstrap_sql.py";
+
+  private PythonInterpreter pythonInterpreter;
 
   public PythonInterpreterPandasSql(Properties property) {
     super(property);
-  }
-
-  PythonInterpreter getPythonInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    PythonInterpreter python = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    python = (PythonInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return python;
   }
 
   @Override
@@ -68,9 +49,8 @@ public class PythonInterpreterPandasSql extends Interpreter {
 
     try {
       LOG.info("Bootstrap {} interpreter with {}", this.toString(), SQL_BOOTSTRAP_FILE_PY);
-      PythonInterpreter python = getPythonInterpreter();
-
-      python.bootstrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
+      this.pythonInterpreter = getInterpreterInTheSameSessionByClassName(PythonInterpreter.class);
+      this.pythonInterpreter.bootstrapInterpreter(SQL_BOOTSTRAP_FILE_PY);
     } catch (IOException e) {
       LOG.error("Can't execute " + SQL_BOOTSTRAP_FILE_PY + " to import SQL dependencies", e);
     }
@@ -79,17 +59,16 @@ public class PythonInterpreterPandasSql extends Interpreter {
   @Override
   public void close() throws InterpreterException {
     LOG.info("Close Python SQL interpreter instance: {}", this.toString());
-    Interpreter python = getPythonInterpreter();
-    python.close();
+    if (pythonInterpreter != null) {
+      pythonInterpreter.close();
+    }
   }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
     LOG.info("Running SQL query: '{}' over Pandas DataFrame", st);
-    Interpreter python = getPythonInterpreter();
-
-    return python.interpret(
+    return pythonInterpreter.interpret(
         "__zeppelin__.show(pysqldf('" + st + "'))\n__zeppelin__._displayhook()", context);
   }
 

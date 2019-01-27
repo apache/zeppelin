@@ -58,7 +58,7 @@ or ```zeppelin.notebook.homescreen.hide``` property to hide the new note from th
 ### Restart Zeppelin
 Restart your Zeppelin server
 
-```
+```bash
 ./bin/zeppelin-daemon stop
 ./bin/zeppelin-daemon start
 ```

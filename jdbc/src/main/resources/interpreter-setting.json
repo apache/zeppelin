@@ -57,7 +57,8 @@
         "envName": null,
         "propertyName": "default.statementPrecode",
         "defaultValue": "",
-        "description": "Runs before each run of the paragraph, in the same connection"
+        "description": "Runs before each run of the paragraph, in the same connection",
+        "type": "textarea"
       },
       "default.splitQueries": {
         "envName": null,
@@ -114,6 +115,20 @@
         "defaultValue": false,
         "description": "Enable ZeppelinContext variable interpolation into paragraph text",
         "type": "checkbox"
+      },
+      "zeppelin.jdbc.maxConnLifetime": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.maxConnLifetime",
+        "defaultValue": "-1",
+        "description": "Maximum of connection lifetime in milliseconds. A value of zero or less means the connection has an infinite lifetime.",
+        "type": "number"
+      },
+      "zeppelin.jdbc.maxRows": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.maxRows",
+        "defaultValue": "1000",
+        "description": "Maximum number of rows fetched from the query.",
+        "type": "number"
       }
     },
     "editor": {

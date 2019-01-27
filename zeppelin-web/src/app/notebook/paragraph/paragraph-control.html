@@ -47,10 +47,12 @@ limitations under the License.
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9"
           tooltip-placement="top" uib-tooltip="Run this paragraph (Shift+Enter)"
           ng-click="runParagraphFromButton(getEditorValue())"
+          ng-class="{'item-disable' : isNoteRunning}"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C"
           tooltip-placement="top" uib-tooltip="Cancel (Ctrl+{{ (isMac ? 'Option' : 'Alt') }}+C)"
           ng-click="cancelParagraph(paragraph)"
+          ng-class="{'item-disable' : isNoteRunning}"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
     <span ng-show="paragraph.runtimeInfos.jobUrl.length == 1">
       <a href="{{paragraph.runtimeInfos.jobUrl[0]}}" target="_blank"><span class="fa fa-tasks"></span> Spark job </a>
@@ -123,25 +125,28 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="moveUp(paragraph)" ng-hide="$first"><span class="icon-arrow-up shortcut-icon"></span>
+          <a ng-click="moveUp(paragraph)" ng-hide="$first" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="icon-arrow-up shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+K</span>
             Move up
           </a>
         </li>
         <li>
-          <a ng-click="moveDown(paragraph)" ng-hide="$last"><span class="icon-arrow-down shortcut-icon"></span>
+          <a ng-click="moveDown(paragraph)" ng-hide="$last" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="icon-arrow-down shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+J</span>
             Move down
           </a>
         </li>
         <li>
-          <a ng-click="insertNew('below')"><span class="icon-plus shortcut-icon"></span>
+          <a ng-click="insertNew('below')" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="icon-plus shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+B</span>
             Insert new
           </a>
         </li>
         <li>
-          <a ng-click="runAllToThis(paragraph)" ng-hide="$first">
+          <a ng-click="runAllToThis(paragraph)" ng-hide="$first" ng-class="{'item-disable' : isNoteRunning}">
             <span class="icon-action-redo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
@@ -150,7 +155,7 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="runAllFromThis(paragraph)" ng-hide="$last">
+          <a ng-click="runAllFromThis(paragraph)" ng-hide="$last" ng-class="{'item-disable' : isNoteRunning}">
             <span class="icon-action-undo shortcut-icon"
                   style="position: relative; transform: rotate(-90deg); left: -4px;">
             </span>
@@ -159,7 +164,8 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="copyParagraph(getEditorValue())"><span class="fa fa-copy shortcut-icon"></span>
+          <a ng-click="copyParagraph(getEditorValue())" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="fa fa-copy shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+Shift+C</span>
             Clone paragraph
           </a>
@@ -190,7 +196,8 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="toggleEnableDisable(paragraph)"><span class="icon-control-play shortcut-icon"></span>
+          <a ng-click="toggleEnableDisable(paragraph)" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="icon-control-play shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+ {{ isMac ? 'Option' : 'Alt'}}+R</span>
             {{paragraph.config.enabled ? "Disable" : "Enable"}} run
           </a>
@@ -202,14 +209,16 @@ limitations under the License.
           </a>
         </li>
         <li>
-          <a ng-click="clearParagraphOutput(paragraph)"><span class="fa fa-eraser shortcut-icon"></span>
+          <a ng-click="clearParagraphOutput(paragraph)" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="fa fa-eraser shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+L</span>
             Clear output
           </a>
         </li>
         <li>
           <!-- remove paragraph -->
-          <a ng-click="removeParagraph(paragraph)" ng-if="note.paragraphs.length > 1"><span class="fa fa-times shortcut-icon"></span>
+          <a ng-click="removeParagraph(paragraph)" ng-if="note.paragraphs.length > 1" ng-class="{'item-disable' : isNoteRunning}">
+            <span class="fa fa-times shortcut-icon"></span>
             <span class="shortcut-keys">Ctrl+{{ isMac ? 'Option' : 'Alt'}}+D</span>
             Remove
           </a>

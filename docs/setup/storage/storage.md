@@ -46,7 +46,7 @@ By default, only first two of them will be automatically kept in sync by Zeppeli
 
 To enable versioning for all your local notebooks though a standard Git repository - uncomment the next property in `zeppelin-site.xml` in order to use GitNotebookRepo class:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
@@ -61,7 +61,7 @@ To enable versioning for all your local notebooks though a standard Git reposito
 Notes may be stored in hadoop compatible file system such as hdfs, so that multiple Zeppelin instances can share the same notes. It supports all the versions of hadoop 2.x. If you use `FileSystemNotebookRepo`, then `zeppelin.notebook.dir` is the path on the hadoop compatible file system. And you need to specify `HADOOP_CONF_DIR` in `zeppelin-env.sh` so that zeppelin can find the right hadoop configuration files.
 If your hadoop cluster is kerberized, then you need to specify `zeppelin.server.kerberos.keytab` and `zeppelin.server.kerberos.principal`
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo</value>
@@ -90,14 +90,14 @@ s3://bucket_name/username/notebook-id/
 
 Configure by setting environment variables in the file **zeppelin-env.sh**:
 
-```
-export ZEPPELIN_NOTEBOOK_S3_BUCKET = bucket_name
-export ZEPPELIN_NOTEBOOK_S3_USER = username
+```bash
+export ZEPPELIN_NOTEBOOK_S3_BUCKET=bucket_name
+export ZEPPELIN_NOTEBOOK_S3_USER=username
 ```
 
 Or using the file **zeppelin-site.xml** uncomment and complete the S3 settings:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.s3.bucket</name>
   <value>bucket_name</value>
@@ -112,7 +112,7 @@ Or using the file **zeppelin-site.xml** uncomment and complete the S3 settings:
 
 Uncomment the next property for use S3NotebookRepo class:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
@@ -122,7 +122,7 @@ Uncomment the next property for use S3NotebookRepo class:
 
 Comment out the next property to disable local git notebook storage (the default):
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
@@ -136,13 +136,13 @@ Comment out the next property to disable local git notebook storage (the default
 
 To use an [AWS KMS](https://aws.amazon.com/kms/) encryption key to encrypt notebooks, set the following environment variable in the file **zeppelin-env.sh**:
 
-```
-export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID = kms-key-id
+```bash
+export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID=kms-key-id
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.s3.kmsKeyID</name>
   <value>AWS-KMS-Key-UUID</value>
@@ -152,13 +152,13 @@ Or using the following setting in **zeppelin-site.xml**:
 
 In order to set custom KMS key region, set the following environment variable in the file **zeppelin-env.sh**:
 
-```
-export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION = kms-key-region
+```bash
+export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION=kms-key-region
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.s3.kmsKeyRegion</name>
   <value>target-region</value>
@@ -172,13 +172,13 @@ Format of `target-region` is described in more details [here](http://docs.aws.am
 You may use a custom [``EncryptionMaterialsProvider``](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/EncryptionMaterialsProvider.html) class as long as it is available in the classpath and able to initialize itself from system properties or another mechanism.  To use this, set the following environment variable in the file **zeppelin-env.sh**:
 
 
-```
-export ZEPPELIN_NOTEBOOK_S3_EMP = class-name
+```bash
+export ZEPPELIN_NOTEBOOK_S3_EMP=class-name
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.s3.encryptionMaterialsProvider</name>
   <value>provider implementation class name</value>
@@ -189,13 +189,13 @@ Or using the following setting in **zeppelin-site.xml**:
 
 To request server-side encryption of notebooks, set the following environment variable in the file **zeppelin-env.sh**:
 
-```
-export ZEPPELIN_NOTEBOOK_S3_SSE = true
+```bash
+export ZEPPELIN_NOTEBOOK_S3_SSE=true
 ```
 
 Or using the following setting in **zeppelin-site.xml**:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.s3.sse</name>
   <value>true</value>
@@ -204,13 +204,14 @@ Or using the following setting in **zeppelin-site.xml**:
 ```
 
 </br>
+
 ## Notebook Storage in Azure <a name="Azure"></a>
 
 Using `AzureNotebookRepo` you can connect your Zeppelin with your Azure account for notebook storage.
 
 First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the file **zeppelin-site.xml** by commenting out and completing the next properties:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.azure.connectionString</name>
   <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
@@ -226,7 +227,7 @@ First of all, input your `AccountName`, `AccountKey`, and `Share Name` in the fi
 
 Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
@@ -236,7 +237,7 @@ Secondly, you can initialize `AzureNotebookRepo` class in the file **zeppelin-si
 
 and commenting out:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
@@ -246,7 +247,7 @@ and commenting out:
 
 In case you want to use simultaneously your local git storage with Azure storage use the following property instead:
 
- ```
+ ```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo, apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
@@ -256,7 +257,7 @@ In case you want to use simultaneously your local git storage with Azure storage
 
 Optionally, you can specify Azure folder structure name in the file **zeppelin-site.xml** by commenting out the next property:
 
- ```
+ ```xml
  <property>
   <name>zeppelin.notebook.azure.user</name>
   <value>user</value>
@@ -265,13 +266,14 @@ Optionally, you can specify Azure folder structure name in the file **zeppelin-s
 ```
 
 </br>
-## Notebook Storage in Google Cloud Storage<a name="GCS"></a>
+
+## Notebook Storage in Google Cloud Storage <a name="GCS"></a>
 
 Using `GCSNotebookRepo` you can connect Zeppelin with Google Cloud Storage using [Application Default Credentials](https://cloud.google.com/docs/authentication/production).
 
 First, choose a GCS path under which to store notebooks.
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.gcs.dir</name>
   <value></value>
@@ -284,7 +286,7 @@ First, choose a GCS path under which to store notebooks.
 
 Then, initialize the `GCSNotebookRepo` class in the file **zeppelin-site.xml** by commenting the next property:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
@@ -294,7 +296,7 @@ Then, initialize the `GCSNotebookRepo` class in the file **zeppelin-site.xml** b
 
 and commenting out:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
@@ -304,7 +306,7 @@ and commenting out:
 
 Or, if you want to simultaneously use your local git storage with GCS, use the following property instead:
 
- ```
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo,org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
@@ -315,7 +317,7 @@ Or, if you want to simultaneously use your local git storage with GCS, use the f
 ### Google Cloud API Authentication
 
 Note: On Google App Engine, Google Cloud Shell, and Google Compute Engine, these
-steps are not necessary, as build-in credentials are used by default.
+steps are not necessary if you are using the default built in service account.
 
 For more information, see [Application Default Credentials](https://cloud.google.com/docs/authentication/production)
 
@@ -349,18 +351,32 @@ for authentication with GCS, you will need a JSON service account key file.
    `/path/to/my/key.json`), and give it appropriate permissions. Ensure at
    least the user running the zeppelin daemon can read it.
 
-Then, point `GOOGLE_APPLICATION_CREDENTIALS` at your new key file in **zeppelin-env.sh**. For example:
+ If you wish to set this as your default credential file to access Google Services,
+ point `GOOGLE_APPLICATION_CREDENTIALS` at your new key file in **zeppelin-env.sh**. For example:
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key.json
 ```
+If you do not want to use this key file as default credential file and want to specify a custom key
+file for authentication with GCS, update the following property :
+
+```xml
+<property>
+  <name>zeppelin.notebook.google.credentialsJsonFilePath</name>
+  <value>path/to/key.json</value>
+  <description>
+    Path to GCS credential key file for authentication with Google Storage.
+ </description>
+</property>
+```
+
 
 </br>
 ## Notebook Storage in ZeppelinHub  <a name="ZeppelinHub"></a>
 
 ZeppelinHub storage layer allows out of the box connection of Zeppelin instance with your ZeppelinHub account. First of all, you need to either comment out the following  property in **zeppelin-site.xml**:
 
-```
+```xml
 <!-- For connecting your Zeppelin with ZeppelinHub -->
 <!--
 <property>
@@ -373,15 +389,15 @@ ZeppelinHub storage layer allows out of the box connection of Zeppelin instance 
 
 or set the environment variable in the file **zeppelin-env.sh**:
 
-```
+```bash
 export ZEPPELIN_NOTEBOOK_STORAGE="org.apache.zeppelin.notebook.repo.GitNotebookRepo, org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo"
 ```
 
 Secondly, you need to set the environment variables in the file **zeppelin-env.sh**:
 
-```
-export ZEPPELINHUB_API_TOKEN = ZeppelinHub token
-export ZEPPELINHUB_API_ADDRESS = address of ZeppelinHub service (e.g. https://www.zeppelinhub.com)
+```bash
+export ZEPPELINHUB_API_TOKEN=ZeppelinHub token
+export ZEPPELINHUB_API_ADDRESS=address of ZeppelinHub service (e.g. https://www.zeppelinhub.com)
 ```
 
 You can get more information on generating `token` and using authentication on the corresponding [help page](http://help.zeppelinhub.com/zeppelin_integration/#add-a-new-zeppelin-instance-and-generate-a-token).
@@ -400,7 +416,7 @@ You can use MongoDB as notebook storage by editting `zeppelin-env.sh` or `zeppel
 #### (Method 1) by editting `zeppelin-env.sh`
 Add a line below to `$ZEPPELIN_HOME/conf/zeppelin-env.sh`:
 
-```sh
+```bash
 export ZEPPELIN_NOTEBOOK_STORAGE=org.apache.zeppelin.notebook.repo.MongoNotebookRepo
 ```
 
@@ -459,7 +475,7 @@ By setting `ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT` as `true` (default `false`), you
 
 To enable GitHub tracking, uncomment the following properties in `zeppelin-site.xml`
 
-```sh
+```xml
 <property>
   <name>zeppelin.notebook.git.remote.url</name>
   <value></value>
@@ -487,7 +503,7 @@ To enable GitHub tracking, uncomment the following properties in `zeppelin-site.
 
 And set the `zeppelin.notebook.storage` propery to `org.apache.zeppelin.notebook.repo.GitHubNotebookRepo`
 
-```sh
+```xml
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.GitHubNotebookRepo</value>

@@ -36,14 +36,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.ResultMessages;
-import org.apache.zeppelin.interpreter.WrappedInterpreter;
 
 /**
  *
@@ -60,7 +57,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    pigServer = getPigInterpreter().getPigServer();
+    pigServer = getInterpreterInTheSameSessionByClassName(PigInterpreter.class).getPigServer();
     maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
@@ -161,24 +158,5 @@ public class PigQueryInterpreter extends BasePigInterpreter {
   @Override
   public PigServer getPigServer() {
     return this.pigServer;
-  }
-
-  private PigInterpreter getPigInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    PigInterpreter pig = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PigInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    pig = (PigInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return pig;
   }
 }

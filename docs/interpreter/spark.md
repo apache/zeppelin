@@ -104,13 +104,13 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Local repository for dependency loader</td>
   </tr>
   <tr>
-    <td>PYSPARK_PYTHON</td>
+    <td><code>PYSPARK_PYTHON</code></td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code>).
             Property <code>spark.pyspark.python</code> take precedence if it is set</td>
   </tr>
   <tr>
-    <td>PYSPARK_DRIVER_PYTHON</td>
+    <td><code>PYSPARK_DRIVER_PYTHON</code></td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in driver only (default is <code>PYSPARK_PYTHON</code>).
             Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
@@ -119,6 +119,11 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>zeppelin.spark.concurrentSQL</td>
     <td>false</td>
     <td>Execute multiple SQL concurrently if set true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.concurrentSQL.max</td>
+    <td>10</td>
+    <td>Max number of SQL concurrently executed</td>
   </tr>
   <tr>
     <td>zeppelin.spark.maxResult</td>
@@ -332,6 +337,21 @@ utilizing Zeppelin's built-in [Angular Display System](../usage/display_system/a
 
 <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/matplotlibAngularExample.gif" />
 
+## Running spark sql concurrently
+By default, each sql statement would run sequentially in `%spark.sql`. But you can run them concurrently by following setup.
+
+1. set `zeppelin.spark.concurrentSQL` to true to enable the sql concurrent feature, underneath zeppelin will change to use fairscheduler for spark. And also set `zeppelin.spark.concurrentSQL.max` to control the max number of sql statements running concurrently.
+2. configure pools by creating `fairscheduler.xml` under your `SPARK_CONF_DIR`, check the offical spark doc [Configuring Pool Properties](http://spark.apache.org/docs/latest/job-scheduling.html#configuring-pool-properties)
+3. set pool property via setting paragraph property. e.g.
+
+```
+%spark(pool=pool1)
+
+sql statement
+```
+
+This feature is available for both all versions of scala spark, pyspark. For sparkr, it is only available starting from 2.3.0.
+ 
 ## Interpreter setting option
 
 You can choose one of `shared`, `scoped` and `isolated` options wheh you configure Spark interpreter.
@@ -360,8 +380,10 @@ This is to make the server communicate with KDC.
 
 3. Add the two properties below to Spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
-        spark.yarn.principal
-        spark.yarn.keytab
+    ```
+    spark.yarn.principal
+    spark.yarn.keytab
+    ```
 
   > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 

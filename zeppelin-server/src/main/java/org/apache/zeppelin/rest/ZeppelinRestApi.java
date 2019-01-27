@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.rest;
 
+import javax.inject.Singleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -40,9 +41,8 @@ import org.apache.zeppelin.util.Util;
  * @since 0.3.4
  */
 @Path("/")
+@Singleton
 public class ZeppelinRestApi {
-  public ZeppelinRestApi() {
-  }
 
   /**
    * Get the root endpoint Return always 200.

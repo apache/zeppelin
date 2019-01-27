@@ -48,6 +48,7 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,24 +88,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     this.appListener = interpreterSettingManager.getAppEventListener();
   }
 
-  public void run() {
-    TServerSocket tSocket = null;
-    try {
-      tSocket = RemoteInterpreterUtils.createTServerSocket(portRange);
-      port = tSocket.getServerSocket().getLocalPort();
-      host = RemoteInterpreterUtils.findAvailableHostAddress();
-    } catch (IOException e1) {
-      throw new RuntimeException(e1);
-    }
-
-    LOGGER.info("InterpreterEventServer will start. Port: {}", port);
-    RemoteInterpreterEventService.Processor processor =
-        new RemoteInterpreterEventService.Processor(this);
-    this.thriftServer = new TThreadPoolServer(
-        new TThreadPoolServer.Args(tSocket).processor(processor));
-    this.thriftServer.serve();
-  }
-
   public void start() throws IOException {
     Thread startingThread = new Thread() {
       @Override
@@ -118,7 +101,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
           throw new RuntimeException(e1);
         }
 
-        LOGGER.info("InterpreterEventServer will start. Port: {}", port);
+        LOGGER.info("InterpreterEventServer is starting at {}:{}", host, port);
         RemoteInterpreterEventService.Processor processor =
             new RemoteInterpreterEventService.Processor(RemoteInterpreterEventServer.this);
         thriftServer = new TThreadPoolServer(
@@ -142,7 +125,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (thriftServer != null && !thriftServer.isServing()) {
       throw new IOException("Fail to start InterpreterEventServer in 30 seconds.");
     }
-    LOGGER.info("InterpreterEventServer is started");
+    LOGGER.info("RemoteInterpreterEventServer is started");
 
     runner = new AppendOutputRunner(listener);
     appendFuture = appendService.scheduleWithFixedDelay(
@@ -156,6 +139,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (appendFuture != null) {
       appendFuture.cancel(true);
     }
+    LOGGER.info("RemoteInterpreterEventServer is stopped");
   }
 
 
@@ -181,8 +165,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       LOGGER.warn("Interpreter process does not existed yet for InterpreterGroup: " +
           registerInfo.getInterpreterGroupId());
     }
-    ((RemoteInterpreterManagedProcess) interpreterProcess)
-        .processStarted(registerInfo.port, registerInfo.host);
+
+    interpreterProcess.processStarted(registerInfo.port, registerInfo.host);
   }
 
   @Override
@@ -234,9 +218,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     appListener.onStatusChange(event.noteId, event.paragraphId, event.appId, event.status);
   }
 
-
   @Override
-  public void runParagraphs(RunParagraphsEvent event) {
+  public void runParagraphs(RunParagraphsEvent event) throws TException {
     try {
       listener.runParagraphs(event.getNoteId(), event.getParagraphIndices(),
           event.getParagraphIds(), event.getCurParagraphId());
@@ -247,12 +230,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.info("complete runParagraphs." + event);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e.getMessage());
+      throw new TException(e);
     }
   }
 
   @Override
   public void addAngularObject(String intpGroupId, String json) throws TException {
+    LOGGER.debug("Add AngularObject, interpreterGroupId: " + intpGroupId + ", json: " + json);
     AngularObject angularObject = AngularObject.fromJson(json);
     InterpreterGroup interpreterGroup =
         interpreterSettingManager.getInterpreterGroupById(intpGroupId);
@@ -293,22 +277,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
     }
     interpreterGroup.getAngularObjectRegistry().remove(name, noteId, paragraphId);
-  }
-
-  @Override
-  public void sendMetaInfo(String intpGroupId, String json) throws TException {
-    InterpreterGroup interpreterGroup =
-        interpreterSettingManager.getInterpreterGroupById(intpGroupId);
-    if (interpreterGroup == null) {
-      throw new TException("Invalid InterpreterGroupId: " + intpGroupId);
-    }
-
-    Map<String, String> metaInfos = gson.fromJson(json,
-        new TypeToken<Map<String, String>>() {
-        }.getType());
-    String settingId = RemoteInterpreterUtils.
-        getInterpreterSettingId(interpreterGroup.getId());
-    listener.onMetaInfosReceived(settingId, metaInfos);
   }
 
   @Override

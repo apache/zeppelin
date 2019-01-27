@@ -54,7 +54,7 @@ public abstract class AbstractInterpreterTest {
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(), confDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_DIR.getVarName(), interpreterDir.getAbsolutePath());
     System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_ORDER.getVarName(), "test,mock1,mock2,mock_resource_pool");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(), "test");
 
     conf = new ZeppelinConfiguration();
     interpreterSettingManager = new InterpreterSettingManager(conf,
@@ -71,7 +71,7 @@ public abstract class AbstractInterpreterTest {
   }
 
   protected Note createNote() {
-    return new Note(null, interpreterFactory, interpreterSettingManager, null, null, null, null);
+    return new Note("test", "test", interpreterFactory, interpreterSettingManager, null, null, null);
   }
 
   protected InterpreterContext createDummyInterpreterContext() {

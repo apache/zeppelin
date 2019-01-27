@@ -201,6 +201,10 @@ There are more JDBC interpreter properties you can specify like below.
     <td>zeppelin.jdbc.interpolation</td>
     <td>Enables ZeppelinContext variable interpolation into paragraph text. Default value is false.</td>
   </tr>
+  <tr>
+    <td>zeppelin.jdbc.maxConnLifetime</td>
+    <td>Maximum of connection lifetime in milliseconds. A value of zero or less means the connection has an infinite lifetime.</td>
+  </tr>
 </table>
 
 You can also add more properties by using this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29).
@@ -738,16 +742,18 @@ The JDBC interpreter also supports interpolation of `ZeppelinContext` objects in
 The following example shows one use of this facility:
 
 ####In Scala cell:
-```
+
+```scala
 z.put("country_code", "KR")
     // ...
 ```
 
 ####In later JDBC cell:
+
 ```sql
 %jdbc_interpreter_name
-    select * from patents_list where 
-    priority_country = '{country_code}' and filing_date like '2015-%'
+select * from patents_list where 
+priority_country = '{country_code}' and filing_date like '2015-%'
 ```
 
 Object interpolation is disabled by default, and can be enabled for all instances of the JDBC interpreter by 

@@ -24,7 +24,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +58,7 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
   public void setUp() {
   }
 
-  @Test
+  //  @Test
   public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
     GetMethod loginWithoutCookie = httpGet("/api/security/ticket");
     Map result = gson.fromJson(loginWithoutCookie.getResponseBodyAsString(), Map.class);

@@ -17,28 +17,22 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- *
+ * Metadata of Note: noteId & note Path
  */
 public class NoteInfo {
   String id;
-  String name;
-  private Map<String, Object> config = new HashMap<>();
+  String path;
 
-  public NoteInfo(String id, String name, Map<String, Object> config) {
+  public NoteInfo(String id, String path) {
     super();
     this.id = id;
-    this.name = name;
-    this.config = config;
+    this.path = path;
   }
 
   public NoteInfo(Note note) {
     id = note.getId();
-    name = note.getName();
-    config = note.getConfig();
+    path = note.getPath();
   }
 
   public String getId() {
@@ -49,20 +43,26 @@ public class NoteInfo {
     this.id = id;
   }
 
-  public String getName() {
-    return name;
+  public String getPath() {
+    return path;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setPath(String path) {
+    this.path = path;
   }
 
-  public Map<String, Object> getConfig() {
-    return config;
+  public String getNoteName() {
+    int pos = this.path.lastIndexOf("/");
+    return path.substring(pos + 1);
   }
 
-  public void setConfig(Map<String, Object> config) {
-    this.config = config;
+  public String getParent() {
+    int pos = this.path.lastIndexOf("/");
+    return path.substring(0, pos);
   }
 
+  @Override
+  public String toString() {
+    return path + "_" + id + ".zpln";
+  }
 }

@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -29,10 +31,12 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.gson.JsonParseException;
+
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -54,17 +58,19 @@ import org.slf4j.LoggerFactory;
  * object store, so this "directory" should not itself be an object. Instead, it represents the base
  * path for the note.json files.
  *
- * Authentication is provided by google-auth-library-java.
+ * Authentication is provided by google-auth-library-java. A custom json key file path
+ * can be specified by zeppelin.notebook.google.credentialsJsonFilePath to connect with GCS
+ * If not specified the GOOGLE_APPLICATION_CREDENTIALS will be used to connect to GCS.
  * @see <a href="https://github.com/google/google-auth-library-java">
  *   google-auth-library-java</a>.
  */
 public class GCSNotebookRepo implements NotebookRepo {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GCSNotebookRepo.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GCSNotebookRepo.class);
   private String encoding;
   private String bucketName;
   private Optional<String> basePath;
-  private Pattern noteNamePattern;
+  private Pattern notePathPattern;
   private Storage storage;
 
   public GCSNotebookRepo() {
@@ -107,27 +113,32 @@ public class GCSNotebookRepo implements NotebookRepo {
 
     // Notes are stored at gs://bucketName/basePath/<note-id>/note.json
     if (basePath.isPresent()) {
-      this.noteNamePattern = Pattern.compile(
-          "^" + Pattern.quote(basePath.get() + "/") + "([^/]+)/note\\.json$");
+      this.notePathPattern = Pattern.compile(
+          "^" + Pattern.quote(basePath.get() + "/") + "(.+\\.zpln)$");
     } else {
-      this.noteNamePattern = Pattern.compile("^([^/]+)/note\\.json$");
+      this.notePathPattern = Pattern.compile("^(.+\\.zpln)$");
     }
 
-    this.storage = StorageOptions.getDefaultInstance().getService();
+    Credentials credentials = GoogleCredentials.getApplicationDefault();
+    String credentialJsonPath = zConf.getString(ConfVars.ZEPPELIN_NOTEBOOK_GCS_CREDENTIALS_FILE);
+    if (credentialJsonPath != null) {
+      credentials = GoogleCredentials.fromStream(new FileInputStream(credentialJsonPath));
+    }
+    this.storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
   }
 
-  private BlobId makeBlobId(String noteId) {
+  private BlobId makeBlobId(String noteId, String notePath) throws IOException {
     if (basePath.isPresent()) {
-      return BlobId.of(bucketName, basePath.get() + "/" + noteId + "/note.json");
+      return BlobId.of(bucketName, basePath.get() + "/" + buildNoteFileName(noteId, notePath));
     } else {
-      return BlobId.of(bucketName, noteId + "/note.json");
+      return BlobId.of(bucketName, buildNoteFileName(noteId, notePath));
     }
   }
 
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+  public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
     try {
-      List<NoteInfo> infos = new ArrayList<>();
+      Map<String, NoteInfo> infos = new HashMap<>();
       Iterable<Blob> blobsUnderDir;
       if (basePath.isPresent()) {
         blobsUnderDir = storage
@@ -139,11 +150,18 @@ public class GCSNotebookRepo implements NotebookRepo {
           .iterateAll();
       }
       for (Blob b : blobsUnderDir) {
-        Matcher matcher = noteNamePattern.matcher(b.getName());
+        Matcher matcher = notePathPattern.matcher(b.getName());
         if (matcher.matches()) {
           // Callers only use the id field, so do not fetch each note
           // This matches the implementation in FileSystemNoteRepo#list
-          infos.add(new NoteInfo(matcher.group(1), "", null));
+          String noteFileName = matcher.group(1);
+          try {
+            String noteId = getNoteId(noteFileName);
+            String notePath = getNotePath("", noteFileName);
+            infos.put(noteId, new NoteInfo(noteId, notePath));
+          } catch (IOException e) {
+            LOGGER.warn(e.getMessage());
+          }
         }
       }
       return infos;
@@ -153,8 +171,8 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    BlobId blobId = makeBlobId(noteId);
+  public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
+    BlobId blobId = makeBlobId(noteId, notePath);
     byte[] contents;
     try {
       contents = storage.readAllBytes(blobId);
@@ -172,7 +190,7 @@ public class GCSNotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId()))
+    BlobInfo info = BlobInfo.newBuilder(makeBlobId(note.getId(), note.getPath()))
         .setContentType("application/json")
         .build();
     try {
@@ -183,9 +201,19 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+  public void move(String noteId, String notePath, String newNotePath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
+  public void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
     Preconditions.checkArgument(!Strings.isNullOrEmpty(noteId));
-    BlobId blobId = makeBlobId(noteId);
+    BlobId blobId = makeBlobId(noteId, notePath);
     try {
       boolean deleted = storage.delete(blobId);
       if (!deleted) {
@@ -197,18 +225,23 @@ public class GCSNotebookRepo implements NotebookRepo {
   }
 
   @Override
+  public void remove(String folderPath, AuthenticationInfo subject) {
+
+  }
+
+  @Override
   public void close() {
     //no-op
   }
 
   @Override
   public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject) {
-    LOG.warn("getSettings is not implemented for GCSNotebookRepo");
+    LOGGER.warn("getSettings is not implemented for GCSNotebookRepo");
     return Collections.emptyList();
   }
 
   @Override
   public void updateSettings(Map<String, String> settings, AuthenticationInfo subject) {
-    LOG.warn("updateSettings is not implemented for GCSNotebookRepo");
+    LOGGER.warn("updateSettings is not implemented for GCSNotebookRepo");
   }
 }

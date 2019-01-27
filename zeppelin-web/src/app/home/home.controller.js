@@ -139,7 +139,7 @@ function HomeCtrl($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOrd
       return true;
     }
 
-    let noteName = note.name;
+    let noteName = note.path;
     if (noteName.toLowerCase().indexOf($scope.query.q.toLowerCase()) > -1) {
       return true;
     }

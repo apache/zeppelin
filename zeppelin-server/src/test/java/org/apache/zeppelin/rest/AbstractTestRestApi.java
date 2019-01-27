@@ -35,6 +35,9 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -128,6 +131,7 @@ public abstract class AbstractTestRestApi {
 
   protected static File zeppelinHome;
   protected static File confDir;
+  protected static File notebookDir;
 
   private String getUrl(String path) {
     String url;
@@ -157,6 +161,7 @@ public abstract class AbstractTestRestApi {
     @Override
     public void run() {
       try {
+        TestUtils.clearInstances();
         ZeppelinServer.main(new String[]{""});
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
@@ -165,8 +170,14 @@ public abstract class AbstractTestRestApi {
     }
   };
 
-  private static void start(boolean withAuth, String testClassName, boolean withKnox)
+  private static void start(boolean withAuth,
+                            String testClassName,
+                            boolean withKnox,
+                            boolean cleanData)
           throws Exception {
+    LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
+        withAuth, testClassName, withKnox);
+    
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -175,11 +186,22 @@ public abstract class AbstractTestRestApi {
       confDir.mkdirs();
 
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
-              zeppelinHome.getAbsolutePath());
+          zeppelinHome.getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName(),
-              new File("../zeppelin-web/dist").getAbsolutePath());
+          new File("../zeppelin-web/dist").getAbsolutePath());
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName(),
-              confDir.getAbsolutePath());
+          confDir.getAbsolutePath());
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName(),
+          "spark");
+      notebookDir = new File(zeppelinHome.getAbsolutePath() + "/notebook_" + testClassName);
+      if (cleanData) {
+        FileUtils.deleteDirectory(notebookDir);
+      }
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
+          notebookDir.getPath()
+      );
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -213,26 +235,6 @@ public abstract class AbstractTestRestApi {
 
       }
 
-      // exclude org.apache.zeppelin.rinterpreter.* for scala 2.11 test
-      String interpreters = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS);
-      String interpretersCompatibleWithScala211Test = null;
-
-      for (String intp : interpreters.split(",")) {
-        if (intp.startsWith("org.apache.zeppelin.rinterpreter")) {
-          continue;
-        }
-
-        if (interpretersCompatibleWithScala211Test == null) {
-          interpretersCompatibleWithScala211Test = intp;
-        } else {
-          interpretersCompatibleWithScala211Test += "," + intp;
-        }
-      }
-
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName(),
-          interpretersCompatibleWithScala211Test);
-
       executor = Executors.newSingleThreadExecutor();
       executor.submit(SERVER);
       long s = System.currentTimeMillis();
@@ -247,20 +249,25 @@ public abstract class AbstractTestRestApi {
       if (started == false) {
         throw new RuntimeException("Can not start Zeppelin server");
       }
+      //ZeppelinServer.notebook.setParagraphJobListener(NotebookServer.getInstance());
       LOG.info("Test Zeppelin stared.");
     }
   }
 
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
-    start(true, testClassName, true);
+    start(true, testClassName, true, true);
   }
   
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
-    start(true, testClassName, false);
+    start(true, testClassName, false, true);
   }
   
   protected static void startUp(String testClassName) throws Exception {
-    start(false, testClassName, false);
+    start(false, testClassName, false, true);
+  }
+
+  protected static void startUp(String testClassName, boolean cleanData) throws Exception {
+    start(false, testClassName, false, cleanData);
   }
 
   private static String getHostname() {
@@ -277,13 +284,14 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
-    if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
+
+    if (!WAS_RUNNING && TestUtils.getInstance(Notebook.class) != null) {
       // restart interpreter to stop all interpreter processes
-      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
+      List<InterpreterSetting> settingList = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
               .get();
-      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
         for (InterpreterSetting setting : settingList) {
-          ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+          TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
       }
       if (shiroIni != null) {
@@ -292,6 +300,7 @@ public abstract class AbstractTestRestApi {
       LOG.info("Terminating test Zeppelin...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
+      PluginManager.reset();
 
       long s = System.currentTimeMillis();
       boolean started = true;
@@ -307,21 +316,21 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-
-      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getVarName());
+      
       if (isRunningWithAuth) {
         isRunningWithAuth = false;
         System
             .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
       }
 
-      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (deleteConfDir && !TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
         // id will change after zeppelin restart, then we can not recover interpreter process
         // properly
         FileUtils.deleteDirectory(confDir);
       }
     }
+
   }
 
   protected static boolean checkIfServerIsRunning() {

@@ -18,12 +18,14 @@
 package org.apache.zeppelin.notebook.socket;
 
 import com.google.gson.Gson;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Zeppelin websocket massage template class.
  */
@@ -165,13 +167,10 @@ public class Message implements JsonSerializable {
     LIST_NOTE_JOBS,               // [c-s] get note job management information
     LIST_UPDATE_NOTE_JOBS,        // [c-s] get job management information for until unixtime
     UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
-                                  // @param unixTime
-    GET_INTERPRETER_BINDINGS,     // [c-s] get interpreter bindings
-                                  // @param noteId
-    SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
-                                  // @param noteId
-                                  // @param selectedSettingIds
+    // @param unixTime
+    GET_INTERPRETER_BINDINGS,    // [c-s] get interpreter bindings
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
+
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
@@ -191,8 +190,26 @@ public class Message implements JsonSerializable {
     INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
     COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
     PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
+    NOTE_RUNNING_STATUS,        // [s-c] sequential run status will be change
     NOTICE                        // [s-c] Notice
   }
+
+  // these messages will be ignored during the sequential run of the note
+  private static final Set<OP> disabledForRunningNoteMessages = Collections
+      .unmodifiableSet(new HashSet<>(Arrays.asList(
+          OP.COMMIT_PARAGRAPH,
+          OP.RUN_PARAGRAPH,
+          OP.RUN_PARAGRAPH_USING_SPELL,
+          OP.RUN_ALL_PARAGRAPHS,
+          OP.PARAGRAPH_CLEAR_OUTPUT,
+          OP.PARAGRAPH_CLEAR_ALL_OUTPUT,
+          OP.INSERT_PARAGRAPH,
+          OP.MOVE_PARAGRAPH,
+          OP.COPY_PARAGRAPH,
+          OP.PARAGRAPH_REMOVE,
+          OP.MOVE_NOTE_TO_TRASH,
+          OP.DEL_NOTE,
+          OP.PATCH_PARAGRAPH)));
 
   private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
@@ -214,6 +231,10 @@ public class Message implements JsonSerializable {
 
   public Object get(String k) {
     return data.get(k);
+  }
+
+  public static boolean isDisabledForRunningNotes(OP eventType) {
+    return disabledForRunningNoteMessages.contains(eventType);
   }
 
   public <T> T getType(String key) {

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +45,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
  */
 public class PigQueryInterpreterTest {
 
-  private PigInterpreter pigInterpreter;
-  private PigQueryInterpreter pigQueryInterpreter;
+  private Interpreter pigInterpreter;
+  private Interpreter pigQueryInterpreter;
   private InterpreterContext context;
 
   @Before
@@ -54,8 +55,8 @@ public class PigQueryInterpreterTest {
     properties.put("zeppelin.pig.execType", "local");
     properties.put("zeppelin.pig.maxResult", "20");
 
-    pigInterpreter = new PigInterpreter(properties);
-    pigQueryInterpreter = new PigQueryInterpreter(properties);
+    pigInterpreter = new LazyOpenInterpreter(new PigInterpreter(properties));
+    pigQueryInterpreter = new LazyOpenInterpreter(new PigQueryInterpreter(properties));
     List<Interpreter> interpreters = new ArrayList();
     interpreters.add(pigInterpreter);
     interpreters.add(pigQueryInterpreter);
@@ -70,13 +71,13 @@ public class PigQueryInterpreterTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws InterpreterException {
     pigInterpreter.close();
     pigQueryInterpreter.close();
   }
 
   @Test
-  public void testBasics() throws IOException {
+  public void testBasics() throws IOException, InterpreterException {
     String content = "andy\tmale\t10\n"
             + "peter\tmale\t20\n"
             + "amy\tfemale\t14\n";
@@ -134,7 +135,7 @@ public class PigQueryInterpreterTest {
   }
 
   @Test
-  public void testMaxResult() throws IOException {
+  public void testMaxResult() throws IOException, InterpreterException {
     StringBuilder content = new StringBuilder();
     for (int i = 0; i < 30; ++i) {
       content.append(i + "\tname_" + i + "\n");

@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -40,7 +41,6 @@ import org.apache.zeppelin.helium.HeliumPackage;
 import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterHookListener;
@@ -53,7 +53,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.RemoteZeppelinServerResource;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
@@ -70,11 +69,12 @@ import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
-import org.apache.zeppelin.scheduler.JobProgressPoller;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -145,6 +145,8 @@ public class RemoteInterpreterServer extends Thread
                                  String interpreterGroupId,
                                  boolean isTest)
       throws TTransportException, IOException {
+    logger.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
+            intpEventServerHost, intpEventServerPort);
     if (null != intpEventServerHost) {
       this.intpEventServerHost = intpEventServerHost;
       if (!isTest) {
@@ -174,7 +176,6 @@ public class RemoteInterpreterServer extends Thread
     }
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
-    logger.info("Starting remote interpreter server on port {}", port);
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
   }
 
@@ -279,6 +280,19 @@ public class RemoteInterpreterServer extends Thread
     RemoteInterpreterServer remoteInterpreterServer =
         new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange);
     remoteInterpreterServer.start();
+
+    // add signal handler
+    Signal.handle(new Signal("TERM"), new SignalHandler() {
+      @Override
+      public void handle(Signal signal) {
+        try {
+          remoteInterpreterServer.shutdown();
+        } catch (TException e) {
+          logger.error("Error on shutdown RemoteInterpreterServer", e);
+        }
+      }
+    });
+
     remoteInterpreterServer.join();
     System.exit(0);
   }
@@ -345,9 +359,7 @@ public class RemoteInterpreterServer extends Thread
     for (Object key : properties.keySet()) {
       if (!RemoteInterpreterUtils.isEnvString((String) key)) {
         String value = properties.getProperty((String) key);
-        if (value == null || value.isEmpty()) {
-          System.clearProperty((String) key);
-        } else {
+        if (!StringUtils.isBlank(value)) {
           System.setProperty((String) key, properties.getProperty((String) key));
         }
       }
@@ -445,7 +457,6 @@ public class RemoteInterpreterServer extends Thread
         interpreterContext.getParagraphId(),
         "RemoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
-        JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
         st,
         context);
@@ -474,41 +485,6 @@ public class RemoteInterpreterServer extends Thread
         context.getNoteGui());
   }
 
-  @Override
-  public void onReceivedZeppelinResource(String responseJson) throws TException {
-    RemoteZeppelinServerResource response = RemoteZeppelinServerResource.fromJson(responseJson);
-    if (response == null) {
-      throw new TException("Bad response for remote resource");
-    }
-
-    try {
-      if (response.getResourceType() == RemoteZeppelinServerResource.Type.PARAGRAPH_RUNNERS) {
-        List<InterpreterContextRunner> intpContextRunners = new LinkedList<>();
-        List<Map<String, Object>> remoteRunnersMap =
-            (List<Map<String, Object>>) response.getData();
-
-        String noteId = null;
-        String paragraphId = null;
-
-        for (Map<String, Object> runnerItem : remoteRunnersMap) {
-          noteId = (String) runnerItem.get("noteId");
-          paragraphId = (String) runnerItem.get("paragraphId");
-          intpContextRunners.add(
-              new ParagraphRunner(this, noteId, paragraphId)
-          );
-        }
-
-        synchronized (this.remoteWorksResponsePool) {
-          this.remoteWorksResponsePool.put(
-              response.getOwnerKey(),
-              intpContextRunners);
-        }
-      }
-    } catch (Exception e) {
-      throw e;
-    }
-  }
-
   class InterpretJobListener implements JobListener {
 
     @Override
@@ -523,31 +499,30 @@ public class RemoteInterpreterServer extends Thread
     }
   }
 
-  // TODO(jl): Need to extract this class from RemoteInterpreterServer to test it
-  public static class InterpretJob extends Job {
+  public static class InterpretJob extends Job<InterpreterResult> {
+
 
     private Interpreter interpreter;
     private String script;
     private InterpreterContext context;
     private Map<String, Object> infos;
-    private Object results;
+    private InterpreterResult results;
 
     public InterpretJob(
         String jobId,
         String jobName,
         JobListener listener,
-        long progressUpdateIntervalMsec,
         Interpreter interpreter,
         String script,
         InterpreterContext context) {
-      super(jobId, jobName, listener, progressUpdateIntervalMsec);
+      super(jobId, jobName, listener);
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
     }
 
     @Override
-    public Object getReturn() {
+    public InterpreterResult getReturn() {
       return results;
     }
 
@@ -603,8 +578,7 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    // TODO(jl): need to redesign this class
-    public Object jobRun() throws Throwable {
+    public InterpreterResult jobRun() throws Throwable {
       ClassLoader currentThreadContextClassloader = Thread.currentThread().getContextClassLoader();
       try {
         InterpreterContext.set(context);
@@ -671,8 +645,8 @@ public class RemoteInterpreterServer extends Thread
     }
 
     @Override
-    public void setResult(Object results) {
-      this.results = results;
+    public void setResult(InterpreterResult result) {
+      this.results = result;
     }
   }
 
@@ -684,9 +658,9 @@ public class RemoteInterpreterServer extends Thread
     logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(sessionId, className);
     String jobId = interpreterContext.getParagraphId();
-    Job job = intp.getScheduler().removeFromWaitingQueue(jobId);
+    Job job = intp.getScheduler().getJob(jobId);
 
-    if (job != null) {
+    if (job != null && job.getStatus() == Status.PENDING) {
       job.setStatus(Status.ABORT);
     } else {
       try {
@@ -749,25 +723,18 @@ public class RemoteInterpreterServer extends Thread
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric, InterpreterOutput output) {
-    //    List<InterpreterContextRunner> contextRunners = new LinkedList<>();
-    //    List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-    //        new TypeToken<List<RemoteInterpreterContextRunner>>() {
-    //        }.getType());
-    //
-    //    if (runners != null) {
-    //      for (InterpreterContextRunner r : runners) {
-    //        contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
-    //      }
-    //    }
-
     return InterpreterContext.builder()
         .setNoteId(ric.getNoteId())
+        .setNoteName(ric.getNoteName())
         .setParagraphId(ric.getParagraphId())
         .setReplName(ric.getReplName())
         .setParagraphTitle(ric.getParagraphTitle())
         .setParagraphText(ric.getParagraphText())
+        .setLocalProperties(ric.getLocalProperties())
         .setAuthenticationInfo(AuthenticationInfo.fromJson(ric.getAuthenticationInfo()))
         .setGUI(GUI.fromJson(ric.getGui()))
+        .setConfig(gson.fromJson(ric.getConfig(),
+                   new TypeToken<Map<String, Object>>() {}.getType()))
         .setNoteGUI(GUI.fromJson(ric.getNoteGui()))
         .setAngularObjectRegistry(interpreterGroup.getAngularObjectRegistry())
         .setResourcePool(interpreterGroup.getResourcePool())
@@ -775,22 +742,6 @@ public class RemoteInterpreterServer extends Thread
         .setIntpEventClient(intpEventClient)
         .setProgressMap(progressMap)
         .build();
-    //    return new InterpreterContext(
-    //        ric.getNoteId(),
-    //        ric.getParagraphId(),
-    //        ric.getReplName(),
-    //        ric.getParagraphTitle(),
-    //        ric.getParagraphText(),
-    //        AuthenticationInfo.fromJson(ric.getAuthenticationInfo()),
-    //        (Map<String, Object>) gson.fromJson(ric.getConfig(),
-    //            new TypeToken<Map<String, Object>>() {
-    //            }.getType()),
-    //        GUI.fromJson(ric.getGui()),
-    //        GUI.fromJson(ric.getNoteGui()),
-    //        interpreterGroup.getAngularObjectRegistry(),
-    //        interpreterGroup.getResourcePool(),
-    //        output, intpEventClient,
-    //        progressMap);
   }
 
 
@@ -830,22 +781,6 @@ public class RemoteInterpreterServer extends Thread
     });
   }
 
-
-  static class ParagraphRunner extends InterpreterContextRunner {
-    Logger logger = LoggerFactory.getLogger(ParagraphRunner.class);
-    private transient RemoteInterpreterServer server;
-
-    ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
-      super(noteId, paragraphId);
-      this.server = server;
-    }
-
-    @Override
-    public void run() {
-//      server.eventClient.run(this);
-    }
-  }
-
   private RemoteInterpreterResult convert(InterpreterResult result,
                                           Map<String, Object> config, GUI gui, GUI noteGui) {
 
@@ -877,20 +812,13 @@ public class RemoteInterpreterServer extends Thread
         logger.info("getStatus:" + Status.UNKNOWN.name());
         return Status.UNKNOWN.name();
       }
-      //TODO(zjffdu) ineffient for loop interpreter and its jobs
-      for (Interpreter intp : interpreters) {
-        for (Job job : intp.getScheduler().getJobsRunning()) {
-          if (jobId.equals(job.getId())) {
-            logger.info("getStatus:" + job.getStatus().name());
-            return job.getStatus().name();
-          }
-        }
 
-        for (Job job : intp.getScheduler().getJobsWaiting()) {
-          if (jobId.equals(job.getId())) {
-            logger.info("getStatus:" + job.getStatus().name());
-            return job.getStatus().name();
-          }
+      for (Interpreter intp : interpreters) {
+        Job job = intp.getScheduler().getJob(jobId);
+        logger.info("job:" + job);
+        if (job != null) {
+          logger.info("getStatus: " + job.getStatus().name());
+          return job.getStatus().name();
         }
       }
     }

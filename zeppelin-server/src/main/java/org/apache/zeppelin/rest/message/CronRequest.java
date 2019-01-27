@@ -26,13 +26,21 @@ import org.apache.zeppelin.common.JsonSerializable;
 public class CronRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
 
-  String cron;
+  private String cron;
+  private Boolean releaseResource;
 
   public CronRequest (){
   }
 
   public String getCronString() {
     return cron;
+  }
+
+  public Boolean getReleaseResource() {
+    if (releaseResource == null) {
+      return Boolean.FALSE;
+    }
+    return releaseResource;
   }
 
   public String toJson() {

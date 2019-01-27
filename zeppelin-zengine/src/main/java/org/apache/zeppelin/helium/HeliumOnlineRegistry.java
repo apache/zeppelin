@@ -22,14 +22,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +66,6 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
   public HeliumOnlineRegistry(String name, String uri, File registryCacheDir) {
     super(name, uri);
     registryCacheDir.mkdirs();
-
     UUID registryCacheFileUuid = UUID.nameUUIDFromBytes(uri.getBytes());
     this.registryCacheFile = new File(registryCacheDir, registryCacheFileUuid.toString());
 
@@ -73,8 +80,18 @@ public class HeliumOnlineRegistry extends HeliumRegistry {
         .build();
     HttpGet get = new HttpGet(uri());
     HttpResponse response;
-
     try {
+      ZeppelinConfiguration cfg = ZeppelinConfiguration.create();
+      if ((get.getURI().getHost().equals(cfg.getS3Endpoint()))) {
+        if (cfg.getS3Timeout() != null) {
+          int timeout = Integer.valueOf(cfg.getS3Timeout());
+          RequestConfig requestCfg = RequestConfig.custom()
+                  .setConnectTimeout(timeout)
+                  .setSocketTimeout(timeout)
+                  .build();
+          get.setConfig(requestCfg);
+        }
+      }
       response = client.execute(get);
     } catch (Exception e) {
       logger.error(e.getMessage());

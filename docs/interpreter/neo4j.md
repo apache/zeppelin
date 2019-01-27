@@ -26,6 +26,9 @@ limitations under the License.
 ## Overview
 [Neo4j](https://neo4j.com/product/) is a native graph database, designed to store and process graphs from bottom to top.
 
+### Supported Version
+
+The Neo4j Interpreter supports all Neo4j versions since v3 via the official [Neo4j Java Driver](https://github.com/neo4j/neo4j-java-driver)
 
 ![Neo4j - Interpreter - Video]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/neo4j-interpreter-video.gif)
 
@@ -75,7 +78,7 @@ In a notebook, to enable the **Neo4j** interpreter, click the **Gear** icon and 
 In a paragraph, use `%neo4j` to select the Neo4j interpreter and then input the Cypher commands.
 For list of Cypher commands please refer to the official [Cyper Refcard](http://neo4j.com/docs/cypher-refcard/current/)
 
-```bash
+```
 %neo4j
 //Sample the TrumpWorld dataset
 WITH
@@ -92,7 +95,7 @@ The Neo4j interpreter leverages the [Network display system](../usage/display_sy
 
 This query:
 
-```bash
+```
 %neo4j
 MATCH (vp:Person {name:"VLADIMIR PUTIN"}), (dt:Person {name:"DONALD J. TRUMP"})
 MATCH path = allShortestPaths( (vp)-[*]-(dt) )
@@ -104,7 +107,7 @@ produces the following result_
 ### Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form](../usage/dynamic_form/intro.html) inside your queries. This query:
 
-```bash
+```
 %neo4j
 MATCH (o:Organization)-[r]-()
 RETURN o.name, count(*), collect(distinct type(r)) AS types

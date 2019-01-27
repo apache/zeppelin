@@ -17,168 +17,25 @@
 
 package org.apache.zeppelin.scheduler;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.scheduler.Job.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * FIFOScheduler runs submitted job sequentially
  */
-public class FIFOScheduler implements Scheduler {
-  List<Job> queue = new LinkedList<>();
-  private ExecutorService executor;
-  private SchedulerListener listener;
-  boolean terminate = false;
-  Job runningJob = null;
-  private String name;
+public class FIFOScheduler extends AbstractScheduler {
 
-  static Logger LOGGER = LoggerFactory.getLogger(FIFOScheduler.class);
+  private Executor executor;
 
-  public FIFOScheduler(String name, ExecutorService executor, SchedulerListener listener) {
-    this.name = name;
-    this.executor = executor;
-    this.listener = listener;
+  FIFOScheduler(String name) {
+    super(name);
+    executor = Executors.newSingleThreadExecutor(
+        new SchedulerThreadFactory("FIFOScheduler-Worker-"));
   }
 
   @Override
-  public String getName() {
-    return name;
+  public void runJobInScheduler(final Job job) {
+    // run job in the SingleThreadExecutor since this is FIFO.
+    executor.execute(() -> runJob(job));
   }
-
-  @Override
-  public Collection<Job> getJobsWaiting() {
-    List<Job> ret = new LinkedList<>();
-    synchronized (queue) {
-      for (Job job : queue) {
-        ret.add(job);
-      }
-    }
-    return ret;
-  }
-
-  @Override
-  public Collection<Job> getJobsRunning() {
-    List<Job> ret = new LinkedList<>();
-    Job job = runningJob;
-
-    if (job != null) {
-      ret.add(job);
-    }
-
-    return ret;
-  }
-
-
-
-  @Override
-  public void submit(Job job) {
-    job.setStatus(Status.PENDING);
-    synchronized (queue) {
-      queue.add(job);
-      queue.notify();
-    }
-  }
-
-
-  @Override
-  public Job removeFromWaitingQueue(String jobId) {
-    synchronized (queue) {
-      Iterator<Job> it = queue.iterator();
-      while (it.hasNext()) {
-        Job job = it.next();
-        if (job.getId().equals(jobId)) {
-          it.remove();
-          return job;
-        }
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public void run() {
-
-    synchronized (queue) {
-      while (terminate == false) {
-        synchronized (queue) {
-          if (runningJob != null || queue.isEmpty() == true) {
-            try {
-              queue.wait(500);
-            } catch (InterruptedException e) {
-              LOGGER.error("Exception in FIFOScheduler while run queue.wait", e);
-            }
-            continue;
-          }
-
-          runningJob = queue.remove(0);
-        }
-
-        final Scheduler scheduler = this;
-        this.executor.execute(new Runnable() {
-          @Override
-          public void run() {
-            if (runningJob.isAborted()) {
-              runningJob.setStatus(Status.ABORT);
-              runningJob.aborted = false;
-              synchronized (queue) {
-                queue.notify();
-              }
-              return;
-            }
-
-            runningJob.setStatus(Status.RUNNING);
-            if (listener != null) {
-              listener.jobStarted(scheduler, runningJob);
-            }
-            runningJob.run();
-            Object jobResult = runningJob.getReturn();
-            if (runningJob.isAborted()) {
-              runningJob.setStatus(Status.ABORT);
-              LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
-                  runningJob.getErrorMessage());
-            } else if (runningJob.getException() != null) {
-              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.ERROR);
-            } else if (jobResult != null && jobResult instanceof InterpreterResult
-                && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
-              LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.ERROR);
-            } else {
-              LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
-                  runningJob.getReturn());
-              runningJob.setStatus(Status.FINISHED);
-            }
-
-            if (listener != null) {
-              listener.jobFinished(scheduler, runningJob);
-            }
-            // reset aborted flag to allow retry
-            runningJob.aborted = false;
-            runningJob = null;
-            synchronized (queue) {
-              queue.notify();
-            }
-          }
-        });
-      }
-    }
-  }
-
-  @Override
-  public void stop() {
-    terminate = true;
-    synchronized (queue) {
-      queue.notify();
-    }
-  }
-
 }

@@ -18,6 +18,7 @@
 package org.apache.zeppelin.python;
 
 import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -184,6 +185,22 @@ public abstract class BasePythonInterpreterTest {
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("there is no Error: ok\n", interpreterResultMessages.get(0).getData());
+
+    // ZEPPELIN-3687
+    context = getInterpreterContext();
+    result = interpreter.interpret("# print('Hello')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(0, interpreterResultMessages.size());
+
+    context = getInterpreterContext();
+    result = interpreter.interpret(
+        "# print('Hello')\n# print('How are u?')\n# time.sleep(1)", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(0, interpreterResultMessages.size());
   }
 
   @Test
@@ -239,6 +256,16 @@ public abstract class BasePythonInterpreterTest {
     TextBox textbox = (TextBox) context.getGui().getForms().get("text_1");
     assertEquals("text_1", textbox.getName());
     assertEquals("value_1", textbox.getDefaultValue());
+
+    // Password
+    context = getInterpreterContext();
+    result =
+        interpreter.interpret("z.password(name='pwd_1')", context);
+    Thread.sleep(100);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(context.getGui().getForms().get("pwd_1") instanceof Password);
+    Password password = (Password) context.getGui().getForms().get("pwd_1");
+    assertEquals("pwd_1", password.getName());
 
     // Select
     context = getInterpreterContext();

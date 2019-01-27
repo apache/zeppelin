@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -52,6 +53,7 @@ public class GitHubNotebookRepoTest {
   private static final Logger LOG = LoggerFactory.getLogger(GitHubNotebookRepoTest.class);
 
   private static final String TEST_NOTE_ID = "2A94M5J1Z";
+  private static final String TEST_NOTE_PATH = "/my_project/my_note1";
 
   private File remoteZeppelinDir;
   private File localZeppelinDir;
@@ -85,16 +87,10 @@ public class GitHubNotebookRepoTest {
 
     File notebookDir = new File(localNotebooksDir);
     notebookDir.mkdirs();
-
-    // Copy the test notebook directory from the test/resources/2A94M5J1Z folder to the fake remote Git directory
-    String remoteTestNoteDir = Joiner.on(File.separator).join(remoteNotebooksDir, TEST_NOTE_ID);
+    
     FileUtils.copyDirectory(
-            new File(
-              GitHubNotebookRepoTest.class.getResource(
-                Joiner.on(File.separator).join("", TEST_NOTE_ID)
-              ).getFile()
-            ), new File(remoteTestNoteDir)
-    );
+        new File(GitHubNotebookRepoTest.class.getResource("/notebook").getFile()),
+        new File(remoteNotebooksDir));
 
     // Create the fake remote Git repository
     Repository remoteRepository = new FileRepository(Joiner.on(File.separator).join(remoteNotebooksDir, ".git"));
@@ -139,7 +135,7 @@ public class GitHubNotebookRepoTest {
    * Test the case when the Notebook repository is created, it pulls the latest changes from the remote repository
    */
   public void pullChangesFromRemoteRepositoryOnLoadingNotebook() throws IOException, GitAPIException {
-    NotebookRepoWithVersionControl.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, null).get(0);
+    NotebookRepoWithVersionControl.Revision firstHistoryRevision = gitHubNotebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null).get(0);
 
     assert(this.firstCommitRevision.getName().equals(firstHistoryRevision.id));
   }
@@ -154,11 +150,11 @@ public class GitHubNotebookRepoTest {
     RevCommit secondCommitRevision = remoteGit.commit().setMessage("Second commit from remote repository").call();
 
     // Add a new paragraph to the local repository
-    addParagraphToNotebook(TEST_NOTE_ID);
+    addParagraphToNotebook();
 
     // Commit and push the changes to remote repository
     NotebookRepoWithVersionControl.Revision thirdCommitRevision = gitHubNotebookRepo.checkpoint(
-            TEST_NOTE_ID, "Third commit from local repository", null);
+            TEST_NOTE_ID, TEST_NOTE_PATH, "Third commit from local repository", null);
 
     // Check all the commits as seen from the local repository. The commits are ordered chronologically. The last
     // commit is the first in the commit logs.
@@ -182,11 +178,11 @@ public class GitHubNotebookRepoTest {
    */
   public void pushLocalChangesToRemoteRepositoryOnCheckpointing() throws IOException, GitAPIException {
     // Add a new paragraph to the local repository
-    addParagraphToNotebook(TEST_NOTE_ID);
+    addParagraphToNotebook();
 
     // Commit and push the changes to remote repository
     NotebookRepoWithVersionControl.Revision secondCommitRevision = gitHubNotebookRepo.checkpoint(
-            TEST_NOTE_ID, "Second commit from local repository", null);
+            TEST_NOTE_ID, TEST_NOTE_PATH, "Second commit from local repository", null);
 
     // Check all the commits as seen from the remote repository. The commits are ordered chronologically. The last
     // commit is the first in the commit logs.
@@ -198,8 +194,8 @@ public class GitHubNotebookRepoTest {
     assert(firstCommitRevision.getName().equals(revisions.next().getName()));
   }
 
-  private void addParagraphToNotebook(String noteId) throws IOException {
-    Note note = gitHubNotebookRepo.get(TEST_NOTE_ID, null);
+  private void addParagraphToNotebook() throws IOException {
+    Note note = gitHubNotebookRepo.get(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     note.setInterpreterFactory(mock(InterpreterFactory.class));
     Paragraph paragraph = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
     paragraph.setText("%md text");
