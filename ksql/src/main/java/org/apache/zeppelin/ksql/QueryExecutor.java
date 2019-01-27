@@ -39,6 +39,8 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
+
 public class QueryExecutor {
   private static final Logger LOGGER = LoggerFactory.getLogger(QueryExecutor.class);
 
@@ -148,7 +150,7 @@ public class QueryExecutor {
               .append(", <span style=\"font-weight:bold;\">Error code</span>: ")
               .append(m.getOrDefault("error_code", "Unknown error code"))
               .append(", <span style=\"font-weight:bold;\">Message</span>: ")
-              .append(escapeHTML(m.getOrDefault("message", "").toString()));
+              .append(escapeHtml4(m.getOrDefault("message", "").toString()));
 
             return new InterpreterResult(InterpreterResult.Code.ERROR, sb.toString());
           } catch (Exception ex) {
@@ -339,9 +341,9 @@ public class QueryExecutor {
     for (Object obj : objects) {
       Map<String, Object> m = (Map<String, Object>) obj;
       sb.append("<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-      sb.append(escapeHTML(m.getOrDefault("id", "UNKNOWN_ID").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("id", "UNKNOWN_ID").toString()));
       sb.append("</td><td>");
-      sb.append(escapeHTML(m.getOrDefault("queryString", "UNKNOWN_QUERY").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("queryString", "UNKNOWN_QUERY").toString()));
       sb.append("</td></tr>\n");
     }
   }
@@ -363,16 +365,16 @@ public class QueryExecutor {
       .append("th, td { padding: 3px; }</style>")
       .append("<table>");
     sb.append("<tr><td width=\"20%\">Name:</td><th>");
-    sb.append(escapeHTML(m.getOrDefault("name", "UNKNOWN NAME").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("name", "UNKNOWN NAME").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Type:</td><th>");
-    sb.append(escapeHTML(m.getOrDefault("type", "STREAM").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("type", "STREAM").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Topic:</td><th>");
-    sb.append(escapeHTML(m.getOrDefault("topic", "UNKNOWN TOPIC").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("topic", "UNKNOWN TOPIC").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Format:</td><td>");
-    sb.append(escapeHTML(m.getOrDefault("format", "UNKNOWN FORMAT").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("format", "UNKNOWN FORMAT").toString()));
     sb.append("</td>").append("</tr>");
 
     List<Object> schemaList = (List<Object>) (m.get("fields"));
@@ -382,9 +384,9 @@ public class QueryExecutor {
       for (Object obj : schemaList) {
         Map<String, Object> entry = (Map<String, Object>) obj;
         sb.append("<tr><td>");
-        sb.append(escapeHTML(entry.getOrDefault("name", "").toString()));
+        sb.append(escapeHtml4(entry.getOrDefault("name", "").toString()));
         sb.append("</td><td>");
-        sb.append(escapeHTML(formatSchema((Map<String, Object>) entry.get("schema"))));
+        sb.append(escapeHtml4(formatSchema((Map<String, Object>) entry.get("schema"))));
         sb.append("</td></tr>\n");
       }
       sb.append("<tr><td colspan=\"2\">&nbsp;</td></tr>\n");
@@ -401,10 +403,10 @@ public class QueryExecutor {
     }
 
     sb.append("<tr><td>Key column:</td><td>");
-    sb.append(escapeHTML(m.getOrDefault("key", "").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("key", "").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Timestamp column:</td><td>");
-    sb.append(escapeHTML(m.getOrDefault("timestamp", "").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("timestamp", "").toString()));
     sb.append("</td>").append("</tr>");
 
     // output extended data
@@ -418,17 +420,17 @@ public class QueryExecutor {
       sb.append("</td></tr>");
 
       sb.append("<tr><td>Statistics:</td><td>");
-      sb.append(escapeHTML(m.getOrDefault("statistics", "").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("statistics", "").toString()));
       sb.append("</td></tr>");
       sb.append("<tr><td>Error statistics:</td><td>");
-      sb.append(escapeHTML(m.getOrDefault("errorStats", "").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("errorStats", "").toString()));
       sb.append("</td></tr>");
 
       sb.append("<tr><td>Topology:</td><td>");
-      sb.append(escapeHTML(m.getOrDefault("topology", "").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("topology", "").toString()));
       sb.append("</td></tr>");
       sb.append("<tr><td>Execution plan:</td><td>");
-      sb.append(escapeHTML(m.getOrDefault("executionPlan", "").toString()));
+      sb.append(escapeHtml4(m.getOrDefault("executionPlan", "").toString()));
       sb.append("</td></tr>");
     }
 
@@ -608,8 +610,8 @@ public class QueryExecutor {
 
     StringBuilder sb = new StringBuilder(HTML_MAGIC);
     sb.append("<span style=\"font-weight:bold;color:")
-      .append(color).append(";\">").append(escapeHTML(status)).append("</span>: ")
-      .append(escapeHTML(m.getOrDefault("message", "").toString()));
+      .append(color).append(";\">").append(escapeHtml4(status)).append("</span>: ")
+      .append(escapeHtml4(m.getOrDefault("message", "").toString()));
 
     return new InterpreterResult(code, sb.toString());
   }
@@ -631,22 +633,22 @@ public class QueryExecutor {
       .append("th, td { padding: 3px; }</style>")
       .append("<table>");
     sb.append("<tr><td width=\"20%\">Name:</td><th colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("name", "UNKNOWN FUNCTION").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("name", "UNKNOWN FUNCTION").toString()));
     sb.append("</th>").append("</tr>");
     sb.append("<tr><td>Type:</td><td colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("type", "scalar").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("type", "scalar").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Description:</td><td colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("description", "").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("description", "").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Author:</td><td colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("format", "Unknown").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("format", "Unknown").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Version:</td><td colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("version", "Unknown").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("version", "Unknown").toString()));
     sb.append("</td>").append("</tr>");
     sb.append("<tr><td>Path:</td><td colspan=\"2\">");
-    sb.append(escapeHTML(m.getOrDefault("path", "Unknown").toString()));
+    sb.append(escapeHtml4(m.getOrDefault("path", "Unknown").toString()));
     sb.append("</td>").append("</tr>");
 
     List<Object> values = (List<Object>) (m.get("functions"));
@@ -658,25 +660,16 @@ public class QueryExecutor {
         sb.append("<tr><td>");
         List<String> types = (List<String>) entry.get("argumentTypes");
         if (types != null) {
-          sb.append(escapeHTML(StringUtils.join(types, ", ")));
+          sb.append(escapeHtml4(StringUtils.join(types, ", ")));
         }
         sb.append("</td><td>");
-        sb.append(escapeHTML(entry.getOrDefault("returnType", "").toString()));
+        sb.append(escapeHtml4(entry.getOrDefault("returnType", "").toString()));
         sb.append("</td><td>");
-        sb.append(escapeHTML(entry.getOrDefault("description", "").toString()));
+        sb.append(escapeHtml4(entry.getOrDefault("description", "").toString()));
         sb.append("</td></tr>");
       }
     }
 
     return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
-
-
-  // TODO(alex): very primitive, rewrite to something more advanced, or find available
-  private static String escapeHTML(final String input) {
-    return input.replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-  }
-
 }
