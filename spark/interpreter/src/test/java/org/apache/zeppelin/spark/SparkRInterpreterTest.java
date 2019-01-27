@@ -22,6 +22,7 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteEventClient;
@@ -67,6 +68,7 @@ public class SparkRInterpreterTest {
     sparkRInterpreter.setInterpreterGroup(interpreterGroup);
     sparkInterpreter.setInterpreterGroup(interpreterGroup);
 
+    InterpreterContext.set(getInterpreterContext());
     sparkRInterpreter.open();
     sparkInterpreter.getZeppelinContext().setEventClient(mockRemoteEventClient);
 
@@ -144,6 +146,7 @@ public class SparkRInterpreterTest {
         .setNoteId("note_1")
         .setParagraphId("paragraph_1")
         .setEventClient(mockRemoteEventClient)
+        .setInterpreterOut(new InterpreterOutput(null))
         .build();
     return context;
   }

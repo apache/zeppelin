@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.FileSystemException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.*;
@@ -63,6 +62,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.WatcherSecurityKey;
 import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.joda.time.DateTime;
@@ -84,7 +84,7 @@ import com.google.gson.reflect.TypeToken;
  */
 public class NotebookServer extends WebSocketServlet
     implements NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
-    RemoteInterpreterProcessListener, ApplicationEventListener {
+    RemoteInterpreterProcessListener, ApplicationEventListener, NotebookServerMBean {
 
   /**
    * Job manager service type
@@ -471,6 +471,19 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
+  public void broadcast(Message m) {
+    synchronized (connectedSockets) {
+      for (NotebookSocket ns : connectedSockets) {
+        try {
+          ns.send(serializeMessage(m));
+        } catch (IOException | WebSocketException e) {
+          LOG.error("Send error: " + m, e);
+        }
+      }
+    }
+  }
+
+
   private void broadcast(String noteId, Message m) {
     List<NotebookSocket> socketsToBroadcast = Collections.emptyList();
     synchronized (noteSocketMap) {
@@ -485,7 +498,7 @@ public class NotebookServer extends WebSocketServlet
     for (NotebookSocket conn : socketsToBroadcast) {
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | WebSocketException e) {
         LOG.error("socket error", e);
       }
     }
@@ -509,7 +522,7 @@ public class NotebookServer extends WebSocketServlet
       }
       try {
         conn.send(serializeMessage(m));
-      } catch (IOException e) {
+      } catch (IOException | WebSocketException e) {
         LOG.error("socket error", e);
       }
     }
@@ -529,7 +542,7 @@ public class NotebookServer extends WebSocketServlet
   private void unicast(Message m, NotebookSocket conn) {
     try {
       conn.send(serializeMessage(m));
-    } catch (IOException e) {
+    } catch (IOException | WebSocketException e) {
       LOG.error("socket error", e);
     }
     broadcastToWatchers(StringUtils.EMPTY, StringUtils.EMPTY, m);
@@ -1052,7 +1065,7 @@ public class NotebookServer extends WebSocketServlet
       note.persist(subject);
       addConnectionToNote(note.getId(), (NotebookSocket) conn);
       conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
-    } catch (FileSystemException e) {
+    } catch (IOException e) {
       LOG.error("Exception from createNote", e);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
@@ -1846,7 +1859,7 @@ public class NotebookServer extends WebSocketServlet
     try {
       note.persist(p.getAuthenticationInfo());
       return true;
-    } catch (FileSystemException ex) {
+    } catch (IOException ex) {
       LOG.error("Exception from run", ex);
       conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
           "Oops! There is something wrong with the notebook file system. "
@@ -2157,7 +2170,7 @@ public class NotebookServer extends WebSocketServlet
       AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
       paragraph.setAuthenticationInfo(subject);
 
-      noteIns.run(paragraphId);
+      noteIns.run(paragraphId, true);
 
     } catch (Exception e) {
       throw e;
@@ -2451,12 +2464,14 @@ public class NotebookServer extends WebSocketServlet
         null;
     try {
       interpreter = notebook().getInterpreterFactory().getInterpreter(user, noteId, replName);
+      LOG.debug("getEditorSetting for interpreter: {} for paragraph {}", replName, paragraphId);
+      resp.put("editor", notebook().getInterpreterSettingManager().
+          getEditorSetting(interpreter, user, noteId, replName));
+      conn.send(serializeMessage(resp));
     } catch (InterpreterNotFoundException e) {
-      throw new IOException("Fail to get interpreter: " + replName, e);
+      LOG.warn("Fail to get interpreter: " + replName);
+      return;
     }
-    resp.put("editor", notebook().getInterpreterSettingManager().
-        getEditorSetting(interpreter, user, noteId, replName));
-    conn.send(serializeMessage(resp));
   }
 
   private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject)
@@ -2515,7 +2530,7 @@ public class NotebookServer extends WebSocketServlet
 
         try {
           conn.send(serialized);
-        } catch (IOException e) {
+        } catch (IOException | WebSocketException e) {
           LOG.error("Cannot broadcast message to watcher", e);
         }
       }
@@ -2527,9 +2542,12 @@ public class NotebookServer extends WebSocketServlet
       for (NotebookSocket watcher : watcherSockets) {
         try {
           watcher.send(
-              WatcherMessage.builder(noteId).subject(subject).message(serializeMessage(message))
-                  .build().toJson());
-        } catch (IOException e) {
+              WatcherMessage.builder(noteId)
+                  .subject(subject)
+                  .message(serializeMessage(message))
+                  .build()
+                  .toJson());
+        } catch (IOException | WebSocketException e) {
           LOG.error("Cannot broadcast message to watcher", e);
         }
       }
@@ -2631,5 +2649,21 @@ public class NotebookServer extends WebSocketServlet
       note.persist(subject);
       broadcastNoteForms(note);
     }
+  }
+
+  @Override
+  public Set<String> getConnectedUsers() {
+    Set<String> connectionList = Sets.newHashSet();
+    for (NotebookSocket notebookSocket : connectedSockets) {
+      connectionList.add(notebookSocket.getUser());
+    }
+    return connectionList;
+  }
+
+  @Override
+  public void sendMessage(String message) {
+    Message m = new Message(OP.NOTICE);
+    m.data.put("notice", message);
+    broadcast(m);
   }
 }

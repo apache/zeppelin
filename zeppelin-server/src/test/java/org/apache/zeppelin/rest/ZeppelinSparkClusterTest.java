@@ -67,10 +67,10 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"2.2.1"},
-        {"2.1.2"},
-        {"2.0.2"},
-        {"1.6.3"}
+            {"2.4.0"},
+            {"2.3.2"},
+            {"2.2.1"},
+            {"1.6.3"}
     });
   }
 
@@ -134,9 +134,10 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     );
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
-    assertEquals("import java.util.Date\n" +
-        "import java.net.URL\n" +
-        "hello\n", p.getResult().message().get(0).getData());
+    assertEquals("hello\n" +
+        "import java.util.Date\n" +
+        "import java.net.URL\n",
+        p.getResult().message().get(0).getData());
 
     p.setText("%spark invalid_code");
     note.run(p.getId(), true);
@@ -173,8 +174,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
         "z.show(df)");
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
-    assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-    assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+    assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
+    assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(0).getData());
 
     // test display DataSet
     if (isSpark2()) {
@@ -183,8 +184,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           "z.show(ds)");
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
-      assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(1).getType());
-      assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(1).getData());
+      assertEquals(InterpreterResult.Type.TABLE, p.getResult().message().get(0).getType());
+      assertEquals("_1\t_2\nhello\t20\n", p.getResult().message().get(0).getData());
     }
   }
 
@@ -487,8 +488,8 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals(4, result.length);
     assertEquals("default_name", result[0]);
     assertEquals("1", result[1]);
-    assertEquals("items: Seq[Object] = Buffer(2)", result[2]);
-    assertEquals("2", result[3]);
+    assertEquals("2", result[2]);
+    assertEquals("items: Seq[Object] = Buffer(2)", result[3]);
   }
 
   @Test

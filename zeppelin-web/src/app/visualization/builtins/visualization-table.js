@@ -82,6 +82,10 @@ export default class TableVisualization extends Visualization {
     return width;
   }
 
+  getSortedValue(a, b) {
+    return a > b ? 1 : a === b ? 0 : -1;
+  }
+
   createGridOptions(tableData, onRegisterApiCallback, config) {
     const rows = tableData.rows;
     const columnNames = tableData.columns.map((c) => c.name);
@@ -105,6 +109,7 @@ export default class TableVisualization extends Visualization {
       exporterExcelFilename: 'myFile.xlsx',
 
       columnDefs: columnNames.map((colName) => {
+        const self = this;
         return {
           displayName: colName,
           name: colName,
@@ -121,6 +126,18 @@ export default class TableVisualization extends Visualization {
           `,
           minWidth: this.getColumnMinWidth(colName),
           width: '*',
+          sortingAlgorithm: function(a, b, row1, row2, sortType, gridCol) {
+            const colType = gridCol.colDef.type.toLowerCase();
+            if (colType === TableColumnType.NUMBER) {
+              return self.getSortedValue(a, b);
+            } else if (colType === TableColumnType.STRING) {
+              return self.getSortedValue(a.toString(), b.toString());
+            } else if (colType === TableColumnType.DATE) {
+              return self.getSortedValue(new Date(a), new Date(b));
+            } else {
+              return self.getSortedValue(a, b);
+            }
+          },
         };
       }),
       rowEditWaitInterval: -1, /** disable saveRow event */
@@ -339,12 +356,12 @@ export default class TableVisualization extends Visualization {
       // create, compile and append grid elem
       gridElem = angular.element(
         `<div id="${gridElemId}" ui-grid="${gridElemId}"
-              ui-grid-edit ui-grid-row-edit 
-              ui-grid-pagination 
+              ui-grid-edit ui-grid-row-edit
+              ui-grid-pagination
               ui-grid-selection
               ui-grid-cellNav ui-grid-pinning
               ui-grid-empty-base-layer
-              ui-grid-resize-columns 
+              ui-grid-resize-columns
               ui-grid-move-columns
               ui-grid-grouping
               ui-grid-save-state

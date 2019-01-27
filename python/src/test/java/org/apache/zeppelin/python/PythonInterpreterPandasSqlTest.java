@@ -39,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -145,10 +146,12 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("moon\t33") > 0);
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    List<InterpreterResultMessage> outputs = out.toInterpreterResultMessage();
+    assertEquals(1, outputs.size());
+    assertEquals(Type.TABLE, outputs.get(0).getType());
+    assertTrue(outputs.get(0).getData().contains("moon\t33"));
+    assertTrue(outputs.get(0).getData().contains("park\t34"));
 
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
   }
@@ -180,10 +183,12 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
     // then
     assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("index_name"));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("nan"));
-    assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("6.7"));
+    List<InterpreterResultMessage> outputs = out.toInterpreterResultMessage();
+    assertEquals(1, outputs.size());
+    assertEquals(Type.TABLE, outputs.get(0).getType());
+    assertTrue(outputs.get(0).getData().contains("index_name"));
+    assertTrue(outputs.get(0).getData().contains("nan"));
+    assertTrue(outputs.get(0).getData().contains("6.7"));
   }
 
   @Override

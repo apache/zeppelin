@@ -78,8 +78,15 @@
       "zeppelin.spark.useNew": {
         "envName": null,
         "propertyName": "zeppelin.spark.useNew",
-        "defaultValue": "false",
+        "defaultValue": true,
         "description": "Whether use new spark interpreter implementation",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.ui.hidden": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.ui.hidden",
+        "defaultValue": false,
+        "description": "Whether to hide spark ui in zeppelin ui",
         "type": "checkbox"
       }
     },

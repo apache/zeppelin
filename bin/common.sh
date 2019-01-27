@@ -121,6 +121,18 @@ JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPEL
 JAVA_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"
 export JAVA_OPTS
 
+if [[ x"${ZEPPELIN_JMX_ENABLE}" == x"true" ]]; then
+  if [[ -z "${ZEPPELIN_JMX_PORT}" ]]; then
+    ZEPPELIN_JMX_PORT="9996"
+  fi
+  JMX_JAVA_OPTS+=" -Dcom.sun.management.jmxremote"
+  JMX_JAVA_OPTS+=" -Dcom.sun.management.jmxremote.port=${ZEPPELIN_JMX_PORT}"
+  JMX_JAVA_OPTS+=" -Dcom.sun.management.jmxremote.authenticate=false"
+  JMX_JAVA_OPTS+=" -Dcom.sun.management.jmxremote.ssl=false"
+  JAVA_OPTS="${JMX_JAVA_OPTS} ${JAVA_OPTS}"
+fi
+export JAVA_OPTS
+
 JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 if [[ -z "${ZEPPELIN_SPARK_YARN_CLUSTER}" ]]; then
     JAVA_INTP_OPTS+=" -Dlog4j.configuration=file://${ZEPPELIN_CONF_DIR}/log4j.properties"

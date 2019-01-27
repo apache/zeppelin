@@ -65,7 +65,12 @@ public class SparkInterpreterLauncher extends ShellScriptLauncher {
       sparkConfBuilder.append(" --master " + sparkMaster);
     }
     if (isYarnMode() && getDeployMode().equals("cluster")) {
-      sparkConfBuilder.append(" --files " + zConf.getConfDir() + "/log4j_yarn_cluster.properties");
+      if (sparkProperties.containsKey("spark.files")) {
+        sparkProperties.put("spark.files", sparkProperties.getProperty("spark.files") + "," +
+            zConf.getConfDir() + "/log4j_yarn_cluster.properties");
+      } else {
+        sparkProperties.put("spark.files", zConf.getConfDir() + "/log4j_yarn_cluster.properties");
+      }
     }
     for (String name : sparkProperties.stringPropertyNames()) {
       sparkConfBuilder.append(" --conf " + name + "=" + sparkProperties.getProperty(name));

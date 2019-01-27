@@ -56,8 +56,10 @@ If you wish to help us and contribute to Zeppelin Documentation, please look at 
     ```
 
  2. checkout ASF repo
+
     ```
     svn co https://svn.apache.org/repos/asf/zeppelin asf-zeppelin
     ```
+
  3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
- 4. ```svn commit```
+ 4. `svn commit`

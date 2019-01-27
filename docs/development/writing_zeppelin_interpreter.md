@@ -42,7 +42,7 @@ In 'Separate Interpreter(scoped / isolated) for each note' mode which you can se
 Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
 For your interpreter project, you need to make `interpreter-parent` as your parent project and use plugin `maven-enforcer-plugin`, `maven-dependency-plugin` and `maven-resources-plugin`. Here's one sample pom.xml 
 
-```
+```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -128,7 +128,7 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
 
 Finally, Zeppelin uses static initialization with the following:
 
-```
+```java
 static {
   Interpreter.register("MyInterpreterName", MyClassName.class.getName());
 }
@@ -157,7 +157,7 @@ If you want to add a new set of syntax highlighting,
 1. Add the `mode-*.js` file to <code>[zeppelin-web/bower.json](https://github.com/apache/zeppelin/blob/master/zeppelin-web/bower.json)</code> (when built, <code>[zeppelin-web/src/index.html](https://github.com/apache/zeppelin/blob/master/zeppelin-web/src/index.html)</code> will be changed automatically).
 2. Add `language` field to `editor` object. Note that if you don't specify language field, your interpreter will use plain text mode for syntax highlighting. Let's say you want to set your language to `java`, then add:
 
-  ```
+  ```json
   "editor": {
       "language": "java"
   }
@@ -166,7 +166,7 @@ If you want to add a new set of syntax highlighting,
 ### Edit on double click
 If your interpreter uses mark-up language such as markdown or HTML, set `editOnDblClick` to `true` so that text editor opens on pargraph double click and closes on paragraph run. Otherwise set it to `false`.
 
-```
+```json
 "editor": {
   "editOnDblClick": false
 }
@@ -177,7 +177,7 @@ By default, `Ctrl+dot(.)` brings autocompletion list in the editor.
 Through `completionKey`, each interpreter can configure autocompletion key.
 Currently `TAB` is only available option.
 
-```
+```json
 "editor": {
   "completionKey": "TAB"
 }
@@ -201,7 +201,7 @@ To configure your interpreter you need to follow these steps:
   Property value is comma separated [INTERPRETER\_CLASS\_NAME].
   For example,
 
-  ```
+  ```xml
   <property>
     <name>zeppelin.interpreters</name>
     <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
@@ -225,7 +225,7 @@ Note that the first interpreter configuration in zeppelin.interpreters will be t
 
 For example,
 
-```
+```scala
 %myintp
 
 val a = "My interpreter"
@@ -235,11 +235,11 @@ println(a)
 ### 0.6.0 and later
 Inside of a note, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will call your interpreter.
 
-You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. If you omit [INTERPRETER\_NAME], then first available interpreter will be selected in the [INTERPRETER\_GROUP].
-Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME] will be chosen from default interpreter group.
+You can omit either `[INTERPRETER\_GROUP]` or `[INTERPRETER\_NAME]`. If you omit `[INTERPRETER\_NAME]`, then first available interpreter will be selected in the `[INTERPRETER\_GROUP]`.
+Likewise, if you skip `[INTERPRETER\_GROUP]`, then `[INTERPRETER\_NAME]` will be chosen from default interpreter group.
 
 
-For example, if you have two interpreter myintp1 and myintp2 in group mygrp, you can call myintp1 like
+For example, if you have two interpreter `myintp1` and `myintp2` in group `mygrp`, you can call myintp1 like
 
 ```
 %mygrp.myintp1
@@ -247,7 +247,7 @@ For example, if you have two interpreter myintp1 and myintp2 in group mygrp, you
 codes for myintp1
 ```
 
-and you can call myintp2 like
+and you can call `myintp2` like
 
 ```
 %mygrp.myintp2
@@ -255,7 +255,7 @@ and you can call myintp2 like
 codes for myintp2
 ```
 
-If you omit your interpreter name, it'll select first available interpreter in the group ( myintp1 ).
+If you omit your interpreter name, it'll select first available interpreter in the group ( `myintp1` ).
 
 ```
 %mygrp

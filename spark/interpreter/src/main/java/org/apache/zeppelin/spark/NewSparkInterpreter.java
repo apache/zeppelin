@@ -23,10 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.DefaultInterpreterProperty;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -34,7 +31,6 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteEventClientWrapper;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -42,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +81,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
     try {
       String scalaVersion = extractScalaVersion();
       LOGGER.info("Using Scala Version: " + scalaVersion);
-      setupConfForPySpark();
       SparkConf conf = new SparkConf();
       for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
         if (!StringUtils.isBlank(entry.getValue().toString())) {
@@ -102,9 +95,10 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
       String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
       Class clazz = Class.forName(innerIntpClassName);
-      this.innerInterpreter =
-          (BaseSparkScalaInterpreter) clazz.getConstructor(SparkConf.class, List.class)
-              .newInstance(conf, getDependencyFiles());
+      this.innerInterpreter = (BaseSparkScalaInterpreter)
+          clazz.getConstructor(SparkConf.class, List.class, Boolean.class)
+              .newInstance(conf, getDependencyFiles(),
+                  Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
       this.innerInterpreter.open();
 
       sc = this.innerInterpreter.sc();
@@ -118,9 +112,12 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       sqlContext = this.innerInterpreter.sqlContext();
       sparkSession = this.innerInterpreter.sparkSession();
       sparkUrl = this.innerInterpreter.sparkUrl();
-      sparkShims = SparkShims.getInstance(sc.version());
-      sparkShims.setupSparkListener(sparkUrl);
-
+      String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
+      if (!StringUtils.isBlank(sparkUrlProp)) {
+        sparkUrl = sparkUrlProp;
+      }
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl);
       hooks = getInterpreterGroup().getInterpreterHookRegistry();
       z = new SparkZeppelinContext(sc, hooks,
           Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
@@ -130,48 +127,6 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
       LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
       throw new InterpreterException("Fail to open SparkInterpreter", e);
     }
-  }
-
-  private void setupConfForPySpark() {
-    String sparkHome = getProperty("SPARK_HOME");
-    File pysparkFolder = null;
-    if (sparkHome == null) {
-      String zeppelinHome =
-          new DefaultInterpreterProperty("ZEPPELIN_HOME", "zeppelin.home", "../../")
-              .getValue().toString();
-      pysparkFolder = new File(zeppelinHome,
-          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
-    } else {
-      pysparkFolder = new File(sparkHome, "python" + File.separator + "lib");
-    }
-
-    ArrayList<String> pysparkPackages = new ArrayList<>();
-    for (File file : pysparkFolder.listFiles()) {
-      if (file.getName().equals("pyspark.zip")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-      if (file.getName().startsWith("py4j-")) {
-        pysparkPackages.add(file.getAbsolutePath());
-      }
-    }
-
-    if (pysparkPackages.size() != 2) {
-      throw new RuntimeException("Not correct number of pyspark packages: " +
-          StringUtils.join(pysparkPackages, ","));
-    }
-    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
-    System.setProperty("spark.files", mergeProperty(System.getProperty("spark.files", ""),
-        StringUtils.join(pysparkPackages, ",")));
-    System.setProperty("spark.submit.pyFiles", mergeProperty(
-        System.getProperty("spark.submit.pyFiles", ""), StringUtils.join(pysparkPackages, ",")));
-
-  }
-
-  private String mergeProperty(String originalValue, String appendedValue) {
-    if (StringUtils.isBlank(originalValue)) {
-      return appendedValue;
-    }
-    return originalValue + "," + appendedValue;
   }
 
   @Override
@@ -241,7 +196,8 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    Interpreter p = getParentSparkInterpreter()
+        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
     if (p == null) {
       return null;
     }

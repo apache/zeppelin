@@ -61,6 +61,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
       setAddBulitinPy4j(false);
     }
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
+    setProperty("zeppelin.py4j.useAuth",
+        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
     super.open();
   }
 
@@ -106,7 +108,11 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = "Started by: " + Utils.getUserName(context.getAuthenticationInfo());
     String setJobGroupStmt = "sc.setJobGroup('" +  jobGroupId + "', '" + jobDesc + "')";
-    return super.interpret(setJobGroupStmt + "\n" + st, context);
+    InterpreterResult result = super.interpret(setJobGroupStmt, context);
+    if (result.code().equals(InterpreterResult.Code.ERROR)) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, "Fail to setJobGroup");
+    }
+    return super.interpret(st, context);
   }
 
   @Override

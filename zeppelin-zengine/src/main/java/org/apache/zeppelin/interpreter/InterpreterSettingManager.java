@@ -21,9 +21,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -79,7 +81,7 @@ import java.util.Map;
  * Besides that InterpreterSettingManager also manage the interpreter setting binding.
  * TODO(zjffdu) We could move it into another separated component.
  */
-public class InterpreterSettingManager {
+public class InterpreterSettingManager implements InterpreterSettingManagerMBean {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -897,7 +899,7 @@ public class InterpreterSettingManager {
         } else if (i > j) {
           return 1;
         } else {
-          return 0;
+          return o1.getName().compareTo(o2.getName());
         }
       }
     });
@@ -937,5 +939,18 @@ public class InterpreterSettingManager {
         LOGGER.error("Can't close interpreterGroup", e);
       }
     }
+  }
+
+  @Override
+  public Set<String> getRunningInterpreters() {
+    Set<String> runningInterpreters = Sets.newHashSet();
+    for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
+      for (ManagedInterpreterGroup mig : entry.getValue().getAllInterpreterGroups()) {
+        if (null != mig.getRemoteInterpreterProcess()) {
+          runningInterpreters.add(entry.getKey());
+        }
+      }
+    }
+    return runningInterpreters;
   }
 }

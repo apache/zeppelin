@@ -14,13 +14,13 @@ limitations under the License.
 <headroom tolerance="10" offset="30" class="noteAction"
           ng-show="note.id && !paragraphUrl">
   <h3>
-    <div style="float: left; width: auto; max-width: 40%"
-      ng-controller="ElasticInputCtrl as input">
-      <input type="text" pu-elastic-input class="form-control2" placeholder="New name"
-             style="min-width: 0px; max-width: 85%; margin-left: 2em;"
+    <div class="notebook-actionBar-title"
+         ng-controller="ElasticInputCtrl as input">
+      <input type="text" pu-elastic-input class="form-control-title-input" placeholder="New name"
              ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
              ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2 reverse-ellipsis ellipsis"
+      <p class="form-control-title"
+         ng-class="{'reverse-ellipsis ellipsis':noteName(note).length > 45}"
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
@@ -225,7 +225,7 @@ limitations under the License.
     </span>
 
 <!-- put the delete action by itself for your protection -->
-      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+      <span class="labelBtn btn-group" style="vertical-align:middle; display:inline-block;">
         <!-- if the note is in the trash, remove note permanently -->
         <button ng-if="isTrash(note)"
                 type="button"
@@ -281,7 +281,7 @@ limitations under the License.
                 </p>
               </div>
               <div>
-                <span>- auto-restart interpreter on cron execution </span>
+                <span>- After execution stop the interpreter </span>
                 <input type="checkbox"
                        ng-model="note.config.releaseresource"
                        ng-click="setReleaseResource(note.config.releaseresource)"/>

@@ -35,8 +35,9 @@ import scala.tools.nsc.interpreter._
   * SparkInterpreter for scala-2.10
   */
 class SparkScala210Interpreter(override val conf: SparkConf,
-                               override val depFiles: java.util.List[String])
-  extends BaseSparkScalaInterpreter(conf, depFiles) {
+                               override val depFiles: java.util.List[String],
+                               override val printReplOutput: java.lang.Boolean)
+  extends BaseSparkScalaInterpreter(conf, depFiles, printReplOutput) {
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -66,8 +67,11 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     settings.embeddedDefaults(Thread.currentThread().getContextClassLoader())
     settings.usejavacp.value = true
     settings.classpath.value = getUserJars.mkString(File.pathSeparator)
-    Console.setOut(interpreterOutput)
     sparkILoop = new SparkILoop(null, new JPrintWriter(Console.out, true))
+    if (printReplOutput) {
+      Console.setOut(interpreterOutput)
+    }
+    sparkILoop = new SparkILoop()
 
     setDeclaredField(sparkILoop, "settings", settings)
     callMethod(sparkILoop, "createInterpreter")
@@ -84,49 +88,6 @@ class SparkScala210Interpreter(override val conf: SparkConf,
 
   override def close(): Unit = {
     super.close()
-    if (sparkILoop != null) {
-      callMethod(sparkILoop, "org$apache$spark$repl$SparkILoop$$closeInterpreter")
-    }
-  }
-
-  protected override def interpret(code: String, context: InterpreterContext): InterpreterResult = {
-    if (context != null) {
-      interpreterOutput.setInterpreterOutput(context.out)
-      context.out.clear()
-    } else {
-      interpreterOutput.setInterpreterOutput(null)
-    }
-
-    Console.withOut(if (context != null) context.out else Console.out) {
-      interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
-      // add print("") at the end in case the last line is comment which lead to INCOMPLETE
-      val lines = code.split("\\n") ++ List("print(\"\")")
-      var incompleteCode = ""
-      var lastStatus: InterpreterResult.Code = null
-      for (line <- lines if !line.trim.isEmpty) {
-        val nextLine = if (incompleteCode != "") {
-          incompleteCode + "\n" + line
-        } else {
-          line
-        }
-        scalaInterpret(nextLine) match {
-          case scala.tools.nsc.interpreter.IR.Success =>
-            // continue the next line
-            incompleteCode = ""
-            lastStatus = InterpreterResult.Code.SUCCESS
-          case error@scala.tools.nsc.interpreter.IR.Error =>
-            return new InterpreterResult(InterpreterResult.Code.ERROR)
-          case scala.tools.nsc.interpreter.IR.Incomplete =>
-            // put this line into inCompleteCode for the next execution.
-            incompleteCode = incompleteCode + "\n" + line
-            lastStatus = InterpreterResult.Code.INCOMPLETE
-        }
-      }
-      // flush all output before returning result to frontend
-      Console.flush()
-      interpreterOutput.setInterpreterOutput(null)
-      return new InterpreterResult(lastStatus)
-    }
   }
 
   def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result =

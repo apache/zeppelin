@@ -45,7 +45,7 @@ You can set the cron schedule by filling in this form. Please see [Cron Trigger 
 
 You can set the cron executing user by filling in this form and press the enter key.
 
-### auto-restart interpreter on cron execution
+### After execution stop the interpreter
 
 When this checkbox is set to "on", the interpreters which are binded to the notebook are stopped automatically after the cron execution. This feature is useful if you want to release the interpreter resources after the cron execution.
 

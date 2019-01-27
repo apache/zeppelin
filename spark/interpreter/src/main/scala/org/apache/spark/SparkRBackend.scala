@@ -17,11 +17,13 @@
 package org.apache.spark
 
 import org.apache.spark.api.r.RBackend
+import org.apache.zeppelin.spark.SparkVersion
 
 object SparkRBackend {
   val backend : RBackend = new RBackend()
   private var started = false;
   private var portNumber = 0;
+  private var secret: String = "";
 
   val backendThread : Thread = new Thread("SparkRBackend") {
     override def run() {
@@ -29,9 +31,16 @@ object SparkRBackend {
     }
   }
 
-  def init() : Int = {
-    portNumber = backend.init()
-    portNumber
+  def init(version: SparkVersion) : Unit = {
+    val rBackendClass = classOf[RBackend]
+    if (version.isSecretSocketSupported) {
+      val result = rBackendClass.getMethod("init").invoke(backend).asInstanceOf[Tuple2[Int, Object]]
+      portNumber = result._1
+      val rAuthHelper = result._2
+      secret = rAuthHelper.getClass.getMethod("secret").invoke(rAuthHelper).asInstanceOf[String]
+    } else {
+      portNumber = rBackendClass.getMethod("init").invoke(backend).asInstanceOf[Int]
+    }
   }
 
   def start() : Unit = {
@@ -44,11 +53,9 @@ object SparkRBackend {
     backendThread.join()
   }
 
-  def isStarted() : Boolean = {
-    started
-  }
+  def isStarted() : Boolean = started
 
-  def port(): Int = {
-    return portNumber
-  }
+  def port(): Int = portNumber
+
+  def socketSecret(): String = secret;
 }

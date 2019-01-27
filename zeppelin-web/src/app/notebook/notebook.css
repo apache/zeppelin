@@ -73,7 +73,7 @@
 }
 
 .labelBtn {
-  padding: .8em .6em .3em;
+  padding: .8em .4em .3em;
   font-size: 75%;
   font-weight: bold;
   line-height: 1;
@@ -154,7 +154,19 @@
   color: #333333;
 }
 
-.form-control2 {
+.notebook-actionBar-title {
+  float: left;
+  width: auto;
+  max-width: 40%;
+}
+
+@media (max-width: 650px) {
+  .notebook-actionBar-title {
+    max-width: 100%;
+  }
+}
+
+.form-control-title-input {
   height: 40px;
   font-size: 29px;
   line-height: 1.2;
@@ -164,71 +176,25 @@
   border-radius: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  padding: 7px 0;
-  margin: 2px 20px 0 14px;
+  margin-left: 1rem;
+  padding-top: 5px;
 }
 
-.form-control-static2 {
-  padding-top: 7px;
-  margin-right: 15px;
+.form-control-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  unicode-bidi: plaintext;
+  text-align: left;
   font-size: 29px;
-  margin-left: 15px;
-  padding-bottom: 7px;
-  margin-bottom: 0;
-  display: inline-block;
-  width: auto;
-  max-width: 97%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+  padding-top: 7px;
+  padding-left: 14px;
 }
 
-.ellipsis {
-  padding-left: 1em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.form-control-title-input:after, .form-control-title:after {
+  content: "\200E‎";
 }
-
-.reverse-ellipsis {
-  /* Your move. */
-  text-overflow: clip;
-  position: relative;
-  background-color: #FFF;
-}
-
-.reverse-ellipsis:before {
-  content: '\02026';
-  position: absolute;
-  z-index: 1;
-  left: -1em;
-  background-color: inherit;
-  padding-left: 1em;
-  margin-left: 0.5em;
-}
-
-.reverse-ellipsis span {
-  min-width: 100%;
-  position: relative;
-  display: inline-block;
-  float: right;
-  overflow: visible;
-  background-color: inherit;
-  text-indent: 0.5em;
-}
-
-.reverse-ellipsis span:before {
-  content: '';
-  position: absolute;
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  background-color: inherit;
-  z-index: 200;
-  left: -.5em;
-}
-
-
 
 .noOverflow {
     overflow: hidden !important;
@@ -468,4 +434,8 @@
 .last-paragraph:hover .plus-sign {
     position: relative;
     top: -16px;
+}
+
+.notebook-form-title {
+  padding: 3px;
 }

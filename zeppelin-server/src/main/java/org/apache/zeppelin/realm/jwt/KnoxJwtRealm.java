@@ -120,7 +120,7 @@ public class KnoxJwtRealm extends AuthorizingRealm {
     return null;
   }
 
-  private String getName(JWTAuthenticationToken upToken) throws ParseException {
+  public String getName(JWTAuthenticationToken upToken) throws ParseException {
     SignedJWT signed = SignedJWT.parse(upToken.getToken());
     String userName = signed.getJWTClaimsSet().getSubject();
     return userName;
@@ -137,6 +137,14 @@ public class KnoxJwtRealm extends AuthorizingRealm {
       boolean expValid = validateExpiration(signed);
       if (!expValid) {
         LOGGER.warn("Expiration time validation of JWT token failed.");
+        return false;
+      }
+      String currentUser = (String) org.apache.shiro.SecurityUtils.getSubject().getPrincipal();
+      if (currentUser == null) {
+        return true;
+      }
+      String cookieUser = signed.getJWTClaimsSet().getSubject();
+      if (!cookieUser.equals(currentUser)) {
         return false;
       }
       return true;

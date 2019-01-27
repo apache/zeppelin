@@ -105,10 +105,10 @@ For more information, check [Interpreter Binding Mode](./interpreter_binding_mod
 
 Zeppelin users can start interpreter thread embedded in their service. This will provide flexibility to user to start interpreter on remote host. To start interpreter along with your service you have to create an instance of ``RemoteInterpreterServer`` and start it as follows:
 
-```
+```java
 RemoteInterpreterServer interpreter=new RemoteInterpreterServer(3678); 
 // Here, 3678 is the port on which interpreter will listen.    
-interpreter.start()  
+interpreter.start();
 
 ```
 

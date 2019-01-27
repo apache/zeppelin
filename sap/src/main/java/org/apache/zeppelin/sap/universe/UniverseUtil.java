@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.sap.universe;
 
+import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -64,6 +65,7 @@ public class UniverseUtil {
   private static final String RIGHT_BRACE = ")";
 
   public static final Map<String, Integer> OPERATIONS;
+  private static final WhitespaceArgumentDelimiter delimiter = new WhitespaceArgumentDelimiter();
 
   static {
     OPERATIONS = new HashMap<>();
@@ -82,6 +84,14 @@ public class UniverseUtil {
     OPERATIONS.put(MARKER_OR, 3);
   }
 
+  public static OptionalInt parseInt(String toParse) {
+    try {
+      return OptionalInt.of(Integer.parseInt(toParse));
+    } catch (NumberFormatException e) {
+      return OptionalInt.empty();
+    }
+  }
+
   public UniverseQuery convertQuery(String text, UniverseClient client, String token)
       throws UniverseException {
     StringBuilder select = new StringBuilder();
@@ -98,7 +108,27 @@ public class UniverseUtil {
     boolean wherePart = false;
     boolean listOperator = false;
     boolean operatorPosition = false;
+    boolean duplicatedRows = true;
     Map<String, UniverseNodeInfo> nodeInfos = null;
+    OptionalInt limit = OptionalInt.empty();
+
+    final int limitIndex = text.lastIndexOf("limit");
+    if (limitIndex != -1) {
+      final String[] arguments = delimiter.delimit(text, 0).getArguments();
+      final int length = arguments.length;
+      if (arguments[length - 3].equals("limit")) {
+        limit = parseInt(arguments[length - 2]);
+      } else if (arguments[length - 2].equals("limit")) {
+        final String toParse = arguments[length - 1];
+        limit = parseInt(toParse.endsWith(";") ?
+            toParse.substring(0, toParse.length() - 1) : toParse);
+      }
+      text = text.substring(0, limitIndex);
+    }
+
+    if (!text.endsWith(";")) {
+      text += ";";
+    }
 
     char[] array = text.toCharArray();
     for (int i = 0; i < array.length; i++) {
@@ -188,7 +218,8 @@ public class UniverseUtil {
         }
         if (buf.toString().toLowerCase().endsWith("where") || i == array.length - 1) {
           selectPart = false;
-          select.append(parseResultObj(resultObj.toString().replaceAll("(?i)wher$", ""),
+          select.append(parseResultObj(resultObj.toString()
+                  .replaceAll("(?i)wher$", "").replaceAll("(?i)distinc", ""),
               nodeInfos));
           select.append(RESULT_END_TEMPLATE);
           continue;
@@ -196,8 +227,13 @@ public class UniverseUtil {
       }
 
       if (selectPart) {
+        if (pathClosed && singleQuoteClosed && buf.toString().toLowerCase().endsWith("distinct")) {
+          duplicatedRows = false;
+          continue;
+        }
         if (pathClosed && singleQuoteClosed && c == ',') {
-          select.append(parseResultObj(resultObj.toString(), nodeInfos));
+          select.append(parseResultObj(resultObj.toString().replaceAll("(?i)distinc", ""),
+            nodeInfos));
           resultObj = new StringBuilder();
         } else {
           resultObj.append(c);
@@ -206,7 +242,7 @@ public class UniverseUtil {
       }
 
       if (wherePart) {
-        if (c == ';' && pathClosed && singleQuoteClosed) {
+        if (c == ';' && pathClosed && singleQuoteClosed) { // todo: check for limit
           wherePart = false;
           where = parseWhere(whereBuf.toString(), nodeInfos);
         } else {
@@ -362,7 +398,7 @@ public class UniverseUtil {
     }
 
     UniverseQuery universeQuery = new UniverseQuery(select.toString().trim(),
-        where, universeInfo);
+        where, universeInfo, duplicatedRows, limit);
 
     if (!universeQuery.isCorrect()) {
       throw new UniverseException("Incorrect query");
@@ -403,8 +439,7 @@ public class UniverseUtil {
         }
         if (nextOperation.equals(LEFT_BRACE)) {
           stack.push(nextOperation);
-        }
-        else if (nextOperation.equals(RIGHT_BRACE)) {
+        } else if (nextOperation.equals(RIGHT_BRACE)) {
           while (!stack.peek().equals(LEFT_BRACE)) {
             out.add(stack.pop());
             if (stack.empty()) {
@@ -412,8 +447,7 @@ public class UniverseUtil {
             }
           }
           stack.pop();
-        }
-        else {
+        } else {
           while (!stack.empty() && !stack.peek().equals(LEFT_BRACE) &&
               (OPERATIONS.get(nextOperation) >= OPERATIONS.get(stack.peek()))) {
             out.add(stack.pop());

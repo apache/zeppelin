@@ -70,34 +70,51 @@ The interpreter can use all modules already installed (with pip, easy_install...
 
 - get the Conda Infomation: 
 
-    ```%python.conda info```
+    ```
+    %python.conda info
+    ```
     
 - list the Conda environments: 
 
-    ```%python.conda env list```
+    ```
+    %python.conda env list
+    ```
 
 - create a conda enviornment: 
-    ```%python.conda create --name [ENV NAME]```
+
+    ```
+    %python.conda create --name [ENV NAME]
+    ```
     
 - activate an environment (python interpreter will be restarted): 
 
-    ```%python.conda activate [ENV NAME]```
+    ```
+    %python.conda activate [ENV NAME]
+    ```
 
 - deactivate
 
-    ```%python.conda deactivate```
+    ```
+    %python.conda deactivate
+    ```
     
 - get installed package list inside the current environment
 
-    ```%python.conda list```
+    ```
+    %python.conda list
+    ```
     
 - install package
 
-    ```%python.conda install [PACKAGE NAME]```
+    ```
+    %python.conda install [PACKAGE NAME]
+    ```
   
 - uninstall package
   
-    ```%python.conda uninstall [PACKAGE NAME]```
+    ```
+    %python.conda uninstall [PACKAGE NAME]
+    ```
 
 ### Docker
 
@@ -171,7 +188,8 @@ If Zeppelin cannot find the matplotlib backend files (which should usually be fo
 then the backend will automatically be set to agg, and the (otherwise deprecated) instructions below can be used for more limited inline plotting.
 
 If you are unable to load the inline backend, use `z.show(plt)`:
- ```python
+
+```python
 %python
 import matplotlib.pyplot as plt
 plt.figure()
@@ -240,8 +258,9 @@ IPython is more powerful than the default python interpreter with extra function
    
     - Jupyter `pip install jupyter`
     - grpcio `pip install grpcio`
+    - protobuf `pip install protobuf`
 
-If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda.
+If you already install anaconda, then you just need to install `grpcio` as Jupyter is already included in anaconda. For grpcio version >= 1.12.0 you'll also need to install protobuf separately.
 
 In addition to all basic functions of the python interpreter, you can use all the IPython advanced features as you use it in Jupyter Notebook.
 

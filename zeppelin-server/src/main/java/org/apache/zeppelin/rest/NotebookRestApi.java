@@ -33,7 +33,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -57,6 +56,12 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Rest api endpoint for the notebook.
@@ -655,6 +660,7 @@ public class NotebookRestApi {
     LOG.info("run note jobs {} ", noteId);
     Note note = notebook.getNote(noteId);
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getRoles()));
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
@@ -765,6 +771,7 @@ public class NotebookRestApi {
     handleParagraphParams(message, note, paragraph);
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getRoles()));
 
     paragraph.setAuthenticationInfo(subject);
     note.persist(subject);
@@ -807,6 +814,7 @@ public class NotebookRestApi {
     }
 
     AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    subject.setRoles(new LinkedList<>(SecurityUtils.getRoles()));
     paragraph.setAuthenticationInfo(subject);
 
     paragraph.run();
@@ -870,6 +878,7 @@ public class NotebookRestApi {
 
     Map<String, Object> config = note.getConfig();
     config.put("cron", request.getCronString());
+    config.put("releaseresource", request.getReleaseResource());
     note.setConfig(config);
     notebook.refreshCron(note.getId());
 
@@ -897,7 +906,8 @@ public class NotebookRestApi {
     checkIfNoteSupportsCron(note);
 
     Map<String, Object> config = note.getConfig();
-    config.put("cron", null);
+    config.remove("cron");
+    config.remove("releaseresource");
     note.setConfig(config);
     notebook.refreshCron(note.getId());
 
@@ -922,8 +932,11 @@ public class NotebookRestApi {
     checkIfNoteIsNotNull(note);
     checkIfUserCanRead(noteId, "Insufficient privileges you cannot get cron information");
     checkIfNoteSupportsCron(note);
+    Map<String, Object> response = new HashMap<>();
+    response.put("cron", note.getConfig().get("cron"));
+    response.put("releaseResource", note.getConfig().get("releaseresource"));
 
-    return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
+    return new JsonResponse<>(Status.OK, response).build();
   }
 
   /**

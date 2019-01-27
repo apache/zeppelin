@@ -16,19 +16,32 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapContext;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
@@ -37,18 +50,9 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-import java.util.*;
-
 
 /**
- * A {@link Realm} that authenticates with an active directory LDAP
+ * A {@link org.apache.shiro.realm.Realm} that authenticates with an active directory LDAP
  * server to determine the roles for a particular user.  This implementation
  * queries for the user's groups and then maps the group names to roles using the
  * {@link #groupRolesMap}.
@@ -61,7 +65,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
 
   private static final String ROLE_NAMES_DELIMETER = ",";
 
-  String KEYSTORE_PASS = "activeDirectoryRealm.systemPassword";
+  final String keystorePass = "activeDirectoryRealm.systemPassword";
   private String hadoopSecurityCredentialPath;
 
   public void setHadoopSecurityCredentialPath(String hadoopSecurityCredentialPath) {
@@ -77,14 +81,14 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap;
+  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
     /*--------------------------------------------
     |         C O N S T R U C T O R S           |
     ============================================*/
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
-    this.groupRolesMap = groupRolesMap;
+    this.groupRolesMap.putAll(groupRolesMap);
   }
 
     /*--------------------------------------------
@@ -147,20 +151,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
       password = this.systemPassword;
     } else {
-      try {
-        Configuration configuration = new Configuration();
-        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          this.hadoopSecurityCredentialPath);
-        CredentialProvider provider =
-          CredentialProviderFactory.getProviders(configuration).get(0);
-        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
-            KEYSTORE_PASS);
-        if (credEntry != null) {
-          password = new String(credEntry.getCredential());
-        }
-      } catch (Exception e) {
-
-      }
+      password = LdapRealm.getSystemPassword(hadoopSecurityCredentialPath, keystorePass);
     }
     return password;
   }
@@ -263,12 +254,13 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return new SimpleAuthorizationInfo(roleNames);
   }
 
-  public List<String> searchForUserName(String containString, LdapContext ldapContext) throws
-      NamingException {
+  public List<String> searchForUserName(String containString, LdapContext ldapContext,
+      int numUsersToFetch) throws NamingException {
     List<String> userNameList = new ArrayList<>();
 
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    searchCtls.setCountLimit(numUsersToFetch);
 
     String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + containString + "*))";
     Object[] searchArguments = new Object[]{containString};

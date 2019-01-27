@@ -97,6 +97,12 @@
         "description": "The interval for checking paragraph execution status",
         "type": "number"
       },
+      "zeppelin.livy.maxLogLines": {
+        "propertyName": "zeppelin.livy.maxLogLines",
+        "defaultValue": "1000",
+        "description": "Max number of lines of logs",
+        "type": "number"
+      },
       "livy.spark.jars.packages": {
         "propertyName": "livy.spark.jars.packages",
         "defaultValue": "",
@@ -105,13 +111,13 @@
       },
       "zeppelin.livy.displayAppInfo": {
         "propertyName": "zeppelin.livy.displayAppInfo",
-        "defaultValue": "true",
+        "defaultValue": true,
         "description": "Whether display app info",
         "type": "checkbox"
       },
       "zeppelin.livy.restart_dead_session": {
         "propertyName": "zeppelin.livy.restart_dead_session",
-        "defaultValue": "false",
+        "defaultValue": false,
         "description": "Whether restart a dead session",
         "type": "checkbox"
       }

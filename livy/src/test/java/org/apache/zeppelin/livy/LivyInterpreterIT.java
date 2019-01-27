@@ -31,6 +31,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -491,7 +493,8 @@ public class LivyInterpreterIT {
       InterpreterResult result = sparkInterpreter.interpret("sc.version", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(2, result.message().size());
-      assertTrue(result.message().get(1).getData().contains("Spark Application Id"));
+      // check yarn appId and ensure it is not null
+      assertTrue(result.message().get(1).getData().contains("Spark Application Id: application_"));
 
       // html output
       String htmlCode = "println(\"%html <h1> hello </h1>\")";
@@ -769,6 +772,12 @@ public class LivyInterpreterIT {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       assertEquals(1, result.message().size());
       assertEquals(InterpreterResult.Type.IMG, result.message().get(0).getType());
+
+      // test code completion
+      List<InterpreterCompletion> completionResult = sparkInterpreter
+          .completion("df.sho", 6, context);
+      assertEquals(1, completionResult.size());
+      assertEquals("show", completionResult.get(0).name);
 
     } finally {
       sparkInterpreter.close();

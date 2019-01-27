@@ -71,7 +71,6 @@ For more information, please see [Mathematical Expression](../usage/display_syst
 
 ### Markdown4j Parser
 
-Since pegdown parser is more accurate and provides much more markdown syntax  
-`markdown4j` option might be removed later. But keep this parser for the backward compatibility.
+Since `pegdown` parser is more accurate and provides much more markdown syntax `markdown4j` option might be removed later. But keep this parser for the backward compatibility.
 
 

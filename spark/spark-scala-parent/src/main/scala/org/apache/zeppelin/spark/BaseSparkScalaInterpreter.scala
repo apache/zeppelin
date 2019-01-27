@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark
 
 
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{JobProgressUtil, SparkConf, SparkContext}
@@ -38,7 +39,8 @@ import scala.util.control.NonFatal
   * @param depFiles
   */
 abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
-                                         val depFiles: java.util.List[String]) {
+                                         val depFiles: java.util.List[String],
+                                         val printReplOutput: java.lang.Boolean) {
 
   protected lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -58,6 +60,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected val interpreterOutput: InterpreterOutputStream
 
+
   protected def open(): Unit = {
     /* Required for scoped mode.
      * In scoped mode multiple scala compiler (repl) generates class in the same directory.
@@ -76,18 +79,66 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
      *
      */
     System.setProperty("scala.repl.name.line", ("$line" + this.hashCode).replace('-', '0'))
+
+    BaseSparkScalaInterpreter.sessionNum.incrementAndGet()
   }
 
-  protected def interpret(code: String, context: InterpreterContext): InterpreterResult
+  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
-  protected def interpret(code: String): InterpreterResult = interpret(code, null)
+    val originalOut = System.out
+    def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
+      Console.withOut(interpreterOutput) {
+        System.setOut(Console.out)
+        interpreterOutput.setInterpreterOutput(context.out)
+        interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
+        context.out.clear()
+
+        val status = scalaInterpret(code) match {
+          case success@scala.tools.nsc.interpreter.IR.Success =>
+            success
+          case scala.tools.nsc.interpreter.IR.Error =>
+            val errorMsg = new String(interpreterOutput.getInterpreterOutput.toByteArray)
+            if (errorMsg.contains("value toDF is not a member of org.apache.spark.rdd.RDD") ||
+              errorMsg.contains("value toDS is not a member of org.apache.spark.rdd.RDD")) {
+              // prepend "import sqlContext.implicits._" due to
+              // https://issues.scala-lang.org/browse/SI-6649
+              context.out.clear()
+              scalaInterpret("import sqlContext.implicits._\n" + code)
+            } else {
+              scala.tools.nsc.interpreter.IR.Error
+            }
+          case scala.tools.nsc.interpreter.IR.Incomplete =>
+            // add print("") at the end in case the last line is comment which lead to INCOMPLETE
+            scalaInterpret(code + "\nprint(\"\")")
+        }
+        context.out.flush()
+        status
+      }
+    }
+    // reset the java stdout
+    System.setOut(originalOut)
+
+    val lastStatus = _interpret(code) match {
+      case scala.tools.nsc.interpreter.IR.Success =>
+        InterpreterResult.Code.SUCCESS
+      case scala.tools.nsc.interpreter.IR.Error =>
+        InterpreterResult.Code.ERROR
+      case scala.tools.nsc.interpreter.IR.Incomplete =>
+        InterpreterResult.Code.INCOMPLETE
+    }
+
+    new InterpreterResult(lastStatus)
+  }
+
+  protected def interpret(code: String): InterpreterResult =
+    interpret(code, InterpreterContext.get())
 
   protected def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result
 
   protected def completion(buf: String,
                            cursor: Int,
                            context: InterpreterContext): java.util.List[InterpreterCompletion] = {
-    val completions = scalaCompleter.complete(buf, cursor).candidates
+    val completions = scalaCompleter.complete(buf.substring(0, cursor), cursor).candidates
       .map(e => new InterpreterCompletion(e, e, null))
     scala.collection.JavaConversions.seqAsJavaList(completions)
   }
@@ -106,19 +157,20 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind(name, tpe, value, modifier.asScala.toList)
 
   protected def close(): Unit = {
-    if (sc != null) {
-      sc.stop()
+    if (BaseSparkScalaInterpreter.sessionNum.decrementAndGet() == 0) {
+      if (sc != null) {
+        sc.stop()
+      }
+      if (sparkHttpServer != null) {
+        sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
+      }
+      sc = null
+      sqlContext = null
+      if (sparkSession != null) {
+        sparkSession.getClass.getMethod("stop").invoke(sparkSession)
+        sparkSession = null
+      }
     }
-    if (sparkHttpServer != null) {
-      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-    }
-    sc = null
-    sqlContext = null
-    if (sparkSession != null) {
-      sparkSession.getClass.getMethod("stop").invoke(sparkSession)
-      sparkSession = null
-    }
-
   }
 
   protected def createSparkContext(): Unit = {
@@ -170,6 +222,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     interpret("import sqlContext.implicits._")
     interpret("import sqlContext.sql")
     interpret("import org.apache.spark.sql.functions._")
+    // print empty string otherwise the last statement's output of this method
+    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
+    interpret("print(\"\")")
   }
 
   private def spark2CreateContext(): Unit = {
@@ -231,6 +286,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     interpret("import spark.implicits._")
     interpret("import spark.sql")
     interpret("import org.apache.spark.sql.functions._")
+    // print empty string otherwise the last statement's output of this method
+    // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
+    interpret("print(\"\")")
   }
 
   private def isSparkSessionPresent(): Boolean = {
@@ -315,12 +373,24 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     val sparkJars = conf.getOption("spark.jars").map(_.split(","))
       .map(_.filter(_.nonEmpty)).toSeq.flatten
     val depJars = depFiles.asScala.filter(_.endsWith(".jar"))
-    val result = sparkJars ++ depJars
+    // add zeppelin spark interpreter jar
+    val zeppelinInterpreterJarURL = getClass.getProtectionDomain.getCodeSource.getLocation
+    // zeppelinInterpreterJarURL might be a folder when under unit testing
+    val result = if (new File(zeppelinInterpreterJarURL.getFile).isDirectory) {
+      sparkJars ++ depJars
+    } else {
+      sparkJars ++ depJars ++ Seq(zeppelinInterpreterJarURL.getFile)
+    }
     conf.set("spark.jars", result.mkString(","))
+    LOGGER.debug("User jar for spark repl: " + conf.get("spark.jars"))
     result
   }
 
   protected def getUserFiles(): Seq[String] = {
     depFiles.asScala.filter(!_.endsWith(".jar"))
   }
+}
+
+object BaseSparkScalaInterpreter {
+  val sessionNum = new AtomicInteger(0)
 }

@@ -36,6 +36,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   $scope.showSetting = false;
   $scope.showRevisionsComparator = false;
   $scope.looknfeelOption = ['default', 'simple', 'report'];
+  $scope.noteFormTitle = null;
   $scope.cronOption = [
     {name: 'None', value: undefined},
     {name: '1m', value: '0 0/1 * * * ?'},
@@ -439,6 +440,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     } else {
       $scope.setConfig();
     }
+  };
+
+  $scope.setNoteFormTitle = function(noteFormTitle) {
+    $scope.note.config.noteFormTitle = noteFormTitle;
+    $scope.setConfig();
   };
 
   /** Set cron expression for this note **/
@@ -1302,13 +1308,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     $scope.$broadcast('focusParagraph', paragraph.id, row + 1, col);
   };
 
-  $scope.$on('setConnectedStatus', function(event, param) {
-    if (connectedOnce && param) {
-      initNotebook();
-    }
-    connectedOnce = true;
-  });
-
   $scope.$on('moveParagraphUp', function(event, paragraph) {
     let newIndex = -1;
     for (let i = 0; i < $scope.note.paragraphs.length; i++) {
@@ -1498,7 +1497,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   });
 
   $scope.isShowNoteForms = function() {
-    if ($scope.note && !angular.equals({}, $scope.note.noteForms)) {
+    if ($scope.note && !_.isEmpty($scope.note.noteForms) && !$scope.paragraphUrl) {
       return true;
     }
     return false;

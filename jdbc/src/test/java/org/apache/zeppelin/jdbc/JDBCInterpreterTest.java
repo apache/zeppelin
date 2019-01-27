@@ -181,6 +181,27 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testColumnAliasQuery() throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select NAME as SOME_OTHER_NAME from test_table limit 1";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("SOME_OTHER_NAME\na_name\n", interpreterResult.message().get(0).getData());
+  }
+
+  @Test
   public void testSplitSqlQuery() throws SQLException, IOException {
     String sqlQuery = "insert into test_table(id, name) values ('a', ';\"');" +
         "select * from test_table;" +

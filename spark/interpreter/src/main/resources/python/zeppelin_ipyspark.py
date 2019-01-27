@@ -19,13 +19,19 @@
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
+import os
+
+# start JVM gateway
+if "PY4J_GATEWAY_SECRET" in os.environ:
+    from py4j.java_gateway import GatewayParameters
+    gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
+    gateway = JavaGateway(gateway_parameters=GatewayParameters(
+        port=${JVM_GATEWAY_PORT}, auth_token=gateway_secret, auto_convert=True))
+else:
+    gateway = JavaGateway(GatewayClient(port=${JVM_GATEWAY_PORT}), auto_convert=True)
 
 # for back compatibility
 from pyspark.sql import SQLContext
-
-# start JVM gateway
-client = GatewayClient(port=${JVM_GATEWAY_PORT})
-gateway = JavaGateway(client, auto_convert=True)
 
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")

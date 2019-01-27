@@ -81,6 +81,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   boolean pythonscriptRunning = false;
   private static final int MAX_TIMEOUT_SEC = 10;
   private long pythonPid;
+  private String secret;
 
   private IPySparkInterpreter iPySparkInterpreter;
 
@@ -250,13 +251,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return pythonExec;
   }
 
-  private void createGatewayServerAndStartScript() throws InterpreterException {
+  private void createGatewayServerAndStartScript() throws InterpreterException, IOException {
     // create python script
     createPythonScript();
 
     port = findRandomOpenPortOnAllLocalInterfaces();
-
-    gatewayServer = new GatewayServer(this, port);
+    secret = Py4JUtils.createSecret(256);
+    boolean useAuth = getSparkInterpreter().getSparkVersion().isSecretSocketSupported();
+    gatewayServer = Py4JUtils.createGatewayServer(this, "127.0.0.1", port, secret, useAuth);
     gatewayServer.start();
 
     String pythonExec = getPythonExec(getProperties());
@@ -265,6 +267,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
+    if (useAuth) {
+      cmd.addArgument(secret, false);
+    }
     executor = new DefaultExecutor();
     outputStream = new InterpreterOutputStream(LOGGER);
     PipedOutputStream ps = new PipedOutputStream();

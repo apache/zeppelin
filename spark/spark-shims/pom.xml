@@ -23,14 +23,14 @@
   <parent>
     <artifactId>spark-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.2-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>spark-shims</artifactId>
-  <version>0.8.1-SNAPSHOT</version>
+  <version>0.8.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Zeppelin: Spark Shims</name>
 
@@ -39,6 +39,17 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!--
+      This is for ZEPPELIN-2221 using VersionInfo for check the version of Yarn.
+      It's checked that VersionInfo is compatible at least 2.2.0 to the latest one.
+    -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>2.6.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

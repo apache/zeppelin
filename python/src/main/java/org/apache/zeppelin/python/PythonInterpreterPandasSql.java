@@ -90,7 +90,7 @@ public class PythonInterpreterPandasSql extends Interpreter {
     Interpreter python = getPythonInterpreter();
 
     return python.interpret(
-            "__zeppelin__.show(pysqldf('" + st + "'))\n__zeppelin__._displayhook()", context);
+            "__zeppelin__.show(pysqldf('" + st + "'))", context);
   }
 
   @Override

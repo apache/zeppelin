@@ -23,6 +23,11 @@ port <- as.integer(args[2])
 libPath <- args[3]
 version <- as.integer(args[4])
 timeout <- as.integer(args[5])
+authSecret <- NULL
+if (length(args) >= 6) {
+  authSecret <- args[6]
+}
+
 rm(args)
 
 print(paste("Port ", toString(port)))
@@ -31,8 +36,11 @@ print(paste("LibPath ", libPath))
 .libPaths(c(file.path(libPath), .libPaths()))
 library(SparkR)
 
-
-SparkR:::connectBackend("localhost", port, timeout)
+if (is.null(authSecret)) {
+  SparkR:::connectBackend("localhost", port, timeout)
+} else {
+  SparkR:::connectBackend("localhost", port, timeout, authSecret)
+}
 
 # scStartTime is needed by R/pkg/R/sparkR.R
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)

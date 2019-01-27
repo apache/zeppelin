@@ -162,8 +162,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     this(property);
     this.sc = sc;
     env = SparkEnv.get();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
+    sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+    sparkShims.setupSparkListener(sc.master(), sparkUrl);
   }
 
   public SparkContext getSparkContext() {
@@ -281,7 +281,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    Interpreter p = getParentSparkInterpreter()
+        .getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
     if (p == null) {
       return null;
     }
@@ -871,8 +872,8 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
     }
 
     sparkUrl = getSparkUIUrl();
-    sparkShims = SparkShims.getInstance(sc.version());
-    sparkShims.setupSparkListener(sparkUrl);
+    sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+    sparkShims.setupSparkListener(sc.master(), sparkUrl);
 
     numReferenceOfSparkContext.incrementAndGet();
   }

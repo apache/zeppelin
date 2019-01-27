@@ -27,9 +27,9 @@ import java.io.IOException;
  * Allows access if current user has at least one role of the specified list.
  * <p>
  * Basically, it's the same as {@link RolesAuthorizationFilter} but using {@literal OR} instead
- * of {@literal AND} on the specified roles.
+ * of {@literal AND} on the specified roles or user.
  */
-public class AnyOfRolesAuthorizationFilter extends RolesAuthorizationFilter {
+public class AnyOfRolesUserAuthorizationFilter extends RolesAuthorizationFilter {
 
   @Override
   public boolean isAccessAllowed(ServletRequest request, ServletResponse response,
@@ -44,7 +44,7 @@ public class AnyOfRolesAuthorizationFilter extends RolesAuthorizationFilter {
     }
 
     for (String roleName : rolesArray) {
-      if (subject.hasRole(roleName)) {
+      if (subject.hasRole(roleName) || subject.getPrincipal().equals(roleName)) {
         return true;
       }
     }

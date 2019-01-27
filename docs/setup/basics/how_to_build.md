@@ -51,7 +51,7 @@ If you haven't installed Git and Maven yet, check the [Build requirements](#buil
 
 #### 1. Clone the Apache Zeppelin repository
 
-```
+```bash
 git clone https://github.com/apache/zeppelin.git
 ```
 
@@ -60,7 +60,7 @@ git clone https://github.com/apache/zeppelin.git
 
 You can build Zeppelin with following maven command:
 
-```
+```bash
 mvn clean package -DskipTests [Options]
 ```
 
@@ -248,7 +248,7 @@ plugin.frontend.yarnDownloadRoot # default https://github.com/yarnpkg/yarn/relea
 If you don't have requirements prepared, install it.
 (The installation method may vary according to your environment, example is for Ubuntu.)
 
-```
+```bash
 sudo apt-get update
 sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
@@ -261,7 +261,8 @@ sudo apt-get install r-cran-evaluate
 
 
 ### Install maven
-```
+
+```bash
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
 sudo tar -zxf apache-maven-3.3.9-bin.tar.gz -C /usr/local/
 sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/local/bin/mvn
@@ -280,7 +281,7 @@ If you're behind the proxy, you'll need to configure maven and npm to pass throu
 
 First of all, configure maven in your `~/.m2/settings.xml`.
 
-```
+```xml
 <settings>
   <proxies>
     <proxy>
@@ -309,7 +310,7 @@ First of all, configure maven in your `~/.m2/settings.xml`.
 
 Then, next commands will configure npm.
 
-```
+```bash
 npm config set proxy http://localhost:3128
 npm config set https-proxy http://localhost:3128
 npm config set registry "http://registry.npmjs.org/"
@@ -318,7 +319,7 @@ npm config set strict-ssl false
 
 Configure git as well
 
-```
+```bash
 git config --global http.proxy http://localhost:3128
 git config --global https.proxy http://localhost:3128
 git config --global url."http://".insteadOf git://

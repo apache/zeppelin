@@ -98,7 +98,7 @@ If generated query contains promtps, then promtps will appear as dynamic form af
 
 Example query
 
-```
+```sql
 %sap
 
 universe [Universe Name];
@@ -121,3 +121,52 @@ where
 
   and [Folder1].[Dimension5] in ('Value1', 'Value2');
 ```
+
+<<<<<<< HEAD
+### `distinct` keyword
+You can write keyword `distinct` after keyword `select` to return only distinct (different) values.
+
+Example query
+```sql
+%sap
+universe [Universe Name];
+
+select distinct
+  [Folder1].[Dimension2], [Measure1]
+where
+  [Filter1];
+```
+
+### `limit` keyword
+You can write keyword `limit` and limit value in the end of query to limit the number of records returned based on a limit value.
+
+Example query
+```sql
+%sap
+universe [Universe Name];
+
+select
+  [Folder1].[Dimension2], [Measure1]
+where
+  [Filter1]
+limit 100;
+```
+
+## Object Interpolation
+The SAP interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+To enable this feature set `universe.interpolation` to `true`. The following example shows one use of this facility:
+
+####In Scala cell:
+
+```scala
+z.put("curr_date", "2018-01-01 00:00:00")
+```
+
+####In later SAP cell:
+
+```sql
+where
+   [Filter1]
+   and [Date] > '{curr_date}'
+```
+

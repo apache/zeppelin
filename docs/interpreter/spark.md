@@ -104,13 +104,13 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Local repository for dependency loader</td>
   </tr>
   <tr>
-    <td>PYSPARK_PYTHON</td>
+    <td><code>PYSPARK_PYTHON</code></td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code>).
             Property <code>spark.pyspark.python</code> take precedence if it is set</td>
   </tr>
   <tr>
-    <td>PYSPARK_DRIVER_PYTHON</td>
+    <td><code>PYSPARK_DRIVER_PYTHON</code></td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in driver only (default is <code>PYSPARK_PYTHON</code>).
             Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
@@ -205,8 +205,7 @@ You can either specify them in `zeppelin-env.sh`, or in interpreter setting page
 in interpreter setting page means you can use multiple versions of `spark` & `hadoop` in one zeppelin instance.
 
 ### 4. New Version of SparkInterpreter
-There's one new version of SparkInterpreter starting with better spark support and code completion from Zeppelin 0.8.0, by default we still use the old version of SparkInterpreter.
-If you want to use the new one, you can configure `zeppelin.spark.useNew` as `true` in its interpreter setting.
+There's one new version of SparkInterpreter with better spark support and code completion starting from Zeppelin 0.8.0. We enable it by default, but user can still use the old version of SparkInterpreter by setting `zeppelin.spark.useNew` as `false` in its interpreter setting.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
 SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
@@ -361,8 +360,10 @@ This is to make the server communicate with KDC.
 
 3. Add the two properties below to Spark configuration (`[SPARK_HOME]/conf/spark-defaults.conf`):
 
-        spark.yarn.principal
-        spark.yarn.keytab
+    ```
+    spark.yarn.principal
+    spark.yarn.keytab
+    ```
 
   > **NOTE:** If you do not have permission to access for the above spark-defaults.conf file, optionally, you can add the above lines to the Spark Interpreter setting through the Interpreter tab in the Zeppelin UI.
 
