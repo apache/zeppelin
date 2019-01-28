@@ -130,6 +130,7 @@ public class RemoteInterpreterServerTest {
     intpContext.setParagraphId("paragraph_1");
     intpContext.setGui("{}");
     intpContext.setNoteGui("{}");
+    intpContext.setLocalProperties(new HashMap<>());
 
     // single output of SUCCESS
     RemoteInterpreterResult result = server.interpret("session_1", Test1Interpreter.class.getName(),
