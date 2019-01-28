@@ -932,10 +932,23 @@ public class InterpreterSetting {
     throw new RuntimeException("Can not convert this type: " + properties.getClass());
   }
 
-  public void waitForReady() throws InterruptedException {
-    while (getStatus().equals(
-        org.apache.zeppelin.interpreter.InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES)) {
-      Thread.sleep(200);
+  public void waitForReady(long timeout) throws InterpreterException {
+    long start = System.currentTimeMillis();
+    while(status != Status.READY) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        throw new InterpreterException(e);
+      }
+      long now = System.currentTimeMillis();
+      if ((now - start) > timeout) {
+        throw new InterpreterException("Fail to download dependencies in " + timeout / 1000
+                + " seconds");
+      }
     }
+  }
+
+  public void waitForReady() throws InterpreterException {
+    waitForReady(Long.MAX_VALUE);
   }
 }

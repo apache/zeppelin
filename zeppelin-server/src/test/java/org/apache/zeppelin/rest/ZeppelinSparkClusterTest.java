@@ -189,7 +189,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("2", p.getReturn().message().get(0).getData());
 
     // test code completion
-    List<InterpreterCompletion> completions = note.completion(p.getId(), "sc.", 2);
+    List<InterpreterCompletion> completions = note.completion(p.getId(), "sc.", 2, AuthenticationInfo.ANONYMOUS);
     assertTrue(completions.size() > 0);
 
     // test cancel

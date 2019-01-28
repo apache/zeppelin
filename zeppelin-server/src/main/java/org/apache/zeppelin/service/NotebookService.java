@@ -820,7 +820,8 @@ public class NotebookService {
     }
 
     try {
-      List<InterpreterCompletion> completions = note.completion(paragraphId, buffer, cursor);
+      List<InterpreterCompletion> completions = note.completion(paragraphId, buffer, cursor,
+              context.getAutheInfo());
       callback.onSuccess(completions, context);
       return completions;
     } catch (RuntimeException e) {
