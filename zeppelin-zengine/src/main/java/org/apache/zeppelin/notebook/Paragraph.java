@@ -655,7 +655,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
           info = new ParagraphRuntimeInfo(key, label, tooltip, group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
-        info.addValue(infos.get(key));
+        info.addValue(infos);
       }
     }
   }
