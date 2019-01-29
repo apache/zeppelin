@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 
@@ -29,7 +30,7 @@ import java.util.Properties;
  * Abstract class for SparkInterpreter. For the purpose of co-exist of NewSparkInterpreter
  * and OldSparkInterpreter
  */
-public abstract class AbstractSparkInterpreter extends Interpreter {
+public abstract class AbstractSparkInterpreter extends AbstractInterpreter {
 
   private SparkInterpreter parentSparkInterpreter;
 
@@ -48,8 +49,6 @@ public abstract class AbstractSparkInterpreter extends Interpreter {
   public abstract SparkVersion getSparkVersion();
 
   public abstract JavaSparkContext getJavaSparkContext();
-
-  public abstract SparkZeppelinContext getZeppelinContext();
 
   public abstract String getSparkUIUrl();
 

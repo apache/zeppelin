@@ -19,6 +19,8 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -37,7 +39,7 @@ import java.util.Properties;
 /**
  * Spark SQL interpreter for Zeppelin.
  */
-public class SparkSqlInterpreter extends Interpreter {
+public class SparkSqlInterpreter extends AbstractInterpreter {
   private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
@@ -59,7 +61,17 @@ public class SparkSqlInterpreter extends Interpreter {
   public void close() {}
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context)
+  protected boolean isInterpolate() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation", "false"));
+  }
+
+  @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return null;
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String st, InterpreterContext context)
       throws InterpreterException {
     if (sparkInterpreter.isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark "
@@ -73,11 +85,9 @@ public class SparkSqlInterpreter extends Interpreter {
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
 
     try {
-      String effectiveSQL = Boolean.parseBoolean(getProperty("zeppelin.spark.sql.interpolation")) ?
-          interpolate(st, context.getResourcePool()) : st;
       Method method = sqlc.getClass().getMethod("sql", String.class);
       String msg = sparkInterpreter.getZeppelinContext().showData(
-          method.invoke(sqlc, effectiveSQL));
+          method.invoke(sqlc, st));
       sc.clearJobGroup();
       return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {

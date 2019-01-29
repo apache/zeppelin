@@ -18,6 +18,8 @@
 package org.apache.zeppelin.sap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -36,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * SAP Universe interpreter for Zeppelin.
  */
-public class UniverseInterpreter extends Interpreter {
+public class UniverseInterpreter extends AbstractInterpreter {
 
   public UniverseInterpreter(Properties properties) {
     super(properties);
@@ -80,10 +82,18 @@ public class UniverseInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String originalSt, InterpreterContext context)
+  protected boolean isInterpolate() {
+    return Boolean.parseBoolean(getProperty("universe.interpolation", "false"));
+  }
+
+  @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return null;
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String st, InterpreterContext context)
       throws InterpreterException {
-    final String st = Boolean.parseBoolean(getProperty("universe.interpolation", "false")) ?
-        interpolate(originalSt, context.getResourcePool()) : originalSt;
     try {
       InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS);
       String paragraphId = context.getParagraphId();

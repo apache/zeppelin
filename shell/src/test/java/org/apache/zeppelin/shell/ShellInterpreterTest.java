@@ -20,6 +20,7 @@ package org.apache.zeppelin.shell;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void test() {
+  public void test() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("dir", context);
     } else {
@@ -65,7 +66,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testInvalidCommand(){
+  public void testInvalidCommand() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("invalid_command\ndir", context);
     } else {
@@ -76,7 +77,7 @@ public class ShellInterpreterTest {
   }
 
   @Test
-  public void testShellTimeout() {
+  public void testShellTimeout() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
       result = shell.interpret("timeout 4", context);
     } else {

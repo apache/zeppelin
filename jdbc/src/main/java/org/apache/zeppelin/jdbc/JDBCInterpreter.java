@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +152,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
     basePropretiesMap = new HashMap<>();
     sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
+  }
+
+  @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return null;
   }
 
   @Override
@@ -727,7 +733,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           String statementPrecode =
               getProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, propertyKey));
-          
+
           if (StringUtils.isNotBlank(statementPrecode)) {
             statement.execute(statementPrecode);
           }
@@ -803,9 +809,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
-    String cmd = Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation")) ?
-            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
+  protected boolean isInterpolate() {
+    return Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation", "false"));
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String cmd, InterpreterContext contextInterpreter) {
     logger.debug("Run SQL command '{}'", cmd);
     String propertyKey = getPropertyKey(contextInterpreter);
     cmd = cmd.trim();
