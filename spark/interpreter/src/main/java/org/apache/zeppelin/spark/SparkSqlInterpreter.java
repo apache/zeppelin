@@ -86,8 +86,10 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
 
     try {
       Method method = sqlc.getClass().getMethod("sql", String.class);
+      int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
+              "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
       String msg = sparkInterpreter.getZeppelinContext().showData(
-          method.invoke(sqlc, st));
+          method.invoke(sqlc, st), maxResult);
       sc.clearJobGroup();
       return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {

@@ -56,12 +56,16 @@ public class Spark1Shims extends SparkShims {
     if (obj instanceof DataFrame) {
       DataFrame df = (DataFrame) obj;
       String[] columns = df.columns();
+      // fetch maxResult+1 rows so that we can check whether it is larger than zeppelin.spark.maxResult
       List<Row> rows = df.takeAsList(maxResult + 1);
-
       StringBuilder msg = new StringBuilder();
       msg.append("%table ");
       msg.append(StringUtils.join(columns, "\t"));
       msg.append("\n");
+      boolean isLargerThanMaxResult = rows.size() > maxResult;
+      if (isLargerThanMaxResult) {
+        rows = rows.subList(0, maxResult);
+      }
       for (Row row : rows) {
         for (int i = 0; i < row.size(); ++i) {
           msg.append(row.get(i));
@@ -72,7 +76,7 @@ public class Spark1Shims extends SparkShims {
         msg.append("\n");
       }
 
-      if (rows.size() > maxResult) {
+      if (isLargerThanMaxResult) {
         msg.append("\n");
         msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
       }

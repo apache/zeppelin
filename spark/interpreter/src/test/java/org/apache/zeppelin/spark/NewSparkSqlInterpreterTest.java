@@ -114,6 +114,7 @@ public class NewSparkSqlInterpreterTest {
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+
   }
 
   public void test_null_value_in_row() throws InterpreterException {
@@ -155,7 +156,16 @@ public class NewSparkSqlInterpreterTest {
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // the number of rows is 10+1, 1 is the head of table
+    assertEquals(11, ret.message().get(0).getData().split("\n").length);
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
+
+    // test limit local property
+    context.getLocalProperties().put("limit", "5");
+    ret = sqlInterpreter.interpret("select * from gr", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // the number of rows is 5+1, 1 is the head of table
+    assertEquals(6, ret.message().get(0).getData().split("\n").length);
   }
 
   @Test

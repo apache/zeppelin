@@ -54,7 +54,7 @@ class FlinkZeppelinContext(val btenv: BatchTableEnvironment,
   override def getInterpreterClassMap: util.Map[String, String] =
     JavaConversions.mapAsJavaMap(interpreterClassMap)
 
-  override def showData(obj: Any): String = {
+  override def showData(obj: Any, maxResult: Int): String = {
     def showTable(table: Table): String = {
       val columnNames: Array[String] = table.getSchema.getColumnNames
       val dsRow: DataSet[Row] = btenv.toDataSet[Row](table)

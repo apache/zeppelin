@@ -188,6 +188,13 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message().get(0).getData());
+
+    interpreterContext.getLocalProperties().put("limit", "1");
+    interpreterResult = t.interpret(sqlQuery, interpreterContext);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
+    assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message().get(0).getData());
   }
 
   @Test
