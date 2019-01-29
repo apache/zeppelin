@@ -278,7 +278,10 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-    ThreadPool threadPool = new QueuedThreadPool(2000, 8, 30);
+    ThreadPool threadPool =
+      new QueuedThreadPool(conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
     ServerConnector connector;
 
