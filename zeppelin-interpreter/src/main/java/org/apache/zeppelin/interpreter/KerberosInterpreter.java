@@ -38,13 +38,13 @@ import org.slf4j.LoggerFactory;
  * startKerberosLoginThread() needs to be called inside the open() and
  * shutdownExecutorService() inside close().
  *
- * 
+ *
  * Environment variables defined in zeppelin-env.sh
  * KERBEROS_REFRESH_INTERVAL controls the refresh interval for Kerberos ticket. The default value
  * is 1d.
  * KINIT_FAIL_THRESHOLD controls how many times should kinit retry. The default value is 5.
  */
-public abstract class KerberosInterpreter extends Interpreter {
+public abstract class KerberosInterpreter extends AbstractInterpreter {
 
   private Integer kinitFailCount = 0;
   private ScheduledExecutorService scheduledExecutorService;

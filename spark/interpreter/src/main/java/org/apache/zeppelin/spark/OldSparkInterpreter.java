@@ -998,12 +998,11 @@ public class OldSparkInterpreter extends AbstractSparkInterpreter {
    * Interpret a single line.
    */
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext context) {
+  public InterpreterResult internalInterpret(String line, InterpreterContext context) {
     if (isUnsupportedSparkVersion()) {
       return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
           + " is not supported");
     }
-    z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }

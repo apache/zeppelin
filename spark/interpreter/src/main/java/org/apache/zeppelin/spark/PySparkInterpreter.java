@@ -186,7 +186,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     return "python";
   }
 
-  public SparkZeppelinContext getZeppelinContext() {
+  public BaseZeppelinContext getZeppelinContext() {
     if (sparkInterpreter != null) {
       return sparkInterpreter.getZeppelinContext();
     } else {

@@ -24,6 +24,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
@@ -143,11 +144,7 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
-    InterpreterContext.set(context);
-    z.setGui(context.getGui());
-    z.setNoteGui(context.getNoteGui());
-    z.setInterpreterContext(context);
+  public InterpreterResult internalInterpret(String st, InterpreterContext context) {
     sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
     // set spark.scheduler.pool to null to clear the pool assosiated with this paragraph
     // sc.setLocalProperty("spark.scheduler.pool", null) will clean the pool

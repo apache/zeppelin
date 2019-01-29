@@ -71,7 +71,7 @@ public abstract class BaseZeppelinContext {
    * @param obj
    * @return
    */
-  protected abstract String showData(Object obj);
+  public abstract String showData(Object obj);
 
   /**
    * @deprecated use z.textbox instead
@@ -225,7 +225,7 @@ public abstract class BaseZeppelinContext {
   public void setMaxResult(int maxResult) {
     this.maxResult = maxResult;
   }
-  
+
   /**
    * display special types of objects for interpreter.
    * Each interpreter can has its own supported classes.
