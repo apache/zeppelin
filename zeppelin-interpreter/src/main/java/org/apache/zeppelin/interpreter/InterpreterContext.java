@@ -201,6 +201,22 @@ public class InterpreterContext {
     return localProperties;
   }
 
+  public String getStringLocalProperty(String key, String defaultValue) {
+    return localProperties.getOrDefault(key, defaultValue);
+  }
+
+  public int getIntLocalProperty(String key, int defaultValue) {
+    return Integer.parseInt(localProperties.getOrDefault(key, defaultValue + ""));
+  }
+
+  public long getLongLocalProperty(String key, int defaultValue) {
+    return Long.parseLong(localProperties.getOrDefault(key, defaultValue + ""));
+  }
+
+  public double getDoubleLocalProperty(String key, double defaultValue) {
+    return Double.parseDouble(localProperties.getOrDefault(key, defaultValue + ""));
+  }
+
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -228,7 +244,7 @@ public class InterpreterContext {
   public String getInterpreterClassName() {
     return interpreterClassName;
   }
-  
+
   public void setInterpreterClassName(String className) {
     this.interpreterClassName = className;
   }
