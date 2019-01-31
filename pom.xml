@@ -779,6 +779,7 @@
       <id>integration</id>
       <modules>
         <module>zeppelin-integration</module>
+        <module>zeppelin-interpreter-integration</module>
       </modules>
     </profile>
 

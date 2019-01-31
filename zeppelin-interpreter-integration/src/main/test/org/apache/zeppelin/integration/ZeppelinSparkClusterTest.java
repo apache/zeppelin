@@ -14,14 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.rest;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
+import org.apache.zeppelin.interpreter.InterpreterProperty;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.AbstractTestRestApi;
+import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,19 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterProperty;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.SparkDownloadUtils;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.AuthenticationInfo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test against spark cluster.

@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.integration;
 
 import com.google.common.collect.Lists;
 import org.apache.zeppelin.dep.Dependency;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -70,6 +77,6 @@ public class JdbcIntegrationTest {
             .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
             .build();
     InterpreterResult interpreterResult = jdbcInterpreter.interpret("show databases;", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
   }
 }
