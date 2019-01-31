@@ -1,22 +1,43 @@
-package org.apache.zeppelin.interpreter;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.SparkDownloadUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -66,27 +87,27 @@ public abstract class SparkIntegrationTest {
 
     InterpreterContext context = new InterpreterContext.Builder().setNoteId("note1").setParagraphId("paragraph_1").build();
     InterpreterResult interpreterResult = sparkInterpreter.interpret("sc.version", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     String detectedSparkVersion = interpreterResult.message().get(0).getData();
     assertTrue(detectedSparkVersion +" doesn't contain " + this.sparkVersion, detectedSparkVersion.contains(this.sparkVersion));
     interpreterResult = sparkInterpreter.interpret("sc.range(1,10).sum()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
-    assertTrue(interpreterResult.msg.get(0).getData().contains("45"));
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertTrue(interpreterResult.message().get(0).getData().contains("45"));
 
     // test PySparkInterpreter
     Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.pyspark", "test");
     interpreterResult = pySparkInterpreter.interpret("sqlContext.createDataFrame([(1,'a'),(2,'b')], ['id','name']).registerTempTable('test')", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test IPySparkInterpreter
     Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.ipyspark", "test");
     interpreterResult = ipySparkInterpreter.interpret("sqlContext.table('test').show()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test SparkSQLInterpreter
     Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql", "test");
     interpreterResult = sqlInterpreter.interpret("select count(1) as c from test", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.message().get(0).getType());
     assertEquals("c\n2\n", interpreterResult.message().get(0).getData());
 
@@ -97,7 +118,7 @@ public abstract class SparkIntegrationTest {
     } else {
       interpreterResult = sparkrInterpreter.interpret("df <- createDataFrame(sqlContext, faithful)\nhead(df)", context);
     }
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.message().get(0).getType());
     assertTrue(interpreterResult.message().get(0).getData().contains("eruptions waiting"));
   }
