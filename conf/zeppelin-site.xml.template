@@ -495,6 +495,28 @@
 
 <!--
 <property>
+    <name>zeppelin.server.jetty.thread.pool.max</name>
+    <value>400</value>
+    <description>Max Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.min</name>
+    <value>8</value>
+    <description>Min Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.timeout</name>
+    <value>30</value>
+    <description>Timeout number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+
+<!--
+<property>
     <name>zeppelin.server.authorization.header.clear</name>
     <value>true</value>
     <description>Authorization header to be cleared if server is running as authcBasic</description>
