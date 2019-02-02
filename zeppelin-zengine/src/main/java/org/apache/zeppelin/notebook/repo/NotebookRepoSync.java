@@ -23,7 +23,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
@@ -271,11 +270,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
    */
   void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Sync started");
-    NotebookAuthorization auth = NotebookAuthorization.getInstance();
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List<NoteInfo> allSrcNotes = new ArrayList<>(srcRepo.list(subject).values());
-    List<NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
+    List<NoteInfo> srcNotes = new ArrayList<>(srcRepo.list(subject).values());
     List<NoteInfo> dstNotes = new ArrayList<>(dstRepo.list(subject).values());
 
     Map<String, List<NoteInfo>> noteIds = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
@@ -289,7 +286,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       for (NoteInfo noteInfo : pushNoteIds) {
         LOGGER.info("Note : " + noteIds);
       }
-      pushNotes(subject, pushNoteIds, srcRepo, dstRepo, false);
+      pushNotes(subject, pushNoteIds, srcRepo, dstRepo);
     } else {
       LOGGER.info("Nothing to push");
     }
@@ -299,7 +296,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       for (NoteInfo noteInfo : pullNoteIds) {
         LOGGER.info("Note : " + noteInfo);
       }
-      pushNotes(subject, pullNoteIds, dstRepo, srcRepo, true);
+      pushNotes(subject, pullNoteIds, dstRepo, srcRepo);
     } else {
       LOGGER.info("Nothing to pull");
     }
@@ -322,45 +319,14 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   private void pushNotes(AuthenticationInfo subject, List<NoteInfo> notesInfo, NotebookRepo localRepo,
-      NotebookRepo remoteRepo, boolean setPermissions) {
+      NotebookRepo remoteRepo) {
     for (NoteInfo noteInfo : notesInfo) {
       try {
         remoteRepo.save(localRepo.get(noteInfo.getId(), noteInfo.getPath(), subject), subject);
-        if (setPermissions && emptyNoteAcl(noteInfo.getId())) {
-          makePrivate(noteInfo.getId(), subject);
-        }
       } catch (IOException e) {
         LOGGER.error("Failed to push note to storage, moving onto next one", e);
       }
     }
-  }
-
-  private boolean emptyNoteAcl(String noteId) {
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-    return notebookAuthorization.getOwners(noteId).isEmpty()
-        && notebookAuthorization.getReaders(noteId).isEmpty()
-            && notebookAuthorization.getRunners(noteId).isEmpty()
-        && notebookAuthorization.getWriters(noteId).isEmpty();
-  }
-
-  private void makePrivate(String noteId, AuthenticationInfo subject) {
-    if (AuthenticationInfo.isAnonymous(subject)) {
-      LOGGER.info("User is anonymous, permissions are not set for pulled notes");
-      return;
-    }
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-    Set<String> users = notebookAuthorization.getOwners(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setOwners(noteId, users);
-    users = notebookAuthorization.getReaders(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setReaders(noteId, users);
-    users = notebookAuthorization.getRunners(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setRunners(noteId, users);
-    users = notebookAuthorization.getWriters(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setWriters(noteId, users);
   }
 
   private void deleteNotes(AuthenticationInfo subject, List<NoteInfo> noteInfos, NotebookRepo repo)

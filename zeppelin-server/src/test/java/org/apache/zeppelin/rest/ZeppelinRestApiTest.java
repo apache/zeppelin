@@ -32,7 +32,9 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -419,7 +421,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
     //TODO(khalid): anonymous or specific user notes?
     HashSet<String> anonymous = Sets.newHashSet("anonymous");
-    assertEquals("List notes are equal", TestUtils.getInstance(Notebook.class).getAllNotes(anonymous)
+    AuthorizationService authorizationService = TestUtils.getInstance(AuthorizationService.class);
+    assertEquals("List notes are equal", TestUtils.getInstance(Notebook.class)
+            .getAllNotes(note -> authorizationService.isReader(note.getId(), anonymous))
             .size(), body.size());
     get.releaseConnection();
   }

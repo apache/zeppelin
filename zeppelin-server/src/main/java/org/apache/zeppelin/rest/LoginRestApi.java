@@ -44,7 +44,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosRealm;
@@ -65,13 +65,17 @@ public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
   private static final Gson gson = new Gson();
   private ZeppelinConfiguration zConf;
+
   private AuthenticationService authenticationService;
+  private AuthorizationService authorizationService;
 
   @Inject
   public LoginRestApi(Notebook notebook,
-      AuthenticationService authenticationService) {
+                      AuthenticationService authenticationService,
+                      AuthorizationService authorizationService) {
     this.zConf = notebook.getConf();
     this.authenticationService = authenticationService;
+    this.authorizationService = authorizationService;
   }
 
   @GET
@@ -199,7 +203,7 @@ public class LoginRestApi {
       // if no exception, that's it, we're done!
 
       // set roles for user in NotebookAuthorization module
-      NotebookAuthorization.getInstance().setRoles(principal, roles);
+      authorizationService.setRoles(principal, roles);
     } catch (AuthenticationException uae) {
       // username wasn't in the system, show them an error message?
       // password didn't match, try again?

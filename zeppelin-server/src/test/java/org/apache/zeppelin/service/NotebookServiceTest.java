@@ -51,11 +51,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.search.LuceneSearch;
@@ -97,7 +94,7 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+
     Credentials credentials = new Credentials(false, null, null);
     Notebook notebook =
         new Notebook(
@@ -106,10 +103,10 @@ public class NotebookServiceTest {
             mockInterpreterFactory,
             mockInterpreterSettingManager,
             searchService,
-            notebookAuthorization,
             credentials,
             null);
-    notebookService = new NotebookService(notebook, notebookAuthorization, zeppelinConfiguration);
+    AuthorizationService authorizationService = new AuthorizationService(notebook, notebook.getConf());
+    notebookService = new NotebookService(notebook, authorizationService, zeppelinConfiguration);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);

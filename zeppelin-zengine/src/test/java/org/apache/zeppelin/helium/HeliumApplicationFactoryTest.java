@@ -29,7 +29,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.search.SearchService;
@@ -57,16 +56,14 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     SearchService search = mock(SearchService.class);
     notebookRepo = mock(NotebookRepo.class);
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
-    /*notebook =
+    notebook =
         new Notebook(
             conf,
             notebookRepo,
             interpreterFactory,
             interpreterSettingManager,
             search,
-            notebookAuthorization,
-            new Credentials(false, null, null));*/
+            new Credentials(false, null, null));
 
     heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
