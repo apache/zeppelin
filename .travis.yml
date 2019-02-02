@@ -34,8 +34,11 @@ cache:
 addons:
   apt:
     sources:
-    - r-packages-trusty
+    - r-source
+    - sourceline: 'deb http://cran.rstudio.com/bin/linux/ubuntu trusty/'
+      key_url: 'keyserver.ubuntu.com/pks/lookup?op=get&search=0x51716619E084DAB9'
     packages:
+    - r-base
     - r-base-dev
 
 env:

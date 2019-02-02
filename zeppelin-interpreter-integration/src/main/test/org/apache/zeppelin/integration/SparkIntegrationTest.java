@@ -57,7 +57,7 @@ public abstract class SparkIntegrationTest {
   public SparkIntegrationTest(String sparkVersion) {
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
     this.sparkVersion = sparkVersion;
-    this.sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion);
   }
 
   @BeforeClass

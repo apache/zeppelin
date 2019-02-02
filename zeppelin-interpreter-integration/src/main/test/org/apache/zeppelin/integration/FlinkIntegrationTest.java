@@ -60,7 +60,7 @@ public class FlinkIntegrationTest {
   public FlinkIntegrationTest(String flinkVersion) {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     this.flinkVersion = flinkVersion;
-    this.flinkHome = SparkDownloadUtils.downloadFlink(flinkVersion);
+    this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
   }
 
   @Parameterized.Parameters
