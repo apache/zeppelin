@@ -63,16 +63,15 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.ParagraphWithRuntimeInfo;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
-import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
@@ -141,6 +140,7 @@ public class NotebookServer extends WebSocketServlet
 
   private Provider<Notebook> notebookProvider;
   private Provider<NotebookService> notebookServiceProvider;
+  private Provider<AuthorizationService> authorizationServiceProvider;
   private Provider<ConfigurationService> configurationServiceProvider;
   private Provider<JobManagerService> jobManagerServiceProvider;
 
@@ -166,6 +166,13 @@ public class NotebookServer extends WebSocketServlet
       Provider<NotebookService> notebookServiceProvider) {
     this.notebookServiceProvider = notebookServiceProvider;
     LOG.info("Injected NotebookServiceProvider");
+  }
+
+  @Inject
+  public void setAuthorizationServiceProvider(Provider<AuthorizationService>
+                                                      authorizationServiceProvider) {
+    this.authorizationServiceProvider = authorizationServiceProvider;
+    LOG.info("Injected NotebookAuthorizationServiceProvider");
   }
 
   @Inject
@@ -198,6 +205,10 @@ public class NotebookServer extends WebSocketServlet
 
   public synchronized JobManagerService getJobManagerService() {
     return jobManagerServiceProvider.get();
+  }
+
+  public AuthorizationService getNotebookAuthorizationService() {
+    return authorizationServiceProvider.get();
   }
 
   @Override
@@ -550,7 +561,8 @@ public class NotebookServer extends WebSocketServlet
       subject = new AuthenticationInfo(StringUtils.EMPTY);
     }
     //send first to requesting user
-    List<NoteInfo> notesInfo = getNotebook().getNotesInfo(userAndRoles);
+    List<NoteInfo> notesInfo = getNotebook().getNotesInfo(
+            noteId -> getNotebookAuthorizationService().isReader(noteId, userAndRoles));
     connectionManager.multicastToUser(subject.getUser(),
         new Message(OP.NOTES_INFO).put("notes", notesInfo));
     //to others afterwards
@@ -603,10 +615,11 @@ public class NotebookServer extends WebSocketServlet
                                                String noteId, Set<String> userAndRoles,
                                                String principal, String op)
       throws IOException {
-    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
-    if (!notebookAuthorization.isWriter(noteId, userAndRoles)) {
+    AuthorizationService authorizationService =
+            getNotebookAuthorizationService();
+    if (!authorizationService.isWriter(noteId, userAndRoles)) {
       permissionError(conn, op, principal, userAndRoles,
-          notebookAuthorization.getOwners(noteId));
+              authorizationService.getOwners(noteId));
       return false;
     }
 
@@ -1861,7 +1874,7 @@ public class NotebookServer extends WebSocketServlet
     // Check READER permission
     Set<String> userAndRoles = new HashSet<>();
     userAndRoles.add(user);
-    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    AuthorizationService notebookAuthorization = getNotebookAuthorizationService();
     boolean isAllowed = notebookAuthorization.isReader(noteId, userAndRoles);
     Set<String> allowed = notebookAuthorization.getReaders(noteId);
     if (false == isAllowed) {

@@ -46,8 +46,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
@@ -84,7 +84,7 @@ public class NotebookRestApi extends AbstractRestApi {
   private Notebook notebook;
   private NotebookServer notebookServer;
   private SearchService noteSearchService;
-  private NotebookAuthorization notebookAuthorization;
+  private AuthorizationService authorizationService;
   private NotebookService notebookService;
   private JobManagerService jobManagerService;
   private AuthenticationService authenticationService;
@@ -95,7 +95,7 @@ public class NotebookRestApi extends AbstractRestApi {
       NotebookServer notebookServer,
       NotebookService notebookService,
       SearchService search,
-      NotebookAuthorization notebookAuthorization,
+      AuthorizationService authorizationService,
       ZeppelinConfiguration zConf,
       AuthenticationService authenticationService,
       JobManagerService jobManagerService) {
@@ -105,7 +105,7 @@ public class NotebookRestApi extends AbstractRestApi {
     this.notebookService = notebookService;
     this.jobManagerService = jobManagerService;
     this.noteSearchService = search;
-    this.notebookAuthorization = notebookAuthorization;
+    this.authorizationService = authorizationService;
     this.zConf = zConf;
     this.authenticationService = authenticationService;
   }
@@ -121,10 +121,10 @@ public class NotebookRestApi extends AbstractRestApi {
     checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
     HashMap<String, Set<String>> permissionsMap = new HashMap<>();
-    permissionsMap.put("owners", notebookAuthorization.getOwners(noteId));
-    permissionsMap.put("readers", notebookAuthorization.getReaders(noteId));
-    permissionsMap.put("writers", notebookAuthorization.getWriters(noteId));
-    permissionsMap.put("runners", notebookAuthorization.getRunners(noteId));
+    permissionsMap.put("owners", authorizationService.getOwners(noteId));
+    permissionsMap.put("readers", authorizationService.getReaders(noteId));
+    permissionsMap.put("writers", authorizationService.getWriters(noteId));
+    permissionsMap.put("runners", authorizationService.getRunners(noteId));
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
@@ -164,8 +164,8 @@ public class NotebookRestApi extends AbstractRestApi {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
-    if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    if (!authorizationService.isOwner(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -176,8 +176,8 @@ public class NotebookRestApi extends AbstractRestApi {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
-    if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    if (!authorizationService.hasWritePermission(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -188,7 +188,7 @@ public class NotebookRestApi extends AbstractRestApi {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
-    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
+    if (!authorizationService.hasReadPermission(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -200,8 +200,8 @@ public class NotebookRestApi extends AbstractRestApi {
     Set<String> userAndRoles = Sets.newHashSet();
     userAndRoles.add(authenticationService.getPrincipal());
     userAndRoles.addAll(authenticationService.getAssociatedRoles());
-    if (!notebookAuthorization.hasRunAuthorization(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    if (!authorizationService.hasRunPermission(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -240,7 +240,7 @@ public class NotebookRestApi extends AbstractRestApi {
 
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserIsOwner(noteId,
-        ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
+        ownerPermissionError(userAndRoles, authorizationService.getOwners(noteId)));
 
     HashMap<String, HashSet<String>> permMap =
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
@@ -282,13 +282,13 @@ public class NotebookRestApi extends AbstractRestApi {
       }
     }
 
-    notebookAuthorization.setReaders(noteId, readers);
-    notebookAuthorization.setRunners(noteId, runners);
-    notebookAuthorization.setWriters(noteId, writers);
-    notebookAuthorization.setOwners(noteId, owners);
-    LOG.debug("After set permissions {} {} {} {}", notebookAuthorization.getOwners(noteId),
-        notebookAuthorization.getReaders(noteId), notebookAuthorization.getRunners(noteId),
-        notebookAuthorization.getWriters(noteId));
+    authorizationService.setReaders(noteId, readers);
+    authorizationService.setRunners(noteId, runners);
+    authorizationService.setWriters(noteId, writers);
+    authorizationService.setOwners(noteId, owners);
+    LOG.debug("After set permissions {} {} {} {}", authorizationService.getOwners(noteId),
+            authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
+            authorizationService.getWriters(noteId));
     AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     notebook.saveNote(note, subject);
     notebookServer.broadcastNote(note);
@@ -1002,10 +1002,10 @@ public class NotebookRestApi extends AbstractRestApi {
     for (int i = 0; i < notesFound.size(); i++) {
       String[] ids = notesFound.get(i).get("id").split("/", 2);
       String noteId = ids[0];
-      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
-          !notebookAuthorization.isReader(noteId, userAndRoles) &&
-          !notebookAuthorization.isWriter(noteId, userAndRoles) &&
-          !notebookAuthorization.isRunner(noteId, userAndRoles)) {
+      if (!authorizationService.isOwner(noteId, userAndRoles) &&
+          !authorizationService.isReader(noteId, userAndRoles) &&
+          !authorizationService.isWriter(noteId, userAndRoles) &&
+          !authorizationService.isRunner(noteId, userAndRoles)) {
         notesFound.remove(i);
         i--;
       }

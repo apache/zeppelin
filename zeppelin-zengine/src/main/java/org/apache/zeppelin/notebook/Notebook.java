@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
@@ -83,7 +84,6 @@ public class Notebook {
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
-  private NotebookAuthorization notebookAuthorization;
   private List<NoteEventListener> noteEventListeners = new ArrayList<>();
   private Credentials credentials;
 
@@ -99,7 +99,6 @@ public class Notebook {
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
-      NotebookAuthorization notebookAuthorization,
       Credentials credentials)
       throws IOException, SchedulerException {
     this.noteManager = new NoteManager(notebookRepo);
@@ -108,7 +107,6 @@ public class Notebook {
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
     this.noteSearchService = noteSearchService;
-    this.notebookAuthorization = notebookAuthorization;
     this.credentials = credentials;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
@@ -116,7 +114,6 @@ public class Notebook {
     CronJob.notebook = this;
 
     this.noteEventListeners.add(this.noteSearchService);
-    this.noteEventListeners.add(this.notebookAuthorization);
     this.noteEventListeners.add(this.interpreterSettingManager);
   }
 
@@ -127,7 +124,6 @@ public class Notebook {
       InterpreterFactory replFactory,
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
-      NotebookAuthorization notebookAuthorization,
       Credentials credentials,
       NoteEventListener noteEventListener)
       throws IOException, SchedulerException {
@@ -137,7 +133,6 @@ public class Notebook {
         replFactory,
         interpreterSettingManager,
         noteSearchService,
-        notebookAuthorization,
         credentials);
     if (null != noteEventListener) {
       this.noteEventListeners.add(noteEventListener);
@@ -183,6 +178,7 @@ public class Notebook {
     Note note =
         new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
             paragraphJobListener, credentials, noteEventListeners);
+    note.initPermissions(subject);
     noteManager.addNote(note, subject);
     fireNoteCreateEvent(note, subject);
     return note;
@@ -499,28 +495,20 @@ public class Notebook {
     return noteList;
   }
 
-  public List<Note> getAllNotes(Set<String> userAndRoles) {
-    final Set<String> entities = Sets.newHashSet();
-    if (userAndRoles != null) {
-      entities.addAll(userAndRoles);
-    }
+  public List<Note> getAllNotes(Function<Note, Boolean> func){
     return getAllNotes().stream()
-        .filter(note -> notebookAuthorization.isReader(note.getId(), entities))
+        .filter(note -> func.apply(note))
         .collect(Collectors.toList());
   }
 
-  public List<NoteInfo> getNotesInfo(Set<String> userAndRoles) {
-    final Set<String> entities = Sets.newHashSet();
-    if (userAndRoles != null) {
-      entities.addAll(userAndRoles);
-    }
+  public List<NoteInfo> getNotesInfo(Function<String, Boolean> func) {
     String homescreenNoteId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList =
         conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     synchronized (noteManager.getNotesInfo()) {
       List<NoteInfo> notesInfo = noteManager.getNotesInfo().entrySet().stream().filter(entry ->
-          notebookAuthorization.isReader(entry.getKey(), entities) &&
+              func.apply(entry.getKey()) &&
               ((!hideHomeScreenNotebookFromList) ||
                   ((hideHomeScreenNotebookFromList) && !entry.getKey().equals(homescreenNoteId))))
           .map(entry -> new NoteInfo(entry.getKey(), entry.getValue()))
@@ -696,10 +684,6 @@ public class Notebook {
 
   public InterpreterSettingManager getInterpreterSettingManager() {
     return interpreterSettingManager;
-  }
-
-  public NotebookAuthorization getNotebookAuthorization() {
-    return notebookAuthorization;
   }
 
   public ZeppelinConfiguration getConf() {

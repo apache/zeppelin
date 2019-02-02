@@ -51,9 +51,9 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
@@ -76,6 +76,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static NotebookService notebookService;
+  private static AuthorizationService authorizationService;
   private HttpServletRequest mockRequest;
   private AuthenticationInfo anonymous;
 
@@ -83,10 +84,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
   public static void init() throws Exception {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     notebook = TestUtils.getInstance(Notebook.class);
+    authorizationService = new AuthorizationService(notebook, notebook.getConf());
     notebookServer = spy(NotebookServer.getInstance());
     notebookService =
         new NotebookService(
-            notebook, NotebookAuthorization.getInstance(), ZeppelinConfiguration.create());
+            notebook, authorizationService, ZeppelinConfiguration.create());
+
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);
     when(notebookServer.getConfigurationService()).thenReturn(configurationService);
@@ -650,8 +653,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
       String noteId = note.getId();
       String user1Id = "user1", user2Id = "user2";
 
-      NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-
       // test user1 can get anonymous's note
       List<ParagraphInfo> paragraphList0 = null;
       try {
@@ -664,10 +665,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
 
       // test user1 cannot get user2's note
-      notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-      notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
-      notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-      notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
       List<ParagraphInfo> paragraphList1 = null;
       try {
         paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
@@ -679,10 +680,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
       assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
 
       // test user1 can get user2's shared note
-      notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-      notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
-      notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-      notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
+      authorizationService.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      authorizationService.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
       List<ParagraphInfo> paragraphList2 = null;
       try {
         paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);

@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -44,8 +43,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.rest.exception.BadRequestException;
@@ -53,7 +52,6 @@ import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.joda.time.DateTime;
@@ -80,15 +78,15 @@ public class NotebookService {
 
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
-  private NotebookAuthorization notebookAuthorization;
+  private AuthorizationService authorizationService;
 
   @Inject
   public NotebookService(
       Notebook notebook,
-      NotebookAuthorization notebookAuthorization,
+      AuthorizationService authorizationService,
       ZeppelinConfiguration zeppelinConfiguration) {
     this.notebook = notebook;
-    this.notebookAuthorization = notebookAuthorization;
+    this.authorizationService = authorizationService;
     this.zConf = zeppelinConfiguration;
   }
 
@@ -177,10 +175,10 @@ public class NotebookService {
   public void removeNote(String noteId,
                          ServiceContext context,
                          ServiceCallback<String> callback) throws IOException {
-    if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
-      return;
-    }
     if (notebook.getNote(noteId) != null) {
+      if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
+        return;
+      }
       notebook.removeNote(noteId, context.getAutheInfo());
       callback.onSuccess("Delete note successfully", context);
     } else {
@@ -199,7 +197,8 @@ public class NotebookService {
         LOGGER.error("Fail to reload notes from repository", e);
       }
     }
-    List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+    List<NoteInfo> notesInfo = notebook.getNotesInfo(
+            noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
     callback.onSuccess(notesInfo, context);
     return notesInfo;
   }
@@ -929,7 +928,8 @@ public class NotebookService {
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
     try {
       notebook.removeFolder(folderPath, context.getAutheInfo());
-      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(
+              noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
       return notesInfo;
     } catch (IOException e) {
@@ -946,7 +946,8 @@ public class NotebookService {
 
     try {
       notebook.moveFolder(folderPath, newFolderPath, context.getAutheInfo());
-      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(
+              noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
       return notesInfo;
     } catch (IOException e) {
@@ -1166,20 +1167,20 @@ public class NotebookService {
     Set<String> allowed = null;
     switch (permission) {
       case READER:
-        isAllowed = notebookAuthorization.isReader(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getReaders(noteId);
+        isAllowed = authorizationService.isReader(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getReaders(noteId);
         break;
       case WRITER:
-        isAllowed = notebookAuthorization.isWriter(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getWriters(noteId);
+        isAllowed = authorizationService.isWriter(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getWriters(noteId);
         break;
       case RUNNER:
-        isAllowed = notebookAuthorization.isRunner(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getRunners(noteId);
+        isAllowed = authorizationService.isRunner(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getRunners(noteId);
         break;
       case OWNER:
-        isAllowed = notebookAuthorization.isOwner(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getOwners(noteId);
+        isAllowed = authorizationService.isOwner(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getOwners(noteId);
         break;
     }
     if (isAllowed) {
