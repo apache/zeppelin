@@ -73,7 +73,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   public ZeppelinSparkClusterTest(String sparkVersion) throws Exception {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
-    String sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
+    String sparkHome = DownloadUtils.downloadSpark(sparkVersion);
     if (!verifiedSparkVersions.contains(sparkVersion)) {
       verifiedSparkVersions.add(sparkVersion);
       setupSparkInterpreter(sparkHome);
