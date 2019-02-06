@@ -213,17 +213,17 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
   }
 
-  @Test
-  public void sparkSQLTest() throws IOException {
-    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-    // test basic dataframe api
-    Paragraph p = note.addNewParagraph(anonymous);
-    p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-        "df.collect()");
-    note.run(p.getId(), true);
-    assertEquals(Status.FINISHED, p.getStatus());
-    assertTrue(p.getReturn().message().get(0).getData().contains(
-        "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+    @Test
+    public void sparkReadJSONTest() throws IOException {
+      Note note = ZeppelinServer.notebook.createNote(anonymous);
+      Paragraph p = note.addNewParagraph(anonymous);
+      p.setText("%spark val jsonStr = \"\"\"{ \"metadata\": { \"key\": 84896, \"value\": 54 }}\"\"\"\n" +
+              "spark.read.json(Seq(jsonStr).toDS)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertTrue(p.getResult().message().get(0).getData().contains(
+              "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]\n"));
+    }
 
     @Test
     public void sparkReadCSVTest() throws IOException {
