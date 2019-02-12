@@ -24,18 +24,16 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class SparkIntegrationTestPt2 extends SparkIntegrationTest{
+public class SparkIntegrationTest24 extends SparkIntegrationTest{
 
-  public SparkIntegrationTestPt2(String sparkVersion) {
+  public SparkIntegrationTest24(String sparkVersion) {
     super(sparkVersion);
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.1.2"},
-            {"2.0.2"},
-            {"1.6.3"}
+            {"2.4.0"}
     });
   }
 
