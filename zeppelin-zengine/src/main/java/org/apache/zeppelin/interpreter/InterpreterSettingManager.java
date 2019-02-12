@@ -632,7 +632,6 @@ public class InterpreterSettingManager implements NoteEventListener {
    * changed
    */
   private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
-    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
     final Thread t = new Thread() {
       public void run() {
         try {
@@ -649,7 +648,6 @@ public class InterpreterSettingManager implements NoteEventListener {
               }
             }
           }
-          setting.setStatus(InterpreterSetting.Status.READY);
         } catch (Exception e) {
           LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
                   " go to interpreter setting page click on edit and save it again to make " +

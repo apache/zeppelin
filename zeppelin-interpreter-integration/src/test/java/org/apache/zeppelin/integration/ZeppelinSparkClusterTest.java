@@ -17,6 +17,7 @@
 package org.apache.zeppelin.integration;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -41,7 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -55,8 +58,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test against spark cluster.
  */
-@RunWith(value = Parameterized.class)
-public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
+public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
 
@@ -79,18 +81,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       setupSparkInterpreter(sparkHome);
       verifySparkVersionNumber();
     }
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"2.4.0"},
-            {"2.3.2"},
-            {"2.2.1"},
-            {"2.1.2"},
-            {"2.0.2"},
-            {"1.6.3"}
-    });
   }
 
   public void setupSparkInterpreter(String sparkHome) throws InterpreterException {
@@ -213,43 +203,65 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
   }
 
-    @Test
-    public void sparkReadJSONTest() throws IOException {
-      Note note = ZeppelinServer.notebook.createNote(anonymous);
-      Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark val jsonStr = \"\"\"{ \"metadata\": { \"key\": 84896, \"value\": 54 }}\"\"\"\n" +
-              "spark.read.json(Seq(jsonStr).toDS)");
-      note.run(p.getId(), true);
-      assertEquals(Status.FINISHED, p.getStatus());
-      assertTrue(p.getResult().message().get(0).getData().contains(
-              "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]\n"));
+  @Test
+  public void sparkReadJSONTest() throws IOException {
+    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+    Paragraph p = note.addNewParagraph(anonymous);
+    File tmpJsonFile = File.createTempFile("test", ".json");
+    FileWriter jsonFileWriter = new FileWriter(tmpJsonFile);
+    IOUtils.copy(new StringReader("{\"metadata\": { \"key\": 84896, \"value\": 54 }}\n"),
+            jsonFileWriter);
+    jsonFileWriter.close();
+    if (isSpark2()) {
+      p.setText("%spark spark.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
+    } else {
+      p.setText("%spark sqlContext.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
     }
-
-    @Test
-    public void sparkReadCSVTest() throws IOException {
-      Note note = ZeppelinServer.notebook.createNote(anonymous);
-      Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark val csvStr = \"\"\"84896,54\"\"\"\n" +
-              "spark.read.csv(Seq(csvStr).toDS)");
-      note.run(p.getId(), true);
-      assertEquals(Status.FINISHED, p.getStatus());
-      assertTrue(p.getResult().message().get(0).getData().contains(
-              "org.apache.spark.sql.DataFrame = [_c0: string, _c1: string]\n"));
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    if (isSpark2()) {
+      assertTrue(p.getReturn().message().get(0).getData().contains(
+              "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]"));
+    } else {
+      assertTrue(p.getReturn().message().get(0).getData().contains(
+              "org.apache.spark.sql.DataFrame = [metadata: struct<key:bigint,value:bigint>]"));
     }
+    TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+  }
 
-    @Test
-    public void sparkSQLTest() throws IOException {
-      Note note = ZeppelinServer.notebook.createNote(anonymous);
-      // test basic dataframe api
-      Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-              "df.collect()");
-      note.run(p.getId(), true);
-      assertEquals(Status.FINISHED, p.getStatus());
-      assertTrue(p.getResult().message().get(0).getData().contains(
-              "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+  @Test
+  public void sparkReadCSVTest() throws IOException {
+    if (!isSpark2()) {
+      // csv if not supported in spark 1.x natively
+      return;
+    }
+    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+    Paragraph p = note.addNewParagraph(anonymous);
+    File tmpCSVFile = File.createTempFile("test", ".csv");
+    FileWriter csvFileWriter = new FileWriter(tmpCSVFile);
+    IOUtils.copy(new StringReader("84896,54"), csvFileWriter);
+    csvFileWriter.close();
+    p.setText("%spark spark.read.csv(\"file://" + tmpCSVFile.getAbsolutePath() + "\")");
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    assertTrue(p.getReturn().message().get(0).getData().contains(
+            "org.apache.spark.sql.DataFrame = [_c0: string, _c1: string]\n"));
+    TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+  }
 
-      // test display DataFrame
+  @Test
+  public void sparkSQLTest() throws IOException {
+    Note note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+    // test basic dataframe api
+    Paragraph p = note.addNewParagraph(anonymous);
+    p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
+            "df.collect()");
+    note.run(p.getId(), true);
+    assertEquals(Status.FINISHED, p.getStatus());
+    assertTrue(p.getReturn().message().get(0).getData().contains(
+            "Array[org.apache.spark.sql.Row] = Array([hello,20])"));
+
+    // test display DataFrame
     p = note.addNewParagraph(anonymous);
     p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
         "z.show(df)");

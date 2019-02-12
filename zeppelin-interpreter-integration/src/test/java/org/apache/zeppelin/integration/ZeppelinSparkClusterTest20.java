@@ -24,19 +24,17 @@ import java.util.Arrays;
 import java.util.List;
 
 @RunWith(value = Parameterized.class)
-public class SparkIntegrationTestPt1 extends SparkIntegrationTest{
+public class ZeppelinSparkClusterTest20 extends ZeppelinSparkClusterTest {
 
-  public SparkIntegrationTestPt1(String sparkVersion) {
+  public ZeppelinSparkClusterTest20(String sparkVersion) throws Exception {
     super(sparkVersion);
   }
+
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.4.0"},
-            {"2.3.2"},
-            {"2.2.1"},
+            {"2.0.2"}
     });
   }
-
 }

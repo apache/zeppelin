@@ -66,7 +66,7 @@ public class JdbcIntegrationTest {
     interpreterSetting.setProperty("default.user", "root");
     Dependency dependency = new Dependency("mysql:mysql-connector-java:5.1.46");
     interpreterSetting.setDependencies(Lists.newArrayList(dependency));
-    interpreterSettingManager.restart("jdbc");
+    interpreterSettingManager.restart(interpreterSetting.getId());
     interpreterSetting.waitForReady(60 * 1000);
     Interpreter jdbcInterpreter = interpreterFactory.getInterpreter("user1", "note1", "jdbc", "test");
     assertNotNull("JdbcInterpreter is null", jdbcInterpreter);

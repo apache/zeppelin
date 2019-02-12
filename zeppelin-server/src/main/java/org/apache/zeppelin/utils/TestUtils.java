@@ -21,6 +21,7 @@ import org.apache.zeppelin.server.ZeppelinServer;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 
+//TODO(zjffdu) refactor this class, it should not be called by non-test code. Or rename it.
 public class TestUtils {
   public static <T> T getInstance(Class<T> clazz) {
     checkCalledByTestMethod();

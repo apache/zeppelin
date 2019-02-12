@@ -58,6 +58,7 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-server</artifactId>
       <version>${project.version}</version>
+      <classifier>tests</classifier>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -74,26 +75,25 @@
       </exclusions>
     </dependency>
 
-    <!--<dependency>-->
-      <!--<groupId>org.apache.zeppelin</groupId>-->
-      <!--<artifactId>zeppelin-server</artifactId>-->
-      <!--<version>${project.version}</version>-->
-      <!--<classifier>tests</classifier>-->
-      <!--<exclusions>-->
-        <!--<exclusion>-->
-          <!--<groupId>com.fasterxml.jackson.core</groupId>-->
-          <!--<artifactId>jackson-databind</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>com.fasterxml.jackson.core</groupId>-->
-          <!--<artifactId>jackson-annotations</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>com.fasterxml.jackson.core</groupId>-->
-          <!--<artifactId>jackson-core</artifactId>-->
-        <!--</exclusion>-->
-      <!--</exclusions>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-server</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!--test libraries-->
     <dependency>
@@ -131,9 +131,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>always</forkMode>
-          <systemProperties>
-            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
-          </systemProperties>
           <environmentVariables>
             <ZEPPELIN_ZENGINE_TEST>1</ZEPPELIN_ZENGINE_TEST>
           </environmentVariables>
