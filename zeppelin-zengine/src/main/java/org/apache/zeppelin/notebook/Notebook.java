@@ -244,6 +244,7 @@ public class Notebook {
     for (Paragraph p : paragraphs) {
       newNote.addCloneParagraph(p, subject);
     }
+    saveNote(newNote, subject);
     return newNote;
   }
 
