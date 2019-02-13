@@ -33,7 +33,7 @@ import java.nio.ByteBuffer;
 /**
  * Information and reference to the resource
  */
-public class Resource implements JsonSerializable {
+public class Resource implements JsonSerializable, Serializable {
   private static final Gson gson = new Gson();
 
   private final transient Object r;
