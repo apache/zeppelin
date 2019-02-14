@@ -21,8 +21,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(value = Parameterized.class)
-public class SparkIntegrationTest {
+public abstract class SparkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
@@ -37,18 +36,6 @@ public class SparkIntegrationTest {
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
     this.sparkVersion = sparkVersion;
     this.sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"2.4.0"},
-            {"2.3.2"},
-            {"2.2.1"},
-            {"2.1.2"},
-            {"2.0.2"},
-            {"1.6.3"}
-    });
   }
 
   @BeforeClass
@@ -94,7 +81,7 @@ public class SparkIntegrationTest {
     // test IPySparkInterpreter
     Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.ipyspark");
     interpreterResult = ipySparkInterpreter.interpret("sqlContext.table('test').show()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code);
 
     // test SparkSQLInterpreter
     Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql");

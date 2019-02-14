@@ -480,7 +480,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //  @Test
   public void testEditOnDoubleClick() throws Exception {
     try {
       createNewNote();

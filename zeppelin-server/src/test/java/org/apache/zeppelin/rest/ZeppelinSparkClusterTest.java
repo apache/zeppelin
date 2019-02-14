@@ -17,6 +17,7 @@
 package org.apache.zeppelin.rest;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
@@ -24,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.SparkDownloadUtils;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
@@ -37,7 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -49,8 +53,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test against spark cluster.
  */
-@RunWith(value = Parameterized.class)
-public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
+public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinSparkClusterTest.class);
 
   private String sparkVersion;
@@ -62,16 +65,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     String sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
     setupSparkInterpreter(sparkHome);
     verifySparkVersionNumber();
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"2.4.0"},
-            {"2.3.2"},
-            {"2.2.1"},
-            {"1.6.3"}
-    });
   }
 
   public void setupSparkInterpreter(String sparkHome) throws InterpreterException {
@@ -159,20 +152,40 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   public void sparkReadJSONTest() throws IOException {
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
-    p.setText("%spark val jsonStr = \"\"\"{ \"metadata\": { \"key\": 84896, \"value\": 54 }}\"\"\"\n" +
-            "spark.read.json(Seq(jsonStr).toDS)");
+    File tmpJsonFile = File.createTempFile("test", ".json");
+    FileWriter jsonFileWriter = new FileWriter(tmpJsonFile);
+    IOUtils.copy(new StringReader("{\"metadata\": { \"key\": 84896, \"value\": 54 }}\n"),
+            jsonFileWriter);
+    jsonFileWriter.close();
+    if (isSpark2()) {
+      p.setText("%spark spark.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
+    } else {
+      p.setText("%spark sqlContext.read.json(\"file://" + tmpJsonFile.getAbsolutePath() + "\")");
+    }
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
-    assertTrue(p.getResult().message().get(0).getData().contains(
-            "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]\n"));
+    if (isSpark2()) {
+      assertTrue(p.getResult().message().get(0).getData().contains(
+              "org.apache.spark.sql.DataFrame = [metadata: struct<key: bigint, value: bigint>]"));
+    } else {
+      assertTrue(p.getResult().message().get(0).getData().contains(
+              "org.apache.spark.sql.DataFrame = [metadata: struct<key:bigint,value:bigint>]"));
+    }
   }
 
   @Test
   public void sparkReadCSVTest() throws IOException {
+    if (!isSpark2()) {
+      // csv if not supported in spark 1.x natively
+      return;
+    }
     Note note = ZeppelinServer.notebook.createNote(anonymous);
     Paragraph p = note.addNewParagraph(anonymous);
-    p.setText("%spark val csvStr = \"\"\"84896,54\"\"\"\n" +
-            "spark.read.csv(Seq(csvStr).toDS)");
+    File tmpCSVFile = File.createTempFile("test", ".csv");
+    FileWriter csvFileWriter = new FileWriter(tmpCSVFile);
+    IOUtils.copy(new StringReader("84896,54"), csvFileWriter);
+    csvFileWriter.close();
+    p.setText("%spark spark.read.csv(\"file://" + tmpCSVFile.getAbsolutePath() + "\")");
     note.run(p.getId(), true);
     assertEquals(Status.FINISHED, p.getStatus());
     assertTrue(p.getResult().message().get(0).getData().contains(
