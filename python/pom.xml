@@ -37,7 +37,7 @@
     <python.py4j.version>0.9.2</python.py4j.version>
     <pypi.repo.url>https://pypi.python.org/packages</pypi.repo.url>
     <python.py4j.repo.folder>/64/5c/01e13b68e8caafece40d549f232c9b5677ad1016071a48d04cc3895acaa3</python.py4j.repo.folder>
-    <grpc.version>1.4.0</grpc.version>
+    <grpc.version>1.15.0</grpc.version>
     <plugin.shade.version>2.4.1</plugin.shade.version>
   </properties>
 
@@ -86,7 +86,7 @@
       <artifactId>grpc-stub</artifactId>
       <version>${grpc.version}</version>
     </dependency>
-    
+
     <!-- test libraries -->
     <dependency>
       <groupId>junit</groupId>

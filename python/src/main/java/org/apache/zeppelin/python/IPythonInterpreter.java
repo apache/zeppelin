@@ -161,7 +161,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   /**
    * non-empty return value mean the errors when checking ipython prerequisite.
    * empty value mean IPython prerequisite is meet.
-   * 
+   *
    * @param pythonExec
    * @return
    */
@@ -180,6 +180,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             IOUtils.toString(new FileInputStream(stderrFile));
       }
       String freezeOutput = IOUtils.toString(new FileInputStream(stdoutFile));
+      LOGGER.debug("Installed python packages:\n" + freezeOutput);
       if (!freezeOutput.contains("jupyter-client=")) {
         return "jupyter-client is not installed.";
       }

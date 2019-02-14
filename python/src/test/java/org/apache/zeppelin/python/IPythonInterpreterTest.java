@@ -90,7 +90,7 @@ public class IPythonInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     List<InterpreterResultMessage> interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("Frame size 32 exceeds maximum: 4"));
+    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum size 4"));
 
     // next call continue work
     result = interpreter.interpret("print(1)", context);
@@ -141,7 +141,7 @@ public class IPythonInterpreterTest {
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals("你好\n", interpreterResultMessages.get(0).getData());
-    
+
     // only the last statement is printed
     context = getInterpreterContext();
     result = interpreter.interpret("'hello world'\n'hello world2'", context);
