@@ -22,6 +22,8 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -29,12 +31,15 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.EnumSet;
 
@@ -80,7 +85,14 @@ public abstract class SparkIntegrationTest {
     }
   }
 
-  private void testInterpreterBasics() throws IOException, InterpreterException {
+  private void testInterpreterBasics() throws IOException, InterpreterException, XmlPullParserException {
+    // add jars & packages for testing
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    sparkInterpreterSetting.setProperty("spark.jars.packages", "com.maxmind.geoip2:geoip2:2.5.0");
+    MavenXpp3Reader reader = new MavenXpp3Reader();
+    Model model = reader.read(new FileReader("pom.xml"));
+    sparkInterpreterSetting.setProperty("spark.jars", new File("target/zeppelin-interpreter-integration-" + model.getVersion() + ".jar").getAbsolutePath());
+
     // test SparkInterpreter
     Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark", "test");
 
@@ -92,6 +104,11 @@ public abstract class SparkIntegrationTest {
     interpreterResult = sparkInterpreter.interpret("sc.range(1,10).sum()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("45"));
+
+    // test jars & packages can be loaded correctly
+    interpreterResult = sparkInterpreter.interpret("import org.apache.zeppelin.interpreter.integration.DummyClass\n" +
+            "import com.maxmind.geoip2._", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
 
     // test PySparkInterpreter
     Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.pyspark", "test");
@@ -123,7 +140,7 @@ public abstract class SparkIntegrationTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException, YarnException, InterpreterException {
+  public void testLocalMode() throws IOException, YarnException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
@@ -143,7 +160,7 @@ public abstract class SparkIntegrationTest {
   }
 
   @Test
-  public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException {
+  public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -166,7 +183,7 @@ public abstract class SparkIntegrationTest {
   }
 
   @Test
-  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException {
+  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
