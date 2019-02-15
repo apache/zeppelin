@@ -370,34 +370,6 @@ public class NewSparkInterpreterTest {
     interpretThread.join();
   }
 
-  @Test
-  public void testDependencies() throws IOException, InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
-    properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.useNew", "true");
-    // disable color output for easy testing
-    properties.setProperty("zeppelin.spark.scala.color", "false");
-
-    // download spark-avro jar
-    URL website = new URL("http://repo1.maven.org/maven2/com/databricks/spark-avro_2.11/3.2.0/spark-avro_2.11-3.2.0.jar");
-    ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-    File avroJarFile = new File("spark-avro_2.11-3.2.0.jar");
-    FileOutputStream fos = new FileOutputStream(avroJarFile);
-    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-
-    properties.setProperty("spark.jars", avroJarFile.getAbsolutePath());
-
-    interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
-    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
-    interpreter.open();
-
-    InterpreterResult result = interpreter.interpret("import com.databricks.spark.avro._", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
   //TODO(zjffdu) This unit test will fail due to classpath issue, should enable it after the classpath issue is fixed.
   @Ignore
   public void testDepInterpreter() throws InterpreterException {

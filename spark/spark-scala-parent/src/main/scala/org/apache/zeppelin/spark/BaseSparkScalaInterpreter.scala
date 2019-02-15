@@ -19,6 +19,8 @@ package org.apache.zeppelin.spark
 
 
 import java.io.File
+import java.net.URLClassLoader
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.spark.sql.SQLContext
@@ -35,6 +37,7 @@ import scala.util.control.NonFatal
 /**
   * Base class for different scala versions of SparkInterpreter. It should be
   * binary compatible between multiple scala versions.
+  *
   * @param conf
   * @param depFiles
   */
@@ -86,6 +89,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
     val originalOut = System.out
+
     def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
       Console.withOut(interpreterOutput) {
         System.setOut(Console.out)
@@ -236,7 +240,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     builder.getClass.getMethod("config", classOf[SparkConf]).invoke(builder, conf)
 
     if (conf.get("spark.sql.catalogImplementation", "in-memory").toLowerCase == "hive"
-        || conf.get("spark.useHiveContext", "false").toLowerCase == "true") {
+      || conf.get("spark.useHiveContext", "false").toLowerCase == "true") {
       val hiveSiteExisted: Boolean =
         Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
       val hiveClassesPresent =
@@ -370,20 +374,26 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def getUserJars(): Seq[String] = {
-    val sparkJars = conf.getOption("spark.jars").map(_.split(","))
-      .map(_.filter(_.nonEmpty)).toSeq.flatten
-    val depJars = depFiles.asScala.filter(_.endsWith(".jar"))
-    // add zeppelin spark interpreter jar
-    val zeppelinInterpreterJarURL = getClass.getProtectionDomain.getCodeSource.getLocation
-    // zeppelinInterpreterJarURL might be a folder when under unit testing
-    val result = if (new File(zeppelinInterpreterJarURL.getFile).isDirectory) {
-      sparkJars ++ depJars
-    } else {
-      sparkJars ++ depJars ++ Seq(zeppelinInterpreterJarURL.getFile)
+    var classLoader = Thread.currentThread().getContextClassLoader
+    var extraJars = Seq.empty[String]
+    while (classLoader != null) {
+      if (classLoader.getClass.getCanonicalName ==
+        "org.apache.spark.util.MutableURLClassLoader") {
+        extraJars = classLoader.asInstanceOf[URLClassLoader].getURLs()
+          // Check if the file exists.
+          .filter { u => u.getProtocol == "file" && new File(u.getPath).isFile }
+          // Some bad spark packages depend on the wrong version of scala-reflect. Blacklist it.
+          .filterNot {
+            u => Paths.get(u.toURI).getFileName.toString.contains("org.scala-lang_scala-reflect")
+          }
+          .map(url => url.toString).toSeq
+        classLoader = null
+      } else {
+        classLoader = classLoader.getParent
+      }
     }
-    conf.set("spark.jars", result.mkString(","))
-    LOGGER.debug("User jar for spark repl: " + conf.get("spark.jars"))
-    result
+    LOGGER.debug("User jar for spark repl: " + extraJars.mkString(","))
+    extraJars
   }
 
   protected def getUserFiles(): Seq[String] = {
