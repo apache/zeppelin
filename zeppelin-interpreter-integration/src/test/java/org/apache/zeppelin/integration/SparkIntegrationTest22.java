@@ -33,7 +33,7 @@ public class SparkIntegrationTest22 extends SparkIntegrationTest{
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-            {"2.2.1"}
+            {"2.2.2"}
     });
   }
 
