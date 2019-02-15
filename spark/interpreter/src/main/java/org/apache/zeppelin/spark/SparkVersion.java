@@ -43,6 +43,9 @@ public class SparkVersion {
 
 
   private int version;
+  private int majorVersion;
+  private int minorVersion;
+  private int patchVersion;
   private String versionString;
 
   SparkVersion(String versionString) {
@@ -57,11 +60,11 @@ public class SparkVersion {
       }
 
       String versions[] = numberPart.split("\\.");
-      int major = Integer.parseInt(versions[0]);
-      int minor = Integer.parseInt(versions[1]);
-      int patch = Integer.parseInt(versions[2]);
+      this.majorVersion = Integer.parseInt(versions[0]);
+      this.minorVersion = Integer.parseInt(versions[1]);
+      this.patchVersion = Integer.parseInt(versions[2]);
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
-      version = Integer.parseInt(String.format("%d%02d%02d", major, minor, patch));
+      version = Integer.parseInt(String.format("%d%02d%02d", majorVersion, minorVersion, patchVersion));
     } catch (Exception e) {
       logger.error("Can not recognize Spark version " + versionString +
           ". Assume it's a future release", e);
@@ -112,7 +115,10 @@ public class SparkVersion {
   }
 
   public boolean isSecretSocketSupported() {
-    return this.newerThanEquals(SPARK_2_3_1);
+    return this.newerThanEquals(SparkVersion.SPARK_2_4_0) ||
+            this.newerThanEqualsPatchVersion(SPARK_2_3_1) ||
+            this.newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.2.2")) ||
+            this.newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.1.3"));
   }
   public boolean equals(Object versionToCompare) {
     return version == ((SparkVersion) versionToCompare).version;
@@ -124,6 +130,11 @@ public class SparkVersion {
 
   public boolean newerThanEquals(SparkVersion versionToCompare) {
     return version >= versionToCompare.version;
+  }
+
+  public boolean newerThanEqualsPatchVersion(SparkVersion versionToCompare) {
+    return version / 100 == versionToCompare.version / 100 &&
+            version % 100 >= versionToCompare.version % 100;
   }
 
   public boolean olderThan(SparkVersion versionToCompare) {
