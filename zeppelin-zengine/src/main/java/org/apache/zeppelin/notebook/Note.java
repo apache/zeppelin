@@ -232,7 +232,7 @@ public class Note implements JsonSerializable {
         this.path = "/" + name;
       }
     } else {
-      int pos = this.path.indexOf("/");
+      int pos = this.path.lastIndexOf("/");
       this.path = this.path.substring(0, pos + 1) + this.name;
     }
   }
