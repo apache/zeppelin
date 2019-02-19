@@ -17,15 +17,16 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
+import java.io.Serializable;
 import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * Resource that can retrieve data from remote
  */
-public class RemoteResource extends Resource implements JsonSerializable {
+public class RemoteResource extends Resource implements JsonSerializable, Serializable {
   private static final Gson gson = new Gson();
 
-  ResourcePoolConnector resourcePoolConnector;
+  transient ResourcePoolConnector resourcePoolConnector;
 
   RemoteResource(ResourceId resourceId, Object r) {
     super(null, resourceId, r);

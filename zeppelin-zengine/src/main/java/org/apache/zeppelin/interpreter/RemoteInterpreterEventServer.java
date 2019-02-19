@@ -327,6 +327,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     return obj;
   }
 
+  /**
+   *
+   * @param intpGroupId caller interpreter group id
+   * @param invokeMethodJson invoke information
+   * @return
+   * @throws TException
+   */
   @Override
   public ByteBuffer invokeMethod(String intpGroupId, String invokeMethodJson) throws TException {
     InvokeResourceMethodEventMessage invokeMethodMessage =
@@ -339,7 +346,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       try {
         obj = Resource.serializeObject(ret);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("invokeMethod failed", e);
       }
     }
     return obj;
@@ -394,10 +401,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.error("no resource pool");
         return null;
       }
-    } else if (interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-        .getInterpreterProcess().isRunning()) {
-      ByteBuffer res = interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-          .getInterpreterProcess().callRemoteFunction(
+    } else if (remoteInterpreterProcess.isRunning()) {
+      ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(
           new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
             @Override
             public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {

@@ -14,34 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.tabledata;
+package org.apache.zeppelin.interpreter.util;
 
-import org.apache.zeppelin.resource.Resource;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
-import java.util.Iterator;
-
-/**
- * Proxy TableData for ResourcePool
- */
-public class TableDataProxy implements TableData {
-  private final Resource resource;
-
-  public TableDataProxy(Resource tableDataRemoteResource) {
-    this.resource = tableDataRemoteResource;
+public class ByteBufferUtils {
+  public static ByteBuffer stringToByteBuffer(String msg, Charset charset){
+    return ByteBuffer.wrap(msg.getBytes(charset));
   }
 
-  @Override
-  public ColumnDef[] columns() {
-    return (ColumnDef[]) resource.invokeMethod(
-        "columns");
-  }
-
-  @Override
-  public Iterator<Row> rows() {
-    String resourceName = resource.getResourceId().getName() + ".rows";
-    Resource rows = resource.invokeMethod("rows", resourceName);
-
-    ProxyRowIterator it = new ProxyRowIterator(rows);
-    return it;
+  public static String ByteBufferToString(ByteBuffer buffer, Charset charset){
+    byte[] bytes;
+    if(buffer.hasArray()) {
+      bytes = buffer.array();
+    } else {
+      bytes = new byte[buffer.remaining()];
+      buffer.get(bytes);
+    }
+    return new String(bytes, charset);
   }
 }

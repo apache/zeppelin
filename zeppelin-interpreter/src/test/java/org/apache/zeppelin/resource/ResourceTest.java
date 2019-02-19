@@ -16,6 +16,9 @@
  */
 package org.apache.zeppelin.resource;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,5 +34,38 @@ public class ResourceTest {
   public void testSerializeDeserialize() throws IOException, ClassNotFoundException {
     ByteBuffer buffer = Resource.serializeObject("hello");
     assertEquals("hello", Resource.deserializeObject(buffer));
+  }
+
+  @Test
+  public void testInvokeMethod_shouldAbleToInvokeMethodWithNoParams() {
+    Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
+    assertEquals(6, r.invokeMethod("length"));
+    assertEquals(6, r.invokeMethod("length", new Class[]{}, new Object[]{}));
+  }
+
+  @Test
+  public void testInvokeMethod_shouldAbleToInvokeMethodWithTypeInference() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
+    assertEquals("ect", r.invokeMethod("substring", new Object[]{3}));
+    assertEquals(true, r.invokeMethod("startsWith", new Object[]{"obj"}));
+
+    assertEquals("ect", r.invokeMethod("substring", new ArrayList<>(Arrays.asList(3))));
+    assertEquals(true, r.invokeMethod("startsWith", new ArrayList<>(Arrays.asList("obj"))));
+  }
+
+  @Test
+  public void testInvokeMethod_shouldAbleToInvokeMethodWithParamClassName() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
+    assertEquals("ect", r.invokeMethod("substring", new String[]{"int"}, new Object[]{3}));
+    assertEquals(true, r.invokeMethod("startsWith", new String[]{"java.lang.String"}, new Object[]{"obj"}));
+
+    assertEquals("ect", r.invokeMethod("substring", new ArrayList<>(Arrays.asList("int")), new ArrayList<>(Arrays.asList(3))));
+    assertEquals(true, r.invokeMethod("startsWith", new ArrayList<>(Arrays.asList("java.lang.String")), new ArrayList<>(Arrays.asList("obj"))));
+  }
+
+  @Test
+  public void testInvokeMethod_shouldAbleToInvokeMethodWithClass() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
+    assertEquals(true, r.invokeMethod("startsWith", new Class[]{ java.lang.String.class }, new Object[]{"obj"}));
   }
 }

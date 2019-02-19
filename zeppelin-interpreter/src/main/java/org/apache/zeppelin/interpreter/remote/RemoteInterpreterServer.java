@@ -943,7 +943,6 @@ public class RemoteInterpreterServer extends Thread
     for (Resource r : resourceSet) {
       result.add(r.toJson());
     }
-
     return result;
   }
 
@@ -977,7 +976,6 @@ public class RemoteInterpreterServer extends Thread
       String noteId, String paragraphId, String resourceName, String invokeMessage) {
     InvokeResourceMethodEventMessage message =
         InvokeResourceMethodEventMessage.fromJson(invokeMessage);
-
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
     if (resource == null || resource.get() == null) {
       return ByteBuffer.allocate(0);
@@ -991,13 +989,20 @@ public class RemoteInterpreterServer extends Thread
         if (message.shouldPutResultIntoResourcePool()) {
           // if return resource name is specified,
           // then put result into resource pool
-          // and return empty byte buffer
+          // and return the Resource class instead of actual return object.
           resourcePool.put(
               noteId,
               paragraphId,
               message.returnResourceName,
               ret);
-          return ByteBuffer.allocate(0);
+
+          Resource returnValResource = resourcePool.get(noteId, paragraphId, message.returnResourceName);
+          ByteBuffer serialized = Resource.serializeObject(returnValResource);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
         } else {
           // if return resource name is not specified,
           // then return serialized result
@@ -1014,31 +1019,6 @@ public class RemoteInterpreterServer extends Thread
       }
     }
   }
-
-  //  /**
-  //   * Get payload of resource from remote
-  //   *
-  //   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
-  //   * @param object                           java serialized of the object
-  //   * @throws TException
-  //   */
-  //  @Override
-  //  public void resourceResponseInvokeMethod(
-  //      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
-  //    InvokeResourceMethodEventMessage message =
-  //        InvokeResourceMethodEventMessage.fromJson(invokeResourceMethodEventMessage);
-  //
-  //    if (message.shouldPutResultIntoResourcePool()) {
-  //      Resource resource = resourcePool.get(
-  //          message.resourceId.getNoteId(),
-  //          message.resourceId.getParagraphId(),
-  //          message.returnResourceName,
-  //          true);
-  //      eventClient.putResponseInvokeMethod(message, resource);
-  //    } else {
-  //      eventClient.putResponseInvokeMethod(message, object);
-  //    }
-  //  }
 
   @Override
   public void angularRegistryPush(String registryAsString) throws TException {
