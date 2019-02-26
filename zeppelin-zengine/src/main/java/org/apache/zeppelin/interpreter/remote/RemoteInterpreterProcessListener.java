@@ -17,6 +17,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,4 +37,6 @@ public interface RemoteInterpreterProcessListener {
 
   public void onParaInfosReceived(String noteId, String paragraphId,
                                   String interpreterSettingId, Map<String, String> metaInfos);
+
+  String onGetNoteJson(String noteId, AuthenticationInfo authInfo);
 }

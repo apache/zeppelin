@@ -107,4 +107,6 @@ service RemoteInterpreterEventService {
   list<string> getAllResources(1: string intpGroupId);
   binary getResource(1: string resourceIdJson);
   binary invokeMethod(1: string intpGroupId, 2: string invokeMethodJson);
+
+  string getNoteFromServer(1: string noteId, 2: string authenticationInfo, 3: bool compressed);
 }

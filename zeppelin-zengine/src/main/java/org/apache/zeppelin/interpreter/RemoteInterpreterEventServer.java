@@ -28,7 +28,6 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
 import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
@@ -48,7 +47,8 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
-import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.GZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -342,6 +342,32 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       }
     }
     return obj;
+  }
+
+  @Override
+  public String getNoteFromServer(String noteId, String authInfoJson, boolean compressed)
+      throws TException {
+    LOGGER.info("get notes from remote interpreter noteId: " + noteId + ", authInfoJson = "
+        + authInfoJson);
+
+    if (noteId != null) {
+      AuthenticationInfo auth = gson.fromJson(authInfoJson, new TypeToken<AuthenticationInfo>() {
+      }.getType());
+      String noteJson = listener.onGetNoteJson(noteId, auth);
+      if (null == noteJson) {
+        return null;
+      }
+      if (compressed) {
+        String compressedNoteJson = GZipUtil.gzip(noteJson);
+        return compressedNoteJson;
+      } else {
+        return noteJson;
+      }
+    } else {
+      LOGGER.error("noteId is null!");
+    }
+
+    return null;
   }
 
   private Object invokeResourceMethod(String intpGroupId,

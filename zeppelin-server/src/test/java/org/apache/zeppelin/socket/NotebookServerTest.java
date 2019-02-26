@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -35,6 +36,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -625,6 +628,47 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertEquals(2, list.get(0).size());
     assertEquals(list.get(0).get("jobUrl"), "jobUrl_value");
     assertEquals(list.get(0).get("jobLabel"), "jobLabel_value");
+  }
+
+  @Test
+  public void testGetNoteFromServer() {
+    Note note = null;
+    // AuthenticationInfo note1AuthInfo = new AuthenticationInfo(anonymous);
+    try {
+      note = notebook.createNote("note1", anonymous);
+      Paragraph p1 = note.addNewParagraph(anonymous);
+      p1.setText("%md start remote interpreter process");
+      p1.setAuthenticationInfo(anonymous);
+      notebookServer.getNotebook().saveNote(note, anonymous);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    String noteId = note.getId();
+    String user1Id = "user1", user2Id = "user2";
+    AuthenticationInfo auth1 = new AuthenticationInfo(user1Id);
+
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+
+    // user1 can get anonymous's note
+    String noteJson0 = notebookServer.onGetNoteJson(noteId, auth1);
+    assertNotNull(user1Id + " can get anonymous's note", noteJson0);
+
+    // user1 cannot get user2's note
+    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    String noteJson1 = notebookServer.onGetNoteJson(noteId, auth1);
+    assertNull(user1Id + " cannot get " + user2Id + "'s note", noteJson1);
+
+    // user1 can get user2's shared note
+    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
+    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    String noteJson2 = notebookServer.onGetNoteJson(noteId, auth1);
+    assertNotNull(user1Id + " can get " + user2Id + "'s shared note", noteJson2);
   }
 
   private NotebookSocket createWebSocket() {

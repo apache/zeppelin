@@ -72,6 +72,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
+import org.apache.zeppelin.service.ServiceCallback;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -1842,6 +1843,34 @@ public class NotebookServer extends WebSocketServlet
                 paragraph.getRuntimeInfos()));
       }
     }
+  }
+
+  @Override
+  public String onGetNoteJson(String noteId, AuthenticationInfo authInfo) {
+    try {
+      Set<String> userAndRoles = new HashSet<>();
+      userAndRoles.add(authInfo.getUser());
+
+      ServiceContext serviceContext = new ServiceContext(authInfo, userAndRoles);
+      Note note = getNotebookService().getNote(noteId, serviceContext,
+          new SimpleServiceCallback<Note>() {
+            @Override
+            public void onSuccess(Note note, ServiceContext context) throws IOException {
+              // do nothing
+            };
+            @Override
+            public void onFailure(Exception e, ServiceContext context) throws IOException {
+              LOG.error(e.getMessage(), e);
+            };
+          });
+      if (null != note) {
+        return note.toJson();
+      }
+    } catch (IOException e) {
+      LOG.error(e.getMessage(), e);
+    }
+
+    return null;
   }
 
   private void broadcastNoteForms(Note note) {

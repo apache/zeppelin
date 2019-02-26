@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -139,6 +140,11 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
   @Override
   public void onParaInfosReceived(String noteId, String paragraphId,
       String interpreterSettingId, Map<String, String> metaInfos) {
+  }
+
+  @Override
+  public String onGetNoteJson(String noteId, AuthenticationInfo authInfo) {
+    return null;
   }
 
 }

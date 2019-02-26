@@ -35,6 +35,8 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.GZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +84,27 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       return resourceSet;
     } catch (TException e) {
       LOGGER.warn("Fail to getAllResources", e);
+      return null;
+    }
+  }
+
+  public synchronized String getNoteFromServer(
+      String noteId, AuthenticationInfo authInfo, boolean compressed) {
+    try {
+      String noteJson = intpEventServiceClient.getNoteFromServer(
+          noteId, gson.toJson(authInfo), compressed);
+      if (null == noteJson) {
+        return null;
+      }
+
+      if (compressed) {
+        String unzipConetxt = GZipUtil.gunzip(noteJson);
+        return unzipConetxt;
+      } else {
+        return noteJson;
+      }
+    } catch (TException e) {
+      LOGGER.warn("Fail to getNoteFromServer", e);
       return null;
     }
   }
