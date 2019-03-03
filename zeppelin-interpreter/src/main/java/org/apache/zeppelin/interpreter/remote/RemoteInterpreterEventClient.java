@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.resource.RemoteResource;
@@ -36,7 +37,6 @@ import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.GZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,23 +88,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  public synchronized String getNoteFromServer(
-      String noteId, AuthenticationInfo authInfo, boolean compressed) {
+  public synchronized List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
     try {
-      String noteJson = intpEventServiceClient.getNoteFromServer(
-          noteId, gson.toJson(authInfo), compressed);
-      if (null == noteJson) {
-        return null;
-      }
-
-      if (compressed) {
-        String unzipConetxt = GZipUtil.gunzip(noteJson);
-        return unzipConetxt;
-      } else {
-        return noteJson;
-      }
+      String authInfoJson = gson.toJson(authInfo);
+      List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(authInfoJson, noteId);
+      return paragraphList;
     } catch (TException e) {
-      LOGGER.warn("Fail to getNoteFromServer", e);
+      LOGGER.warn("Fail to getParagraphList: ", e);
       return null;
     }
   }

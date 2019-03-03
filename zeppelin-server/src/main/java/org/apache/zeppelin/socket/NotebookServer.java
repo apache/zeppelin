@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +56,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -1846,7 +1848,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   @Override
-  public String onGetNoteJson(String noteId, AuthenticationInfo authInfo) {
+  public List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
     try {
       Set<String> userAndRoles = new HashSet<>();
       userAndRoles.add(authInfo.getUser());
@@ -1863,13 +1865,27 @@ public class NotebookServer extends WebSocketServlet
               LOG.error(e.getMessage(), e);
             };
           });
+
+      // convert Paragraph to ParagraphInfo
       if (null != note) {
-        return note.toJson();
+        List<ParagraphInfo> paragraphInfos = new ArrayList();
+        List<Paragraph> paragraphs = note.getParagraphs();
+        for (Iterator<Paragraph> iter = paragraphs.iterator(); iter.hasNext();) {
+          Paragraph paragraph = iter.next();
+          ParagraphInfo paraInfo = new ParagraphInfo();
+          paraInfo.setNoteId(noteId);
+          paraInfo.setParagraphId(paragraph.getId());
+          paraInfo.setParagraphTitle(paragraph.getTitle());
+          paraInfo.setParagraphText(paragraph.getText());
+          paragraphInfos.add(paraInfo);
+        }
+        return paragraphInfos;
       }
     } catch (IOException e) {
       LOG.error(e.getMessage(), e);
     }
 
+    // note isn't exist or throw exception
     return null;
   }
 

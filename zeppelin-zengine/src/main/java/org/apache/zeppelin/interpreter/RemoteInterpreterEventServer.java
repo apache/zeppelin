@@ -34,6 +34,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
@@ -48,7 +49,6 @@ import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.util.GZipUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,28 +345,21 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   @Override
-  public String getNoteFromServer(String noteId, String authInfoJson, boolean compressed)
+  public List<ParagraphInfo> getParagraphList(String authInfoJson, String noteId)
       throws TException {
-    LOGGER.info("get notes from remote interpreter noteId: " + noteId + ", authInfoJson = "
-        + authInfoJson);
+    LOGGER.info("get paragraph list from remote interpreter noteId: " + noteId
+        + ", authInfoJson = " + authInfoJson);
 
     if (noteId != null) {
       AuthenticationInfo auth = gson.fromJson(authInfoJson, new TypeToken<AuthenticationInfo>() {
       }.getType());
-      String noteJson = listener.onGetNoteJson(noteId, auth);
-      if (null == noteJson) {
-        return null;
-      }
-      if (compressed) {
-        String compressedNoteJson = GZipUtil.gzip(noteJson);
-        return compressedNoteJson;
-      } else {
-        return noteJson;
-      }
+      List<ParagraphInfo> paragraphInfos = listener.getParagraphList(auth, noteId);
+      return paragraphInfos;
     } else {
       LOGGER.error("noteId is null!");
     }
 
+    // note isn't exist or throw exception
     return null;
   }
 

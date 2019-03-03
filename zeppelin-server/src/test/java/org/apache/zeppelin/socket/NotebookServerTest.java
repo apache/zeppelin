@@ -47,6 +47,7 @@ import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -631,9 +632,9 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetNoteFromServer() {
+  public void testGetParagraphList() {
     Note note = null;
-    // AuthenticationInfo note1AuthInfo = new AuthenticationInfo(anonymous);
+
     try {
       note = notebook.createNote("note1", anonymous);
       Paragraph p1 = note.addNewParagraph(anonymous);
@@ -650,25 +651,25 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
 
-    // user1 can get anonymous's note
-    String noteJson0 = notebookServer.onGetNoteJson(noteId, auth1);
-    assertNotNull(user1Id + " can get anonymous's note", noteJson0);
+    // test user1 can get anonymous's note
+    List<ParagraphInfo> paragraphList0 = notebookServer.getParagraphList(auth1, noteId);
+    assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
 
-    // user1 cannot get user2's note
+    // test user1 cannot get user2's note
     notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    String noteJson1 = notebookServer.onGetNoteJson(noteId, auth1);
-    assertNull(user1Id + " cannot get " + user2Id + "'s note", noteJson1);
+    List<ParagraphInfo> paragraphList1 = notebookServer.getParagraphList(auth1, noteId);
+    assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
 
-    // user1 can get user2's shared note
+    // test user1 can get user2's shared note
     notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    String noteJson2 = notebookServer.onGetNoteJson(noteId, auth1);
-    assertNotNull(user1Id + " can get " + user2Id + "'s shared note", noteJson2);
+    List<ParagraphInfo> paragraphList2 = notebookServer.getParagraphList(auth1, noteId);
+    assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
   }
 
   private NotebookSocket createWebSocket() {

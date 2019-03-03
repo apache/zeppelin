@@ -24,6 +24,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -289,7 +290,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Override
-  public String onGetNoteJson(String noteId, AuthenticationInfo authInfo) {
+  public List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
     return null;
   }
 
