@@ -50,6 +50,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -634,7 +635,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetParagraphList() throws TException {
+  public void testGetParagraphList() {
     Note note = null;
 
     try {
@@ -653,7 +654,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
 
     // test user1 can get anonymous's note
-    List<ParagraphInfo> paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
+    List<ParagraphInfo> paragraphList0 = null;
+    try {
+      paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
     assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
 
     // test user1 cannot get user2's note
@@ -661,7 +669,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
+    List<ParagraphInfo> paragraphList1 = null;
+    try {
+      paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
     assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
 
     // test user1 can get user2's shared note
@@ -669,7 +684,14 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
+    List<ParagraphInfo> paragraphList2 = null;
+    try {
+      paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
     assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
   }
 
