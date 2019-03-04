@@ -41,6 +41,7 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -57,6 +58,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -70,11 +72,11 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
-import org.apache.zeppelin.service.ServiceCallback;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -1848,10 +1850,14 @@ public class NotebookServer extends WebSocketServlet
   }
 
   @Override
-  public List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
+  public List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
     try {
+      AuthenticationInfo authInfo = new AuthenticationInfo();
+      authInfo.setUser(user);
+
       Set<String> userAndRoles = new HashSet<>();
-      userAndRoles.add(authInfo.getUser());
+      userAndRoles.add(user);
 
       ServiceContext serviceContext = new ServiceContext(authInfo, userAndRoles);
       Note note = getNotebookService().getNote(noteId, serviceContext,
@@ -1863,6 +1869,14 @@ public class NotebookServer extends WebSocketServlet
             @Override
             public void onFailure(Exception e, ServiceContext context) throws IOException {
               LOG.error(e.getMessage(), e);
+              String message = e.getMessage();
+              if (e instanceof NoteNotFoundException) {
+                message = "Not found this note : " + noteId;
+              } else if (e instanceof ForbiddenException) {
+                message = "No READER permission access to this note : " + noteId;
+              }
+
+              throw new IOException(message);
             };
           });
 
@@ -1880,13 +1894,14 @@ public class NotebookServer extends WebSocketServlet
           paragraphInfos.add(paraInfo);
         }
         return paragraphInfos;
+      } else {
+        String msg = "User " + user + " does not have READER permission to the note: " + noteId;
+        throw new ServiceException(msg);
       }
     } catch (IOException e) {
       LOG.error(e.getMessage(), e);
+      throw new ServiceException(e.getMessage());
     }
-
-    // note isn't exist or throw exception
-    return null;
   }
 
   private void broadcastNoteForms(Note note) {

@@ -647,12 +647,11 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     String noteId = note.getId();
     String user1Id = "user1", user2Id = "user2";
-    AuthenticationInfo auth1 = new AuthenticationInfo(user1Id);
 
     NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
 
     // test user1 can get anonymous's note
-    List<ParagraphInfo> paragraphList0 = notebookServer.getParagraphList(auth1, noteId);
+    List<ParagraphInfo> paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
     assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
 
     // test user1 cannot get user2's note
@@ -660,7 +659,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList1 = notebookServer.getParagraphList(auth1, noteId);
+    List<ParagraphInfo> paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
     assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
 
     // test user1 can get user2's shared note
@@ -668,7 +667,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
     notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
     notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList2 = notebookServer.getParagraphList(auth1, noteId);
+    List<ParagraphInfo> paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
     assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
   }
 

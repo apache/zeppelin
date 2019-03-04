@@ -290,7 +290,7 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
   }
 
   @Override
-  public List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
+  public List<ParagraphInfo> getParagraphList(String user, String noteId) {
     return null;
   }
 

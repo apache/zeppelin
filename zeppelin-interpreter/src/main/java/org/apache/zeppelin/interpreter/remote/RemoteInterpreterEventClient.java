@@ -31,6 +31,7 @@ import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -88,15 +89,10 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
-  public synchronized List<ParagraphInfo> getParagraphList(AuthenticationInfo authInfo, String noteId) {
-    try {
-      String authInfoJson = gson.toJson(authInfo);
-      List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(authInfoJson, noteId);
-      return paragraphList;
-    } catch (TException e) {
-      LOGGER.warn("Fail to getParagraphList: ", e);
-      return null;
-    }
+  public synchronized List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
+    List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(user, noteId);
+    return paragraphList;
   }
 
   @Override

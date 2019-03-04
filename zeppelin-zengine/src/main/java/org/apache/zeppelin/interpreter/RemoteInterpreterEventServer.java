@@ -43,6 +43,7 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
@@ -345,22 +346,18 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   }
 
   @Override
-  public List<ParagraphInfo> getParagraphList(String authInfoJson, String noteId)
-      throws TException {
+  public List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
     LOGGER.info("get paragraph list from remote interpreter noteId: " + noteId
-        + ", authInfoJson = " + authInfoJson);
+        + ", user = " + user);
 
-    if (noteId != null) {
-      AuthenticationInfo auth = gson.fromJson(authInfoJson, new TypeToken<AuthenticationInfo>() {
-      }.getType());
-      List<ParagraphInfo> paragraphInfos = listener.getParagraphList(auth, noteId);
+    if (user != null && noteId != null) {
+      List<ParagraphInfo> paragraphInfos = listener.getParagraphList(user, noteId);
       return paragraphInfos;
     } else {
-      LOGGER.error("noteId is null!");
+      LOGGER.error("user or noteId is null!");
+      return null;
     }
-
-    // note isn't exist or throw exception
-    return null;
   }
 
   private Object invokeResourceMethod(String intpGroupId,
