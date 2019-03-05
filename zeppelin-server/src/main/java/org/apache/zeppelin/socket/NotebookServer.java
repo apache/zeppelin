@@ -1852,56 +1852,37 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public List<ParagraphInfo> getParagraphList(String user, String noteId)
       throws TException, ServiceException {
-    try {
-      AuthenticationInfo authInfo = new AuthenticationInfo();
-      authInfo.setUser(user);
-
-      Set<String> userAndRoles = new HashSet<>();
-      userAndRoles.add(user);
-
-      ServiceContext serviceContext = new ServiceContext(authInfo, userAndRoles);
-      Note note = getNotebookService().getNote(noteId, serviceContext,
-          new SimpleServiceCallback<Note>() {
-            @Override
-            public void onSuccess(Note note, ServiceContext context) throws IOException {
-              // do nothing
-            };
-            @Override
-            public void onFailure(Exception e, ServiceContext context) throws IOException {
-              LOG.error(e.getMessage(), e);
-              String message = e.getMessage();
-              if (e instanceof NoteNotFoundException) {
-                message = "Not found this note : " + noteId;
-              } else if (e instanceof ForbiddenException) {
-                message = "No READER permission access to this note : " + noteId;
-              }
-
-              throw new IOException(message);
-            };
-          });
-
-      // convert Paragraph to ParagraphInfo
-      if (null != note) {
-        List<ParagraphInfo> paragraphInfos = new ArrayList();
-        List<Paragraph> paragraphs = note.getParagraphs();
-        for (Iterator<Paragraph> iter = paragraphs.iterator(); iter.hasNext();) {
-          Paragraph paragraph = iter.next();
-          ParagraphInfo paraInfo = new ParagraphInfo();
-          paraInfo.setNoteId(noteId);
-          paraInfo.setParagraphId(paragraph.getId());
-          paraInfo.setParagraphTitle(paragraph.getTitle());
-          paraInfo.setParagraphText(paragraph.getText());
-          paragraphInfos.add(paraInfo);
-        }
-        return paragraphInfos;
-      } else {
-        String msg = "User " + user + " does not have READER permission to the note: " + noteId;
-        throw new ServiceException(msg);
-      }
-    } catch (IOException e) {
-      LOG.error(e.getMessage(), e);
-      throw new ServiceException(e.getMessage());
+    Notebook notebook = getNotebook();
+    Note note = notebook.getNote(noteId);
+    if (null == note) {
+      throw new ServiceException("Not found this note : " + noteId);
     }
+
+    // Check READER permission
+    Set<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(user);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    boolean isAllowed = notebookAuthorization.isReader(noteId, userAndRoles);
+    Set<String> allowed = notebookAuthorization.getReaders(noteId);
+    if (false == isAllowed) {
+      String errorMsg = "Insufficient privileges to READER note. " +
+          "Allowed users or roles: " + allowed;
+      throw new ServiceException(errorMsg);
+    }
+
+    // Convert Paragraph to ParagraphInfo
+    List<ParagraphInfo> paragraphInfos = new ArrayList();
+    List<Paragraph> paragraphs = note.getParagraphs();
+    for (Iterator<Paragraph> iter = paragraphs.iterator(); iter.hasNext();) {
+      Paragraph paragraph = iter.next();
+      ParagraphInfo paraInfo = new ParagraphInfo();
+      paraInfo.setNoteId(noteId);
+      paraInfo.setParagraphId(paragraph.getId());
+      paraInfo.setParagraphTitle(paragraph.getTitle());
+      paraInfo.setParagraphText(paragraph.getText());
+      paragraphInfos.add(paraInfo);
+    }
+    return paragraphInfos;
   }
 
   private void broadcastNoteForms(Note note) {
