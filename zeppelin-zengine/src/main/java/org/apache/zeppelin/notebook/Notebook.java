@@ -183,7 +183,7 @@ public class Notebook {
     Note note =
         new Note(notePath, defaultInterpreterGroup, replFactory, interpreterSettingManager,
             paragraphJobListener, credentials, noteEventListeners);
-    saveNote(note, subject);
+    noteManager.addNote(note, subject);
     fireNoteCreateEvent(note, subject);
     return note;
   }

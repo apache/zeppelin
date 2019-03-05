@@ -64,6 +64,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 public class NotebookServiceTest {
 
@@ -129,6 +130,14 @@ public class NotebookServiceTest {
     assertEquals(1, note1.getParagraphCount());
     verify(callback).onSuccess(note1, context);
 
+    // create duplicated note
+    reset(callback);
+    Note note2 = notebookService.createNote("/folder_1/note1", "test", context, callback);
+    assertNull(note2);
+    ArgumentCaptor<Exception> exception = ArgumentCaptor.forClass(Exception.class);
+    verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
+    assertTrue(exception.getValue().getCause().getMessage().equals("Note /folder_1/note1 existed"));
+
     // list note
     reset(callback);
     List<NoteInfo> notesInfo = notebookService.listNotesInfo(false, context, callback);
@@ -157,7 +166,7 @@ public class NotebookServiceTest {
     assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
 
     // create another note
-    Note note2 = notebookService.createNote("/note2", "test", context, callback);
+    note2 = notebookService.createNote("/note2", "test", context, callback);
     assertEquals("note2", note2.getName());
     verify(callback).onSuccess(note2, context);
 
