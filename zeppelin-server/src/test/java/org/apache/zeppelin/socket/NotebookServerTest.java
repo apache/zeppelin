@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -35,15 +36,21 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
@@ -625,6 +632,67 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertEquals(2, list.get(0).size());
     assertEquals(list.get(0).get("jobUrl"), "jobUrl_value");
     assertEquals(list.get(0).get("jobLabel"), "jobLabel_value");
+  }
+
+  @Test
+  public void testGetParagraphList() {
+    Note note = null;
+
+    try {
+      note = notebook.createNote("note1", anonymous);
+      Paragraph p1 = note.addNewParagraph(anonymous);
+      p1.setText("%md start remote interpreter process");
+      p1.setAuthenticationInfo(anonymous);
+      notebookServer.getNotebook().saveNote(note, anonymous);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    String noteId = note.getId();
+    String user1Id = "user1", user2Id = "user2";
+
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+
+    // test user1 can get anonymous's note
+    List<ParagraphInfo> paragraphList0 = null;
+    try {
+      paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
+    assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
+
+    // test user1 cannot get user2's note
+    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    List<ParagraphInfo> paragraphList1 = null;
+    try {
+      paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
+    assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
+
+    // test user1 can get user2's shared note
+    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
+    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+    List<ParagraphInfo> paragraphList2 = null;
+    try {
+      paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
+    } catch (ServiceException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
+    assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
   }
 
   private NotebookSocket createWebSocket() {

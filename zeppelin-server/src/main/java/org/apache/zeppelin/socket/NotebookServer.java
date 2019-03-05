@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -55,6 +57,8 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -68,6 +72,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
+import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.service.ConfigurationService;
 import org.apache.zeppelin.service.JobManagerService;
@@ -1842,6 +1847,42 @@ public class NotebookServer extends WebSocketServlet
                 paragraph.getRuntimeInfos()));
       }
     }
+  }
+
+  @Override
+  public List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
+    Notebook notebook = getNotebook();
+    Note note = notebook.getNote(noteId);
+    if (null == note) {
+      throw new ServiceException("Not found this note : " + noteId);
+    }
+
+    // Check READER permission
+    Set<String> userAndRoles = new HashSet<>();
+    userAndRoles.add(user);
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    boolean isAllowed = notebookAuthorization.isReader(noteId, userAndRoles);
+    Set<String> allowed = notebookAuthorization.getReaders(noteId);
+    if (false == isAllowed) {
+      String errorMsg = "Insufficient privileges to READER note. " +
+          "Allowed users or roles: " + allowed;
+      throw new ServiceException(errorMsg);
+    }
+
+    // Convert Paragraph to ParagraphInfo
+    List<ParagraphInfo> paragraphInfos = new ArrayList();
+    List<Paragraph> paragraphs = note.getParagraphs();
+    for (Iterator<Paragraph> iter = paragraphs.iterator(); iter.hasNext();) {
+      Paragraph paragraph = iter.next();
+      ParagraphInfo paraInfo = new ParagraphInfo();
+      paraInfo.setNoteId(noteId);
+      paraInfo.setParagraphId(paragraph.getId());
+      paraInfo.setParagraphTitle(paragraph.getTitle());
+      paraInfo.setParagraphText(paragraph.getText());
+      paragraphInfos.add(paraInfo);
+    }
+    return paragraphInfos;
   }
 
   private void broadcastNoteForms(Note note) {

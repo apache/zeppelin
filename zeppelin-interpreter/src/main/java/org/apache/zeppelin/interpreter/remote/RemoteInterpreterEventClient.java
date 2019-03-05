@@ -28,13 +28,16 @@ import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +87,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       LOGGER.warn("Fail to getAllResources", e);
       return null;
     }
+  }
+
+  public synchronized List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
+    List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(user, noteId);
+    return paragraphList;
   }
 
   @Override
