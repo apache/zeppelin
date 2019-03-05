@@ -64,7 +64,8 @@ public class SparkVersion {
       this.minorVersion = Integer.parseInt(versions[1]);
       this.patchVersion = Integer.parseInt(versions[2]);
       // version is always 5 digits. (e.g. 2.0.0 -> 20000, 1.6.2 -> 10602)
-      version = Integer.parseInt(String.format("%d%02d%02d", majorVersion, minorVersion, patchVersion));
+      version = Integer.parseInt(String.format("%d%02d%02d", majorVersion, minorVersion,
+              patchVersion));
     } catch (Exception e) {
       logger.error("Can not recognize Spark version " + versionString +
           ". Assume it's a future release", e);
