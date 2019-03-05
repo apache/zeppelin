@@ -593,7 +593,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\"," + "\"progressUpdateIntervalMs\":500," +
         "\"config\":{},\"settings\":{}}]," +
-        "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
+        "\"name\": \"Test RuntimeInfos\",\"config\": " +
         "{}}}}";
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;

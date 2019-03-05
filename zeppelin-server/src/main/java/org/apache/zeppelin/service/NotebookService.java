@@ -149,7 +149,7 @@ public class NotebookService {
       callback.onSuccess(note, context);
       return note;
     } catch (IOException e) {
-      callback.onFailure(new IOException("Fail to create note", e), context);
+      callback.onFailure(e, context);
       return null;
     }
   }

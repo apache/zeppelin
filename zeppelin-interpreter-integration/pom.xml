@@ -143,9 +143,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkMode>always</forkMode>
-          <environmentVariables>
-            <ZEPPELIN_ZENGINE_TEST>1</ZEPPELIN_ZENGINE_TEST>
-          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>

@@ -1379,6 +1379,18 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     notebook.removeNote(note2.getId(), anonymous);
   }
 
+  @Test
+  public void testCreateDuplicateNote() throws Exception {
+    Note note1 = notebook.createNote("note1", anonymous);
+    try {
+      notebook.createNote("note1", anonymous);
+      fail("Should not be able to create same note 'note1'");
+    } catch (Exception e) {
+      assertTrue(e.getMessage().contains("Note '/note1' existed"));
+    } finally {
+      notebook.removeNote(note1.getId(), anonymous);
+    }
+  }
 
   @Test
   public void testGetAllNotesWithDifferentPermissions() throws IOException {
