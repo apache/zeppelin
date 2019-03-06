@@ -35,6 +35,12 @@ So, copying `notebook` and `conf` directory should be enough.
 
 ## Migration Guide
 
+### Upgrading from Zeppelin 0.8 to 0.9
+
+ - From 0.9, we change the notes file name structure ([ZEPPELIN-2619](https://issues.apache.org/jira/browse/ZEPPELIN-2619)). So when you upgrading zeppelin to 0.9, you need to upgrade note file. Here's steps you need to follow:
+   1. Backup your notes file in case the upgrade fails
+   2. Call `bin/upgrade-note.sh -d` to upgrade note, `-d` option means to delete the old note file, missing this option will keep the old file.  
+
 ### Upgrading from Zeppelin 0.7 to 0.8
 
  - From 0.8, we recommend to use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` instead of `zeppelin.pyspark.python` as `zeppelin.pyspark.python` only effects driver. You can use `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` as using them in spark.
