@@ -796,8 +796,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage",
         "org.apache.zeppelin.notebook.repo.GitNotebookRepo"),
     ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC("zeppelin.notebook.one.way.sync", false),
-    ZEPPELIN_NOTEBOOK_NEW_FORMAT_CONVERT("zeppelin.notebook.new_format.convert", false),
-    ZEPPELIN_NOTEBOOK_NEW_FORMAT_DELETE_OLD("zeppelin.notebook.new_format.delete_old", false),
     // whether by default note is public or private
     ZEPPELIN_NOTEBOOK_PUBLIC("zeppelin.notebook.public", true),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner",

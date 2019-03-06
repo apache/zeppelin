@@ -38,6 +38,7 @@ import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ public class Note implements JsonSerializable {
   private String name = "";
   private String id;
   private String defaultInterpreterGroup;
+  private String version;
   private Map<String, Object> noteParams = new LinkedHashMap<>();
   private Map<String, Input> noteForms = new LinkedHashMap<>();
   private Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -109,6 +111,7 @@ public class Note implements JsonSerializable {
     this.paragraphJobListener = paragraphJobListener;
     this.noteEventListeners = noteEventListener;
     this.credentials = credentials;
+    this.version = Util.getVersion();
     generateId();
 
     setCronSupported(ZeppelinConfiguration.create());
@@ -193,6 +196,10 @@ public class Note implements JsonSerializable {
       this.path = path;
     }
     this.name = getName(path);
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
   }
 
   public String getDefaultInterpreterGroup() {

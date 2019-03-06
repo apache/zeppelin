@@ -28,6 +28,7 @@ import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final String pullKey = "pullNoteIds";
   private static final String delDstKey = "delDstNoteIds";
 
-  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
+  private static final String DEFAULT_STORAGE = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
@@ -62,9 +63,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
     String allStorageClassNames = conf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
-      allStorageClassNames = defaultStorage;
+      allStorageClassNames = DEFAULT_STORAGE;
       LOGGER.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}",
-          defaultStorage);
+              DEFAULT_STORAGE);
     }
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
@@ -72,6 +73,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
           "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
+    // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
       if (notebookRepo != null) {
@@ -79,32 +81,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
         repos.add(notebookRepo);
       }
     }
+
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
-      LOGGER.info("No storage could be initialized, using default {} storage", defaultStorage);
-      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(defaultStorage);
+      LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
+      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(DEFAULT_STORAGE);
       defaultNotebookRepo.init(conf);
       repos.add(defaultNotebookRepo);
-    }
-
-    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
-    boolean convertToNew = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_CONVERT);
-    boolean deleteOld = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_DELETE_OLD);
-    if (convertToNew) {
-      NotebookRepo newNotebookRepo = repos.get(0);
-      OldNotebookRepo oldNotebookRepo =
-          PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
-      oldNotebookRepo.init(conf);
-      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
-      LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
-      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
-        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
-        note.setPath(note.getName());
-        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
-        if (deleteOld) {
-          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
-        }
-      }
     }
 
     // sync for anonymous mode on start
@@ -112,7 +95,50 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       try {
         sync(AuthenticationInfo.ANONYMOUS);
       } catch (IOException e) {
-        LOGGER.error("Couldn't sync on start ", e);
+        LOGGER.error("Couldn't sync anonymous mode on start ", e);
+      }
+    }
+  }
+
+  // Zeppelin change its note file name structure in 0.9.0, this is called when upgrading
+  // from 0.9.0 before to 0.9.0 after
+  public void convertNoteFiles(ZeppelinConfiguration conf, boolean deleteOld) throws IOException {
+    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
+    for (int i = 0; i < repos.size(); ++i) {
+      NotebookRepo newNotebookRepo = repos.get(i);
+      OldNotebookRepo oldNotebookRepo =
+              PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
+      oldNotebookRepo.init(conf);
+      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
+      LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
+      LOGGER.info("Delete old note: " + deleteOld);
+      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
+        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
+        note.setPath(note.getName());
+        note.setVersion(Util.getVersion());
+        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+        if (newNotebookRepo instanceof NotebookRepoWithVersionControl) {
+          ((NotebookRepoWithVersionControl) newNotebookRepo).checkpoint(
+                  note.getId(),
+                  note.getPath(),
+                  "Upgrade note '" + note.getName() + "' to " + Util.getVersion(),
+                  AuthenticationInfo.ANONYMOUS);
+        }
+        if (deleteOld) {
+          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
+          LOGGER.info("Remote old note: " + note.getId());
+          // TODO(zjffdu) no commit when deleting note, This is an issue of
+          // NotebookRepoWithVersionControl
+          /**
+          if (oldNotebookRepo instanceof NotebookRepoWithVersionControl) {
+            ((NotebookRepoWithVersionControl) oldNotebookRepo).checkpoint(
+                    note.getId(),
+                    note.getName(),
+                    "Delete note '" + note.getName() + "' during note upgrade",
+                    AuthenticationInfo.ANONYMOUS);
+          }
+           **/
+        }
       }
     }
   }
