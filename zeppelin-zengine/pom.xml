@@ -594,20 +594,6 @@
             </exclusion>
           </exclusions>
         </dependency>
-
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-interpreter</artifactId>
-          <version>${project.version}</version>
-          <scope>test</scope>
-          <exclusions>
-            <!-- It is fine to exclude zeppelin-python, because it is only used at runtime when launching interpreter -->
-            <exclusion>
-              <groupId>org.apache.zeppelin</groupId>
-              <artifactId>zeppelin-python</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
       </dependencies>
     </profile>
 
