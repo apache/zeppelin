@@ -218,12 +218,14 @@ public class RemoteInterpreterServer extends Thread
   public void shutdown() throws TException {
     logger.info("Shutting down...");
     if (interpreterGroup != null) {
-      for (List<Interpreter> session : interpreterGroup.values()) {
-        for (Interpreter interpreter : session) {
-          try {
-            interpreter.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+      synchronized (interpreterGroup) {
+        for (List<Interpreter> session : interpreterGroup.values()) {
+          for (Interpreter interpreter : session) {
+            try {
+              interpreter.close();
+            } catch (InterpreterException e) {
+              logger.warn("Fail to close interpreter", e);
+            }
           }
         }
       }
@@ -246,8 +248,11 @@ public class RemoteInterpreterServer extends Thread
     }
 
     if (server.isServing()) {
+      logger.info("Force shutting down");
       System.exit(0);
     }
+
+    logger.info("Shutting down");
   }
 
   public int getPort() {
@@ -418,27 +423,27 @@ public class RemoteInterpreterServer extends Thread
     }
 
     // close interpreters
-    List<Interpreter> interpreters;
-    synchronized (interpreterGroup) {
-      interpreters = interpreterGroup.get(sessionId);
-    }
-    if (interpreters != null) {
-      Iterator<Interpreter> it = interpreters.iterator();
-      while (it.hasNext()) {
-        Interpreter inp = it.next();
-        if (inp.getClassName().equals(className)) {
-          try {
-            inp.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+    if (interpreterGroup != null) {
+      synchronized (interpreterGroup) {
+        List<Interpreter> interpreters = interpreterGroup.get(sessionId);
+        if (interpreters != null) {
+          Iterator<Interpreter> it = interpreters.iterator();
+          while (it.hasNext()) {
+            Interpreter inp = it.next();
+            if (inp.getClassName().equals(className)) {
+              try {
+                inp.close();
+              } catch (InterpreterException e) {
+                logger.warn("Fail to close interpreter", e);
+              }
+              it.remove();
+              break;
+            }
           }
-          it.remove();
-          break;
         }
       }
     }
   }
-
 
   @Override
   public RemoteInterpreterResult interpret(String sessionId, String className, String st,
