@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.AbstractInterpreter;
@@ -94,10 +95,10 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {
       if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
-        throw new InterpreterException(e);
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       }
       logger.error("Invocation target exception", e);
-      String msg = e.getMessage()
+      String msg = e.getCause().getMessage()
               + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
       return new InterpreterResult(Code.ERROR, msg);
     }
