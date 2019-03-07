@@ -56,6 +56,10 @@ public class Spark1Shims extends SparkShims {
     if (obj instanceof DataFrame) {
       DataFrame df = (DataFrame) obj;
       String[] columns = df.columns();
+      // DDL will empty DataFrame
+      if (columns.length == 0) {
+        return "";
+      }
       // fetch maxResult+1 rows so that we can check whether it is larger than zeppelin.spark.maxResult
       List<Row> rows = df.takeAsList(maxResult + 1);
       StringBuilder msg = new StringBuilder();

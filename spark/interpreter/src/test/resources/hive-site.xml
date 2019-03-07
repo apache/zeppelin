@@ -1,0 +1,7 @@
+<configuration>
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>${user.home}/hive/warehouse</value>
+        <description>location of default database for the warehouse</description>
+    </property>
+</configuration>
