@@ -47,8 +47,10 @@ public class NewSparkSqlInterpreterTest {
     p.setProperty("spark.app.name", "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "false");
-    p.setProperty("zeppelin.spark.sqlInterpreter.stacktrace", "false");
-    p.setProperty("zeppelin.spark.useNew", "true");
+    p.setProperty("zeppelin.spark.sql.stacktrace", "true");
+   p.setProperty("zeppelin.spark.useNew", "true");
+    p.setProperty("zeppelin.spark.useHiveContext", "true");
+
     intpGroup = new InterpreterGroup();
     sparkInterpreter = new SparkInterpreter(p);
     sparkInterpreter.setInterpreterGroup(intpGroup);
@@ -60,10 +62,10 @@ public class NewSparkSqlInterpreterTest {
     intpGroup.get("session_1").add(sqlInterpreter);
 
     context = new InterpreterContext("note", "id", null, "title", "text", new AuthenticationInfo(),
-        new HashMap<String, Object>(), new GUI(), new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
+            new HashMap<String, Object>(), new GUI(), new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("id"),
+            new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(null));
 
     InterpreterContext.set(context);
 
@@ -109,8 +111,8 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.interpret("case class Person(name:String, age:Int)", context);
     sparkInterpreter.interpret("case class People(group:String, person:Person)", context);
     sparkInterpreter.interpret(
-        "val gr = sc.parallelize(Seq(People(\"g1\", Person(\"moon\",33)), People(\"g2\", Person(\"sun\",11))))",
-        context);
+            "val gr = sc.parallelize(Seq(People(\"g1\", Person(\"moon\",33)), People(\"g2\", Person(\"sun\",11))))",
+            context);
     if (isDataFrameSupported()) {
       sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
     } else {
@@ -125,33 +127,33 @@ public class NewSparkSqlInterpreterTest {
     sparkInterpreter.interpret("import org.apache.spark.sql._", context);
     if (isDataFrameSupported()) {
       sparkInterpreter.interpret(
-          "import org.apache.spark.sql.types.{StructType,StructField,StringType,IntegerType}",
-          context);
+              "import org.apache.spark.sql.types.{StructType,StructField,StringType,IntegerType}",
+              context);
     }
     sparkInterpreter.interpret(
-        "def toInt(s:String): Any = {try { s.trim().toInt} catch {case e:Exception => null}}",
-        context);
+            "def toInt(s:String): Any = {try { s.trim().toInt} catch {case e:Exception => null}}",
+            context);
     sparkInterpreter.interpret(
-        "val schema = StructType(Seq(StructField(\"name\", StringType, false),StructField(\"age\" , IntegerType, true),StructField(\"other\" , StringType, false)))",
-        context);
+            "val schema = StructType(Seq(StructField(\"name\", StringType, false),StructField(\"age\" , IntegerType, true),StructField(\"other\" , StringType, false)))",
+            context);
     sparkInterpreter.interpret(
-        "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))",
-        context);
+            "val csv = sc.parallelize(Seq((\"jobs, 51, apple\"), (\"gates, , microsoft\")))",
+            context);
     sparkInterpreter.interpret(
-        "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
-        context);
+            "val raw = csv.map(_.split(\",\")).map(p => Row(p(0),toInt(p(1)),p(2)))",
+            context);
     if (isDataFrameSupported()) {
       sparkInterpreter.interpret("val people = sqlContext.createDataFrame(raw, schema)",
-          context);
+              context);
       sparkInterpreter.interpret("people.toDF.registerTempTable(\"people\")", context);
     } else {
       sparkInterpreter.interpret("val people = sqlContext.applySchema(raw, schema)",
-          context);
+              context);
       sparkInterpreter.interpret("people.registerTempTable(\"people\")", context);
     }
 
     InterpreterResult ret = sqlInterpreter.interpret(
-        "select name, age from people where name = 'gates'", context);
+            "select name, age from people where name = 'gates'", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(Type.TABLE, ret.message().get(0).getType());
     assertEquals("name\tage\ngates\tnull\n", ret.message().get(0).getData());
@@ -161,8 +163,8 @@ public class NewSparkSqlInterpreterTest {
   public void testMaxResults() throws InterpreterException {
     sparkInterpreter.interpret("case class P(age:Int)", context);
     sparkInterpreter.interpret(
-        "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10),P(11)))",
-        context);
+            "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8),P(9),P(10),P(11)))",
+            context);
     if (isDataFrameSupported()) {
       sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
     } else {
@@ -172,5 +174,38 @@ public class NewSparkSqlInterpreterTest {
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
+  }
+
+  @Test
+  public void testDDL() throws InterpreterException {
+    InterpreterResult ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // spark 1.x will still return DataFrame with non-empty columns.
+    // org.apache.spark.sql.DataFrame = [result: string]
+    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
+      assertTrue(ret.message().isEmpty());
+    } else {
+      assertEquals(Type.TABLE, ret.message().get(0).getType());
+      assertEquals("result\n", ret.message().get(0).getData());
+    }
+
+    // create the same table again
+    ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(1, ret.message().size());
+    assertEquals(Type.TEXT, ret.message().get(0).getType());
+    assertTrue(ret.message().get(0).getData().contains("already exists"));
+
+    // invalid DDL
+    ret = sqlInterpreter.interpret("create temporary function udf1 as 'org.apache.zeppelin.UDF'", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(1, ret.message().size());
+    assertEquals(Type.TEXT, ret.message().get(0).getType());
+
+    // spark 1.x could not detect the root cause correctly
+    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
+      assertTrue(ret.message().get(0).getData().contains("ClassNotFoundException") ||
+              ret.message().get(0).getData().contains("Can not load class"));
+    }
   }
 }

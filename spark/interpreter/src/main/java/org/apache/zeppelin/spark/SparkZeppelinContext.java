@@ -128,6 +128,10 @@ public class SparkZeppelinContext extends BaseZeppelinContext {
         | IllegalArgumentException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
+    // DDL will empty DataFrame
+    if (columns.isEmpty()) {
+      return "";
+    }
 
     StringBuilder msg = new StringBuilder();
     msg.append("%table ");
