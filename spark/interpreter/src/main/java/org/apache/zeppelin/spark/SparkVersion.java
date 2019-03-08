@@ -134,8 +134,9 @@ public class SparkVersion {
   }
 
   public boolean newerThanEqualsPatchVersion(SparkVersion versionToCompare) {
-    return version / 100 == versionToCompare.version / 100 &&
-            version % 100 >= versionToCompare.version % 100;
+    return majorVersion == versionToCompare.majorVersion &&
+            minorVersion == versionToCompare.minorVersion &&
+            patchVersion >= versionToCompare.patchVersion;
   }
 
   public boolean olderThan(SparkVersion versionToCompare) {
