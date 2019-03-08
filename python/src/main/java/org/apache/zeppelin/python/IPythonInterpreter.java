@@ -326,6 +326,11 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     if (watchDog != null) {
       LOGGER.debug("Kill IPython Process");
       ipythonClient.stop(StopRequest.newBuilder().build());
+      try {
+        ipythonClient.shutdown();
+      } catch (InterruptedException e) {
+        LOGGER.warn("Fail to shutdown IPythonClient");
+      }
       watchDog.destroyProcess();
       gatewayServer.shutdown();
     }
