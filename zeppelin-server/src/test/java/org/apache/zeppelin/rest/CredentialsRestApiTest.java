@@ -27,8 +27,9 @@ import java.nio.file.Files;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.zeppelin.service.NoSecurityService;
-import org.apache.zeppelin.service.SecurityService;
+
+import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.service.NoAuthenticationService;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.junit.Before;
@@ -39,14 +40,14 @@ public class CredentialsRestApiTest {
 
   private CredentialRestApi credentialRestApi;
   private Credentials credentials;
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
 
   @Before
   public void setUp() throws IOException {
     credentials =
         new Credentials(false, Files.createTempFile("credentials", "test").toString(), null);
-    securityService = new NoSecurityService();
-    credentialRestApi = new CredentialRestApi(credentials, securityService);
+    authenticationService = new NoAuthenticationService();
+    credentialRestApi = new CredentialRestApi(credentials, authenticationService);
   }
 
   @Test

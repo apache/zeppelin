@@ -21,17 +21,39 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface SecurityService {
+/**
+ * Interface for Zeppelin Security.
+ * //TODO(zjffdu) rename it to AuthenticationService
+ */
+public interface AuthenticationService {
 
+  /**
+   * Get current principal/username.
+   * @return
+   */
   String getPrincipal();
 
+  /**
+   * Get roles associated with current principal
+   * @return
+   */
   Set<String> getAssociatedRoles();
 
   Collection getRealmsList();
 
   boolean isAuthenticated();
 
+  /**
+   * Used for user auto-completion
+   * @param searchText
+   * @param numUsersToFetch
+   * @return
+   */
   List<String> getMatchedUsers(String searchText, int numUsersToFetch);
 
+  /**
+   * Used for role auto-completion
+   * @return
+   */
   List<String> getMatchedRoles();
 }

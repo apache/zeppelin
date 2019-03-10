@@ -24,14 +24,10 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.utils.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,17 +40,17 @@ import sun.security.acl.PrincipalImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(org.apache.shiro.SecurityUtils.class)
-public class ShiroSecurityServiceTest {
+public class ShiroAuthenticationServiceTest {
   @Mock
   org.apache.shiro.subject.Subject subject;
 
-  ShiroSecurityService shiroSecurityService;
+  ShiroAuthenticationService shiroSecurityService;
   ZeppelinConfiguration zeppelinConfiguration;
 
   @Before
   public void setup() throws Exception {
     zeppelinConfiguration = ZeppelinConfiguration.create();
-    shiroSecurityService = new ShiroSecurityService(zeppelinConfiguration);
+    shiroSecurityService = new ShiroAuthenticationService(zeppelinConfiguration);
   }
 
   @Test

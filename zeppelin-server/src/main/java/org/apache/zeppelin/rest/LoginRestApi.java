@@ -50,7 +50,7 @@ import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosToken;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,13 +65,13 @@ public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
   private static final Gson gson = new Gson();
   private ZeppelinConfiguration zConf;
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
 
   @Inject
   public LoginRestApi(Notebook notebook,
-      SecurityService securityService) {
+      AuthenticationService authenticationService) {
     this.zConf = notebook.getConf();
-    this.securityService = securityService;
+    this.authenticationService = authenticationService;
   }
 
   @GET
@@ -126,7 +126,7 @@ public class LoginRestApi {
   }
 
   private KerberosRealm getKerberosRealm() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -143,7 +143,7 @@ public class LoginRestApi {
   }
 
   private KnoxJwtRealm getJTWRealm() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -160,7 +160,7 @@ public class LoginRestApi {
   }
 
   private boolean isKnoxSSOEnabled() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -181,8 +181,8 @@ public class LoginRestApi {
       currentUser.getSession(true);
       currentUser.login(token);
 
-      Set<String> roles = securityService.getAssociatedRoles();
-      String principal = securityService.getPrincipal();
+      Set<String> roles = authenticationService.getAssociatedRoles();
+      String principal = authenticationService.getPrincipal();
       String ticket;
       if ("anonymous".equals(principal)) {
         ticket = "anonymous";
@@ -283,7 +283,7 @@ public class LoginRestApi {
 
   private void logoutCurrentUser() {
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
-    TicketContainer.instance.removeTicket(securityService.getPrincipal());
+    TicketContainer.instance.removeTicket(authenticationService.getPrincipal());
     currentUser.getSession().stop();
     currentUser.logout();
   }
