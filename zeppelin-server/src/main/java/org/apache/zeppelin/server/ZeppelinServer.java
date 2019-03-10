@@ -50,14 +50,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.service.AdminService;
-import org.apache.zeppelin.service.ConfigurationService;
-import org.apache.zeppelin.service.InterpreterService;
-import org.apache.zeppelin.service.JobManagerService;
-import org.apache.zeppelin.service.NoSecurityService;
-import org.apache.zeppelin.service.NotebookService;
-import org.apache.zeppelin.service.SecurityService;
-import org.apache.zeppelin.service.ShiroSecurityService;
+import org.apache.zeppelin.service.*;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
@@ -145,10 +139,10 @@ public class ZeppelinServer extends ResourceConfig {
             bind(notebookAuthorization).to(NotebookAuthorization.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
+              bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
             } else {
               // TODO(jl): Will be added more type
-              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
+              bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
             }
             bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
             bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);

@@ -56,25 +56,27 @@ import org.apache.zeppelin.realm.LdapRealm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Tools for securing Zeppelin. */
-public class ShiroSecurityService implements SecurityService {
+/**
+ * AuthenticationService which use Apache Shiro.
+ */
+public class ShiroAuthenticationService implements AuthenticationService {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(ShiroSecurityService.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(ShiroAuthenticationService.class);
 
-  private final ZeppelinConfiguration zeppelinConfiguration;
+  private final ZeppelinConfiguration conf;
 
   @Inject
-  public ShiroSecurityService(ZeppelinConfiguration zeppelinConfiguration) throws Exception {
-    LOGGER.info("NoSecurityService is initialized");
-    this.zeppelinConfiguration = zeppelinConfiguration;
-    if (zeppelinConfiguration.getShiroPath().length() > 0) {
+  public ShiroAuthenticationService(ZeppelinConfiguration conf) throws Exception {
+    LOGGER.info("ShiroAuthenticationService is initialized");
+    this.conf = conf;
+    if (conf.getShiroPath().length() > 0) {
       try {
         Collection<Realm> realms =
             ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
                 .getRealms();
         if (realms.size() > 1) {
           Boolean isIniRealmEnabled = false;
-          for (Object realm : realms) {
+          for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
               isIniRealmEnabled = true;
               break;
@@ -87,7 +89,7 @@ public class ShiroSecurityService implements SecurityService {
           }
         }
       } catch (UnavailableSecurityManagerException e) {
-        LOGGER.error("Failed to initialise shiro configuraion", e);
+        LOGGER.error("Failed to initialise shiro configuration", e);
       }
     }
   }
@@ -104,7 +106,7 @@ public class ShiroSecurityService implements SecurityService {
     String principal;
     if (subject.isAuthenticated()) {
       principal = extractPrincipal(subject);
-      if (zeppelinConfiguration.isUsernameForceLowerCase()) {
+      if (conf.isUsernameForceLowerCase()) {
         LOGGER.debug("Converting principal name " + principal
             + " to lower case:" + principal.toLowerCase());
         principal = principal.toLowerCase();
@@ -155,18 +157,18 @@ public class ShiroSecurityService implements SecurityService {
       Collection<Realm> realmsList = (Collection<Realm>) getRealmsList();
       if (realmsList != null) {
         for (Realm realm : realmsList) {
-          String name = realm.getClass().getName();
-          LOGGER.debug("RealmClass.getName: " + name);
-          if (name.equals("org.apache.shiro.realm.text.IniRealm")) {
+          String realClassName = realm.getClass().getName();
+          LOGGER.debug("RealmClass.getName: " + realClassName);
+          if (realClassName.equals("org.apache.shiro.realm.text.IniRealm")) {
             usersList.addAll(getUserList((IniRealm) realm));
-          } else if (name.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
+          } else if (realClassName.equals("org.apache.zeppelin.realm.LdapGroupRealm")) {
             usersList.addAll(getUserList((JndiLdapRealm) realm, searchText, numUsersToFetch));
-          } else if (name.equals("org.apache.zeppelin.realm.LdapRealm")) {
+          } else if (realClassName.equals("org.apache.zeppelin.realm.LdapRealm")) {
             usersList.addAll(getUserList((LdapRealm) realm, searchText, numUsersToFetch));
-          } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
+          } else if (realClassName.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
             usersList.addAll(
                 getUserList((ActiveDirectoryGroupRealm) realm, searchText, numUsersToFetch));
-          } else if (name.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
+          } else if (realClassName.equals("org.apache.shiro.realm.jdbc.JdbcRealm")) {
             usersList.addAll(getUserList((JdbcRealm) realm));
           }
         }

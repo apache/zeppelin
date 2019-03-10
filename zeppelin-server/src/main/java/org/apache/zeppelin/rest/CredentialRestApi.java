@@ -33,7 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
 import org.apache.zeppelin.user.UsernamePassword;
@@ -47,13 +47,13 @@ import org.slf4j.LoggerFactory;
 public class CredentialRestApi {
   Logger logger = LoggerFactory.getLogger(CredentialRestApi.class);
   private Credentials credentials;
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
   private Gson gson = new Gson();
 
   @Inject
-  public CredentialRestApi(Credentials credentials, SecurityService securityService) {
+  public CredentialRestApi(Credentials credentials, AuthenticationService authenticationService) {
     this.credentials = credentials;
-    this.securityService = securityService;
+    this.authenticationService = authenticationService;
   }
 
   /**
@@ -78,7 +78,7 @@ public class CredentialRestApi {
       return new JsonResponse(Status.BAD_REQUEST).build();
     }
 
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     logger.info("Update credentials for user {} entity {}", user, entity);
     UserCredentials uc = credentials.getUserCredentials(user);
     uc.putUsernamePassword(entity, new UsernamePassword(username, password));
@@ -94,7 +94,7 @@ public class CredentialRestApi {
    */
   @GET
   public Response getCredentials() throws IllegalArgumentException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     logger.info("getCredentials credentials for user {} ", user);
     UserCredentials uc = credentials.getUserCredentials(user);
     return new JsonResponse<>(Status.OK, uc).build();
@@ -109,7 +109,7 @@ public class CredentialRestApi {
    */
   @DELETE
   public Response removeCredentials() throws IOException, IllegalArgumentException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     logger.info("removeCredentials credentials for user {} ", user);
     UserCredentials uc = credentials.removeUserCredentials(user);
     if (uc == null) {
@@ -130,7 +130,7 @@ public class CredentialRestApi {
   @Path("{entity}")
   public Response removeCredentialEntity(@PathParam("entity") String entity)
       throws IOException, IllegalArgumentException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     logger.info("removeCredentialEntity for user {} entity {}", user, entity);
     if (!credentials.removeCredentialEntity(user, entity)) {
       return new JsonResponse(Status.NOT_FOUND).build();
