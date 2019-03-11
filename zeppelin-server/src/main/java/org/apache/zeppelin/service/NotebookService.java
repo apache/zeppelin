@@ -700,7 +700,7 @@ public class NotebookService {
     }
 
     NotebookRepoWithVersionControl.Revision revision =
-        notebook.checkpointNote(noteId, note.getName(), commitMessage, context.getAutheInfo());
+        notebook.checkpointNote(noteId, note.getPath(), commitMessage, context.getAutheInfo());
     callback.onSuccess(revision, context);
     return revision;
   }
