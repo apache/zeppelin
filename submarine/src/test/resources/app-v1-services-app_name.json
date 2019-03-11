@@ -1,0 +1,145 @@
+{
+  "name":"hzliuxun-tb",
+  "id":"application_1550650473498_0020",
+  "artifact":{
+    "type":"DOCKER"
+  },
+  "lifetime":-1,
+  "components":[
+    {
+      "name":"tensorboard",
+      "dependencies":[
+
+      ],
+      "artifact":{
+        "id":"10.120.196.232:5000/dockerfile-cpu-tf1.8.0-with-models:1.1",
+        "type":"DOCKER"
+      },
+      "resource":{
+        "cpus":1,
+        "memory":"4096",
+        "additional":{
+          "memory-mb":{
+            "value":4096,
+            "unit":"Mi",
+            "attributes":{
+
+            },
+            "tags":[
+
+            ]
+          },
+          "yarn.io/gpu":{
+            "value":0,
+            "unit":"",
+            "attributes":{
+
+            },
+            "tags":[
+
+            ]
+          },
+          "vcores":{
+            "value":1,
+            "unit":"",
+            "attributes":{
+
+            },
+            "tags":[
+
+            ]
+          }
+        }
+      },
+      "state":"STABLE",
+      "configuration":{
+        "properties":{
+
+        },
+        "env":{
+          "_TASK_TYPE":"TENSORBOARD",
+          "_TASK_INDEX":"${COMPONENT_ID}",
+          "DOCKER_JAVA_HOME":"/usr/lib/jvm/java-8-openjdk-amd64/jre",
+          "TZ":"Asia/Shanghai",
+          "YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK":"bridge",
+          "DOCKER_HADOOP_HDFS_HOME":"/hadoop-current",
+          "YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS":"/etc/passwd:/etc/passwd:ro,/etc/krb5.conf:/etc/krb5.conf:ro"
+        },
+        "files":[
+          {
+            "type":"STATIC",
+            "properties":{
+
+            },
+            "dest_file":"core-site.xml",
+            "src_file":"hdfs://mldev/user/bdms_hzliuxun/submarine/jobs/hzliuxun-tb/staging/core-site.xml"
+          },
+          {
+            "type":"STATIC",
+            "properties":{
+
+            },
+            "dest_file":"hdfs-site.xml",
+            "src_file":"hdfs://mldev/user/bdms_hzliuxun/submarine/jobs/hzliuxun-tb/staging/hdfs-site.xml"
+          },
+          {
+            "type":"STATIC",
+            "properties":{
+
+            },
+            "dest_file":"run-TENSORBOARD.sh",
+            "src_file":"hdfs://mldev/user/bdms_hzliuxun/submarine/jobs/hzliuxun-tb/staging/TENSORBOARD-launch-script1579958783280532432.sh"
+          }
+        ]
+      },
+      "quicklinks":[
+
+      ],
+      "containers":[
+        {
+          "id":"container_e324_1550650473498_0020_01_000002",
+          "ip":"172.18.0.3",
+          "hostname":"tensorboard-0.hzliuxun-tb.bdms-hzliuxun.submarinecluster",
+          "state":"READY",
+          "launch_time":1551419055511,
+          "bare_host":"ml2.jd.163.org",
+          "component_instance_name":"tensorboard-0"
+        }
+      ],
+      "launch_command":"./run-TENSORBOARD.sh",
+      "number_of_containers":1,
+      "decommissioned_instances":[
+
+      ],
+      "run_privileged_container":false,
+      "restart_policy":"NEVER"
+    }
+  ],
+  "configuration":{
+    "properties":{
+
+    },
+    "env":{
+      "DOCKER_JAVA_HOME":"/usr/lib/jvm/java-8-openjdk-amd64/jre",
+      "TZ":"Asia/Shanghai",
+      "YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK":"bridge",
+      "DOCKER_HADOOP_HDFS_HOME":"/hadoop-current",
+      "YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS":"/etc/passwd:/etc/passwd:ro,/etc/krb5.conf:/etc/krb5.conf:ro"
+    },
+    "files":[
+
+    ]
+  },
+  "state":"STARTED",
+  "quicklinks":{
+    "Tensorboard":"http://tensorboard-0.hzliuxun-tb.hadoop.submarinecluster:6006"
+  },
+  "version":"1551419039827",
+  "kerberos_principal":{
+    "principal_name":"bdms_hzliuxun/dev@BDMS.163.COM",
+    "keytab":"hdfs://mldev/user/bdms_hzliuxun/submarine/jobs/hzliuxun-tb/staging/hzliuxun.keytab"
+  },
+  "dependencies":[
+
+  ]
+}

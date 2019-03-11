@@ -136,20 +136,28 @@ public class YarnClient {
   public void deleteService(String serviceName) {
     String appUrl = this.yarnWebHttpAddr + "/app/v1/services/" + serviceName
         + "?_=" + System.currentTimeMillis();
+
+    InputStream inputStream = null;
     try {
       HttpResponse response = callRestUrl(appUrl, principal, HTTP.DELETE);
-      InputStream is = response.getEntity().getContent();
-      String result = new BufferedReader(new InputStreamReader(is))
+      inputStream = response.getEntity().getContent();
+      String result = new BufferedReader(new InputStreamReader(inputStream))
           .lines().collect(Collectors.joining(System.lineSeparator()));
       if (response.getStatusLine().getStatusCode() != 200 /*success*/) {
         LOGGER.warn("Status code " + response.getStatusLine().getStatusCode());
         LOGGER.warn("message is :" + Arrays.deepToString(response.getAllHeaders()));
         LOGGER.warn("result：\n" + result);
       }
-
-      // parse app status json
     } catch (Exception exp) {
       exp.printStackTrace();
+    } finally {
+      try {
+        if (null != inputStream) {
+          inputStream.close();
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
   }
 
@@ -160,10 +168,11 @@ public class YarnClient {
     String appUrl = this.yarnWebHttpAddr + "/app/v1/services/" + appIdOrName
         + "?_=" + System.currentTimeMillis();
 
+    InputStream inputStream = null;
     try {
       HttpResponse response = callRestUrl(appUrl, principal, HTTP.GET);
-      InputStream is = response.getEntity().getContent();
-      String result = new BufferedReader(new InputStreamReader(is))
+      inputStream = response.getEntity().getContent();
+      String result = new BufferedReader(new InputStreamReader(inputStream))
           .lines().collect(Collectors.joining(System.lineSeparator()));
       if (response.getStatusLine().getStatusCode() != 200 /*success*/
           && response.getStatusLine().getStatusCode() != 404 /*Not found*/) {
@@ -176,6 +185,14 @@ public class YarnClient {
       mapStatus = parseAppServices(result);
     } catch (Exception exp) {
       exp.printStackTrace();
+    } finally {
+      try {
+        if (null != inputStream) {
+          inputStream.close();
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
 
     return mapStatus;
@@ -190,10 +207,11 @@ public class YarnClient {
     String appUrl = this.yarnWebHttpAddr + "/ws/v1/cluster/apps/" + appId
         + "?_=" + System.currentTimeMillis();
 
+    InputStream inputStream = null;
     try {
       HttpResponse response = callRestUrl(appUrl, principal, HTTP.GET);
-      InputStream is = response.getEntity().getContent();
-      String result = new BufferedReader(new InputStreamReader(is))
+      inputStream = response.getEntity().getContent();
+      String result = new BufferedReader(new InputStreamReader(inputStream))
           .lines().collect(Collectors.joining(System.lineSeparator()));
       if (response.getStatusLine().getStatusCode() != 200 /*success*/) {
         LOGGER.warn("Status code " + response.getStatusLine().getStatusCode());
@@ -206,6 +224,14 @@ public class YarnClient {
       return appAttempts;
     } catch (Exception exp) {
       exp.printStackTrace();
+    } finally {
+      try {
+        if (null != inputStream) {
+          inputStream.close();
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
 
     return appAttempts;
@@ -245,10 +271,11 @@ public class YarnClient {
     String appUrl = this.yarnWebHttpAddr + "/ws/v1/cluster/apps/" + appId
         + "/appattempts?_=" + System.currentTimeMillis();
 
+    InputStream inputStream = null;
     try {
       HttpResponse response = callRestUrl(appUrl, principal, HTTP.GET);
-      InputStream is = response.getEntity().getContent();
-      String result = new BufferedReader(new InputStreamReader(is))
+      inputStream = response.getEntity().getContent();
+      String result = new BufferedReader(new InputStreamReader(inputStream))
           .lines().collect(Collectors.joining(System.lineSeparator()));
       if (response.getStatusLine().getStatusCode() != 200 /*success*/) {
         LOGGER.warn("Status code " + response.getStatusLine().getStatusCode());
@@ -260,6 +287,14 @@ public class YarnClient {
       appAttempts = parseAppAttempts(result);
     } catch (Exception exp) {
       exp.printStackTrace();
+    } finally {
+      try {
+        if (null != inputStream) {
+          inputStream.close();
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
 
     return appAttempts;
@@ -272,10 +307,11 @@ public class YarnClient {
     String appUrl = this.yarnWebHttpAddr + "/ws/v1/cluster/apps/" + appId
         + "/appattempts/" + appAttemptId + "/containers?_=" + System.currentTimeMillis();
 
+    InputStream inputStream = null;
     try {
       HttpResponse response = callRestUrl(appUrl, principal, HTTP.GET);
-      InputStream is = response.getEntity().getContent();
-      String result = new BufferedReader(new InputStreamReader(is))
+      inputStream = response.getEntity().getContent();
+      String result = new BufferedReader(new InputStreamReader(inputStream))
           .lines().collect(Collectors.joining(System.lineSeparator()));
       if (response.getStatusLine().getStatusCode() != 200 /*success*/) {
         LOGGER.warn("Status code " + response.getStatusLine().getStatusCode());
@@ -287,6 +323,14 @@ public class YarnClient {
       appAttemptsContainers = parseAppAttemptsContainers(result);
     } catch (Exception exp) {
       exp.printStackTrace();
+    } finally {
+      try {
+        if (null != inputStream) {
+          inputStream.close();
+        }
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
     }
 
     return appAttemptsContainers;

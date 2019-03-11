@@ -1,0 +1,60 @@
+{
+  "app": {
+    "id": "application_1550650473498_0015",
+    "user": "bdms_hzliuxun",
+    "name": "hzliuxun-2e3fdwarx",
+    "queue": "default",
+    "state": "FINISHED",
+    "finalStatus": "SUCCEEDED",
+    "progress": 100,
+    "trackingUI": "History",
+    "trackingUrl": "http://ml2.jd.163.org:8088/proxy/application_1550650473498_0015/",
+    "diagnostics": "",
+    "clusterId": 1550650473498,
+    "applicationType": "yarn-service",
+    "applicationTags": "name: hzliuxun-2e3fdwarx",
+    "priority": 0,
+    "startedTime": 1551346859832,
+    "launchTime": 1551346860606,
+    "finishedTime": 1551347003968,
+    "elapsedTime": 144136,
+    "amContainerLogs": "http://ml2.jd.163.org:8042/node/containerlogs/container_e324_1550650473498_0015_01_000001/bdms_hzliuxun",
+    "amHostHttpAddress": "ml2.jd.163.org:8042",
+    "amRPCAddress": "ml2.jd.163.org:34038",
+    "masterNodeId": "ml2.jd.163.org:36797",
+    "allocatedMB": -1,
+    "allocatedVCores": -1,
+    "reservedMB": -1,
+    "reservedVCores": -1,
+    "runningContainers": -1,
+    "memorySeconds": 700242,
+    "vcoreSeconds": 300,
+    "queueUsagePercentage": 0,
+    "clusterUsagePercentage": 0,
+    "resourceSecondsMap": {
+      "entry": {
+        "key": "vcores",
+        "value": "300"
+      }
+    },
+    "preemptedResourceMB": 0,
+    "preemptedResourceVCores": 0,
+    "numNonAMContainerPreempted": 0,
+    "numAMContainerPreempted": 0,
+    "preemptedMemorySeconds": 0,
+    "preemptedVcoreSeconds": 0,
+    "preemptedResourceSecondsMap": {},
+    "logAggregationStatus": "SUCCEEDED",
+    "unmanagedApplication": false,
+    "amNodeLabelExpression": "",
+    "timeouts": {
+      "timeout": [
+        {
+          "type": "LIFETIME",
+          "expiryTime": "UNLIMITED",
+          "remainingTimeInSeconds": -1
+        }
+      ]
+    }
+  }
+}

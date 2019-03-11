@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -56,12 +57,6 @@ public class HdfsClient {
 
   private static Pattern REPL_PATTERN =
       Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
-
-  public static final String DEFAULT_STORAGE
-      = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
-  public static final String HDFS_STORAGE
-      = "org.apache.zeppelin.notebook.repo.FileSystemNotebookRepo";
-  private String noteStorageClassName = "";
 
   public HdfsClient(Properties properties) {
     String krb5conf = properties.getProperty(SubmarineConstants.SUBMARINE_HADOOP_KRB5_CONF, "");
@@ -259,6 +254,42 @@ public class HdfsClient {
     }
   }
 
+  public String parseText(String text) {
+    String script = "", intpText = "";
+
+    // parse text to get interpreter component
+    if (text != null) {
+      Matcher matcher = REPL_PATTERN.matcher(text);
+      if (matcher.matches()) {
+        String headingSpace = matcher.group(1);
+        intpText = matcher.group(2);
+
+        if (matcher.groupCount() == 3 && matcher.group(3) != null) {
+          String localPropertiesText = matcher.group(3);
+          String[] splits = localPropertiesText.substring(1, localPropertiesText.length() - 1)
+              .split(",");
+          for (String split : splits) {
+            String[] kv = split.split("=");
+            if (StringUtils.isBlank(split) || kv.length == 0) {
+              continue;
+            }
+            if (kv.length > 2) {
+              throw new RuntimeException("Invalid paragraph properties format: " + split);
+            }
+          }
+          script = text.substring(headingSpace.length() + intpText.length() +
+              localPropertiesText.length() + 1).trim();
+        } else {
+          script = text.substring(headingSpace.length() + intpText.length() + 1).trim();
+        }
+      } else {
+        script = text.trim();
+      }
+    }
+
+    return script;
+  }
+
   public String saveParagraphToFiles(String noteId, List<ParagraphInfo> paragraphInfos,
                                      String dirName, Properties properties)
       throws Exception {
@@ -283,7 +314,9 @@ public class HdfsClient {
         mapParagraph.put(paragraphTitle, mergeScript);
       }
       StringBuffer mergeScript = mapParagraph.get(paragraphTitle);
-      mergeScript.append(paragraph.getParagraphText() + "\n\n");
+      String parapraphText = paragraph.getParagraphText();
+      String text = parseText(parapraphText);
+      mergeScript.append(text + "\n\n");
     }
 
     // Clear all files in the local noteId directory
