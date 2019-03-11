@@ -55,6 +55,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -693,6 +695,34 @@ public class NotebookServerTest extends AbstractTestRestApi {
       e.printStackTrace();
     }
     assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
+  }
+
+  @Test
+  public void testNoteRevision() throws IOException {
+    Note note = notebook.createNote("note1", anonymous);
+    assertEquals(0, note.getParagraphCount());
+    NotebookRepoWithVersionControl.Revision firstRevision = notebook.checkpointNote(note.getId(), note.getPath(), "first commit", AuthenticationInfo.ANONYMOUS);
+    List<NotebookRepoWithVersionControl.Revision> revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+    assertEquals(1, revisionList.size());
+    assertEquals(firstRevision.id, revisionList.get(0).id);
+    assertEquals("first commit", revisionList.get(0).message);
+
+    // add one new paragraph and commit it
+    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+    assertEquals(1, note.getParagraphCount());
+    NotebookRepoWithVersionControl.Revision secondRevision = notebook.checkpointNote(note.getId(), note.getPath(), "second commit", AuthenticationInfo.ANONYMOUS);
+
+    revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+    assertEquals(2, revisionList.size());
+    assertEquals(secondRevision.id, revisionList.get(0).id);
+    assertEquals("second commit", revisionList.get(0).message);
+    assertEquals(firstRevision.id, revisionList.get(1).id);
+    assertEquals("first commit", revisionList.get(1).message);
+
+    // checkout the first commit
+    note = notebook.getNoteByRevision(note.getId(), note.getPath(), firstRevision.id, AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, note.getParagraphCount());
   }
 
   private NotebookSocket createWebSocket() {

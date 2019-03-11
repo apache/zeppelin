@@ -483,7 +483,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String noteName, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -496,7 +496,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
         if (isRevisionSupportedInRepo(i)) {
           allRepoCheckpoints
               .add(((NotebookRepoWithVersionControl) getRepo(i))
-                  .checkpoint(noteId, noteName, checkpointMsg, subject));
+                  .checkpoint(noteId, notePath, checkpointMsg, subject));
         }
       } catch (IOException e) {
         LOGGER.warn("Couldn't checkpoint in {} storage with index {} for note {}",
@@ -521,11 +521,11 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note get(String noteId, String noteName, String revId, AuthenticationInfo subject) {
+  public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
       if (isRevisionSupportedInDefaultRepo()) {
-        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, noteName,
+        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, notePath,
             revId, subject);
       }
     } catch (IOException e) {
@@ -535,13 +535,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId, String noteName,
+  public List<Revision> revisionHistory(String noteId, String notePath,
                                         AuthenticationInfo subject) {
     List<Revision> revisions = Collections.emptyList();
     try {
       if (isRevisionSupportedInDefaultRepo()) {
         revisions = ((NotebookRepoWithVersionControl) getRepo(0))
-            .revisionHistory(noteId, noteName, subject);
+            .revisionHistory(noteId, notePath, subject);
       }
     } catch (IOException e) {
       LOGGER.error("Failed to list revision history", e);
@@ -570,7 +570,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String noteName, String revId, AuthenticationInfo subject)
+  public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -579,7 +579,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       try {
         if (isRevisionSupportedInRepo(i)) {
           currentNote = ((NotebookRepoWithVersionControl) getRepo(i))
-              .setNoteRevision(noteId, noteName, revId, subject);
+              .setNoteRevision(noteId, notePath, revId, subject);
         }
       } catch (IOException e) {
         // already logged

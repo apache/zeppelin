@@ -214,10 +214,10 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String noteName, String revId,
+  public Note setNoteRevision(String noteId, String notePath, String revId,
                               AuthenticationInfo subject)
       throws IOException {
-    Note revisionNote = get(noteId, noteName, revId, subject);
+    Note revisionNote = get(noteId, notePath, revId, subject);
     if (revisionNote != null) {
       save(revisionNote, subject);
     }

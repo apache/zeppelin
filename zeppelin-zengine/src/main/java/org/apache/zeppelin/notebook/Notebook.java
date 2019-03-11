@@ -325,32 +325,32 @@ public class Notebook {
     }
   }
 
-  public Revision checkpointNote(String noteId, String noteName, String checkpointMessage,
+  public Revision checkpointNote(String noteId, String notePath, String checkpointMessage,
       AuthenticationInfo subject) throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo)
-          .checkpoint(noteId, noteName, checkpointMessage, subject);
+          .checkpoint(noteId, notePath, checkpointMessage, subject);
     } else {
       return null;
     }
   }
 
   public List<Revision> listRevisionHistory(String noteId,
-                                            String noteName,
+                                            String notePath,
                                             AuthenticationInfo subject) throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo)
-          .revisionHistory(noteId, noteName, subject);
+          .revisionHistory(noteId, notePath, subject);
     } else {
       return null;
     }
   }
 
-  public Note setNoteRevision(String noteId, String noteName, String revisionId, AuthenticationInfo subject)
+  public Note setNoteRevision(String noteId, String notePath, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
       return ((NotebookRepoWithVersionControl) notebookRepo)
-          .setNoteRevision(noteId, noteName, revisionId, subject);
+          .setNoteRevision(noteId, notePath, revisionId, subject);
     } else {
       return null;
     }

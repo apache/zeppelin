@@ -187,23 +187,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       NotebookRepoWithVersionControl {
 
     @Override
-    public Revision checkpoint(String noteId, String noteName, String checkpointMsg, AuthenticationInfo subject)
+    public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject)
         throws IOException {
       return null;
     }
 
     @Override
-    public Note get(String noteId, String noteName, String revId, AuthenticationInfo subject) throws IOException {
+    public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
       return null;
     }
 
     @Override
-    public List<Revision> revisionHistory(String noteId, String noteName, AuthenticationInfo subject) {
+    public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) {
       return null;
     }
 
     @Override
-    public Note setNoteRevision(String noteId, String noteName, String revId, AuthenticationInfo subject) throws
+    public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject) throws
         IOException {
       return null;
     }
