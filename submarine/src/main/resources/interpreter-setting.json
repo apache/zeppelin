@@ -1,0 +1,314 @@
+[
+  {
+    "group": "submarine",
+    "name": "submarine",
+    "className": "org.apache.zeppelin.submarine.SubmarineInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "zeppelin.submarine.auth.type": {
+        "envName": "ZEPPELIN_SUBMARINE_AUTH_TYPE",
+        "propertyName": "zeppelin.submarine.auth.type",
+        "defaultValue": "kerberos",
+        "description": "simple or kerberos",
+        "type": "string"
+      },
+      "yarn.webapp.http.address": {
+        "envName": "YARN_WEBAPP_HTTP_ADDRESS",
+        "propertyName": "yarn.webapp.http.address",
+        "defaultValue": "",
+        "description": "YARN web ui address",
+        "type": "string"
+      },
+      "INTERPRETER_LAUNCH_MODE": {
+        "envName": "INTERPRETER_LAUNCH_MODE",
+        "propertyName": "interpreter.launch.mode",
+        "defaultValue": "local",
+        "description": "Submarine interpreter launch in local/yarn",
+        "type": "string"
+      },
+      "HADOOP_YARN_SUBMARINE_JAR": {
+        "envName": "HADOOP_YARN_SUBMARINE_JAR",
+        "propertyName": "hadoop.yarn.submarine.jar",
+        "defaultValue": "",
+        "description": "Submarine executive full path, ex) ../hadoop/share/hadoop/yarn/hadoop-yarn-submarine-x.x.x.jar",
+        "type": "string"
+      },
+      "DOCKER_HADOOP_HDFS_HOME": {
+        "envName": "DOCKER_HADOOP_HDFS_HOME",
+        "propertyName": "DOCKER_HADOOP_HDFS_HOME",
+        "defaultValue": "",
+        "description": "hadoop home in docker container",
+        "type": "string"
+      },
+      "DOCKER_JAVA_HOME": {
+        "envName": "DOCKER_JAVA_HOME",
+        "propertyName": "DOCKER_JAVA_HOME",
+        "defaultValue": "",
+        "description": "java home in docker container",
+        "type": "string"
+      },
+      "SUBMARINE_INTERPRETER_DOCKER_IMAGE": {
+        "envName": "SUBMARINE_INTERPRETER_DOCKER_IMAGE",
+        "propertyName": "SUBMARINE_INTERPRETER_DOCKER_IMAGE",
+        "defaultValue": "",
+        "description": "Docker image of submarine interpreter",
+        "type": "string"
+      },
+      "zeppelin.interpreter.rpc.portRange": {
+        "envName": "ZEPPELIN_INTERPRETER_RPC_PORTRANGE",
+        "propertyName": "zeppelin.interpreter.rpc.portRange",
+        "defaultValue": "29914",
+        "description": "The process port of the submarine interpreter container mapping defined in the `scripts/docker/interpreter/submarine/tensorflow_gpu/Dockerfile` file",
+        "type": "string"
+      },
+      "submarine.yarn.queue": {
+        "envName": "SUBMARINE_YARN_QUEUE",
+        "propertyName": "submarine.yarn.queue",
+        "defaultValue": "root.default",
+        "description": "submarine queue name of yarn",
+        "type": "string"
+      },
+      "submarine.hadoop.home": {
+        "envName": "SUBMARINE_HADOOP_HOME",
+        "propertyName": "submarine.hadoop.home",
+        "defaultValue": "",
+        "description": "submarine user-defined HADOOP_HOME",
+        "type": "string"
+      },
+      "SUBMARINE_HADOOP_CONF_DIR": {
+        "envName": "SUBMARINE_HADOOP_CONF_DIR",
+        "propertyName": "submarine.hadoop.conf.dir",
+        "defaultValue": "",
+        "description": "submarine user-defined HADOOP_CONF_DIR",
+        "type": "string"
+      },
+      "submarine.hadoop.krb5.conf": {
+        "envName": "SUBMARINE_HADOOP_KRB5_CONF",
+        "propertyName": "submarine.hadoop.krb5.conf",
+        "defaultValue": "/etc/krb5.conf",
+        "description": "submarine user-defined hdfs/yarn kerberos authentication krb5.conf",
+        "type": "string"
+      },
+      "SUBMARINE_HADOOP_KEYTAB": {
+        "envName": "SUBMARINE_HADOOP_KEYTAB",
+        "propertyName": "submarine.hadoop.keytab",
+        "defaultValue": "",
+        "description": "submarine hdfs/yarn kerberos authentication",
+        "type": "string"
+      },
+      "SUBMARINE_HADOOP_PRINCIPAL": {
+        "envName": "SUBMARINE_HADOOP_PRINCIPAL",
+        "propertyName": "submarine.hadoop.principal",
+        "defaultValue": "",
+        "description": "submarine hdfs/yarn kerberos authentication",
+        "type": "string"
+      },
+      "docker.container.network": {
+        "envName": "DOCKER_CONTAINER_NETWORK",
+        "propertyName": "docker.container.network",
+        "defaultValue": "",
+        "description": "Network name in the docker container",
+        "type": "string"
+      },
+      "DOCKER_CONTAINER_TIME_ZONE": {
+        "envName": "DOCKER_CONTAINER_TIME_ZONE",
+        "propertyName": "docker.container.time.zone",
+        "defaultValue": "Etc/UTC",
+        "description": "docker container time zone",
+        "type": "string"
+      },
+      "zeppelin.interpreter.connect.timeout": {
+        "envName": "ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT",
+        "propertyName": "zeppelin.interpreter.connect.timeout",
+        "defaultValue": "100000",
+        "description": "zeppelin interpreter connect timeout",
+        "type": "number"
+      },
+      "submarine.algorithm.hdfs.path": {
+        "envName": "SUBMARINE_ALGORITHM_HDFS_PATH",
+        "propertyName": "submarine.algorithm.hdfs.path",
+        "defaultValue": "hdfs://...",
+        "description": "Algorithm file upload HDFS path, Support ${username} variable symbol, For example: hdfs:///usr/${username}",
+        "type": "string"
+      },
+      "tf.parameter.services.num": {
+        "envName": "TF_PARAMETER_SERVICES_NUM",
+        "propertyName": "tf.parameter.services.num",
+        "defaultValue": "1",
+        "description": "Number of parameter services",
+        "type": "number"
+      },
+      "tf.worker.services.num": {
+        "envName": "TF_WORKER_SERVICES_NUM",
+        "propertyName": "tf.worker.services.num",
+        "defaultValue": "0",
+        "description": "Number of worker services",
+        "type": "number"
+      },
+      "tf.parameter.services.docker.image": {
+        "envName": "TF_PARAMETER_SERVICES_DOCKER_IMAGE",
+        "propertyName": "tf.parameter.services.docker.image",
+        "defaultValue": "",
+        "description": "Docker image of parameter services",
+        "type": "string"
+      },
+      "tf.parameter.services.gpu": {
+        "envName": "TF_PARAMETER_SERVICES_GPU",
+        "propertyName": "tf.parameter.services.gpu",
+        "defaultValue": "0",
+        "description": "GPU number of parameter services",
+        "type": "number"
+      },
+      "tf.parameter.services.cpu": {
+        "envName": "TF_PARAMETER_SERVICES_CPU",
+        "propertyName": "tf.parameter.services.cpu",
+        "defaultValue": "2",
+        "description": "CPU number of parameter services",
+        "type": "number"
+      },
+      "tf.parameter.services.memory": {
+        "envName": "TF_PARAMETER_SERVICES_MEMORY",
+        "propertyName": "tf.parameter.services.memory",
+        "defaultValue": "2G",
+        "description": "Memory number of parameter services",
+        "type": "string"
+      },
+      "tf.worker.services.docker.image": {
+        "envName": "TF_WORKER_SERVICES_DOCKER_IMAGE",
+        "propertyName": "tf.worker.services.docker.image",
+        "defaultValue": "",
+        "description": "Docker image of worker services",
+        "type": "string"
+      },
+      "tf.worker.services.gpu": {
+        "envName": "TF_WORKER_SERVICES_GPU",
+        "propertyName": "tf.worker.services.gpu",
+        "defaultValue": "0",
+        "description": "GPU number of worker services",
+        "type": "number"
+      },
+      "tf.worker.services.cpu": {
+        "envName": "TF_WORKER_SERVICES_CPU",
+        "propertyName": "tf.worker.services.cpu",
+        "defaultValue": "2",
+        "description": "CPU number of worker services",
+        "type": "number"
+      },
+      "tf.worker.services.memory": {
+        "envName": "TF_WORKER_SERVICES_MEMORY",
+        "propertyName": "tf.worker.services.memory",
+        "defaultValue": "4G",
+        "description": "Memory number of worker services",
+        "type": "string"
+      },
+      "tf.tensorboard.enable": {
+        "envName": "TF_TENSORBOARD_ENABLE",
+        "propertyName": "tf.tensorboard.enable",
+        "defaultValue": true,
+        "description": "Whether to enable tensorboard",
+        "type": "checkbox"
+      },
+      "tf.checkpoint.path": {
+        "envName": "TF_CHECKPOINT_PATH",
+        "propertyName": "tf.checkpoint.path",
+        "defaultValue": "",
+        "description": "tensorflow checkpoint path",
+        "type": "string"
+      }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    },
+    "config": {
+      "fontSize": 9,
+      "colWidth": 12,
+      "runOnSelectionChange": false,
+      "title": true
+    }
+  },
+  {
+    "group": "submarine",
+    "name": "python",
+    "className": "org.apache.zeppelin.submarine.PySubmarineInterpreter",
+    "properties": {
+      "zeppelin.python": {
+        "envName": null,
+        "propertyName": "zeppelin.python",
+        "defaultValue": "python",
+        "description": "Python directory. It is set to python by default.(assume python is in your $PATH)",
+        "type": "string"
+      },
+      "zeppelin.python.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.python.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of dataframe rows to display.",
+        "type": "number"
+      },
+      "zeppelin.python.useIPython": {
+        "propertyName": "zeppelin.python.useIPython",
+        "defaultValue": false,
+        "description": "whether use IPython when it is available",
+        "type": "checkbox"
+      },
+      "machinelearing.distributed.enable": {
+        "envName": "MACHINELEARING_DISTRIBUTED",
+        "propertyName": "machinelearing.distributed.enable",
+        "defaultValue": false,
+        "description": "Running distributed machine learing",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "python",
+    "name": "ipython",
+    "className": "org.apache.zeppelin.submarine.IPySubmarineInterpreter",
+    "properties": {
+      "zeppelin.ipython.launch.timeout": {
+        "propertyName": "zeppelin.ipython.launch.timeout",
+        "defaultValue": "30000",
+        "description": "time out for ipython launch",
+        "type": "number"
+      },
+      "zeppelin.ipython.grpc.message_size": {
+        "propertyName": "zeppelin.ipython.grpc.message_size",
+        "defaultValue": "33554432",
+        "description": "grpc message size, default is 32M",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "submarine",
+    "name": "sh",
+    "className": "org.apache.zeppelin.submarine.SubmarineShellInterpreter",
+    "properties": {
+      "shell.command.timeout.millisecs": {
+        "envName": "SHELL_COMMAND_TIMEOUT",
+        "propertyName": "shell.command.timeout.millisecs",
+        "defaultValue": "60000",
+        "description": "Shell command time out in millisecs. Default = 60000",
+        "type": "number"
+      }
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
+  }
+]

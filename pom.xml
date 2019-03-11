@@ -59,6 +59,7 @@
     <module>zeppelin-display</module>
     <module>groovy</module>
     <module>spark</module>
+    <module>submarine</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
