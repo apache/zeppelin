@@ -119,7 +119,7 @@ If you want to learn more about this feature, please visit [this page](./docs/la
 
 <img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
 
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./docs/latest/development/contribution/how_to_contribute_code.html).
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/zeppelin) and [how to contribute](./docs/latest/development/contribution/how_to_contribute_code.html).
 Apache Zeppelin has a very active development community.
 Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 </div>
