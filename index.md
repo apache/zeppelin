@@ -43,12 +43,12 @@ limitations under the License.
 
 <br />
 ## Multiple Language Backend
-[Apache Zeppelin interpreter](./docs/latest/manual/interpreters.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
+[Apache Zeppelin interpreter](./docs/latest/usage/interpreter/overview.html) concept allows any language/data-processing-backend to be plugged into Zeppelin.
 Currently Apache Zeppelin supports many interpreters such as Apache Spark, Python, JDBC, Markdown and Shell.
 
 <img class="img-responsive" width="500px" style="margin:0 auto; padding: 26px;" src="./assets/themes/zeppelin/img/available_interpreters.png" />
 
-Adding new language-backend is really simple. Learn [how to create a new interpreter](./docs/latest/development/writingzeppelininterpreter.html#make-your-own-interpreter).
+Adding new language-backend is really simple. Learn [how to create a new interpreter](./docs/latest/development/writing_zeppelin_interpreter.html#make-your-own-interpreter).
 
 #### Apache Spark integration
 Especially, Apache Zeppelin provides built-in [Apache Spark](http://spark.apache.org/) integration. You don't need to build a separate module, plugin or library for it.
@@ -87,7 +87,7 @@ Apache Zeppelin aggregates values and displays them in pivot chart with simple d
   </div>
 </div>
 
-Learn more about [basic display systems](./docs/latest/displaysystem/basicdisplaysystem.html) and Angular API([frontend](./docs/latest/displaysystem/front-end-angular.html) , [backend](./docs/latest/displaysystem/back-end-angular.html)) in Apache Zeppelin.
+Learn more about [basic display systems](./docs/latest/usage/display_system/basic.html) and Angular API([frontend](./docs/latest/usage/display_system/angular_frontend.html) , [backend](./docs/latest/usage/display_system/angular_backend.html)) in Apache Zeppelin.
 
 <br />
 ## Dynamic forms
@@ -98,7 +98,7 @@ Apache Zeppelin can dynamically create some input forms in your notebook.
     <img class="img-responsive" style="margin: 16px auto;" src="./assets/themes/zeppelin/img/screenshots/dynamicform.png" />
   </div>
 </div>
-Learn more about [Dynamic Forms](./docs/latest/manual/dynamicform.html).
+Learn more about [Dynamic Forms](./docs/latest/usage/dynamic_form/intro.html).
 
 <br />
 ## Collaborate by sharing your Notebook & Paragraph
@@ -112,14 +112,14 @@ Your notebook URL can be shared among collaborators. Then Apache Zeppelin will b
 
 Apache Zeppelin provides an URL to display the result only, that page does not include any menus and buttons inside of notebooks.
 You can easily embed it as an iframe inside of your website in this way.
-If you want to learn more about this feature, please visit [this page](./docs/latest/manual/publish.html).
+If you want to learn more about this feature, please visit [this page](./docs/latest/usage/other_features/publishing_paragraphs.html).
 
 <br />
 ## 100% Opensource
 
 <img class="img-responsive" style="margin:0 auto; padding: 15px;" src="./assets/themes/zeppelin/img/asf_logo.png" width="250px"/>
 
-Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/zeppelin.git) and [how to contribute](./docs/latest/development/howtocontribute.html).
+Apache Zeppelin is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/zeppelin) and [how to contribute](./docs/latest/development/contribution/how_to_contribute_code.html).
 Apache Zeppelin has a very active development community.
 Join to our [Mailing list](https://zeppelin.apache.org/community.html) and report issues on [Jira Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
 </div>
