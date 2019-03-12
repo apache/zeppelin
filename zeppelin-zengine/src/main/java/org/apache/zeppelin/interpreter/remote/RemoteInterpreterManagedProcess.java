@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -89,7 +90,25 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   @Override
   public void start(String userName) throws IOException {
     // start server process
-    CommandLine cmdLine = CommandLine.parse(interpreterRunner);
+    Map<String, String> procEnv = EnvironmentUtils.getProcEnvironment();
+    procEnv.putAll(env);
+    String command = interpreterRunner;
+    if (isUserImpersonated && !userName.equals("anonymous")) {
+      command = "bin/execute-as-user " + userName + " " + interpreterRunner;
+      procEnv.put("USER", userName);
+      procEnv.put("LOGNAME", userName);
+      String home = procEnv.get("HOME");
+      if (home != null) {
+        int lastSeparatorPos = home.lastIndexOf(File.separatorChar);
+        if (lastSeparatorPos != -1) {
+          procEnv.put("HOME", home.substring(0, lastSeparatorPos + 1) + userName);
+        } else {
+          LOGGER.warn("Invalid home directory: " + home);
+          procEnv.put("HOME", userName);
+        }
+      }
+    }
+    CommandLine cmdLine = CommandLine.parse(command);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
     cmdLine.addArgument("-c", false);
@@ -100,16 +119,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     cmdLine.addArgument(interpreterPortRange, false);
     cmdLine.addArgument("-i", false);
     cmdLine.addArgument(interpreterGroupId, false);
-    if (isUserImpersonated && !userName.equals("anonymous")) {
-      cmdLine.addArgument("-u", false);
-      cmdLine.addArgument(userName, false);
-    }
     cmdLine.addArgument("-l", false);
     cmdLine.addArgument(localRepoDir, false);
     cmdLine.addArgument("-g", false);
     cmdLine.addArgument(interpreterSettingName, false);
 
-    Map procEnv = EnvironmentUtils.getProcEnvironment();
     procEnv.putAll(env);
     interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, procEnv);
     interpreterProcessLauncher.launch();

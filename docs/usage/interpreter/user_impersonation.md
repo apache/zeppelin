@@ -21,7 +21,7 @@ limitations under the License.
 
 # Impersonation
 
-User impersonation enables to run zeppelin interpreter process as a web frontend user
+User impersonation enables to run zeppelin interpreter process as the login user
 
 ## Setup
 
@@ -33,13 +33,10 @@ user1 = password1, role1
 user2 = password2, role2
 ```
 
-#### 2. Enable password-less ssh for the user you want to impersonate (say user1).
+#### 2. Make sure you have the user account in the zeppelin server host (say user1). And these user are in the same group with user who start zeppelin server.
 
 ```bash
 adduser user1
-#ssh-keygen (optional if you don't already have generated ssh-key.
-ssh user1@localhost mkdir -p .ssh
-cat ~/.ssh/id_rsa.pub | ssh user1@localhost 'cat >> .ssh/authorized_keys'
 ```
 
 Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_CMD in zeppelin-env.sh
@@ -48,6 +45,12 @@ Alternatively instead of password-less, user can override ZEPPELIN_IMPERSONATE_C
 export ZEPPELIN_IMPERSONATE_CMD='sudo -H -u ${ZEPPELIN_IMPERSONATE_USER} bash -c '
 ```
 
+#### 3. Build execute-as-user
+
+* run: gcc execute-as-user.c -o execute-as-user
+* run: chown root execute-as-user (you might need root privilege)
+* run: chmod 6050 execute-as-user (you might need root privilege)
+* copy execute-as-user to ZEPPELIN_HOME/bin folder
 
 #### 4. Restart zeppelin server.
 
@@ -66,7 +69,6 @@ bin\zeppelin.cmd
       <a data-lightbox="compiler" href="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/user-impersonation.gif">
         <img class="img-responsive" src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/user-impersonation.gif" />
       </a>
-
   </div>
 </div>
 
@@ -81,4 +83,14 @@ Go to interpreter setting page, and enable "User Impersonate" in any of the inte
 whoami
 ```
 
+```
+%spark
+println(System.getenv("HOME"))
+```
+
+```
+%python
+from os.path import expanduser
+print(expanduser("~"))
+```
 Note that usage of "User Impersonate" option will enable Spark interpreter to use `--proxy-user` option with current user by default. If you want to disable `--proxy-user` option, then refer to `ZEPPELIN_IMPERSONATE_SPARK_PROXY_USER` variable in `conf/zeppelin-env.sh`
