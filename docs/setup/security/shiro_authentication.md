@@ -83,7 +83,7 @@ activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=C
 activeDirectoryRealm.authorizationCachingEnabled = false
 activeDirectoryRealm.principalSuffix = @corp.company.net
 
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
