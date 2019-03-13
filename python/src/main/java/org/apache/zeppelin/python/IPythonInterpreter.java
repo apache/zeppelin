@@ -86,6 +86,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private boolean useBuiltinPy4j = true;
   private boolean useAuth = false;
   private String secret;
+  private volatile boolean pythonProcessFailed = false;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
@@ -278,7 +279,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
 
     // wait until IPython kernel is started or timeout
     long startTime = System.currentTimeMillis();
-    while (true) {
+    while (!pythonProcessFailed) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -302,6 +303,9 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         throw new IOException("Fail to launch IPython Kernel in " + ipythonLaunchTimeout / 1000
             + " seconds");
       }
+    }
+    if (pythonProcessFailed) {
+      throw new IOException("Fail to launch IPython Kernel as the python process is failed");
     }
   }
 
@@ -402,6 +406,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Exception happens in Python Process", e);
+    pythonProcessFailed = true;
   }
 
   private static class ProcessLogOutputStream extends LogOutputStream {
