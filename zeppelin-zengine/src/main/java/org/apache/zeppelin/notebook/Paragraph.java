@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -385,105 +386,109 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   @Override
   protected InterpreterResult jobRun() throws Throwable {
-    this.runtimeInfos.clear();
-    this.interpreter = getBindedInterpreter();
-    if (this.interpreter == null) {
-      LOGGER.error("Can not find interpreter name " + intpText);
-      throw new RuntimeException("Can not find interpreter for " + intpText);
-    }
-    LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
-        getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
-    InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
-        interpreter.getInterpreterGroup()).getInterpreterSetting();
-    if (interpreterSetting != null) {
-      interpreterSetting.waitForReady();
-    }
-    if (this.user != null) {
-      if (subject != null && !interpreterSetting.isUserAuthorized(subject.getUsersAndRoles())) {
-        String msg = String.format("%s has no permission for %s", subject.getUser(), intpText);
-        LOGGER.error(msg);
-        return new InterpreterResult(Code.ERROR, msg);
+    try {
+      this.runtimeInfos.clear();
+      this.interpreter = getBindedInterpreter();
+      if (this.interpreter == null) {
+        LOGGER.error("Can not find interpreter name " + intpText);
+        throw new RuntimeException("Can not find interpreter for " + intpText);
       }
-    }
+      LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+              getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
+      InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+              interpreter.getInterpreterGroup()).getInterpreterSetting();
+      if (interpreterSetting != null) {
+        interpreterSetting.waitForReady();
+      }
+      if (this.user != null) {
+        if (subject != null && !interpreterSetting.isUserAuthorized(subject.getUsersAndRoles())) {
+          String msg = String.format("%s has no permission for %s", subject.getUser(), intpText);
+          LOGGER.error(msg);
+          return new InterpreterResult(Code.ERROR, msg);
+        }
+      }
 
-    for (Paragraph p : userParagraphMap.values()) {
-      p.setText(getText());
-    }
+      for (Paragraph p : userParagraphMap.values()) {
+        p.setText(getText());
+      }
 
-    // inject form
-    String script = this.scriptText;
-    if (interpreter.getFormType() == FormType.NATIVE) {
-      settings.clear();
-    } else if (interpreter.getFormType() == FormType.SIMPLE) {
-      // inputs will be built from script body
-      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
-      LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
-      final AngularObjectRegistry angularRegistry =
-          interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      String scriptBody = extractVariablesFromAngularRegistry(script, inputs, angularRegistry);
+      // inject form
+      String script = this.scriptText;
+      if (interpreter.getFormType() == FormType.NATIVE) {
+        settings.clear();
+      } else if (interpreter.getFormType() == FormType.SIMPLE) {
+        // inputs will be built from script body
+        LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
+        LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
+        final AngularObjectRegistry angularRegistry =
+                interpreter.getInterpreterGroup().getAngularObjectRegistry();
+        String scriptBody = extractVariablesFromAngularRegistry(script, inputs, angularRegistry);
 
-      settings.setForms(inputs);
-      if (!noteInputs.isEmpty()) {
-        if (!note.getNoteForms().isEmpty()) {
-          Map<String, Input> currentNoteForms =  note.getNoteForms();
-          for (String s : noteInputs.keySet()) {
-            if (!currentNoteForms.containsKey(s)) {
-              currentNoteForms.put(s, noteInputs.get(s));
+        settings.setForms(inputs);
+        if (!noteInputs.isEmpty()) {
+          if (!note.getNoteForms().isEmpty()) {
+            Map<String, Input> currentNoteForms = note.getNoteForms();
+            for (String s : noteInputs.keySet()) {
+              if (!currentNoteForms.containsKey(s)) {
+                currentNoteForms.put(s, noteInputs.get(s));
+              }
+            }
+          } else {
+            note.setNoteForms(noteInputs);
+          }
+        }
+        script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
+        script = Input.getSimpleQuery(settings.getParams(), script, false);
+      }
+      LOGGER.debug("RUN : " + script);
+      try {
+        InterpreterContext context = getInterpreterContext();
+        InterpreterContext.set(context);
+        InterpreterResult ret = interpreter.interpret(script, context);
+
+        if (interpreter.getFormType() == FormType.NATIVE) {
+          note.setNoteParams(context.getNoteGui().getParams());
+          note.setNoteForms(context.getNoteGui().getForms());
+        }
+
+        if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
+          return getReturn();
+        }
+
+        context.out.flush();
+        List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+        resultMessages.addAll(ret.message());
+        InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
+        Paragraph p = getUserParagraph(getUser());
+        if (null != p) {
+          p.setResult(res);
+          p.settings.setParams(settings.getParams());
+        }
+
+        // After the paragraph is executed,
+        // need to apply the paragraph to the configuration in the
+        // `interpreter-setting.json` config
+        if (this.configSettingNeedUpdate) {
+          this.configSettingNeedUpdate = false;
+          InterpreterSettingManager intpSettingManager
+                  = this.note.getInterpreterSettingManager();
+          if (null != intpSettingManager) {
+            InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
+            if (null != intpGroup && intpGroup instanceof ManagedInterpreterGroup) {
+              String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
+              Map<String, Object> config
+                      = intpSettingManager.getConfigSetting(name);
+              applyConfigSetting(config);
             }
           }
-        } else {
-          note.setNoteForms(noteInputs);
         }
-      }
-      script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
-      script = Input.getSimpleQuery(settings.getParams(), script, false);
-    }
-    LOGGER.debug("RUN : " + script);
-    try {
-      InterpreterContext context = getInterpreterContext();
-      InterpreterContext.set(context);
-      InterpreterResult ret = interpreter.interpret(script, context);
 
-      if (interpreter.getFormType() == FormType.NATIVE) {
-        note.setNoteParams(context.getNoteGui().getParams());
-        note.setNoteForms(context.getNoteGui().getForms());
+        return res;
+      } finally {
+        InterpreterContext.remove();
       }
-
-      if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
-        return getReturn();
-      }
-
-      context.out.flush();
-      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-      resultMessages.addAll(ret.message());
-      InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
-      Paragraph p = getUserParagraph(getUser());
-      if (null != p) {
-        p.setResult(res);
-        p.settings.setParams(settings.getParams());
-      }
-
-      // After the paragraph is executed,
-      // need to apply the paragraph to the configuration in the
-      // `interpreter-setting.json` config
-      if (this.configSettingNeedUpdate) {
-        this.configSettingNeedUpdate = false;
-        InterpreterSettingManager intpSettingManager
-            = this.note.getInterpreterSettingManager();
-        if (null != intpSettingManager) {
-          InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
-          if (null != intpGroup && intpGroup instanceof ManagedInterpreterGroup) {
-            String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
-            Map<String, Object> config
-                = intpSettingManager.getConfigSetting(name);
-            applyConfigSetting(config);
-          }
-        }
-      }
-
-      return res;
-    } finally {
-      InterpreterContext.remove();
+    } catch (Exception e) {
+      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
     }
   }
 

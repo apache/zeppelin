@@ -19,6 +19,8 @@ package org.apache.zeppelin.spark;
 
 
 import com.google.common.io.Files;
+import junit.framework.TestCase;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -40,6 +42,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -47,7 +50,6 @@ import static org.mockito.Mockito.verify;
 
 public class IPySparkInterpreterTest extends IPythonInterpreterTest {
 
-  private InterpreterGroup intpGroup;
   private RemoteInterpreterEventClient mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
 
   @Override
@@ -66,7 +68,6 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     return p;
   }
-
 
   @Override
   protected void startInterpreter(Properties properties) throws InterpreterException {
@@ -101,7 +102,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     intpGroup = null;
   }
 
-  @Test
+  //@Test
   public void testIPySpark() throws InterruptedException, InterpreterException, IOException {
     testPySpark(interpreter, mockIntpEventClient);
   }
@@ -237,6 +238,22 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertTrue(interpreterResultMessages.get(0).getData().contains("(0, 100)"));
+  }
+
+  @Test
+  @Override
+  public void testIPythonFailToLaunch() throws InterpreterException {
+    tearDown();
+
+    Properties properties = initIntpProperties();
+    properties.setProperty("spark.pyspark.python", "invalid_python");
+    try {
+      startInterpreter(properties);
+      fail("Should not be able to start IPythonInterpreter");
+    } catch (InterpreterException e) {
+      String exceptionMsg = ExceptionUtils.getStackTrace(e);
+      TestCase.assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+    }
   }
 
   private static boolean isSpark2(String sparkVersion) {

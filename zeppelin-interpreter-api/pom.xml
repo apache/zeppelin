@@ -64,6 +64,8 @@
               <exclude>org.slf4j:slf4j-log4j12</exclude>
               <!-- Leave commons-logging unshaded so downstream users can configure logging. -->
               <exclude>commons-logging:commons-logging</exclude>
+              <!-- Leave commons-exec unshaded so downstream users can use ProcessLauncher. -->
+              <exclude>org.apache.commons:commons-exec</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
               <exclude>com.esotericsoftware:kryo</exclude>
@@ -111,6 +113,8 @@
                 <exclude>org/slf4j/**/*</exclude>
                 <exclude>org/apache/commons/logging/*</exclude>
                 <exclude>org/apache/commons/logging/**/*</exclude>
+                <exclude>org/apache/commons/exec/*</exclude>
+                <exclude>org/apache/commons/exec/**/*</exclude>
                 <exclude>org/apache/log4j/*</exclude>
                 <exclude>org/apache/log4j/**/*</exclude>
                 <exclude>org/sonatype/*</exclude>

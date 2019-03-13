@@ -19,38 +19,28 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.LogOutputStream;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class manages start / stop of remote interpreter process
  */
-public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
-    implements ExecuteResultHandler {
-  private static final Logger logger = LoggerFactory.getLogger(
+public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
+  private static final Logger LOGGER = LoggerFactory.getLogger(
       RemoteInterpreterManagedProcess.class);
 
   private final String interpreterRunner;
   private final int zeppelinServerRPCPort;
   private final String zeppelinServerRPCHost;
   private final String interpreterPortRange;
-  private DefaultExecutor executor;
-  private ExecuteWatchdog watchdog;
-  private AtomicBoolean running = new AtomicBoolean(false);
+  private InterpreterProcessLauncher interpreterProcessLauncher;
   private String host = null;
   private int port = -1;
   private final String interpreterDir;
@@ -119,49 +109,26 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
     cmdLine.addArgument("-g", false);
     cmdLine.addArgument(interpreterSettingName, false);
 
-    executor = new DefaultExecutor();
-
-    ByteArrayOutputStream cmdOut = new ByteArrayOutputStream();
-    ProcessLogOutputStream processOutput = new ProcessLogOutputStream(logger);
-    processOutput.setOutputStream(cmdOut);
-
-    executor.setStreamHandler(new PumpStreamHandler(processOutput));
-    watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
-    executor.setWatchdog(watchdog);
-
-    try {
-      Map procEnv = EnvironmentUtils.getProcEnvironment();
-      procEnv.putAll(env);
-
-      logger.info("Run interpreter process {}", cmdLine);
-      executor.execute(cmdLine, procEnv, this);
-    } catch (IOException e) {
-      running.set(false);
-      throw new RuntimeException(e);
+    Map procEnv = EnvironmentUtils.getProcEnvironment();
+    procEnv.putAll(env);
+    interpreterProcessLauncher = new InterpreterProcessLauncher(cmdLine, procEnv);
+    interpreterProcessLauncher.launch();
+    interpreterProcessLauncher.waitForReady(getConnectTimeout());
+    if (interpreterProcessLauncher.isLaunchTimeout()) {
+      throw new IOException(String.format("Interpreter Process creation is time out in %d seconds",
+              getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
+              "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
+              interpreterProcessLauncher.getErrorMessage());
     }
-
-    try {
-      synchronized (running) {
-        if (!running.get()) {
-          running.wait(getConnectTimeout());
-        }
-      }
-      if (!running.get()) {
-        throw new IOException(new String(
-            String.format("Interpreter Process creation is time out in %d seconds",
-                getConnectTimeout()/1000) + "\n" + "You can increase timeout threshold via " +
-                "setting zeppelin.interpreter.connect.timeout of this interpreter.\n" +
-                cmdOut.toString()));
-      }
-    } catch (InterruptedException e) {
-      logger.error("Remote interpreter is not accessible");
+    if (!interpreterProcessLauncher.isRunning()) {
+      throw new IOException("Fail to launch interpreter process:\n" +
+              interpreterProcessLauncher.getErrorMessage());
     }
-    processOutput.setOutputStream(null);
   }
 
   public void stop() {
     if (isRunning()) {
-      logger.info("Kill interpreter process");
+      LOGGER.info("Kill interpreter process");
       try {
         callRemoteFunction(new RemoteFunction<Void>() {
           @Override
@@ -171,38 +138,20 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
           }
         });
       } catch (Exception e) {
-        logger.warn("ignore the exception when shutting down");
+        LOGGER.warn("ignore the exception when shutting down", e);
       }
-      watchdog.destroyProcess();
+      this.interpreterProcessLauncher.stop();
     }
 
-    executor = null;
-    watchdog = null;
-    running.set(false);
-    logger.info("Remote process terminated");
-  }
-
-  @Override
-  public void onProcessComplete(int exitValue) {
-    logger.info("Interpreter process exited {}", exitValue);
-    running.set(false);
-
+    interpreterProcessLauncher = null;
+    LOGGER.info("Remote process terminated");
   }
 
   @Override
   public void processStarted(int port, String host) {
     this.port = port;
     this.host = host;
-    synchronized (running) {
-      running.set(true);
-      running.notify();
-    }
-  }
-
-  @Override
-  public void onProcessFailed(ExecuteException e) {
-    logger.info("Interpreter process failed {}", e);
-    running.set(false);
+    interpreterProcessLauncher.onProcessRunning();
   }
 
   @VisibleForTesting
@@ -235,52 +184,64 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   }
 
   public boolean isRunning() {
-    return running.get();
+    return interpreterProcessLauncher != null && interpreterProcessLauncher.isRunning();
   }
 
-  private static class ProcessLogOutputStream extends LogOutputStream {
+  @Override
+  public String getErrorMessage() {
+    return this.interpreterProcessLauncher != null ? this.interpreterProcessLauncher.getErrorMessage() : "";
+  }
 
-    private Logger logger;
-    OutputStream out;
+  private class InterpreterProcessLauncher extends ProcessLauncher {
 
-    public ProcessLogOutputStream(Logger logger) {
-      this.logger = logger;
+    public InterpreterProcessLauncher(CommandLine commandLine,
+                                      Map<String, String> envs) {
+      super(commandLine, envs);
     }
 
     @Override
-    protected void processLine(String s, int i) {
-      this.logger.debug(s);
-    }
-
-    @Override
-    public void write(byte [] b) throws IOException {
-      super.write(b);
-
-      if (out != null) {
-        synchronized (this) {
-          if (out != null) {
-            out.write(b);
-          }
-        }
-      }
-    }
-
-    @Override
-    public void write(byte [] b, int offset, int len) throws IOException {
-      super.write(b, offset, len);
-
-      if (out != null) {
-        synchronized (this) {
-          if (out != null) {
-            out.write(b, offset, len);
-          }
-        }
-      }
-    }
-
-    public void setOutputStream(OutputStream out) {
+    public void waitForReady(int timeout) {
       synchronized (this) {
-        this.out = out;
+        if (state != State.RUNNING) {
+          try {
+            wait(timeout);
+          } catch (InterruptedException e) {
+            LOGGER.error("Remote interpreter is not accessible", e);
+          }
+        }
+      }
+      this.stopCatchLaunchOutput();
+      if (state == State.LAUNCHED) {
+        onTimeout();
+      }
+    }
+
+    @Override
+    public void onProcessRunning() {
+      super.onProcessRunning();
+      synchronized(this) {
+        notify();
+      }
+    }
+
+    @Override
+    public void onProcessComplete(int exitValue) {
+      LOGGER.warn("Process is exited with exit value " + exitValue);
+      // For yarn-cluster mode, client process will exit with exit value 0
+      // after submitting spark app. So don't move to TERMINATED state when exitValue is 0.
+      if (exitValue != 0) {
+        state = State.TERMINATED;
+        synchronized (this) {
+          notify();
+        }
+      }
+    }
+
+    @Override
+    public void onProcessFailed(ExecuteException e) {
+      super.onProcessFailed(e);
+      synchronized (this) {
+        notify();
       }
     }
   }
