@@ -40,7 +40,7 @@ import static org.apache.zeppelin.submarine.commons.SubmarineConstants.HADOOP_YA
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.INPUT_PATH;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.INTERPRETER_LAUNCH_MODE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.JOB_NAME;
-import static org.apache.zeppelin.submarine.commons.SubmarineConstants.MACHINELEARING_DISTRIBUTED_ENABLE;
+import static org.apache.zeppelin.submarine.commons.SubmarineConstants.MACHINELEARNING_DISTRIBUTED_ENABLE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.PS_LAUNCH_CMD;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_FILES;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_PATH;
@@ -148,7 +148,7 @@ public class SubmarineUtils {
     String noteId = submarineJob.getNoteId();
 
     // Check user-set job variables
-    String machinelearingDistributed = getProperty(properties, MACHINELEARING_DISTRIBUTED_ENABLE,
+    String machinelearingDistributed = getProperty(properties, MACHINELEARNING_DISTRIBUTED_ENABLE,
         outLog, sbMessage);
     String inputPath = getProperty(properties, INPUT_PATH, outLog, sbMessage);
     String checkPointPath = getProperty(properties, CHECKPOINT_PATH, outLog, sbMessage);
@@ -276,7 +276,7 @@ public class SubmarineUtils {
     mapParams.put(unifyKey(SUBMARINE_YARN_QUEUE), submarineYarnQueue);
     mapParams.put(unifyKey(SUBMARINE_HADOOP_KEYTAB), submarineHadoopKeytab);
     mapParams.put(unifyKey(SUBMARINE_HADOOP_PRINCIPAL), submarineHadoopPrincipal);
-    mapParams.put(unifyKey(MACHINELEARING_DISTRIBUTED_ENABLE), machinelearingDistributed);
+    mapParams.put(unifyKey(MACHINELEARNING_DISTRIBUTED_ENABLE), machinelearingDistributed);
     mapParams.put(unifyKey(SUBMARINE_ALGORITHM_HDFS_PATH), notePath);
     mapParams.put(unifyKey(SUBMARINE_ALGORITHM_HDFS_FILES), arrayHdfsFiles);
     mapParams.put(unifyKey(INPUT_PATH), inputPath);

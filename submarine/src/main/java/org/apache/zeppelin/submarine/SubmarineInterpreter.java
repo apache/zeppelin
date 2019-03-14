@@ -43,7 +43,7 @@ import static org.apache.zeppelin.submarine.commons.SubmarineConstants.COMMAND_J
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.COMMAND_TYPE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.COMMAND_USAGE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.INPUT_PATH;
-import static org.apache.zeppelin.submarine.commons.SubmarineConstants.MACHINELEARING_DISTRIBUTED_ENABLE;
+import static org.apache.zeppelin.submarine.commons.SubmarineConstants.MACHINELEARNING_DISTRIBUTED_ENABLE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.OPERATION_TYPE;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.PS_LAUNCH_CMD;
 import static org.apache.zeppelin.submarine.commons.SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_PATH;
@@ -131,8 +131,8 @@ public class SubmarineInterpreter extends Interpreter {
         }
       }
 
-      String distributed = this.properties.getProperty(MACHINELEARING_DISTRIBUTED_ENABLE, "false");
-      SubmarineUtils.setAgulObjValue(context, unifyKey(MACHINELEARING_DISTRIBUTED_ENABLE),
+      String distributed = this.properties.getProperty(MACHINELEARNING_DISTRIBUTED_ENABLE, "false");
+      SubmarineUtils.setAgulObjValue(context, unifyKey(MACHINELEARNING_DISTRIBUTED_ENABLE),
           distributed);
 
       inputPath = SubmarineUtils.getAgulObjValue(context, INPUT_PATH);
@@ -239,7 +239,7 @@ public class SubmarineInterpreter extends Interpreter {
     String command = (String) context.getGui().
         select("Submarine Command", "", commandOptions);
 
-    String distributed = this.properties.getProperty(MACHINELEARING_DISTRIBUTED_ENABLE, "false");
+    String distributed = this.properties.getProperty(MACHINELEARNING_DISTRIBUTED_ENABLE, "false");
 
     if (command.equals(COMMAND_JOB_RUN)) {
       String inputPath = (String) context.getGui().textbox("Input Path(input_path)");

@@ -394,10 +394,10 @@ public class JinjaTemplatesTest {
 
     if (dist == Boolean.TRUE) {
       jinjaParams.put(SubmarineUtils.unifyKey(
-          SubmarineConstants.MACHINELEARING_DISTRIBUTED_ENABLE), "true");
+          SubmarineConstants.MACHINELEARNING_DISTRIBUTED_ENABLE), "true");
     } else if (dist == Boolean.FALSE) {
       jinjaParams.put(SubmarineUtils.unifyKey(
-          SubmarineConstants.MACHINELEARING_DISTRIBUTED_ENABLE), "false");
+          SubmarineConstants.MACHINELEARNING_DISTRIBUTED_ENABLE), "false");
     }
 
     jinjaParams.put(SubmarineUtils.unifyKey(
