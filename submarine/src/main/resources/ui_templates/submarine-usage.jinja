@@ -1,0 +1,111 @@
+{#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-#}
+<div id="job-manager-header" style="margin-bottom:20px;">
+  <div class="header">
+    <div class="row" style="width:100%">
+      <div class="col-md-12">
+        <h3 class="new_h3">
+          Submarine Usage
+        </h3>
+      </div>
+    </div>
+    <div class="row" style="width:100%">
+      <div class="col-md-12">
+        You can execute the selected command by entering the parameters in the interface below.
+        <a style="cursor:pointer" ng-click="z.angularBind('COMMAND_TYPE','','{{ PARAGRAPH_ID }}');z.runParagraph('{{ PARAGRAPH_ID }}')">
+          Submarine dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin-top: 10px; margin-bottom: 10px;"/>
+
+  <div style="margin-top: 10px; margin-bottom: 10px;">
+    <b>Launch Standalone Tensorflow Application:</b>
+    <pre>
+yarn jar path-to/hadoop-yarn-applications-submarine-3.2.0-SNAPSHOT.jar job run \
+  --env DOCKER_JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/ \
+  --env DOCKER_HADOOP_HDFS_HOME=/hadoop-3.1.0 --name tf-job-001 \
+  --docker_image <your-docker-image> \
+  --input_path hdfs://default/dataset/cifar-10-data  \
+  --checkpoint_path hdfs://default/tmp/cifar-10-jobdir \
+  --worker_resources memory=4G,vcores=2,gpu=2  \
+  --worker_launch_cmd "python ... (Your training application cmd)" \
+  --tensorboard # this will launch a companion tensorboard container for monitoring
+</pre>
+  </div>
+  <div style="margin-top: 10px; margin-bottom: 10px;">
+    <b>Launch Distributed Tensorflow Application:</b>
+    <pre>
+yarn jar hadoop-yarn-applications-submarine-${version}.jar job run \
+ --name tf-job-001 --docker_image <your docker image> \
+ --input_path hdfs://default/dataset/cifar-10-data \
+ --checkpoint_path hdfs://default/tmp/cifar-10-jobdir \
+ --env DOCKER_JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre/ \
+ --env DOCKER_HADOOP_HDFS_HOME=/hadoop-3.1.0 \
+ --num_workers 2 \
+ --worker_resources memory=8G,vcores=2,gpu=1 --worker_launch_cmd "cmd for worker ..." \
+ --num_ps 2 \
+ --ps_resources memory=4G,vcores=2,gpu=0 --ps_launch_cmd "cmd for ps"
+</pre>
+  </div>
+
+  <div style="margin-top: 10px; margin-bottom: 10px;">
+    <b>Commandline options</b>
+  </div>
+  <div class="box width-full">
+    <div>
+      <div class="row configuration">
+        <div class="col-md-12">
+          <table class="table table-striped" style="margin-bottom: 0px;">
+            <thead>
+              <tr>
+                <th style="width:20%">name</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody>
+{% for item in COMMANDLINE_OPTIONS %}
+              <tr>
+                <td>{{item.name}}</td>
+                <td>
+                  <div class="hiding_overflow">
+                    {{item.description}}
+                  </div>
+                </td>
+              </tr>
+{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="width:100%">
+    <div class="job-search-tool">
+      <div class="form-inline">
+        <button type="submit" class="btn btn-primary"
+        ng-click="z.angularBind('COMMAND_TYPE','','{{ PARAGRAPH_ID }}');z.runParagraph('{{ PARAGRAPH_ID }}')">
+          Submarine dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,59 @@
+{
+  "app": {
+    "id": "application_1550650473498_0003",
+    "user": "bdms_hzliuxun",
+    "name": "hzliuxun-2e3fdwarx",
+    "queue": "default",
+    "state": "FAILED",
+    "finalStatus": "FAILED",
+    "progress": 0,
+    "trackingUI": "History",
+    "trackingUrl": "http://ml2.jd.163.org:8188/applicationhistory/app/application_1550650473498_0003",
+    "diagnostics": "Application application_1550650473498_0003 failed 3 times due to AM Container for appattempt_1550650473498_0003_000003 exited with  exitCode: -1000\nFailing this attempt.Diagnostics: [2019-02-27 13:57:19.178]Application application_1550650473498_0003 initialization failed (exitCode=255) with output: main : command provided 0\nmain : run as user is bdms_hzliuxun\nmain : requested yarn user is bdms_hzliuxun\nUser bdms_hzliuxun not found\n\nFor more detailed output, check the application tracking page: http://ml2.jd.163.org:8188/applicationhistory/app/application_1550650473498_0003 Then click on links to logs of each attempt.\n. Failing the application.",
+    "clusterId": 1550650473498,
+    "applicationType": "yarn-service",
+    "applicationTags": "name: hzliuxun-2e3fdwarx",
+    "priority": 0,
+    "startedTime": 1551247036457,
+    "launchTime": 1551247037087,
+    "finishedTime": 1551247039182,
+    "elapsedTime": 2725,
+    "amContainerLogs": "http://ml2.jd.163.org:8042/node/containerlogs/container_e324_1550650473498_0003_03_000001/bdms_hzliuxun",
+    "amHostHttpAddress": "ml2.jd.163.org:8042",
+    "masterNodeId": "ml2.jd.163.org:36797",
+    "allocatedMB": -1,
+    "allocatedVCores": -1,
+    "reservedMB": -1,
+    "reservedVCores": -1,
+    "runningContainers": -1,
+    "memorySeconds": 195,
+    "vcoreSeconds": 0,
+    "queueUsagePercentage": 0,
+    "clusterUsagePercentage": 0,
+    "resourceSecondsMap": {
+      "entry": {
+        "key": "vcores",
+        "value": "0"
+      }
+    },
+    "preemptedResourceMB": 0,
+    "preemptedResourceVCores": 0,
+    "numNonAMContainerPreempted": 0,
+    "numAMContainerPreempted": 0,
+    "preemptedMemorySeconds": 0,
+    "preemptedVcoreSeconds": 0,
+    "preemptedResourceSecondsMap": {},
+    "logAggregationStatus": "SUCCEEDED",
+    "unmanagedApplication": false,
+    "amNodeLabelExpression": "",
+    "timeouts": {
+      "timeout": [
+        {
+          "type": "LIFETIME",
+          "expiryTime": "UNLIMITED",
+          "remainingTimeInSeconds": -1
+        }
+      ]
+    }
+  }
+}
