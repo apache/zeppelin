@@ -16,4 +16,4 @@
 # limitations under the License.
 #
 
-docker build -t submarine-interpreter-cpu:1.0.0 .
+docker build -t zeppelin-cpu-tensorflow_1.13.1-hadoop_3.1.2:1.0.0 .

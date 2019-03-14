@@ -16,4 +16,4 @@
 # limitations under the License.
 #
 
-docker build -t zeppelin-tensorflow_1.10-hadoop_3.1.2-gpu:1.0.0 .
+docker build -t zeppelin-gpu-tensorflow_1.13.1-hadoop_3.1.2:1.0.0 .

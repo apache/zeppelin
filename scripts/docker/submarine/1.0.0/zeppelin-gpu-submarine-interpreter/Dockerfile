@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,6 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-docker build -t zeppelin-tensorflow_1.10-hadoop_3.1.2-cpu:1.0.0 .
+FROM zeppelin-gpu-tensorflow_1.13.0-hadoop_3.1.2:1.0.0
+MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
+
+# expose interpreter thrift port
+EXPOSE 29914
