@@ -14,6 +14,7 @@
 
 package org.apache.zeppelin.submarine;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -66,7 +67,7 @@ public class SubmarineInterpreter extends Interpreter {
   private boolean needUpdateConfig = true;
   private String currentReplName = "";
 
-  SubmarineContext submarineContext = null;
+  private SubmarineContext submarineContext = null;
 
   public SubmarineInterpreter(Properties properties) {
     super(properties);
@@ -88,26 +89,15 @@ public class SubmarineInterpreter extends Interpreter {
   }
 
   private void setParagraphConfig(InterpreterContext context) {
-    String replName = context.getReplName();
-    if (StringUtils.equals(currentReplName, replName)) {
-      currentReplName = context.getReplName();
-      needUpdateConfig = true;
-    }
-    if (needUpdateConfig) {
-      needUpdateConfig = false;
-      if (currentReplName.equals("submarine") || currentReplName.isEmpty()) {
-        context.getConfig().put("editorHide", true);
-        context.getConfig().put("title", false);
-      } else {
-        context.getConfig().put("editorHide", false);
-        context.getConfig().put("title", true);
-      }
-    }
+    context.getConfig().put("editorHide", true);
+    context.getConfig().put("title", false);
   }
 
   @Override
   public InterpreterResult interpret(String script, InterpreterContext context) {
     try {
+      setParagraphConfig(context);
+
       // algorithm & checkpoint path support replaces ${username} with real user name
       String algorithmPath = properties.getProperty(SUBMARINE_ALGORITHM_HDFS_PATH, "");
       if (algorithmPath.contains(USERNAME_SYMBOL)) {
@@ -121,8 +111,6 @@ public class SubmarineInterpreter extends Interpreter {
       }
 
       SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(properties, context);
-
-      setParagraphConfig(context);
 
       LOGGER.debug("Run shell command '" + script + "'");
       String command = "", operation = "", cleanCheckpoint = "";
@@ -271,5 +259,10 @@ public class SubmarineInterpreter extends Interpreter {
         intpContext.getParagraphId(), "Active", activeChecked);*/
 
     return command;
+  }
+
+  @VisibleForTesting
+  public SubmarineContext getSubmarineContext() {
+    return submarineContext;
   }
 }

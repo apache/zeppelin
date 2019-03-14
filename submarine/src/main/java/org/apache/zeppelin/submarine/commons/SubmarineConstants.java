@@ -43,11 +43,8 @@ public class SubmarineConstants {
   public static final String CHECKPOINT_PATH = "CHECKPOINT_PATH";
   public static final String PS_LAUNCH_CMD = "PS_LAUNCH_CMD";
   public static final String WORKER_LAUNCH_CMD = "WORKER_LAUNCH_CMD";
-  public static final String MACHINELEARING_DISTRIBUTED_ENABLE
-      = "machinelearing.distributed.enable";
-
-  public static final String ZEPPELIN_INTERPRETER_RPC_PORTRANGE
-      = "zeppelin.interpreter.rpc.portRange";
+  public static final String MACHINELEARNING_DISTRIBUTED_ENABLE
+      = "machinelearning.distributed.enable";
 
   public static final String DOCKER_CONTAINER_NETWORK   = "docker.container.network";
   public static final String SUBMARINE_YARN_QUEUE       = "submarine.yarn.queue";

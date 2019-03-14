@@ -48,7 +48,7 @@ addons:
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
-    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet'
+    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine'
 
 matrix:
   include:
@@ -89,7 +89,7 @@ matrix:
     # Test interpreter modules
     - jdk: "oraclejdk8"
       dist: trusty
-      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" PROFILE="-Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" TENSORFLOW="1.0.0" PROFILE="-Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Run Spark integration test and unit test separately for each spark version
 

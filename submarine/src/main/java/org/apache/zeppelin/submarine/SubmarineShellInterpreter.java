@@ -51,6 +51,8 @@ public class SubmarineShellInterpreter extends ShellInterpreter {
 
   @Override
   public InterpreterResult internalInterpret(String cmd, InterpreterContext intpContext) {
+    setParagraphConfig(intpContext);
+
     // algorithm path & checkpoint path support replaces ${username} with real user name
     String algorithmPath = properties.getProperty(SUBMARINE_ALGORITHM_HDFS_PATH, "");
     if (algorithmPath.contains(USERNAME_SYMBOL)) {
@@ -65,6 +67,11 @@ public class SubmarineShellInterpreter extends ShellInterpreter {
     }
 
     return super.internalInterpret(cmd, intpContext);
+  }
+
+  private void setParagraphConfig(InterpreterContext context) {
+    context.getConfig().put("editorHide", false);
+    context.getConfig().put("title", true);
   }
 
   @Override
@@ -97,9 +104,8 @@ public class SubmarineShellInterpreter extends ShellInterpreter {
 
   @Override
   protected boolean isKerboseEnabled() {
-    if (!StringUtils.isAnyEmpty(getProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE))
-        && getProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE)
-        .equalsIgnoreCase("kerberos")) {
+    String authType = getProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE, "");
+    if (StringUtils.equals(authType, "kerberos")) {
       return true;
     }
     return false;

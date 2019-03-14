@@ -91,7 +91,7 @@ public class JobRunThread extends Thread {
       submarineJob.setCurrentJobState(EXECUTE_SUBMARINE);
 
       String algorithmPath = properties.getProperty(
-          SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_PATH);
+          SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_PATH, "");
       if (!algorithmPath.startsWith("hdfs://")) {
         String message = "Algorithm file upload HDFS path, " +
             "Must be `hdfs://` prefix. now setting " + algorithmPath;

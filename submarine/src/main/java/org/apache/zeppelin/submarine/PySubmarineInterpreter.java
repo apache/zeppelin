@@ -42,6 +42,8 @@ public class PySubmarineInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    setParagraphConfig(context);
+
     // algorithm & checkpoint path support replaces ${username} with real user name
     String algorithmPath = properties.getProperty(
         SubmarineConstants.SUBMARINE_ALGORITHM_HDFS_PATH, "");
@@ -57,9 +59,10 @@ public class PySubmarineInterpreter extends PythonInterpreter {
     }
 
     if (null == submarineInterpreter) {
-      submarineInterpreter = getInterpreterInTheSameSessionByClassName(
-          SubmarineInterpreter.class);
-      submarineInterpreter.setPythonWorkDir(context.getNoteId(), getPythonWorkDir());
+      submarineInterpreter = getInterpreterInTheSameSessionByClassName(SubmarineInterpreter.class);
+      if (null != submarineInterpreter) {
+        submarineInterpreter.setPythonWorkDir(context.getNoteId(), getPythonWorkDir());
+      }
     }
 
     SubmarineJob submarineJob = submarineContext.addOrGetSubmarineJob(this.properties, context);
@@ -75,6 +78,11 @@ public class PySubmarineInterpreter extends PythonInterpreter {
       }
     }
     return super.interpret(st, context);
+  }
+
+  private void setParagraphConfig(InterpreterContext context) {
+    context.getConfig().put("editorHide", false);
+    context.getConfig().put("title", true);
   }
 
   @Override

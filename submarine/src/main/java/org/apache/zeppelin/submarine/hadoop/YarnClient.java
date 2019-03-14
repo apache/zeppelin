@@ -76,8 +76,8 @@ public class YarnClient {
 
   private Configuration hadoopConf;
   private String yarnWebHttpAddr;
-  private String principal;
-  private String keytab;
+  private String principal = "";
+  private String keytab = "";
 
   public static final String YARN_REST_APPATTEMPTS = "appAttempts";
   public static final String YARN_REST_CONTAINER = "container";
@@ -92,12 +92,20 @@ public class YarnClient {
 
   String SERVICE_PATH = "/services/{service_name}";
 
+  private boolean hadoopSecurityEnabled = true; // simple or kerberos
+
   public YarnClient(Properties properties) {
     this.hadoopConf = new Configuration();
 
+    String hadoopAuthType = properties.getProperty(
+        SubmarineConstants.ZEPPELIN_SUBMARINE_AUTH_TYPE, "kerberos");
+    if (StringUtils.equals(hadoopAuthType, "simple")) {
+      hadoopSecurityEnabled = false;
+    }
+
     yarnWebHttpAddr = properties.getProperty(SubmarineConstants.YARN_WEB_HTTP_ADDRESS, "");
     boolean isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
-    if (isSecurityEnabled) {
+    if (isSecurityEnabled || hadoopSecurityEnabled) {
       String krb5conf = properties.getProperty(SubmarineConstants.SUBMARINE_HADOOP_KRB5_CONF, "");
       if (StringUtils.isEmpty(krb5conf)) {
         krb5conf = "/etc/krb5.conf";

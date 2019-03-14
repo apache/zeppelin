@@ -253,11 +253,11 @@
         "description": "whether use IPython when it is available",
         "type": "checkbox"
       },
-      "machinelearing.distributed.enable": {
-        "envName": "MACHINELEARING_DISTRIBUTED",
-        "propertyName": "machinelearing.distributed.enable",
+      "machinelearning.distributed.enable": {
+        "envName": "MACHINELEARNING_DISTRIBUTED",
+        "propertyName": "machinelearning.distributed.enable",
         "defaultValue": false,
-        "description": "Running distributed machine learing",
+        "description": "Running distributed machine learning",
         "type": "checkbox"
       }
     },

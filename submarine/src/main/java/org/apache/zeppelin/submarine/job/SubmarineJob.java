@@ -14,6 +14,7 @@
 
 package org.apache.zeppelin.submarine.job;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -135,6 +136,11 @@ public class SubmarineJob extends Thread {
         LOGGER.error(e.getMessage(), e);
       }
     }
+  }
+
+  @VisibleForTesting
+  public boolean getRunning() {
+    return running.get();
   }
 
   // Stop SubmarineJob

@@ -17,6 +17,7 @@ package org.apache.zeppelin.submarine;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.submarine.commons.SubmarineConstants;
 import org.apache.zeppelin.submarine.hadoop.YarnClient;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.zeppelin.submarine.commons.SubmarineConstants.ZEPPELIN_SUBMARINE_AUTH_TYPE;
+
 public class YarnClientTest {
   private static Logger LOGGER = LoggerFactory.getLogger(YarnClientTest.class);
 
@@ -38,6 +41,11 @@ public class YarnClientTest {
   public static void initEnv() {
     ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
     Properties properties = new Properties();
+    properties.setProperty(ZEPPELIN_SUBMARINE_AUTH_TYPE, "simple");
+    properties.setProperty("zeppelin.python.useIPython", "false");
+    properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    properties.setProperty(SubmarineConstants.SUBMARINE_HADOOP_KEYTAB, "keytab");
+    properties.setProperty(SubmarineConstants.SUBMARINE_HADOOP_PRINCIPAL, "user");
     yarnClient = new YarnClient(properties);
   }
 
