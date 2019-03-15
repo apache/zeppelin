@@ -637,7 +637,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetParagraphList() {
+  public void testGetParagraphList() throws IOException {
     Note note = null;
 
     try {
@@ -646,83 +646,93 @@ public class NotebookServerTest extends AbstractTestRestApi {
       p1.setText("%md start remote interpreter process");
       p1.setAuthenticationInfo(anonymous);
       notebookServer.getNotebook().saveNote(note, anonymous);
-    } catch (IOException e) {
-      e.printStackTrace();
+
+      String noteId = note.getId();
+      String user1Id = "user1", user2Id = "user2";
+
+      NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+
+      // test user1 can get anonymous's note
+      List<ParagraphInfo> paragraphList0 = null;
+      try {
+        paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
+      } catch (ServiceException e) {
+        e.printStackTrace();
+      } catch (TException e) {
+        e.printStackTrace();
+      }
+      assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
+
+      // test user1 cannot get user2's note
+      notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      List<ParagraphInfo> paragraphList1 = null;
+      try {
+        paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
+      } catch (ServiceException e) {
+        e.printStackTrace();
+      } catch (TException e) {
+        e.printStackTrace();
+      }
+      assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
+
+      // test user1 can get user2's shared note
+      notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
+      notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
+      List<ParagraphInfo> paragraphList2 = null;
+      try {
+        paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
+      } catch (ServiceException e) {
+        e.printStackTrace();
+      } catch (TException e) {
+        e.printStackTrace();
+      }
+      assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
+    } finally {
+      if (null != note) {
+        notebook.removeNote(note.getId(), anonymous);
+      }
     }
-
-    String noteId = note.getId();
-    String user1Id = "user1", user2Id = "user2";
-
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-
-    // test user1 can get anonymous's note
-    List<ParagraphInfo> paragraphList0 = null;
-    try {
-      paragraphList0 = notebookServer.getParagraphList(user1Id, noteId);
-    } catch (ServiceException e) {
-      e.printStackTrace();
-    } catch (TException e) {
-      e.printStackTrace();
-    }
-    assertNotNull(user1Id + " can get anonymous's note", paragraphList0);
-
-    // test user1 cannot get user2's note
-    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList1 = null;
-    try {
-      paragraphList1 = notebookServer.getParagraphList(user1Id, noteId);
-    } catch (ServiceException e) {
-      e.printStackTrace();
-    } catch (TException e) {
-      e.printStackTrace();
-    }
-    assertNull(user1Id + " cannot get " + user2Id + "'s note", paragraphList1);
-
-    // test user1 can get user2's shared note
-    notebookAuthorization.setOwners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    notebookAuthorization.setReaders(noteId, new HashSet<>(Arrays.asList(user1Id, user2Id)));
-    notebookAuthorization.setRunners(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    notebookAuthorization.setWriters(noteId, new HashSet<>(Arrays.asList(user2Id)));
-    List<ParagraphInfo> paragraphList2 = null;
-    try {
-      paragraphList2 = notebookServer.getParagraphList(user1Id, noteId);
-    } catch (ServiceException e) {
-      e.printStackTrace();
-    } catch (TException e) {
-      e.printStackTrace();
-    }
-    assertNotNull(user1Id + " can get " + user2Id + "'s shared note", paragraphList2);
   }
 
   @Test
   public void testNoteRevision() throws IOException {
-    Note note = notebook.createNote("note1", anonymous);
-    assertEquals(0, note.getParagraphCount());
-    NotebookRepoWithVersionControl.Revision firstRevision = notebook.checkpointNote(note.getId(), note.getPath(), "first commit", AuthenticationInfo.ANONYMOUS);
-    List<NotebookRepoWithVersionControl.Revision> revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
-    assertEquals(1, revisionList.size());
-    assertEquals(firstRevision.id, revisionList.get(0).id);
-    assertEquals("first commit", revisionList.get(0).message);
+    Note note = null;
 
-    // add one new paragraph and commit it
-    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
-    assertEquals(1, note.getParagraphCount());
-    NotebookRepoWithVersionControl.Revision secondRevision = notebook.checkpointNote(note.getId(), note.getPath(), "second commit", AuthenticationInfo.ANONYMOUS);
+    try {
+      note = notebook.createNote("note1", anonymous);
+      assertEquals(0, note.getParagraphCount());
+      NotebookRepoWithVersionControl.Revision firstRevision = notebook.checkpointNote(note.getId(), note.getPath(), "first commit", AuthenticationInfo.ANONYMOUS);
+      List<NotebookRepoWithVersionControl.Revision> revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+      assertEquals(1, revisionList.size());
+      assertEquals(firstRevision.id, revisionList.get(0).id);
+      assertEquals("first commit", revisionList.get(0).message);
 
-    revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
-    assertEquals(2, revisionList.size());
-    assertEquals(secondRevision.id, revisionList.get(0).id);
-    assertEquals("second commit", revisionList.get(0).message);
-    assertEquals(firstRevision.id, revisionList.get(1).id);
-    assertEquals("first commit", revisionList.get(1).message);
+      // add one new paragraph and commit it
+      note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      notebook.saveNote(note, AuthenticationInfo.ANONYMOUS);
+      assertEquals(1, note.getParagraphCount());
+      NotebookRepoWithVersionControl.Revision secondRevision = notebook.checkpointNote(note.getId(), note.getPath(), "second commit", AuthenticationInfo.ANONYMOUS);
 
-    // checkout the first commit
-    note = notebook.getNoteByRevision(note.getId(), note.getPath(), firstRevision.id, AuthenticationInfo.ANONYMOUS);
-    assertEquals(0, note.getParagraphCount());
+      revisionList = notebook.listRevisionHistory(note.getId(), note.getPath(), AuthenticationInfo.ANONYMOUS);
+      assertEquals(2, revisionList.size());
+      assertEquals(secondRevision.id, revisionList.get(0).id);
+      assertEquals("second commit", revisionList.get(0).message);
+      assertEquals(firstRevision.id, revisionList.get(1).id);
+      assertEquals("first commit", revisionList.get(1).message);
+
+      // checkout the first commit
+      note = notebook.getNoteByRevision(note.getId(), note.getPath(), firstRevision.id, AuthenticationInfo.ANONYMOUS);
+      assertEquals(0, note.getParagraphCount());
+    } finally {
+      if (null != note) {
+        notebook.removeNote(note.getId(), anonymous);
+      }
+    }
   }
 
   private NotebookSocket createWebSocket() {

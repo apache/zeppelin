@@ -136,7 +136,7 @@ public class NotebookServiceTest {
     assertNull(note2);
     ArgumentCaptor<Exception> exception = ArgumentCaptor.forClass(Exception.class);
     verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
-    assertTrue(exception.getValue().getCause().getMessage().equals("Note /folder_1/note1 existed"));
+    assertTrue(exception.getValue().getMessage().equals("Note '/folder_1/note1' existed"));
 
     // list note
     reset(callback);

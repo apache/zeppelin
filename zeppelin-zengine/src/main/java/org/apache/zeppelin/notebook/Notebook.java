@@ -251,8 +251,10 @@ public class Notebook {
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove note " + noteId);
     Note note = getNote(noteId);
-    noteManager.removeNote(noteId, subject);
-    fireNoteRemoveEvent(note, subject);
+    if (null != note) {
+      noteManager.removeNote(noteId, subject);
+      fireNoteRemoveEvent(note, subject);
+    }
   }
 
   public Note getNote(String id) {
