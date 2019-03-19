@@ -128,10 +128,6 @@ public abstract class ClusterManager {
 
   protected Collection<Node> clusterNodes = new ArrayList<>();
 
-  // raft
-  protected static String ZEPL_CLUSTER_ID = "ZEPL-CLUSTER";
-  protected static String ZEPL_CLIENT_ID = "ZEPL-CLIENT";
-
   protected int raftServerPort = 0;
 
   protected RaftClient raftClient = null;
@@ -139,7 +135,6 @@ public abstract class ClusterManager {
   protected Map<MemberId, Address> raftAddressMap = new ConcurrentHashMap<>();
   protected LocalRaftProtocolFactory protocolFactory
       = new LocalRaftProtocolFactory(protocolSerializer);
-  protected List<MessagingService> messagingServices = new ArrayList<>();
   protected List<MemberId> clusterMemberIds = new ArrayList<MemberId>();
 
   protected AtomicBoolean running = new AtomicBoolean(true);
@@ -150,6 +145,8 @@ public abstract class ClusterManager {
 
   // zeppelin server host & port
   protected String zeplServerHost = "";
+
+  protected ClusterMonitor clusterMonitor = null;
 
   public ClusterManager() {
     try {
@@ -166,11 +163,12 @@ public abstract class ClusterManager {
             raftServerPort = clusterPort;
           }
 
-          Node node = Node.builder().withId(cluster[i])
-              .withAddress(Address.from(clusterHost, clusterPort)).build();
+          String memberId = clusterHost + ":" + clusterPort;
+          Address address = Address.from(clusterHost, clusterPort);
+          Node node = Node.builder().withId(memberId).withAddress(address).build();
           clusterNodes.add(node);
-          raftAddressMap.put(MemberId.from(cluster[i]), Address.from(clusterHost, clusterPort));
-          clusterMemberIds.add(MemberId.from(cluster[i]));
+          raftAddressMap.put(MemberId.from(memberId), address);
+          clusterMemberIds.add(MemberId.from(memberId));
         }
       }
     } catch (UnknownHostException e) {
@@ -218,7 +216,7 @@ public abstract class ClusterManager {
           LOGGER.error(e.getMessage());
         }
 
-        MemberId memberId = MemberId.from(ZEPL_CLIENT_ID + zeplServerHost + ":" + raftClientPort);
+        MemberId memberId = MemberId.from(zeplServerHost + ":" + raftClientPort);
         Address address = Address.from(zeplServerHost, raftClientPort);
         raftAddressMap.put(memberId, address);
 
@@ -308,7 +306,7 @@ public abstract class ClusterManager {
     }
   }
 
-  public String getClusterName() {
+  public String getClusterNodeName() {
     return zeplServerHost + ":" + raftServerPort;
   }
 

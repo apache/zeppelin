@@ -31,6 +31,9 @@ import java.util.Map;
 public class ClusterMeta implements Serializable {
   private static Logger logger = LoggerFactory.getLogger(ClusterMeta.class);
 
+  // The name of each server node in the cluster
+  public static String NODE_NAME            = "NODE_NAME";
+
   // zeppelin-server meta
   public static String SERVER_HOST          = "SERVER_HOST";
   public static String SERVER_PORT          = "SERVER_PORT";
@@ -39,6 +42,7 @@ public class ClusterMeta implements Serializable {
   public static String SERVER_START_TIME    = "SERVER_START_TIME";
 
   // interperter-process meta
+  public static String INTP_PROCESS_ID      = "INTP_PROCESS_ID";
   public static String INTP_TSERVER_HOST    = "INTP_TSERVER_HOST";
   public static String INTP_TSERVER_PORT    = "INTP_TSERVER_PORT";
   public static String INTP_START_TIME      = "INTP_START_TIME";
