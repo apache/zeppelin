@@ -38,6 +38,10 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
     def __init__(self, server):
         self._status = ipython_pb2.STARTING
         self._server = server
+        # issue with execute_interactive and auto completion: https://github.com/jupyter/jupyter_client/issues/429
+        # in all case because ipython does not support run and auto completion at the same time: https://github.com/jupyter/notebook/issues/3763
+        # For now we will lock to ensure that there is no concurrent bug that can "hang" the kernel
+        self._lock = threading.Lock()
 
     def start(self):
         print("starting...")
@@ -82,10 +86,11 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
 
         payload_reply = []
         def execute_worker():
-            reply = self._kc.execute_interactive(request.code,
+            with self._lock:
+                reply = self._kc.execute_interactive(request.code,
                                             output_hook=_output_hook,
                                             timeout=None)
-            payload_reply.append(reply)
+                payload_reply.append(reply)
 
         t = threading.Thread(name="ConsumerThread", target=execute_worker)
         t.start()
@@ -169,7 +174,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         return ipython_pb2.CancelResponse()
 
     def complete(self, request, context):
-        reply = self._kc.complete(request.code, request.cursor, reply=True, timeout=None)
+        with self._lock:
+            reply = self._kc.complete(request.code, request.cursor, reply=True, timeout=None)
         return ipython_pb2.CompletionResponse(matches=reply['content']['matches'])
 
     def status(self, request, context):
