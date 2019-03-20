@@ -404,7 +404,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     pool.execute(completionFuture);
 
     // We ensure that running and auto completion are not hanging.
-    InterpreterResult res = interpretFuture.get(10000, TimeUnit.MILLISECONDS);
+    InterpreterResult res = interpretFuture.get(15000, TimeUnit.MILLISECONDS);
     List<InterpreterCompletion> autoRes = completionFuture.get(1000, TimeUnit.MILLISECONDS);
     assertTrue(res.code().name().equals("SUCCESS"));
     assertTrue(autoRes.size() > 0);
