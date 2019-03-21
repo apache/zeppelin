@@ -103,7 +103,7 @@ public class RemoteInterpreter extends Interpreter {
   }
 
   public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() throws IOException {
-    if (this.interpreterProcess != null) {
+    if (this.interpreterProcess != null && interpreterProcess.isRunning()) {
       return this.interpreterProcess;
     }
     ManagedInterpreterGroup intpGroup = getInterpreterGroup();

@@ -145,13 +145,16 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertTrue(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
+    assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
     try {
       assertEquals("hello", remoteInterpreter2.interpret("hello", context1));
       fail("Should not be able to call interpret after interpreter is closed");
     } catch (Exception e) {
       e.printStackTrace();
     }
-    assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
+
+    // [ZEPPELIN-4031] Fixed : Unable to detect interpreter process killed when it is killed manully
+    assertNotNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
   }
 
   @Test
@@ -191,14 +194,16 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
     assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
     remoteInterpreter2.getInterpreterGroup().close(remoteInterpreter2.getSessionId());
+    assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
     try {
       assertEquals("hello", remoteInterpreter2.interpret("hello", context1).message().get(0).getData());
       fail("Should not be able to call interpret after interpreter is closed");
     } catch (Exception e) {
       e.printStackTrace();
     }
-    assertNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
 
+    // [ZEPPELIN-4031] Fixed : Unable to detect interpreter process killed when it is killed manully
+    assertNotNull(remoteInterpreter2.getInterpreterGroup().getRemoteInterpreterProcess());
   }
 
   @Test
@@ -447,7 +452,7 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void testFailToLaunchInterpreterProcess_Timeout() {
     try {
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
-              zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");
+          zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");
       System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
       final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
       final InterpreterContext context1 = createDummyInterpreterContext();
@@ -463,5 +468,37 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName());
       System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName());
     }
+  }
+
+  public void testDetectIntpProcessKilled() throws InterpreterException, IOException {
+    // [ZEPPELIN-4031] Fixed : Unable to detect interpreter process killed when it is killed manully
+    interpreterSetting.getOption().setPerUser(InterpreterOption.SHARED);
+
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+
+    assertTrue(interpreter1 instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter1 = (RemoteInterpreter) interpreter1;
+
+    InterpreterContext context1 = createDummyInterpreterContext();
+    assertEquals("hello", remoteInterpreter1.interpret("hello", context1).message().get(0).getData());
+    assertEquals(Interpreter.FormType.NATIVE, interpreter1.getFormType());
+    assertEquals(0, remoteInterpreter1.getProgress(context1));
+    assertNotNull(remoteInterpreter1.getOrCreateInterpreterProcess());
+    assertTrue(remoteInterpreter1.getInterpreterGroup().getRemoteInterpreterProcess().isRunning());
+
+    // Test close RemoteInterpreterProcess
+    // Call InterpreterGroup.close instead of Interpreter.close, otherwise we will have the
+    // RemoteInterpreterProcess leakage.
+    remoteInterpreter1.getInterpreterGroup().close(remoteInterpreter1.getSessionId());
+    interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
+    // RemoteInterpreterProcess close, equals null;
+    assertNull(remoteInterpreter1.getInterpreterGroup().getInterpreterProcess());
+    try {
+      remoteInterpreter1.interpret("hello", context1);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    // Check if the interpreter is recreated
+    assertNotNull(remoteInterpreter1.getInterpreterGroup().getInterpreterProcess());
   }
 }

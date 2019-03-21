@@ -58,16 +58,41 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
                                                                              Properties properties)
       throws IOException {
+    if (remoteIntpProcessIsShutdown()) {
+      LOGGER.info("Check whether the InterpreterProcess has been shutdown.");
+      // clean invalid session and dirty data of interpreterSetting
+      close();
+    }
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
           properties);
+      ManagedInterpreterGroup managedIntpGroup = interpreterSetting.getInterpreterGroup(getId());
+      if (null != managedIntpGroup) {
+        managedIntpGroup.setInterpreterProcess(remoteInterpreterProcess);
+      }
       remoteInterpreterProcess.start(userName);
       interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
       getInterpreterSetting().getRecoveryStorage()
           .onInterpreterClientStart(remoteInterpreterProcess);
     }
     return remoteInterpreterProcess;
+  }
+
+  public void setInterpreterProcess(RemoteInterpreterProcess remoteIntpProcess) {
+    remoteInterpreterProcess = remoteIntpProcess;
+  }
+
+  // Check that the remote interpreter process Whether it Service exception,
+  // Causes it to be unusable.
+  private boolean remoteIntpProcessIsShutdown() {
+    if (null != remoteInterpreterProcess && !remoteInterpreterProcess.isRunning()
+        && null != remoteInterpreterProcess.getHost() && -1 != remoteInterpreterProcess.getPort()) {
+      // The remote interpreter process has been created, but it has stopped running.
+      return true;
+    }
+
+    return false;
   }
 
   public RemoteInterpreterProcess getInterpreterProcess() {
@@ -77,7 +102,6 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   public RemoteInterpreterProcess getRemoteInterpreterProcess() {
     return remoteInterpreterProcess;
   }
-
 
   /**
    * Close all interpreter instances in this group
@@ -96,7 +120,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   public synchronized void close(String sessionId) {
     LOGGER.info("Close Session: " + sessionId + " for interpreter setting: " +
             interpreterSetting.getName());
-    close(sessions.remove(sessionId));
+    closeSessionThread(sessions.remove(sessionId));
     //TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
     if (sessions.isEmpty() && interpreterSetting != null) {
       LOGGER.info("Remove this InterpreterGroup: {} as all the sessions are closed", id);
@@ -114,14 +138,14 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     }
   }
 
-  private void close(Collection<Interpreter> interpreters) {
+  private void closeSessionThread(Collection<Interpreter> interpreters) {
     if (interpreters == null) {
       return;
     }
     List<Thread> closeThreads = interpreters.stream()
             .map(interpreter -> new Thread(() ->
                     closeInterpreter(interpreter),
-                    interpreter.getClass().getSimpleName() + "-close"))
+                    interpreter.getClass().getSimpleName() + "-closeSessionThread"))
             .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
                     LOGGER.error("Interpreter close error", e)))
             .peek(Thread::start)
@@ -131,7 +155,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       try {
         t.join();
       } catch (InterruptedException e) {
-        LOGGER.error("Can't wait interpreter close threads", e);
+        LOGGER.error("Can't wait interpreter closeSessionThread threads", e);
         Thread.currentThread().interrupt();
         break;
       }
@@ -141,17 +165,27 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   private void closeInterpreter(Interpreter interpreter) {
     Scheduler scheduler = interpreter.getScheduler();
 
-    for (final Job job : scheduler.getAllJobs()) {
-      job.abort();
-      job.setStatus(Job.Status.ABORT);
-      LOGGER.info("Job " + job.getJobName() + " aborted ");
-    }
+    // Need to abort the task being executed
+    // when actively shutting down the remote interpreter
+    if (false == remoteIntpProcessIsShutdown()) {
+      // ZEPPELIN-4031
+      // But when zeppelin detects that the interpreter process is abnormal,
+      // Can't abort the this task,
+      // Because this will be because of the call to the job.abort() function.
+      // Call the getOrCreateInterpreterProcess() function again,
+      // Will wait for the connection to interpret the 30 second timeout setting.
+      for (final Job job : scheduler.getAllJobs()) {
+        job.abort();
+        job.setStatus(Job.Status.ABORT);
+        LOGGER.info("Job " + job.getJobName() + " aborted ");
+      }
 
-    try {
-      LOGGER.info("Trying to close interpreter " + interpreter.getClassName());
-      interpreter.close();
-    } catch (InterpreterException e) {
-      LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+      try {
+        LOGGER.info("Trying to close interpreter " + interpreter.getClassName());
+        interpreter.close();
+      } catch (InterpreterException e) {
+        LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+      }
     }
 
     //TODO(zjffdu) move the close of schedule to Interpreter
