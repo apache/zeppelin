@@ -373,7 +373,8 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   public void testIpython_shouldNotHang_whenCallingAutoCompleteAndInterpretConcurrently()
       throws InterpreterException,
       InterruptedException, TimeoutException, ExecutionException {
-    startInterpreter(new Properties());
+    Properties properties = initIntpProperties();
+    startInterpreter(properties);
     final String code = "import time\n"
         + "print(1)\n"
         + "time.sleep(5)\n"
