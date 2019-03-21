@@ -82,7 +82,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private boolean useBuiltinPy4j = true;
   private boolean usePy4JAuth = true;
   private String secret;
-  private volatile boolean pythonProcessFailed = false;
+  private volatile boolean pythonProcessRunning = false;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
@@ -294,7 +294,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
 
     // wait until IPython kernel is started or timeout
     long startTime = System.currentTimeMillis();
-    while (!pythonProcessFailed) {
+    while (!pythonProcessRunning) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -305,6 +305,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
         StatusResponse response = ipythonClient.status(StatusRequest.newBuilder().build());
         if (response.getStatus() == IPythonStatus.RUNNING) {
           LOGGER.info("IPython Kernel is Running");
+          pythonProcessRunning = true;
           break;
         } else {
           LOGGER.info("Wait for IPython Kernel to be started");
@@ -319,7 +320,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             + " seconds");
       }
     }
-    if (pythonProcessFailed) {
+    if (!pythonProcessRunning) {
       throw new IOException("Fail to launch IPython Kernel as the python process is failed");
     }
   }
@@ -355,23 +356,44 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     }
   }
 
+  public ExecuteWatchdog getWatchDog() {
+    return watchDog;
+  }
+
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st,
+                                     InterpreterContext context) throws InterpreterException {
     zeppelinContext.setGui(context.getGui());
     zeppelinContext.setNoteGui(context.getNoteGui());
     zeppelinContext.setInterpreterContext(context);
     interpreterOutput.setInterpreterOutput(context.out);
-    ExecuteResponse response =
-        ipythonClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
-            interpreterOutput);
     try {
+      ExecuteResponse response =
+              ipythonClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
+                      interpreterOutput);
       interpreterOutput.getInterpreterOutput().flush();
-    } catch (IOException e) {
-      throw new RuntimeException("Fail to write output", e);
+      // It is not known which method is called first (ipythonClient.stream_execute
+      // or onProcessFailed) when ipython kernel process is exited. Because they are in
+      // 2 different threads. So here we would check ipythonClient's status and sleep 1 second
+      // if ipython kernel is maybe terminated.
+      if (pythonProcessRunning && !ipythonClient.isMaybeIPythonFailed()) {
+        return new InterpreterResult(
+                InterpreterResult.Code.valueOf(response.getStatus().name()));
+      } else {
+        if (ipythonClient.isMaybeIPythonFailed()) {
+          Thread.sleep(1000);
+        }
+        if (pythonProcessRunning) {
+          return new InterpreterResult(
+                  InterpreterResult.Code.valueOf(response.getStatus().name()));
+        } else {
+          return new InterpreterResult(InterpreterResult.Code.ERROR,
+                  "IPython kernel is abnormally exited, please check your code and log.");
+        }
+      }
+    } catch (Exception e) {
+      throw new InterpreterException("Fail to interpret python code", e);
     }
-    InterpreterResult result = new InterpreterResult(
-        InterpreterResult.Code.valueOf(response.getStatus().name()));
-    return result;
   }
 
   @Override
@@ -416,12 +438,13 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void onProcessComplete(int exitValue) {
     LOGGER.warn("Python Process is completed with exitValue: " + exitValue);
+    pythonProcessRunning = false;
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Exception happens in Python Process", e);
-    pythonProcessFailed = true;
+    pythonProcessRunning = false;
   }
 
   static class ProcessLogOutputStream extends LogOutputStream {
