@@ -83,7 +83,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st,
+                                     InterpreterContext context) throws InterpreterException {
     InterpreterContext.set(context);
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = Utils.buildJobDesc(context);

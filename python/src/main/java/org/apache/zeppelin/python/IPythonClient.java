@@ -53,6 +53,7 @@ public class IPythonClient {
   private final ManagedChannel channel;
   private final IPythonGrpc.IPythonBlockingStub blockingStub;
   private final IPythonGrpc.IPythonStub asyncStub;
+  private volatile boolean maybeIPythonFailed = false;
 
   private SecureRandom random = new SecureRandom();
 
@@ -83,6 +84,7 @@ public class IPythonClient {
     final ExecuteResponse.Builder finalResponseBuilder = ExecuteResponse.newBuilder()
         .setStatus(ExecuteStatus.SUCCESS);
     final AtomicBoolean completedFlag = new AtomicBoolean(false);
+    maybeIPythonFailed = false;
     LOGGER.debug("stream_execute code:\n" + request.getCode());
     asyncStub.execute(request, new StreamObserver<ExecuteResponse>() {
       int index = 0;
@@ -137,7 +139,7 @@ public class IPythonClient {
         }
         LOGGER.error("Fail to call IPython grpc", throwable);
         finalResponseBuilder.setStatus(ExecuteStatus.ERROR);
-
+        maybeIPythonFailed = true;
         completedFlag.set(true);
         synchronized (completedFlag) {
           completedFlag.notify();
@@ -204,6 +206,9 @@ public class IPythonClient {
     asyncStub.stop(request, null);
   }
 
+  public boolean isMaybeIPythonFailed() {
+    return maybeIPythonFailed;
+  }
 
   public static void main(String[] args) {
     IPythonClient client = new IPythonClient("localhost", 50053);
