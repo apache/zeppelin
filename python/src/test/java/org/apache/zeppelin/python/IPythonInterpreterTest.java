@@ -318,11 +318,13 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         });
 
     pool.execute(interpretFuture);
-    // Not testing anything just to see the ci behavior
-    InterpreterResult res = interpretFuture.get(20000, TimeUnit.MILLISECONDS);
+    // we sleep to ensure that the paragraph is running
+    Thread.sleep(3000);
     pool.execute(completionFuture);
-    List<InterpreterCompletion> autoRes = completionFuture.get(5000, TimeUnit.MILLISECONDS);
+
     // We ensure that running and auto completion are not hanging.
+    InterpreterResult res = interpretFuture.get(20000, TimeUnit.MILLISECONDS);
+    List<InterpreterCompletion> autoRes = completionFuture.get(1000, TimeUnit.MILLISECONDS);
     assertTrue(res.code().name().equals("SUCCESS"));
     assertTrue(autoRes.size() > 0);
   }
