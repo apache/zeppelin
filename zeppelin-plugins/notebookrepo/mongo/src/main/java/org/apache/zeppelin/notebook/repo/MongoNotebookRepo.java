@@ -80,15 +80,16 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException {
+    LOG.debug("list repo.");
     Map<String, NoteInfo> infos = new HashMap<>();
 
     Document match = new Document("$match", new Document(Fields.IS_DIR, false));
-    Document graphLookup = new Document("$graphLookup"
-        , new Document("from", folderName)
-        .append("startWith", "$" + Fields.PID)
-        .append("connectFromField", Fields.PID)
-        .append("connectToField", Fields.ID)
-        .append("as", "fullPath"));
+    Document graphLookup = new Document("$graphLookup",
+        new Document("from", folderName)
+            .append("startWith", "$" + Fields.PID)
+            .append("connectFromField", Fields.PID)
+            .append("connectToField", Fields.ID)
+            .append("as", Fields.FULL_PATH));
 
 
     ArrayList<Document> list = Lists.newArrayList(match, graphLookup);
@@ -97,7 +98,7 @@ public class MongoNotebookRepo implements NotebookRepo {
     for (Document document : aggregate) {
       String id = document.getString(Fields.ID);
       String name = document.getString(Fields.NAME);
-      List<Document> fullPath = document.get("fullPath", List.class);
+      List<Document> fullPath = document.get(Fields.FULL_PATH, List.class);
 
       StringBuilder sb = new StringBuilder();
       for (Document pathNode : fullPath) {
@@ -115,10 +116,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException {
-    ////validate folder exists
-    //String[] pathArray = toPathArray(notePath, false);
-    //findFolder(pathArray);
-    LOG.info("====get{}:{}", noteId, notePath);
+    LOG.debug("get note, noteId: {}, notePath:{}", noteId, notePath);
 
     return getNote(noteId, notePath);
   }
@@ -134,7 +132,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public void save(Note note, AuthenticationInfo subject) throws IOException {
-    LOG.info("====save {}:", note);
+    LOG.debug("save note, note: {}", note);
     String[] pathArray = toPathArray(note.getPath(), false);
     String pId = completeFolder(pathArray);
     saveNotePath(note.getId(), note.getName(), pId);
@@ -163,9 +161,10 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void move(String noteId, String notePath, String newNotePath
-      , AuthenticationInfo subject) throws IOException {
-    LOG.info("====move{}:{}:{}", noteId, notePath, newNotePath);
+  public void move(String noteId, String notePath, String newNotePath,
+                   AuthenticationInfo subject) throws IOException {
+    LOG.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
+        noteId, notePath, newNotePath);
     String[] pathArray = toPathArray(newNotePath, true);
     String[] parentPathArray = Arrays.copyOfRange(pathArray, 0, pathArray.length - 1);
     String noteName = pathArray[pathArray.length - 1];
@@ -174,18 +173,18 @@ public class MongoNotebookRepo implements NotebookRepo {
   }
 
   private void moveNote(String noteId, String parentId, String noteName) {
-    Document doc = new Document("$set"
-        , new Document(Fields.PID, parentId)
-        .append(Fields.NAME, noteName));
+    Document doc = new Document("$set",
+        new Document(Fields.PID, parentId)
+            .append(Fields.NAME, noteName));
 
     folders.updateOne(eq(Fields.ID, noteId), doc);
     notes.updateOne(eq(Fields.ID, noteId), Updates.set(Fields.NAME, noteName));
   }
 
   @Override
-  public void move(String folderPath, String newFolderPath
-      , AuthenticationInfo subject) throws IOException {
-    LOG.info("====move folder {}:{}", folderPath, newFolderPath);
+  public void move(String folderPath, String newFolderPath,
+                   AuthenticationInfo subject) throws IOException {
+    LOG.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
     if (folderPath.equals(newFolderPath)) {
       return;
     }
@@ -197,19 +196,19 @@ public class MongoNotebookRepo implements NotebookRepo {
     String newPId = completeFolder(newFolderParentArray);
     String newFolderName = newPathArray[newPathArray.length - 1];
 
-    Document doc = new Document("$set"
-        , new Document(Fields.ID, id)
-        .append(Fields.PID, newPId)
-        .append(Fields.IS_DIR, true)
-        .append(Fields.NAME, newFolderName));
+    Document doc = new Document("$set",
+        new Document(Fields.ID, id)
+            .append(Fields.PID, newPId)
+            .append(Fields.IS_DIR, true)
+            .append(Fields.NAME, newFolderName));
 
     folders.updateOne(eq(Fields.ID, id), doc);
   }
 
   @Override
-  public void remove(String noteId, String notePath
-      , AuthenticationInfo subject) throws IOException {
-    LOG.info("====remove {}:{}", noteId, notePath);
+  public void remove(String noteId, String notePath,
+                     AuthenticationInfo subject) throws IOException {
+    LOG.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
     folders.deleteOne(eq(Fields.ID, noteId));
     notes.deleteOne(eq(Fields.ID, noteId));
 
@@ -229,7 +228,7 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   @Override
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
-    LOG.info("====remove folder: {}", folderPath);
+    LOG.debug("remove folder, folderPath: {}", folderPath);
     String[] pathArray = toPathArray(folderPath, true);
     String id = findFolder(pathArray);
     FindIterable<Document> iter = folders.find(eq(Fields.PID, id));
@@ -285,11 +284,11 @@ public class MongoNotebookRepo implements NotebookRepo {
           .append(Fields.NAME, currentPath);
 
       String cId = new ObjectId().toString();
-      Document doc = new Document("$setOnInsert"
-          , new Document(Fields.ID, cId)
-          .append(Fields.PID, pId)
-          .append(Fields.IS_DIR, true)
-          .append(Fields.NAME, currentPath));
+      Document doc = new Document("$setOnInsert",
+          new Document(Fields.ID, cId)
+              .append(Fields.PID, pId)
+              .append(Fields.IS_DIR, true)
+              .append(Fields.NAME, currentPath));
 
       Document exist = folders.find(query).first();
       if (exist == null) {
@@ -314,9 +313,9 @@ public class MongoNotebookRepo implements NotebookRepo {
       return pId;
     }
     for (String currentPath : splitPath) {
-      Bson where = and(eq(Fields.PID, pId)
-          , eq(Fields.IS_DIR, true)
-          , eq(Fields.NAME, currentPath));
+      Bson where = and(eq(Fields.PID, pId),
+          eq(Fields.IS_DIR, true),
+          eq(Fields.NAME, currentPath));
       Document node = folders.find(where).first();
       if (null == node) {
         throw new IllegalStateException("folder not found in path:" + currentPath);
@@ -386,5 +385,7 @@ public class MongoNotebookRepo implements NotebookRepo {
      * parent folder id.
      */
     private static final String PID = "pId";
+
+    private static final String FULL_PATH = "fullPath";
   }
 }
