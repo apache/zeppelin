@@ -1,6 +1,0 @@
-grpcio==1.12.1
-protobuf==3.6.1
-ipython==5.7.0
-ipykernel==4.8.2
-jupyter-client==5.2.3
-py4j==0.10.7
