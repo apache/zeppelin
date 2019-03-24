@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -76,6 +77,7 @@ public class IPythonInterpreterTest {
   }
 
   @Test
+<<<<<<< HEAD
   public void testGrpcFrameSize() throws InterpreterException, IOException {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.ipython.grpc.message_size", "4");
@@ -114,7 +116,6 @@ public class IPythonInterpreterTest {
     // to make this test can run under both python2 and python3
     InterpreterResult result = interpreter.interpret("from __future__ import print_function", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
 
     InterpreterContext context = getInterpreterContext();
     result = interpreter.interpret("import sys\nprint(sys.version[0])", context);
@@ -464,6 +465,48 @@ public class IPythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("import time\nprint(\"Hello\")\ntime.sleep(0.5)\nz.getInterpreterContext().out().clear()\nprint(\"world\")\n", context);
     assertEquals("%text world\n", context.out.getCurrentOutput().toString());
+  }
+  
+  public void testIpythonKernelCrash_shouldNotHangExecution()
+          throws InterpreterException, IOException {
+    // The goal of this test is to ensure that we handle case when the kernel die.
+    // In order to do so, we will kill the kernel process from the python code.
+    // A real example of that could be a out of memory by the code we execute.
+    String codeDep = "!pip install psutil";
+    String codeFindPID = "from os import getpid\n"
+            + "import psutil\n"
+            + "pids = psutil.pids()\n"
+            + "my_pid = getpid()\n"
+            + "pidToKill = []\n"
+            + "for pid in pids:\n"
+            + "    try:\n"
+            + "        p = psutil.Process(pid)\n"
+            + "        cmd = p.cmdline()\n"
+            + "        for arg in cmd:\n"
+            + "            if arg.count('ipykernel'):\n"
+            + "                pidToKill.append(pid)\n"
+            + "    except:\n"
+            + "        continue\n"
+            + "len(pidToKill)";
+    String codeKillKernel = "from os import kill\n"
+            + "import signal\n"
+            + "for pid in pidToKill:\n"
+            + "    kill(pid, signal.SIGKILL)";
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(codeDep, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    context = getInterpreterContext();
+    result = interpreter.interpret(codeFindPID, context);
+    assertEquals(Code.SUCCESS, result.code());
+    InterpreterResultMessage output = context.out.toInterpreterResultMessage().get(0);
+    int numberOfPID = Integer.parseInt(output.getData());
+    assertTrue(numberOfPID > 0);
+    context = getInterpreterContext();
+    result = interpreter.interpret(codeKillKernel, context);
+    assertEquals(Code.ERROR, result.code());
+    output = context.out.toInterpreterResultMessage().get(0);
+    assertTrue(output.getData().equals("Ipython kernel has been stopped. Please check logs. "
+            + "It might be because of an out of memory issue."));
   }
 
   private static InterpreterContext getInterpreterContext() {
