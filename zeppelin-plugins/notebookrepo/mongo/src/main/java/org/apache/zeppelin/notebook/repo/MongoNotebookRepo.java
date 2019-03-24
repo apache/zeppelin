@@ -252,6 +252,7 @@ public class MongoNotebookRepo implements NotebookRepo {
         remove(nodePath, subject);
       } else {
         folders.deleteOne(eq(Fields.ID, nodeId));
+        notes.deleteOne(eq(Fields.ID, nodeId));
       }
 
       folders.deleteOne(eq(Fields.ID, nodeId));
