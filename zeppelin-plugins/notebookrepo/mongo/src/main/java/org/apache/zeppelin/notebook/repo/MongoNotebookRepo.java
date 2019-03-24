@@ -3,7 +3,8 @@ package org.apache.zeppelin.notebook.repo;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -165,6 +166,9 @@ public class MongoNotebookRepo implements NotebookRepo {
                    AuthenticationInfo subject) throws IOException {
     LOG.debug("move note, noteId: {}, notePath: {}, newNotePath: {}",
         noteId, notePath, newNotePath);
+    if (StringUtils.equals(notePath, newNotePath)) {
+      return;
+    }
     String[] pathArray = toPathArray(newNotePath, true);
     String[] parentPathArray = Arrays.copyOfRange(pathArray, 0, pathArray.length - 1);
     String noteName = pathArray[pathArray.length - 1];
@@ -185,7 +189,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void move(String folderPath, String newFolderPath,
                    AuthenticationInfo subject) throws IOException {
     LOG.debug("move folder, folderPath: {}, newFolderPath: {}", folderPath, newFolderPath);
-    if (folderPath.equals(newFolderPath)) {
+    if (StringUtils.equals(folderPath, newFolderPath)) {
       return;
     }
 
