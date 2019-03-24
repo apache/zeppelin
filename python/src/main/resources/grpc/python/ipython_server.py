@@ -53,7 +53,7 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         print("execute code:\n")
         print(request.code.encode('utf-8'))
         sys.stdout.flush()
-        stream_reply_queue = queue.Queue(maxsize = 20)
+        stream_reply_queue = queue.Queue(maxsize = 30)
         payload_reply = []
         def _output_hook(msg):
             msg_type = msg['header']['msg_type']
@@ -91,7 +91,6 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                 if outtype:
                     stream_reply_queue.put(
                         ipython_pb2.ExecuteResponse(status=outstatus, type=outtype, output=output)
-
         def execute_worker():
             reply = self._kc.execute_interactive(request.code,
                                           output_hook=_output_hook,
