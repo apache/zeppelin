@@ -82,8 +82,9 @@ public class InterpreterSettingTest {
         .create();
 
     // create default interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-shared_process", interpreter.getInterpreterGroup().getId());
 
     // create default interpreter for user2 and note1
     interpreterSetting.getDefaultInterpreter("user2", "note1");
@@ -120,9 +121,10 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-shared_process", interpreter.getInterpreterGroup().getId());
 
     // create interpreter for user2 and note1
     interpreterSetting.getDefaultInterpreter("user2", "note1");
@@ -158,9 +160,10 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-shared_process", interpreter.getInterpreterGroup().getId());
 
     // create interpreter for user1 and note2
     interpreterSetting.getDefaultInterpreter("user1", "note2");
@@ -196,13 +199,15 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-user1", interpreter1.getInterpreterGroup().getId());
 
     // create interpreter for user2 and note1
-    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-user2", interpreter2.getInterpreterGroup().getId());
 
     // Each user own one InterpreterGroup and one session per InterpreterGroup
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
@@ -234,13 +239,16 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-note1", interpreter1.getInterpreterGroup().getId());
 
     // create interpreter for user2 and note2
-    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user1", "note2");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-note2", interpreter2.getInterpreterGroup().getId());
+
     // Each user own one InterpreterGroup and one session per InterpreterGroup
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(1).getSessionNum());
@@ -272,17 +280,19 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-user1", interpreter1.getInterpreterGroup().getId());
 
     interpreterSetting.getDefaultInterpreter("user1", "note2");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
 
     // create interpreter for user2 and note1
-    interpreterSetting.getDefaultInterpreter("user2", "note1");
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user2", "note1");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-user2", interpreter2.getInterpreterGroup().getId());
 
     // group1 for user1 has 2 sessions, and group2 for user2 has 1 session
     assertEquals(interpreterSetting.getInterpreterGroup("user1", "note1"), interpreterSetting.getInterpreterGroup("user1", "note2"));
@@ -325,20 +335,23 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-user1-note1", interpreter1.getInterpreterGroup().getId());
 
     // create interpreter for user1 and note2
-    interpreterSetting.getDefaultInterpreter("user1", "note2");
+    Interpreter interpreter2 = interpreterSetting.getDefaultInterpreter("user1", "note2");
     assertEquals(2, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-user1-note2", interpreter2.getInterpreterGroup().getId());
 
     // create interpreter for user2 and note1
-    interpreterSetting.getDefaultInterpreter("user2", "note1");
-    assertEquals(3, interpreterSetting.getAllInterpreterGroups().size());
+    Interpreter interpreter3 = interpreterSetting.getDefaultInterpreter("user2", "note1");
+    assertEquals("test-user2-note1", interpreter3.getInterpreterGroup().getId());
 
     // create interpreter for user2 and note2
-    interpreterSetting.getDefaultInterpreter("user2", "note2");
+    Interpreter interpreter4 = interpreterSetting.getDefaultInterpreter("user2", "note2");
     assertEquals(4, interpreterSetting.getAllInterpreterGroups().size());
+    assertEquals("test-user2-note2", interpreter4.getInterpreterGroup().getId());
 
     for (InterpreterGroup interpreterGroup : interpreterSetting.getAllInterpreterGroups()) {
       // each InterpreterGroup has one session
@@ -383,9 +396,10 @@ public class InterpreterSettingTest {
         .create();
 
     // create interpreter for user1 and note1
-    interpreterSetting.getDefaultInterpreter("user1", "note1");
+    Interpreter interpreter1 = interpreterSetting.getDefaultInterpreter("user1", "note1");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().get(0).getSessionNum());
+    assertEquals("test-shared_process", interpreter1.getInterpreterGroup().getId());
 
     // create interpreter for user1 and note2
     interpreterSetting.getDefaultInterpreter("user1", "note2");

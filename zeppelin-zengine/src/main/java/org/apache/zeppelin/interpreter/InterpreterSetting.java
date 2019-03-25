@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.dep.DependencyResolver;
@@ -378,17 +379,22 @@ public class InterpreterSetting {
   }
 
   private String getInterpreterGroupId(String user, String noteId) {
-    String key;
+    List<String> keys = new ArrayList<>();
     if (option.isExistingProcess) {
-      key = Constants.EXISTING_PROCESS;
-    } else if (getOption().isProcess()) {
-      key = (option.perUserIsolated() ? user : "") + "-" + (option.perNoteIsolated() ? noteId : "");
+      keys.add(Constants.EXISTING_PROCESS);
+    } else if (getOption().isIsolated()) {
+      if (option.perUserIsolated()) {
+        keys.add(user);
+      }
+      if (option.perNoteIsolated()) {
+        keys.add(noteId);
+      }
     } else {
-      key = SHARED_PROCESS;
+      keys.add(SHARED_PROCESS);
     }
 
     //TODO(zjffdu) we encode interpreter setting id into groupId, this is not a good design
-    return id + "-" + key;
+    return id + "-" + StringUtils.join(keys, "-");
   }
 
   private String getInterpreterSessionId(String user, String noteId) {

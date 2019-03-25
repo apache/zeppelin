@@ -149,7 +149,7 @@ public class InterpreterOption {
     return ISOLATED.equals(perNote);
   }
 
-  public boolean isProcess() {
+  public boolean isIsolated() {
     return perUserIsolated() || perNoteIsolated();
   }
 
