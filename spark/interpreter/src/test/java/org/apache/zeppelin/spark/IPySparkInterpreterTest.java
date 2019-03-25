@@ -64,6 +64,7 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     return p;
   }
 

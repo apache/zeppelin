@@ -95,7 +95,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         System.setOut(Console.out)
         interpreterOutput.setInterpreterOutput(context.out)
         interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
-        context.out.clear()
 
         val status = scalaInterpret(code) match {
           case success@scala.tools.nsc.interpreter.IR.Success =>
@@ -122,6 +121,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     // reset the java stdout
     System.setOut(originalOut)
 
+    context.out.write("")
     val lastStatus = _interpret(code) match {
       case scala.tools.nsc.interpreter.IR.Success =>
         InterpreterResult.Code.SUCCESS

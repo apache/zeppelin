@@ -374,6 +374,12 @@ Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark o
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
+## Deprecate Spark 2.2 and earlier versions
+Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.
+You can get rid of this message by setting `zeppelin.spark.deprecatedMsg.show` to `false`.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_deprecate.png">
+
 ### Configuration Setup
 
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
