@@ -78,7 +78,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
-
+    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
     SQLContext sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();

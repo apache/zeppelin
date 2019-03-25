@@ -86,6 +86,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     InterpreterContext context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
@@ -382,6 +383,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     interpreter = new SparkInterpreter(properties);
@@ -413,6 +415,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     InterpreterContext.set(getInterpreterContext());
     interpreter = new SparkInterpreter(properties);
@@ -442,6 +445,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.scheduler.mode", "FAIR");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -473,6 +477,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.ui.enabled", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -500,6 +505,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.ui.hidden", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
     assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
@@ -525,6 +531,7 @@ public class NewSparkInterpreterTest {
     properties.setProperty("zeppelin.spark.useNew", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     SparkInterpreter interpreter1 = new SparkInterpreter(properties);
     SparkInterpreter interpreter2 = new SparkInterpreter(properties);

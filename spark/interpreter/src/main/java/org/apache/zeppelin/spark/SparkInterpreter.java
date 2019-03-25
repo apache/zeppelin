@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -74,6 +75,7 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   @Override
   public InterpreterResult internalInterpret(String st, InterpreterContext context)
       throws InterpreterException {
+    Utils.printDeprecateMessage(delegation.getSparkVersion(), context, properties);
     return delegation.interpret(st, context);
   }
 

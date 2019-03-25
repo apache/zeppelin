@@ -147,6 +147,7 @@ public class PySparkInterpreter extends PythonInterpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     return super.interpret(st, context);
   }
 

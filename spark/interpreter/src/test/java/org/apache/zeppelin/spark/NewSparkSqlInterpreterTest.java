@@ -55,6 +55,7 @@ public class NewSparkSqlInterpreterTest {
     p.setProperty("zeppelin.spark.sql.stacktrace", "true");
     p.setProperty("zeppelin.spark.useNew", "true");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     intpGroup = new InterpreterGroup();
     sparkInterpreter = new SparkInterpreter(p);

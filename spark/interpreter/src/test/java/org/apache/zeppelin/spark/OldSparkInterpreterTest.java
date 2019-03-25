@@ -87,6 +87,7 @@ public class OldSparkInterpreterTest {
     p.setProperty("zeppelin.spark.property_1", "value_1");
     // disable color output for easy testing
     p.setProperty("zeppelin.spark.scala.color", "false");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     return p;
   }
 

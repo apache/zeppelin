@@ -95,6 +95,13 @@
         "defaultValue": true,
         "description": "Whether to enable color output of spark scala interpreter",
         "type": "checkbox"
+      },
+      "zeppelin.spark.deprecatedMsg.show": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.deprecatedMsg.show",
+        "defaultValue": true,
+        "description": "Whether show the spark deprecated message",
+        "type": "checkbox"
       }
     },
     "editor": {

@@ -18,10 +18,12 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -33,6 +35,10 @@ import java.util.regex.Pattern;
  */
 class Utils {
   public static Logger logger = LoggerFactory.getLogger(Utils.class);
+  public static String DEPRRECATED_MESSAGE =
+          "%html <font color=\"red\">Spark lower than 2.2 is deprecated, " +
+          "if you don't want to see this message, please set " +
+          "zeppelin.spark.deprecateMsg.show to false.</font>";
   private static final String SCALA_COMPILER_VERSION = evaluateScalaCompilerVersion();
 
   static Object invokeMethod(Object o, String name) {
@@ -177,5 +183,21 @@ class Utils {
       uName = "anonymous";
     }
     return uName;
+  }
+
+  public static void printDeprecateMessage(SparkVersion sparkVersion,
+                                            InterpreterContext context,
+                                            Properties properties) throws InterpreterException {
+    context.out.clear();
+    if (sparkVersion.olderThan(SparkVersion.SPARK_2_2_0)
+            && Boolean.parseBoolean(
+                    properties.getProperty("zeppelin.spark.deprecatedMsg.show", "true"))) {
+      try {
+        context.out.write(DEPRRECATED_MESSAGE);
+        context.out.write("%text ");
+      } catch (IOException e) {
+        throw new InterpreterException(e);
+      }
+    }
   }
 }

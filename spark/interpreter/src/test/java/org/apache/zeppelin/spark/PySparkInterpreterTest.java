@@ -54,6 +54,7 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     // create interpreter group
     intpGroup = new InterpreterGroup();
