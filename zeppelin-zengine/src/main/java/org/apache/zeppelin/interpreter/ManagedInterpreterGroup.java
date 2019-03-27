@@ -58,16 +58,15 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
                                                                              Properties properties)
       throws IOException {
-    if (remoteIntpProcessIsShutdown()) {
-      LOGGER.info("Check whether the InterpreterProcess has been shutdown.");
-      // clean invalid session and dirty data of interpreterSetting
-      close();
-    }
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
       remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
           properties);
-      ManagedInterpreterGroup managedIntpGroup = interpreterSetting.getInterpreterGroup(getId());
+      // RemoteInterpreter.java::resurrectionInvalidIntpProcess()
+      // Detecting an invalid interpreter process Clean up session, 
+      // Will clean up the ManagedInterpreterGroup
+      // So may need to rebuild the ManagedInterpreterGroup
+      ManagedInterpreterGroup managedIntpGroup = interpreterSetting.getInterpreterGroup(id);
       if (null != managedIntpGroup) {
         managedIntpGroup.setInterpreterProcess(remoteInterpreterProcess);
       }
@@ -79,15 +78,14 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     return remoteInterpreterProcess;
   }
 
-  public void setInterpreterProcess(RemoteInterpreterProcess remoteIntpProcess) {
+  private void setInterpreterProcess(RemoteInterpreterProcess remoteIntpProcess) {
     remoteInterpreterProcess = remoteIntpProcess;
   }
 
   // Check that the remote interpreter process Whether it Service exception,
   // Causes it to be unusable.
-  private boolean remoteIntpProcessIsShutdown() {
-    if (null != remoteInterpreterProcess && !remoteInterpreterProcess.isRunning()
-        && null != remoteInterpreterProcess.getHost() && -1 != remoteInterpreterProcess.getPort()) {
+  private boolean remoteIntpProcessIsInvalid() {
+    if (null != remoteInterpreterProcess && !remoteInterpreterProcess.isRunning()) {
       // The remote interpreter process has been created, but it has stopped running.
       return true;
     }
@@ -167,7 +165,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
 
     // Need to abort the task being executed
     // when actively shutting down the remote interpreter
-    if (false == remoteIntpProcessIsShutdown()) {
+    if (false == remoteIntpProcessIsInvalid()) {
       // ZEPPELIN-4031
       // But when zeppelin detects that the interpreter process is abnormal,
       // Can't abort the this task,

@@ -203,12 +203,30 @@ public class RemoteInterpreter extends Interpreter {
     }
   }
 
+  // Detecting an invalid interpreter process,
+  // Clean up session, Recreate the interpreter process
+  private void resurrectionInvalidIntpProcess() throws InterpreterException {
+    if (interpreterProcess != null && !interpreterProcess.isRunning() && isOpened) {
+      LOGGER.info("Check whether the InterpreterProcess has been shutdown.");
+      // clean invalid session and dirty data of interpreterSetting
+      ManagedInterpreterGroup intpGroup = getInterpreterGroup();
+      intpGroup.close();
+      // recreate RemoteInterpreterProcess
+      isOpened = false;
+      isCreated = false;
+      open();
+    }
+  }
+
   @Override
   public InterpreterResult interpret(final String st, final InterpreterContext context)
       throws InterpreterException {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("st:\n{}", st);
     }
+
+    // Detecting an invalid interpreter process
+    resurrectionInvalidIntpProcess();
 
     final FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = null;
