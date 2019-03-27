@@ -32,13 +32,11 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
@@ -52,16 +50,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl.Revision
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.JobKey;
 import org.quartz.SchedulerException;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +68,6 @@ public class Notebook {
   private InterpreterFactory replFactory;
   private InterpreterSettingManager interpreterSettingManager;
   private ZeppelinConfiguration conf;
-  private StdSchedulerFactory quertzSchedFact;
-  org.quartz.Scheduler quartzSched;
   private ParagraphJobListener paragraphJobListener;
   private NotebookRepo notebookRepo;
   private SearchService noteSearchService;
@@ -100,7 +87,7 @@ public class Notebook {
       InterpreterSettingManager interpreterSettingManager,
       SearchService noteSearchService,
       Credentials credentials)
-      throws IOException, SchedulerException {
+      throws IOException {
     this.noteManager = new NoteManager(notebookRepo);
     this.conf = conf;
     this.notebookRepo = notebookRepo;
@@ -108,10 +95,6 @@ public class Notebook {
     this.interpreterSettingManager = interpreterSettingManager;
     this.noteSearchService = noteSearchService;
     this.credentials = credentials;
-    quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
-    quartzSched = quertzSchedFact.getScheduler();
-    quartzSched.start();
-    CronJob.notebook = this;
 
     this.noteEventListeners.add(this.noteSearchService);
     this.noteEventListeners.add(this.interpreterSettingManager);
@@ -126,7 +109,7 @@ public class Notebook {
       SearchService noteSearchService,
       Credentials credentials,
       NoteEventListener noteEventListener)
-      throws IOException, SchedulerException {
+      throws IOException {
     this(
         conf,
         notebookRepo,
@@ -555,128 +538,6 @@ public class Notebook {
     }
   }
 
-
-  /**
-   * Cron task for the note.
-   */
-  public static class CronJob implements org.quartz.Job {
-    public static Notebook notebook;
-
-    @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
-
-      String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
-      Note note = notebook.getNote(noteId);
-      if (note.haveRunningOrPendingParagraphs()) {
-        LOGGER.warn("execution of the cron job is skipped because there is a running or pending " +
-            "paragraph (note id: {})", noteId);
-        return;
-      }
-
-      if (!note.isCronSupported(notebook.getConf())) {
-        LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
-        return;
-      }
-
-      runAll(note);
-
-      boolean releaseResource = false;
-      String cronExecutingUser = null;
-      try {
-        Map<String, Object> config = note.getConfig();
-        if (config != null) {
-          if (config.containsKey("releaseresource")) {
-            releaseResource = (boolean) config.get("releaseresource");
-          }
-          cronExecutingUser = (String) config.get("cronExecutingUser");
-        }
-      } catch (ClassCastException e) {
-        LOGGER.error(e.getMessage(), e);
-      }
-      if (releaseResource) {
-        for (InterpreterSetting setting : notebook.getInterpreterSettingManager()
-            .getInterpreterSettings(note.getId())) {
-          try {
-            notebook.getInterpreterSettingManager().restart(setting.getId(), noteId,
-                    cronExecutingUser != null ? cronExecutingUser : "anonymous");
-          } catch (InterpreterException e) {
-            LOGGER.error("Fail to restart interpreter: " + setting.getId(), e);
-          }
-        }
-      }
-    }
-
-    void runAll(Note note) {
-      String cronExecutingUser = (String) note.getConfig().get("cronExecutingUser");
-      String cronExecutingRoles = (String) note.getConfig().get("cronExecutingRoles");
-      if (null == cronExecutingUser) {
-        cronExecutingUser = "anonymous";
-      }
-      AuthenticationInfo authenticationInfo = new AuthenticationInfo(
-          cronExecutingUser,
-          StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
-          null);
-      note.runAll(authenticationInfo, true);
-    }
-  }
-
-  public void refreshCron(String id) {
-    removeCron(id);
-    Note note = getNote(id);
-    if (note == null || note.isTrash()) {
-      return;
-    }
-    Map<String, Object> config = note.getConfig();
-    if (config == null) {
-      return;
-    }
-
-    if (!note.isCronSupported(getConf())) {
-      LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
-      return;
-    }
-
-    String cronExpr = (String) note.getConfig().get("cron");
-    if (cronExpr == null || cronExpr.trim().length() == 0) {
-      return;
-    }
-
-
-    JobDetail newJob =
-        JobBuilder.newJob(CronJob.class).withIdentity(id, "note").usingJobData("noteId", id)
-            .build();
-
-    Map<String, Object> info = note.getInfo();
-    info.put("cron", null);
-
-    CronTrigger trigger = null;
-    try {
-      trigger = TriggerBuilder.newTrigger().withIdentity("trigger_" + id, "note")
-          .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr)).forJob(id, "note").build();
-    } catch (Exception e) {
-      LOGGER.error("Error", e);
-      info.put("cron", e.getMessage());
-    }
-
-
-    try {
-      if (trigger != null) {
-        quartzSched.scheduleJob(newJob, trigger);
-      }
-    } catch (SchedulerException e) {
-      LOGGER.error("Error", e);
-      info.put("cron", "Scheduler Exception");
-    }
-
-  }
-
-  public void removeCron(String id) {
-    try {
-      quartzSched.deleteJob(new JobKey(id, "note"));
-    } catch (SchedulerException e) {
-      LOGGER.error("Can't remove quertz " + id, e);
-    }
-  }
 
   public InterpreterFactory getInterpreterFactory() {
     return replFactory;

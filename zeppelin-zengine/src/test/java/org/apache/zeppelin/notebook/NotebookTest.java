@@ -34,6 +34,8 @@ import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -44,7 +46,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
@@ -82,6 +83,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private StatusChangedListener afterStatusChangedListener;
+  private SchedulerService schedulerService;
 
   @Before
   public void setUp() throws Exception {
@@ -97,6 +99,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
             credentials, null);
     authorizationService = new AuthorizationService(notebook, notebook.getConf());
     notebook.setParagraphJobListener(this);
+    schedulerService = new QuartzSchedulerService(conf, notebook);
 
   }
 
@@ -106,7 +109,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testRevisionSupported() throws IOException, SchedulerException {
+  public void testRevisionSupported() throws IOException {
     NotebookRepo notebookRepo;
     Notebook notebook;
 
@@ -477,13 +480,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
@@ -511,13 +514,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // check if the executions of the running and pending paragraphs were skipped
@@ -559,7 +562,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", cron);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
   }
 
   @Test
@@ -644,7 +647,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   private void terminateScheduledNote(Note note) throws IOException {
     note.getConfig().remove("cron");
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -669,7 +672,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("cron", "1/3 * * * * ?");
     config.put("releaseresource", true);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
 
     RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock1", "test");
@@ -689,7 +692,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     // make sure all paragraph has been executed
     assertNotNull(p.getDateFinished());
@@ -748,7 +751,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     }
 
     // refresh the cron schedule
-    notebook.refreshCron(cronNote.getId());
+    schedulerService.refreshCron(cronNote.getId());
 
     // wait until cronNoteInterpreter is opened
     while (!cronNoteInterpreter.isOpened()) {
@@ -773,7 +776,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         put("releaseresource", null);
       }
     });
-    notebook.refreshCron(cronNote.getId());
+    schedulerService.refreshCron(cronNote.getId());
 
     // remove notebooks
     notebook.removeNote(cronNote.getId(), anonymous);
@@ -789,15 +792,15 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
 
-    final int jobsBeforeRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
-    notebook.refreshCron(note.getId());
-    final int jobsAfterRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+    final int jobsBeforeRefresh = schedulerService.getJobs().size();
+    schedulerService.refreshCron(note.getId());
+    final int jobsAfterRefresh = schedulerService.getJobs().size();
 
     assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
 
     // remove cron scheduler.
     config.remove("cron");
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     notebook.removeNote(note.getId(), anonymous);
   }
 

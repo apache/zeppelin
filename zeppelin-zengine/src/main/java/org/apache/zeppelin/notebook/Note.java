@@ -843,7 +843,7 @@ public class Note implements JsonSerializable {
   /**
    * Return true if there is a running or pending paragraph
    */
-  boolean haveRunningOrPendingParagraphs() {
+  public boolean haveRunningOrPendingParagraphs() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
         Status status = p.getStatus();
