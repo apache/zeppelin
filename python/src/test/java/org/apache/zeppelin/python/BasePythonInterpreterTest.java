@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import net.jodah.concurrentunit.ConcurrentTestCase;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
@@ -42,7 +41,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
+public abstract class BasePythonInterpreterTest {
 
   protected InterpreterGroup intpGroup;
   protected Interpreter interpreter;

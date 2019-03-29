@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import net.jodah.concurrentunit.Waiter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -238,30 +235,4 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
-  @Test
-  public void testIPythonProcessKilled() throws InterruptedException, TimeoutException {
-    final Waiter waiter = new Waiter();
-    Thread thread = new Thread() {
-      @Override
-      public void run() {
-        try {
-          InterpreterResult result = interpreter.interpret("import time\ntime.sleep(1000)",
-                  getInterpreterContext());
-          waiter.assertEquals(InterpreterResult.Code.ERROR, result.code());
-          waiter.assertEquals(
-                  "IPython kernel is abnormally exited, please check your code and log.",
-                  result.message().get(0).getData());
-        } catch (InterpreterException e) {
-          waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
-        }
-        waiter.resume();
-      }
-    };
-    thread.start();
-    Thread.sleep(3000);
-    IPythonInterpreter iPythonInterpreter = (IPythonInterpreter)
-            ((LazyOpenInterpreter) interpreter).getInnerInterpreter();
-    iPythonInterpreter.getWatchDog().destroyProcess();
-    waiter.await(3000);
-  }
 }

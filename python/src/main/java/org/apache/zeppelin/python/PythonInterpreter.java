@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
@@ -161,10 +160,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     pythonScriptRunning.set(true);
   }
 
-  @VisibleForTesting
-  public DefaultExecutor getPythonExecutor() {
-    return this.executor;
-  }
+
 
   private void createPythonScript() throws IOException {
     // set java.io.tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
@@ -352,7 +348,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     synchronized (statementFinishedNotifier) {
-      while (statementOutput == null && pythonScriptRunning.get()) {
+      while (statementOutput == null) {
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -378,7 +374,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
 
     synchronized (pythonScriptInitialized) {
       long startTime = System.currentTimeMillis();
-      while (!pythonScriptInitialized.get() && pythonScriptRunning.get()
+      while (!pythonScriptInitialized.get()
           && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
         try {
           LOGGER.info("Wait for PythonScript initialized");
@@ -421,12 +417,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       } catch (IOException e) {
         throw new InterpreterException(e);
       }
-      if (pythonScriptRunning.get()) {
-        return new InterpreterResult(Code.SUCCESS);
-      } else {
-        return new InterpreterResult(Code.ERROR,
-                "Python process is abnormally exited, please check your code and log.");
-      }
+      return new InterpreterResult(Code.SUCCESS);
     }
   }
 
@@ -599,9 +590,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     LOGGER.info("python process terminated. exit code " + exitValue);
     pythonScriptRunning.set(false);
     pythonScriptInitialized.set(false);
-    synchronized (statementFinishedNotifier) {
-      statementFinishedNotifier.notify();
-    }
   }
 
   @Override
@@ -609,9 +597,6 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     LOGGER.error("python process failed", e);
     pythonScriptRunning.set(false);
     pythonScriptInitialized.set(false);
-    synchronized (statementFinishedNotifier) {
-      statementFinishedNotifier.notify();
-    }
   }
 
   // Called by Python Process, used for debugging purpose

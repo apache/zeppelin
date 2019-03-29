@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.python;
 
-import net.jodah.concurrentunit.Waiter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -30,7 +28,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 
 public class PythonInterpreterTest extends BasePythonInterpreterTest {
-  
+
   @Override
   public void setUp() throws InterpreterException {
 
@@ -53,7 +50,6 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
 
     interpreter = new LazyOpenInterpreter(new PythonInterpreter(properties));
-
     intpGroup.put("note", new LinkedList<Interpreter>());
     intpGroup.get("note").add(interpreter);
     interpreter.setInterpreterGroup(intpGroup);
@@ -108,32 +104,5 @@ public class PythonInterpreterTest extends BasePythonInterpreterTest {
     assertTrue(t.isAlive());
     t.join(2000);
     assertFalse(t.isAlive());
-  }
-
-  @Test
-  public void testPythonProcessKilled() throws InterruptedException, TimeoutException {
-    final Waiter waiter = new Waiter();
-    Thread thread = new Thread() {
-      @Override
-      public void run() {
-        try {
-          InterpreterResult result = interpreter.interpret("import time\ntime.sleep(1000)",
-                  getInterpreterContext());
-          waiter.assertEquals(InterpreterResult.Code.ERROR, result.code());
-          waiter.assertEquals(
-                  "Python process is abnormally exited, please check your code and log.",
-                  result.message().get(0).getData());
-        } catch (InterpreterException e) {
-          waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
-        }
-        waiter.resume();
-      }
-    };
-    thread.start();
-    Thread.sleep(3000);
-    PythonInterpreter pythonInterpreter = (PythonInterpreter)
-            ((LazyOpenInterpreter) interpreter).getInnerInterpreter();
-    pythonInterpreter.getPythonExecutor().getWatchdog().destroyProcess();
-    waiter.await(3000);
   }
 }
