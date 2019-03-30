@@ -339,7 +339,7 @@ public class MongoNotebookRepo implements NotebookRepo {
    * @param includeLast whether return file/folder name in path
    * @return path in array
    */
-  private String[] toPathArray(String notePath, boolean includeLast) {
+  String[] toPathArray(String notePath, boolean includeLast) {
     if (null == notePath || notePath.length() == 0) {
       throw new NullPointerException("notePath is null");
     }
