@@ -49,6 +49,16 @@ public class ToPathArrayTest {
         {"/abc/", false, new String[]{}},
         {"/a/b/c", false, new String[]{"a", "b"}},
         {"/a/b//c/", false, new String[]{"a", "b"}},
+
+        {"abc", true, new String[]{"abc"}},
+        {"abc/", true, new String[]{"abc"}},
+        {"a/b/c", true, new String[]{"a", "b", "c"}},
+        {"a/b//c/", true, new String[]{"a", "b", "c"}},
+
+        {"abc", false, new String[]{}},
+        {"abc/", false, new String[]{}},
+        {"a/b/c", false, new String[]{"a", "b"}},
+        {"a/b//c/", false, new String[]{"a", "b"}},
     };
     return Arrays.asList(arrs);
   }

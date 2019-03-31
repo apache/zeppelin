@@ -371,14 +371,19 @@ public class MongoNotebookRepo implements NotebookRepo {
     if (null == notePath || notePath.length() == 0) {
       throw new NullPointerException("notePath is null");
     }
-    //replace multiple "/" to one
+    //replace multiple "/" to one "/"
     notePath = notePath.replaceAll("/+", "/");
 
     if ("/".equals(notePath)) {
       return ArrayUtils.EMPTY_STRING_ARRAY;
     }
 
-    String[] arr = notePath.substring(1).split("/");
+    //remove leading "/"
+    if (notePath.startsWith("/")) {
+      notePath = notePath.substring(1);
+    }
+
+    String[] arr = notePath.split("/");
 
     return includeLast ? arr : Arrays.copyOfRange(arr, 0, arr.length - 1);
   }
