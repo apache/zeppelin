@@ -49,6 +49,8 @@ public class MongoNotebookRepo implements NotebookRepo {
 
   private String folderName;
 
+  private AutoReadWriteLock lock = new AutoReadWriteLock();
+
   public MongoNotebookRepo() {
   }
 
@@ -71,9 +73,12 @@ public class MongoNotebookRepo implements NotebookRepo {
     NotebookRepo vfsRepo = new VFSNotebookRepo();
     vfsRepo.init(this.conf);
     Map<String, NoteInfo> infos = vfsRepo.list(null);
-    for (NoteInfo info : infos.values()) {
-      Note note = vfsRepo.get(info.getId(), info.getPath(), null);
-      save(note, null);
+
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      for (NoteInfo info : infos.values()) {
+        Note note = vfsRepo.get(info.getId(), info.getPath(), null);
+        saveInternal(note, null);
+      }
     }
 
     vfsRepo.close();
@@ -92,24 +97,24 @@ public class MongoNotebookRepo implements NotebookRepo {
             .append("connectToField", Fields.ID)
             .append("as", Fields.FULL_PATH));
 
+    try (AutoLock autoLock = lock.lockForRead()) {
+      ArrayList<Document> list = Lists.newArrayList(match, graphLookup);
+      AggregateIterable<Document> aggregate = folders.aggregate(list);
+      for (Document document : aggregate) {
+        String id = document.getString(Fields.ID);
+        String name = document.getString(Fields.NAME);
+        List<Document> fullPath = document.get(Fields.FULL_PATH, List.class);
 
-    ArrayList<Document> list = Lists.newArrayList(match, graphLookup);
+        StringBuilder sb = new StringBuilder();
+        for (Document pathNode : fullPath) {
+          sb.append("/").append(pathNode.getString(Fields.NAME));
+        }
 
-    AggregateIterable<Document> aggregate = folders.aggregate(list);
-    for (Document document : aggregate) {
-      String id = document.getString(Fields.ID);
-      String name = document.getString(Fields.NAME);
-      List<Document> fullPath = document.get(Fields.FULL_PATH, List.class);
+        String fullPathStr = sb.append("/").append(name).toString();
 
-      StringBuilder sb = new StringBuilder();
-      for (Document pathNode : fullPath) {
-        sb.append("/").append(pathNode.getString(Fields.NAME));
+        NoteInfo noteInfo = new NoteInfo(id, fullPathStr);
+        infos.put(id, noteInfo);
       }
-
-      String fullPathStr = sb.append("/").append(name).toString();
-
-      NoteInfo noteInfo = new NoteInfo(id, fullPathStr);
-      infos.put(id, noteInfo);
     }
 
     return infos;
@@ -135,6 +140,17 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void save(Note note, AuthenticationInfo subject) throws IOException {
     LOG.debug("save note, note: {}", note);
     String[] pathArray = toPathArray(note.getPath(), false);
+
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      String pId = completeFolder(pathArray);
+      saveNotePath(note.getId(), note.getName(), pId);
+      saveNote(note);
+    }
+  }
+
+  private void saveInternal(Note note, AuthenticationInfo subject) throws IOException {
+    String[] pathArray = toPathArray(note.getPath(), false);
+
     String pId = completeFolder(pathArray);
     saveNotePath(note.getId(), note.getName(), pId);
     saveNote(note);
@@ -172,8 +188,11 @@ public class MongoNotebookRepo implements NotebookRepo {
     String[] pathArray = toPathArray(newNotePath, true);
     String[] parentPathArray = Arrays.copyOfRange(pathArray, 0, pathArray.length - 1);
     String noteName = pathArray[pathArray.length - 1];
-    String pId = completeFolder(parentPathArray);
-    moveNote(noteId, pId, noteName);
+
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      String pId = completeFolder(parentPathArray);
+      moveNote(noteId, pId, noteName);
+    }
   }
 
   private void moveNote(String noteId, String parentId, String noteName) {
@@ -196,36 +215,42 @@ public class MongoNotebookRepo implements NotebookRepo {
     String[] pathArray = toPathArray(folderPath, true);
     String[] newPathArray = toPathArray(newFolderPath, true);
     String[] newFolderParentArray = Arrays.copyOfRange(newPathArray, 0, newPathArray.length - 1);
-    String id = findFolder(pathArray);
-    String newPId = completeFolder(newFolderParentArray);
-    String newFolderName = newPathArray[newPathArray.length - 1];
 
-    Document doc = new Document("$set",
-        new Document(Fields.ID, id)
-            .append(Fields.PID, newPId)
-            .append(Fields.IS_DIR, true)
-            .append(Fields.NAME, newFolderName));
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      String id = findFolder(pathArray);
+      String newPId = completeFolder(newFolderParentArray);
+      String newFolderName = newPathArray[newPathArray.length - 1];
 
-    folders.updateOne(eq(Fields.ID, id), doc);
+      Document doc = new Document("$set",
+          new Document(Fields.ID, id)
+              .append(Fields.PID, newPId)
+              .append(Fields.IS_DIR, true)
+              .append(Fields.NAME, newFolderName));
+
+      folders.updateOne(eq(Fields.ID, id), doc);
+    }
   }
 
   @Override
   public void remove(String noteId, String notePath,
                      AuthenticationInfo subject) throws IOException {
     LOG.debug("remove note, noteId:{}, notePath:{}", noteId, notePath);
-    folders.deleteOne(eq(Fields.ID, noteId));
-    notes.deleteOne(eq(Fields.ID, noteId));
 
-    //clean empty folder
-    String[] pathArray = toPathArray(notePath, false);
-    for (int i = pathArray.length; i >= 0; i--) {
-      String[] current = Arrays.copyOfRange(pathArray, 0, i);
-      String folderId = findFolder(current);
-      boolean isEmpty = folders.count(eq(Fields.PID, folderId)) <= 0;
-      if (isEmpty) {
-        folders.deleteOne(eq(Fields.ID, folderId));
-      } else {
-        break;
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      folders.deleteOne(eq(Fields.ID, noteId));
+      notes.deleteOne(eq(Fields.ID, noteId));
+
+      //clean empty folder
+      String[] pathArray = toPathArray(notePath, false);
+      for (int i = pathArray.length; i >= 0; i--) {
+        String[] current = Arrays.copyOfRange(pathArray, 0, i);
+        String folderId = findFolder(current);
+        boolean isEmpty = folders.count(eq(Fields.PID, folderId)) <= 0;
+        if (isEmpty) {
+          folders.deleteOne(eq(Fields.ID, folderId));
+        } else {
+          break;
+        }
       }
     }
   }
@@ -234,28 +259,31 @@ public class MongoNotebookRepo implements NotebookRepo {
   public void remove(String folderPath, AuthenticationInfo subject) throws IOException {
     LOG.debug("remove folder, folderPath: {}", folderPath);
     String[] pathArray = toPathArray(folderPath, true);
-    String id = findFolder(pathArray);
-    FindIterable<Document> iter = folders.find(eq(Fields.PID, id));
-    for (Document node : iter) {
-      String nodeId = node.getString(Fields.ID);
-      Boolean isDir = node.getBoolean(Fields.IS_DIR);
-      String nodeName = node.getString(Fields.NAME);
 
-      if (isDir) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : pathArray) {
-          sb.append("/").append(s);
+    try (AutoLock autoLock = lock.lockForWrite()) {
+      String id = findFolder(pathArray);
+      FindIterable<Document> iter = folders.find(eq(Fields.PID, id));
+      for (Document node : iter) {
+        String nodeId = node.getString(Fields.ID);
+        Boolean isDir = node.getBoolean(Fields.IS_DIR);
+        String nodeName = node.getString(Fields.NAME);
+
+        if (isDir) {
+          StringBuilder sb = new StringBuilder();
+          for (String s : pathArray) {
+            sb.append("/").append(s);
+          }
+          sb.append("/").append(nodeName);
+
+          String nodePath = sb.toString();
+          remove(nodePath, subject);
+        } else {
+          folders.deleteOne(eq(Fields.ID, nodeId));
+          notes.deleteOne(eq(Fields.ID, nodeId));
         }
-        sb.append("/").append(nodeName);
 
-        String nodePath = sb.toString();
-        remove(nodePath, subject);
-      } else {
         folders.deleteOne(eq(Fields.ID, nodeId));
-        notes.deleteOne(eq(Fields.ID, nodeId));
       }
-
-      folders.deleteOne(eq(Fields.ID, nodeId));
     }
   }
 
