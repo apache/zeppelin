@@ -23,7 +23,7 @@ limitations under the License.
 
 The latest release of Apache Zeppelin is **0.8.1**.
 
-  - 0.8.1 released on Jan 23, 2018 ([release notes](./releases/zeppelin-release-0.8.1.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.8.1))
+  - 0.8.1 released on Jan 23, 2019 ([release notes](./releases/zeppelin-release-0.8.1.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=zeppelin.git;h=refs/tags/v0.8.1))
 
     * Binary package with all interpreters ([Install guide](../../docs/0.8.1/quickstart/install.html)):
     <p><div class="btn btn-md btn-primary" onclick="ga('send', 'event', 'download', 'zeppelin-bin-all', '0.8.1'); window.location.href='http://www.apache.org/dyn/closer.cgi/zeppelin/zeppelin-0.8.1/zeppelin-0.8.1-bin-all.tgz'">zeppelin-0.8.1-bin-all.tgz</div> (947 MB,
