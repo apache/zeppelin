@@ -23,8 +23,10 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.Util;
@@ -138,6 +140,23 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
           }
            **/
         }
+      }
+    }
+  }
+
+  public void mergeAuthorizationInfo() throws IOException {
+    LOGGER.info("Merge AuthorizationInfo into note file");
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    for (int i = 0; i < repos.size(); ++i) {
+      NotebookRepo notebookRepo = repos.get(i);
+      Map<String, NoteInfo> notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+      for (NoteInfo noteInfo : notesInfo.values()) {
+        Note note = notebookRepo.get(noteInfo.getId(), noteInfo.getPath(), AuthenticationInfo.ANONYMOUS);
+        note.setOwners(notebookAuthorization.getOwners(noteInfo.getId()));
+        note.setRunners(notebookAuthorization.getRunners(noteInfo.getId()));
+        note.setReaders(notebookAuthorization.getReaders(noteInfo.getId()));
+        note.setWriters(notebookAuthorization.getWriters(noteInfo.getId()));
+        notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
       }
     }
   }
