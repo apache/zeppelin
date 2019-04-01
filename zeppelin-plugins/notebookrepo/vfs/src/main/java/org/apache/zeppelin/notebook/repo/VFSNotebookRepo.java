@@ -183,7 +183,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   @Override
   public void remove(String noteId, String notePath, AuthenticationInfo subject)
       throws IOException {
-    LOGGER.info("Remove note: " + noteId + " +, notePath: " + notePath);
+    LOGGER.info("Remove note: " + noteId + ", notePath: " + notePath);
     FileObject noteFile = rootNotebookFileObject.resolveFile(
         buildNoteFileName(noteId, notePath), NameScope.DESCENDENT);
     noteFile.delete(Selectors.SELECT_SELF);
