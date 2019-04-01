@@ -46,6 +46,7 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
@@ -79,15 +80,18 @@ public class NotebookService {
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
   private AuthorizationService authorizationService;
+  private SchedulerService schedulerService;
 
   @Inject
   public NotebookService(
       Notebook notebook,
       AuthorizationService authorizationService,
-      ZeppelinConfiguration zeppelinConfiguration) {
+      ZeppelinConfiguration zeppelinConfiguration,
+      SchedulerService schedulerService) {
     this.notebook = notebook;
     this.authorizationService = authorizationService;
     this.zConf = zeppelinConfiguration;
+    this.schedulerService = schedulerService;
   }
 
   public Note getHomeNote(ServiceContext context,
@@ -618,7 +622,7 @@ public class NotebookService {
     note.setName(name);
     note.setConfig(config);
     if (cronUpdated) {
-      notebook.refreshCron(note.getId());
+      schedulerService.refreshCron(note.getId());
     }
 
     notebook.saveNote(note, context.getAutheInfo());

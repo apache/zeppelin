@@ -47,6 +47,9 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
@@ -156,6 +159,11 @@ public class ZeppelinServer extends ResourceConfig {
                 .to(NoteEventListener.class)
                 .to(WebSocketServlet.class)
                 .in(Singleton.class);
+            if (conf.isZeppelinNotebookCronEnable()) {
+              bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            } else {
+              bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            }
           }
         });
 

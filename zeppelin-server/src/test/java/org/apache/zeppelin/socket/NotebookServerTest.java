@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.thrift.TException;
@@ -56,7 +57,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.Message.OP;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -75,6 +77,7 @@ import org.junit.Test;
 public class NotebookServerTest extends AbstractTestRestApi {
   private static Notebook notebook;
   private static NotebookServer notebookServer;
+  private static SchedulerService schedulerService;
   private static NotebookService notebookService;
   private static AuthorizationService authorizationService;
   private HttpServletRequest mockRequest;
@@ -85,10 +88,12 @@ public class NotebookServerTest extends AbstractTestRestApi {
     AbstractTestRestApi.startUp(NotebookServerTest.class.getSimpleName());
     notebook = TestUtils.getInstance(Notebook.class);
     authorizationService = new AuthorizationService(notebook, notebook.getConf());
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    schedulerService = new QuartzSchedulerService(conf, notebook);
     notebookServer = spy(NotebookServer.getInstance());
     notebookService =
         new NotebookService(
-            notebook, authorizationService, ZeppelinConfiguration.create());
+            notebook, authorizationService, conf, schedulerService);
 
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);

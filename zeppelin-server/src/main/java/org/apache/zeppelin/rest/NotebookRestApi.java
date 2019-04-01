@@ -48,6 +48,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
@@ -88,6 +89,7 @@ public class NotebookRestApi extends AbstractRestApi {
   private NotebookService notebookService;
   private JobManagerService jobManagerService;
   private AuthenticationService authenticationService;
+  private SchedulerService schedulerService;
 
   @Inject
   public NotebookRestApi(
@@ -98,7 +100,8 @@ public class NotebookRestApi extends AbstractRestApi {
       AuthorizationService authorizationService,
       ZeppelinConfiguration zConf,
       AuthenticationService authenticationService,
-      JobManagerService jobManagerService) {
+      JobManagerService jobManagerService,
+      SchedulerService schedulerService) {
     super(authenticationService);
     this.notebook = notebook;
     this.notebookServer = notebookServer;
@@ -108,6 +111,7 @@ public class NotebookRestApi extends AbstractRestApi {
     this.authorizationService = authorizationService;
     this.zConf = zConf;
     this.authenticationService = authenticationService;
+    this.schedulerService = schedulerService;
   }
 
   /**
@@ -880,7 +884,7 @@ public class NotebookRestApi extends AbstractRestApi {
     config.put("cron", request.getCronString());
     config.put("releaseresource", request.getReleaseResource());
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -910,7 +914,7 @@ public class NotebookRestApi extends AbstractRestApi {
     config.remove("cron");
     config.remove("releaseresource");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
