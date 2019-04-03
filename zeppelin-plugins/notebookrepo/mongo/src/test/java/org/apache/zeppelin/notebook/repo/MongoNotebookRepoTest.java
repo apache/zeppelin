@@ -102,5 +102,8 @@ public class MongoNotebookRepoTest {
     // remote note1
     notebookRepo.remove(note1.getId(), note1.getPath(), AuthenticationInfo.ANONYMOUS);
     assertEquals(1, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
+
+    notebookRepo.remove("/my_project3", AuthenticationInfo.ANONYMOUS);
+    assertEquals(0, notebookRepo.list(AuthenticationInfo.ANONYMOUS).size());
   }
 }
