@@ -40,11 +40,11 @@ mvn -Dpython.test.exclude='' test -pl python -am
 
  * [Py4J](https://www.py4j.org/) Python and Java libraries are used to load input zeppelin Java class into the python process (make java code with python code !). Therefore the interpreter can directly create Zeppelin input form inside the Python process (and eventually with some python variable already defined). JVM opens a random open port to be accessible from python process.
 
- * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter will directly  send a `kill SIGINT PID` to python process to interrupt execution. Python process catches SIGINT signal with some code defined in bootstrap.py
+ * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter will directly send a `kill SIGINT PID` to python process to interrupt execution. Python process catches SIGINT signal with some code defined in bootstrap.py
 
  * Matplotlib figures are displayed inline with the notebook automatically using a built-in backend for zeppelin in conjunction with a post-execute hook.
 
- * `%python.sql` support for Pandas DataFrames is optional but can be downloaded from [here](https://github.com/yhat/pandasql) if user has not one installed.
+ * `%python.sql` support for Pandas DataFrames is optional but can be downloaded from [here](https://github.com/yhat/pandasql) if user does not have one installed.
 
 
 # IPython Overview
