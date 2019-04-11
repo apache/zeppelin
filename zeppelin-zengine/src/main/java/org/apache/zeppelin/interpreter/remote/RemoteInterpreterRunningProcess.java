@@ -93,4 +93,9 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   public void processStarted(int port, String host) {
     // assume process is externally managed. nothing to do
   }
+
+  @Override
+  public String getErrorMessage() {
+    return null;
+  }
 }

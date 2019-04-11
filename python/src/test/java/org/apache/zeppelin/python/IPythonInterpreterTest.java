@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
@@ -305,7 +306,24 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     Thread.sleep(3000);
     IPythonInterpreter iPythonInterpreter = (IPythonInterpreter)
             ((LazyOpenInterpreter) interpreter).getInnerInterpreter();
-    iPythonInterpreter.getWatchDog().destroyProcess();
+    iPythonInterpreter.getIPythonProcessLauncher().stop();
     waiter.await(3000);
   }
+
+  @Test
+  public void testIPythonFailToLaunch() throws InterpreterException {
+    tearDown();
+
+    Properties properties = initIntpProperties();
+    properties.setProperty("zeppelin.python", "invalid_python");
+
+    try {
+      startInterpreter(properties);
+      fail("Should not be able to start IPythonInterpreter");
+    } catch (InterpreterException e) {
+      String exceptionMsg = ExceptionUtils.getStackTrace(e);
+      assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+    }
+  }
+
 }

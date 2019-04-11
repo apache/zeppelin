@@ -70,12 +70,13 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
 
   private String sparkVersion;
+  private String sparkHome;
   private AuthenticationInfo anonymous = new AuthenticationInfo("anonymous");
 
   public ZeppelinSparkClusterTest(String sparkVersion) throws Exception {
     this.sparkVersion = sparkVersion;
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
-    String sparkHome = DownloadUtils.downloadSpark(sparkVersion);
+    this.sparkHome = DownloadUtils.downloadSpark(sparkVersion);
     if (!verifiedSparkVersions.contains(sparkVersion)) {
       verifiedSparkVersions.add(sparkVersion);
       setupSparkInterpreter(sparkHome);
@@ -801,6 +802,43 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
       }
+    }
+  }
+
+  @Test
+  public void testFailtoLaunchSpark() throws IOException {
+    Note note = null;
+    try {
+      TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
+      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      Paragraph p = note.addNewParagraph(anonymous);
+      p.setText("%spark.conf SPARK_HOME invalid_spark_home");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+
+      Paragraph p1 = note.addNewParagraph(anonymous);
+      p1.setText("%spark\nsc.version");
+      note.run(p1.getId(), true);
+      assertEquals(Status.ERROR, p1.getStatus());
+      assertTrue("Actual error message: " + p1.getReturn().message().get(0).getData(),
+              p1.getReturn().message().get(0).getData().contains("No such file or directory"));
+
+      // run it again, and get the same error
+      note.run(p1.getId(), true);
+      assertEquals(Status.ERROR, p1.getStatus());
+      assertTrue("Actual error message: " + p1.getReturn().message().get(0).getData(),
+              p1.getReturn().message().get(0).getData().contains("No such file or directory"));
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+      }
+      // reset SPARK_HOME, otherwise it will cause the following test fail
+      InterpreterSetting sparkIntpSetting = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
+              .getInterpreterSettingByName("spark");
+      Map<String, InterpreterProperty> sparkProperties =
+              (Map<String, InterpreterProperty>) sparkIntpSetting.getProperties();
+      sparkProperties.put("SPARK_HOME", new InterpreterProperty("SPARK_HOME", sparkHome));
+      sparkIntpSetting.close();
     }
   }
 }

@@ -17,28 +17,38 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.display.ui.OptionInput;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter;
-import org.apache.zeppelin.interpreter.remote.mock.GetEnvPropertyInterpreter;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class RemoteInterpreterTest extends AbstractInterpreterTest {
 
@@ -48,6 +58,11 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
   public void setUp() throws Exception {
     super.setUp();
     interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
+  }
+
+  @Override
+  public void tearDown() throws Exception {
+    super.tearDown();
   }
 
   @Test
@@ -389,4 +404,64 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     assertArrayEquals(expected.values().toArray(), gui.getForms().values().toArray());
   }
 
+  @Test
+  public void testFailToLaunchInterpreterProcess_InvalidRunner() {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(), "invalid_runner");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final InterpreterContext context1 = createDummyInterpreterContext();
+      // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
+      // time overhead of launching the process.
+      try {
+        interpreter1.interpret("1", context1);
+        fail("Should not be able to launch interpreter process");
+      } catch (InterpreterException e) {
+        assertTrue(ExceptionUtils.getStackTrace(e).contains("No such file or directory"));
+      }
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName());
+    }
+  }
+
+  @Test
+  public void testFailToLaunchInterpreterProcess_ErrorInRunner() {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
+               zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_invalid.sh");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final InterpreterContext context1 = createDummyInterpreterContext();
+      // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
+      // time overhead of launching the process.
+      try {
+        interpreter1.interpret("1", context1);
+        fail("Should not be able to launch interpreter process");
+      } catch (InterpreterException e) {
+        assertTrue(ExceptionUtils.getStackTrace(e).contains("invalid_command: command not found"));
+      }
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName());
+    }
+  }
+
+  @Test
+  public void testFailToLaunchInterpreterProcess_Timeout() {
+    try {
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName(),
+              zeppelinHome.getAbsolutePath() + "/zeppelin-zengine/src/test/resources/bin/interpreter_timeout.sh");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "10000");
+      final Interpreter interpreter1 = interpreterSetting.getInterpreter("user1", "note1", "sleep");
+      final InterpreterContext context1 = createDummyInterpreterContext();
+      // run this dummy interpret method first to launch the RemoteInterpreterProcess to avoid the
+      // time overhead of launching the process.
+      try {
+        interpreter1.interpret("1", context1);
+        fail("Should not be able to launch interpreter process");
+      } catch (InterpreterException e) {
+        assertTrue(ExceptionUtils.getStackTrace(e).contains("Interpreter Process creation is time out"));
+      }
+    } finally {
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName());
+    }
+  }
 }

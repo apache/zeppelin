@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -631,13 +632,15 @@ public class RemoteInterpreterServer extends Thread
           int lastMessageIndex = resultMessages.size() - 1;
           if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
             context.getResourcePool().put(
-                context.getNoteId(),
-                context.getParagraphId(),
-                WellKnownResourceName.ZeppelinTableResult.toString(),
-                resultMessages.get(lastMessageIndex));
+                    context.getNoteId(),
+                    context.getParagraphId(),
+                    WellKnownResourceName.ZeppelinTableResult.toString(),
+                    resultMessages.get(lastMessageIndex));
           }
         }
         return new InterpreterResult(result.code(), resultMessages);
+      } catch (Throwable e) {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       } finally {
         Thread.currentThread().setContextClassLoader(currentThreadContextClassloader);
         InterpreterContext.remove();
