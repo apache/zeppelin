@@ -230,10 +230,12 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       // For yarn-cluster mode, client process will exit with exit value 0
       // after submitting spark app. So don't move to TERMINATED state when exitValue is 0.
       if (exitValue != 0) {
-        state = State.TERMINATED;
+        transition(State.TERMINATED);
         synchronized (this) {
           notify();
         }
+      } else {
+        transition(State.COMPLETED);
       }
     }
 

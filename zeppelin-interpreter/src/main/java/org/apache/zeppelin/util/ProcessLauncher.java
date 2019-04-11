@@ -43,7 +43,8 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     NEW,
     LAUNCHED,
     RUNNING,
-    TERMINATED
+    TERMINATED,
+    COMPLETED
   }
 
   private CommandLine commandLine;
@@ -68,17 +69,22 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     executor.setWatchdog(watchdog);
     try {
       executor.execute(commandLine, envs, this);
-      state = State.LAUNCHED;
+      transition(State.LAUNCHED);
       LOGGER.info("Process is launched: {}", commandLine);
     } catch (IOException e) {
       this.processOutput.stopCatchLaunchOutput();
       LOGGER.error("Fail to launch process: " + commandLine, e);
-      state = State.TERMINATED;
+      transition(State.TERMINATED);
       errorMessage = e.getMessage();
     }
   }
 
   public abstract void waitForReady(int timeout);
+
+  public void transition(State state) {
+    this.state = state;
+    LOGGER.info("Process state is transitioned to " + state);
+  }
 
   public void onTimeout() {
     LOGGER.warn("Process launch is time out.");
@@ -88,20 +94,24 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
   public void onProcessRunning() {
     LOGGER.info("Process is running");
-    state = State.RUNNING;
+    transition(State.RUNNING);
   }
 
   @Override
   public void onProcessComplete(int exitValue) {
     LOGGER.warn("Process is exited with exit value " + exitValue);
-    state = State.TERMINATED;
+    if (exitValue == 0) {
+      transition(State.COMPLETED);
+    } else {
+      transition(State.TERMINATED);
+    }
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Process is failed due to " + e);
     errorMessage = ExceptionUtils.getStackTrace(e);
-    state = State.TERMINATED;
+    transition(State.TERMINATED);
   }
 
   public String getErrorMessage() {
