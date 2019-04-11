@@ -77,7 +77,6 @@ public class IPythonInterpreterTest {
   }
 
   @Test
-<<<<<<< HEAD
   public void testGrpcFrameSize() throws InterpreterException, IOException {
     Properties properties = new Properties();
     properties.setProperty("zeppelin.ipython.grpc.message_size", "4");
