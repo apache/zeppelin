@@ -82,7 +82,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private JSONArray getFieldAsArray(JSONObject obj, String field) {
     final String[] fields = field.split("/");
     final JSONObject parent = getParentField(obj, fields);
-    return parent.getJSONArray(fields[fields.length - 1]);
+    return parent.optJSONArray(fields[fields.length - 1]);
   }
 
   private String getFieldAsString(HttpResponse<JsonNode> response, String field) {
