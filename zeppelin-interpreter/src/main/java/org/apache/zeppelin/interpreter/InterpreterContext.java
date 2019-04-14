@@ -21,6 +21,8 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.serving.RestApiHandler;
+import org.apache.zeppelin.serving.RestApiServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 import java.util.HashMap;
@@ -62,6 +64,7 @@ public class InterpreterContext {
   private Map<String, Integer> progressMap;
   private Map<String, String> localProperties = new HashMap<>();
   private RemoteInterpreterEventClient intpEventClient;
+  private RestApiServer restApiServer;
 
   /**
    * Builder class for InterpreterContext
@@ -155,6 +158,11 @@ public class InterpreterContext {
 
     public Builder setLocalProperties(Map<String, String> localProperties) {
       context.localProperties = localProperties;
+      return this;
+    }
+
+    public Builder setRestApiServer(RestApiServer restApiServer) {
+      context.restApiServer = restApiServer;
       return this;
     }
 
@@ -259,6 +267,11 @@ public class InterpreterContext {
 
   public InterpreterOutput out() {
     return out;
+  }
+
+  public void addRestAPI(String endpoint, RestApiHandler handler) {
+    restApiServer.addEndpoint(endpoint, handler);
+    this.intpEventClient.addRestApi(noteId, endpoint);
   }
 
   /**

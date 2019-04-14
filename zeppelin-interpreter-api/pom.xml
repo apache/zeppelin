@@ -138,6 +138,10 @@
               <pattern>io</pattern>
               <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>org.eclipse</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.org.eclipse</shadedPattern>
+            </relocation>
           </relocations>
         </configuration>
         <executions>

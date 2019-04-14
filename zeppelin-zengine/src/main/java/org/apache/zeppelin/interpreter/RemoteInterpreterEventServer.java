@@ -42,6 +42,7 @@ import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.interpreter.thrift.RestApiInfo;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
@@ -365,6 +366,14 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       LOGGER.error("user or noteId is null!");
       return null;
     }
+  }
+
+  @Override
+  public void addRestApi(RestApiInfo restApiInfo) throws TException {
+    LOGGER.info("add rest api from remote interpreter");
+
+    // create route to
+    restApiInfo.intpGroupId
   }
 
   private Object invokeResourceMethod(String intpGroupId,

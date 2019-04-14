@@ -60,7 +60,7 @@ public class RemoteInterpreterServerTest {
     stopRemoteInterpreterServer(server, 10 * 10000);
   }
 
-  private void startRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
+  public static void startRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
       throws InterruptedException {
     assertEquals(false, server.isRunning());
     server.start();
@@ -76,7 +76,7 @@ public class RemoteInterpreterServerTest {
         server.getPort()));
   }
 
-  private void stopRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
+  public static void stopRemoteInterpreterServer(RemoteInterpreterServer server, int timeout)
       throws TException, InterruptedException {
     assertEquals(true, server.isRunning());
     server.shutdown();

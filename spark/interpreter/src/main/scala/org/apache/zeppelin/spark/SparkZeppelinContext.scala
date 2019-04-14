@@ -24,6 +24,7 @@ import org.apache.zeppelin.annotation.ZeppelinApi
 import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterHookRegistry}
+import org.apache.zeppelin.serving.JsonApiHandler
 
 import scala.collection.{JavaConversions, Seq}
 
@@ -127,6 +128,14 @@ class SparkZeppelinContext(val sc: SparkContext,
   @deprecated def angularWatchGlobal(name: String,
                                      func: (AnyRef, AnyRef, InterpreterContext) => Unit): Unit = {
     angularWatch(name, null, func)
+  }
+
+  @ZeppelinApi def addRestApi[T](name: String,
+                              func: (T) => AnyRef): Unit = {
+    val handler = new JsonApiHandler[T]() {
+      override def handle(t: T): AnyRef = func;
+    };
+    interpreterContext.addRestAPI(name, handler)
   }
 
   private def angularWatch(name: String, noteId: String, func: (AnyRef, AnyRef) => Unit): Unit = {

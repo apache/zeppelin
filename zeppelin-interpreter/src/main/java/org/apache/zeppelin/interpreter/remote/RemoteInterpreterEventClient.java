@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
+import org.apache.zeppelin.interpreter.thrift.RestApiInfo;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
@@ -274,6 +275,19 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       intpEventServiceClient.sendParagraphInfo(intpGroupId, gson.toJson(infos));
     } catch (TException e) {
       LOGGER.warn("Fail to onParaInfosReceived: " + infos, e);
+    }
+  }
+
+  public synchronized void addRestApi(String noteId, String endpointName) {
+    try {
+      RestApiInfo apiInfo = new RestApiInfo(
+              intpGroupId,
+              noteId,
+              endpointName
+      );
+      intpEventServiceClient.addRestApi(apiInfo);
+    } catch (TException e) {
+      LOGGER.warn("Fail to add rest api endpoint", e);
     }
   }
 
