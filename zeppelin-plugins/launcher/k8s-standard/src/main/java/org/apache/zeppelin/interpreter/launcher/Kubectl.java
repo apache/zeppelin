@@ -19,14 +19,21 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import java.util.Properties;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +65,15 @@ public class Kubectl {
 
   public String delete(String spec) throws IOException {
     return execAndGet(new String[]{"delete", "-f", "-"}, spec);
+  }
+
+  public String get(String resourceType, String resourceName) throws IOException {
+    return execAndGet(new String[]{"get", resourceType, resourceName, "-o", "json"});
+  }
+
+  public void label(String resourceType, String resourceName, String key, String value) throws IOException {
+    execAndGet(new String[]{"label", "--overwrite", resourceType, resourceName,
+            String.format("%s=%s", key, value)}, "");
   }
 
   public String wait(String resource, String waitFor, int timeoutSec) throws IOException {
@@ -153,5 +169,90 @@ public class Kubectl {
     PumpStreamHandler streamHandler = new PumpStreamHandler(stdout, stderr, stdin);
     executor.setStreamHandler(streamHandler);
     return executor.execute(cmd);
+  }
+
+
+  /**
+   * Check if i'm running inside of kubernetes or not.
+   * It should return truth regardless of ZeppelinConfiguration.getRunMode().
+   *
+   * Normally, unless Zeppelin is running on Kubernetes, K8sStandardInterpreterLauncher shouldn't even have initialized.
+   * However, when ZeppelinConfiguration.getRunMode() is force 'k8s', InterpreterSetting.getLauncherPlugin() will try
+   * to use K8sStandardInterpreterLauncher. This is useful for development. It allows Zeppelin server running on your
+   * IDE and creates your interpreters in Kubernetes. So any code changes on Zeppelin server or kubernetes yaml spec
+   * can be applied without re-building docker image.
+   * @return
+   */
+  public static boolean isRunningOnKubernetes() {
+    if (new File("/var/run/secrets/kubernetes.io").exists()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Get current namespace
+   * @throws IOException
+   */
+  public static String getNamespaceFromContainer() throws IOException {
+    if (isRunningOnKubernetes()) {
+      return readFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace", Charset.defaultCharset()).trim();
+    } else {
+      return "default";
+    }
+  }
+
+  /**
+   * Get hostname. It should be the same to Service name (and Pod name) of the Kubernetes
+   * @return
+   */
+  public static String getHostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      return "localhost";
+    }
+  }
+
+
+  static String readFile(String path, Charset encoding) throws IOException {
+    byte[] encoded = Files.readAllBytes(Paths.get(path));
+    return new String(encoded, encoding);
+  }
+
+  /**
+   * Apply spec file(s) in the path.
+   * @param path
+   */
+  public void apply(File path, Properties binding, boolean delete) throws IOException {
+    if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
+      LOGGER.info("Skip " + path.getAbsolutePath());
+    }
+
+    if (path.isDirectory()) {
+      File[] files = path.listFiles();
+      Arrays.sort(files);
+      if (delete) {
+        ArrayUtils.reverse(files);
+      }
+
+      for (File f : files) {
+        apply(f, binding, delete);
+      }
+    } else if (path.isFile()) {
+      LOGGER.info("Apply " + path.getAbsolutePath());
+      K8sSpecTemplate specTemplate = new K8sSpecTemplate();
+      specTemplate.loadProperties(binding);
+
+      String spec = specTemplate.render(path);
+      if (delete) {
+        delete(spec);
+      } else {
+        apply(spec);
+      }
+    } else {
+      LOGGER.error("Can't apply " + path.getAbsolutePath());
+    }
   }
 }

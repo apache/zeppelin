@@ -134,7 +134,7 @@ public class RemoteInterpreterServer extends Thread
 
   private boolean isTest;
 
-  private RestApiServer restApiServer = RestApiServer.singleton();
+  private RestApiServer restApiServer;
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -182,6 +182,9 @@ public class RemoteInterpreterServer extends Thread
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+
+    // initialize restApiServer for serving
+    restApiServer = RestApiServer.singleton();
   }
 
   @Override

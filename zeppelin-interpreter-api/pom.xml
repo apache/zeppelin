@@ -142,6 +142,10 @@
               <pattern>org.eclipse</pattern>
               <shadedPattern>${shaded.dependency.prefix}.org.eclipse</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>org.ow2</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.org.ow2</shadedPattern>
+            </relocation>
           </relocations>
         </configuration>
         <executions>

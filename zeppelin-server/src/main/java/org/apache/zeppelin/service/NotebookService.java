@@ -328,6 +328,40 @@ public class NotebookService {
     }
   }
 
+  public void runNote(String noteId,
+                      ServiceContext context,
+                      ServiceCallback<Paragraph> callback) throws IOException {
+    if (!checkPermission(noteId, Permission.RUNNER, Message.OP.RUN_ALL_PARAGRAPHS, context,
+            callback)) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return;
+    }
+
+    note.setRunning(true);
+    try {
+      for (Paragraph p : note.getParagraphs()) {
+        String paragraphId = p.getId();
+        String text = p.getText();
+        String title = p.getTitle();
+        Map<String, Object> params = p.settings.getParams();
+        Map<String, Object> config = p.getConfig();
+
+        if (!runParagraph(noteId, paragraphId, title, text, params, config, false, true,
+                context, callback)) {
+          // stop execution when one paragraph fails.
+          break;
+        }
+      }
+    } finally {
+      note.setRunning(false);
+    }
+  }
+
   public void runAllParagraphs(String noteId,
                                List<Map<String, Object>> paragraphs,
                                ServiceContext context,

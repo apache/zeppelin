@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.util;
 
+import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -72,5 +73,19 @@ public class Util {
   public static String getGitTimestamp() {
     return StringUtils.defaultIfEmpty(gitProperties.getProperty(GIT_PROPERTIES_COMMIT_TS_KEY),
             StringUtils.EMPTY);
+  }
+
+  public static String getRandomString(int length) {
+    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+
+    StringBuilder sb = new StringBuilder();
+    Random random = new Random();
+    for (int i = 0; i < length; i++) {
+      char c = chars[random.nextInt(chars.length)];
+      sb.append(c);
+    }
+    String randomStr = sb.toString();
+
+    return randomStr;
   }
 }

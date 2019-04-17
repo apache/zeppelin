@@ -23,6 +23,8 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.OldNotebookRepo;
+import org.apache.zeppelin.serving.NoteServingTaskManager;
+import org.apache.zeppelin.serving.TaskContextStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,7 @@ public class PluginManager {
   private String pluginsDir = zConf.getPluginsDir();
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
+  private Map<String, NoteServingTaskManager> cachedServingTaskManager = new HashMap<>();
 
   public static synchronized PluginManager get() {
     if (instance == null) {
@@ -162,6 +165,31 @@ public class PluginManager {
     return launcher;
   }
 
+  public synchronized NoteServingTaskManager loadNoteServingTaskManager(String launcherPlugin,
+                                                                        String pluginClass) throws IOException {
+
+    if (cachedServingTaskManager.containsKey(launcherPlugin)) {
+      return cachedServingTaskManager.get(launcherPlugin);
+    }
+    LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
+    URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
+    NoteServingTaskManager taskManager = null;
+    try {
+      taskManager = (NoteServingTaskManager) (Class.forName(pluginClass, true, pluginClassLoader))
+              .getConstructor(ZeppelinConfiguration.class)
+              .newInstance(zConf);
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+            | NoSuchMethodException | InvocationTargetException e) {
+      LOGGER.warn("Fail to instantiate Launcher from plugin classpath:" + launcherPlugin, e);
+    }
+
+    if (taskManager == null) {
+      throw new IOException("Fail to load plugin: " + launcherPlugin);
+    }
+    cachedServingTaskManager.put(launcherPlugin, taskManager);
+    return taskManager;
+  }
+
   private URLClassLoader getPluginClassLoader(String pluginsDir,
                                               String pluginType,
                                               String pluginName) throws IOException {
@@ -190,4 +218,5 @@ public class PluginManager {
   public static void reset() {
     instance = null;
   }
+
 }

@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
@@ -48,7 +49,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   public K8sStandardInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) throws IOException {
     super(zConf, recoveryStorage);
     kubectl = new Kubectl(zConf.getK8sKubectlCmd());
-    kubectl.setNamespace(getNamespace());
+    kubectl.setNamespace(Kubectl.getNamespaceFromContainer());
   }
 
   @VisibleForTesting
@@ -78,39 +79,21 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
   }
 
   /**
-   * Get current namespace
-   * @throws IOException
-   */
-  String getNamespace() throws IOException {
-    if (isRunningOnKubernetes()) {
-      return readFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace", Charset.defaultCharset()).trim();
-    } else {
-      return "default";
-    }
-  }
-
-  /**
-   * Get hostname. It should be the same to Service name (and Pod name) of the Kubernetes
-   * @return
-   */
-  String getHostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return "localhost";
-    }
-  }
-
-  /**
    * get Zeppelin server host dns.
    * return <hostname>.<namespace>.svc.cluster.local
    * @throws IOException
    */
   private String getZeppelinServiceHost() throws IOException {
     if (isRunningOnKubernetes()) {
+      String serviceName = System.getenv("SERVICE_NAME");
+      if (StringUtils.isEmpty(serviceName)) {
+        // if SERVICE_NAME env is not defined, try pod host name as a service name.
+        serviceName = Kubectl.getHostname();
+      }
+
       return String.format("%s.%s.svc.cluster.local",
-              getHostname(), // service name and pod name should be the same
-              getNamespace());
+              serviceName,
+              Kubectl.getNamespaceFromContainer());
     } else {
       return context.getZeppelinServerHost();
     }
@@ -122,7 +105,7 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
    */
   private String getZeppelinServiceRpcPort() {
     String envServicePort = System.getenv(
-            String.format("%s_SERVICE_PORT_RPC", getHostname().replaceAll("[-.]", "_").toUpperCase()));
+            String.format("%s_SERVICE_PORT_RPC", Kubectl.getHostname().replaceAll("[-.]", "_").toUpperCase()));
     if (envServicePort != null) {
       return envServicePort;
     } else {
@@ -168,10 +151,5 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
     }
     env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());
     return env;
-  }
-
-  String readFile(String path, Charset encoding) throws IOException {
-    byte[] encoded = Files.readAllBytes(Paths.get(path));
-    return new String(encoded, encoding);
   }
 }

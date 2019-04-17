@@ -16,11 +16,15 @@
  */
 package org.apache.zeppelin.server;
 
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.Base64;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,6 +33,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
+import org.apache.directory.api.util.Strings;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.cluster.ClusterManager;
@@ -45,9 +50,11 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.ClusterManagerService;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
@@ -58,7 +65,9 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.serving.NoteServingTaskManager;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
@@ -105,7 +114,7 @@ public class ZeppelinServer extends ResourceConfig {
     packages("org.apache.zeppelin.rest");
   }
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, IOException {
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
@@ -155,6 +164,7 @@ public class ZeppelinServer extends ResourceConfig {
             bindAsContract(NotebookService.class).in(Singleton.class);
             bindAsContract(JobManagerService.class).in(Singleton.class);
             bindAsContract(Notebook.class).in(Singleton.class);
+            bindAsContract(NoteServingTaskManagerService.class).in(Singleton.class);
             bindAsContract(NotebookServer.class)
                 .to(AngularObjectRegistryListener.class)
                 .to(RemoteInterpreterProcessListener.class)
@@ -253,6 +263,8 @@ public class ZeppelinServer extends ResourceConfig {
     }
     LOG.info("Done, zeppelin server started");
 
+    runNoteOnStart(conf);
+
     Runtime.getRuntime()
         .addShutdownHook(
             new Thread(
@@ -333,6 +345,39 @@ public class ZeppelinServer extends ResourceConfig {
     server.addConnector(connector);
 
     return server;
+  }
+
+  private static void runNoteOnStart(ZeppelinConfiguration conf) throws IOException {
+    String noteIdToRun = conf.getNotebookRunId();
+    if (!Strings.isEmpty(noteIdToRun)) {
+      NotebookService notebookService = (NotebookService) ServiceLocatorUtilities.getService(
+              sharedServiceLocator, NotebookService.class.getName());
+
+      ServiceContext serviceContext;
+      String base64EncodedJsonSerializedServiceContext = conf.getNotebookRunServiceContext();
+      if (Strings.isEmpty(base64EncodedJsonSerializedServiceContext)) {
+        serviceContext = new ServiceContext(AuthenticationInfo.ANONYMOUS, new HashSet<String>() {});
+      } else {
+        serviceContext = new Gson().fromJson(
+                new String(Base64.getDecoder().decode(base64EncodedJsonSerializedServiceContext)),
+                ServiceContext.class);
+      }
+
+      notebookService.runNote(noteIdToRun, serviceContext, new ServiceCallback<Paragraph>() {
+        @Override
+        public void onStart(String message, ServiceContext context) throws IOException {
+        }
+
+        @Override
+        public void onSuccess(Paragraph result, ServiceContext context) throws IOException {
+        }
+
+        @Override
+        public void onFailure(Exception ex, ServiceContext context) throws IOException {
+        }
+      });
+
+    }
   }
 
   private static void configureRequestHeaderSize(

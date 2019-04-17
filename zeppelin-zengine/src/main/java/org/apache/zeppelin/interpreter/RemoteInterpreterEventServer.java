@@ -373,7 +373,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     LOGGER.info("add rest api from remote interpreter");
 
     // create route to
-    restApiInfo.intpGroupId
+    //restApiInfo.intpGroupI
   }
 
   private Object invokeResourceMethod(String intpGroupId,

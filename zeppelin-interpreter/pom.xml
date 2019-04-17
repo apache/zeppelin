@@ -140,6 +140,7 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 
+    <!-- Serving -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>

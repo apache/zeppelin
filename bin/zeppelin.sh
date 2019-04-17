@@ -19,20 +19,26 @@
 # Run Zeppelin 
 #
 
-USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>]"
+USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>] [--run <noteId>]"
 
-if [[ "$1" == "--config" ]]; then
-  shift
-  conf_dir="$1"
-  if [[ ! -d "${conf_dir}" ]]; then
-    echo "ERROR : ${conf_dir} is not a directory"
-    echo ${USAGE}
-    exit 1
-  else
-    export ZEPPELIN_CONF_DIR="${conf_dir}"
-  fi
-  shift
-fi
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+  case $key in
+    --config)
+    ZEPPELIN_CONF_DIR="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    --run)
+    ZEPPELIN_NOTEBOOK_RUN="$2"
+    shift # past argument
+    shift # past value
+    ;;
+  esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 
 bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)

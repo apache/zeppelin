@@ -10,9 +10,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     this.zeppelinServiceRpcPort = zeppelinServiceRpcPort;
     this.portForward = portForward;
     this.sparkImage = sparkImage;
-    this.podName = interpreterGroupName.toLowerCase() + "-" + getRandomString(6);
+    this.podName = interpreterGroupName.toLowerCase() + "-" + Util.getRandomString(6);
   }
 
 
@@ -88,7 +88,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   @Override
   public void start(String userName) throws IOException {
     // create new pod
-    apply(specTempaltes, false);
+    kubectl.apply(specTempaltes, getTemplateBindings(), false);
     kubectl.wait(String.format("pod/%s", getPodName()), "condition=Ready", getConnectTimeout()/1000);
 
     if (portForward) {
@@ -136,7 +136,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   public void stop() {
     // delete pod
     try {
-      apply(specTempaltes, true);
+      kubectl.apply(specTempaltes, getTemplateBindings(), true);
     } catch (IOException e) {
       LOGGER.info("Error on removing interpreter pod", e);
     }
@@ -199,41 +199,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     } catch (Exception e) {
       LOGGER.error("Can't get pod status", e);
       return false;
-    }
-  }
-
-  /**
-   * Apply spec file(s) in the path.
-   * @param path
-   */
-  void apply(File path, boolean delete) throws IOException {
-    if (path.getName().startsWith(".") || path.isHidden() || path.getName().endsWith("~")) {
-      LOGGER.info("Skip " + path.getAbsolutePath());
-    }
-
-    if (path.isDirectory()) {
-      File[] files = path.listFiles();
-      Arrays.sort(files);
-      if (delete) {
-        ArrayUtils.reverse(files);
-      }
-
-      for (File f : files) {
-        apply(f, delete);
-      }
-    } else if (path.isFile()) {
-      LOGGER.info("Apply " + path.getAbsolutePath());
-      K8sSpecTemplate specTemplate = new K8sSpecTemplate();
-      specTemplate.loadProperties(getTemplateBindings());
-
-      String spec = specTemplate.render(path);
-      if (delete) {
-        kubectl.delete(spec);
-      } else {
-        kubectl.apply(spec);
-      }
-    } else {
-      LOGGER.error("Can't apply " + path.getAbsolutePath());
     }
   }
 
@@ -355,20 +320,6 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
   private String ownerName() {
     return System.getenv("POD_NAME");
-  }
-
-  private String getRandomString(int length) {
-    char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
-
-    StringBuilder sb = new StringBuilder();
-    Random random = new Random();
-    for (int i = 0; i < length; i++) {
-      char c = chars[random.nextInt(chars.length)];
-      sb.append(c);
-    }
-    String randomStr = sb.toString();
-
-    return randomStr;
   }
 
   @Override
