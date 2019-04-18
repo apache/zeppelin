@@ -1,6 +1,7 @@
 package org.apache.zeppelin.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
@@ -52,25 +53,45 @@ public class NoteServingTaskManagerService {
       @Override
       public void onSuccess(Note result, ServiceContext context) throws IOException {
         noteRef.set(result);
+        synchronized (noteRef) {
+          noteRef.notify();
+        }
       }
 
       @Override
       public void onFailure(Exception ex, ServiceContext context) throws IOException {
         exRef.set(ex);
+        synchronized (noteRef) {
+          noteRef.notify();
+        }
       }
     });
 
-    if (exRef.get() != null) {
-      throw exRef.get();
-    }
+    synchronized (noteRef) {
+      while (noteRef.get() == null && exRef.get() == null) {
+        noteRef.wait(100);
+      }
 
-    Note note = noteRef.get();
-    NoteServingTask servingTask = servingTaskManager.start(note, revId);
-    return servingTask;
+      if (exRef.get() != null) {
+        throw exRef.get();
+      }
+
+      Note note = noteRef.get();
+      NoteServingTask servingTask = servingTaskManager.start(note, revId);
+      return servingTask;
+    }
   }
 
   public NoteServingTask stopServing(String noteId, String revId, ServiceContext serviceContext) throws Exception {
-
+    // TODO check permission
     return servingTaskManager.stop(noteId, revId);
+  }
+
+  public NoteServingTask getServing(String noteId, String revId, ServiceContext serviceContext) throws IOException {
+    return servingTaskManager.get(noteId, revId);
+  }
+
+  public List<NoteServingTask> getAllServing() {
+    return servingTaskManager.list();
   }
 }

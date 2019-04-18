@@ -42,7 +42,7 @@ public class K8sNoteServingTaskManager extends NoteServingTaskManager {
 
   @Override
   protected NoteServingTask createOrGetServingTask(TaskContext taskContext) {
-    File servingTemplateDir = new File(zConf.getK8sTemplatesDir(), "serving");
+    File servingTemplateDir = new File(getzConf().getK8sTemplatesDir(), "serving");
     K8sNoteServingTask servingTask = new K8sNoteServingTask(kubectl, taskContext, servingTemplateDir);
     return servingTask;
   }

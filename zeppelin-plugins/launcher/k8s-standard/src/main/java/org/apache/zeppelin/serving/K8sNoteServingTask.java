@@ -30,15 +30,14 @@ import org.apache.zeppelin.interpreter.launcher.Kubectl;
 /**
  * Start / Stop / Monitor serving task.
  */
-public class K8sNoteServingTask implements NoteServingTask {
+public class K8sNoteServingTask extends NoteServingTask {
   private final Kubectl kubectl;
-  private final TaskContext taskContext;
   private final File k8sTemplateDir;
   private final Gson gson = new Gson();
 
   public K8sNoteServingTask(Kubectl kubectl, TaskContext taskContext, File k8sTemplateDir) {
+    super(taskContext);
     this.kubectl = kubectl;
-    this.taskContext = taskContext;
     this.k8sTemplateDir = k8sTemplateDir;
   }
 
@@ -48,6 +47,7 @@ public class K8sNoteServingTask implements NoteServingTask {
   }
 
   Properties getTemplateBindings() throws IOException {
+    TaskContext taskContext = getTaskContext();
     Properties k8sProperties = new Properties();
     String taskId = taskContext.getId();
     String servingName = getServingName();
@@ -66,7 +66,7 @@ public class K8sNoteServingTask implements NoteServingTask {
   }
 
   private String getServingName() {
-    return String.format("serving-%s", taskContext.getId());
+    return String.format("serving-%s", getTaskContext().getId());
   }
 
   @Override

@@ -26,18 +26,16 @@ import org.apache.zeppelin.notebook.Note;
  * Manage lifecycle of NoteServingTask.
  */
 public abstract class NoteServingTaskManager {
-  final ZeppelinConfiguration zConf;
-  private final TaskContextStorage taskContextStorage;
+  private final ZeppelinConfiguration zConf;
 
   public NoteServingTaskManager(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
-    this.taskContextStorage = getTaskContextStorage();
   }
 
   public NoteServingTask start(Note note, String revId) throws IOException {
     // create task
     TaskContext taskContext = new TaskContext(note, revId);
-    taskContextStorage.save(taskContext);
+    getTaskContextStorage().save(taskContext);
     NoteServingTask servingTask = createOrGetServingTask(taskContext);
 
     // start serving
@@ -58,11 +56,11 @@ public abstract class NoteServingTaskManager {
   }
 
   public void delete(String noteId, String revId) throws IOException {
-    taskContextStorage.delete(TaskContext.getTaskId(noteId, revId));
+    getTaskContextStorage().delete(TaskContext.getTaskId(noteId, revId));
   }
 
   public NoteServingTask get(String noteId, String revId) throws IOException {
-    TaskContext taskContext = taskContextStorage.load(TaskContext.getTaskId(noteId, revId));
+    TaskContext taskContext = getTaskContextStorage().load(TaskContext.getTaskId(noteId, revId));
     if (taskContext == null) {
       return null;
     }
@@ -72,8 +70,12 @@ public abstract class NoteServingTaskManager {
   }
 
   public List<NoteServingTask> list() {
-    List<TaskContext> contexts = taskContextStorage.list();
+    List<TaskContext> contexts = getTaskContextStorage().list();
     return contexts.stream().map(c -> createOrGetServingTask(c)).collect(Collectors.toList());
+  }
+
+  public ZeppelinConfiguration getzConf() {
+    return zConf;
   }
 
   protected abstract TaskContextStorage getTaskContextStorage();

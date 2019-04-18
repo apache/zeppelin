@@ -17,10 +17,12 @@
 
 package org.apache.zeppelin.rest;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -39,6 +41,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -63,8 +67,10 @@ import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.JobManagerService;
+import org.apache.zeppelin.service.NoteServingTaskManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.serving.NoteServingTask;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
@@ -90,18 +96,20 @@ public class NotebookRestApi extends AbstractRestApi {
   private JobManagerService jobManagerService;
   private AuthenticationService authenticationService;
   private SchedulerService schedulerService;
+  private NoteServingTaskManagerService noteServingTaskManagerService;
 
   @Inject
   public NotebookRestApi(
-      Notebook notebook,
-      NotebookServer notebookServer,
-      NotebookService notebookService,
-      SearchService search,
-      AuthorizationService authorizationService,
-      ZeppelinConfiguration zConf,
-      AuthenticationService authenticationService,
-      JobManagerService jobManagerService,
-      SchedulerService schedulerService) {
+          Notebook notebook,
+          NotebookServer notebookServer,
+          NotebookService notebookService,
+          SearchService search,
+          AuthorizationService authorizationService,
+          ZeppelinConfiguration zConf,
+          AuthenticationService authenticationService,
+          JobManagerService jobManagerService,
+          SchedulerService schedulerService,
+          NoteServingTaskManagerService noteServingTaskManagerService) {
     super(authenticationService);
     this.notebook = notebook;
     this.notebookServer = notebookServer;
@@ -112,6 +120,7 @@ public class NotebookRestApi extends AbstractRestApi {
     this.zConf = zConf;
     this.authenticationService = authenticationService;
     this.schedulerService = schedulerService;
+    this.noteServingTaskManagerService = noteServingTaskManagerService;
   }
 
   /**
@@ -1018,6 +1027,55 @@ public class NotebookRestApi extends AbstractRestApi {
     return new JsonResponse<>(Status.OK, notesFound).build();
   }
 
+  @POST
+  @Path("serving/{noteId}/{revId}")
+  @ZeppelinApi
+  public Response servingStart(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws Exception {
+    NoteServingTask task = noteServingTaskManagerService.startServing(noteId, revId, getServiceContext());
+
+    return new JsonResponse<>(Status.OK, ImmutableMap.of(
+            "taskId", task.getTaskContext().getId()
+    )).build();
+  }
+
+  @DELETE
+  @Path("serving/{noteId}/{revId}")
+  @ZeppelinApi
+  public Response servingStop(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws Exception {
+    NoteServingTask task = noteServingTaskManagerService.stopServing(noteId, revId, getServiceContext());
+    return new JsonResponse<>(Status.OK).build();
+  }
+
+  @GET
+  @Path("serving/{noteId}/{revId}")
+  @ZeppelinApi
+  public Response servingInfo(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws IOException {
+    NoteServingTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
+    return new JsonResponse<>(Status.OK, ImmutableMap.of(
+            "taskId", task.getTaskContext().getId(),
+            "isRunning", task.isRunning()
+    )).build();
+  }
+
+  @GET
+  @Path("serving")
+  @ZeppelinApi
+  public Response servingList() throws IOException {
+    List<NoteServingTask> tasks = noteServingTaskManagerService.getAllServing();
+    List<ImmutableMap<String, ? extends Serializable>> taskInfoList = tasks.stream().map(task -> {
+      try {
+        return ImmutableMap.of(
+                "taskId", task.getTaskContext().getId(),
+                "isRunning", task.isRunning());
+      } catch (IOException e) {
+        LOG.error("Not able to get task info", e);
+      }
+      return ImmutableMap.of(
+              "taskId", task.getTaskContext().getId()
+      );
+    }).collect(Collectors.toList());
+    return new JsonResponse<>(Status.OK, taskInfoList).build();
+  }
 
   private void handleParagraphParams(String message, Note note, Paragraph paragraph)
       throws IOException {

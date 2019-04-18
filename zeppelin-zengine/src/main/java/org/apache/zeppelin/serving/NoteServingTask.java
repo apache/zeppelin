@@ -21,8 +21,18 @@ import java.io.IOException;
 /**
  * Contains information to deploy note and serve.
  */
-public interface NoteServingTask {
-  void start() throws IOException;
-  void stop() throws IOException;
-  boolean isRunning() throws IOException;
+public abstract class NoteServingTask {
+  private TaskContext taskContext;
+
+  public NoteServingTask(TaskContext taskContext) {
+    this.taskContext = taskContext;
+  }
+
+  public TaskContext getTaskContext() {
+    return taskContext;
+  }
+
+  public abstract void start() throws IOException;
+  public abstract void stop() throws IOException;
+  public abstract boolean isRunning() throws IOException;
 }
