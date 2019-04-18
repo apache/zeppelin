@@ -61,6 +61,33 @@ public class K8sNoteServingTaskTest {
   }
 
   @Test
-  public void testStop() {
+  public void testStop() throws IOException {
+    Note note = new Note();
+    note.setId("2E63B9RE6");
+    TaskContext task = new TaskContext(note, "rev1");
+
+    storage = new FileSystemTaskContextStorage(contextRoot.getAbsolutePath());
+
+    Kubectl kubectl = new Kubectl("kubectl");
+    kubectl.setNamespace("default");
+    File servingTemplate = new File("../../../k8s/serving");
+    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(kubectl, task, servingTemplate);
+    noteServingTask.stop();
+  }
+
+  @Test
+  public void testIsRunning() throws IOException {
+    Note note = new Note();
+    note.setId("2E63B9RE6");
+    TaskContext task = new TaskContext(note, "rev1");
+
+    storage = new FileSystemTaskContextStorage(contextRoot.getAbsolutePath());
+
+    Kubectl kubectl = new Kubectl("kubectl");
+    kubectl.setNamespace("default");
+    File servingTemplate = new File("../../../k8s/serving");
+    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(kubectl, task, servingTemplate);
+
+    boolean isRunning = noteServingTask.isRunning();
   }
 }

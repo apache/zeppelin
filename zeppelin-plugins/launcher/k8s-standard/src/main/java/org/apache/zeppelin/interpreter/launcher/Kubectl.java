@@ -71,6 +71,10 @@ public class Kubectl {
     return execAndGet(new String[]{"get", resourceType, resourceName, "-o", "json"});
   }
 
+  public String getByLabel(String resourceType, String labelExpr) throws IOException {
+    return execAndGet(new String[]{"get", resourceType, "-l", labelExpr, "-o", "json"});
+  }
+
   public void label(String resourceType, String resourceName, String key, String value) throws IOException {
     execAndGet(new String[]{"label", "--overwrite", resourceType, resourceName,
             String.format("%s=%s", key, value)}, "");

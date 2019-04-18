@@ -125,7 +125,9 @@ spec:
           key: serviceDomain
     - name: MASTER   # default value of master property for spark interpreter.
       value: k8s://https://kubernetes.default.svc
-    # volumeMounts:
+    volumeMounts:
+      - name: zeppelin-task-context-volume
+        mountPath: /zeppelin/task
     #  - name: zeppelin-server-notebook-volume     # configure this to persist notebook
     #    mountPath: /zeppelin/notebook
     #  - name: zeppelin-server-conf                # configure this to persist Zeppelin configuration
@@ -167,6 +169,9 @@ spec:
         path: nginx.conf
       - key: serviceDomain
         path: serviceDomain
+  - name: zeppelin-task-context-volume
+    persistentVolumeClaim:
+      claimName: task-context-volume-claim
 ---
 kind: Service
 apiVersion: v1

@@ -24,5 +24,5 @@ import java.io.IOException;
 public interface NoteServingTask {
   void start() throws IOException;
   void stop() throws IOException;
-  boolean isRunning();
+  boolean isRunning() throws IOException;
 }

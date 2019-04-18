@@ -878,7 +878,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
 
-    ZEPPELIN_K8S_SERVING_CONTEXT_DIR("zeppelin.k8s.serving.context.dir", "serving_context"),
+    ZEPPELIN_K8S_SERVING_CONTEXT_DIR("zeppelin.k8s.serving.context.dir", "task/serving"),
 
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
