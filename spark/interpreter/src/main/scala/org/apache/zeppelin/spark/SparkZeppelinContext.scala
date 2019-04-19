@@ -130,12 +130,12 @@ class SparkZeppelinContext(val sc: SparkContext,
     angularWatch(name, null, func)
   }
 
-  @ZeppelinApi def addRestApi[T](name: String,
-                              func: (T) => AnyRef): Unit = {
+  @ZeppelinApi def addRestApi[T, R](name: String,
+                              func: (T) => R): Unit = {
     val handler = new JsonApiHandler[T]() {
       override def handle(t: T): AnyRef = func;
     };
-    interpreterContext.addRestAPI(name, handler)
+    interpreterContext.addRestApi(name, handler)
   }
 
   private def angularWatch(name: String, noteId: String, func: (AnyRef, AnyRef) => Unit): Unit = {

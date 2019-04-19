@@ -118,7 +118,7 @@ public class RestApiServerTest {
     @Override
     public InterpreterResult interpret(String st, InterpreterContext context) {
       String endpoint = st;
-      context.addRestAPI(endpoint, new RestApiHandler() {
+      context.addRestApi(endpoint, new RestApiHandler() {
 
         @Override
         protected void handle(HttpServletRequest request, HttpServletResponse response) {

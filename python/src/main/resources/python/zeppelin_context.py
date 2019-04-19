@@ -26,6 +26,16 @@ try:
 except ImportError:
     from io import StringIO
 
+class PythonApiHandler(object):
+  def __init__(self, fn):
+    self.fn = fn
+
+  def handle(self, request):
+    return fn(request)
+
+  class Java:
+    implements = ['org.apache.zeppelin.python.PythonRestApiHandler']
+
 class PyZeppelinContext(object):
     """ A context impl that uses Py4j to communicate to JVM
     """
@@ -87,6 +97,9 @@ class PyZeppelinContext(object):
 
     def noteCheckbox(self, name, options, defaultChecked=[]):
         return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+
+    def addRestApi(self, name, fn):
+        return self.z.addRestApiHandler(name, PythonApiHandler(fn))
 
     def registerHook(self, event, cmd, replName=None):
         if replName is None:

@@ -22,6 +22,7 @@ import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.zeppelin.serving.JsonApiHandler;
 
 /**
  * ZeppelinContext for Python
@@ -45,5 +46,17 @@ public class PythonZeppelinContext extends BaseZeppelinContext {
   @Override
   public String showData(Object obj, int maxResult) {
     return null;
+  }
+
+  public void addRestApiHandler(String endpoint, PythonRestApiHandler pythonHandler) {
+    JsonApiHandler jsonApiHandler = new JsonApiHandler<Map>() {
+      @Override
+      public Object handle(Map request) {
+        // call python function and return
+        return pythonHandler.handle(request);
+      }
+    };
+
+    super.addRestApi(endpoint, jsonApiHandler);
   }
 }

@@ -269,7 +269,7 @@ public class InterpreterContext {
     return out;
   }
 
-  public void addRestAPI(String endpoint, RestApiHandler handler) {
+  public void addRestApi(String endpoint, RestApiHandler handler) {
     restApiServer.addEndpoint(endpoint, handler);
     this.intpEventClient.addRestApi(noteId, endpoint);
   }

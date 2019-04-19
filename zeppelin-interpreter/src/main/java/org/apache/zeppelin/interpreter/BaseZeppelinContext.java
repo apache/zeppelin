@@ -855,6 +855,6 @@ public abstract class BaseZeppelinContext {
 
   @ZeppelinApi
   public void addRestApi(String endpoint, RestApiHandler handler) {
-    interpreterContext.addRestAPI(endpoint, handler);
+    interpreterContext.addRestApi(endpoint, handler);
   }
 }
