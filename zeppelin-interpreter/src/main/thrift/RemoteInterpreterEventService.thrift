@@ -96,7 +96,8 @@ struct ParagraphInfo {
 struct RestApiInfo {
   1: string intpGroupId,
   2: string noteId,
-  3: string endpointName
+  3: string endpointName,
+  4: i32 serverPort
 }
 
 exception ServiceException{

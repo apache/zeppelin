@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServlet;
  */
 public class RestApiServer extends HttpServlet {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestApiServer.class);
-  public static final int PORT = 8090;
+  public static int PORT;
 
   private Server server;
 
@@ -39,6 +39,14 @@ public class RestApiServer extends HttpServlet {
   private final ConcurrentHashMap<String, RestApiHandler> endpoints = new ConcurrentHashMap();
 
   public RestApiServer() {
+  }
+
+  public static void setPort(int port) {
+    PORT = port;
+  }
+
+  public static int getPort() {
+    return PORT;
   }
 
   public static RestApiServer singleton() {

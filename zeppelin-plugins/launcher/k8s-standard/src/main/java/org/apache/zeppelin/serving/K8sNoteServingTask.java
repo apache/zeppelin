@@ -59,6 +59,7 @@ public class K8sNoteServingTask extends NoteServingTask {
     k8sProperties.put("zeppelin.k8s.serving.name", servingName);
     k8sProperties.put("zeppelin.k8s.serving.notebook.dir", notebookDir);
     k8sProperties.put("zeppelin.k8s.serving.noteId", taskContext.getNote().getId());
+    k8sProperties.put("zeppelin.k8s.serving.revId", taskContext.getRevId());
     k8sProperties.put("zeppelin.k8s.serving.serviceContext", "");
 
     // interpreter properties overrides the values

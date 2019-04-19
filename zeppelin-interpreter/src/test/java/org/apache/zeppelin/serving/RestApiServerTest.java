@@ -54,7 +54,7 @@ public class RestApiServerTest {
   @Before
   public void setUp() throws TException, IOException {
     server = new RemoteInterpreterServer("localhost",
-            RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+            RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", 0,true);
     server.setIntpEventClient(mock(RemoteInterpreterEventClient.class));
 
     Map<String, String> intpProperties = new HashMap<>();

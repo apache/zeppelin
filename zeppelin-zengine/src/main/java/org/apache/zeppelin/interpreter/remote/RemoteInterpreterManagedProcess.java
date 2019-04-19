@@ -48,6 +48,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
   private final String interpreterSettingName;
   private final String interpreterGroupId;
   private final boolean isUserImpersonated;
+  private int interpreterRestApiServerPort = 0;
 
   private Map<String, String> env;
 
@@ -56,6 +57,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       int zeppelinServerRPCPort,
       String zeppelinServerRPCHost,
       String interpreterPortRange,
+      int interpreterRestApiServerPort,
       String intpDir,
       String localRepoDir,
       Map<String, String> env,
@@ -74,6 +76,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     this.interpreterSettingName = interpreterSettingName;
     this.interpreterGroupId = interpreterGroupId;
     this.isUserImpersonated = isUserImpersonated;
+    this.interpreterRestApiServerPort = interpreterRestApiServerPort;
   }
 
   @Override
@@ -108,6 +111,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     cmdLine.addArgument(localRepoDir, false);
     cmdLine.addArgument("-g", false);
     cmdLine.addArgument(interpreterSettingName, false);
+    cmdLine.addArgument("-s", false);
+    cmdLine.addArgument(String.valueOf(interpreterRestApiServerPort), false);
 
     Map procEnv = EnvironmentUtils.getProcEnvironment();
     procEnv.putAll(env);

@@ -139,15 +139,17 @@ public class RemoteInterpreterServer extends Thread
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
                                  String interpreterGroupId,
-                                 String portRange)
-      throws IOException, TTransportException {
-    this(intpEventServerHost, intpEventServerPort, portRange, interpreterGroupId, false);
+                                 String portRange,
+                                 int restApiServerPort)
+          throws IOException, TTransportException {
+    this(intpEventServerHost, intpEventServerPort, portRange, interpreterGroupId, restApiServerPort,false);
   }
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
                                  String portRange,
                                  String interpreterGroupId,
+                                 int restApiServerPort,
                                  boolean isTest)
       throws TTransportException, IOException {
     logger.info("Starting remote interpreter server on port {}, intpEventServerAddress: {}:{}", port,
@@ -183,7 +185,11 @@ public class RemoteInterpreterServer extends Thread
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
 
+    if (restApiServerPort <= 0) {
+      restApiServerPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+    }
     // initialize restApiServer for serving
+    RestApiServer.setPort(restApiServerPort);
     restApiServer = RestApiServer.singleton();
   }
 
@@ -280,6 +286,7 @@ public class RemoteInterpreterServer extends Thread
       throws TTransportException, InterruptedException, IOException {
     String zeppelinServerHost = null;
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
+    int restApiServerPort = Constants.ZEPPELIN_INTERPRETER_RESTAPI_DEFAULT_PORT;
     String portRange = ":";
     String interpreterGroupId = null;
     if (args.length > 0) {
@@ -289,9 +296,13 @@ public class RemoteInterpreterServer extends Thread
       if (args.length > 3) {
         portRange = args[3];
       }
+
+      if (args.length > 4) {
+        port = Integer.parseInt(args[4]);
+      }
     }
     RemoteInterpreterServer remoteInterpreterServer =
-        new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange);
+        new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange, restApiServerPort);
     remoteInterpreterServer.start();
 
     // add signal handler

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sStandardInterpreterLauncher.class);
   private static final int K8S_INTERPRETER_SERVICE_PORT = 12321;
+  private static final int K8S_INTERPRETER_RESTAPISERVER_PORT = 8090;
   private final Kubectl kubectl;
   private final String interpreterGroupId;
   private final String interpreterGroupName;
@@ -226,6 +227,7 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
     // environment variables
     envs.put("SERVICE_DOMAIN", envs.getOrDefault("SERVICE_DOMAIN", System.getenv("SERVICE_DOMAIN")));
     envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
+    envs.put("ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT", String.valueOf(K8S_INTERPRETER_RESTAPISERVER_PORT));
 
     if (isSpark()) {
       int webUiPort = 4040;

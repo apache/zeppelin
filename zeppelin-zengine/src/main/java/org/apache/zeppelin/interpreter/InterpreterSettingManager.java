@@ -47,6 +47,7 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -131,8 +132,7 @@ public class InterpreterSettingManager implements NoteEventListener {
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
-                                   RemoteInterpreterProcessListener
-                                       remoteInterpreterProcessListener,
+                                   RemoteInterpreterProcessListener remoteInterpreterProcessListener,
                                    ApplicationEventListener appEventListener)
       throws IOException {
     this(zeppelinConfiguration, new InterpreterOption(),
@@ -177,6 +177,9 @@ public class InterpreterSettingManager implements NoteEventListener {
     LOGGER.info("Using LifecycleManager: " + this.lifecycleManager.getClass().getName());
 
     this.configStorage = configStorage;
+
+    PluginManager.get()
+
     this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
     this.interpreterEventServer.start();
     init();

@@ -82,6 +82,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
       return new RemoteInterpreterManagedProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           context.getZeppelinServerRPCPort(), context.getZeppelinServerHost(), zConf.getInterpreterPortRange(),
+              zConf.getInterpreterRestApiServerPort(),
           zConf.getInterpreterDir() + "/" + groupName, localRepoPath,
           buildEnvFromProperties(context), connectTimeout, name,
           context.getInterpreterGroupId(), option.isUserImpersonate());

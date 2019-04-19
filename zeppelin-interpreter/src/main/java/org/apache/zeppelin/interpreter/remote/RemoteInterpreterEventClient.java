@@ -38,6 +38,7 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.serving.RestApiServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,11 +280,13 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   }
 
   public synchronized void addRestApi(String noteId, String endpointName) {
+    int port = RestApiServer.getPort();
     try {
       RestApiInfo apiInfo = new RestApiInfo(
               intpGroupId,
               noteId,
-              endpointName
+              endpointName,
+              port
       );
       intpEventServiceClient.addRestApi(apiInfo);
     } catch (TException e) {

@@ -8,7 +8,6 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.serving.NoteServingTask;
 import org.apache.zeppelin.serving.NoteServingTaskManager;
-import org.apache.zeppelin.serving.TaskContext;
 
 import javax.inject.Inject;
 

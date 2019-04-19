@@ -90,6 +90,8 @@ spec:
           value: {{zeppelin.k8s.serving.notebook.dir}}
         - name: ZEPPELIN_NOTEBOOK_RUN_ID
           value: {{zeppelin.k8s.serving.noteId}}
+        - name: ZEPPELIN_NOTEBOOK_RUN_REV
+          value: {{zeppelin.k8s.serving.revId}}
         - name: ZEPPELIN_NOTEBOOK_RUN_SERVICE_CONTEXT
           value: {{zeppelin.k8s.serving.serviceContext}}
         - name: MASTER   # default value of master property for spark interpreter.

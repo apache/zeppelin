@@ -22,6 +22,6 @@ import java.io.IOException;
  * RestApiRouter configure routing table for note serving.
  */
 public interface RestApiRouter {
-  void addRoute(String noteId, String revId, String intpId, String endpoint) throws IOException;
-  void removeRoute(String noteId, String revId, String intpId, String endpoint) throws IOException;
+  void addRoute(String noteId, String revId, String hostName, int port, String endpoint) throws IOException;
+  void removeRoute(String noteId, String revId) throws IOException;
 }

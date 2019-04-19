@@ -45,11 +45,13 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RestApiInfo;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.serving.RestApiRouter;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +70,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RemoteInterpreterEventServer.class);
 
+  private final ZeppelinConfiguration zConf;
   private String portRange;
   private int port;
   private String host;
@@ -81,13 +84,18 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   private final RemoteInterpreterProcessListener listener;
   private final ApplicationEventListener appListener;
   private final Gson gson = new Gson();
+  private final RestApiRouter restApiRouter;
+
 
   public RemoteInterpreterEventServer(ZeppelinConfiguration zConf,
-                                      InterpreterSettingManager interpreterSettingManager) {
+                                      InterpreterSettingManager interpreterSettingManager,
+                                      RestApiRouter restApiRouter) {
+    this.zConf = zConf;
     this.portRange = zConf.getZeppelinServerRPCPortRange();
     this.interpreterSettingManager = interpreterSettingManager;
     this.listener = interpreterSettingManager.getRemoteInterpreterProcessListener();
     this.appListener = interpreterSettingManager.getAppEventListener();
+    this.restApiRouter = restApiRouter;
   }
 
   public void start() throws IOException {
@@ -372,8 +380,23 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   public void addRestApi(RestApiInfo restApiInfo) throws TException {
     LOGGER.info("add rest api from remote interpreter");
 
-    // create route to
-    //restApiInfo.intpGroupI
+    // String noteId, String revId, String intpId, String endpoint
+    ManagedInterpreterGroup interpreterGroup = interpreterSettingManager.getInterpreterGroupById(
+            restApiInfo.getIntpGroupId());
+    RemoteInterpreterProcess intpProcess = interpreterGroup.getInterpreterProcess();
+    String podDnsName = intpProcess.getHost();
+    String revId = zConf.getNotebookRunRev();
+
+    try {
+      restApiRouter.addRoute(
+              restApiInfo.getNoteId(),
+              revId,
+              podDnsName,
+              restApiInfo.getServerPort(),
+              restApiInfo.getEndpointName());
+    } catch (IOException e) {
+      LOGGER.error("Error on adding route for serving {}", restApiInfo);
+    }
   }
 
   private Object invokeResourceMethod(String intpGroupId,

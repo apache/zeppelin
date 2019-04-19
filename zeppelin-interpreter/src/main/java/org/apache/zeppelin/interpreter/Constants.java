@@ -39,6 +39,8 @@ public class Constants {
 
   public static final Map<String, TimeUnit> TIME_SUFFIXES;
 
+  public static final int ZEPPELIN_INTERPRETER_RESTAPI_DEFAULT_PORT = 8090;
+
   static {
     TIME_SUFFIXES = new HashMap<>();
     TIME_SUFFIXES.put("us", TimeUnit.MICROSECONDS);

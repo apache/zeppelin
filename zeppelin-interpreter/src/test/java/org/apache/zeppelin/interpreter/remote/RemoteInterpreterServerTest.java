@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -43,7 +44,7 @@ public class RemoteInterpreterServerTest {
   @Test
   public void testStartStop() throws InterruptedException, IOException, TException {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", 0, true);
 
     startRemoteInterpreterServer(server, 10 * 1000);
     stopRemoteInterpreterServer(server, 10 * 10000);
@@ -52,7 +53,7 @@ public class RemoteInterpreterServerTest {
   @Test
   public void testStartStopWithQueuedEvents() throws InterruptedException, IOException, TException {
     RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", 0, true);
     server.intpEventClient = mock(RemoteInterpreterEventClient.class);
     startRemoteInterpreterServer(server, 10 * 1000);
 
@@ -95,7 +96,7 @@ public class RemoteInterpreterServerTest {
   @Test
   public void testInterpreter() throws IOException, TException, InterruptedException {
     final RemoteInterpreterServer server = new RemoteInterpreterServer("localhost",
-        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", true);
+        RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces(), ":", "groupId", 0, true);
     server.intpEventClient = mock(RemoteInterpreterEventClient.class);
 
     Map<String, String> intpProperties = new HashMap<>();

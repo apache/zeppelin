@@ -357,6 +357,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_RUN_ID);
   }
 
+  public String getNotebookRunRev() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_RUN_REV);
+  }
+
   public String getNotebookRunServiceContext() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_RUN_SERVICE_CONTEXT);
   }
@@ -526,6 +530,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getInterpreterPortRange() {
     return getString(ConfVars.ZEPPELIN_INTERPRETER_RPC_PORTRANGE);
+  }
+
+  public int getInterpreterRestApiServerPort() {
+    return getInt(ConfVars.ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT);
   }
 
   public boolean isWindowsPath(String path){
@@ -779,7 +787,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-    ZEPPELIN_NOTEBOOK_RUN_ID("zeppelin.notebook.run.id", null), // run particular note id on zeppelin start
+    ZEPPELIN_NOTEBOOK_RUN_ID("zeppelin.notebook.run.id", null),   // run particular note id on zeppelin start
+    ZEPPELIN_NOTEBOOK_RUN_REV("zeppelin.notebook.run.rev", null), // revision id for ZEPPELIN_NOTEBOOK_RUN_ID.
     ZEPPELIN_NOTEBOOK_RUN_SERVICE_CONTEXT("zeppelin.notebook.run.servicecontext", null), // base64 encoded serialized service context to be used ZEPPELIN_NOTEBOOK_RUN_ID.
     ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
     ZEPPELIN_RECOVERY_STORAGE_CLASS("zeppelin.recovery.storage.class",
@@ -854,6 +863,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
+    ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT("zeppelin.interpreter.restapiserver.port", 0),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),
