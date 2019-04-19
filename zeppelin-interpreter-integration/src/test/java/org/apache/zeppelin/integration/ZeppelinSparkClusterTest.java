@@ -113,7 +113,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
             new InterpreterProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer"));
     sparkProperties.put("zeppelin.spark.scala.color",
             new InterpreterProperty("zeppelin.spark.scala.color", "false"));
-    sparkProperties.put("zzeppelin.spark.deprecatedMsg.show",
+    sparkProperties.put("zeppelin.spark.deprecatedMsg.show",
             new InterpreterProperty("zeppelin.spark.deprecatedMsg.show", "false"));
     TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(sparkIntpSetting.getId());
   }

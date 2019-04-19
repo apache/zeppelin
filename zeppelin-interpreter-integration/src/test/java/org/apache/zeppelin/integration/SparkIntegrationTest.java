@@ -148,6 +148,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("zeppelin.spark.useHiveContext", "false");
     sparkInterpreterSetting.setProperty("zeppelin.pyspark.useIPython", "false");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     testInterpreterBasics();
 
@@ -171,6 +172,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     testInterpreterBasics();
 
@@ -194,6 +196,7 @@ public abstract class SparkIntegrationTest {
     sparkInterpreterSetting.setProperty("PYSPARK_PYTHON", getPythonExec());
     sparkInterpreterSetting.setProperty("spark.driver.memory", "512m");
     sparkInterpreterSetting.setProperty("zeppelin.spark.scala.color", "false");
+    sparkInterpreterSetting.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     testInterpreterBasics();
 
