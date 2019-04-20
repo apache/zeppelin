@@ -20,8 +20,6 @@ package org.apache.zeppelin.python;
 import net.jodah.concurrentunit.Waiter;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -32,9 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.serving.RestApiServer;
 import org.junit.Test;
@@ -44,9 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -55,7 +48,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   private HttpClient client;
@@ -346,19 +338,27 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   }
 
   @Test
-  public void testAddRestApiJsonRequest() throws InterpreterException, InterruptedException, IOException {
+  public void testAddRestApiJsonRequest()
+          throws InterpreterException, InterruptedException, IOException {
     // given
     int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     RestApiServer.setPort(port);
     InterpreterContext context = getInterpreterContext();
 
     // when
-    InterpreterResult result = interpreter.interpret("def stringlen(d):\n  return len(d[\"input\"])\nz.addRestApi(\"len\", stringlen)\n", context);
+    InterpreterResult result = interpreter.interpret(
+            "def stringlen(d):\n  return len(d[\"input\"])\nz.addRestApi(\"len\", stringlen)\n",
+            context);
     waitForResult(result, Code.SUCCESS);
 
     // then
-    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s", RestApiServer.getPort(), "len"));
-    put.setRequestEntity(new StringRequestEntity("{\"input\": \"abc\"}", "application/json", "utf8"));
+    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s",
+                    RestApiServer.getPort(),
+                    "len"));
+    put.setRequestEntity(new StringRequestEntity(
+            "{\"input\": \"abc\"}",
+            "application/json",
+            "utf8"));
 
     int code = client.executeMethod(put);
     assertEquals(200, code);
@@ -368,19 +368,27 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   }
 
   @Test
-  public void testAddRestApiJsonRequestJsonReturn() throws InterpreterException, InterruptedException, IOException {
+  public void testAddRestApiJsonRequestJsonReturn()
+          throws InterpreterException, InterruptedException, IOException {
     // given
     int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     RestApiServer.setPort(port);
     InterpreterContext context = getInterpreterContext();
 
     // when
-    InterpreterResult result = interpreter.interpret("def stringlen(d):\n  return {\"len\": len(d[\"input\"])}\nz.addRestApi(\"len\", stringlen)\n", context);
+    InterpreterResult result = interpreter.interpret(
+            "def stringlen(d):\n  return {\"len\": len(d[\"input\"])}\n" +
+                    "z.addRestApi(\"len\", stringlen)\n",
+            context);
     waitForResult(result, Code.SUCCESS);
 
     // then
-    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s", RestApiServer.getPort(), "len"));
-    put.setRequestEntity(new StringRequestEntity("{\"input\": \"abc\"}", "application/json", "utf8"));
+    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s",
+            RestApiServer.getPort(), "len"));
+    put.setRequestEntity(new StringRequestEntity(
+            "{\"input\": \"abc\"}",
+            "application/json",
+            "utf8"));
 
     int code = client.executeMethod(put);
     assertEquals(200, code);
@@ -390,18 +398,21 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   }
 
   @Test
-  public void testAddRestApiStringRequest() throws InterpreterException, InterruptedException, IOException {
+  public void testAddRestApiStringRequest()
+          throws InterpreterException, InterruptedException, IOException {
     // given
     int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
     RestApiServer.setPort(port);
     InterpreterContext context = getInterpreterContext();
 
     // when
-    InterpreterResult result = interpreter.interpret("def stringlen(d):\n  return len(d)\nz.addRestApi(\"len\", stringlen)\n", context);
+    InterpreterResult result = interpreter.interpret(
+            "def stringlen(d):\n  return len(d)\nz.addRestApi(\"len\", stringlen)\n", context);
     waitForResult(result, Code.SUCCESS);
 
     // then
-    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s", RestApiServer.getPort(), "len"));
+    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s",
+            RestApiServer.getPort(), "len"));
     put.setRequestEntity(new StringRequestEntity("abc", "text/plain", "utf8"));
 
     int code = client.executeMethod(put);
@@ -417,6 +428,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {
+        continue;
       }
 
       if (System.currentTimeMillis() - start > 30 * 1000) {

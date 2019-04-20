@@ -23,13 +23,13 @@ import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.zeppelin.serving.JsonApiHandler;
 
 /**
  * ZeppelinContext for Python
  */
 public class PythonZeppelinContext extends BaseZeppelinContext {
-  ConcurrentLinkedQueue<PythonRestApiHandler> restApiReqResQueue= new ConcurrentLinkedQueue();
+  ConcurrentLinkedQueue<PythonRestApiRequestResponseMessage> restApiReqResQueue
+          = new ConcurrentLinkedQueue();
 
   public PythonZeppelinContext(InterpreterHookRegistry hooks, int maxResult) {
     super(hooks, maxResult);
@@ -62,17 +62,18 @@ public class PythonZeppelinContext extends BaseZeppelinContext {
    * method will be invoked by python
    * @return
    */
-  public PythonRestApiHandler getNextApiRequestFromQueue() {
-    PythonRestApiHandler handler = restApiReqResQueue.poll();
-    if (handler == null) {
+  public PythonRestApiRequestResponseMessage getNextApiRequestFromQueue() {
+    PythonRestApiRequestResponseMessage message = restApiReqResQueue.poll();
+    if (message == null) {
       synchronized (restApiReqResQueue) {
         try {
           restApiReqResQueue.wait(1000);
         } catch (InterruptedException e) {
+          // nothing to do
         }
       }
-      handler = restApiReqResQueue.poll();
+      message = restApiReqResQueue.poll();
     }
-    return handler;
+    return message;
   }
 }

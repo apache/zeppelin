@@ -99,20 +99,19 @@ class PyZeppelinContext(object):
 
     def _handleApiRequestThread(self):
         while True:
-          pythonRestApiHandler = self.z.getNextApiRequestFromQueue()
-          if pythonRestApiHandler == None:
+          msg = self.z.getNextApiRequestFromQueue()
+          if msg == None:
               continue
 
-          endpoint = pythonRestApiHandler.getEndpoint()
-          request = pythonRestApiHandler.getRequestBody()
+          endpoint = msg.getEndpoint()
+          request = msg.getRequestBody()
           fn = self._apiHandlers[endpoint]
           try:
               ret = fn(request)
-              pythonRestApiHandler.setResponse(ret)
+              msg.setResponseBody(ret)
           except:
               err = sys.exc_info()[0]
-              pythonRestApiHandler.setResponse(str(err))
-
+              msg.setResponseBody(str(err))
 
     def registerHook(self, event, cmd, replName=None):
         if replName is None:

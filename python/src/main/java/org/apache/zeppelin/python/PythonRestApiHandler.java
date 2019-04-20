@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.serving.RestApiHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,80 +36,65 @@ import javax.servlet.http.HttpServletResponse;
  * PythonRestApiHandler.
  */
 public class PythonRestApiHandler extends RestApiHandler {
+  private static Logger LOGGER = LoggerFactory.getLogger(PythonRestApiHandler.class);
+
   private final String endpoint;
-  private final ConcurrentLinkedQueue restApiReqResQueue;
-  private boolean isResponseSet = false;
-  private Object responseObject;
-  private HttpServletRequest request;
-  private HttpServletResponse response;
+  private final ConcurrentLinkedQueue<PythonRestApiRequestResponseMessage> restApiReqResQueue;
   private Gson gson = new Gson();
 
-  public PythonRestApiHandler(String endpoint, ConcurrentLinkedQueue restApiReqResQueue) {
+  public PythonRestApiHandler(
+          String endpoint,
+          ConcurrentLinkedQueue<PythonRestApiRequestResponseMessage> restApiReqResQueue) {
     this.endpoint = endpoint;
     this.restApiReqResQueue = restApiReqResQueue;
   }
 
   @Override
-  protected void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  protected void handle(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
+    BufferedReader reader = request.getReader();
+    Object requestObject;
+    String contentType = request.getContentType();
+    try {
+      if (contentType != null && contentType.startsWith("application/json")) {
+        requestObject = gson.fromJson(reader, new TypeToken<Map>() {}.getType());
+      } else {
+        requestObject = IOUtils.toString(reader);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Bad request", e);
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    PythonRestApiRequestResponseMessage message = new PythonRestApiRequestResponseMessage(
+            endpoint,
+            requestObject,
+            request,
+            response);
+
     synchronized (restApiReqResQueue) {
-      restApiReqResQueue.add(this);
+      restApiReqResQueue.add(message);
       restApiReqResQueue.notifyAll();
     }
 
-    this.request = request;
-    this.response = response;
-
-    synchronized (this) {
+    synchronized (message) {
       long start = System.currentTimeMillis();
-      while (!isResponseSet && System.currentTimeMillis() - start <= 60 * 1000) {
+      while (!message.isResponseSet() && System.currentTimeMillis() - start <= 60 * 1000) {
         try {
-          this.wait();
+          message.wait();
         } catch (InterruptedException e) {
+          continue;
         }
       }
     }
 
-    if (!isResponseSet) {
+    if (!message.isResponseSet()) {
       response.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);
     } else {
       response.setStatus(HttpServletResponse.SC_OK);
       PrintWriter responseWriter = response.getWriter();
-      gson.toJson(responseObject, responseWriter);
+      gson.toJson(message.getResponseBody(), responseWriter);
     }
-  }
-
-  /**
-   * Invoke from python
-   */
-  public Object getRequestBody() throws IOException {
-    BufferedReader reader = request.getReader();
-    String body = IOUtils.toString(reader);
-
-    // first try parse as a json
-    try {
-      Map param = gson.fromJson(body, new TypeToken<Map>() {}.getType());
-      return param;
-    } catch (Exception e) {
-      // if request body is not json, thread it as a string
-      return body;
-    }
-  }
-
-  /**
-   * Invoke from python
-   */
-  public void setResponse(Object responseObject) {
-    synchronized (this) {
-      isResponseSet = true;
-      this.responseObject = responseObject;
-      this.notify();
-    }
-  }
-
-  /**
-   * Invoke from python
-   */
-  public String getEndpoint() {
-    return endpoint;
   }
 }
