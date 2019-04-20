@@ -17,7 +17,7 @@
 
 import os, sys, traceback, json, re
 
-from py4j.java_gateway import java_import, JavaGateway, GatewayClient
+from py4j.java_gateway import java_import, JavaGateway, GatewayClient, CallbackServerParameters
 from py4j.protocol import Py4JJavaError
 
 import ast
@@ -84,9 +84,13 @@ if "PY4J_GATEWAY_SECRET" in os.environ:
   from py4j.java_gateway import GatewayParameters
   gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
   gateway = JavaGateway(gateway_parameters=GatewayParameters(
-    address=host, port=port, auth_token=gateway_secret, auto_convert=True))
+    address=host, port=port, auth_token=gateway_secret, auto_convert=True),
+    start_callback_server=True,
+    callback_server_parameters=CallbackServerParameters())
 else:
-  gateway = JavaGateway(GatewayClient(address=host, port=port), auto_convert=True)
+  gateway = JavaGateway(GatewayClient(address=host, port=port), auto_convert=True,
+    start_callback_server=True,
+    callback_server_parameters=CallbackServerParameters())
 
 intp = gateway.entry_point
 _zcUserQueryNameSpace = {}

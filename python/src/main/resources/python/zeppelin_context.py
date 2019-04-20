@@ -18,6 +18,7 @@
 import os, sys
 import warnings
 import base64
+import threading
 
 from io import BytesIO
 
@@ -26,15 +27,6 @@ try:
 except ImportError:
     from io import StringIO
 
-class PythonApiHandler(object):
-  def __init__(self, fn):
-    self.fn = fn
-
-  def handle(self, request):
-    return fn(request)
-
-  class Java:
-    implements = ['org.apache.zeppelin.python.PythonRestApiHandler']
 
 class PyZeppelinContext(object):
     """ A context impl that uses Py4j to communicate to JVM
@@ -48,6 +40,9 @@ class PyZeppelinContext(object):
         self.max_result = z.getMaxResult()
         self._displayhook = lambda *args: None
         self._setup_matplotlib()
+        self._apiHandlers = {}
+        t = threading.Thread(target=self._handleApiRequestThread)
+        t.start()
 
     # By implementing special methods it makes operating on it more Pythonic
     def __setitem__(self, key, item):
@@ -99,7 +94,25 @@ class PyZeppelinContext(object):
         return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
 
     def addRestApi(self, name, fn):
-        return self.z.addRestApiHandler(name, PythonApiHandler(fn))
+        self._apiHandlers[name] = fn
+        return self.z.addRestApiHandler(name)
+
+    def _handleApiRequestThread(self):
+        while True:
+          pythonRestApiHandler = self.z.getNextApiRequestFromQueue()
+          if pythonRestApiHandler == None:
+              continue
+
+          endpoint = pythonRestApiHandler.getEndpoint()
+          request = pythonRestApiHandler.getRequestBody()
+          fn = self._apiHandlers[endpoint]
+          try:
+              ret = fn(request)
+              pythonRestApiHandler.setResponse(ret)
+          except:
+              err = sys.exc_info()[0]
+              pythonRestApiHandler.setResponse(str(err))
+
 
     def registerHook(self, event, cmd, replName=None):
         if replName is None:

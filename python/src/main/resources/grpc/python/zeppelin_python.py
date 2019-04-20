@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-from py4j.java_gateway import java_import, JavaGateway, GatewayClient
+from py4j.java_gateway import java_import, JavaGateway, GatewayClient, CallbackServerParameters
 import os
 
 # start JVM gateway
@@ -23,10 +23,14 @@ if "PY4J_GATEWAY_SECRET" in os.environ:
     from py4j.java_gateway import GatewayParameters
     gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
     gateway = JavaGateway(gateway_parameters=GatewayParameters(address="${JVM_GATEWAY_ADDRESS}",
-        port=${JVM_GATEWAY_PORT}, auth_token=gateway_secret, auto_convert=True))
+        port=${JVM_GATEWAY_PORT}, auth_token=gateway_secret, auto_convert=True),
+        start_callback_server=True,
+        callback_server_parameters=CallbackServerParameters())
     java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
     intp = gateway.entry_point
 else:
-    gateway = JavaGateway(GatewayClient(address="${JVM_GATEWAY_ADDRESS}", port=${JVM_GATEWAY_PORT}), auto_convert=True)
+    gateway = JavaGateway(GatewayClient(address="${JVM_GATEWAY_ADDRESS}", port=${JVM_GATEWAY_PORT}), auto_convert=True,
+        start_callback_server=True,
+        callback_server_parameters=CallbackServerParameters())
     java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
     intp = gateway.entry_point

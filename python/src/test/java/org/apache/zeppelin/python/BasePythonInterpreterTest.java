@@ -31,6 +31,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.serving.RestApiServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -356,6 +357,7 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
         .setParagraphId("paragraphId")
         .setInterpreterOut(new InterpreterOutput(null))
         .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+        .setRestApiServer(RestApiServer.singleton())
         .build();
   }
 }
