@@ -52,6 +52,7 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.serving.RestApiRouter;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -178,9 +179,10 @@ public class InterpreterSettingManager implements NoteEventListener {
 
     this.configStorage = configStorage;
 
-    PluginManager.get()
+    PluginManager pluginManager = PluginManager.get();
+    RestApiRouter apiRouter = pluginManager.loadNoteServingRestApiRouter();
 
-    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this);
+    this.interpreterEventServer = new RemoteInterpreterEventServer(conf, this, apiRouter);
     this.interpreterEventServer.start();
     init();
   }

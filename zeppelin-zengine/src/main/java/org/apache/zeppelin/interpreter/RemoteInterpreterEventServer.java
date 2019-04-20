@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -384,14 +386,16 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     ManagedInterpreterGroup interpreterGroup = interpreterSettingManager.getInterpreterGroupById(
             restApiInfo.getIntpGroupId());
     RemoteInterpreterProcess intpProcess = interpreterGroup.getInterpreterProcess();
-    String podDnsName = intpProcess.getHost();
+    String hostAddress = intpProcess.getHost();
+
     String revId = zConf.getNotebookRunRev();
 
     try {
       restApiRouter.addRoute(
               restApiInfo.getNoteId(),
               revId,
-              podDnsName,
+              hostAddress,
+              restApiInfo.getHostname(),
               restApiInfo.getServerPort(),
               restApiInfo.getEndpointName());
     } catch (IOException e) {

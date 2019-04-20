@@ -16,12 +16,30 @@
  */
 package org.apache.zeppelin.serving;
 
-import java.io.IOException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * RestApiRouter configure routing table for note serving.
+ * Dummy implementation of note serving task manager.
+ * Used when zeppelin is running in an environment where serving is not supported.
  */
-public interface RestApiRouter {
-  void addRoute(String noteId, String revId, String dnsName, String hostname, int port, String endpoint) throws IOException;
-  void removeRoute(String noteId, String revId) throws IOException;
+public class DummyNoteServingTaskManager extends NoteServingTaskManager {
+  private static Logger LOGGER = LoggerFactory.getLogger(DummyNoteServingTaskManager.class);
+
+  public DummyNoteServingTaskManager(ZeppelinConfiguration zConf) {
+    super(zConf);
+  }
+
+  @Override
+  protected TaskContextStorage getTaskContextStorage() {
+    LOGGER.info("No note serving task manager is configured");
+    return null;
+  }
+
+  @Override
+  protected NoteServingTask createOrGetServingTask(TaskContext taskContext) {
+    LOGGER.info("No note serving task manager is configured");
+    return null;
+  }
 }

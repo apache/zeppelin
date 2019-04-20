@@ -298,7 +298,7 @@ public class RemoteInterpreterServer extends Thread
       }
 
       if (args.length > 4) {
-        port = Integer.parseInt(args[4]);
+        restApiServerPort = Integer.parseInt(args[4]);
       }
     }
     RemoteInterpreterServer remoteInterpreterServer =

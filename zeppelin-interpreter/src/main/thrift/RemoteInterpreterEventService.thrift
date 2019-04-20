@@ -97,7 +97,8 @@ struct RestApiInfo {
   1: string intpGroupId,
   2: string noteId,
   3: string endpointName,
-  4: i32 serverPort
+  4: string hostname,
+  5: i32 serverPort
 }
 
 exception ServiceException{

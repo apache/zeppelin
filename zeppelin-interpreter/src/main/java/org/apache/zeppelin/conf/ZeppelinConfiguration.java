@@ -533,7 +533,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public int getInterpreterRestApiServerPort() {
-    return getInt(ConfVars.ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT);
+    return getInt(ConfVars.ZEPPELIN_INTERPRETER_RESTAPI_PORT);
   }
 
   public boolean isWindowsPath(String path){
@@ -863,7 +863,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
-    ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT("zeppelin.interpreter.restapiserver.port", 0),
+    ZEPPELIN_INTERPRETER_RESTAPI_PORT("zeppelin.interpreter.restapiserver.port", 0),
 
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),

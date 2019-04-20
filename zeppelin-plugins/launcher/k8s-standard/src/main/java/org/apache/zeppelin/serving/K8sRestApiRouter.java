@@ -36,22 +36,20 @@ public class K8sRestApiRouter implements RestApiRouter {
   /**
    * Add labels to kubernetes Service of Interpreter Pod.
    * So API router can scan lables of all the Services and construct routing table.
-   * @param noteId
-   * @param revId
-   * @param intpId the same to the name of Service. (also the same to the name of Pod)
-   * @param endpoint name of endpoint
-   * @throws IOException
    */
   @Override
-  public void addRoute(String noteId, String revId, String intpId, String endpoint) throws IOException {
+  public void addRoute(String noteId, String revId, String dnsName, String hostname, int port, String endpoint) throws IOException {
     String randomEndpointId = Util.getRandomString(5);
-    kubectl.label("service", intpId, "noteId", noteId);
-    kubectl.label("service", intpId, "revId", revId);
-    kubectl.label("service", intpId, String.format("endpoint-%s", randomEndpointId), endpoint);
+
+    String serviceName = hostname;
+
+    kubectl.label("service", serviceName, "serving", "true");
+    kubectl.label("service", serviceName, "noteId", noteId);
+    kubectl.label("service", serviceName, "revId", revId);
+    kubectl.label("service", serviceName, String.format("endpoint-%s", randomEndpointId), endpoint);
   }
 
   @Override
-  public void removeRoute(String noteId, String revId, String intpId, String endpoint) throws IOException {
-
+  public void removeRoute(String noteId, String revId) throws IOException {
   }
 }

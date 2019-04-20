@@ -65,7 +65,6 @@ import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
-import org.apache.zeppelin.serving.NoteServingTaskManager;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;

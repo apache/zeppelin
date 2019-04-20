@@ -17,11 +17,23 @@
 package org.apache.zeppelin.serving;
 
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * RestApiRouter configure routing table for note serving.
+ * Dummy rest api router for serving.
+ * Used when zeppelin is running in an environment where serving is not supported.
  */
-public interface RestApiRouter {
-  void addRoute(String noteId, String revId, String dnsName, String hostname, int port, String endpoint) throws IOException;
-  void removeRoute(String noteId, String revId) throws IOException;
+public class DummyRestApiRouter implements RestApiRouter {
+  private static Logger LOGGER = LoggerFactory.getLogger(DummyRestApiRouter.class);
+
+  @Override
+  public void addRoute(String noteId, String revId, String dnsname, String hostname, int port, String endpoint) throws IOException {
+    LOGGER.info("No api router is configured");
+  }
+
+  @Override
+  public void removeRoute(String noteId, String revId) throws IOException {
+    LOGGER.info("No api router is configured");
+  }
 }

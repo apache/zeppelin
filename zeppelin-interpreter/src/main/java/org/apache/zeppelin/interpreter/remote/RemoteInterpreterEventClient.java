@@ -17,6 +17,8 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -282,15 +284,19 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
   public synchronized void addRestApi(String noteId, String endpointName) {
     int port = RestApiServer.getPort();
     try {
+      String hostname = InetAddress.getLocalHost().getHostName();
       RestApiInfo apiInfo = new RestApiInfo(
               intpGroupId,
               noteId,
               endpointName,
+              hostname,
               port
       );
       intpEventServiceClient.addRestApi(apiInfo);
     } catch (TException e) {
       LOGGER.warn("Fail to add rest api endpoint", e);
+    } catch (UnknownHostException e) {
+      LOGGER.error("Can't get host name", e);
     }
   }
 

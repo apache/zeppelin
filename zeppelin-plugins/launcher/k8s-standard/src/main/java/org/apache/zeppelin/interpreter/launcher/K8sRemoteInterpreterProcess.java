@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.util.Util;
@@ -226,8 +227,10 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     // environment variables
     envs.put("SERVICE_DOMAIN", envs.getOrDefault("SERVICE_DOMAIN", System.getenv("SERVICE_DOMAIN")));
-    envs.put("ZEPPELIN_HOME", envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
-    envs.put("ZEPPELIN_INTERPRETER_RESTAPISERVER_PORT", String.valueOf(K8S_INTERPRETER_RESTAPISERVER_PORT));
+    envs.put(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.name(),
+            envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
+    envs.put(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_RESTAPI_PORT.name(),
+            "\"" + String.valueOf(K8S_INTERPRETER_RESTAPISERVER_PORT) + "\"");
 
     if (isSpark()) {
       int webUiPort = 4040;

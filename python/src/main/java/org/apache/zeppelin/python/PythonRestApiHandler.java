@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
 
-import java.io.IOException;
+package org.apache.zeppelin.python;
+
+import java.util.Map;
 
 /**
- * RestApiRouter configure routing table for note serving.
+ * Interface for rest api handler for serving.
+ * This interface will be implemented in python side.
+ * py4j will bridge python implementation and java caller.
  */
-public interface RestApiRouter {
-  void addRoute(String noteId, String revId, String dnsName, String hostname, int port, String endpoint) throws IOException;
-  void removeRoute(String noteId, String revId) throws IOException;
+public interface PythonRestApiHandler {
+  Object handle(Map request);
 }

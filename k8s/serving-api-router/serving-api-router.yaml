@@ -1,0 +1,168 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zeppelin-serving-api-router-conf
+data:
+  serviceDomain: local.zeppelin-project.org:8080
+  nginx_apply_routing_table_and_reload.sh: |
+    #!/bin/sh
+    nginx &
+    while :
+    do
+      echo "" > /tmp/nginx.conf
+      sed -n '/SERVING_ROUTING_TABLE/!p;//q' /tmp/conf/nginx.conf >> /tmp/nginx.conf
+      if [ -f "/routing_table/location" ]; then
+        cat /routing_table/location >> /tmp/nginx.conf
+      fi
+      sed -e '1,/SERVING_ROUTING_TABLE/ d' /tmp/conf/nginx.conf >> /tmp/nginx.conf
+      sed -i -e "s/SERVICE_DOMAIN/$(cat /tmp/conf/serviceDomain)/g" /tmp/nginx.conf;
+      sed -i -e "s/NAMESPACE/$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)/g" /tmp/nginx.conf;
+
+      diff /tmp/nginx.conf /etc/nginx/nginx.conf
+      if [ $? -ne 0 ]; then
+        mv /tmp/nginx.conf /etc/nginx/nginx.conf
+        nginx -s reload
+      fi
+      sleep 3
+    done
+
+  nginx.conf: |
+    daemon off;
+    worker_processes auto;
+    events {
+      worker_connections 1024;
+    }
+    http {
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+      }
+
+      # first server block will be default. Proxy zeppelin server.
+      server {
+        listen 80;
+
+        SERVING_ROUTING_TABLE
+
+        location / {
+          proxy_pass http://localhost:8080;
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_redirect http://localhost $scheme://SERVICE_DOMAIN;
+        }
+      }
+
+      # match request domain [port]-[service].[serviceDomain]
+      # proxy extra service such as spark-ui
+      server {
+        listen 80;
+        server_name "~(?<svc_port>[0-9]+)-(?<svc_name>[^.]*)\.(.*)";
+        location / {
+          resolver 127.0.0.1:53 ipv6=off;
+          proxy_pass http://$svc_name.NAMESPACE.svc.cluster.local:$svc_port;
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_redirect http://localhost $scheme://SERVICE_DOMAIN;
+
+          # redirect rule for spark ui. 302 redirect response misses port number of service domain
+          proxy_redirect ~(http:[/]+[0-9]+[-][^-]+[-][^.]+)[^/]+(\/jobs.*) $1.SERVICE_DOMAIN$2;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeppelin-serving-api-router
+spec:
+  selector:
+    matchLabels:
+      app: zeppelin-serving-api-router
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zeppelin-serving-api-router
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - name: serving-api-router
+        image: nginx:1.14.0
+        command: ["/bin/sh", "-c"]
+        args:
+          - sh /tmp/conf/nginx_apply_routing_table_and_reload.sh
+        volumeMounts:
+          - name: zeppelin-server-conf-volume
+            mountPath: /tmp/conf
+          - name: routing-table-volume
+            mountPath: /routing_table
+        env:
+        - name: TRIGGER
+          value: "9"
+        lifecycle:
+          preStop:
+            exec:
+              # SIGTERM triggers a quick exit; gracefully terminate instead
+              command: ["/usr/sbin/nginx", "-s", "quit"]
+      - name: dnsmasq  # nginx requires dns resolver for dynamic dns resolution
+        image: "janeczku/go-dnsmasq:release-1.0.5"
+        args:
+          - --listen
+          - "127.0.0.1:53"
+          - --default-resolver
+          - --append-search-domains
+          - --hostsfile=/etc/hosts
+          - --verbose
+      - name: routing-table-generator
+        image: apache/zeppelin:0.9.0-SNAPSHOT
+        command: ["/bin/bash"]
+        args:
+         - "-c"
+         - "/zeppelin/k8s/bin/update_routing_table.py 5 /routing_table/location"
+        volumeMounts:
+          - name: routing-table-volume
+            mountPath: /routing_table
+      volumes:
+      - name: zeppelin-server-conf-volume
+        configMap:
+          name: zeppelin-serving-api-router-conf
+          items:
+          - key: nginx.conf
+            path: nginx.conf
+          - key: serviceDomain
+            path: serviceDomain
+          - key: nginx_apply_routing_table_and_reload.sh
+            path: nginx_apply_routing_table_and_reload.sh
+      - name: routing-table-volume
+        emptyDir: {}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: zeppelin-serving-api-router
+spec:
+  ports:
+    - name: http
+      port: 80
+  selector:
+    app: zeppelin-serving-api-router

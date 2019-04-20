@@ -23,7 +23,10 @@ import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.OldNotebookRepo;
+import org.apache.zeppelin.serving.DummyNoteServingTaskManager;
+import org.apache.zeppelin.serving.DummyRestApiRouter;
 import org.apache.zeppelin.serving.NoteServingTaskManager;
+import org.apache.zeppelin.serving.RestApiRouter;
 import org.apache.zeppelin.serving.TaskContextStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +54,7 @@ public class PluginManager {
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
   private Map<String, NoteServingTaskManager> cachedServingTaskManager = new HashMap<>();
+  private Map<String, RestApiRouter> cachedRestApiRouter = new HashMap<>();
 
   public static synchronized PluginManager get() {
     if (instance == null) {
@@ -165,6 +169,21 @@ public class PluginManager {
     return launcher;
   }
 
+  public synchronized NoteServingTaskManager loadNoteServingTaskManager() throws IOException {
+    if (zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S) {
+      /**
+       * For now, class name is hardcoded here.
+       * Later, we can make it configurable if necessary.
+       */
+      return loadNoteServingTaskManager(
+              "K8sStandardInterpreterLauncher",
+              "org.apache.zeppelin.serving.K8sNoteServingTaskManager"
+      );
+    } else {
+      return new DummyNoteServingTaskManager(zConf);
+    }
+  }
+
   public synchronized NoteServingTaskManager loadNoteServingTaskManager(String launcherPlugin,
                                                                         String pluginClass) throws IOException {
 
@@ -188,6 +207,46 @@ public class PluginManager {
     }
     cachedServingTaskManager.put(launcherPlugin, taskManager);
     return taskManager;
+  }
+
+  public synchronized RestApiRouter loadNoteServingRestApiRouter() throws IOException {
+    if (zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S) {
+      /**
+       * For now, class name is hardcoded here.
+       * Later, we can make it configurable if necessary.
+       */
+      return loadNoteServingRestApiRouter(
+              "K8sStandardInterpreterLauncher",
+              "org.apache.zeppelin.serving.K8sRestApiRouter"
+      );
+    } else {
+      return new DummyRestApiRouter();
+    }
+  }
+
+  public synchronized RestApiRouter loadNoteServingRestApiRouter(String launcherPlugin,
+                                                                 String pluginClass) throws IOException {
+
+    if (cachedRestApiRouter.containsKey(launcherPlugin)) {
+      return cachedRestApiRouter.get(launcherPlugin);
+    }
+    LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
+    URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
+    RestApiRouter apiRouter = null;
+    try {
+      apiRouter = (RestApiRouter) (Class.forName(pluginClass, true, pluginClassLoader))
+              .getConstructor(ZeppelinConfiguration.class)
+              .newInstance(zConf);
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+            | NoSuchMethodException | InvocationTargetException e) {
+      LOGGER.warn("Fail to instantiate Launcher from plugin classpath:" + launcherPlugin, e);
+    }
+
+    if (apiRouter == null) {
+      throw new IOException("Fail to load plugin: " + launcherPlugin);
+    }
+    cachedRestApiRouter.put(launcherPlugin, apiRouter);
+    return apiRouter;
   }
 
   private URLClassLoader getPluginClassLoader(String pluginsDir,
