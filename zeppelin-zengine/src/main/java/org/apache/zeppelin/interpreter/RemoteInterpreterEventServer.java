@@ -382,7 +382,6 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   public void addRestApi(RestApiInfo restApiInfo) throws TException {
     LOGGER.info("add rest api from remote interpreter");
 
-    // String noteId, String revId, String intpId, String endpoint
     ManagedInterpreterGroup interpreterGroup = interpreterSettingManager.getInterpreterGroupById(
             restApiInfo.getIntpGroupId());
     RemoteInterpreterProcess intpProcess = interpreterGroup.getInterpreterProcess();

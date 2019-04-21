@@ -35,6 +35,8 @@ kind: {{zeppelin.k8s.background.resource.type}}
 metadata:
   namespace: {{zeppelin.k8s.background.namespace}}
   name: {{zeppelin.k8s.background.name}}
+  labels:
+    taskType: {{zeppelin.k8s.background.type}}
 spec:
 {% if zeppelin.k8s.background.resource.type == "Deployment" %}
   selector:
