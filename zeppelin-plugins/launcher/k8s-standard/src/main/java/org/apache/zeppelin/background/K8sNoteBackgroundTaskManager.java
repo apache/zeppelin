@@ -14,32 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
+import java.io.IOException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.zeppelin.interpreter.launcher.Kubectl;
 
 /**
- * Dummy implementation of note serving task manager.
- * Used when zeppelin is running in an environment where serving is not supported.
+ * Manage note test task.
  */
-public class DummyNoteServingTaskManager extends NoteServingTaskManager {
-  private static Logger LOGGER = LoggerFactory.getLogger(DummyNoteServingTaskManager.class);
+public abstract class K8sNoteBackgroundTaskManager extends NoteBackgroundTaskManager {
 
-  public DummyNoteServingTaskManager(ZeppelinConfiguration zConf) {
+  private final FileSystemTaskContextStorage taskContextStorage;
+  private final Kubectl kubectl;
+
+  public K8sNoteBackgroundTaskManager(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
+    taskContextStorage = new FileSystemTaskContextStorage(zConf.getK8sServingContextDir());
+    kubectl = new Kubectl(zConf.getK8sKubectlCmd());
+    kubectl.setNamespace(Kubectl.getNamespaceFromContainer());
+
   }
 
   @Override
   protected TaskContextStorage getTaskContextStorage() {
-    LOGGER.info("No note serving task manager is configured");
-    return null;
+    return taskContextStorage;
   }
 
-  @Override
-  protected NoteServingTask createOrGetServingTask(TaskContext taskContext) {
-    LOGGER.info("No note serving task manager is configured");
-    return null;
+  protected Kubectl getKubectl() {
+    return kubectl;
   }
 }

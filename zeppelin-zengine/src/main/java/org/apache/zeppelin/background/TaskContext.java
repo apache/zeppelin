@@ -14,17 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
-import java.io.IOException;
-import java.util.List;
+import org.apache.zeppelin.notebook.Note;
 
 /**
- * Storage interface for task context
+ * TaskContext
  */
-public interface TaskContextStorage {
-  void save(TaskContext context) throws IOException;
-  TaskContext load(String taskId) throws IOException;
-  void delete(String taskId) throws IOException;
-  List<TaskContext> list();
+public class TaskContext {
+  private final String revId;
+  private final Note note;
+  private String id;
+
+  public TaskContext(Note note, String revId) {
+    id = getTaskId(note.getId(), revId);
+    this.note = note;
+    this.revId = revId;
+  }
+
+  public String getRevId() {
+    return revId;
+  }
+
+  public Note getNote() {
+    return note;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public static String getTaskId(String noteId, String revId) {
+    return (noteId + "-" + revId).toLowerCase();
+  }
 }

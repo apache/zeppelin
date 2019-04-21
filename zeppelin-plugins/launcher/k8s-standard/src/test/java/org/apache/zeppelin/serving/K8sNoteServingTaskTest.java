@@ -20,6 +20,8 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.background.FileSystemTaskContextStorage;
+import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.interpreter.launcher.Kubectl;
 import org.apache.zeppelin.notebook.Note;
 import org.junit.After;

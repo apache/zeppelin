@@ -37,7 +37,16 @@ data:
       diff /tmp/nginx.conf /etc/nginx/nginx.conf
       if [ $? -ne 0 ]; then
         mv /tmp/nginx.conf /etc/nginx/nginx.conf
-        nginx -s reload
+        while :
+        do
+          nginx -s reload
+          if [ $? -ne 0 ]; then
+            sleep 2
+            continue
+          else
+            break
+          fi
+        done
       fi
       sleep 3
     done
@@ -61,7 +70,8 @@ data:
         SERVING_ROUTING_TABLE
 
         location / {
-          proxy_pass http://localhost:8080;
+          resolver 127.0.0.1:53 ipv6=off;
+          proxy_pass http://zeppelin-server.NAMESPACE.svc.cluster.local:8080;
           proxy_set_header Host $host;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
@@ -118,7 +128,7 @@ spec:
             mountPath: /routing_table
         env:
         - name: TRIGGER
-          value: "9"
+          value: "10"
         lifecycle:
           preStop:
             exec:

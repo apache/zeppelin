@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,55 +23,55 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 
 /**
- * Manage lifecycle of NoteServingTask.
+ * Manage note background task. such as test task, serving task.
  */
-public abstract class NoteServingTaskManager {
+public abstract class NoteBackgroundTaskManager {
   private final ZeppelinConfiguration zConf;
 
-  public NoteServingTaskManager(ZeppelinConfiguration zConf) {
+  public NoteBackgroundTaskManager(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
   }
 
-  public NoteServingTask start(Note note, String revId) throws IOException {
+  public NoteBackgroundTask start(Note note, String revId) throws IOException {
     // create task
     TaskContext taskContext = new TaskContext(note, revId);
     getTaskContextStorage().save(taskContext);
-    NoteServingTask servingTask = createOrGetServingTask(taskContext);
+    NoteBackgroundTask testTask = createOrGetBackgroundTask(taskContext);
 
-    // start serving
-    servingTask.start();
+    // start test
+    testTask.start();
 
-    return servingTask;
+    return testTask;
   }
 
-  public NoteServingTask stop(String noteId, String revId) throws IOException {
-    NoteServingTask servingTask = get(noteId, revId);
-    if (servingTask == null) {
+  public NoteBackgroundTask stop(String noteId, String revId) throws IOException {
+    NoteBackgroundTask testTask = get(noteId, revId);
+    if (testTask == null) {
       return null;
     }
 
-    // stop serving
-    servingTask.stop();
-    return servingTask;
+    // stop test
+    testTask.stop();
+    return testTask;
   }
 
   public void delete(String noteId, String revId) throws IOException {
     getTaskContextStorage().delete(TaskContext.getTaskId(noteId, revId));
   }
 
-  public NoteServingTask get(String noteId, String revId) throws IOException {
+  public NoteBackgroundTask get(String noteId, String revId) throws IOException {
     TaskContext taskContext = getTaskContextStorage().load(TaskContext.getTaskId(noteId, revId));
     if (taskContext == null) {
       return null;
     }
 
-    NoteServingTask servingTask = createOrGetServingTask(taskContext);
+    NoteBackgroundTask servingTask = createOrGetBackgroundTask(taskContext);
     return servingTask;
   }
 
-  public List<NoteServingTask> list() {
+  public List<NoteBackgroundTask> list() {
     List<TaskContext> contexts = getTaskContextStorage().list();
-    return contexts.stream().map(c -> createOrGetServingTask(c)).collect(Collectors.toList());
+    return contexts.stream().map(c -> createOrGetBackgroundTask(c)).collect(Collectors.toList());
   }
 
   public ZeppelinConfiguration getzConf() {
@@ -79,5 +79,5 @@ public abstract class NoteServingTaskManager {
   }
 
   protected abstract TaskContextStorage getTaskContextStorage();
-  protected abstract NoteServingTask createOrGetServingTask(TaskContext taskContext);
+  protected abstract NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext);
 }

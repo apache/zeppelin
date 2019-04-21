@@ -181,6 +181,8 @@ spec:
   ports:
     - name: http
       port: 80
+    - name: zeppelin
+      port: 8080
     - name: rpc            # port name is referenced in the code. So it shouldn't be changed.
       port: 12320
   selector:
@@ -192,7 +194,10 @@ metadata:
   name: zeppelin-server-role
 rules:
 - apiGroups: [""]
-  resources: ["pods", "services"]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["create", "get", "update", "patch", "list", "delete", "watch"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["deployments"]
   verbs: ["create", "get", "update", "patch", "list", "delete", "watch"]
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources: ["roles", "rolebindings"]

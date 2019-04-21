@@ -14,37 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.test;
 
-import org.apache.zeppelin.notebook.Note;
+import java.io.File;
+import org.apache.zeppelin.background.K8sNoteBackgroundTask;
+import org.apache.zeppelin.background.TaskContext;
+import org.apache.zeppelin.interpreter.launcher.Kubectl;
 
 /**
- * TaskContext
+ * Note test task.
  */
-public class TaskContext {
-  private final String revId;
-  private final Note note;
-  private String id;
-
-  public TaskContext(Note note, String revId) {
-    id = getTaskId(note.getId(), revId);
-    this.note = note;
-    this.revId = revId;
+public class K8sNoteTestTask extends K8sNoteBackgroundTask {
+  public K8sNoteTestTask(Kubectl kubectl, TaskContext taskContext, File k8sTemplateDir) {
+    super(kubectl, taskContext, k8sTemplateDir);
   }
 
-  public String getRevId() {
-    return revId;
-  }
-
-  public Note getNote() {
-    return note;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public static String getTaskId(String noteId, String revId) {
-    return (noteId + "-" + revId).toLowerCase();
+  @Override
+  protected String getResourceName() {
+    return String.format("test-%s", getTaskContext().getId());
   }
 }

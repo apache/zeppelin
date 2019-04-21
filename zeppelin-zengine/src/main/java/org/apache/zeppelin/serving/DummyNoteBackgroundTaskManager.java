@@ -16,30 +16,34 @@
  */
 package org.apache.zeppelin.serving;
 
-import java.io.File;
-import java.io.IOException;
-import org.apache.zeppelin.background.FileSystemTaskContextStorage;
-import org.apache.zeppelin.background.K8sNoteBackgroundTaskManager;
 import org.apache.zeppelin.background.NoteBackgroundTask;
 import org.apache.zeppelin.background.NoteBackgroundTaskManager;
 import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.background.TaskContextStorage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.launcher.Kubectl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Provide TaskContextStorage and creates NoteServingTask.
+ * Dummy implementation of note serving/test task manager.
+ * Used when zeppelin is running in an environment where serving/test is not supported.
  */
-public class K8sNoteServingTaskManager extends K8sNoteBackgroundTaskManager {
+public class DummyNoteBackgroundTaskManager extends NoteBackgroundTaskManager {
+  private static Logger LOGGER = LoggerFactory.getLogger(DummyNoteBackgroundTaskManager.class);
 
-  public K8sNoteServingTaskManager(ZeppelinConfiguration zConf) throws IOException {
+  public DummyNoteBackgroundTaskManager(ZeppelinConfiguration zConf) {
     super(zConf);
   }
 
   @Override
+  protected TaskContextStorage getTaskContextStorage() {
+    LOGGER.info("No note serving task manager is configured");
+    return null;
+  }
+
+  @Override
   protected NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext) {
-    File servingTemplateDir = new File(getzConf().getK8sTemplatesDir(), "background");
-    K8sNoteServingTask servingTask = new K8sNoteServingTask(getKubectl(), taskContext, servingTemplateDir);
-    return servingTask;
+    LOGGER.info("No note serving task manager is configured");
+    return null;
   }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class FileSystemTaskContextStorage implements TaskContextStorage {
     notebookDir.mkdirs();
 
     Note note = context.getNote();
-    File noteFile = new File(notebookDir, note.getId() + ".zpln");
+    File noteFile = new File(notebookDir, note.getName() + "_" + note.getId() + ".zpln");
     FileUtils.writeStringToFile(noteFile, note.toJson());
     FileUtils.writeStringToFile(revFile, context.getRevId());
   }

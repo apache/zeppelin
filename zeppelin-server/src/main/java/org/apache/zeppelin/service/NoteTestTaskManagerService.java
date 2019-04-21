@@ -17,7 +17,6 @@
 package org.apache.zeppelin.service;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.zeppelin.background.NoteBackgroundTask;
 import org.apache.zeppelin.background.NoteBackgroundTaskManager;
@@ -27,23 +26,22 @@ import org.apache.zeppelin.plugin.PluginManager;
 
 import javax.inject.Inject;
 
-public class NoteServingTaskManagerService {
-
+public class NoteTestTaskManagerService {
   private final ZeppelinConfiguration zConf;
   private final NotebookService notebookService;
-  private final NoteBackgroundTaskManager servingTaskManager;
+  private final NoteBackgroundTaskManager testTaskManager;
 
   @Inject
-  public NoteServingTaskManagerService(ZeppelinConfiguration zConf,
-                                       NotebookService notebookService) throws IOException {
+  public NoteTestTaskManagerService(ZeppelinConfiguration zConf,
+                                    NotebookService notebookService) throws IOException {
     this.zConf = zConf;
     this.notebookService = notebookService;
 
     PluginManager pluginManager = PluginManager.get();
-    servingTaskManager = pluginManager.loadNoteBackgroundTaskManager();
+    testTaskManager = pluginManager.loadNoteTestTaskManager();
   }
 
-  public NoteBackgroundTask startServing(String noteId, String revId, ServiceContext serviceContext) throws Exception {
+  public NoteBackgroundTask startTest(String noteId, String revId, ServiceContext serviceContext) throws Exception {
     final AtomicReference<Note> noteRef = new AtomicReference<>();
     final AtomicReference<Exception> exRef = new AtomicReference<>();
 
@@ -80,21 +78,17 @@ public class NoteServingTaskManagerService {
       }
 
       Note note = noteRef.get();
-      NoteBackgroundTask servingTask = servingTaskManager.start(note, revId);
-      return servingTask;
+      NoteBackgroundTask testTask = testTaskManager.start(note, revId);
+      return testTask;
     }
   }
 
-  public NoteBackgroundTask stopServing(String noteId, String revId, ServiceContext serviceContext) throws Exception {
+  public NoteBackgroundTask stopTest(String noteId, String revId, ServiceContext serviceContext) throws Exception {
     // TODO check permission
-    return servingTaskManager.stop(noteId, revId);
+    return testTaskManager.stop(noteId, revId);
   }
 
-  public NoteBackgroundTask getServing(String noteId, String revId, ServiceContext serviceContext) throws IOException {
-    return servingTaskManager.get(noteId, revId);
-  }
-
-  public List<NoteBackgroundTask> getAllServing() {
-    return servingTaskManager.list();
+  public NoteBackgroundTask getTest(String noteId, String revId, ServiceContext serviceContext) throws IOException {
+    return testTaskManager.get(noteId, revId);
   }
 }

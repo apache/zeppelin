@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.background.FileSystemTaskContextStorage;
+import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.notebook.Note;
 import org.junit.After;
 import org.junit.Before;

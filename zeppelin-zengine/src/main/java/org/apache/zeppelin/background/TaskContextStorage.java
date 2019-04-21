@@ -14,25 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.serving;
+package org.apache.zeppelin.background;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
- * Contains information to deploy note and serve.
+ * Storage interface for task context
  */
-public abstract class NoteServingTask {
-  private TaskContext taskContext;
-
-  public NoteServingTask(TaskContext taskContext) {
-    this.taskContext = taskContext;
-  }
-
-  public TaskContext getTaskContext() {
-    return taskContext;
-  }
-
-  public abstract void start() throws IOException;
-  public abstract void stop() throws IOException;
-  public abstract boolean isRunning() throws IOException;
+public interface TaskContextStorage {
+  void save(TaskContext context) throws IOException;
+  TaskContext load(String taskId) throws IOException;
+  void delete(String taskId) throws IOException;
+  List<TaskContext> list();
 }

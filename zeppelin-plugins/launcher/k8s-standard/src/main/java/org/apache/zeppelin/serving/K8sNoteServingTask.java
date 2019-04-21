@@ -25,87 +25,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.background.K8sNoteBackgroundTask;
+import org.apache.zeppelin.background.NoteBackgroundTask;
+import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.interpreter.launcher.Kubectl;
 
 /**
  * Start / Stop / Monitor serving task.
  */
-public class K8sNoteServingTask extends NoteServingTask {
-  private final Kubectl kubectl;
-  private final File k8sTemplateDir;
-  private final Gson gson = new Gson();
+public class K8sNoteServingTask extends K8sNoteBackgroundTask {
 
   public K8sNoteServingTask(Kubectl kubectl, TaskContext taskContext, File k8sTemplateDir) {
-    super(taskContext);
-    this.kubectl = kubectl;
-    this.k8sTemplateDir = k8sTemplateDir;
+    super(kubectl, taskContext, k8sTemplateDir);
   }
 
   @Override
-  public void start() throws IOException {
-    kubectl.apply(k8sTemplateDir, getTemplateBindings(), false);
+  protected Properties getTemplateBindings() throws IOException {
+    Properties properties = super.getTemplateBindings();
+    String notebookDir = String.format("/zeppelin/task/serving/%s/notebook", getTaskContext().getId());
+    properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
+    properties.put("zeppelin.k8s.background.autoshutdown", "false");
+    return properties;
   }
 
-  Properties getTemplateBindings() throws IOException {
-    TaskContext taskContext = getTaskContext();
-    Properties k8sProperties = new Properties();
-    String taskId = taskContext.getId();
-    String servingName = getServingName();
-    String notebookDir = String.format("/zeppelin/task/serving/%s/notebook", taskContext.getId());
-
-    // k8s template properties
-    k8sProperties.put("zeppelin.k8s.serving.taskId", taskId);
-    k8sProperties.put("zeppelin.k8s.serving.namespace", kubectl.getNamespace());
-    k8sProperties.put("zeppelin.k8s.serving.name", servingName);
-    k8sProperties.put("zeppelin.k8s.serving.notebook.dir", notebookDir);
-    k8sProperties.put("zeppelin.k8s.serving.noteId", taskContext.getNote().getId());
-    k8sProperties.put("zeppelin.k8s.serving.revId", taskContext.getRevId());
-    k8sProperties.put("zeppelin.k8s.serving.serviceContext", "");
-
-    // interpreter properties overrides the values
-    return k8sProperties;
-  }
-
-  private String getServingName() {
+  @Override
+  protected String getResourceName() {
     return String.format("serving-%s", getTaskContext().getId());
-  }
-
-  @Override
-  public void stop() throws IOException {
-    kubectl.apply(k8sTemplateDir, getTemplateBindings(), true);
-
-  }
-
-  @Override
-  public boolean isRunning() throws IOException {
-    String podString = kubectl.getByLabel("pod", String.format("app=%s", getServingName()));
-    if (StringUtils.isEmpty(podString)) {
-      return false;
-    }
-
-    Map<String, Object> pod = gson.fromJson(podString, new TypeToken<Map<String, Object>>() {
-    }.getType());
-    List<Map<String, Object>> items = (List<Map<String, Object>>) pod.get("items");
-    if (items == null) {
-      return false;
-    }
-
-    Iterator<Map<String, Object>> it = items.iterator();
-    while (it.hasNext()) {
-      Map<String, Object> item = it.next();
-      Map<String, Object> status = (Map<String, Object>) item.get("status");
-      if (status == null) {
-        return false;
-      }
-
-      String phase = (String) status.get("phase");
-      if (phase == null) {
-        return false;
-      }
-
-      return phase.equals("Running");
-    }
-
-    return false;
   }
 }

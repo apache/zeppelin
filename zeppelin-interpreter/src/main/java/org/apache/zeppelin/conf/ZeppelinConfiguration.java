@@ -365,6 +365,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_RUN_SERVICE_CONTEXT);
   }
 
+  public boolean getNotebookRunAutoShutdown() {
+    return getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RUN_AUTOSHUTDOWN);
+  }
 
   public String getPluginsDir() {
     return getRelativeDir(getString(ConfVars.ZEPPELIN_PLUGINS_DIR));
@@ -724,6 +727,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_K8S_SERVING_CONTEXT_DIR);
   }
 
+  public String getK8sTestContextDir() {
+    return getRelativeDir(ConfVars.ZEPPELIN_K8S_TEST_CONTEXT_DIR);
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -787,9 +794,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_OUTPUT_LIMIT("zeppelin.interpreter.output.limit", 1024 * 100),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+
     ZEPPELIN_NOTEBOOK_RUN_ID("zeppelin.notebook.run.id", null),   // run particular note id on zeppelin start
     ZEPPELIN_NOTEBOOK_RUN_REV("zeppelin.notebook.run.rev", null), // revision id for ZEPPELIN_NOTEBOOK_RUN_ID.
     ZEPPELIN_NOTEBOOK_RUN_SERVICE_CONTEXT("zeppelin.notebook.run.servicecontext", null), // base64 encoded serialized service context to be used ZEPPELIN_NOTEBOOK_RUN_ID.
+    ZEPPELIN_NOTEBOOK_RUN_AUTOSHUTDOWN("zeppelin.notebook.run.autoshutdown", true), // after specified note (ZEPPELIN_NOTEBOOK_RUN_ID) run, shutdown zeppelin server
+
     ZEPPELIN_RECOVERY_DIR("zeppelin.recovery.dir", "recovery"),
     ZEPPELIN_RECOVERY_STORAGE_CLASS("zeppelin.recovery.storage.class",
         "org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage"),
@@ -889,6 +899,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
 
     ZEPPELIN_K8S_SERVING_CONTEXT_DIR("zeppelin.k8s.serving.context.dir", "task/serving"),
+    ZEPPELIN_K8S_TEST_CONTEXT_DIR("zeppelin.k8s.test.context.dir", "task/test"),
 
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),
