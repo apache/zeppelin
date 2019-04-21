@@ -17,6 +17,7 @@
 package org.apache.zeppelin.background;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Note test task
@@ -35,4 +36,5 @@ public abstract class NoteBackgroundTask {
   public abstract void start() throws IOException;
   public abstract void stop() throws IOException;
   public abstract boolean isRunning() throws IOException;
+  public abstract Map<String, Object> getInfo() throws IOException;
 }

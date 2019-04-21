@@ -1057,7 +1057,8 @@ public class NotebookRestApi extends AbstractRestApi {
     NoteBackgroundTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
     return new JsonResponse<>(Status.OK, ImmutableMap.of(
             "taskId", task.getTaskContext().getId(),
-            "isRunning", task.isRunning()
+            "isRunning", task.isRunning(),
+            "info", task.getInfo()
     )).build();
   }
 
@@ -1107,7 +1108,8 @@ public class NotebookRestApi extends AbstractRestApi {
     NoteBackgroundTask task = noteTestTaskManagerService.getTest(noteId, revId, getServiceContext());
     return new JsonResponse<>(Status.OK, ImmutableMap.of(
             "taskId", task.getTaskContext().getId(),
-            "isRunning", task.isRunning()
+            "isRunning", task.isRunning(),
+            "info", task.getInfo()
     )).build();
   }
 

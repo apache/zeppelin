@@ -54,7 +54,13 @@ public class K8sNoteServingTaskManager extends K8sNoteBackgroundTaskManager {
   @Override
   protected NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext) {
     File servingTemplateDir = new File(getConf().getK8sTemplatesDir(), "background");
-    K8sNoteServingTask servingTask = new K8sNoteServingTask(getKubectl(), taskContext, servingTemplateDir);
+    K8sNoteServingTask servingTask = new K8sNoteServingTask(
+            getKubectl(),
+            taskContext,
+            String.format("%s/%s/notebook",
+                    new File(getConf().getK8sServingContextDir()).getAbsolutePath(),
+                    taskContext.getId()),
+            servingTemplateDir);
     return servingTask;
   }
 

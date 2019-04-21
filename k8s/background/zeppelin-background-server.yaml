@@ -96,8 +96,6 @@ spec:
               name: {{zeppelin.k8s.background.name}}-conf
               key: serviceDomain
         - name: ZEPPELIN_NOTEBOOK_DIR
-          value: "{{zeppelin.k8s.background.taskId}}"
-        - name: ZEPPELIN_NOTEBOOK_DIR
           value: "{{zeppelin.k8s.background.notebook.dir}}"
         - name: ZEPPELIN_NOTEBOOK_RUN_ID
           value: "{{zeppelin.k8s.background.noteId}}"

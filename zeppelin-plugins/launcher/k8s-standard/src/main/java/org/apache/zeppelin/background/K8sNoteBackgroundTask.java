@@ -53,6 +53,9 @@ public abstract class K8sNoteBackgroundTask extends NoteBackgroundTask {
     String servingName = getResourceName();
 
     // k8s template properties
+    k8sProperties.put("zeppelin.k8s.background.resource.type", getResourceType());
+    k8sProperties.put("zeppelin.k8s.background.resource.apiversion", getResourceApiVersion());
+
     k8sProperties.put("zeppelin.k8s.background.taskId", taskId);
     k8sProperties.put("zeppelin.k8s.background.namespace", kubectl.getNamespace());
     k8sProperties.put("zeppelin.k8s.background.name", servingName);
@@ -60,49 +63,27 @@ public abstract class K8sNoteBackgroundTask extends NoteBackgroundTask {
     k8sProperties.put("zeppelin.k8s.background.revId", taskContext.getRevId());
     k8sProperties.put("zeppelin.k8s.background.serviceContext", "");
     k8sProperties.put("zeppelin.k8s.background.autoshutdown", "true");
-
-    // interpreter properties overrides the values
     return k8sProperties;
   }
 
   protected abstract String getResourceName();
+  protected abstract String getResourceType();
+  protected abstract String getResourceApiVersion();
 
   @Override
   public void stop() throws IOException {
     kubectl.apply(k8sTemplateDir, getTemplateBindings(), true);
-
   }
 
   @Override
-  public boolean isRunning() throws IOException {
-    String podString = kubectl.getByLabel("pod", String.format("app=%s", getResourceName()));
-    if (StringUtils.isEmpty(podString)) {
-      return false;
+  public Map<String, Object> getInfo() throws IOException {
+    String resourceJsonString = kubectl.get(getResourceType(), getResourceName());
+    if (StringUtils.isEmpty(resourceJsonString)) {
+      return null;
     }
 
-    Map<String, Object> pod = gson.fromJson(podString, new TypeToken<Map<String, Object>>() {
-    }.getType());
-    List<Map<String, Object>> items = (List<Map<String, Object>>) pod.get("items");
-    if (items == null) {
-      return false;
-    }
-
-    Iterator<Map<String, Object>> it = items.iterator();
-    while (it.hasNext()) {
-      Map<String, Object> item = it.next();
-      Map<String, Object> status = (Map<String, Object>) item.get("status");
-      if (status == null) {
-        return false;
-      }
-
-      String phase = (String) status.get("phase");
-      if (phase == null) {
-        return false;
-      }
-
-      return phase.equals("Running");
-    }
-
-    return false;
+    Map<String, Object> resource = gson.fromJson(
+            resourceJsonString, new TypeToken<Map<String, Object>>() {}.getType());
+    return resource;
   }
 }

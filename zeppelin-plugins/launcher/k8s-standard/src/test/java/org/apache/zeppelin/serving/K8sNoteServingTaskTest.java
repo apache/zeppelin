@@ -28,6 +28,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.mockito.Mockito.mock;
+
 /**
  * K8sNoteServingTaskTest
  */
@@ -54,11 +56,15 @@ public class K8sNoteServingTaskTest {
     storage = new FileSystemTaskContextStorage(contextRoot.getAbsolutePath());
     storage.save(task);
 
-    Kubectl kubectl = new Kubectl("kubectl");
+    Kubectl kubectl = mock(Kubectl.class);
     kubectl.setNamespace("default");
     File servingTemplate = new File("../../../k8s/serving");
     System.out.println(servingTemplate.getAbsolutePath());
-    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(kubectl, task, servingTemplate);
+    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(
+            kubectl,
+            task,
+            String.format("%s/%s/notebook", contextRoot.getAbsolutePath(), task.getId()),
+            servingTemplate);
     noteServingTask.start();
   }
 
@@ -73,7 +79,11 @@ public class K8sNoteServingTaskTest {
     Kubectl kubectl = new Kubectl("kubectl");
     kubectl.setNamespace("default");
     File servingTemplate = new File("../../../k8s/serving");
-    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(kubectl, task, servingTemplate);
+    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(
+            kubectl,
+            task,
+            String.format("%s/%s/notebook", contextRoot.getAbsolutePath(), task.getId()),
+            servingTemplate);
     noteServingTask.stop();
   }
 
@@ -88,7 +98,11 @@ public class K8sNoteServingTaskTest {
     Kubectl kubectl = new Kubectl("kubectl");
     kubectl.setNamespace("default");
     File servingTemplate = new File("../../../k8s/serving");
-    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(kubectl, task, servingTemplate);
+    K8sNoteServingTask noteServingTask = new K8sNoteServingTask(
+            kubectl,
+            task,
+            String.format("%s/%s/notebook", contextRoot.getAbsolutePath(), task.getId()),
+            servingTemplate);
 
     boolean isRunning = noteServingTask.isRunning();
   }

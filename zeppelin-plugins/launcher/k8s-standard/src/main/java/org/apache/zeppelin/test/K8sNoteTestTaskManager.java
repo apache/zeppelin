@@ -22,7 +22,13 @@ public class K8sNoteTestTaskManager extends K8sNoteBackgroundTaskManager {
   @Override
   protected NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext) {
     File servingTemplateDir = new File(getConf().getK8sTemplatesDir(), "background");
-    K8sNoteTestTask testTask = new K8sNoteTestTask(getKubectl(), taskContext, servingTemplateDir);
+    K8sNoteTestTask testTask = new K8sNoteTestTask(
+            getKubectl(),
+            taskContext,
+            String.format("%s/%s/notebook",
+                    new File(getConf().getK8sTestContextDir()).getAbsolutePath(),
+                    taskContext.getId()),
+            servingTemplateDir);
     return testTask;
   }
 }
