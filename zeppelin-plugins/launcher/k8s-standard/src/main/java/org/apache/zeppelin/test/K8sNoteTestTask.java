@@ -38,6 +38,8 @@ public class K8sNoteTestTask extends K8sNoteBackgroundTask {
     properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
     properties.put("zeppelin.k8s.background.autoshutdown", "true");
     properties.put("zeppelin.k8s.background.type", "test");
+    properties.put("zeppelin.k8s.background.resource.apiversion", "batch/v1");
+    properties.put("zeppelin.k8s.background.resource.type", "Job");
     return properties;
   }
 

@@ -46,6 +46,8 @@ public class K8sNoteServingTask extends K8sNoteBackgroundTask {
     properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
     properties.put("zeppelin.k8s.background.autoshutdown", "false");
     properties.put("zeppelin.k8s.background.type", "serving");
+    properties.put("zeppelin.k8s.background.resource.apiversion", "apps/v1");
+    properties.put("zeppelin.k8s.background.resource.type", "Deployment");
     return properties;
   }
 

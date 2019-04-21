@@ -30,12 +30,13 @@ data:
   serviceDomain: local.zeppelin-project.org:8080
   sparkContainerImage: spark:2.4.0
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: {{zeppelin.k8s.background.resource.apiversion}}
+kind: {{zeppelin.k8s.background.resource.type}}
 metadata:
   namespace: {{zeppelin.k8s.background.namespace}}
   name: {{zeppelin.k8s.background.name}}
 spec:
+{% if zeppelin.k8s.background.resource.type == "Deployment" %}
   selector:
     matchLabels:
       app: {{zeppelin.k8s.background.name}}
@@ -45,6 +46,14 @@ spec:
       labels:
         app: {{zeppelin.k8s.background.name}}
     spec:
+{% endif %}
+{% if zeppelin.k8s.background.resource.type == "Job" %}
+  backoffLimit: 1
+  activeDeadlineSeconds: 3600
+  template:
+    spec:
+      restartPolicy: Never
+{% endif %}
       automountServiceAccountToken: true
       containers:
       - name: zeppelin-server
