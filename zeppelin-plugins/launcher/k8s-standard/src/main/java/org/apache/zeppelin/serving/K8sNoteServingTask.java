@@ -45,6 +45,7 @@ public class K8sNoteServingTask extends K8sNoteBackgroundTask {
     String notebookDir = String.format("/zeppelin/task/serving/%s/notebook", getTaskContext().getId());
     properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
     properties.put("zeppelin.k8s.background.autoshutdown", "false");
+    properties.put("zeppelin.k8s.background.type", "serving");
     return properties;
   }
 

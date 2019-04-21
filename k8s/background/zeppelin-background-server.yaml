@@ -98,6 +98,8 @@ spec:
           value: "{{zeppelin.k8s.background.autoshutdown}}"
         - name: MASTER   # default value of master property for spark interpreter.
           value: "k8s://https://kubernetes.default.svc"
+        - name: ZEPPELIN_BACKGROUND_TYPE
+          value: "{{zeppelin.k8s.background.type}}"
         volumeMounts:
           - name: zeppelin-task-context-volume
             mountPath: /zeppelin/task

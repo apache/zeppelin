@@ -17,6 +17,8 @@
 package org.apache.zeppelin.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 import org.apache.zeppelin.background.K8sNoteBackgroundTask;
 import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.interpreter.launcher.Kubectl;
@@ -30,7 +32,18 @@ public class K8sNoteTestTask extends K8sNoteBackgroundTask {
   }
 
   @Override
+  protected Properties getTemplateBindings() throws IOException {
+    Properties properties = super.getTemplateBindings();
+    String notebookDir = String.format("/zeppelin/task/test/%s/notebook", getTaskContext().getId());
+    properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
+    properties.put("zeppelin.k8s.background.autoshutdown", "true");
+    properties.put("zeppelin.k8s.background.type", "test");
+    return properties;
+  }
+
+  @Override
   protected String getResourceName() {
     return String.format("test-%s", getTaskContext().getId());
   }
+
 }

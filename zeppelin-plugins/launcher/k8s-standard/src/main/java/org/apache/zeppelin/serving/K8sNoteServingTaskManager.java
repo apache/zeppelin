@@ -21,11 +21,9 @@ import java.io.IOException;
 import org.apache.zeppelin.background.FileSystemTaskContextStorage;
 import org.apache.zeppelin.background.K8sNoteBackgroundTaskManager;
 import org.apache.zeppelin.background.NoteBackgroundTask;
-import org.apache.zeppelin.background.NoteBackgroundTaskManager;
 import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.background.TaskContextStorage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.launcher.Kubectl;
 
 /**
  * Provide TaskContextStorage and creates NoteServingTask.
@@ -37,8 +35,13 @@ public class K8sNoteServingTaskManager extends K8sNoteBackgroundTaskManager {
   }
 
   @Override
+  protected TaskContextStorage createTaskContextStorage() {
+    return new FileSystemTaskContextStorage(getConf().getK8sServingContextDir());
+  }
+
+  @Override
   protected NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext) {
-    File servingTemplateDir = new File(getzConf().getK8sTemplatesDir(), "background");
+    File servingTemplateDir = new File(getConf().getK8sTemplatesDir(), "background");
     K8sNoteServingTask servingTask = new K8sNoteServingTask(getKubectl(), taskContext, servingTemplateDir);
     return servingTask;
   }

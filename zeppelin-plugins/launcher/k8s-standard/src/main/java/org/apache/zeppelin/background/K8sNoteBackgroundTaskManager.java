@@ -25,19 +25,22 @@ import org.apache.zeppelin.interpreter.launcher.Kubectl;
  */
 public abstract class K8sNoteBackgroundTaskManager extends NoteBackgroundTaskManager {
 
-  private final FileSystemTaskContextStorage taskContextStorage;
+  private TaskContextStorage taskContextStorage = null;
   private final Kubectl kubectl;
 
   public K8sNoteBackgroundTaskManager(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
-    taskContextStorage = new FileSystemTaskContextStorage(zConf.getK8sServingContextDir());
     kubectl = new Kubectl(zConf.getK8sKubectlCmd());
     kubectl.setNamespace(Kubectl.getNamespaceFromContainer());
-
   }
 
+  protected abstract TaskContextStorage createTaskContextStorage();
+
   @Override
-  protected TaskContextStorage getTaskContextStorage() {
+  protected synchronized TaskContextStorage getTaskContextStorage() {
+    if (taskContextStorage == null) {
+      taskContextStorage = createTaskContextStorage();
+    }
     return taskContextStorage;
   }
 

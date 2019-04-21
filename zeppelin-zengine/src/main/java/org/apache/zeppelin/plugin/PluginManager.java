@@ -52,7 +52,7 @@ public class PluginManager {
   private String pluginsDir = zConf.getPluginsDir();
 
   private Map<String, InterpreterLauncher> cachedLaunchers = new HashMap<>();
-  private Map<String, NoteBackgroundTaskManager> cachedServingTaskManager = new HashMap<>();
+  private Map<String, NoteBackgroundTaskManager> cachedBackgroundTaskManagers = new HashMap<>();
   private Map<String, RestApiRouter> cachedRestApiRouter = new HashMap<>();
 
   public static synchronized PluginManager get() {
@@ -201,8 +201,8 @@ public class PluginManager {
   public synchronized NoteBackgroundTaskManager loadNoteBackgroundTaskManager(String launcherPlugin,
                                                                               String pluginClass) throws IOException {
 
-    if (cachedServingTaskManager.containsKey(launcherPlugin)) {
-      return cachedServingTaskManager.get(launcherPlugin);
+    if (cachedBackgroundTaskManagers.containsKey(pluginClass)) {
+      return cachedBackgroundTaskManagers.get(pluginClass);
     }
     LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
     URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
@@ -219,12 +219,18 @@ public class PluginManager {
     if (taskManager == null) {
       throw new IOException("Fail to load plugin: " + launcherPlugin);
     }
-    cachedServingTaskManager.put(launcherPlugin, taskManager);
+    cachedBackgroundTaskManagers.put(pluginClass, taskManager);
     return taskManager;
   }
 
   public synchronized RestApiRouter loadNoteServingRestApiRouter() throws IOException {
     if (zConf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S) {
+      String backgroundTaskType = System.getenv("ZEPPELIN_BACKGROUND_TYPE");
+      if ("test".equalsIgnoreCase(backgroundTaskType)) {
+        // if NoteTestTask shouldn't add route during test.
+        return new DummyRestApiRouter();
+      }
+
       /**
        * For now, class name is hardcoded here.
        * Later, we can make it configurable if necessary.

@@ -74,7 +74,7 @@ public abstract class NoteBackgroundTaskManager {
     return contexts.stream().map(c -> createOrGetBackgroundTask(c)).collect(Collectors.toList());
   }
 
-  public ZeppelinConfiguration getzConf() {
+  public ZeppelinConfiguration getConf() {
     return zConf;
   }
 
