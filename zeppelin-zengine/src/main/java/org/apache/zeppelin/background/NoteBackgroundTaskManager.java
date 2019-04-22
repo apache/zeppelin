@@ -27,6 +27,7 @@ import org.apache.zeppelin.notebook.Note;
  */
 public abstract class NoteBackgroundTaskManager {
   private final ZeppelinConfiguration zConf;
+  BackgroundTaskLifecycleListener listener;
 
   public NoteBackgroundTaskManager(ZeppelinConfiguration zConf) {
     this.zConf = zConf;
@@ -36,31 +37,31 @@ public abstract class NoteBackgroundTaskManager {
     // create task
     TaskContext taskContext = new TaskContext(note, revId);
     getTaskContextStorage().save(taskContext);
-    NoteBackgroundTask testTask = createOrGetBackgroundTask(taskContext);
+    NoteBackgroundTask task = createOrGetBackgroundTask(taskContext);
 
     // start test
     boolean running = false;
     try {
-      running = testTask.isRunning();
+      running = task.isRunning();
     } catch (IOException e) {
       // task not exists. ignore exception here
     }
     if (!running) {
-      testTask.start();
+      task.start();
     }
-
-    return testTask;
+    return task;
   }
 
   public NoteBackgroundTask stop(String noteId, String revId) throws IOException {
-    NoteBackgroundTask testTask = get(noteId, revId);
-    if (testTask == null) {
+    NoteBackgroundTask task = get(noteId, revId);
+    if (task == null) {
       return null;
     }
 
     // stop test
-    testTask.stop();
-    return testTask;
+    task.stop();
+
+    return task;
   }
 
   public void delete(String noteId, String revId) throws IOException {
@@ -73,8 +74,8 @@ public abstract class NoteBackgroundTaskManager {
       return null;
     }
 
-    NoteBackgroundTask servingTask = createOrGetBackgroundTask(taskContext);
-    return servingTask;
+    NoteBackgroundTask task = createOrGetBackgroundTask(taskContext);
+    return task;
   }
 
   public List<NoteBackgroundTask> list() {
@@ -88,4 +89,12 @@ public abstract class NoteBackgroundTaskManager {
 
   protected abstract TaskContextStorage getTaskContextStorage();
   protected abstract NoteBackgroundTask createOrGetBackgroundTask(TaskContext taskContext);
+
+  public BackgroundTaskLifecycleListener getListener() {
+    return listener;
+  }
+
+  public void setListener(BackgroundTaskLifecycleListener listener) {
+    this.listener = listener;
+  }
 }

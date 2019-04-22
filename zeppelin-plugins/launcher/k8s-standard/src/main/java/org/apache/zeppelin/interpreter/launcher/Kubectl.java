@@ -19,6 +19,13 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.batch.Job;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.Watcher;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -41,10 +48,14 @@ public class Kubectl {
   private final Logger LOGGER = LoggerFactory.getLogger(Kubectl.class);
   private final String kubectlCmd;
   private final Gson gson = new Gson();
+  private final KubernetesClient client;
   private String namespace;
 
   public Kubectl(String kubectlCmd) {
     this.kubectlCmd = kubectlCmd;
+
+    Config config = new ConfigBuilder().build();
+    client = new DefaultKubernetesClient(config);
   }
 
   /**
@@ -258,5 +269,17 @@ public class Kubectl {
     } else {
       LOGGER.error("Can't apply " + path.getAbsolutePath());
     }
+  }
+
+  public void watchDeployments(Watcher<Deployment> watcher, String labelKey, String labelValue) {
+    client.apps().deployments().inNamespace(getNamespace())
+            .withLabel(labelKey, labelValue)
+            .watch(watcher);
+  }
+
+  public void watchJobs(Watcher<Job> watcher, String labelKey, String labelValue) {
+    client.batch().jobs().inNamespace(getNamespace())
+            .withLabel(labelKey, labelValue)
+            .watch(watcher);
   }
 }

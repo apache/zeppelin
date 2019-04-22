@@ -46,6 +46,12 @@
             <artifactId>jinjava</artifactId>
             <version>2.4.12</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>4.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>

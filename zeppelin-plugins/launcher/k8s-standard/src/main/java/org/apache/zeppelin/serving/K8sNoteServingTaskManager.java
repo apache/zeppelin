@@ -18,18 +18,21 @@ package org.apache.zeppelin.serving;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.zeppelin.background.BackgroundTaskLifecycleListener;
 import org.apache.zeppelin.background.FileSystemTaskContextStorage;
 import org.apache.zeppelin.background.K8sNoteBackgroundTaskManager;
 import org.apache.zeppelin.background.NoteBackgroundTask;
 import org.apache.zeppelin.background.TaskContext;
 import org.apache.zeppelin.background.TaskContextStorage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.launcher.BackgroundTaskLifecycleWatcherImpl;
 import org.apache.zeppelin.interpreter.launcher.Kubectl;
 import org.apache.zeppelin.notebook.Note;
 import org.slf4j.Logger;
@@ -40,10 +43,20 @@ import org.slf4j.LoggerFactory;
  */
 public class K8sNoteServingTaskManager extends K8sNoteBackgroundTaskManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sNoteServingTaskManager.class);
+  private final BackgroundTaskLifecycleWatcherImpl<Deployment> watcher;
   Gson gson = new Gson();
 
   public K8sNoteServingTaskManager(ZeppelinConfiguration zConf) throws IOException {
     super(zConf);
+
+    watcher = new BackgroundTaskLifecycleWatcherImpl<Deployment>(getListener()) {
+      @Override
+      protected String getTaskId(Deployment deployment) {
+        return deployment.getMetadata().getName().replaceFirst("serving-", "");
+      }
+    };
+
+    getKubectl().watchDeployments(watcher, "taskType",  "serving");
   }
 
   @Override
@@ -118,5 +131,10 @@ public class K8sNoteServingTaskManager extends K8sNoteBackgroundTaskManager {
     }
 
     return tasks;
+  }
+
+  public void setListener(BackgroundTaskLifecycleListener listener) {
+    super.setListener(listener);
+    watcher.setListener(listener);
   }
 }
