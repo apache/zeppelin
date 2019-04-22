@@ -52,7 +52,7 @@ spec:
     env:
   {% for key, value in zeppelin.k8s.envs.items() %}
     - name: {{key}}
-      value: {{value}}
+      value: "{{value}}"
   {% endfor %}
   {% if zeppelin.k8s.interpreter.group.name == "spark" %}
     volumeMounts:

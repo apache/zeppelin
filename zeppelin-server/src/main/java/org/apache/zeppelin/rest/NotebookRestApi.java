@@ -23,6 +23,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -72,6 +73,7 @@ import org.apache.zeppelin.service.NoteServingTaskManagerService;
 import org.apache.zeppelin.service.NoteTestTaskManagerService;
 import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.serving.MetricStorage;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.quartz.CronExpression;
@@ -1057,9 +1059,27 @@ public class NotebookRestApi extends AbstractRestApi {
     NoteBackgroundTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
     return new JsonResponse<>(Status.OK, ImmutableMap.of(
             "taskId", task.getTaskContext().getId(),
-            "isRunning", task.isRunning(),
-            "info", task.getInfo()
+            "task", task.getInfo()
     )).build();
+  }
+
+  @GET
+  @Path("serving/{noteId}/{revId}/{endpoint}")
+  @ZeppelinApi
+  public Response servingMetrics(@PathParam("noteId") String noteId,
+                                 @PathParam("revId") String revId,
+                                 @PathParam("endpoint") String endpoint,
+                                 @QueryParam("from") int fromTimestamp,
+                                 @QueryParam("to") int toTimestamp)
+          throws IOException {
+    NoteBackgroundTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
+    MetricStorage metricStorage = noteServingTaskManagerService.getMetricStorage();
+
+    Date toDate = (toTimestamp > 0) ? new Date(toTimestamp * 1000) : new Date();
+    Date fromDate = (fromTimestamp > 0) ? new Date(fromTimestamp * 1000) : new Date(toDate.getTime() - 1000 * 60 * 30);
+    List<Map<String, Object>> series = metricStorage.get(fromDate, toDate, noteId, revId, endpoint);
+
+    return new JsonResponse<>(Status.OK, series).build();
   }
 
   @GET
@@ -1067,11 +1087,12 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response servingList() throws IOException {
     List<NoteBackgroundTask> tasks = noteServingTaskManagerService.getAllServing();
-    List<ImmutableMap<String, ? extends Serializable>> taskInfoList = tasks.stream().map(task -> {
+    List<ImmutableMap<String, ?>> taskInfoList = tasks.stream().map(task -> {
       try {
         return ImmutableMap.of(
                 "taskId", task.getTaskContext().getId(),
-                "isRunning", task.isRunning());
+                "info", task.getInfo()
+        );
       } catch (IOException e) {
         LOG.error("Not able to get task info", e);
       }
@@ -1081,6 +1102,7 @@ public class NotebookRestApi extends AbstractRestApi {
     }).collect(Collectors.toList());
     return new JsonResponse<>(Status.OK, taskInfoList).build();
   }
+
 
   @POST
   @Path("test/{noteId}/{revId}")
@@ -1106,11 +1128,13 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response testInfo(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws IOException {
     NoteBackgroundTask task = noteTestTaskManagerService.getTest(noteId, revId, getServiceContext());
-    return new JsonResponse<>(Status.OK, ImmutableMap.of(
+
+    Response response = new JsonResponse<>(Status.OK, ImmutableMap.of(
             "taskId", task.getTaskContext().getId(),
-            "isRunning", task.isRunning(),
-            "info", task.getInfo()
+            "task", task.getInfo()
     )).build();
+
+    return response;
   }
 
   private void handleParagraphParams(String message, Note note, Paragraph paragraph)

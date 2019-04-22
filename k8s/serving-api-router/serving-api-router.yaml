@@ -168,3 +168,66 @@ spec:
       port: 80
   selector:
     app: zeppelin-serving-api-router
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: zeppelin-serving-metric-redis-conf
+data:
+  redis.conf: |
+    save ""
+    maxmemory-policy volatile-lru
+    appendonly no
+    protected-mode no
+    bind 0.0.0.0
+    port 6379
+    dir ./
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: zeppelin-serving-metric-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zeppelin-serving-metric-redis
+  template:
+    metadata:
+      labels:
+        app: zeppelin-serving-metric-redis
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: redis
+        image: redis:3.2.0-alpine
+        command:
+        - redis-server
+        args:
+        - /etc/redis/redis.conf
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-conf-volume
+          mountPath: /etc/redis
+      volumes:
+      - name: redis-conf-volume
+        configMap:
+          name: zeppelin-serving-metric-redis-conf
+          items:
+          - key: redis.conf
+            path: redis.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: zeppelin-serving-metric-redis
+spec:
+  selector:
+    app: zeppelin-serving-metric-redis
+  type: ClusterIP
+  ports:
+  - name: redis-service-port
+    protocol: TCP
+    port: 6379
+    targetPort: 6379

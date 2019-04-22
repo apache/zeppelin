@@ -86,4 +86,8 @@ public abstract class K8sNoteBackgroundTask extends NoteBackgroundTask {
             resourceJsonString, new TypeToken<Map<String, Object>>() {}.getType());
     return resource;
   }
+
+  protected Kubectl getKubectl() {
+    return kubectl;
+  }
 }

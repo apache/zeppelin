@@ -29,6 +29,7 @@ data:
   # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
   serviceDomain: local.zeppelin-project.org:8080
   sparkContainerImage: spark:2.4.0
+  redisAddr: zeppelin-serving-metric-redis.default.svc.cluster.local:6379 # metric storage
   nginx.conf: |
     daemon off;
     worker_processes auto;
@@ -123,6 +124,11 @@ spec:
         configMapKeyRef:
           name: zeppelin-server-conf
           key: serviceDomain
+    - name: ZEPPELIN_INTERPRETER_METRIC_REDIS_ADDR
+      valueFrom:
+        configMapKeyRef:
+          name: zeppelin-server-conf
+          key: redisAddr
     - name: MASTER   # default value of master property for spark interpreter.
       value: k8s://https://kubernetes.default.svc
     volumeMounts:

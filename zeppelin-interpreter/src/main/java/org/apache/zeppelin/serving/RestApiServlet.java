@@ -17,6 +17,12 @@
 package org.apache.zeppelin.serving;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +58,37 @@ public class RestApiServlet extends HttpServlet {
 
     handler.handle(request, response);
 
-    /*
-    response.setContentType("application/json");
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().println("{ \"status\": \"ok\"}");
-    */
+    try {
+      writeMetrics(server, endpoint, request, response);
+    } catch(Throwable e) {
+      LOGGER.error("Failed to write metric", e);
+    }
+  }
+
+  void writeMetrics(RestApiServer server, String endpoint, HttpServletRequest request, HttpServletResponse response) {
+    // metrics
+    String keyCountPerStatus = String.format("count.%d", response.getStatus());
+    ConcurrentLinkedQueue<MetricStorage> metricStorages = server.getMetricStorages();
+    Date now = new Date();
+
+    String metricHeaderPrefix = "z-metric-";
+
+    metricStorages.forEach(m -> {
+      m.incr(now, endpoint, keyCountPerStatus, 1);
+
+      Collection<String> headers = response.getHeaderNames();
+      for (String header : headers) {
+        if (header.toLowerCase().startsWith(metricHeaderPrefix)) {
+          String userMetricName = header.substring(metricHeaderPrefix.length());
+          try {
+            double userMetricValue = Double.parseDouble(response.getHeader(header));
+            m.incr(now, endpoint, userMetricName, userMetricValue);
+          } catch (Exception e) {
+            LOGGER.error("Invalid custom metric value {}: {}", header, response.getHeader(header));
+          }
+        }
+      }
+    });
   }
 
   String getEndpointNameFromRequestPath(String path) {

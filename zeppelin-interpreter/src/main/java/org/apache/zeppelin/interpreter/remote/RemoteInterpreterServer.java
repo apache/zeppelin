@@ -68,6 +68,7 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
 import org.apache.zeppelin.resource.WellKnownResourceName;
+import org.apache.zeppelin.serving.RedisMetricStorage;
 import org.apache.zeppelin.serving.RestApiServer;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -191,6 +192,11 @@ public class RemoteInterpreterServer extends Thread
     // initialize restApiServer for serving
     RestApiServer.setPort(restApiServerPort);
     restApiServer = RestApiServer.singleton();
+
+    // serving metric storage
+    if (System.getenv("SERVICE_NAME") != null) {
+      restApiServer.addMetricStorage(new RedisMetricStorage());
+    }
   }
 
   @Override

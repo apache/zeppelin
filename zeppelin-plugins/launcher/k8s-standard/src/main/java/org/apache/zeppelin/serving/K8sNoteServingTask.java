@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.background.K8sNoteBackgroundTask;
 import org.apache.zeppelin.background.NoteBackgroundTask;
 import org.apache.zeppelin.background.TaskContext;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.Kubectl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 public class K8sNoteServingTask extends K8sNoteBackgroundTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(K8sNoteServingTask.class);
   private final String notebookDir;
+  private final Gson gson = new Gson();
 
   public K8sNoteServingTask(Kubectl kubectl,
                             TaskContext taskContext,
@@ -53,6 +56,8 @@ public class K8sNoteServingTask extends K8sNoteBackgroundTask {
     properties.put("zeppelin.k8s.background.notebook.dir", notebookDir);
     properties.put("zeppelin.k8s.background.autoshutdown", "false");
     properties.put("zeppelin.k8s.background.type", "serving");
+    properties.put("zeppelin.k8s.serving.metric.redis.addr",
+            System.getenv(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_METRIC_REDIS_ADDR.name()));
     return properties;
   }
 
@@ -71,13 +76,49 @@ public class K8sNoteServingTask extends K8sNoteBackgroundTask {
     return "Deployment";
   }
 
+  public Map<String, Object> getInfo() throws IOException {
+    HashMap<String, Object> combinedInfo = new HashMap<String, Object>();
+    Map<String, Object> info = super.getInfo();
+    combinedInfo.putAll(info);
+
+    Kubectl kubectl = getKubectl();
+    TaskContext context = getTaskContext();
+    String labelFilter = String.format("serving=true,noteId=%s,revId=%s",
+            context.getNote().getId(),
+            context.getRevId());
+    String resourceJsonString = kubectl.getByLabel("service", labelFilter);
+
+    HashMap<String, String> endPointServiceNameMap = new HashMap<String, String>();
+
+    if (!StringUtils.isEmpty(resourceJsonString)) {
+      Map<String, Object> services = gson.fromJson(resourceJsonString,
+              new TypeToken<Map<String, Object>>() {}.getType());
+
+      if (services.containsKey("items")) {
+        List<Map<String, Object>> items = (List<Map<String, Object>>) services.get("items");
+        for(Map<String, Object> item : items) {
+          Map<String, Object> metadata = (Map<String, Object>) item.get("metadata");
+          Map<String, Object> labels = (Map<String, Object>) metadata.get("labels");
+          for (String labelkey : labels.keySet()) {
+            if (labelkey.startsWith("endpoint-")) {
+              endPointServiceNameMap.put((String) labels.get(labelkey), (String) metadata.get("name"));
+            }
+          }
+        }
+      }
+    }
+
+    combinedInfo.put("endpoints", endPointServiceNameMap);
+    return combinedInfo;
+  }
+
   @Override
   public boolean isRunning() {
     Map<String, Object> resource = null;
     try {
       resource = getInfo();
     } catch (IOException e) {
-      LOGGER.error("Can't get task info", e);
+      // does not exists
       return false;
     }
     if (resource == null) {

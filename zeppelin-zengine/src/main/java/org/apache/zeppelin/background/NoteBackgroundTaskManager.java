@@ -39,7 +39,15 @@ public abstract class NoteBackgroundTaskManager {
     NoteBackgroundTask testTask = createOrGetBackgroundTask(taskContext);
 
     // start test
-    testTask.start();
+    boolean running = false;
+    try {
+      running = testTask.isRunning();
+    } catch (IOException e) {
+      // task not exists. ignore exception here
+    }
+    if (!running) {
+      testTask.start();
+    }
 
     return testTask;
   }

@@ -227,10 +227,18 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
 
     // environment variables
     envs.put("SERVICE_DOMAIN", envs.getOrDefault("SERVICE_DOMAIN", System.getenv("SERVICE_DOMAIN")));
+    envs.put("SERVICE_NAME", envs.getOrDefault("SERVICE_NAME", System.getenv("SERVICE_NAME")));
     envs.put(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.name(),
             envs.getOrDefault("ZEPPELIN_HOME", "/zeppelin"));
     envs.put(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_RESTAPI_PORT.name(),
-            "\"" + String.valueOf(K8S_INTERPRETER_RESTAPISERVER_PORT) + "\"");
+            String.valueOf(K8S_INTERPRETER_RESTAPISERVER_PORT));
+
+    // pass all env variables starts with ZEPPELIN_INTERPRETER
+    for (String envName : System.getenv().keySet()) {
+      if (envName.startsWith("ZEPPELIN_INTERPRETER")) {
+        envs.put(envName, System.getenv(envName));
+      }
+    }
 
     if (isSpark()) {
       int webUiPort = 4040;

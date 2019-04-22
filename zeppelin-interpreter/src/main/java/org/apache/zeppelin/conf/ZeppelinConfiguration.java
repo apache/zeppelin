@@ -539,6 +539,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_INTERPRETER_RESTAPI_PORT);
   }
 
+  public String getInterpreterMetricRedisAddr() {
+    return getString(ConfVars.ZEPPELIN_INTERPRETER_METRIC_REDIS_ADDR);
+  }
+
   public boolean isWindowsPath(String path){
     return path.matches("^[A-Za-z]:\\\\.*");
   }
@@ -874,7 +878,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_RPC_PORTRANGE("zeppelin.server.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RPC_PORTRANGE("zeppelin.interpreter.rpc.portRange", ":"),
     ZEPPELIN_INTERPRETER_RESTAPI_PORT("zeppelin.interpreter.restapiserver.port", 0),
-
+    ZEPPELIN_INTERPRETER_METRIC_REDIS_ADDR("zeppelin.interpreter.metric.redis.addr", null), // serving metric strage. host:port
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_CLASS("zeppelin.interpreter.lifecyclemanager.class",
         "org.apache.zeppelin.interpreter.lifecycle.NullLifecycleManager"),
     ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL(

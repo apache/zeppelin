@@ -16,7 +16,9 @@
  */
 package org.apache.zeppelin.serving;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ public class RestApiServer extends HttpServlet {
   private static RestApiServer singletonInstance;
 
   private final ConcurrentHashMap<String, RestApiHandler> endpoints = new ConcurrentHashMap();
+  private final ConcurrentLinkedQueue<MetricStorage> metricStorages = new ConcurrentLinkedQueue<>();
 
   public RestApiServer() {
   }
@@ -92,5 +95,13 @@ public class RestApiServer extends HttpServlet {
 
   public RestApiHandler getEndpoint(String endpoint) {
     return endpoints.get(endpoint);
+  }
+
+  public ConcurrentLinkedQueue<MetricStorage> getMetricStorages() {
+    return metricStorages;
+  }
+
+  public void addMetricStorage(MetricStorage storage) {
+    metricStorages.add(storage);
   }
 }

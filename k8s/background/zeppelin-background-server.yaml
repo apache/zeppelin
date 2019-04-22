@@ -29,6 +29,7 @@ data:
   # If you have your ingress controller configured to connect to `zeppelin-server` service and have a domain name for it (with wildcard subdomain point the same address), you can replace serviceDomain field with your own domain.
   serviceDomain: local.zeppelin-project.org:8080
   sparkContainerImage: spark:2.4.0
+  redisAddr: zeppelin-serving-metric-redis.default.svc.cluster.local # metric storage
 ---
 apiVersion: {{zeppelin.k8s.background.resource.apiversion}}
 kind: {{zeppelin.k8s.background.resource.type}}
@@ -95,6 +96,8 @@ spec:
             configMapKeyRef:
               name: {{zeppelin.k8s.background.name}}-conf
               key: serviceDomain
+        - name: ZEPPELIN_INTERPRETER_METRIC_REDIS_ADDR
+          value: "{{zeppelin.k8s.serving.metric.redis.addr}}"
         - name: ZEPPELIN_NOTEBOOK_DIR
           value: "{{zeppelin.k8s.background.notebook.dir}}"
         - name: ZEPPELIN_NOTEBOOK_RUN_ID

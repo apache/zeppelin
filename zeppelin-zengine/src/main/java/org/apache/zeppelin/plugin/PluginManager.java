@@ -26,6 +26,8 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.OldNotebookRepo;
 import org.apache.zeppelin.serving.DummyNoteBackgroundTaskManager;
 import org.apache.zeppelin.serving.DummyRestApiRouter;
+import org.apache.zeppelin.serving.MetricStorage;
+import org.apache.zeppelin.serving.RedisMetricStorage;
 import org.apache.zeppelin.serving.RestApiRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -267,6 +269,18 @@ public class PluginManager {
     }
     cachedRestApiRouter.put(launcherPlugin, apiRouter);
     return apiRouter;
+  }
+
+  public synchronized MetricStorage loadNoteServingMetricStorage() throws IOException {
+    String redisAddr = zConf.getInterpreterMetricRedisAddr();
+    if (redisAddr != null) {
+      return new RedisMetricStorage(
+              redisAddr,
+              "",
+              "",
+              RedisMetricStorage.DEFAULT_METRIC_EXPIRE_SEC);
+    }
+    return null;
   }
 
   private URLClassLoader getPluginClassLoader(String pluginsDir,

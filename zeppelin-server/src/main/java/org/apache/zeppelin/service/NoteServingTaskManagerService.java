@@ -24,6 +24,7 @@ import org.apache.zeppelin.background.NoteBackgroundTaskManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.serving.MetricStorage;
 
 import javax.inject.Inject;
 
@@ -32,6 +33,7 @@ public class NoteServingTaskManagerService {
   private final ZeppelinConfiguration zConf;
   private final NotebookService notebookService;
   private final NoteBackgroundTaskManager servingTaskManager;
+  private final MetricStorage metricStorage;
 
   @Inject
   public NoteServingTaskManagerService(ZeppelinConfiguration zConf,
@@ -41,6 +43,7 @@ public class NoteServingTaskManagerService {
 
     PluginManager pluginManager = PluginManager.get();
     servingTaskManager = pluginManager.loadNoteBackgroundTaskManager();
+    metricStorage = pluginManager.loadNoteServingMetricStorage();
   }
 
   public NoteBackgroundTask startServing(String noteId, String revId, ServiceContext serviceContext) throws Exception {
@@ -96,5 +99,9 @@ public class NoteServingTaskManagerService {
 
   public List<NoteBackgroundTask> getAllServing() {
     return servingTaskManager.list();
+  }
+
+  public MetricStorage getMetricStorage() {
+    return metricStorage;
   }
 }
