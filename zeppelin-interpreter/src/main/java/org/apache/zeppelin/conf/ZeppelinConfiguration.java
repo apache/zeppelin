@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -50,7 +51,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public enum RUN_MODE {
     LOCAL,
-    K8S
+    K8S,
+    YARN
   }
 
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
@@ -703,6 +705,41 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_K8S_TEMPLATE_DIR);
   }
 
+  @VisibleForTesting
+  public void setServerKerberosKeytab(String type) {
+    properties.put(ConfVars.ZEPPELIN_SERVER_KERBEROS_KEYTAB.getVarName(), type);
+  }
+
+  @VisibleForTesting
+  public void setServerKerberosPrincipal(String type) {
+    properties.put(ConfVars.ZEPPELIN_SERVER_KERBEROS_PRINCIPAL.getVarName(), type);
+  }
+
+  @VisibleForTesting
+  public void setYarnWebappAddress(String address) {
+    properties.put(ConfVars.ZEPPELIN_YARN_WEBAPP_ADDRESS.getVarName(), address);
+  }
+
+  public String getYarnContainerImage() {
+    return getString(ConfVars.ZEPPELIN_YARN_CONTAINER_IMAGE);
+  }
+
+  public String getYarnWebappAddress() {
+    return getString(ConfVars.ZEPPELIN_YARN_WEBAPP_ADDRESS);
+  }
+
+  public String getYarnContainerResource(String intpSettingName) {
+    String yarnContainterResource = "";
+    yarnContainterResource = getString(ConfVars.ZEPPELIN_YARN_CONTAINER_RESOURCE);
+    if (null != intpSettingName && !StringUtils.isEmpty(intpSettingName)) {
+      String intpResConfName = ConfVars.ZEPPELIN_YARN_CONTAINER_INTP_RESOURCE.varName;
+      intpResConfName = intpResConfName.replace("${INTERPRETER_SETTING_NAME}", intpSettingName);
+      return getString(intpResConfName, yarnContainterResource);
+    }
+
+    return yarnContainterResource;
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -855,13 +892,18 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
     ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
-    ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s
+    ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | yarn
 
     ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_KUBECTL("zeppelin.k8s.kubectl", "kubectl"),     // kubectl command
     ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
+
+    ZEPPELIN_YARN_CONTAINER_IMAGE("zeppelin.yarn.container.image", "apache/zeppelin:" + Util.getVersion()),
+    ZEPPELIN_YARN_WEBAPP_ADDRESS("zeppelin.yarn.webapp.address", ""),
+    ZEPPELIN_YARN_CONTAINER_RESOURCE("zeppelin.yarn.container.resource", "memory=8G,vcores=1,gpu=0"),
+    ZEPPELIN_YARN_CONTAINER_INTP_RESOURCE("zeppelin.yarn.container.${INTERPRETER_SETTING_NAME}.resource", "memory=8G,vcores=1,gpu=0"),
 
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),

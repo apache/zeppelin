@@ -369,7 +369,7 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">ZEPPELIN_RUN_MODE</h6></td>
     <td><h6 class="properties">zeppelin.run.mode</h6></td>
     <td>auto</td>
-    <td>Run mode. 'auto|local|k8s'. 'auto' autodetect environment. 'local' runs interpreter as a local process. k8s runs interpreter on Kubernetes cluster</td>
+    <td>Run mode. 'auto|local|k8s|yarn'. 'auto' autodetect environment. 'local' runs interpreter as a local process. 'k8s' runs interpreter on Kubernetes cluster. 'yarn' runs interpreter on Yarn cluster.</td>
   </tr>
   <tr>
     <td><h6 class="properties">ZEPPELIN_K8S_PORTFORWARD</h6></td>
@@ -394,7 +394,31 @@ If both are defined, then the **environment variables** will take priority.
     <td><h6 class="properties">zeppelin.k8s.template.dir</h6></td>
     <td>k8s</td>
     <td>Kubernetes yaml spec files</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_YARN_WEBAPP_ADDRESS</h6></td>
+    <td><h6 class="properties">zeppelin.yarn.webapp.address</h6></td>
+    <td></td>
+    <td>Yarn webapp address, The zeppelin server gets the state of the interpreter container through this webapp</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_YARN_CONTAINER_IMAGE</h6></td>
+    <td><h6 class="properties">zeppelin.yarn.container.image</h6></td>
+    <td>apache/zeppelin:{{ site.ZEPPELIN_VERSION }}</td>
+    <td>Docker image for interpreters</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_YARN_CONTAINER_RESOURCE</h6></td>
+    <td><h6 class="properties">zeppelin.yarn.container.resource</h6></td>
+    <td>memory=8G,vcores=1,gpu=0</td>
+    <td>Docker default resource for interpreters container</td>
+  </tr>
+  <tr>
+    <td><h6 class="properties">ZEPPELIN_YARN_CONTAINER_${INTERPRETER_SETTING_NAME}_RESOURCE</h6></td>
+    <td><h6 class="properties">zeppelin.yarn.container.${INTERPRETER_SETTING_NAME}.resource</h6></td>
+    <td>memory=8G,vcores=1,gpu=0</td>
+    <td>Set different resources for different interpreters, e.g. zeppelin.yarn.container.python.resource</td>
+  </tr>
 </table>
 
 

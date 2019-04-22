@@ -216,7 +216,43 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
       fi
     fi
   fi
+fi
 
+if [[ "${ZEPPELIN_RUN_MODE}" == "yarn" ]]; then
+  export YARN_BIN="${HADOOP_HOME}/bin/yarn"
+  export YARN_DOCKER_JAVA_INTP_OPTS="java -Dfile.encoding=UTF-8 -Dlog4j.configuration=file:///zeppelin/conf/log4j.properties "
+  YARN_DOCKER_JAVA_INTP_OPTS="${YARN_DOCKER_JAVA_INTP_OPTS} -Dzeppelin.log.file=/tmp/zeppelin-interpreter-on-yarn.log"
+  export YARN_INTP_CLASSPATH="/zeppelin/interpreter/${INTERPRETER_SETTING_NAME}/*"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/zeppelin/lib/interpreter/*"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/lib"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar"
+  if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+    YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/zeppelin/interpreter/spark/dep/*"
+  fi
+
+  if [[ -n "${HADOOP_YARN_SUBMARINE_JAR}" ]]; then
+    if [[ -f "${HADOOP_YARN_SUBMARINE_JAR}" ]]; then
+      export YARN_RUNNER="${YARN_BIN} jar ${HADOOP_YARN_SUBMARINE_JAR} "
+      YARN_RUNNER="${YARN_RUNNER} job run --name ${YARN_APP_NAME} "
+      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_JAVA_HOME=${DOCKER_JAVA_HOME} "
+      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_HDFS_HOME=${DOCKER_HADOOP_HOME} "
+      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_CONF_DIR=${DOCKER_HADOOP_CONF_DIR} "
+      YARN_RUNNER="${YARN_RUNNER} --env YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK=bridge "
+      YARN_RUNNER="${YARN_RUNNER} --env TZ=\"Etc/UTC\" "
+      YARN_RUNNER="${YARN_RUNNER} --env HADOOP_LOG_DIR=/tmp "
+      YARN_RUNNER="${YARN_RUNNER} --env ZEPPELIN_HOME=/zeppelin "
+      YARN_RUNNER="${YARN_RUNNER} ${ZEPPELIN_CONF_DIR_ENV} "
+      YARN_RUNNER="${YARN_RUNNER} ${YARN_LOCALIZATION_ENV} "
+      YARN_RUNNER="${YARN_RUNNER} --docker_image ${ZEPPELIN_YARN_CONTAINER_IMAGE} "
+      YARN_RUNNER="${YARN_RUNNER} --input_path hdfs:/// "
+      YARN_RUNNER="${YARN_RUNNER} --worker_resources ${ZEPPELIN_YARN_CONTAINER_RESOURCE} "
+      YARN_RUNNER="${YARN_RUNNER} --num_workers 1 "
+      YARN_RUNNER="${YARN_RUNNER} --keytab ${SUBMARINE_HADOOP_KEYTAB} "
+      YARN_RUNNER="${YARN_RUNNER} --principal ${SUBMARINE_HADOOP_PRINCIPAL} "
+      YARN_RUNNER="${YARN_RUNNER} --distribute_keytab "
+    fi
+  fi
 fi
 
 addJarInDirForIntp "${LOCAL_INTERPRETER_REPO}"
@@ -233,12 +269,13 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
   fi
 fi
 
-if [[ -n "${SPARK_SUBMIT}" ]]; then
+if [[ -n "${SPARK_SUBMIT}" && "${ZEPPELIN_RUN_MODE}" != "yarn" ]]; then
     INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
+elif [[ "${ZEPPELIN_RUN_MODE}" == "yarn" ]]; then
+    INTERPRETER_RUN_COMMAND+=' '` echo ${YARN_RUNNER} --worker_launch_cmd \"${YARN_DOCKER_JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${YARN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}\"`
 else
     INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
 fi
-
 
 if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
     INTERPRETER_RUN_COMMAND+="'"

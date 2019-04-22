@@ -104,7 +104,12 @@ RUN echo "$LOG_TAG Download Zeppelin binary" && \
 
 COPY log4j.properties ${Z_HOME}/conf/
 
+# Zeppelin Server port
 EXPOSE 8080
+# Zeppelin interpreter port
+EXPOSE 29914
+# Zeppelin Spark UI port
+EXPOSE 4040
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 WORKDIR ${Z_HOME}

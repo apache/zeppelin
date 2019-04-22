@@ -657,6 +657,8 @@ public class InterpreterSetting {
   public String getLauncherPlugin() {
     if (isRunningOnKubernetes()) {
       return "K8sStandardInterpreterLauncher";
+    } if (isRunningOnYarn()) {
+      return "YarnStandardInterpreterLauncher";
     } else {
       if (group.equals("spark")) {
         return "SparkInterpreterLauncher";
@@ -668,6 +670,42 @@ public class InterpreterSetting {
 
   private boolean isRunningOnKubernetes() {
     return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
+  }
+
+  // So only when the master configures `master=local[*]` in spark,
+  // The spark interpreter will be run in the docker container of yarn.
+  // The purpose of doing this is because enables users of `pyspark` and `sparkR` to
+  // install and upgrade python and R libraries themselves in the container.
+  private boolean isRunningOnYarn() {
+    boolean sparkLocalMode = true;
+    if(group.equals("spark") && properties instanceof Map) {
+      // org/apache/zeppelin/interpreter/launcher/SparkInterpreterLauncher.java
+      // Order to look for spark master
+      // 1. master in interpreter setting
+      // 2. spark.master interpreter setting
+      // 3. use local[*]
+      String sparkMaster = "local[*]";
+      Map<String, InterpreterProperty> mapProps= (Map<String, InterpreterProperty>) this.properties;
+      InterpreterProperty intpProp = mapProps.get("master");
+      if (null != intpProp.getValue()) {
+        sparkMaster = intpProp.getValue().toString();
+      } else {
+        intpProp = mapProps.get("spark.master");
+        if (null != intpProp.getValue()) {
+          sparkMaster = intpProp.getValue().toString();
+        } else {
+          sparkMaster = "local[*]";
+        }
+      }
+
+      if (sparkMaster.startsWith("local")) {
+        sparkLocalMode = true;
+      } else {
+        sparkLocalMode = false;
+      }
+    }
+
+    return sparkLocalMode == true && conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.YARN;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {

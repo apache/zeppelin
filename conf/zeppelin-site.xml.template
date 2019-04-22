@@ -610,7 +610,7 @@
 <property>
   <name>zeppelin.run.mode</name>
   <value>auto</value>
-  <description>'auto|local|k8s'</description>
+  <description>'auto|local|k8s|yarn'</description>
 </property>
 
 <property>
@@ -637,4 +637,39 @@
   <description>Kubernetes yaml spec files</description>
 </property>
 
+  <!--Zeppelin On Yarn-->
+  <property>
+    <name>zeppelin.yarn.webapp.address</name>
+    <value></value>
+    <description>zeppelin.yarn.webapp.address</description>
+  </property>
+
+  <property>
+    <name>zeppelin.yarn.container.image</name>
+    <value>apache/zeppelin:0.9.0-SNAPSHOT</value>
+    <description>Docker image for interpreters</description>
+  </property>
+
+  <property>
+    <name>zeppelin.yarn.container.resource</name>
+    <value>memory=8G,vcores=1,gpu=0</value>
+    <description>Docker default resource for interpreters container</description>
+  </property>
+
+  <!-- Set different resources for different interpreters-->
+  <!--name>zeppelin.yarn.container.${INTERPRETER_SETTING_NAME}.resource</name-->
+  <!--
+  <property>
+    <name>zeppelin.yarn.container.python.resource</name>
+    <value>memory=8G,vcores=1,gpu=0</value>
+    <description>Specify the required resources for the interpreter container</description>
+  </property>
+  -->
+  <!--
+  <property>
+    <name>e.g. zeppelin.yarn.container.submarine.resource</name>
+    <value>memory=8G,vcores=1,gpu=0</value>
+    <description>Specify the required resources for the interpreter container</description>
+  </property>
+  -->
 </configuration>
