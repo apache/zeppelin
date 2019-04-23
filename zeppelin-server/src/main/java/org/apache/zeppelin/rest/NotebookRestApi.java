@@ -65,6 +65,7 @@ import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.rest.message.RenameNoteRequest;
 import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.AuthenticationService;
@@ -1129,12 +1130,66 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response testInfo(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws IOException {
     NoteBackgroundTask task = noteTestTaskManagerService.getTest(noteId, revId, getServiceContext());
 
-    Response response = new JsonResponse<>(Status.OK, ImmutableMap.of(
-            "taskId", task.getTaskContext().getId(),
-            "task", task.getInfo()
-    )).build();
+    if (task != null) {
+      Map<String, Object> taskInfo = null;
+      taskInfo = task.getInfo();
+      boolean taskRunning = taskInfo != null;
 
-    return response;
+      if (taskInfo == null) {
+        taskInfo = ImmutableMap.of();
+      }
+
+      Map<String, Integer> result = ImmutableMap.of();
+      if (!taskRunning) {
+        Note note = task.getTaskContext().getNote();
+
+        int pCount = 0;
+        int pSuccess = 0;
+        int pFail = 0;
+
+        for (Paragraph p : note.getParagraphs()) {
+          pCount++;
+          if (p.getStatus() == Paragraph.Status.FINISHED ||
+                  p.getStatus() == Paragraph.Status.READY) {
+            pSuccess++;
+          } else {
+            pFail++;
+          }
+        }
+
+        result = ImmutableMap.of(
+                "count", pCount,
+                "success", pSuccess,
+                "fail", pFail
+        );
+      }
+
+
+      Response response = new JsonResponse<>(Status.OK, ImmutableMap.of(
+              "taskId", task.getTaskContext().getId(),
+              "task", taskInfo,
+              "running", taskRunning,
+              "result", result
+      )).build();
+      return response;
+    } else {
+      return new JsonResponse<>(Status.NOT_FOUND).build();
+    }
+  }
+
+  @GET
+  @Path("test/{noteId}/{revId}/note")
+  @ZeppelinApi
+  public Response getTestNote(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws IOException {
+    NoteBackgroundTask task = noteTestTaskManagerService.getTest(noteId, revId, getServiceContext());
+    if (task != null) {
+      Response response = new JsonResponse<>(Status.OK, ImmutableMap.of(
+              "note", task.getTaskContext().getNote()
+      )).build();
+      return response;
+    } else {
+      return new JsonResponse<>(Status.NOT_FOUND).build();
+    }
   }
 
   private void handleParagraphParams(String message, Note note, Paragraph paragraph)

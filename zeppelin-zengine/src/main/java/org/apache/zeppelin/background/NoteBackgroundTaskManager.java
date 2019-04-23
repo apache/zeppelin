@@ -61,6 +61,7 @@ public abstract class NoteBackgroundTaskManager {
     // stop test
     task.stop();
 
+    getTaskContextStorage().delete(task.getTaskContext().getId());
     return task;
   }
 

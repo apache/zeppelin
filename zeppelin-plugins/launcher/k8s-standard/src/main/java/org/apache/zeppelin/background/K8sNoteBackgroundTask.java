@@ -77,7 +77,13 @@ public abstract class K8sNoteBackgroundTask extends NoteBackgroundTask {
 
   @Override
   public Map<String, Object> getInfo() throws IOException {
-    String resourceJsonString = kubectl.get(getResourceType(), getResourceName());
+    String resourceJsonString;
+    try {
+      resourceJsonString = kubectl.get(getResourceType(), getResourceName());
+    } catch (IOException e) {
+      // not exists;
+      return null;
+    }
     if (StringUtils.isEmpty(resourceJsonString)) {
       return null;
     }
