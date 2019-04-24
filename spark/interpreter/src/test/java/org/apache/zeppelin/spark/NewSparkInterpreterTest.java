@@ -159,6 +159,13 @@ public class NewSparkInterpreterTest {
         "object Counter {\n def apply(x: Long) = new Counter()\n}", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    // class extend
+    result = interpreter.interpret("import java.util.ArrayList", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("class MyArrayList extends ArrayList{}", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
     // spark rdd operation
     result = interpreter.interpret("sc.range(1, 10).sum", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
