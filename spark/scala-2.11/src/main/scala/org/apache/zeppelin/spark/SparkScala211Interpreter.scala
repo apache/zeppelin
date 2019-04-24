@@ -22,6 +22,7 @@ import java.net.URLClassLoader
 import java.nio.file.{Files, Paths}
 
 import org.apache.spark.SparkConf
+import org.apache.spark.repl.SparkILoop
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
@@ -43,7 +44,7 @@ class SparkScala211Interpreter(override val conf: SparkConf,
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
-  private var sparkILoop: ILoop = _
+  private var sparkILoop: SparkILoop = _
 
   override val interpreterOutput = new InterpreterOutputStream(LOGGER)
 
@@ -74,7 +75,7 @@ class SparkScala211Interpreter(override val conf: SparkConf,
     } else {
       new JPrintWriter(Console.out, true)
     }
-    sparkILoop = new ILoop(None, replOut)
+    sparkILoop = new SparkILoop(None, replOut)
     sparkILoop.settings = settings
     sparkILoop.createInterpreter()
 
