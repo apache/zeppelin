@@ -164,6 +164,13 @@ public class NewSparkInterpreterTest {
         "val circle1 = new Circle(5.0)", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    // class extend
+    result = interpreter.interpret("import java.util.ArrayList", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("class MyArrayList extends ArrayList{}", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
     // spark rdd operation
     result = interpreter.interpret("sc\n.range(1, 10)\n.sum", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
