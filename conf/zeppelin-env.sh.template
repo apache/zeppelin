@@ -111,8 +111,6 @@
 
 
 #### Standard Interpreter Launcher On Yarn
-# export HADOOP_HOME= # bin/interpreter.sh environment variable
-# export HADOOP_YARN_SUBMARINE_JAR # (require) hadoop 3.1+ submarine support docker container
-# export DOCKER_HADOOP_HOME # Haodop home dir in docker containter
-# export DOCKER_JAVA_HOME # Java home dir in docker containter
-# export UPLOAD_LOCAL_LIB_TO_CONTAINTER=true # Recommended to upload the local zeppelin library to the container
+# export HADOOP_SUBMARINE_JAR # (require) hadoop 3.3 submarine support docker container
+# export DOCKER_HADOOP_HOME=/hadoop-current
+# export DOCKER_JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

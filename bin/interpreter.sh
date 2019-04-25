@@ -219,39 +219,34 @@ elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
 fi
 
 if [[ "${ZEPPELIN_RUN_MODE}" == "yarn" ]]; then
-  export YARN_BIN="${HADOOP_HOME}/bin/yarn"
+  export SUBMARINE_BIN="${JAVA_HOME}/bin/java -cp ${HADOOP_CONF_DIR}:${HADOOP_SUBMARINE_JAR} org.apache.hadoop.yarn.submarine.client.cli.Cli "
+  export YARN_RUNNER="${SUBMARINE_BIN} job run --name ${YARN_APP_NAME} "
+  YARN_RUNNER="${YARN_RUNNER} --env DOCKER_JAVA_HOME=${DOCKER_JAVA_HOME} "
+  YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_HDFS_HOME=${DOCKER_HADOOP_HOME} "
+  YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_CONF_DIR=${DOCKER_HADOOP_CONF_DIR} "
+  YARN_RUNNER="${YARN_RUNNER} --env YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK=bridge "
+  YARN_RUNNER="${YARN_RUNNER} --env TZ=\"Etc/UTC\" "
+  YARN_RUNNER="${YARN_RUNNER} --env HADOOP_LOG_DIR=/tmp "
+  YARN_RUNNER="${YARN_RUNNER} ${ZEPPELIN_CONF_DIR_ENV} "
+  YARN_RUNNER="${YARN_RUNNER} ${YARN_LOCALIZATION_ENV} "
+  YARN_RUNNER="${YARN_RUNNER} --docker_image ${ZEPPELIN_YARN_CONTAINER_IMAGE} "
+  YARN_RUNNER="${YARN_RUNNER} --input_path hdfs:/// "
+  YARN_RUNNER="${YARN_RUNNER} --worker_resources ${ZEPPELIN_YARN_CONTAINER_RESOURCE} "
+  YARN_RUNNER="${YARN_RUNNER} --num_workers 1 "
+  YARN_RUNNER="${YARN_RUNNER} --keytab ${SUBMARINE_HADOOP_KEYTAB} "
+  YARN_RUNNER="${YARN_RUNNER} --principal ${SUBMARINE_HADOOP_PRINCIPAL} "
+  YARN_RUNNER="${YARN_RUNNER} --distribute_keytab "
+
   export YARN_DOCKER_JAVA_INTP_OPTS="java -Dfile.encoding=UTF-8 -Dlog4j.configuration=file:///zeppelin/conf/log4j.properties "
   YARN_DOCKER_JAVA_INTP_OPTS="${YARN_DOCKER_JAVA_INTP_OPTS} -Dzeppelin.log.file=/tmp/zeppelin-interpreter-on-yarn.log"
-  export YARN_INTP_CLASSPATH="/zeppelin/interpreter/${INTERPRETER_SETTING_NAME}/*"
+
+  export YARN_INTP_CLASSPATH=":/zeppelin/interpreter/${INTERPRETER_SETTING_NAME}/*"
   YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/zeppelin/lib/interpreter/*"
-  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/lib"
-  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib"
-  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:${DOCKER_JAVA_HOME}/lib"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:${DOCKER_JAVA_HOME}/jre/lib"
+  YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:${DOCKER_JAVA_HOME}/jre/lib/charsets.jar"
   if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     YARN_INTP_CLASSPATH="${YARN_INTP_CLASSPATH}:/zeppelin/interpreter/spark/dep/*"
-  fi
-
-  if [[ -n "${HADOOP_YARN_SUBMARINE_JAR}" ]]; then
-    if [[ -f "${HADOOP_YARN_SUBMARINE_JAR}" ]]; then
-      export YARN_RUNNER="${YARN_BIN} jar ${HADOOP_YARN_SUBMARINE_JAR} "
-      YARN_RUNNER="${YARN_RUNNER} job run --name ${YARN_APP_NAME} "
-      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_JAVA_HOME=${DOCKER_JAVA_HOME} "
-      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_HDFS_HOME=${DOCKER_HADOOP_HOME} "
-      YARN_RUNNER="${YARN_RUNNER} --env DOCKER_HADOOP_CONF_DIR=${DOCKER_HADOOP_CONF_DIR} "
-      YARN_RUNNER="${YARN_RUNNER} --env YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK=bridge "
-      YARN_RUNNER="${YARN_RUNNER} --env TZ=\"Etc/UTC\" "
-      YARN_RUNNER="${YARN_RUNNER} --env HADOOP_LOG_DIR=/tmp "
-      YARN_RUNNER="${YARN_RUNNER} --env ZEPPELIN_HOME=/zeppelin "
-      YARN_RUNNER="${YARN_RUNNER} ${ZEPPELIN_CONF_DIR_ENV} "
-      YARN_RUNNER="${YARN_RUNNER} ${YARN_LOCALIZATION_ENV} "
-      YARN_RUNNER="${YARN_RUNNER} --docker_image ${ZEPPELIN_YARN_CONTAINER_IMAGE} "
-      YARN_RUNNER="${YARN_RUNNER} --input_path hdfs:/// "
-      YARN_RUNNER="${YARN_RUNNER} --worker_resources ${ZEPPELIN_YARN_CONTAINER_RESOURCE} "
-      YARN_RUNNER="${YARN_RUNNER} --num_workers 1 "
-      YARN_RUNNER="${YARN_RUNNER} --keytab ${SUBMARINE_HADOOP_KEYTAB} "
-      YARN_RUNNER="${YARN_RUNNER} --principal ${SUBMARINE_HADOOP_PRINCIPAL} "
-      YARN_RUNNER="${YARN_RUNNER} --distribute_keytab "
-    fi
   fi
 fi
 
