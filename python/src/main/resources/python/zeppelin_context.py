@@ -106,9 +106,14 @@ class PyZeppelinContext(object):
           endpoint = msg.getEndpoint()
           request = msg.getRequestBody()
           fn = self._apiHandlers[endpoint]
+
           try:
               ret = fn(request)
-              msg.setResponseBody(ret)
+              if isinstance(ret, tuple):
+                msg.setResponseHeader(ret[1])
+                msg.setResponseBody(ret[0])
+              else:
+                msg.setResponseBody(ret)
           except:
               err = sys.exc_info()[0]
               msg.setResponseBody(str(err))

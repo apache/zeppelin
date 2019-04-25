@@ -93,6 +93,11 @@ public class PythonRestApiHandler extends RestApiHandler {
       response.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);
     } else {
       response.setStatus(HttpServletResponse.SC_OK);
+      Object headers = message.getResponseHeader();
+      if (headers != null && headers instanceof Map) {
+        ((Map) headers).forEach((k, v) -> response.setHeader(k.toString(), v.toString()));
+      }
+
       PrintWriter responseWriter = response.getWriter();
       gson.toJson(message.getResponseBody(), responseWriter);
     }

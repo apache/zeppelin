@@ -56,16 +56,22 @@ public class RestApiServlet extends HttpServlet {
       return;
     }
 
+    long start = System.currentTimeMillis();
     handler.handle(request, response);
+    long end = System.currentTimeMillis();
 
     try {
-      writeMetrics(server, endpoint, request, response);
+      writeMetrics(server, endpoint, request, response, end - start);
     } catch(Throwable e) {
       LOGGER.error("Failed to write metric", e);
     }
   }
 
-  void writeMetrics(RestApiServer server, String endpoint, HttpServletRequest request, HttpServletResponse response) {
+  void writeMetrics(RestApiServer server,
+                    String endpoint,
+                    HttpServletRequest request,
+                    HttpServletResponse response,
+                    long elapsed) {
     // metrics
     String keyCountPerStatus = String.format("count.%d", response.getStatus());
     ConcurrentLinkedQueue<MetricStorage> metricStorages = server.getMetricStorages();
@@ -75,6 +81,7 @@ public class RestApiServlet extends HttpServlet {
 
     metricStorages.forEach(m -> {
       m.incr(now, endpoint, keyCountPerStatus, 1);
+      m.incr(now, endpoint, "latency", elapsed);
 
       Collection<String> headers = response.getHeaderNames();
       for (String header : headers) {

@@ -121,7 +121,7 @@ public class RedisMetricStorage implements MetricStorage {
   }
 
   @Override
-  public List<Map<String, Object>> get(Date from, Date to, String noteId, String revId, String endpoint) {
+  public synchronized List<Map<String, Object>> get(Date from, Date to, String noteId, String revId, String endpoint) {
     List<Map<String, Object>> series = new LinkedList<>();
 
     Date p = from;

@@ -1058,10 +1058,18 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response servingInfo(@PathParam("noteId") String noteId, @PathParam("revId") String revId) throws IOException {
     NoteBackgroundTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
-    return new JsonResponse<>(Status.OK, ImmutableMap.of(
-            "taskId", task.getTaskContext().getId(),
-            "task", task.getInfo()
-    )).build();
+    if (task != null) {
+      Map<String, Object> taskInfo = task.getInfo();
+      if (taskInfo == null) {
+        taskInfo = ImmutableMap.of();
+      }
+      return new JsonResponse<>(Status.OK, ImmutableMap.of(
+              "taskId", task.getTaskContext().getId(),
+              "task", taskInfo
+      )).build();
+    } else {
+      return new JsonResponse<>(Status.NOT_FOUND).build();
+    }
   }
 
   @GET
@@ -1076,7 +1084,7 @@ public class NotebookRestApi extends AbstractRestApi {
     NoteBackgroundTask task = noteServingTaskManagerService.getServing(noteId, revId, getServiceContext());
     MetricStorage metricStorage = noteServingTaskManagerService.getMetricStorage();
 
-    Date toDate = (toTimestamp > 0) ? new Date(toTimestamp * 1000) : new Date();
+    Date toDate = (toTimestamp > 0) ? new Date(toTimestamp * 1000) : new Date(System.currentTimeMillis() + 1000 * 60);
     Date fromDate = (fromTimestamp > 0) ? new Date(fromTimestamp * 1000) : new Date(toDate.getTime() - 1000 * 60 * 30);
     List<Map<String, Object>> series = metricStorage.get(fromDate, toDate, noteId, revId, endpoint);
 
@@ -1090,9 +1098,16 @@ public class NotebookRestApi extends AbstractRestApi {
     List<NoteBackgroundTask> tasks = noteServingTaskManagerService.getAllServing();
     List<ImmutableMap<String, ?>> taskInfoList = tasks.stream().map(task -> {
       try {
+        Note note = task.getTaskContext().getNote();
+
         return ImmutableMap.of(
                 "taskId", task.getTaskContext().getId(),
-                "info", task.getInfo()
+                "info", task.getInfo(),
+                "note", ImmutableMap.of(
+                        "name", note.getName(),
+                        "id", note.getId(),
+                        "revision", task.getTaskContext().getRevId()
+                )
         );
       } catch (IOException e) {
         LOG.error("Not able to get task info", e);

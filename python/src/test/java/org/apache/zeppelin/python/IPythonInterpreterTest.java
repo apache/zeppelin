@@ -418,6 +418,33 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     put.releaseConnection();
   }
 
+  @Test
+  public void testCustomResponseHeader()
+          throws InterpreterException, InterruptedException, IOException {
+    // given
+    int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+    RestApiServer.setPort(port);
+    InterpreterContext context = getInterpreterContext();
+
+    // when
+    InterpreterResult result = interpreter.interpret(
+            "def stringlen(d):\n  return len(d), {'z-metric-c1': len(d)}\n" +
+                    "z.addRestApi(\"len\", stringlen)\n", context);
+    waitForResult(result, Code.SUCCESS);
+
+    // then
+    PutMethod put = new PutMethod(String.format("http://localhost:%d/%s",
+            RestApiServer.getPort(), "len"));
+    put.setRequestEntity(new StringRequestEntity("abc", "text/plain", "utf8"));
+
+    int code = client.executeMethod(put);
+    assertEquals(200, code);
+    assertEquals("3", put.getResponseBodyAsString());
+    assertEquals("3", put.getResponseHeader("z-metric-c1").getValue());
+
+    put.releaseConnection();
+  }
+
   private void waitForResult(InterpreterResult result, InterpreterResult.Code code) {
     long start = System.currentTimeMillis();
     while (result.code() != code) {

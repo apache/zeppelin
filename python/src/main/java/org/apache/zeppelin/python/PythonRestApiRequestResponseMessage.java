@@ -26,6 +26,7 @@ public class PythonRestApiRequestResponseMessage {
   private String endpoint;
   private Object requestBody;
   private Object responseBody;
+  private Object responseHeader;
   private HttpServletRequest httpRequest;
   private HttpServletResponse httpResponse;
   private boolean isResponseSet = false;
@@ -71,5 +72,13 @@ public class PythonRestApiRequestResponseMessage {
 
   public boolean isResponseSet() {
     return isResponseSet;
+  }
+
+  public void setResponseHeader(Object responseHeader) {
+    this.responseHeader = responseHeader;
+  }
+
+  public Object getResponseHeader() {
+    return responseHeader;
   }
 }

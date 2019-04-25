@@ -195,7 +195,12 @@ public class RemoteInterpreterServer extends Thread
 
     // serving metric storage
     if (System.getenv("SERVICE_NAME") != null) {
-      restApiServer.addMetricStorage(new RedisMetricStorage());
+      try {
+        restApiServer.addMetricStorage(new RedisMetricStorage());
+      } catch (Exception e) {
+        logger.info("Redis metric storage is not initialized");
+        logger.debug("Error", e);
+      }
     }
   }
 

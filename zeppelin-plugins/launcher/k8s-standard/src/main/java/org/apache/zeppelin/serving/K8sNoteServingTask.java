@@ -79,36 +79,40 @@ public class K8sNoteServingTask extends K8sNoteBackgroundTask {
   public Map<String, Object> getInfo() throws IOException {
     HashMap<String, Object> combinedInfo = new HashMap<String, Object>();
     Map<String, Object> info = super.getInfo();
-    combinedInfo.putAll(info);
 
-    Kubectl kubectl = getKubectl();
-    TaskContext context = getTaskContext();
-    String labelFilter = String.format("serving=true,noteId=%s,revId=%s",
-            context.getNote().getId(),
-            context.getRevId());
-    String resourceJsonString = kubectl.getByLabel("service", labelFilter);
+    if (info != null) {
+      combinedInfo.putAll(info);
 
-    HashMap<String, String> endPointServiceNameMap = new HashMap<String, String>();
+      Kubectl kubectl = getKubectl();
+      TaskContext context = getTaskContext();
+      String labelFilter = String.format("serving=true,noteId=%s,revId=%s",
+              context.getNote().getId(),
+              context.getRevId());
+      String resourceJsonString = kubectl.getByLabel("service", labelFilter);
 
-    if (!StringUtils.isEmpty(resourceJsonString)) {
-      Map<String, Object> services = gson.fromJson(resourceJsonString,
-              new TypeToken<Map<String, Object>>() {}.getType());
+      HashMap<String, String> endPointServiceNameMap = new HashMap<String, String>();
 
-      if (services.containsKey("items")) {
-        List<Map<String, Object>> items = (List<Map<String, Object>>) services.get("items");
-        for(Map<String, Object> item : items) {
-          Map<String, Object> metadata = (Map<String, Object>) item.get("metadata");
-          Map<String, Object> labels = (Map<String, Object>) metadata.get("labels");
-          for (String labelkey : labels.keySet()) {
-            if (labelkey.startsWith("endpoint-")) {
-              endPointServiceNameMap.put((String) labels.get(labelkey), (String) metadata.get("name"));
+      if (!StringUtils.isEmpty(resourceJsonString)) {
+        Map<String, Object> services = gson.fromJson(resourceJsonString,
+                new TypeToken<Map<String, Object>>() {
+                }.getType());
+
+        if (services.containsKey("items")) {
+          List<Map<String, Object>> items = (List<Map<String, Object>>) services.get("items");
+          for (Map<String, Object> item : items) {
+            Map<String, Object> metadata = (Map<String, Object>) item.get("metadata");
+            Map<String, Object> labels = (Map<String, Object>) metadata.get("labels");
+            for (String labelkey : labels.keySet()) {
+              if (labelkey.startsWith("endpoint-")) {
+                endPointServiceNameMap.put((String) labels.get(labelkey), (String) metadata.get("name"));
+              }
             }
           }
         }
       }
-    }
 
-    combinedInfo.put("endpoints", endPointServiceNameMap);
+      combinedInfo.put("endpoints", endPointServiceNameMap);
+    }
     return combinedInfo;
   }
 
