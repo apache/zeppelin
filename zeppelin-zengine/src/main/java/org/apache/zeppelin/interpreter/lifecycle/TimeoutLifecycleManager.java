@@ -41,19 +41,19 @@ public class TimeoutLifecycleManager implements LifecycleManager {
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
     this.checkScheduler = Executors.newScheduledThreadPool(1);
     this.checkScheduler.scheduleAtFixedRate(() -> {
-      try {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<ManagedInterpreterGroup, Long> entry : interpreterGroups.entrySet()) {
-          ManagedInterpreterGroup interpreterGroup = entry.getKey();
-          Long lastTimeUsing = entry.getValue();
-          if ((now - lastTimeUsing) > timeoutThreshold) {
-            LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
+      long now = System.currentTimeMillis();
+      for (Map.Entry<ManagedInterpreterGroup, Long> entry : interpreterGroups.entrySet()) {
+        ManagedInterpreterGroup interpreterGroup = entry.getKey();
+        Long lastTimeUsing = entry.getValue();
+        if ((now - lastTimeUsing) > timeoutThreshold) {
+          LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
+          try {
             interpreterGroup.close();
-            interpreterGroups.remove(entry.getKey());
+          } catch (Exception e) {
+            LOGGER.warn("Fail to close interpreterGroup: " + interpreterGroup.getId(), e);
           }
+          interpreterGroups.remove(entry.getKey());
         }
-      } catch (Exception e) {
-        LOGGER.warn("Fail to run periodical checking task", e);
       }
     }, checkInterval, checkInterval, MILLISECONDS);
     LOGGER.info("TimeoutLifecycleManager is started with checkinterval: " + checkInterval
