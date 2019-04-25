@@ -7,9 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
 /**
@@ -30,29 +32,30 @@ public class TimeoutLifecycleManager implements LifecycleManager {
   private long checkInterval;
   private long timeoutThreshold;
 
-  private Timer checkTimer;
+  private ScheduledExecutorService checkScheduler;
 
   public TimeoutLifecycleManager(ZeppelinConfiguration zConf) {
     this.checkInterval = zConf.getLong(ZeppelinConfiguration.ConfVars
             .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
     this.timeoutThreshold = zConf.getLong(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
-    this.checkTimer = new Timer(true);
-    this.checkTimer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
+    this.checkScheduler = Executors.newScheduledThreadPool(1);
+    this.checkScheduler.scheduleAtFixedRate(() -> {
+      try {
         long now = System.currentTimeMillis();
         for (Map.Entry<ManagedInterpreterGroup, Long> entry : interpreterGroups.entrySet()) {
           ManagedInterpreterGroup interpreterGroup = entry.getKey();
           Long lastTimeUsing = entry.getValue();
-          if ((now - lastTimeUsing) > timeoutThreshold )  {
+          if ((now - lastTimeUsing) > timeoutThreshold) {
             LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
             interpreterGroup.close();
             interpreterGroups.remove(entry.getKey());
           }
         }
+      } catch (Exception e) {
+        LOGGER.warn("Fail to run periodical checking task", e);
       }
-    }, checkInterval, checkInterval);
+    }, checkInterval, checkInterval, MILLISECONDS);
     LOGGER.info("TimeoutLifecycleManager is started with checkinterval: " + checkInterval
         + ", timeoutThreshold: " + timeoutThreshold);
   }
