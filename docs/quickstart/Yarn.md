@@ -21,7 +21,7 @@ limitations under the License.
 
 # Zeppelin on Yarn
 
-Zeppelin can run on [Yarn](https://hadoop.apache.org/submarine). Zeppelin server runs in local host, it creates docker container for individual interpreter. All interpreters run in yarn (The local mode of the spark interpreter also runs on the yarn).
+Zeppelin can run on [Yarn](https://hadoop.apache.org). Zeppelin server runs in local host, it creates docker container for individual interpreter. All interpreters run in yarn (The local mode of the spark interpreter also runs on the yarn).
 
 Key benefits are
 
@@ -31,13 +31,7 @@ Key benefits are
 
 ## Prerequisites
 
- - YARN 3.2.0+, You can use [Submarine-installer](https://github.com/hadoopsubmarine/submarine-installer), Deploy Docker and runtime environments.
- - Zeppelin < 0.9.0 docker image, You need to set `UPLOAD_LOCAL_LIB_TO_CONTAINTER = true` in zeppelin-env.sh
- - Zeppelin >= 0.9.0 docker image, You can set `UPLOAD_LOCAL_LIB_TO_CONTAINTER = true or false` in zeppelin-env.sh, If equal true, When zeppelin starts the interpreter, it uploads the local interpreter lib library to the docker container, which keeps the local zeppelin service exactly the same as the version in the container. The disadvantage is that the container will start slightly slower.
-
-## Spark Interpreter
-
-If you set `zeppelin.run.mode=yarn` in zepplin-site.xml, All interpreters run in yarn (The local mode of the spark interpreter also runs on the yarn)
+ - YARN 3.3.0+, You can use [Submarine-installer](https://github.com/hadoopsubmarine/submarine-installer), install Yarn and Docker runtime environments.
 
 ## Build Zeppelin image manually
 
@@ -81,8 +75,6 @@ $ cd scripts/docker/zeppelin/bin/
 $ docker build -t <tag> .
 ```
 
-You can set `UPLOAD_LOCAL_LIB_TO_CONTAINTER = true or false` in zeppelin-env.sh. When zeppelin starts the interpreter, it uploads the local interpreter lib library to the docker container.
-
 ## How it works
 
 ### Zeppelin on Yarn
@@ -90,33 +82,34 @@ You can set `UPLOAD_LOCAL_LIB_TO_CONTAINTER = true or false` in zeppelin-env.sh.
 When you create a specific interpreter, Zeppelin uses the `yarn job run` command, Create a zeppelin docker container in yarn.
 Send the start command of this interpreter to the container, After the interpreter in the container is started, Connect by using the IP and port of the server where the container is located.
 
-Each interpreter starts a container, There is a completely isolated container environment between different interpreters.
+Each interpreter starts a docker container, There is a completely isolated container environment between different interpreters.
 
 ### Spark on Yarn
 
-Because spark originally supports the yarn mode, But there is a problem, You need to install the python and R packages in the nodemanager server of yarn.
-It is difficult to maintain and it is easy to form version conflicts.
+The spark interpreter for `master=yarn-client` and `master=yarn-cluster` mode is already supported in yarn.
+The downside is that `pyspark` and `sparkR` need to have `Python` and `R` dependent libraries installed on all YARN servers. The advantage is the ability to process large amounts of data.
 
-So only when the master configures `master=local[*]` in spark, The spark interpreter will be run in the docker container of yarn.
-The purpose of doing this is because enables users of `pyspark` and `sparkR` to install and upgrade python and R libraries themselves in the container.
+So, we only run the spark interpreter for `master=local[*]` in the docker of yarn.
+The advantage is that it is convenient to install Python and R dependent libraries. The disadvantage is that the amount of data that can be processed is limited.
 
+Wait for the new version of hadoop to support spark on yarn docker, Upgrade the spark interpreter On Yarn.
 
 ## Persist /notebook and /conf directory
 
-Zeppelin on YARN mode, The zeppelin server still runs in local, so the notebook and conf is still stored in local, It is not stored in the docker container where the interpreter is located.
+Zeppelin On YARN mode, The zeppelin server still runs in local, so the notebook and conf is still stored in local, It is not stored in the docker container where the interpreter is located.
 
 
 ## Future work
 
  - Ability to create multiple spark containers to form a spark standalone mode to solve large data volume scenarios.
- - Let the python and spark interpreter embed the shell interpreter, Let the user container maintain the environment through shell commands.
- - Upgrade the shell interpreter, the current shell function is relatively simple, no ability to explore.
-
+ - Let the `python` and `spark` interpreter embed the `shell` interpreter, Let the user container maintain the environment through shell commands.
+ - Upgrade the `shell` interpreter, the current shell function is relatively simple, no ability to explore.
+ - Wait for the new version of hadoop to support spark on yarn docker, Upgrade the spark interpreter On Yarn.
 
 ## Development
 
 Instead of build Zeppelin distribution package and docker image everytime during development,
-Zeppelin can run locally (such as inside your IDE in debug mode) and able to run Interpreter using [K8sStandardInterpreterLauncher](https://github.com/apache/zeppelin/blob/master/zeppelin-plugins/launcher/yarn-standard/src/main/java/org/apache/zeppelin/interpreter/launcher/YarnStandardInterpreterLauncher.java) by configuring following environment variables.
+Zeppelin can run locally (such as inside your IDE in debug mode) and able to run Interpreter using [YarnStandardInterpreterLauncher](https://github.com/apache/zeppelin/blob/master/zeppelin-plugins/launcher/yarn-standard/src/main/java/org/apache/zeppelin/interpreter/launcher/YarnStandardInterpreterLauncher.java) by configuring following environment variables.
 
 ### bin/zeppelin-env.sh
 
@@ -138,27 +131,17 @@ Zeppelin can run locally (such as inside your IDE in debug mode) and able to run
 | zeppelin.yarn.container.resource | memory=8G,vcores=1,gpu=0 | Docker default resource for interpreters container |
 | zeppelin.yarn.container.${INTERPRETER_SETTING_NAME}.resource | memory=8G,vcores=1,gpu=0 | Set different resources for different interpreters, e.g. zeppelin.yarn.container.`python`.resource |
 
-## Bugs & Contacts
-
-+ **Zeppelin on Yarn BUG**
-  If you encounter a bug for this interpreter, please create a sub **JIRA** ticket on [ZEPPELIN-3856](https://issues.apache.org/jira/browse/ZEPPELIN-4050).
-+ **Submarine Running problem**
-  If you encounter a problem for Submarine runtime, please create a **ISSUE** on [hadoop-submarine-ecosystem](https://github.com/hadoopsubmarine/hadoop-submarine-ecosystem).
-+ **YARN Submarine BUG**
-  If you encounter a bug for Yarn Submarine, please create a **JIRA** ticket on [SUBMARINE](https://issues.apache.org/jira/browse/SUBMARINE).
-
 ## Dependency
 
 1. **YARN**
-  Submarine currently need to run on Hadoop 3.3+
+  You can compile and deploy the yarn 3.3+ version separately, Yarn 3.3 is compatible with hdfs 2.7+ version.
 
-  + The hadoop version of the hadoop submarine team git repository is periodically submitted to the code repository of the hadoop.
-  + The version of the git repository for the hadoop submarine team will be faster than the hadoop version release cycle.
-  + You can use the hadoop version of the hadoop submarine team git repository.
+2. **Yarn runtime environment**
+  you can use Submarine-installer https://github.com/hadoopsubmarine, Help you install the yarn3.3 and docker runtime environment.
 
-2. **Submarine runtime environment**
-  you can use Submarine-installer https://github.com/hadoopsubmarine, Deploy Docker and network environments.
+## Bugs & Contacts
 
-## More
-
-**Hadoop Submarine Project**: https://hadoop.apache.org/submarine
++ **Zeppelin on Yarn BUG**
+  If you encounter a bug, please create a sub **JIRA** ticket on [ZEPPELIN-4050](https://issues.apache.org/jira/browse/ZEPPELIN-4050).
++ **YARN runtime environment problem**
+  If you encounter a problem for Yarn runtime, please create a **ISSUE** on [Yarn installer](https://github.com/hadoopsubmarine/submarine-installer).
