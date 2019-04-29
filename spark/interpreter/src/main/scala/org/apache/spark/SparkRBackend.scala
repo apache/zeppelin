@@ -17,7 +17,6 @@
 package org.apache.spark
 
 import org.apache.spark.api.r.RBackend
-import org.apache.zeppelin.spark.SparkVersion
 
 object SparkRBackend {
   val backend : RBackend = new RBackend()
@@ -31,15 +30,15 @@ object SparkRBackend {
     }
   }
 
-  def init(version: SparkVersion) : Unit = {
+  def init() : Unit = {
     val rBackendClass = classOf[RBackend]
-    if (version.isSecretSocketSupported) {
-      val result = rBackendClass.getMethod("init").invoke(backend).asInstanceOf[Tuple2[Int, Object]]
-      portNumber = result._1
-      val rAuthHelper = result._2
-      secret = rAuthHelper.getClass.getMethod("secret").invoke(rAuthHelper).asInstanceOf[String]
-    } else {
-      portNumber = rBackendClass.getMethod("init").invoke(backend).asInstanceOf[Int]
+    rBackendClass.getMethod("init").invoke(backend) match {
+        // A secret is used in newer versions of Spark to encrypt traffic
+      case (port: Int, rAuthHelper: AnyRef) =>
+        portNumber = port
+        secret = rAuthHelper.getClass.getMethod("secret").invoke(rAuthHelper).asInstanceOf[String]
+      case port: java.lang.Integer =>
+        portNumber = port
     }
   }
 

@@ -88,7 +88,7 @@ public class SparkRInterpreter extends Interpreter {
     SparkVersion sparkVersion = new SparkVersion(sc.version());
     synchronized (SparkRBackend.backend()) {
       if (!SparkRBackend.isStarted()) {
-        SparkRBackend.init(sparkVersion);
+        SparkRBackend.init();
         SparkRBackend.start();
       }
     }
