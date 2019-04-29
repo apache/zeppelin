@@ -21,70 +21,209 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.zeppelin.shell.terminal.TerminalSocketTest;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ShellInterpreterTest {
+import javax.websocket.ContainerProvider;
+import javax.websocket.DeploymentException;
+import javax.websocket.Session;
+import javax.websocket.WebSocketContainer;
+
+public class ShellInterpreterTest extends BaseInterpreterTest {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreterTest.class);
 
   private ShellInterpreter shell;
-  private InterpreterContext context;
+  private InterpreterContext intpContext;
   private InterpreterResult result;
 
-  @Before
-  public void setUp() throws Exception {
+  @Override
+  public void setUp() throws InterpreterException {
     Properties p = new Properties();
-    p.setProperty("shell.command.timeout.millisecs", "2000");
+    intpContext = getIntpContext();
+
     shell = new ShellInterpreter(p);
-
-    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
     shell.open();
-  }
 
-  @After
-  public void tearDown() throws Exception {
-  }
-
-  @Test
-  public void test() throws InterpreterException {
     if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("dir", context);
+      result = shell.interpret("dir", intpContext);
     } else {
-      result = shell.interpret("ls", context);
+      result = shell.interpret("ls", intpContext);
     }
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(shell.executors.isEmpty());
-    // it should be fine to cancel a statement that has been completed.
-    shell.cancel(context);
-    assertTrue(shell.executors.isEmpty());
+  }
+
+  @Override
+  public void tearDown() throws InterpreterException {
+    shell.close();
   }
 
   @Test
-  public void testInvalidCommand() throws InterpreterException {
-    if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("invalid_command\ndir", context);
-    } else {
-      result = shell.interpret("invalid_command\nls", context);
+  public void testInvalidCommand() {
+    Session session = null;
+    WebSocketContainer webSocketContainer = null;
+
+    try {
+      // mock connect terminal
+      boolean running = shell.terminalThreadIsRunning();
+      assertEquals(running, true);
+
+      URI uri = URI.create("ws://localhost:" + shell.getTerminalPort() + "/terminal/");
+      webSocketContainer = ContainerProvider.getWebSocketContainer();
+
+      // Attempt Connect
+      session = (Session) webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+
+      // Send Start terminal service message
+      String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
+          "\"noteId\":\"noteId-1\",\"paragraphId\":\"paragraphId-1\"}");
+      LOGGER.info("send > " + terminalReadyCmd);
+      session.getBasicRemote().sendText(terminalReadyCmd);
+      Thread.sleep(10000);
+
+      LOGGER.info(TerminalSocketTest.ReceivedMsg.toString());
+      String msg = TerminalSocketTest.ReceivedMsg.get(0);
+      LOGGER.info(msg);
+      // {"text":"\u001b[?1034hbash-3.2$ \r\u001b[Kbash-3.2$
+      // \r\u001b[Kbash-3.2$ ","type":"TERMINAL_PRINT"}
+      String pattern = "\\{\"text\":\".*\"type\":\"TERMINAL_PRINT\"}";
+      boolean isMatch = Pattern.matches(pattern, msg);
+      assertTrue(isMatch);
+
+      // Send invalid_command message
+      String echoHelloWorldCmd = String.format("{\"type\":\"TERMINAL_COMMAND\"," +
+          "\"command\":\"invalid_command\r\"}");
+      LOGGER.info("send > " + echoHelloWorldCmd);
+      session.getBasicRemote().sendText(echoHelloWorldCmd);
+      Thread.sleep(5000);
+
+      LOGGER.info(TerminalSocketTest.ReceivedMsg.toString());
+      // [{"text":"invalid_co \rmmand\r\n","type":"TERMINAL_PRINT"},
+      //  {"text":"bash: invalid_command: command not found\r\n","type":"TERMINAL_PRINT"},
+      //  {"text":"bash-3.2$ ","type":"TERMINAL_PRINT"}]
+      boolean return_invalid_command = false;
+      for (String msg2 : TerminalSocketTest.ReceivedMsg) {
+        boolean find = msg2.contains("invalid_command: command not found");
+        if (find) {
+          LOGGER.info("find return terminal print: " + msg2);
+          return_invalid_command = true;
+          break;
+        }
+      }
+      assertTrue(return_invalid_command);
+    } catch (InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (DeploymentException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    } finally {
+      try {
+        session.close();
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+
+      // Force lifecycle stop when done with container.
+      // This is to free up threads and resources that the
+      // JSR-356 container allocates. But unfortunately
+      // the JSR-356 spec does not handle lifecycles (yet)
+      if (webSocketContainer instanceof LifeCycle) {
+        try {
+          ((LifeCycle) webSocketContainer).stop();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
     }
-    assertEquals(Code.SUCCESS, result.code());
-    assertTrue(shell.executors.isEmpty());
   }
 
   @Test
-  public void testShellTimeout() throws InterpreterException {
-    if (System.getProperty("os.name").startsWith("Windows")) {
-      result = shell.interpret("timeout 4", context);
-    } else {
-      result = shell.interpret("sleep 4", context);
-    }
+  public void testValidCommand() {
+    Session session = null;
+    WebSocketContainer webSocketContainer = null;
 
-    assertEquals(Code.INCOMPLETE, result.code());
-    assertTrue(result.message().get(0).getData().contains("Paragraph received a SIGTERM"));
+    try {
+      // mock connect terminal
+      boolean running = shell.terminalThreadIsRunning();
+      assertEquals(running, true);
+
+      URI uri = URI.create("ws://localhost:" + shell.getTerminalPort() + "/terminal/");
+      webSocketContainer = ContainerProvider.getWebSocketContainer();
+
+      // Attempt Connect
+      session = (Session) webSocketContainer.connectToServer(TerminalSocketTest.class, uri);
+
+      // Send Start terminal service message
+      String terminalReadyCmd = String.format("{\"type\":\"TERMINAL_READY\"," +
+          "\"noteId\":\"noteId-1\",\"paragraphId\":\"paragraphId-1\"}");
+      LOGGER.info("send > " + terminalReadyCmd);
+      session.getBasicRemote().sendText(terminalReadyCmd);
+      Thread.sleep(10000);
+
+      LOGGER.info(TerminalSocketTest.ReceivedMsg.toString());
+      String msg = TerminalSocketTest.ReceivedMsg.get(0);
+      LOGGER.info(msg);
+      // {"text":"\u001b[?1034hbash-3.2$ \r\u001b[Kbash-3.2$
+      // \r\u001b[Kbash-3.2$ ","type":"TERMINAL_PRINT"}
+      String pattern = "\\{\"text\":\".*\"type\":\"TERMINAL_PRINT\"}";
+      boolean isMatch = Pattern.matches(pattern, msg);
+      assertTrue(isMatch);
+
+      // Send echo 'hello world!' message
+      String echoHelloWorldCmd = String.format("{\"type\":\"TERMINAL_COMMAND\"," +
+          "\"command\":\"echo 'hello world!'\r\"}");
+      LOGGER.info("send > " + echoHelloWorldCmd);
+      session.getBasicRemote().sendText(echoHelloWorldCmd);
+      Thread.sleep(5000);
+
+      // [{"text":"echo \u0027hell \ro world!\u0027\r\n","type":"TERMINAL_PRINT"},
+      //  {"text":"hello world!\r\nbash-3.2$ ","type":"TERMINAL_PRINT"}]
+      LOGGER.info(TerminalSocketTest.ReceivedMsg.toString());
+      boolean return_hello_world = false;
+      for (String msg2 : TerminalSocketTest.ReceivedMsg) {
+        boolean find = msg2.contains("hello world!");
+        if (find) {
+          LOGGER.info("find return terminal print: " + msg2);
+          return_hello_world = true;
+          break;
+        }
+      }
+      assertTrue(return_hello_world);
+    } catch (InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (DeploymentException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    } finally {
+      try {
+        session.close();
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+
+      // Force lifecycle stop when done with container.
+      // This is to free up threads and resources that the
+      // JSR-356 container allocates. But unfortunately
+      // the JSR-356 spec does not handle lifecycles (yet)
+      if (webSocketContainer instanceof LifeCycle) {
+        try {
+          ((LifeCycle) webSocketContainer).stop();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
   }
 }

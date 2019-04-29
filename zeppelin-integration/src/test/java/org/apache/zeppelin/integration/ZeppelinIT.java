@@ -281,7 +281,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
               getParagraphXPath(1) + "//div[@id=\"angularRunParagraph\"]"));
 
       // Create 2nd paragraph
-      setTextOfParagraph(2, "%sh echo TEST");
+      setTextOfParagraph(2, "%angular TEST");
       runParagraph(2);
       waitForParagraph(2, "FINISHED");
 
@@ -301,7 +301,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       // Set new text value for 2nd paragraph
-      setTextOfParagraph(2, "%sh echo NEW_VALUE");
+      setTextOfParagraph(2, "%angular NEW_VALUE");
 
       // Click on 1 paragraph to trigger z.runParagraph() function
       driver.findElement(By.xpath(

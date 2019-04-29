@@ -4,13 +4,6 @@
     "name": "sh",
     "className": "org.apache.zeppelin.shell.ShellInterpreter",
     "properties": {
-      "shell.command.timeout.millisecs": {
-        "envName": "SHELL_COMMAND_TIMEOUT",
-        "propertyName": "shell.command.timeout.millisecs",
-        "defaultValue": "60000",
-        "description": "Shell command time out in millisecs. Default = 60000",
-        "type": "number"
-      },
       "shell.working.directory.user.home": {
         "envName": "SHELL_WORKING_DIRECTORY_USER_HOME",
         "propertyName": "shell.working.directory.user.home",
@@ -38,13 +31,6 @@
         "defaultValue": "",
         "description": "Kerberos principal",
         "type": "string"
-      },
-      "zeppelin.shell.interpolation": {
-        "envName": null,
-        "propertyName": "zeppelin.shell.interpolation",
-        "defaultValue": false,
-        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
-        "type": "checkbox"
       }
     },
     "editor": {

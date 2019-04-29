@@ -17,26 +17,28 @@
 
 package org.apache.zeppelin.shell;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Resources;
+import com.hubspot.jinjava.Jinjava;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.shell.terminal.TerminalManager;
+import org.apache.zeppelin.shell.terminal.TerminalThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.KerberosInterpreter;
@@ -50,43 +52,40 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 public class ShellInterpreter extends KerberosInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShellInterpreter.class);
 
-  private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
-  private String defaultTimeoutProperty = "60000";
-
-  private static final String DIRECTORY_USER_HOME = "shell.working.directory.user.home";
-  private final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-  private final String shell = isWindows ? "cmd /c" : "bash -c";
-  ConcurrentHashMap<String, DefaultExecutor> executors;
-
   public ShellInterpreter(Properties property) {
     super(property);
   }
 
+  private TerminalThread terminalThread = null;
+
+  private InterpreterContext intpContext;
+
+  private int terminalPort = 0;
+
+  // terminal web socket status
+  // ui_templates/terminal-dashboard.jinja
+  public static final String TERMINAL_SOCKET_STATUS = "TERMINAL_SOCKET_STATUS";
+  public static final String TERMINAL_SOCKET_CONNECT = "TERMINAL_SOCKET_CONNECT";
+  public static final String TERMINAL_SOCKET_CLOSE = "TERMINAL_SOCKET_CLOSE";
+  public static final String TERMINAL_SOCKET_ERROR = "TERMINAL_SOCKET_ERROR";
+
   @Override
   public void open() {
     super.open();
-    LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
-    executors = new ConcurrentHashMap<>();
+  }
+
+  private void setParagraphConfig() {
+    intpContext.getConfig().put("editorHide", true);
+    intpContext.getConfig().put("title", false);
   }
 
   @Override
   public void close() {
-    super.close();
-    for (String executorKey : executors.keySet()) {
-      DefaultExecutor executor = executors.remove(executorKey);
-      if (executor != null) {
-        try {
-          executor.getWatchdog().destroyProcess();
-        } catch (Exception e){
-          LOGGER.error("error destroying executor for paragraphId: " + executorKey, e);
-        }
-      }
+    if (null != terminalThread) {
+      TerminalManager.getInstance().cleanIntpContext(intpContext.getNoteId());
+      terminalThread.stopRunning();
     }
-  }
-
-  @Override
-  protected boolean isInterpolate() {
-    return Boolean.parseBoolean(getProperty("zeppelin.shell.interpolation", "false"));
+    super.close();
   }
 
   @Override
@@ -95,67 +94,73 @@ public class ShellInterpreter extends KerberosInterpreter {
   }
 
   @Override
-  public InterpreterResult internalInterpret(String cmd,
-                                             InterpreterContext contextInterpreter) {
-    LOGGER.debug("Run shell command '" + cmd + "'");
-    OutputStream outStream = new ByteArrayOutputStream();
+  public InterpreterResult internalInterpret(String cmd, InterpreterContext context) {
+    this.intpContext = context;
+    TerminalManager.getInstance().setInterpreterContext(context);
 
-    CommandLine cmdLine = CommandLine.parse(shell);
-    // the Windows CMD shell doesn't handle multiline statements,
-    // they need to be delimited by '&&' instead
-    if (isWindows) {
-      String[] lines = StringUtils.split(cmd, "\n");
-      cmd = StringUtils.join(lines, " && ");
+    if (null == terminalThread) {
+      try {
+        terminalPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+        terminalThread = new TerminalThread(terminalPort);
+        terminalThread.start();
+      } catch (IOException e) {
+        LOGGER.error(e.getMessage(), e);
+        return new InterpreterResult(Code.ERROR, e.getMessage());
+      }
+
+      for (int i = 0; i < 5 && !terminalThread.isRunning(); i++) {
+        try {
+          LOGGER.info("loop = " + i);
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
     }
-    cmdLine.addArgument(cmd, false);
+    setParagraphConfig();
+    createTerminalDashboard(context.getNoteId(), context.getParagraphId(), terminalPort);
 
+    return new InterpreterResult(Code.SUCCESS);
+  }
+
+  public void createTerminalDashboard(String noteId, String paragraphId, int port) {
+    String hostName = "", hostIp = "";
+    URL urlTemplate = Resources.getResource("ui_templates/terminal-dashboard.jinja");
+    String template = null;
     try {
-      DefaultExecutor executor = new DefaultExecutor();
-      executor.setStreamHandler(new PumpStreamHandler(
-          contextInterpreter.out, contextInterpreter.out));
-
-      executor.setWatchdog(new ExecuteWatchdog(
-          Long.valueOf(getProperty(TIMEOUT_PROPERTY, defaultTimeoutProperty))));
-      executors.put(contextInterpreter.getParagraphId(), executor);
-      if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
-        executor.setWorkingDirectory(new File(System.getProperty("user.home")));
-      }
-
-      int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
-          + " return with exit value: " + exitVal);
-      return new InterpreterResult(Code.SUCCESS, outStream.toString());
-    } catch (ExecuteException e) {
-      int exitValue = e.getExitValue();
-      LOGGER.error("Can not run " + cmd, e);
-      Code code = Code.ERROR;
-      String message = outStream.toString();
-      if (exitValue == 143) {
-        code = Code.INCOMPLETE;
-        message += "Paragraph received a SIGTERM\n";
-        LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
-            + " stopped executing: " + message);
-      }
-      message += "ExitValue: " + exitValue;
-      return new InterpreterResult(code, message);
+      template = Resources.toString(urlTemplate, Charsets.UTF_8);
+      InetAddress addr = InetAddress.getLocalHost();
+      hostName = addr.getHostName().toString();
+      hostIp = RemoteInterpreterUtils.findAvailableHostAddress();
     } catch (IOException e) {
-      LOGGER.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage());
-    } finally {
-      executors.remove(contextInterpreter.getParagraphId());
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    Jinjava jinjava = new Jinjava();
+    HashMap<String, Object> jinjaParams = new HashMap();
+    Date now = new Date();
+    String terminalServerUrl = "http://" + hostIp + ":" + port +
+        "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
+    jinjaParams.put("HOST_NAME", hostName);
+    jinjaParams.put("HOST_IP", hostIp);
+    jinjaParams.put("TERMINAL_STATUS", "CONNECT");
+    jinjaParams.put("TERMINAL_SERVER_URL", terminalServerUrl);
+    String terminalDashboardTemplate = jinjava.render(template, jinjaParams);
+
+    LOGGER.info(terminalDashboardTemplate);
+    try {
+      intpContext.out.setType(InterpreterResult.Type.ANGULAR);
+      InterpreterResultMessageOutput outputUI = intpContext.out.getOutputAt(0);
+      outputUI.clear();
+      outputUI.write(terminalDashboardTemplate);
+      outputUI.flush();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
     }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
-    DefaultExecutor executor = executors.remove(context.getParagraphId());
-    if (executor != null) {
-      try {
-        executor.getWatchdog().destroyProcess();
-      } catch (Exception e){
-        LOGGER.error("error destroying executor for paragraphId: " + context.getParagraphId(), e);
-      }
-    }
   }
 
   @Override
@@ -183,29 +188,16 @@ public class ShellInterpreter extends KerberosInterpreter {
   @Override
   protected boolean runKerberosLogin() {
     try {
-      createSecureConfiguration();
+      String kinitCommand = String.format("kinit -k -t %s %s",
+          properties.getProperty("zeppelin.shell.keytab.location"),
+          properties.getProperty("zeppelin.shell.principal"));
+
+      TerminalManager.getInstance().runCommand(kinitCommand);
       return true;
     } catch (Exception e) {
       LOGGER.error("Unable to run kinit for zeppelin", e);
     }
     return false;
-  }
-
-  public void createSecureConfiguration() throws InterpreterException {
-    Properties properties = getProperties();
-    CommandLine cmdLine = CommandLine.parse(shell);
-    cmdLine.addArgument("-c", false);
-    String kinitCommand = String.format("kinit -k -t %s %s",
-        properties.getProperty("zeppelin.shell.keytab.location"),
-        properties.getProperty("zeppelin.shell.principal"));
-    cmdLine.addArgument(kinitCommand, false);
-    DefaultExecutor executor = new DefaultExecutor();
-    try {
-      executor.execute(cmdLine);
-    } catch (Exception e) {
-      LOGGER.error("Unable to run kinit for zeppelin user " + kinitCommand, e);
-      throw new InterpreterException(e);
-    }
   }
 
   @Override
@@ -217,4 +209,13 @@ public class ShellInterpreter extends KerberosInterpreter {
     return false;
   }
 
+  @VisibleForTesting
+  public int getTerminalPort() {
+    return terminalPort;
+  }
+
+  @VisibleForTesting
+  public boolean terminalThreadIsRunning() {
+    return terminalThread.isRunning();
+  }
 }

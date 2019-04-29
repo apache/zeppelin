@@ -1,0 +1,40 @@
+{#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-#}
+<div class="row" style="width:100%">
+  <div class="col-md-12" ng-switch="TERMINAL_SOCKET_STATUS">
+    <b>Terminal - {{ HOST_NAME }} ({{ HOST_IP }})</b>
+    <b style="color: #999; margin-left:10px;">STATUS: </b>
+    <i ng-switch-when="TERMINAL_SOCKET_CONNECT" ng-style="{'color':'green'}">CONNECT</i>
+    <i ng-switch-when="TERMINAL_SOCKET_CLOSE" ng-style="{'color':'red'}">DISCONNECT</i>
+    <i ng-switch-default ng-style="{'color':'red'}">ERROR</i>
+    <a ng-if="TERMINAL_SOCKET_STATUS!='TERMINAL_SOCKET_CONNECT'" class="fa fa-info-circle interpreter-binding-mode-info-link" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Please run this paragraph again"></a>
+
+    <!--button class="btn btn-default btn-xs" style="margin-left:40px;"
+      ng-click="" tooltip-placement="top" uib-tooltip="upload file to host"><span class="icon-plus shortcut-icon"></span> Upload File
+    </button>
+    <button class="btn btn-default btn-xs" style="margin-left:4px;"
+      ng-click="" tooltip-placement="top" uib-tooltip="download file from host"> <span class="icon-arrow-down shortcut-icon"></span> Download File
+    </button-->
+
+  </div>
+</div>
+
+<hr style="margin-top: 10px; margin-bottom: 10px;"/>
+
+<form style="width:100%">
+  <iframe src="{{ TERMINAL_SERVER_URL }}" height="400" width="100%" frameborder="0" scrolling="0"></iframe>
+</form>
