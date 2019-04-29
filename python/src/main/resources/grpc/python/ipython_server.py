@@ -87,8 +87,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         payload_reply = []
         def execute_worker():
             reply = self._kc.execute_interactive(request.code,
-                                        output_hook=_output_hook,
-                                        timeout=None)
+                                          output_hook=_output_hook,
+                                          timeout=None)
             payload_reply.append(reply)
 
         t = threading.Thread(name="ConsumerThread", target=execute_worker)
