@@ -50,8 +50,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
         getInterpreterInTheSameSessionByClassName(PySparkInterpreter.class, false);
     setProperty("zeppelin.python", pySparkInterpreter.getPythonExec());
     sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-    setProperty("zeppelin.py4j.useAuth",
-        sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
+    setProperty("zeppelin.py4j.useAuth", isSecretSupported() + "");
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     // only set PYTHONPATH in embedded, local or yarn-client mode.
     // yarn-cluster will setup PYTHONPATH automatically.
@@ -140,5 +139,16 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   public Object getSparkSession() {
     return sparkInterpreter.getSparkSession();
+  }
+
+  private Boolean isSecretSupported() {
+    try {
+      // Check to see if the available py4j version supports authTokens
+      py4j.GatewayServer.GatewayServerBuilder.class.getMethod("authToken", String.class);
+      return true;
+    } catch (NoSuchMethodException e)
+    {
+      return false;
+    }
   }
 }
