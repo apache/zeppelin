@@ -21,24 +21,25 @@ import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Set;
 import javax.ws.rs.WebApplicationException;
-import org.apache.zeppelin.service.SecurityService;
+
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.user.AuthenticationInfo;
 
 public class AbstractRestApi {
 
-  protected SecurityService securityService;
+  protected AuthenticationService authenticationService;
 
-  protected AbstractRestApi(SecurityService securityService) {
-    this.securityService = securityService;
+  protected AbstractRestApi(AuthenticationService authenticationService) {
+    this.authenticationService = authenticationService;
   }
 
   protected ServiceContext getServiceContext() {
-    AuthenticationInfo authInfo = new AuthenticationInfo(securityService.getPrincipal());
+    AuthenticationInfo authInfo = new AuthenticationInfo(authenticationService.getPrincipal());
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(securityService.getPrincipal());
-    userAndRoles.addAll(securityService.getAssociatedRoles());
+    userAndRoles.add(authenticationService.getPrincipal());
+    userAndRoles.addAll(authenticationService.getAssociatedRoles());
     return new ServiceContext(authInfo, userAndRoles);
   }
 

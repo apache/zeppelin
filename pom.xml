@@ -59,6 +59,7 @@
     <module>zeppelin-display</module>
     <module>groovy</module>
     <module>spark</module>
+    <module>submarine</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
@@ -787,6 +788,7 @@
       <id>integration</id>
       <modules>
         <module>zeppelin-integration</module>
+        <module>zeppelin-interpreter-integration</module>
       </modules>
     </profile>
 

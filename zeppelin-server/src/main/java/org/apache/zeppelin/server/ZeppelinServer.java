@@ -44,20 +44,17 @@ import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
+import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.service.AdminService;
-import org.apache.zeppelin.service.ConfigurationService;
-import org.apache.zeppelin.service.InterpreterService;
-import org.apache.zeppelin.service.JobManagerService;
-import org.apache.zeppelin.service.NoSecurityService;
-import org.apache.zeppelin.service.NotebookService;
-import org.apache.zeppelin.service.SecurityService;
-import org.apache.zeppelin.service.ShiroSecurityService;
+import org.apache.zeppelin.service.*;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
 import org.eclipse.jetty.http.HttpVersion;
@@ -76,6 +73,8 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -122,7 +121,6 @@ public class ZeppelinServer extends ResourceConfig {
         new AbstractBinder() {
           @Override
           protected void configure() {
-            NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
             Credentials credentials =
                 new Credentials(
                     conf.credentialsPersist(),
@@ -140,13 +138,13 @@ public class ZeppelinServer extends ResourceConfig {
             bindAsContract(GsonProvider.class).in(Singleton.class);
             bindAsContract(WebApplicationExceptionMapper.class).in(Singleton.class);
             bindAsContract(AdminService.class).in(Singleton.class);
-            bind(notebookAuthorization).to(NotebookAuthorization.class);
+            bindAsContract(AuthorizationService.class).to(Singleton.class);
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
-              bind(ShiroSecurityService.class).to(SecurityService.class).in(Singleton.class);
+              bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
             } else {
               // TODO(jl): Will be added more type
-              bind(NoSecurityService.class).to(SecurityService.class).in(Singleton.class);
+              bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
             }
             bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
             bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
@@ -161,6 +159,11 @@ public class ZeppelinServer extends ResourceConfig {
                 .to(NoteEventListener.class)
                 .to(WebSocketServlet.class)
                 .in(Singleton.class);
+            if (conf.isZeppelinNotebookCronEnable()) {
+              bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            } else {
+              bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            }
           }
         });
 
@@ -276,7 +279,11 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
-    final Server server = new Server();
+    ThreadPool threadPool =
+      new QueuedThreadPool(conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
+                           conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
+    final Server server = new Server(threadPool);
     ServerConnector connector;
 
     if (conf.useSsl()) {

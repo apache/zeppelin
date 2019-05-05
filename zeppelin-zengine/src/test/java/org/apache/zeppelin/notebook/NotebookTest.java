@@ -23,7 +23,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -35,6 +34,8 @@ import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -45,13 +46,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
-import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,10 +79,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   private Notebook notebook;
   private NotebookRepo notebookRepo;
-  private NotebookAuthorization notebookAuthorization;
+  private AuthorizationService authorizationService;
   private Credentials credentials;
   private AuthenticationInfo anonymous = AuthenticationInfo.ANONYMOUS;
   private StatusChangedListener afterStatusChangedListener;
+  private SchedulerService schedulerService;
 
   @Before
   public void setUp() throws Exception {
@@ -91,11 +93,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new InMemoryNotebookRepo();
-    notebookAuthorization = NotebookAuthorization.init(conf);
+
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
     notebook = new Notebook(conf, notebookRepo, interpreterFactory, interpreterSettingManager, search,
-        notebookAuthorization, credentials, null);
+            credentials, null);
+    authorizationService = new AuthorizationService(notebook, notebook.getConf());
     notebook.setParagraphJobListener(this);
+    schedulerService = new QuartzSchedulerService(conf, notebook);
 
   }
 
@@ -105,20 +109,20 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testRevisionSupported() throws IOException, SchedulerException {
+  public void testRevisionSupported() throws IOException {
     NotebookRepo notebookRepo;
     Notebook notebook;
 
     notebookRepo = new DummyNotebookRepo();
     notebook = new Notebook(conf, notebookRepo, interpreterFactory,
         interpreterSettingManager, null,
-        notebookAuthorization, credentials, null);
+        credentials, null);
     assertFalse("Revision is not supported in DummyNotebookRepo", notebook.isRevisionSupported());
 
     notebookRepo = new DummyNotebookRepoWithVersionControl();
     notebook = new Notebook(conf, notebookRepo, interpreterFactory,
         interpreterSettingManager, null,
-        notebookAuthorization, credentials, null);
+        credentials, null);
     assertTrue("Revision is supported in DummyNotebookRepoWithVersionControl",
         notebook.isRevisionSupported());
   }
@@ -186,23 +190,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
       NotebookRepoWithVersionControl {
 
     @Override
-    public Revision checkpoint(String noteId, String noteName, String checkpointMsg, AuthenticationInfo subject)
+    public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject)
         throws IOException {
       return null;
     }
 
     @Override
-    public Note get(String noteId, String noteName, String revId, AuthenticationInfo subject) throws IOException {
+    public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) throws IOException {
       return null;
     }
 
     @Override
-    public List<Revision> revisionHistory(String noteId, String noteName, AuthenticationInfo subject) {
+    public List<Revision> revisionHistory(String noteId, String notePath, AuthenticationInfo subject) {
       return null;
     }
 
     @Override
-    public Note setNoteRevision(String noteId, String noteName, String revId, AuthenticationInfo subject) throws
+    public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject) throws
         IOException {
       return null;
     }
@@ -386,11 +390,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note note = notebook.createNote("note1", subject);
 
-    assertNotNull(notebook.getNotebookAuthorization().getOwners(note.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(note.getId()).size());
+    assertNotNull(authorizationService.getOwners(note.getId()));
+    assertEquals(1, authorizationService.getOwners(note.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
-    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(note.getId()));
+    assertEquals(owners, authorizationService.getOwners(note.getId()));
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -476,13 +480,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
     dateFinished = p.getDateFinished();
     assertNotNull(dateFinished);
@@ -510,13 +514,13 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     Thread.sleep(2 * 1000);
 
     // check if the executions of the running and pending paragraphs were skipped
@@ -558,7 +562,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("enabled", true);
     config.put("cron", cron);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
   }
 
   @Test
@@ -643,7 +647,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
   private void terminateScheduledNote(Note note) throws IOException {
     note.getConfig().remove("cron");
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -668,7 +672,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     config.put("cron", "1/3 * * * * ?");
     config.put("releaseresource", true);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
 
     RemoteInterpreter mock1 = (RemoteInterpreter) interpreterFactory.getInterpreter(anonymous.getUser(), note.getId(), "mock1", "test");
@@ -688,7 +692,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     // make sure all paragraph has been executed
     assertNotNull(p.getDateFinished());
@@ -747,7 +751,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     }
 
     // refresh the cron schedule
-    notebook.refreshCron(cronNote.getId());
+    schedulerService.refreshCron(cronNote.getId());
 
     // wait until cronNoteInterpreter is opened
     while (!cronNoteInterpreter.isOpened()) {
@@ -772,7 +776,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
         put("releaseresource", null);
       }
     });
-    notebook.refreshCron(cronNote.getId());
+    schedulerService.refreshCron(cronNote.getId());
 
     // remove notebooks
     notebook.removeNote(cronNote.getId(), anonymous);
@@ -782,21 +786,21 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   @Test
   public void testCronNoteInTrash() throws InterruptedException, IOException, SchedulerException {
     Note note = notebook.createNote("~Trash/NotCron", anonymous);
-    
+
     Map<String, Object> config = note.getConfig();
     config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
 
-    final int jobsBeforeRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
-    notebook.refreshCron(note.getId());
-    final int jobsAfterRefresh = notebook.quartzSched.getJobKeys(GroupMatcher.anyGroup()).size();
+    final int jobsBeforeRefresh = schedulerService.getJobs().size();
+    schedulerService.refreshCron(note.getId());
+    final int jobsAfterRefresh = schedulerService.getJobs().size();
 
     assertEquals(jobsBeforeRefresh, jobsAfterRefresh);
 
     // remove cron scheduler.
     config.remove("cron");
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
     notebook.removeNote(note.getId(), anonymous);
   }
 
@@ -825,11 +829,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // Verify import note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note importedNote2 = notebook.importNote(exportedNoteJson, "Title2", subject);
-    assertNotNull(notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()).size());
+    assertNotNull(authorizationService.getOwners(importedNote2.getId()));
+    assertEquals(1, authorizationService.getOwners(importedNote2.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
-    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(importedNote2.getId()));
+    assertEquals(owners, authorizationService.getOwners(importedNote2.getId()));
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(importedNote.getId(), anonymous);
     notebook.removeNote(importedNote2.getId(), anonymous);
@@ -856,11 +860,11 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // Verify clone note with subject
     AuthenticationInfo subject = new AuthenticationInfo("user1");
     Note cloneNote2 = notebook.cloneNote(note.getId(), "clone note2", subject);
-    assertNotNull(notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
-    assertEquals(1, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()).size());
+    assertNotNull(authorizationService.getOwners(cloneNote2.getId()));
+    assertEquals(1, authorizationService.getOwners(cloneNote2.getId()).size());
     Set<String> owners = new HashSet<>();
     owners.add("user1");
-    assertEquals(owners, notebook.getNotebookAuthorization().getOwners(cloneNote2.getId()));
+    assertEquals(owners, authorizationService.getOwners(cloneNote2.getId()));
     notebook.removeNote(note.getId(), anonymous);
     notebook.removeNote(cloneNote.getId(), anonymous);
     notebook.removeNote(cloneNote2.getId(), anonymous);
@@ -986,51 +990,50 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testPermissions() throws IOException {
     // create a note and a paragraph
     Note note = notebook.createNote("note1", anonymous);
-    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers or writers means note is public
-    assertEquals(notebookAuthorization.isOwner(note.getId(),
+    assertEquals(authorizationService.isOwner(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isRunner(note.getId(),
+    assertEquals(authorizationService.isRunner(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isWriter(note.getId(),
+    assertEquals(authorizationService.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
 
-    notebookAuthorization.setOwners(note.getId(),
+    authorizationService.setOwners(note.getId(),
         new HashSet<>(Arrays.asList("user1")));
-    notebookAuthorization.setReaders(note.getId(),
+    authorizationService.setReaders(note.getId(),
         new HashSet<>(Arrays.asList("user1", "user2")));
-    notebookAuthorization.setRunners(note.getId(),
+    authorizationService.setRunners(note.getId(),
         new HashSet<>(Arrays.asList("user3")));
-    notebookAuthorization.setWriters(note.getId(),
+    authorizationService.setWriters(note.getId(),
         new HashSet<>(Arrays.asList("user1")));
 
-    assertEquals(notebookAuthorization.isOwner(note.getId(),
+    assertEquals(authorizationService.isOwner(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
-    assertEquals(notebookAuthorization.isOwner(note.getId(),
+    assertEquals(authorizationService.isOwner(note.getId(),
         new HashSet<>(Arrays.asList("user1"))), true);
 
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user4"))), false);
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
 
-    assertEquals(notebookAuthorization.isRunner(note.getId(),
+    assertEquals(authorizationService.isRunner(note.getId(),
         new HashSet<>(Arrays.asList("user3"))), true);
-    assertEquals(notebookAuthorization.isRunner(note.getId(),
+    assertEquals(authorizationService.isRunner(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
 
-    assertEquals(notebookAuthorization.isWriter(note.getId(),
+    assertEquals(authorizationService.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), false);
-    assertEquals(notebookAuthorization.isWriter(note.getId(),
+    assertEquals(authorizationService.isWriter(note.getId(),
         new HashSet<>(Arrays.asList("user1"))), true);
 
     // Test clearing of permissions
-    notebookAuthorization.setReaders(note.getId(), Sets.<String>newHashSet());
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    authorizationService.setReaders(note.getId(), Sets.<String>newHashSet());
+    assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user2"))), true);
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         new HashSet<>(Arrays.asList("user4"))), true);
 
     notebook.removeNote(note.getId(), anonymous);
@@ -1042,44 +1045,88 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     String user2 = "user2";
     Set<String> roles = Sets.newHashSet("admin");
     // set admin roles for both user1 and user2
-    notebookAuthorization.setRoles(user1, roles);
-    notebookAuthorization.setRoles(user2, roles);
+    authorizationService.setRoles(user1, roles);
+    authorizationService.setRoles(user2, roles);
 
     Note note = notebook.createNote("note1", new AuthenticationInfo(user1));
 
     // check that user1 is owner, reader, runner and writer
-    assertEquals(notebookAuthorization.isOwner(note.getId(),
+    assertEquals(authorizationService.isOwner(note.getId(),
         Sets.newHashSet(user1)), true);
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         Sets.newHashSet(user1)), true);
-    assertEquals(notebookAuthorization.isRunner(note.getId(),
+    assertEquals(authorizationService.isRunner(note.getId(),
         Sets.newHashSet(user2)), true);
-    assertEquals(notebookAuthorization.isWriter(note.getId(),
+    assertEquals(authorizationService.isWriter(note.getId(),
         Sets.newHashSet(user1)), true);
 
     // since user1 and user2 both have admin role, user2 will be reader and writer as well
-    assertEquals(notebookAuthorization.isOwner(note.getId(),
+    assertEquals(authorizationService.isOwner(note.getId(),
         Sets.newHashSet(user2)), false);
-    assertEquals(notebookAuthorization.isReader(note.getId(),
+    assertEquals(authorizationService.isReader(note.getId(),
         Sets.newHashSet(user2)), true);
-    assertEquals(notebookAuthorization.isRunner(note.getId(),
+    assertEquals(authorizationService.isRunner(note.getId(),
         Sets.newHashSet(user2)), true);
-    assertEquals(notebookAuthorization.isWriter(note.getId(),
+    assertEquals(authorizationService.isWriter(note.getId(),
         Sets.newHashSet(user2)), true);
 
     // check that user1 has note listed in his workbench
-    Set<String> user1AndRoles = notebookAuthorization.getRoles(user1);
+    Set<String> user1AndRoles = authorizationService.getRoles(user1);
     user1AndRoles.add(user1);
-    List<Note> user1Notes = notebook.getAllNotes(user1AndRoles);
+    List<NoteInfo> user1Notes = notebook.getNotesInfo(noteId -> authorizationService.isReader(noteId, user1AndRoles));
     assertEquals(user1Notes.size(), 1);
     assertEquals(user1Notes.get(0).getId(), note.getId());
 
     // check that user2 has note listed in his workbench because of admin role
-    Set<String> user2AndRoles = notebookAuthorization.getRoles(user2);
+    Set<String> user2AndRoles = authorizationService.getRoles(user2);
     user2AndRoles.add(user2);
-    List<Note> user2Notes = notebook.getAllNotes(user2AndRoles);
+    List<NoteInfo> user2Notes = notebook.getNotesInfo(noteId -> authorizationService.isReader(noteId, user2AndRoles));
     assertEquals(user2Notes.size(), 1);
     assertEquals(user2Notes.get(0).getId(), note.getId());
+  }
+
+  @Test
+  public void testInterpreterSettingConfig() {
+    LOGGER.info("testInterpreterSettingConfig >>> ");
+    Note note = new Note("testInterpreterSettingConfig", "config_test",
+        interpreterFactory, interpreterSettingManager, this, credentials, new ArrayList<>());
+
+    // create paragraphs
+    Paragraph p1 = note.addNewParagraph(anonymous);
+    Map<String, Object> config = p1.getConfig();
+    assertTrue(config.containsKey("runOnSelectionChange"));
+    assertTrue(config.containsKey("title"));
+    assertEquals(config.get("runOnSelectionChange"), false);
+    assertEquals(config.get("title"), true);
+
+    // The config_test interpreter sets the default parameters
+    // in interpreter/config_test/interpreter-setting.json
+    //    "config": {
+    //      "runOnSelectionChange": false,
+    //      "title": true
+    //    },
+    p1.setText("%config_test sleep 1000");
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+
+    // wait until first paragraph finishes and second paragraph starts
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+
+    // Check if the config_test interpreter default parameter takes effect
+    LOGGER.info("p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get("runOnSelectionChange"), false);
+    assertEquals(config.get("title"), true);
+
+    // The mock1 interpreter does not set default parameters
+    p1.setText("%mock1 sleep 1000");
+    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+
+    // wait until first paragraph finishes and second paragraph starts
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+
+    // Check if the mock1 interpreter parameter is updated
+    LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get("runOnSelectionChange"), true);
+    assertEquals(config.get("title"), false);
   }
 
   @Test
@@ -1314,76 +1361,83 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   public void testGetAllNotes() throws Exception {
     Note note1 = notebook.createNote("note1", anonymous);
     Note note2 = notebook.createNote("note2", anonymous);
-    assertEquals(2, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
+    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
 
-    notebook.getNotebookAuthorization().setOwners(note1.getId(), Sets.newHashSet("user1"));
-    notebook.getNotebookAuthorization().setWriters(note1.getId(), Sets.newHashSet("user1"));
-    notebook.getNotebookAuthorization().setRunners(note1.getId(), Sets.newHashSet("user1"));
-    notebook.getNotebookAuthorization().setReaders(note1.getId(), Sets.newHashSet("user1"));
-    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
-    assertEquals(2, notebook.getAllNotes(Sets.newHashSet("user1")).size());
+    authorizationService.setOwners(note1.getId(), Sets.newHashSet("user1"));
+    authorizationService.setWriters(note1.getId(), Sets.newHashSet("user1"));
+    authorizationService.setRunners(note1.getId(), Sets.newHashSet("user1"));
+    authorizationService.setReaders(note1.getId(), Sets.newHashSet("user1"));
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
+    assertEquals(2, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1"))).size());
 
-    notebook.getNotebookAuthorization().setOwners(note2.getId(), Sets.newHashSet("user2"));
-    notebook.getNotebookAuthorization().setWriters(note2.getId(), Sets.newHashSet("user2"));
-    notebook.getNotebookAuthorization().setReaders(note2.getId(), Sets.newHashSet("user2"));
-    notebook.getNotebookAuthorization().setRunners(note2.getId(), Sets.newHashSet("user2"));
-    assertEquals(0, notebook.getAllNotes(Sets.newHashSet("anonymous")).size());
-    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user1")).size());
-    assertEquals(1, notebook.getAllNotes(Sets.newHashSet("user2")).size());
-    notebook.removeNote(note1.getId(), anonymous);
-    notebook.removeNote(note2.getId(), anonymous);
+    authorizationService.setOwners(note2.getId(), Sets.newHashSet("user2"));
+    authorizationService.setWriters(note2.getId(), Sets.newHashSet("user2"));
+    authorizationService.setReaders(note2.getId(), Sets.newHashSet("user2"));
+    authorizationService.setRunners(note2.getId(), Sets.newHashSet("user2"));
+    assertEquals(0, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("anonymous"))).size());
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1"))).size());
+    assertEquals(1, notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2"))).size());
+    notebook.removeNote(note1.getId(), AuthenticationInfo.ANONYMOUS);
+    notebook.removeNote(note2.getId(), AuthenticationInfo.ANONYMOUS);
   }
-
+  
+  @Test
+  public void testCreateDuplicateNote() throws Exception {
+    Note note1 = notebook.createNote("note1", anonymous);
+    try {
+      notebook.createNote("note1", anonymous);
+      fail("Should not be able to create same note 'note1'");
+    } catch (Exception e) {
+      assertTrue(e.getMessage().contains("Note '/note1' existed"));
+    } finally {
+      notebook.removeNote(note1.getId(), anonymous);
+    }
+  }
 
   @Test
   public void testGetAllNotesWithDifferentPermissions() throws IOException {
-    HashSet<String> user1 = Sets.newHashSet("user1");
-    HashSet<String> user2 = Sets.newHashSet("user1");
-    List<Note> notes1 = notebook.getAllNotes(user1);
-    List<Note> notes2 = notebook.getAllNotes(user2);
+    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 0);
     assertEquals(notes2.size(), 0);
 
     //creates note and sets user1 owner
-    Note note = notebook.createNote("note1", new AuthenticationInfo("user1"));
+    Note note1 = notebook.createNote("note1", new AuthenticationInfo("user1"));
 
     // note is public since readers and writers empty
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
 
-    notebook.getNotebookAuthorization().setReaders(note.getId(), Sets.newHashSet("user1"));
+    authorizationService.setReaders(note1.getId(), Sets.newHashSet("user1"));
     //note is public since writers empty
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
 
-    notebook.getNotebookAuthorization().setRunners(note.getId(), Sets.newHashSet("user1"));
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    authorizationService.setRunners(note1.getId(), Sets.newHashSet("user1"));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
 
-    notebook.getNotebookAuthorization().setWriters(note.getId(), Sets.newHashSet("user1"));
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    authorizationService.setWriters(note1.getId(), Sets.newHashSet("user1"));
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
-    assertEquals(notes2.size(), 1);
+    assertEquals(notes2.size(), 0);
   }
 
   @Test
-  public void testPublicPrivateNewNote() throws IOException, SchedulerException {
-    HashSet<String> user1 = Sets.newHashSet("user1");
-    HashSet<String> user2 = Sets.newHashSet("user2");
-
+  public void testPublicPrivateNewNote() throws IOException {
     // case of public note
     assertTrue(conf.isNotebookPublic());
-    assertTrue(notebookAuthorization.isPublic());
+    assertTrue(authorizationService.isPublic());
 
-    List<Note> notes1 = notebook.getAllNotes(user1);
-    List<Note> notes2 = notebook.getAllNotes(user2);
+    List<Note> notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    List<Note> notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 0);
     assertEquals(notes2.size(), 0);
 
@@ -1391,29 +1445,29 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note notePublic = notebook.createNote("note1", new AuthenticationInfo("user1"));
 
     // both users have note
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
     assertEquals(notes1.get(0).getId(), notePublic.getId());
     assertEquals(notes2.get(0).getId(), notePublic.getId());
 
     // user1 is only owner
-    assertEquals(notebookAuthorization.getOwners(notePublic.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getReaders(notePublic.getId()).size(), 0);
-    assertEquals(notebookAuthorization.getRunners(notePublic.getId()).size(), 0);
-    assertEquals(notebookAuthorization.getWriters(notePublic.getId()).size(), 0);
+    assertEquals(authorizationService.getOwners(notePublic.getId()).size(), 1);
+    assertEquals(authorizationService.getReaders(notePublic.getId()).size(), 0);
+    assertEquals(authorizationService.getRunners(notePublic.getId()).size(), 0);
+    assertEquals(authorizationService.getWriters(notePublic.getId()).size(), 0);
 
     // case of private note
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "false");
     ZeppelinConfiguration conf2 = ZeppelinConfiguration.create();
     assertFalse(conf2.isNotebookPublic());
     // notebook authorization reads from conf, so no need to re-initilize
-    assertFalse(notebookAuthorization.isPublic());
+    assertFalse(authorizationService.isPublic());
 
     // check that still 1 note per user
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 1);
     assertEquals(notes2.size(), 1);
 
@@ -1421,17 +1475,17 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     Note notePrivate = notebook.createNote("note2", new AuthenticationInfo("user1"));
 
     // only user1 have notePrivate right after creation
-    notes1 = notebook.getAllNotes(user1);
-    notes2 = notebook.getAllNotes(user2);
+    notes1 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user1")));
+    notes2 = notebook.getAllNotes(note -> authorizationService.isReader(note.getId(), Sets.newHashSet("user2")));
     assertEquals(notes1.size(), 2);
     assertEquals(notes2.size(), 1);
     assertEquals(true, notes1.contains(notePrivate));
 
     // user1 have all rights
-    assertEquals(notebookAuthorization.getOwners(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getReaders(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getRunners(notePrivate.getId()).size(), 1);
-    assertEquals(notebookAuthorization.getWriters(notePrivate.getId()).size(), 1);
+    assertEquals(authorizationService.getOwners(notePrivate.getId()).size(), 1);
+    assertEquals(authorizationService.getReaders(notePrivate.getId()).size(), 1);
+    assertEquals(authorizationService.getRunners(notePrivate.getId()).size(), 1);
+    assertEquals(authorizationService.getWriters(notePrivate.getId()).size(), 1);
 
     //set back public to true
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_PUBLIC.getVarName(), "true");

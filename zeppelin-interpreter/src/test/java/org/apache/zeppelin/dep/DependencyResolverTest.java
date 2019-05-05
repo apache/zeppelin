@@ -66,6 +66,7 @@ public class DependencyResolverTest {
 
   @Test
   public void testDelRepo() {
+    resolver.addRepo("securecentral", "https://repo1.maven.org/maven2", false);
     int reposCnt = resolver.getRepos().size();
     resolver.delRepo("securecentral");
     resolver.delRepo("badId");

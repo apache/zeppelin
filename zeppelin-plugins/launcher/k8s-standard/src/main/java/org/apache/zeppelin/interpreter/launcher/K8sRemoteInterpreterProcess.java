@@ -379,4 +379,9 @@ public class K8sRemoteInterpreterProcess extends RemoteInterpreterProcess {
       started.notify();
     }
   }
+
+  @Override
+  public String getErrorMessage() {
+    return null;
+  }
 }

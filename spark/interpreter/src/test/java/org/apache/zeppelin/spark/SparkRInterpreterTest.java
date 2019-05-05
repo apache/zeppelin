@@ -56,7 +56,8 @@ public class SparkRInterpreterTest {
     properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.R.knitr", "true");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
-
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
     sparkRInterpreter = new SparkRInterpreter(properties);

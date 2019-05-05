@@ -20,7 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -45,6 +46,10 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
 
   public SparkInterpreter(Properties properties) {
     super(properties);
+    // set scala.color
+    if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.scala.color", "true"))) {
+      System.setProperty("scala.color", "true");
+    }
     if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.useNew", "false"))) {
       delegation = new NewSparkInterpreter(properties);
     } else {
@@ -68,8 +73,9 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context)
+  public InterpreterResult internalInterpret(String st, InterpreterContext context)
       throws InterpreterException {
+    Utils.printDeprecateMessage(delegation.getSparkVersion(), context, properties);
     return delegation.interpret(st, context);
   }
 
@@ -132,7 +138,7 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public SparkZeppelinContext getZeppelinContext() {
+  public BaseZeppelinContext getZeppelinContext() {
     return delegation.getZeppelinContext();
   }
 

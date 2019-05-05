@@ -65,13 +65,18 @@ public abstract class BaseZeppelinContext {
     return this.maxResult;
   }
 
+  public String showData(Object obj) {
+    return showData(obj, maxResult);
+  }
+
   /**
    * subclasses should implement this method to display specific data type
    *
    * @param obj
+   * @param maxResult  max number of rows to display
    * @return
    */
-  protected abstract String showData(Object obj);
+  public abstract String showData(Object obj, int maxResult);
 
   /**
    * @deprecated use z.textbox instead
@@ -225,7 +230,7 @@ public abstract class BaseZeppelinContext {
   public void setMaxResult(int maxResult) {
     this.maxResult = maxResult;
   }
-  
+
   /**
    * display special types of objects for interpreter.
    * Each interpreter can has its own supported classes.

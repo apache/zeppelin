@@ -86,6 +86,17 @@ struct AppStatusUpdateEvent {
   4: string status
 }
 
+struct ParagraphInfo {
+  1: string noteId,
+  2: string paragraphId,
+  3: string paragraphTitle,
+  4: string paragraphText
+}
+
+exception ServiceException{
+  1: required string message;
+}
+
 service RemoteInterpreterEventService {
   void registerInterpreterProcess(1: RegisterInfo registerInfo);
   void appendOutput(1: OutputAppendEvent event);
@@ -107,4 +118,6 @@ service RemoteInterpreterEventService {
   list<string> getAllResources(1: string intpGroupId);
   binary getResource(1: string resourceIdJson);
   binary invokeMethod(1: string intpGroupId, 2: string invokeMethodJson);
+
+  list<ParagraphInfo> getParagraphList(1: string user, 2: string noteId) throws (1: ServiceException e);
 }

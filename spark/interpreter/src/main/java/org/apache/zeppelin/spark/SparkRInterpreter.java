@@ -101,7 +101,7 @@ public class SparkRInterpreter extends Interpreter {
       ZeppelinRContext.setSparkSession(sparkInterpreter.getSparkSession());
     }
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
-    ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
+    ZeppelinRContext.setZeppelinContext((SparkZeppelinContext) sparkInterpreter.getZeppelinContext());
 
     zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
     try {
@@ -121,7 +121,8 @@ public class SparkRInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String lines, InterpreterContext interpreterContext)
       throws InterpreterException {
-
+    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(),
+            interpreterContext, properties);
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
     String jobDesc = Utils.buildJobDesc(interpreterContext);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);

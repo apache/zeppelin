@@ -52,8 +52,11 @@ public class NewSparkSqlInterpreterTest {
     p.setProperty("spark.app.name", "test");
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "true");
-    p.setProperty("zeppelin.spark.sqlInterpreter.stacktrace", "false");
+    p.setProperty("zeppelin.spark.sql.stacktrace", "true");
     p.setProperty("zeppelin.spark.useNew", "true");
+    p.setProperty("zeppelin.spark.useHiveContext", "true");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+
     intpGroup = new InterpreterGroup();
     sparkInterpreter = new SparkInterpreter(p);
     sparkInterpreter.setInterpreterGroup(intpGroup);
@@ -114,6 +117,7 @@ public class NewSparkSqlInterpreterTest {
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+
   }
 
   public void test_null_value_in_row() throws InterpreterException {
@@ -155,7 +159,16 @@ public class NewSparkSqlInterpreterTest {
 
     InterpreterResult ret = sqlInterpreter.interpret("select * from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // the number of rows is 10+1, 1 is the head of table
+    assertEquals(11, ret.message().get(0).getData().split("\n").length);
     assertTrue(ret.message().get(1).getData().contains("alert-warning"));
+
+    // test limit local property
+    context.getLocalProperties().put("limit", "5");
+    ret = sqlInterpreter.interpret("select * from gr", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // the number of rows is 5+1, 1 is the head of table
+    assertEquals(6, ret.message().get(0).getData().split("\n").length);
   }
 
   @Test
@@ -202,4 +215,36 @@ public class NewSparkSqlInterpreterTest {
 
   }
 
+  @Test
+  public void testDDL() throws InterpreterException {
+    InterpreterResult ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    // spark 1.x will still return DataFrame with non-empty columns.
+    // org.apache.spark.sql.DataFrame = [result: string]
+    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
+      assertTrue(ret.message().isEmpty());
+    } else {
+      assertEquals(Type.TABLE, ret.message().get(0).getType());
+      assertEquals("result\n", ret.message().get(0).getData());
+    }
+
+    // create the same table again
+    ret = sqlInterpreter.interpret("create table t1(id int, name string)", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(1, ret.message().size());
+    assertEquals(Type.TEXT, ret.message().get(0).getType());
+    assertTrue(ret.message().get(0).getData().contains("already exists"));
+
+    // invalid DDL
+    ret = sqlInterpreter.interpret("create temporary function udf1 as 'org.apache.zeppelin.UDF'", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(1, ret.message().size());
+    assertEquals(Type.TEXT, ret.message().get(0).getType());
+
+    // spark 1.x could not detect the root cause correctly
+    if (!sparkInterpreter.getSparkContext().version().startsWith("1.")) {
+      assertTrue(ret.message().get(0).getData().contains("ClassNotFoundException") ||
+              ret.message().get(0).getData().contains("Can not load class"));
+    }
+  }
 }

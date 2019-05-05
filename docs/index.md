@@ -51,7 +51,7 @@ limitations under the License.
 * [Spark with Zeppelin](./quickstart/spark_with_zeppelin.html)
 * [SQL with Zeppelin](./quickstart/sql_with_zeppelin.html)
 * [Python with Zeppelin](./quickstart/python_with_zeppelin.html)
-  
+
 #### Usage 
 * Dynamic Form 
   * [What is Dynamic Form](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
@@ -83,10 +83,11 @@ limitations under the License.
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
   * [Helium API](./usage/rest_api/helium.html)
-  
+
 #### Setup 
 * Basics 
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Manage Zeppelin with systemd](./setup/basics/systemd.html)
   * [Multi-user Support](./setup/basics/multi_user_support.html)
 * Deployment 
   * [Spark Cluster Mode: Standalone](./setup/deployment/spark_cluster_mode.html#spark-standalone-mode)
@@ -113,7 +114,7 @@ limitations under the License.
   * [Proxy Setting](./setup/operation/proxy_setting.html)
   * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
   * [Trouble Shooting](./setup/operation/trouble_shooting.html)
-  
+
 #### Developer Guide
 * Extending Zeppelin
   * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
@@ -127,7 +128,7 @@ limitations under the License.
   * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
   * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
   * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
-  
+
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
   * [Beam](./interpreter/beam.html)
@@ -157,7 +158,8 @@ limitations under the License.
   * [Scio](./interpreter/scio.html)
   * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
-  
+  * [Submarine](./interpreter/submarine.html)
+
 #### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)

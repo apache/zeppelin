@@ -142,4 +142,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
    * called by RemoteInterpreterEventServer to notify that RemoteInterpreter Process is started
    */
   public abstract void processStarted(int port, String host);
+
+  public abstract String getErrorMessage();
 }

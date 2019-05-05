@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -218,12 +219,14 @@ public class RemoteInterpreterServer extends Thread
   public void shutdown() throws TException {
     logger.info("Shutting down...");
     if (interpreterGroup != null) {
-      for (List<Interpreter> session : interpreterGroup.values()) {
-        for (Interpreter interpreter : session) {
-          try {
-            interpreter.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+      synchronized (interpreterGroup) {
+        for (List<Interpreter> session : interpreterGroup.values()) {
+          for (Interpreter interpreter : session) {
+            try {
+              interpreter.close();
+            } catch (InterpreterException e) {
+              logger.warn("Fail to close interpreter", e);
+            }
           }
         }
       }
@@ -246,8 +249,11 @@ public class RemoteInterpreterServer extends Thread
     }
 
     if (server.isServing()) {
+      logger.info("Force shutting down");
       System.exit(0);
     }
+
+    logger.info("Shutting down");
   }
 
   public int getPort() {
@@ -418,27 +424,27 @@ public class RemoteInterpreterServer extends Thread
     }
 
     // close interpreters
-    List<Interpreter> interpreters;
-    synchronized (interpreterGroup) {
-      interpreters = interpreterGroup.get(sessionId);
-    }
-    if (interpreters != null) {
-      Iterator<Interpreter> it = interpreters.iterator();
-      while (it.hasNext()) {
-        Interpreter inp = it.next();
-        if (inp.getClassName().equals(className)) {
-          try {
-            inp.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+    if (interpreterGroup != null) {
+      synchronized (interpreterGroup) {
+        List<Interpreter> interpreters = interpreterGroup.get(sessionId);
+        if (interpreters != null) {
+          Iterator<Interpreter> it = interpreters.iterator();
+          while (it.hasNext()) {
+            Interpreter inp = it.next();
+            if (inp.getClassName().equals(className)) {
+              try {
+                inp.close();
+              } catch (InterpreterException e) {
+                logger.warn("Fail to close interpreter", e);
+              }
+              it.remove();
+              break;
+            }
           }
-          it.remove();
-          break;
         }
       }
     }
   }
-
 
   @Override
   public RemoteInterpreterResult interpret(String sessionId, String className, String st,
@@ -626,13 +632,15 @@ public class RemoteInterpreterServer extends Thread
           int lastMessageIndex = resultMessages.size() - 1;
           if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
             context.getResourcePool().put(
-                context.getNoteId(),
-                context.getParagraphId(),
-                WellKnownResourceName.ZeppelinTableResult.toString(),
-                resultMessages.get(lastMessageIndex));
+                    context.getNoteId(),
+                    context.getParagraphId(),
+                    WellKnownResourceName.ZeppelinTableResult.toString(),
+                    resultMessages.get(lastMessageIndex));
           }
         }
         return new InterpreterResult(result.code(), resultMessages);
+      } catch (Throwable e) {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       } finally {
         Thread.currentThread().setContextClassLoader(currentThreadContextClassloader);
         InterpreterContext.remove();
@@ -938,7 +946,6 @@ public class RemoteInterpreterServer extends Thread
     for (Resource r : resourceSet) {
       result.add(r.toJson());
     }
-
     return result;
   }
 
@@ -972,7 +979,6 @@ public class RemoteInterpreterServer extends Thread
       String noteId, String paragraphId, String resourceName, String invokeMessage) {
     InvokeResourceMethodEventMessage message =
         InvokeResourceMethodEventMessage.fromJson(invokeMessage);
-
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
     if (resource == null || resource.get() == null) {
       return ByteBuffer.allocate(0);
@@ -986,13 +992,20 @@ public class RemoteInterpreterServer extends Thread
         if (message.shouldPutResultIntoResourcePool()) {
           // if return resource name is specified,
           // then put result into resource pool
-          // and return empty byte buffer
+          // and return the Resource class instead of actual return object.
           resourcePool.put(
               noteId,
               paragraphId,
               message.returnResourceName,
               ret);
-          return ByteBuffer.allocate(0);
+
+          Resource returnValResource = resourcePool.get(noteId, paragraphId, message.returnResourceName);
+          ByteBuffer serialized = Resource.serializeObject(returnValResource);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
         } else {
           // if return resource name is not specified,
           // then return serialized result
@@ -1009,31 +1022,6 @@ public class RemoteInterpreterServer extends Thread
       }
     }
   }
-
-  //  /**
-  //   * Get payload of resource from remote
-  //   *
-  //   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
-  //   * @param object                           java serialized of the object
-  //   * @throws TException
-  //   */
-  //  @Override
-  //  public void resourceResponseInvokeMethod(
-  //      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
-  //    InvokeResourceMethodEventMessage message =
-  //        InvokeResourceMethodEventMessage.fromJson(invokeResourceMethodEventMessage);
-  //
-  //    if (message.shouldPutResultIntoResourcePool()) {
-  //      Resource resource = resourcePool.get(
-  //          message.resourceId.getNoteId(),
-  //          message.resourceId.getParagraphId(),
-  //          message.returnResourceName,
-  //          true);
-  //      eventClient.putResponseInvokeMethod(message, resource);
-  //    } else {
-  //      eventClient.putResponseInvokeMethod(message, object);
-  //    }
-  //  }
 
   @Override
   public void angularRegistryPush(String registryAsString) throws TException {

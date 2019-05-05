@@ -52,14 +52,18 @@
     <!-- settings -->
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
-
-
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-display</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>spark-scala-2.10</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -139,6 +143,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
@@ -151,18 +156,8 @@
       <artifactId>spark-hive_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
-
+    
     <!-- Aether :: maven dependency resolution -->
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -384,6 +379,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>net.jodah</groupId>
+      <artifactId>concurrentunit</artifactId>
+      <version>0.4.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -459,7 +460,7 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx1536m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx2048m -XX:MaxPermSize=256m</argLine>
           <excludes>
             <exclude>**/SparkRInterpreterTest.java</exclude>
             <exclude>${pyspark.test.exclude}</exclude>
@@ -602,52 +603,4 @@
 
     </plugins>
   </build>
-
-  <profiles>
-
-    <profile>
-      <id>spark-2.2</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-scala-2.10</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>spark-2.1</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-scala-2.10</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>spark-2.0</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-scala-2.10</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>spark-1.6</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>spark-scala-2.10</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-  </profiles>
 </project>

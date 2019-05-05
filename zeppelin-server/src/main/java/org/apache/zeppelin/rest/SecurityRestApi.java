@@ -34,7 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +49,11 @@ public class SecurityRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
   private static final Gson gson = new Gson();
 
-  private final SecurityService securityService;
+  private final AuthenticationService authenticationService;
 
   @Inject
-  public SecurityRestApi(SecurityService securityService) {
-    this.securityService = securityService;
+  public SecurityRestApi(AuthenticationService authenticationService) {
+    this.authenticationService = authenticationService;
   }
 
   /**
@@ -69,8 +69,8 @@ public class SecurityRestApi {
   @ZeppelinApi
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    String principal = securityService.getPrincipal();
-    Set<String> roles = securityService.getAssociatedRoles();
+    String principal = authenticationService.getPrincipal();
+    Set<String> roles = authenticationService.getAssociatedRoles();
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
@@ -102,8 +102,8 @@ public class SecurityRestApi {
   public Response getUserList(@PathParam("searchText") final String searchText) {
 
     final int numUsersToFetch = 5;
-    List<String> usersList = securityService.getMatchedUsers(searchText, numUsersToFetch);
-    List<String> rolesList = securityService.getMatchedRoles();
+    List<String> usersList = authenticationService.getMatchedUsers(searchText, numUsersToFetch);
+    List<String> rolesList = authenticationService.getMatchedRoles();
 
     List<String> autoSuggestUserList = new ArrayList<>();
     List<String> autoSuggestRoleList = new ArrayList<>();

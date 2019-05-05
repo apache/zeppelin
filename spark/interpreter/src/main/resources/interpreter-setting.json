@@ -88,6 +88,20 @@
         "defaultValue": false,
         "description": "Whether to hide spark ui in zeppelin ui",
         "type": "checkbox"
+      },
+      "zeppelin.spark.scala.color": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.scala.color",
+        "defaultValue": true,
+        "description": "Whether to enable color output of spark scala interpreter",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.deprecatedMsg.show": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.deprecatedMsg.show",
+        "defaultValue": true,
+        "description": "Whether show the spark deprecated message",
+        "type": "checkbox"
       }
     },
     "editor": {

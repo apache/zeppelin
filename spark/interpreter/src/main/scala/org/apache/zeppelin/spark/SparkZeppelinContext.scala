@@ -67,7 +67,7 @@ class SparkZeppelinContext(val sc: SparkContext,
   override def getInterpreterClassMap: util.Map[String, String] =
     JavaConversions.mapAsJavaMap(interpreterClassMap)
 
-  override def showData(obj: Any): String = sparkShims.showDataFrame(obj, maxResult)
+  override def showData(obj: Any, maxResult: Int): String = sparkShims.showDataFrame(obj, maxResult)
 
   @ZeppelinApi
   def select(name: String, options: Seq[(Any, String)]): Any = select(name, null, options)

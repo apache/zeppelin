@@ -251,3 +251,18 @@ to customize,
  - Blocking communication between interpreter Pod.
  - Spark Interpreter Pod has Role CRUD for any pod/service in the same namespace. Which should be restricted to only Spark executors Pod.
  - Per note interpreter mode by default when Zeppelin is running on Kubernetes
+
+
+## Development
+
+Instead of build Zeppelin distribution package and docker image everytime during development,
+Zeppelin can run locally (such as inside your IDE in debug mode) and able to run Interpreter using [K8sStandardInterpreterLauncher](https://github.com/apache/zeppelin/blob/master/zeppelin-plugins/launcher/k8s-standard/src/main/java/org/apache/zeppelin/interpreter/launcher/K8sStandardInterpreterLauncher.java) by configuring following environment variables.
+
+| Environment variable | Value | Description |
+| ----- | ----- | ----- |
+| ZEPPELIN_RUN_MODE | k8s | Make Zeppelin run interpreter on Kubernetes |
+| ZEPPELIN_K8S_PORTFORWARD | true | Enable port forwarding from local Zeppelin instance to Interpreters running on Kubernetes |
+| ZEPPELIN_K8S_CONTAINER_IMAGE | <image>:<version> | Zeppelin interpreter docker image to use |
+| ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE | <image>:<version> | Spark docker image to use |
+
+`kubectl` command need to be configured to connect your Kubernetes cluster.

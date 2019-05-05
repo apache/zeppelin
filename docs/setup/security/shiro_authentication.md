@@ -28,6 +28,9 @@ limitations under the License.
 
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
+## Important Note
+By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Secure the Websocket channel), or only deploy and use Zeppelin in a secured and trusted environment.
+
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
@@ -80,7 +83,7 @@ activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=C
 activeDirectoryRealm.authorizationCachingEnabled = false
 activeDirectoryRealm.principalSuffix = @corp.company.net
 
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389

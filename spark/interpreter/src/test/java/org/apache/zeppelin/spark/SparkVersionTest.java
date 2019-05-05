@@ -55,6 +55,14 @@ public class SparkVersionTest {
     assertTrue(SparkVersion.SPARK_2_0_0.olderThanEquals(SparkVersion.SPARK_2_0_0));
     assertFalse(SparkVersion.SPARK_2_3_0.olderThan(SparkVersion.SPARK_2_0_0));
 
+    // test newerThanEqualsPatchVersion
+    assertTrue(SparkVersion.fromVersionString("2.3.1")
+            .newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.3.0")));
+    assertFalse(SparkVersion.fromVersionString("2.3.1")
+            .newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.3.2")));
+    assertFalse(SparkVersion.fromVersionString("2.3.1")
+            .newerThanEqualsPatchVersion(SparkVersion.fromVersionString("2.2.0")));
+
     // conversion
     assertEquals(20300, SparkVersion.SPARK_2_3_0.toNumber());
     assertEquals("2.3.0", SparkVersion.SPARK_2_3_0.toString());

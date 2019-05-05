@@ -17,11 +17,14 @@
 
 package org.apache.zeppelin.python;
 
+import net.jodah.concurrentunit.Waiter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.Test;
@@ -30,9 +33,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 public class IPythonInterpreterTest extends BasePythonInterpreterTest {
@@ -63,6 +68,49 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   @Override
   public void tearDown() throws InterpreterException {
     intpGroup.close();
+  }
+
+  @Test
+  public void testIpythonKernelCrash_shouldNotHangExecution()
+      throws InterpreterException, IOException {
+    // The goal of this test is to ensure that we handle case when the kernel die.
+    // In order to do so, we will kill the kernel process from the python code.
+    // A real example of that could be a out of memory by the code we execute.
+    String codeDep = "!pip install psutil";
+    String codeFindPID = "from os import getpid\n"
+        + "import psutil\n"
+        + "pids = psutil.pids()\n"
+        + "my_pid = getpid()\n"
+        + "pidToKill = []\n"
+        + "for pid in pids:\n"
+        + "    try:\n"
+        + "        p = psutil.Process(pid)\n"
+        + "        cmd = p.cmdline()\n"
+        + "        for arg in cmd:\n"
+        + "            if arg.count('ipykernel'):\n"
+        + "                pidToKill.append(pid)\n"
+        + "    except:\n"
+        + "        continue\n"
+        + "len(pidToKill)";
+    String codeKillKernel = "from os import kill\n"
+        + "import signal\n"
+        + "for pid in pidToKill:\n"
+        + "    kill(pid, signal.SIGKILL)";
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(codeDep, context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    context = getInterpreterContext();
+    result = interpreter.interpret(codeFindPID, context);
+    assertEquals(Code.SUCCESS, result.code());
+    InterpreterResultMessage output = context.out.toInterpreterResultMessage().get(0);
+    int numberOfPID = Integer.parseInt(output.getData());
+    assertTrue(numberOfPID > 0);
+    context = getInterpreterContext();
+    result = interpreter.interpret(codeKillKernel, context);
+    assertEquals(Code.ERROR, result.code());
+    output = context.out.toInterpreterResultMessage().get(0);
+    assertTrue(output.getData().equals("Ipython kernel has been stopped. Please check logs. "
+        + "It might be because of an out of memory issue."));
   }
 
   @Test
@@ -233,6 +281,49 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("print('1'*3000)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
+  @Test
+  public void testIPythonProcessKilled() throws InterruptedException, TimeoutException {
+    final Waiter waiter = new Waiter();
+    Thread thread = new Thread() {
+      @Override
+      public void run() {
+        try {
+          InterpreterResult result = interpreter.interpret("import time\ntime.sleep(1000)",
+                  getInterpreterContext());
+          waiter.assertEquals(InterpreterResult.Code.ERROR, result.code());
+          waiter.assertEquals(
+                  "IPython kernel is abnormally exited, please check your code and log.",
+                  result.message().get(0).getData());
+        } catch (InterpreterException e) {
+          waiter.fail("Should not throw exception\n" + ExceptionUtils.getStackTrace(e));
+        }
+        waiter.resume();
+      }
+    };
+    thread.start();
+    Thread.sleep(3000);
+    IPythonInterpreter iPythonInterpreter = (IPythonInterpreter)
+            ((LazyOpenInterpreter) interpreter).getInnerInterpreter();
+    iPythonInterpreter.getIPythonProcessLauncher().stop();
+    waiter.await(3000);
+  }
+
+  @Test
+  public void testIPythonFailToLaunch() throws InterpreterException {
+    tearDown();
+
+    Properties properties = initIntpProperties();
+    properties.setProperty("zeppelin.python", "invalid_python");
+
+    try {
+      startInterpreter(properties);
+      fail("Should not be able to start IPythonInterpreter");
+    } catch (InterpreterException e) {
+      String exceptionMsg = ExceptionUtils.getStackTrace(e);
+      assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+    }
   }
 
 }

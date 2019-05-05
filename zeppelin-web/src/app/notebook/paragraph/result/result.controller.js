@@ -24,6 +24,7 @@ import ScatterchartVisualization from '../../../visualization/builtins/visualiza
 import NetworkVisualization from '../../../visualization/builtins/visualization-d3network';
 import {DefaultDisplayType, SpellResult} from '../../../spell';
 import {ParagraphStatus} from '../paragraph.status';
+import Result from './result';
 
 const AnsiUp = require('ansi_up');
 const AnsiUpConverter = new AnsiUp.default; // eslint-disable-line new-parens,new-cap
@@ -488,22 +489,7 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
   };
 
   const checkAndReplaceCarriageReturn = function(str) {
-    if (/\r/.test(str)) {
-      let newGenerated = '';
-      let strArr = str.split('\n');
-      for (let str of strArr) {
-        if (/\r/.test(str)) {
-          let splitCR = str.split('\r');
-          newGenerated += splitCR[splitCR.length - 1] + '\n';
-        } else {
-          newGenerated += str + '\n';
-        }
-      }
-      // remove last "\n" character
-      return newGenerated.slice(0, -1);
-    } else {
-      return str;
-    }
+    return new Result(str).checkAndReplaceCarriageReturn();
   };
 
   const renderText = function(targetElemId, data, refresh) {

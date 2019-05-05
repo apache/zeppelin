@@ -92,11 +92,11 @@ public class MockInterpreterResourcePool extends Interpreter {
       Resource resource = resourcePool.get(noteId, paragraphId, name);
       LOGGER.info("Resource: " + resource);
       if (stmt.length >=4) {
-        Resource res = resource.invokeMethod(value, null, null, stmt[3]);
+        Resource res = resource.invokeMethod(value, stmt[3]);
         LOGGER.info("After invokeMethod: " + resource);
         ret = res.get();
       } else {
-        ret = resource.invokeMethod(value, null, null);
+        ret = resource.invokeMethod(value);
         LOGGER.info("After invokeMethod: " + ret);
       }
     }

@@ -14,24 +14,25 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProvider;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +152,11 @@ public class JDBCInterpreter extends KerberosInterpreter {
     basePropretiesMap = new HashMap<>();
     sqlCompletersMap = new HashMap<>();
     maxLineResults = MAX_LINE_DEFAULT;
+  }
+
+  @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return null;
   }
 
   @Override
@@ -715,8 +721,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
         statement = connection.createStatement();
 
         // fetch n+1 rows in order to indicate there's more rows available (for large selects)
-        statement.setFetchSize(getMaxResult());
-        statement.setMaxRows(maxRows);
+        statement.setFetchSize(interpreterContext.getIntLocalProperty("limit", getMaxResult()));
+        statement.setMaxRows(interpreterContext.getIntLocalProperty("limit", maxRows));
 
         if (statement == null) {
           return new InterpreterResult(Code.ERROR, "Prefix not found.");
@@ -727,7 +733,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
           String statementPrecode =
               getProperty(String.format(STATEMENT_PRECODE_KEY_TEMPLATE, propertyKey));
-          
+
           if (StringUtils.isNotBlank(statementPrecode)) {
             statement.execute(statementPrecode);
           }
@@ -803,9 +809,12 @@ public class JDBCInterpreter extends KerberosInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
-    String cmd = Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation")) ?
-            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
+  protected boolean isInterpolate() {
+    return Boolean.parseBoolean(getProperty("zeppelin.jdbc.interpolation", "false"));
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String cmd, InterpreterContext contextInterpreter) {
     logger.debug("Run SQL command '{}'", cmd);
     String propertyKey = getPropertyKey(contextInterpreter);
     cmd = cmd.trim();

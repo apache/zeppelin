@@ -26,8 +26,10 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +46,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final String pullKey = "pullNoteIds";
   private static final String delDstKey = "delDstNoteIds";
 
-  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
+  private static final String DEFAULT_STORAGE = "org.apache.zeppelin.notebook.repo.GitNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<>();
   private boolean oneWaySync;
@@ -62,9 +64,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     oneWaySync = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC);
     String allStorageClassNames = conf.getNotebookStorageClass().trim();
     if (allStorageClassNames.isEmpty()) {
-      allStorageClassNames = defaultStorage;
+      allStorageClassNames = DEFAULT_STORAGE;
       LOGGER.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}",
-          defaultStorage);
+              DEFAULT_STORAGE);
     }
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
@@ -72,6 +74,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
           "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
+    // init the underlying NotebookRepo
     for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       NotebookRepo notebookRepo = PluginManager.get().loadNotebookRepo(storageClassNames[i].trim());
       if (notebookRepo != null) {
@@ -79,32 +82,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
         repos.add(notebookRepo);
       }
     }
+
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
-      LOGGER.info("No storage could be initialized, using default {} storage", defaultStorage);
-      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(defaultStorage);
+      LOGGER.info("No storage could be initialized, using default {} storage", DEFAULT_STORAGE);
+      NotebookRepo defaultNotebookRepo = PluginManager.get().loadNotebookRepo(DEFAULT_STORAGE);
       defaultNotebookRepo.init(conf);
       repos.add(defaultNotebookRepo);
-    }
-
-    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
-    boolean convertToNew = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_CONVERT);
-    boolean deleteOld = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_NEW_FORMAT_DELETE_OLD);
-    if (convertToNew) {
-      NotebookRepo newNotebookRepo = repos.get(0);
-      OldNotebookRepo oldNotebookRepo =
-          PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
-      oldNotebookRepo.init(conf);
-      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
-      LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
-      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
-        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
-        note.setPath(note.getName());
-        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
-        if (deleteOld) {
-          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
-        }
-      }
     }
 
     // sync for anonymous mode on start
@@ -112,7 +96,67 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       try {
         sync(AuthenticationInfo.ANONYMOUS);
       } catch (IOException e) {
-        LOGGER.error("Couldn't sync on start ", e);
+        LOGGER.error("Couldn't sync anonymous mode on start ", e);
+      }
+    }
+  }
+
+  // Zeppelin change its note file name structure in 0.9.0, this is called when upgrading
+  // from 0.9.0 before to 0.9.0 after
+  public void convertNoteFiles(ZeppelinConfiguration conf, boolean deleteOld) throws IOException {
+    // convert old note file (noteId/note.json) to new note file (note_name_note_id.zpln)
+    for (int i = 0; i < repos.size(); ++i) {
+      NotebookRepo newNotebookRepo = repos.get(i);
+      OldNotebookRepo oldNotebookRepo =
+              PluginManager.get().loadOldNotebookRepo(newNotebookRepo.getClass().getCanonicalName());
+      oldNotebookRepo.init(conf);
+      List<OldNoteInfo> oldNotesInfo = oldNotebookRepo.list(AuthenticationInfo.ANONYMOUS);
+      LOGGER.info("Convert old note file to new style, note count: " + oldNotesInfo.size());
+      LOGGER.info("Delete old note: " + deleteOld);
+      for (OldNoteInfo oldNoteInfo : oldNotesInfo) {
+        Note note = oldNotebookRepo.get(oldNoteInfo.getId(), AuthenticationInfo.ANONYMOUS);
+        note.setPath(note.getName());
+        note.setVersion(Util.getVersion());
+        newNotebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
+        if (newNotebookRepo instanceof NotebookRepoWithVersionControl) {
+          ((NotebookRepoWithVersionControl) newNotebookRepo).checkpoint(
+                  note.getId(),
+                  note.getPath(),
+                  "Upgrade note '" + note.getName() + "' to " + Util.getVersion(),
+                  AuthenticationInfo.ANONYMOUS);
+        }
+        if (deleteOld) {
+          oldNotebookRepo.remove(note.getId(), AuthenticationInfo.ANONYMOUS);
+          LOGGER.info("Remote old note: " + note.getId());
+          // TODO(zjffdu) no commit when deleting note, This is an issue of
+          // NotebookRepoWithVersionControl
+          /**
+          if (oldNotebookRepo instanceof NotebookRepoWithVersionControl) {
+            ((NotebookRepoWithVersionControl) oldNotebookRepo).checkpoint(
+                    note.getId(),
+                    note.getName(),
+                    "Delete note '" + note.getName() + "' during note upgrade",
+                    AuthenticationInfo.ANONYMOUS);
+          }
+           **/
+        }
+      }
+    }
+  }
+
+  public void mergeAuthorizationInfo() throws IOException {
+    LOGGER.info("Merge AuthorizationInfo into note file");
+    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
+    for (int i = 0; i < repos.size(); ++i) {
+      NotebookRepo notebookRepo = repos.get(i);
+      Map<String, NoteInfo> notesInfo = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
+      for (NoteInfo noteInfo : notesInfo.values()) {
+        Note note = notebookRepo.get(noteInfo.getId(), noteInfo.getPath(), AuthenticationInfo.ANONYMOUS);
+        note.setOwners(notebookAuthorization.getOwners(noteInfo.getId()));
+        note.setRunners(notebookAuthorization.getRunners(noteInfo.getId()));
+        note.setReaders(notebookAuthorization.getReaders(noteInfo.getId()));
+        note.setWriters(notebookAuthorization.getWriters(noteInfo.getId()));
+        notebookRepo.save(note, AuthenticationInfo.ANONYMOUS);
       }
     }
   }
@@ -245,11 +289,9 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
    */
   void sync(int sourceRepoIndex, int destRepoIndex, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Sync started");
-    NotebookAuthorization auth = NotebookAuthorization.getInstance();
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List<NoteInfo> allSrcNotes = new ArrayList<>(srcRepo.list(subject).values());
-    List<NoteInfo> srcNotes = auth.filterByUser(allSrcNotes, subject);
+    List<NoteInfo> srcNotes = new ArrayList<>(srcRepo.list(subject).values());
     List<NoteInfo> dstNotes = new ArrayList<>(dstRepo.list(subject).values());
 
     Map<String, List<NoteInfo>> noteIds = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo,
@@ -263,7 +305,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       for (NoteInfo noteInfo : pushNoteIds) {
         LOGGER.info("Note : " + noteIds);
       }
-      pushNotes(subject, pushNoteIds, srcRepo, dstRepo, false);
+      pushNotes(subject, pushNoteIds, srcRepo, dstRepo);
     } else {
       LOGGER.info("Nothing to push");
     }
@@ -273,7 +315,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       for (NoteInfo noteInfo : pullNoteIds) {
         LOGGER.info("Note : " + noteInfo);
       }
-      pushNotes(subject, pullNoteIds, dstRepo, srcRepo, true);
+      pushNotes(subject, pullNoteIds, dstRepo, srcRepo);
     } else {
       LOGGER.info("Nothing to pull");
     }
@@ -296,45 +338,14 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   private void pushNotes(AuthenticationInfo subject, List<NoteInfo> notesInfo, NotebookRepo localRepo,
-      NotebookRepo remoteRepo, boolean setPermissions) {
+      NotebookRepo remoteRepo) {
     for (NoteInfo noteInfo : notesInfo) {
       try {
         remoteRepo.save(localRepo.get(noteInfo.getId(), noteInfo.getPath(), subject), subject);
-        if (setPermissions && emptyNoteAcl(noteInfo.getId())) {
-          makePrivate(noteInfo.getId(), subject);
-        }
       } catch (IOException e) {
         LOGGER.error("Failed to push note to storage, moving onto next one", e);
       }
     }
-  }
-
-  private boolean emptyNoteAcl(String noteId) {
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-    return notebookAuthorization.getOwners(noteId).isEmpty()
-        && notebookAuthorization.getReaders(noteId).isEmpty()
-            && notebookAuthorization.getRunners(noteId).isEmpty()
-        && notebookAuthorization.getWriters(noteId).isEmpty();
-  }
-
-  private void makePrivate(String noteId, AuthenticationInfo subject) {
-    if (AuthenticationInfo.isAnonymous(subject)) {
-      LOGGER.info("User is anonymous, permissions are not set for pulled notes");
-      return;
-    }
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
-    Set<String> users = notebookAuthorization.getOwners(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setOwners(noteId, users);
-    users = notebookAuthorization.getReaders(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setReaders(noteId, users);
-    users = notebookAuthorization.getRunners(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setRunners(noteId, users);
-    users = notebookAuthorization.getWriters(noteId);
-    users.add(subject.getUser());
-    notebookAuthorization.setWriters(noteId, users);
   }
 
   private void deleteNotes(AuthenticationInfo subject, List<NoteInfo> noteInfos, NotebookRepo repo)
@@ -483,7 +494,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String noteName, String checkpointMsg, AuthenticationInfo subject)
+  public Revision checkpoint(String noteId, String notePath, String checkpointMsg, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -496,7 +507,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
         if (isRevisionSupportedInRepo(i)) {
           allRepoCheckpoints
               .add(((NotebookRepoWithVersionControl) getRepo(i))
-                  .checkpoint(noteId, noteName, checkpointMsg, subject));
+                  .checkpoint(noteId, notePath, checkpointMsg, subject));
         }
       } catch (IOException e) {
         LOGGER.warn("Couldn't checkpoint in {} storage with index {} for note {}",
@@ -521,11 +532,11 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note get(String noteId, String noteName, String revId, AuthenticationInfo subject) {
+  public Note get(String noteId, String notePath, String revId, AuthenticationInfo subject) {
     Note revisionNote = null;
     try {
       if (isRevisionSupportedInDefaultRepo()) {
-        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, noteName,
+        revisionNote = ((NotebookRepoWithVersionControl) getRepo(0)).get(noteId, notePath,
             revId, subject);
       }
     } catch (IOException e) {
@@ -535,13 +546,13 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId, String noteName,
+  public List<Revision> revisionHistory(String noteId, String notePath,
                                         AuthenticationInfo subject) {
     List<Revision> revisions = Collections.emptyList();
     try {
       if (isRevisionSupportedInDefaultRepo()) {
         revisions = ((NotebookRepoWithVersionControl) getRepo(0))
-            .revisionHistory(noteId, noteName, subject);
+            .revisionHistory(noteId, notePath, subject);
       }
     } catch (IOException e) {
       LOGGER.error("Failed to list revision history", e);
@@ -570,7 +581,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   }
 
   @Override
-  public Note setNoteRevision(String noteId, String noteName, String revId, AuthenticationInfo subject)
+  public Note setNoteRevision(String noteId, String notePath, String revId, AuthenticationInfo subject)
       throws IOException {
     int repoCount = getRepoCount();
     int repoBound = Math.min(repoCount, getMaxRepoNum());
@@ -579,7 +590,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
       try {
         if (isRevisionSupportedInRepo(i)) {
           currentNote = ((NotebookRepoWithVersionControl) getRepo(i))
-              .setNoteRevision(noteId, noteName, revId, subject);
+              .setNoteRevision(noteId, notePath, revId, subject);
         }
       } catch (IOException e) {
         // already logged

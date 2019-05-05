@@ -289,7 +289,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Commit note to current repository?',
       callback: function(result) {
         if (result) {
-          websocketMsgSrv.checkpointNote($routeParams.noteId, $routeParams.name, commitMessage);
+          websocketMsgSrv.checkpointNote($routeParams.noteId, commitMessage);
         }
       },
     });

@@ -160,6 +160,10 @@ You can also set other Spark properties which are not listed in the table. For a
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
   </tr>
+  <td>zeppelin.spark.scala.color</td>
+    <td>true</td>
+    <td>Whether to enable color output of spark scala interpreter</td>
+  </tr>
 </table>
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
@@ -369,6 +373,12 @@ If you don't want to use IPython, then you can set `zeppelin.pyspark.useIPython`
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+
+## Deprecate Spark 2.2 and earlier versions
+Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.
+You can get rid of this message by setting `zeppelin.spark.deprecatedMsg.show` to `false`.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_deprecate.png">
 
 ### Configuration Setup
 

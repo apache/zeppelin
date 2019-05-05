@@ -17,18 +17,19 @@
 
 package org.apache.zeppelin.java;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.stream.Stream;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
 
 /**
  * Java interpreter
@@ -48,15 +49,10 @@ public class JavaInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    File dir = new File(".");
-    File[] dirFiles = dir.listFiles();
-    // delete all .class files created while compilation process
-    for (int i = 0; i < dir.list().length; i++) {
-      File f = dirFiles[i];
-      if (f.getAbsolutePath().endsWith(".class")) {
-        f.delete();
-      }
-    }
+    /* Clean up .class files created during the compilation process. */
+    Stream.of(
+      new File(".").listFiles(f -> f.getAbsolutePath().endsWith(".class")))
+      .forEach(f -> f.delete());
   }
 
   @Override

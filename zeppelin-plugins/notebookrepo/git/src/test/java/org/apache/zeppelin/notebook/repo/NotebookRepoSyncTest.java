@@ -36,10 +36,10 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.storage.ConfigStorage;
@@ -64,9 +64,9 @@ public class NotebookRepoSyncTest {
   private InterpreterFactory factory;
   private InterpreterSettingManager interpreterSettingManager;
   private SearchService search;
-  private NotebookAuthorization notebookAuthorization;
   private Credentials credentials;
   private AuthenticationInfo anonymous;
+  private AuthorizationService authorizationService;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
 
   @Before
@@ -99,11 +99,10 @@ public class NotebookRepoSyncTest {
 
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookAuthorization = NotebookAuthorization.init(conf);
     credentials = new Credentials(conf.credentialsPersist(), conf.getCredentialsPath(), null);
-    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials, null);
+    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search, credentials, null);
     anonymous = new AuthenticationInfo("anonymous");
+    authorizationService = new AuthorizationService(notebookSync, conf);
   }
 
   @After
@@ -241,8 +240,7 @@ public class NotebookRepoSyncTest {
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC.getVarName(), "true");
     conf = ZeppelinConfiguration.create();
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials, null);
+    notebookSync = new Notebook(conf, notebookRepoSync, factory, interpreterSettingManager, search, credentials, null);
 
     // check that both storage repos are empty
     assertTrue(notebookRepoSync.getRepoCount() > 1);
@@ -289,8 +287,7 @@ public class NotebookRepoSyncTest {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, factory, interpreterSettingManager, search,
-        notebookAuthorization, credentials, null);
+    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, factory, interpreterSettingManager, search, credentials, null);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);
@@ -338,14 +335,13 @@ public class NotebookRepoSyncTest {
     assertEquals(1, notebookRepoSync.list(1, null).size());
 
     /* check that user1 is the only owner */
-    NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
     Set<String> entity = new HashSet<String>();
     entity.add(user1.getUser());
-    assertEquals(true, authInfo.isOwner(note.getId(), entity));
-    assertEquals(1, authInfo.getOwners(note.getId()).size());
-    assertEquals(0, authInfo.getReaders(note.getId()).size());
-    assertEquals(0, authInfo.getRunners(note.getId()).size());
-    assertEquals(0, authInfo.getWriters(note.getId()).size());
+    assertEquals(true, authorizationService.isOwner(note.getId(), entity));
+    assertEquals(1, authorizationService.getOwners(note.getId()).size());
+    assertEquals(0, authorizationService.getReaders(note.getId()).size());
+    assertEquals(0, authorizationService.getRunners(note.getId()).size());
+    assertEquals(0, authorizationService.getWriters(note.getId()).size());
 
     /* update note and save on secondary storage */
     note.setInterpreterFactory(mock(InterpreterFactory.class));
@@ -370,35 +366,26 @@ public class NotebookRepoSyncTest {
     assertEquals(1, notebookRepoSync.get(0,
         notebookRepoSync.list(0, null).get(0).getId(),
         notebookRepoSync.list(0, null).get(0).getPath(), null).getParagraphs().size());
-    assertEquals(true, authInfo.isOwner(note.getId(), entity));
-    assertEquals(1, authInfo.getOwners(note.getId()).size());
-    assertEquals(0, authInfo.getReaders(note.getId()).size());
-    assertEquals(0, authInfo.getRunners(note.getId()).size());
-    assertEquals(0, authInfo.getWriters(note.getId()).size());
+    assertEquals(true, authorizationService.isOwner(note.getId(), entity));
+    assertEquals(1, authorizationService.getOwners(note.getId()).size());
+    assertEquals(0, authorizationService.getReaders(note.getId()).size());
+    assertEquals(0, authorizationService.getRunners(note.getId()).size());
+    assertEquals(0, authorizationService.getWriters(note.getId()).size());
 
     /* scenario 2 - note doesn't exist on main storage */
     /* remove from main storage */
     notebookRepoSync.remove(0, note.getId(), note.getPath(), user1);
     assertEquals(0, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
-    authInfo.removeNote(note.getId());
-    assertEquals(0, authInfo.getOwners(note.getId()).size());
-    assertEquals(0, authInfo.getReaders(note.getId()).size());
-    assertEquals(0, authInfo.getRunners(note.getId()).size());
-    assertEquals(0, authInfo.getWriters(note.getId()).size());
 
     /* now sync - should bring note from secondary storage with added acl */
     notebookRepoSync.sync(user1);
     assertEquals(1, notebookRepoSync.list(0, null).size());
     assertEquals(1, notebookRepoSync.list(1, null).size());
-    assertEquals(1, authInfo.getOwners(note.getId()).size());
-    assertEquals(1, authInfo.getReaders(note.getId()).size());
-    assertEquals(1, authInfo.getRunners(note.getId()).size());
-    assertEquals(1, authInfo.getWriters(note.getId()).size());
-    assertEquals(true, authInfo.isOwner(note.getId(), entity));
-    assertEquals(true, authInfo.isReader(note.getId(), entity));
-    assertEquals(true, authInfo.isRunner(note.getId(), entity));
-    assertEquals(true, authInfo.isWriter(note.getId(), entity));
+    assertEquals(1, authorizationService.getOwners(note.getId()).size());
+    assertEquals(0, authorizationService.getReaders(note.getId()).size());
+    assertEquals(0, authorizationService.getRunners(note.getId()).size());
+    assertEquals(0, authorizationService.getWriters(note.getId()).size());
   }
 
   static void delete(File file) {

@@ -1,0 +1,68 @@
+{
+  "container": [
+    {
+      "containerId": "container_e312_1547632280649_0002_01_000002",
+      "allocatedMB": "8192",
+      "allocatedVCores": "2",
+      "assignedNodeId": "ml2.jd.163.org:34216",
+      "priority": "0",
+      "startedTime": "1547637739965",
+      "finishedTime": "0",
+      "elapsedTime": "13690019",
+      "logUrl": "http://ml2.jd.163.org:8042/node/containerlogs/container_e312_1547632280649_0002_01_000002/hadoop",
+      "containerExitStatus": "0",
+      "containerState": "RUNNING",
+      "nodeHttpAddress": "http://ml2.jd.163.org:8042",
+      "nodeId": "ml2.jd.163.org:34216",
+      "allocatedResources": {
+        "entry": [
+          {
+            "key": "memory-mb",
+            "value": "8192"
+          },
+          {
+            "key": "yarn.io/gpu",
+            "value": "1"
+          },
+          {
+            "key": "vcores",
+            "value": "2"
+          }
+        ]
+      },
+      "exposedPorts": "{\"29914/tcp\":[{\"HostIp\":\"0.0.0.0\",\"HostPort\":\"32816\"}],\"8080/tcp\":[{\"HostIp\":\"0.0.0.0\",\"HostPort\":\"32817\"}]}"
+    },
+    {
+      "containerId": "container_e312_1547632280649_0002_01_000001",
+      "allocatedMB": "1024",
+      "allocatedVCores": "1",
+      "assignedNodeId": "ml2.jd.163.org:34216",
+      "priority": "0",
+      "startedTime": "1547637729953",
+      "finishedTime": "0",
+      "elapsedTime": "13700031",
+      "logUrl": "http://ml2.jd.163.org:8042/node/containerlogs/container_e312_1547632280649_0002_01_000001/hadoop",
+      "containerExitStatus": "0",
+      "containerState": "RUNNING",
+      "nodeHttpAddress": "http://ml2.jd.163.org:8042",
+      "nodeId": "ml2.jd.163.org:34216",
+      "allocatedResources": {
+        "entry": [
+          {
+            "key": "memory-mb",
+            "value": "1024"
+          },
+          {
+            "key": "yarn.io/gpu",
+            "value": "0"
+          },
+          {
+            "key": "vcores",
+            "value": "1"
+          }
+        ]
+      },
+      "exposedPorts": ""
+    }
+  ]
+}

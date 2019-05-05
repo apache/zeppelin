@@ -57,6 +57,7 @@ public class OldSparkSqlInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "false");
     p.setProperty("zeppelin.spark.sql.stacktrace", "false");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     repl = new SparkInterpreter(p);
     intpGroup = new InterpreterGroup();

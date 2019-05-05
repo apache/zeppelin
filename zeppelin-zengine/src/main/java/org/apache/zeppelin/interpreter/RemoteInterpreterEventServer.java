@@ -28,13 +28,13 @@ import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.remote.AppendOutputRunner;
 import org.apache.zeppelin.interpreter.remote.InvokeResourceMethodEventMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.AppOutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.AppOutputUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RegisterInfo;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
@@ -43,12 +43,13 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResultMessage;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
-import org.apache.zeppelin.util.ReflectionUtils;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -326,6 +327,13 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     return obj;
   }
 
+  /**
+   *
+   * @param intpGroupId caller interpreter group id
+   * @param invokeMethodJson invoke information
+   * @return
+   * @throws TException
+   */
   @Override
   public ByteBuffer invokeMethod(String intpGroupId, String invokeMethodJson) throws TException {
     InvokeResourceMethodEventMessage invokeMethodMessage =
@@ -338,10 +346,25 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
       try {
         obj = Resource.serializeObject(ret);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("invokeMethod failed", e);
       }
     }
     return obj;
+  }
+
+  @Override
+  public List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
+    LOGGER.info("get paragraph list from remote interpreter noteId: " + noteId
+        + ", user = " + user);
+
+    if (user != null && noteId != null) {
+      List<ParagraphInfo> paragraphInfos = listener.getParagraphList(user, noteId);
+      return paragraphInfos;
+    } else {
+      LOGGER.error("user or noteId is null!");
+      return null;
+    }
   }
 
   private Object invokeResourceMethod(String intpGroupId,
@@ -378,10 +401,8 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         LOGGER.error("no resource pool");
         return null;
       }
-    } else if (interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-        .getInterpreterProcess().isRunning()) {
-      ByteBuffer res = interpreterSettingManager.getInterpreterGroupById(intpGroupId)
-          .getInterpreterProcess().callRemoteFunction(
+    } else if (remoteInterpreterProcess.isRunning()) {
+      ByteBuffer res = remoteInterpreterProcess.callRemoteFunction(
           new RemoteInterpreterProcess.RemoteFunction<ByteBuffer>() {
             @Override
             public ByteBuffer call(RemoteInterpreterService.Client client) throws Exception {
