@@ -23,9 +23,11 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.embedded.RedisServer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class RedisMetricStorageTest {
   static int redisPort = 16380;
@@ -81,5 +83,31 @@ public class RedisMetricStorageTest {
     Map<String, String> map = m.get(now, "ep3");
     assertEquals("yo", map.get("str"));
     assertEquals("1", map.get("count"));
+  }
+
+  @Test
+  public void testReconnect() throws InterruptedException, IOException {
+    // given
+    RedisMetricStorage m = new RedisMetricStorage("localhost:" + redisPort, "note1", "rev1", 1);
+
+    Date now = new Date();
+
+    // when
+    m.set(now, "ep4", "str", "yo");
+    redisServer.stop();
+    redisServer.start();
+
+    // then
+    try {
+      m.incr(now, "ep4", "count", 1);
+      assertFalse(true);
+    } catch (JedisConnectionException e) {
+      // exception expected
+    }
+
+    // then
+    m.set(now, "ep4", "str", "yo");
+    Map<String, String> map = m.get(now, "ep4");
+    assertEquals("yo", map.get("str"));
   }
 }

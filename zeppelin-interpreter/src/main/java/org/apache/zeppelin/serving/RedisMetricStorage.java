@@ -25,11 +25,15 @@ import java.util.List;
 import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class RedisMetricStorage implements MetricStorage {
   public static final int DEFAULT_METRIC_EXPIRE_SEC = 60 * 30;
 
-  private final Jedis redis;
+  private Jedis redis;
+  private final String host;
+  private final int port;
+
   private final String noteId;
   private final String revId;
   private final SimpleDateFormat dateFormat;
@@ -45,7 +49,9 @@ public class RedisMetricStorage implements MetricStorage {
     metricExpireSec = DEFAULT_METRIC_EXPIRE_SEC;
 
     String[] hostPort = getRedisAddr().split(":");
-    redis = new Jedis(hostPort[0], Integer.parseInt(hostPort[1]));
+    this.host = hostPort[0];
+    this.port = Integer.parseInt(hostPort[1]);
+    redis = new Jedis(host, port);
     dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
   }
 
@@ -61,10 +67,27 @@ public class RedisMetricStorage implements MetricStorage {
     this.metricExpireSec = metricExpireSec;
 
     String[] hostPort = redisAddr.split(":");
-    redis = new Jedis(hostPort[0], Integer.parseInt(hostPort[1]));
+    this.host = hostPort[0];
+    this.port = Integer.parseInt(hostPort[1]);
+    redis = new Jedis(host, port);
     dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
   }
 
+  private Jedis redis() {
+    if (redis == null) {
+      synchronized (this) {
+        if (redis == null) {
+          redis = new Jedis(host, port);
+        }
+      }
+    }
+
+    return redis;
+  }
+
+  private void reset() {
+    redis = null;
+  }
 
   String getRedisAddr() {
     String addr = System.getenv(
@@ -84,13 +107,24 @@ public class RedisMetricStorage implements MetricStorage {
   }
 
   private void setExpire(Date updateDate, String key) {
-    redis.expireAt(key, (updateDate.getTime()/1000) + metricExpireSec);
+    try {
+      redis().expireAt(key, (updateDate.getTime() / 1000) + metricExpireSec);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
   }
 
   @Override
   public double incr(Date date, String endpoint, String field, double n) {
     String key = redisKey(date, endpoint);
-    Double r = redis.hincrByFloat(key, field, n);
+    Double r;
+    try {
+       r = redis().hincrByFloat(key, field, n);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
     setExpire(date, key);
     return r;
   }
@@ -98,26 +132,46 @@ public class RedisMetricStorage implements MetricStorage {
   @Override
   public void set(Date date, String endpoint, String field, String value) {
     String key = redisKey(date, endpoint);
-    redis.hset(key, field, value);
+    try {
+      redis().hset(key, field, value);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
     setExpire(date, key);
   }
 
   @Override
   public Object get(Date date, String endpoint, String field) {
     String key = redisKey(date, endpoint);
-    return redis.hget(key, field);
+    try {
+      return redis().hget(key, field);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
   }
 
   @Override
   public Map<String, String> get(Date date, String endpoint) {
     String key = redisKey(date, endpoint);
-    return redis.hgetAll(key);
+    try {
+      return redis().hgetAll(key);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
   }
 
   @Override
   public Map<String, String> get(Date date, String noteId, String revId, String endpoint) {
     String key = redisKey(date, noteId, revId, endpoint);
-    return redis.hgetAll(key);
+    try {
+      return redis().hgetAll(key);
+    } catch (JedisConnectionException e) {
+      reset();
+      throw e;
+    }
   }
 
   @Override
