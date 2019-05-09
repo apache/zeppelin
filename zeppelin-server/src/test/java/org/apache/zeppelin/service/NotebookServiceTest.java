@@ -175,6 +175,13 @@ public class NotebookServiceTest {
     assertEquals(1, notesInfo.size());
     assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
 
+    // move folder in case of folder path without prefix '/'
+    reset(callback);
+    notesInfo = notebookService.renameFolder("folder_3", "folder_4", context, callback);
+    verify(callback).onSuccess(notesInfo, context);
+    assertEquals(1, notesInfo.size());
+    assertEquals("/folder_4/new_name", notesInfo.get(0).getPath());
+
     // create another note
     note2 = notebookService.createNote("/note2", "test", context, callback);
     assertEquals("note2", note2.getName());
@@ -204,7 +211,7 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(notesInfo, context);
 
     // delete folder
-    notesInfo = notebookService.removeFolder("/folder_3", context, callback);
+    notesInfo = notebookService.removeFolder("/folder_4", context, callback);
     verify(callback).onSuccess(notesInfo, context);
 
     // list note again
