@@ -156,6 +156,13 @@ public class NotebookService {
     }
   }
 
+  /**
+   * normalize both note name and note folder
+   *
+   * @param notePath
+   * @return
+   * @throws IOException
+   */
   String normalizeNotePath(String notePath) throws IOException {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
@@ -949,7 +956,8 @@ public class NotebookService {
     //TODO(zjffdu) folder permission check
 
     try {
-      notebook.moveFolder(folderPath, newFolderPath, context.getAutheInfo());
+      notebook.moveFolder(normalizeNotePath(folderPath),
+              normalizeNotePath(newFolderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
