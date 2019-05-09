@@ -40,14 +40,6 @@
         <plugin.name>NotebookRepo/GitHubNotebookRepo</plugin.name>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.zeppelin</groupId>
-            <artifactId>notebookrepo-git</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
