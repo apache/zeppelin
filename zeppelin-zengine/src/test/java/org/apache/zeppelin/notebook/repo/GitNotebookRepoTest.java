@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.truth.Truth;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -99,14 +100,14 @@ public class GitNotebookRepoTest {
 
     //then
     Git git = notebookRepo.getGit();
-    assertThat(git).isNotNull();
+    Truth.assertThat(git).isNotNull();
 
     assertThat(dotGit.exists()).isEqualTo(true);
     assertThat(notebookRepo.list(null)).isNotEmpty();
 
     List<DiffEntry> diff = git.diff().call();
     // no commit, diff isn't empty
-    assertThat(diff).isNotEmpty();
+    Truth.assertThat(diff).isNotEmpty();
   }
 
   @Test

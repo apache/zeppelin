@@ -38,8 +38,6 @@
 
     <modules>
         <module>notebookrepo/s3</module>
-        <module>notebookrepo/vfs</module>
-        <module>notebookrepo/git</module>
         <module>notebookrepo/github</module>
         <module>notebookrepo/azure</module>
         <module>notebookrepo/gcs</module>
