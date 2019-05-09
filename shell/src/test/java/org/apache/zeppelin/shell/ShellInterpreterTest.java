@@ -85,6 +85,6 @@ public class ShellInterpreterTest {
     }
 
     assertEquals(Code.INCOMPLETE, result.code());
-    assertTrue(result.message().get(0).getData().contains("Paragraph received a SIGTERM"));
+    assertTrue(result.message().get(0).getData().contains("Timeout of 2000 ms to run reached"));
   }
 }

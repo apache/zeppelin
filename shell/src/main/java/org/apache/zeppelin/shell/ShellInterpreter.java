@@ -132,7 +132,7 @@ public class ShellInterpreter extends KerberosInterpreter {
       String message = outStream.toString();
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
-        message += "Paragraph received a SIGTERM\n";
+        message += "Timeout of " + getProperty(TIMEOUT_PROPERTY) + " ms to run reached.\n";
         LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
             + " stopped executing: " + message);
       }
