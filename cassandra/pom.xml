@@ -58,7 +58,13 @@
             <groupId>org.apache.zeppelin</groupId>
             <artifactId>zeppelin-interpreter</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-all</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

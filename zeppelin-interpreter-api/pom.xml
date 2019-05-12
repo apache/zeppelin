@@ -139,6 +139,7 @@
               <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
             </relocation>
           </relocations>
+          <outputFile>${project.basedir}/../interpreter/${project.artifactId}-${project.version}.jar</outputFile>
         </configuration>
         <executions>
           <execution>
