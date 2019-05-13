@@ -56,6 +56,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     });
 
     getZeppelinVersion();
+    listConfigurations();
     loadNotes();
   }
 
