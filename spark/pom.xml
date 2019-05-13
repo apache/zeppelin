@@ -196,9 +196,6 @@
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.7</py4j.version>
             </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
         </profile>
 
         <profile>
@@ -212,6 +209,9 @@
 
         <profile>
             <id>spark-2.2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <spark.version>2.2.1</spark.version>
                 <py4j.version>0.10.4</py4j.version>
