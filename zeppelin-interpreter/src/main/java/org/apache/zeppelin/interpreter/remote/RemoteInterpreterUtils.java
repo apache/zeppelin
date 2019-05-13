@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
@@ -34,7 +35,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  *
@@ -93,22 +97,53 @@ public class RemoteInterpreterUtils {
     throw new IOException("No available port in the portRange: " + portRange);
   }
 
+  // 1) Multiple NetworkCard will be configured on some servers
+  // 2) In the docker container environment, A container will also generate multiple virtual NetworkCard
   public static String findAvailableHostAddress() throws UnknownHostException, SocketException {
-    InetAddress address = InetAddress.getLocalHost();
-    if (address.isLoopbackAddress()) {
-      for (NetworkInterface networkInterface : Collections
-          .list(NetworkInterface.getNetworkInterfaces())) {
-        if (!networkInterface.isLoopback()) {
-          for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
-            InetAddress a = interfaceAddress.getAddress();
-            if (a instanceof Inet4Address) {
-              return a.getHostAddress();
-            }
+    List<NetworkInterface> netlist = new ArrayList<NetworkInterface>();
+
+    // Get all the network cards in the current environment
+    Enumeration<?> netInterfaces = NetworkInterface.getNetworkInterfaces();
+    while (netInterfaces.hasMoreElements()) {
+      NetworkInterface networkInterface = (NetworkInterface)netInterfaces.nextElement();
+      LOGGER.info("networkInterface = " + networkInterface.toString());
+      if (networkInterface.isLoopback()) {
+        // Filter lo network card
+        continue;
+      }
+      // When all the network cards are obtained by the above method,
+      // The order obtained is the reverse of the order of the NICs
+      // seen in the server with the ifconfig command.
+      // Therefore, when you want to traverse from the first NIC,
+      // Need to reverse the elements in Enumeration<?>
+      netlist.add(0, networkInterface);
+    }
+
+    for (NetworkInterface list:netlist) {
+      Enumeration<?> enumInetAddress = list.getInetAddresses();
+
+      while (enumInetAddress.hasMoreElements()) {
+        InetAddress ip = (InetAddress) enumInetAddress.nextElement();
+        LOGGER.info("ip = " + ip.toString());
+        if (!ip.isLoopbackAddress()) {
+          if (ip.getHostAddress().equalsIgnoreCase("127.0.0.1")){
+            continue;
+          }
+          if (ip instanceof Inet6Address) {
+            // Filter ipv6 address
+            continue;
+          }
+          if (ip instanceof Inet4Address) {
+            // Return ipv4 address
+            return ip.getHostAddress();
           }
         }
+        return ip.getLocalHost().getHostAddress();
       }
     }
-    return address.getHostAddress();
+
+    LOGGER.error("Can't find available HostAddress!");
+    throw new UnknownHostException("Can't find available HostAddress!");
   }
 
   public static boolean checkIfRemoteEndpointAccessible(String host, int port) {
