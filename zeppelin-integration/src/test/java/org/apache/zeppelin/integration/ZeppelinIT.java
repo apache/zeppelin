@@ -77,7 +77,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
        */
-      setTextOfParagraph(1, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
+      setTextOfParagraph(1, "%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
