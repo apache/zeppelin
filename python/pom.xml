@@ -190,6 +190,11 @@
               <resource>reference.conf</resource>
             </transformer>
           </transformers>
+          <artifactSet>
+            <excludes>
+              <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
+            </excludes>
+          </artifactSet>
           <outputFile>${project.build.directory}/../../interpreter/python/${interpreter.jar.name}-${project.version}.jar</outputFile>
         </configuration>
         <executions>
