@@ -597,7 +597,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       Paragraph p0 = note.addNewParagraph(anonymous);
       p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
       note.run(p0.getId(), true);
-      LOGGER.info(p0.getReturn().toString());
       assertEquals(Status.FINISHED, p0.getStatus());
 
       // write test csv file

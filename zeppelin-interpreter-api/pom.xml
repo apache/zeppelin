@@ -139,7 +139,6 @@
               <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
             </relocation>
           </relocations>
-          <outputFile>${project.basedir}/../interpreter/${project.artifactId}-${project.version}.jar</outputFile>
         </configuration>
         <executions>
           <execution>
@@ -147,6 +146,26 @@
             <goals>
               <goal>shade</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>copy-to-interpreter</id>
+            <phase>package</phase>
+            <configuration>
+              <target>
+                <echo>ANT TASK - copying files....</echo>
+                <copy todir="${project.basedir}/../interpreter" overwrite="true" flatten="true">
+                  <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-api-*.jar" >
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>
