@@ -323,4 +323,32 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     }
 
   }
+
+  @Test
+  public void deleteTrashNode() throws Exception {
+    try {
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      String currentUrl = driver.getCurrentUrl();
+      LOG.info("currentUrl = " + currentUrl);
+
+      //delete created notebook to trash
+      deleteTestNotebook(driver);
+      ZeppelinITUtils.sleep(3000, false);
+
+      // reopen trash note
+      driver.get(currentUrl);
+      ZeppelinITUtils.sleep(3000, false);
+
+      // delete note from trash
+      deleteTrashNotebook(driver);
+      ZeppelinITUtils.sleep(2000, false);
+      LOG.info("deleteTrashNode executed");
+    }  catch (Exception e) {
+      handleException("Exception in ZeppelinIT while deleteTrashNode", e);
+    }
+  }
 }

@@ -123,6 +123,16 @@ abstract public class AbstractZeppelinIT {
     ZeppelinITUtils.sleep(100, false);
   }
 
+  protected void deleteTrashNotebook(final WebDriver driver) {
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
+        .sendKeys(Keys.ENTER);
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']")));
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This cannot be undone. Are you sure?')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+    ZeppelinITUtils.sleep(100, false);
+  }
+
   protected void clickAndWait(final By locator) {
     pollingWait(locator, MAX_IMPLICIT_WAIT).click();
     ZeppelinITUtils.sleep(1000, false);
