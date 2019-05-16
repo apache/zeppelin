@@ -237,7 +237,6 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   $scope.isTrash = function(note) {
-    console.log('note.path = ' + note.path);
     return note ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
   };
 
