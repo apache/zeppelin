@@ -106,7 +106,9 @@ public class RemoteInterpreterUtils {
     Enumeration<?> netInterfaces = NetworkInterface.getNetworkInterfaces();
     while (netInterfaces.hasMoreElements()) {
       NetworkInterface networkInterface = (NetworkInterface)netInterfaces.nextElement();
-      LOGGER.info("networkInterface = " + networkInterface.toString());
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("networkInterface = " + networkInterface.toString());
+      }
       if (networkInterface.isLoopback()) {
         // Filter lo network card
         continue;
@@ -124,7 +126,9 @@ public class RemoteInterpreterUtils {
 
       while (enumInetAddress.hasMoreElements()) {
         InetAddress ip = (InetAddress) enumInetAddress.nextElement();
-        LOGGER.info("ip = " + ip.toString());
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("ip = " + ip.toString());
+        }
         if (!ip.isLoopbackAddress() && !ip.isLinkLocalAddress()) {
           if (ip.getHostAddress().equalsIgnoreCase("127.0.0.1")){
             continue;
