@@ -125,7 +125,7 @@ public class RemoteInterpreterUtils {
       while (enumInetAddress.hasMoreElements()) {
         InetAddress ip = (InetAddress) enumInetAddress.nextElement();
         LOGGER.info("ip = " + ip.toString());
-        if (!ip.isLoopbackAddress()) {
+        if (!ip.isLoopbackAddress() && !ip.isLinkLocalAddress()) {
           if (ip.getHostAddress().equalsIgnoreCase("127.0.0.1")){
             continue;
           }
