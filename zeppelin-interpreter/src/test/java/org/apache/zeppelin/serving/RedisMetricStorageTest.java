@@ -45,12 +45,17 @@ public class RedisMetricStorageTest {
   }
 
   @Test
-  public void testIncr() throws InterruptedException {
+  public void testAdd() throws InterruptedException {
     RedisMetricStorage m = new RedisMetricStorage("localhost:" + redisPort, "note1", "rev1", 1);
     Date now = new Date();
 
-    assertEquals(1.0, m.incr(now, "ep1", "count", 1), 0);
-    assertEquals(3.0, m.incr(now, "ep1", "count", 2), 0);
+    Metric m1 = m.add(now, "ep1", "count", 1);
+    assertEquals(1, m1.getCount(), 0);
+    assertEquals(1.0, m1.getSum(), 0);
+
+    Metric m2 = m.add(now, "ep1", "count", 2);
+    assertEquals(2, m2.getCount(), 0);
+    assertEquals(3.0, m2.getSum(), 0);
   }
 
   @Test
@@ -61,8 +66,8 @@ public class RedisMetricStorageTest {
 
     // when
     assertEquals(null, m.get(now, "ep2", "count"));
-    m.set(now, "ep2", "count", "yo");
-    assertEquals("yo", m.get(now, "ep2", "count"));
+    m.add(now, "ep2", "count", 1);
+    assertEquals(1, m.get(now, "ep2", "count").getCount());
     Thread.sleep(1000);
 
     // then
@@ -76,13 +81,12 @@ public class RedisMetricStorageTest {
     Date now = new Date();
 
     // when
-    m.set(now, "ep3", "str", "yo");
-    m.incr(now, "ep3", "count", 1);
+    m.add(now, "ep3", "count", 1);
 
     // then
-    Map<String, String> map = m.get(now, "ep3");
-    assertEquals("yo", map.get("str"));
-    assertEquals("1", map.get("count"));
+    Map<String, Metric> map = m.get(now, "ep3");
+    assertEquals(1, map.get("count").getCount());
+    assertEquals(1.0, map.get("count").getSum(), 1.0);
   }
 
   @Test
@@ -93,21 +97,20 @@ public class RedisMetricStorageTest {
     Date now = new Date();
 
     // when
-    m.set(now, "ep4", "str", "yo");
+    m.add(now, "ep4", "count", 1);
     redisServer.stop();
     redisServer.start();
 
     // then
     try {
-      m.incr(now, "ep4", "count", 1);
+      m.add(now, "ep4", "count", 1);
       assertFalse(true);
     } catch (JedisConnectionException e) {
       // exception expected
     }
 
     // then
-    m.set(now, "ep4", "str", "yo");
-    Map<String, String> map = m.get(now, "ep4");
-    assertEquals("yo", map.get("str"));
+    Metric metric = m.add(now, "ep4", "count", 1);
+    assertEquals(1, m.get(now, "ep4", "count").getCount());
   }
 }

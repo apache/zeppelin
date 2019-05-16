@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class RedisMetricStorage implements MetricStorage {
   public static final int DEFAULT_METRIC_EXPIRE_SEC = 60 * 30;
+  private static final String META_FIELD_COUNT_POSTFIX = "__--zmcnt";
 
   private Jedis redis;
   private final String host;
@@ -116,62 +118,77 @@ public class RedisMetricStorage implements MetricStorage {
   }
 
   @Override
-  public double incr(Date date, String endpoint, String field, double n) {
+  public Metric add(Date date, String endpoint, String field, double n) {
     String key = redisKey(date, endpoint);
     Double r;
+    long c = 0;
     try {
-       r = redis().hincrByFloat(key, field, n);
+      r = redis().hincrByFloat(key, field, n);
+      c = redis().hincrBy(key, field + META_FIELD_COUNT_POSTFIX, 1);
     } catch (JedisConnectionException e) {
       reset();
       throw e;
     }
     setExpire(date, key);
-    return r;
+    return new Metric(c, r);
   }
 
-  @Override
-  public void set(Date date, String endpoint, String field, String value) {
+  @VisibleForTesting
+  public Metric get(Date date, String endpoint, String field) {
     String key = redisKey(date, endpoint);
     try {
-      redis().hset(key, field, value);
-    } catch (JedisConnectionException e) {
-      reset();
-      throw e;
-    }
-    setExpire(date, key);
-  }
-
-  @Override
-  public Object get(Date date, String endpoint, String field) {
-    String key = redisKey(date, endpoint);
-    try {
-      return redis().hget(key, field);
+      double r = Double.parseDouble(redis().hget(key, field));
+      long c = Long.parseLong(redis().hget(key, field + META_FIELD_COUNT_POSTFIX));
+      return new Metric(c, r);
+    } catch (NullPointerException e) {
+      return null;
     } catch (JedisConnectionException e) {
       reset();
       throw e;
     }
   }
 
-  @Override
-  public Map<String, String> get(Date date, String endpoint) {
+  @VisibleForTesting
+  public Map<String, Metric> get(Date date, String endpoint) {
     String key = redisKey(date, endpoint);
     try {
-      return redis().hgetAll(key);
+      return getMetricMapFromKey(key);
     } catch (JedisConnectionException e) {
       reset();
       throw e;
     }
   }
 
-  @Override
-  public Map<String, String> get(Date date, String noteId, String revId, String endpoint) {
+  @VisibleForTesting
+  public Map<String, Metric> get(Date date, String noteId, String revId, String endpoint) {
     String key = redisKey(date, noteId, revId, endpoint);
     try {
-      return redis().hgetAll(key);
+      return getMetricMapFromKey(key);
     } catch (JedisConnectionException e) {
       reset();
       throw e;
     }
+  }
+
+  private Map<String, Metric> getMetricMapFromKey(String key) {
+    Map<String, Metric> metricMap = new HashMap<>();
+    Map<String, String> map = redis().hgetAll(key);
+    for (String k : map.keySet()) {
+      if (k.endsWith(META_FIELD_COUNT_POSTFIX)) {
+        continue;
+      }
+
+      if (map.containsKey(k + META_FIELD_COUNT_POSTFIX)) {
+        try {
+          double r = Double.parseDouble(map.get(k));
+          long c = Long.parseLong(map.get(k + META_FIELD_COUNT_POSTFIX));
+          metricMap.put(k, new Metric(c, r));
+        } catch (NullPointerException e) {
+          metricMap.put(k, null);
+        }
+      }
+    }
+    return metricMap;
   }
 
   @Override

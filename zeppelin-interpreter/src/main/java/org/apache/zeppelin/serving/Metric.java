@@ -16,18 +16,20 @@
  */
 package org.apache.zeppelin.serving;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+public class Metric {
+  private final long count;
+  private final double sum;
 
-public interface MetricStorage {
-  /**
-   * Add a metric data
-   */
-  Metric add(Date date, String endpoint, String key, double n);
+  public Metric(long count, double sum) {
+    this.count = count;
+    this.sum = sum;
+  }
 
-  /**
-   * Get series of (aggregated) metric data
-   */
-  List<Map<String, Object>> get(Date from, Date to, String noteId, String revId, String endpoint);
+  public long getCount() {
+    return count;
+  }
+
+  public double getSum() {
+    return sum;
+  }
 }

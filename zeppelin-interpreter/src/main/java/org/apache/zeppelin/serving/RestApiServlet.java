@@ -19,9 +19,6 @@ package org.apache.zeppelin.serving;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,15 +70,14 @@ public class RestApiServlet extends HttpServlet {
                     HttpServletResponse response,
                     long elapsed) {
     // metrics
-    String keyCountPerStatus = String.format("count.%d", response.getStatus());
+    String keyCountPerStatus = String.format("elapsed.%d", response.getStatus());
     ConcurrentLinkedQueue<MetricStorage> metricStorages = server.getMetricStorages();
     Date now = new Date();
 
     String metricHeaderPrefix = "z-metric-";
 
     metricStorages.forEach(m -> {
-      m.incr(now, endpoint, keyCountPerStatus, 1);
-      m.incr(now, endpoint, "latency", elapsed);
+      m.add(now, endpoint, keyCountPerStatus, elapsed);
 
       Collection<String> headers = response.getHeaderNames();
       for (String header : headers) {
@@ -89,7 +85,7 @@ public class RestApiServlet extends HttpServlet {
           String userMetricName = header.substring(metricHeaderPrefix.length());
           try {
             double userMetricValue = Double.parseDouble(response.getHeader(header));
-            m.incr(now, endpoint, userMetricName, userMetricValue);
+            m.add(now, endpoint, userMetricName, userMetricValue);
           } catch (Exception e) {
             LOGGER.error("Invalid custom metric value {}: {}", header, response.getHeader(header));
           }
