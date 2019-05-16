@@ -26,7 +26,7 @@ function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
       // a flat list to boost searching
       notes.flatList = _.map(notesList, (note) => {
         note.isTrash = note.path
-          ? note.path.split('/')[0] === TRASH_FOLDER_ID : false;
+          ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
         return note;
       });
 
