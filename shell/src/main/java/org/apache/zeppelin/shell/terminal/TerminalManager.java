@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.zeppelin.shell.ShellInterpreter.TERMINAL_SOCKET_CLOSE;
-import static org.apache.zeppelin.shell.ShellInterpreter.TERMINAL_SOCKET_CONNECT;
-import static org.apache.zeppelin.shell.ShellInterpreter.TERMINAL_SOCKET_ERROR;
-import static org.apache.zeppelin.shell.ShellInterpreter.TERMINAL_SOCKET_STATUS;
+import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_CLOSE;
+import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_CONNECT;
+import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_ERROR;
+import static org.apache.zeppelin.shell.TerminalInterpreter.TERMINAL_SOCKET_STATUS;
 
 // Each notebook supports multiple terminals
 public class TerminalManager {

@@ -55,7 +55,9 @@ public class TerminalSocket {
 
   @OnMessage
   public void onWebSocketText(String message) {
-    LOGGER.info("Received TEXT message: " + message);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Received TEXT message: " + message);
+    }
 
     Map<String, String> messageMap = getMessageMap(message);
 
@@ -95,7 +97,7 @@ public class TerminalSocket {
 
   @OnError
   public void onWebSocketError(Throwable cause) {
-    LOGGER.error(cause.getMessage(), cause);
+    LOGGER.warn(cause.getMessage(), cause);
 
     terminalManager.onWebSocketError(this, noteId, paragraphId);
   }
