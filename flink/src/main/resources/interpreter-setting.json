@@ -4,42 +4,175 @@
     "name": "flink",
     "className": "org.apache.zeppelin.flink.FlinkInterpreter",
     "properties": {
-      "host": {
-        "envName": "host",
+      "flink.execution.mode": {
+        "envName": null,
         "propertyName": null,
         "defaultValue": "local",
-        "description": "host name of running JobManager. 'local' runs flink in local mode.",
+        "description": "execution mode, it could be local/remote/yarn/k8s",
         "type": "string"
       },
-      "port": {
-        "envName": "port",
+      "flink.execution.remote.host": {
+        "envName": null,
         "propertyName": null,
-        "defaultValue": "6123",
-        "description": "port of running JobManager.",
+        "defaultValue": "",
+        "description": "host name of running JobManager. Only used for remote mode",
+        "type": "string"
+      },
+      "flink.execution.remote.port": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "port of running JobManager. Only used for remote mode",
         "type": "number"
-      }
-    },
-    "editor": {
-      "language": "scala",
-      "editOnDblClick": false
-    }
-  },
-
-  {
-    "group": "flink",
-    "name": "sql",
-    "className": "org.apache.zeppelin.flink.FlinkSQLInterpreter",
-    "properties": {
+      },
+      "flink.jm.memory": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "1024",
+        "description": "Memory for JobManager (mb)",
+        "type": "number"
+      },
+      "flink.tm.memory": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "1024",
+        "description": "Memory for TaskManager (mb)",
+        "type": "number"
+      },
+      "flink.tm.num": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "2",
+        "description": "Number of TaskManager",
+        "type": "number"
+      },
+      "flink.tm.slot": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "1",
+        "description": "Number of slot per TaskManager",
+        "type": "number"
+      },
+      "flink.yarn.appName": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "Zeppelin Flink Session",
+        "description": "Yarn app name",
+        "type": "string"
+      },
+      "flink.yarn.queue": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "default",
+        "description": "yarn queue name",
+        "type": "string"
+      },
+      "flink.yarn.jars": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "additional user jars (comma separated)",
+        "type": "string"
+      },
+      "zeppelin.flink.scala.color": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "true",
+        "description": "whether display scala shell output in colorful format",
+        "type": "checkbox"
+      },
+      "zeppelin.flink.enableHive": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "false",
+        "description": "whether enable hive",
+        "type": "checkbox"
+      },
+      "zeppelin.flink.printREPLOutput": {
+        "envName": null,
+        "propertyName": "zeppelin.flink.printREPLOutput",
+        "defaultValue": true,
+        "description": "Print REPL output",
+        "type": "checkbox"
+      },
       "zeppelin.flink.maxResult": {
         "envName": "zeppelin.flink.maxResult",
         "propertyName": "zeppelin.flink.maxResult",
         "defaultValue": "1000",
         "description": "max number of row returned by sql interpreter.",
         "type": "number"
+      },
+      "zeppelin.flink.planner": {
+        "envName": "zeppelin.flink.planner",
+        "propertyName": "zeppelin.flink.planner",
+        "defaultValue": "blink",
+        "description": "planner or flink table api, blink or flink",
+        "type": "number"
+      },
+      "zeppelin.pyflink.python": {
+        "envName": "zeppelin.pyflink.python",
+        "propertyName": "zeppelin.pyflink.python",
+        "defaultValue": "python",
+        "description": "python executable for pyflink",
+        "type": "string"
       }
     },
     "editor": {
+      "language": "scala",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+
+  {
+    "group": "flink",
+    "name": "bsql",
+    "className": "org.apache.zeppelin.flink.FlinkBatchSqlInterpreter",
+    "properties": {
+
+    },
+    "editor": {
       "language": "sql",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "flink",
+    "name": "ssql",
+    "className": "org.apache.zeppelin.flink.FlinkStreamSqlInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "flink",
+    "name": "pyflink",
+    "className": "org.apache.zeppelin.flink.PyFlinkInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "flink",
+    "name": "ipyflink",
+    "className": "org.apache.zeppelin.flink.IPyFlinkInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "python",
       "editOnDblClick": false
     }
   }

@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.integration;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ public class DownloadUtils {
     }
   }
 
-
   public static String downloadSpark(String version) {
     String sparkDownloadFolder = downloadFolder + "/spark";
     File targetSparkHomeFolder = new File(sparkDownloadFolder + "/spark-" + version + "-bin-hadoop2.6");
@@ -65,24 +65,54 @@ public class DownloadUtils {
       LOGGER.info("Skip to download flink as it is already downloaded.");
       return targetFlinkHomeFolder.getAbsolutePath();
     }
-    download("flink", version, "-bin-hadoop2.6.tgz");
+    download("flink", version, "-bin-scala_2.11.tgz");
+    // download other dependencies for running flink with yarn and hive
+    try {
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-connector-hive_2.11/"
+                      + version + "/flink-connector-hive_2.11-" + version + ".jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-hadoop-compatibility_2.11/"
+                      + version + "/flink-hadoop-compatibility_2.11-" + version + ".jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/hive/hive-exec/2.3.4/hive-exec-2.3.4.jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+      runShellCommand(new String[]{"wget",
+              "https://repo1.maven.org/maven2/org/apache/flink/flink-shaded-hadoop2-uber/2.7.5-1.8.1/flink-shaded-hadoop2-uber-2.7.5-1.8.1.jar",
+              "-P", targetFlinkHomeFolder + "/lib"});
+    } catch (Exception e) {
+      throw new RuntimeException("Fail to download jar", e);
+    }
     return targetFlinkHomeFolder.getAbsolutePath();
   }
 
+  public static String downloadHadoop(String version) {
+    String hadoopDownloadFolder = downloadFolder + "/hadoop";
+    File targetHadoopHomeFolder = new File(hadoopDownloadFolder + "/hadoop-" + version);
+    if (targetHadoopHomeFolder.exists()) {
+      LOGGER.info("Skip to download hadoop as it is already downloaded.");
+      return targetHadoopHomeFolder.getAbsolutePath();
+    }
+    download("hadoop", version, ".tar.gz", "hadoop/core");
+    return targetHadoopHomeFolder.getAbsolutePath();
+  }
+
   // Try mirrors first, if fails fallback to apache archive
-  private static void download(String project, String version, String postFix) {
+  private static void download(String project, String version, String postFix, String projectPath) {
     String projectDownloadFolder = downloadFolder + "/" + project;
     try {
       String preferredMirror = IOUtils.toString(new URL("https://www.apache.org/dyn/closer.lua?preferred=true"));
       File downloadFile = new File(projectDownloadFolder + "/" + project + "-" + version + postFix);
-      String downloadURL = preferredMirror + "/" + project + "/" + project + "-" + version + "/" + project + "-" + version + postFix;
+      String downloadURL = preferredMirror + "/" + projectPath + "/" + project + "-" + version + "/" + project + "-" + version + postFix;
       runShellCommand(new String[]{"wget", downloadURL, "-P", projectDownloadFolder});
       runShellCommand(new String[]{"tar", "-xvf", downloadFile.getAbsolutePath(), "-C", projectDownloadFolder});
     } catch (Exception e) {
       LOGGER.warn("Failed to download " + project + " from mirror site, fallback to use apache archive", e);
       File downloadFile = new File(projectDownloadFolder + "/" + project + "-" + version + postFix);
       String downloadURL =
-              "https://archive.apache.org/dist/" + project + "/" + project +"-"
+              "https://archive.apache.org/dist/" + projectPath + "/" + project +"-"
                       + version
                       + "/" + project + "-"
                       + version
@@ -95,6 +125,10 @@ public class DownloadUtils {
         throw new RuntimeException("Fail to download " + project + " " + version, ex);
       }
     }
+  }
+
+  private static void download(String project, String version, String postFix) {
+    download(project, version, postFix, project);
   }
 
   private static void runShellCommand(String[] commands) throws IOException, InterruptedException {

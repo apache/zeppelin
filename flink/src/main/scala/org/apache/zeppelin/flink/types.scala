@@ -18,24 +18,9 @@
 
 package org.apache.zeppelin.flink
 
-import org.apache.flink.table.api.{Table, TableEnvironment}
-import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
+import org.apache.flink.client.program.ClusterClient
+import org.apache.flink.runtime.minicluster.MiniCluster
 
-class FlinkSQLScalaInterpreter(scalaInterpreter: FlinkScalaInterpreter,
-                               z: FlinkZeppelinContext,
-                               maxRow: Int) {
-
-  private var btenv: TableEnvironment = scalaInterpreter.getBatchTableEnvironment()
-
-  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
-    try {
-      val table: Table = this.btenv.sqlQuery(code)
-      val result = z.showData(table)
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, result)
-    } catch {
-      case e: Exception =>
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Fail to fetch result: " + e.getMessage)
-    }
-  }
+object types {
+  type ClusterType = Option[Either[MiniCluster, ClusterClient[_]]]
 }

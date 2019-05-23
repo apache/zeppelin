@@ -21,8 +21,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.MiniYARNCluster;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +43,16 @@ public class MiniHadoopCluster {
   private MiniYARNCluster yarnCluster;
   private String configPath = new File("target/tests/hadoop_conf").getAbsolutePath();
 
-  @BeforeClass
+  public MiniHadoopCluster() {
+    this.hadoopConf = new Configuration();
+  }
+
+  public MiniHadoopCluster(Configuration hadoopConf) {
+      this.hadoopConf = hadoopConf;
+  }
+
   public void start() throws IOException {
     LOGGER.info("Starting MiniHadoopCluster ...");
-    this.hadoopConf = new Configuration();
     new File(configPath).mkdirs();
     // start MiniDFSCluster
     this.dfsCluster = new MiniDFSCluster.Builder(hadoopConf)
@@ -112,7 +116,6 @@ public class MiniHadoopCluster {
     LOGGER.info("Save configuration to " + dest);
   }
 
-  @AfterClass
   public void stop() {
     if (this.yarnCluster != null) {
       this.yarnCluster.stop();

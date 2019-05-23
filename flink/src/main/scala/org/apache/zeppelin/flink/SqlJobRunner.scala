@@ -15,27 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.flink
 
-import org.apache.flink.table.api.{Table, TableEnvironment}
-import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
+import org.apache.flink.runtime.jobgraph.JobGraph
+import org.slf4j.{Logger, LoggerFactory}
 
-class FlinkSQLScalaInterpreter(scalaInterpreter: FlinkScalaInterpreter,
-                               z: FlinkZeppelinContext,
-                               maxRow: Int) {
+class SqlJobRunner(cluster: types.ClusterType,
+                   jobGraph: JobGraph,
+                   jobName: String,
+                   classLoader: ClassLoader) {
 
-  private var btenv: TableEnvironment = scalaInterpreter.getBatchTableEnvironment()
+  lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
-  def interpret(code: String, context: InterpreterContext): InterpreterResult = {
-    try {
-      val table: Table = this.btenv.sqlQuery(code)
-      val result = z.showData(table)
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, result)
-    } catch {
-      case e: Exception =>
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Fail to fetch result: " + e.getMessage)
+  def run(): Unit = {
+    cluster match {
+      case Some(Left(miniCluster)) =>
+        miniCluster.submitJob(jobGraph)
+      case Some(Right(yarnCluster)) =>
+        yarnCluster.submitJob(jobGraph, Thread.currentThread().getContextClassLoader)
+      case None =>
+        LOGGER.error("Unable to run SqlJobRunner")
     }
   }
 }

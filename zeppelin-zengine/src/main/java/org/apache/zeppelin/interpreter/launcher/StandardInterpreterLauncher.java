@@ -99,6 +99,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
         String flinkHome = context.getProperties().get(key).toString();
         env.put("FLINK_CONF_DIR", flinkHome + "/conf");
         env.put("FLINK_LIB_DIR", flinkHome + "/lib");
+        env.put("FLINK_PLUGINS_DIR", flinkHome + "/plugins");
       }
     }
     env.put("INTERPRETER_GROUP_ID", context.getInterpreterGroupId());

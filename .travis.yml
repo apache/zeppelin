@@ -51,7 +51,7 @@ services:
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
-    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine'
+    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine'
 
 matrix:
   include:
@@ -87,6 +87,13 @@ matrix:
       jdk: "openjdk8"
       dist: xenial
       env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+
+    # Test flink module
+    - sudo: required
+      jdk: "openjdk8"
+      dist: xenial
+      env: PYTHON="3" SPARKR="true" PROFILE="-Pscala-2.11" BUILD_FLAG="clean install -Pbuild-distr -DskipRat -am" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl flink" TEST_PROJECTS="-DfailIfNoTests=false"
+
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
