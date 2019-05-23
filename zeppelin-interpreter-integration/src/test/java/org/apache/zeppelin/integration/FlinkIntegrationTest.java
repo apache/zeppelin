@@ -17,9 +17,11 @@
 
 package org.apache.zeppelin.integration;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -55,26 +57,28 @@ public class FlinkIntegrationTest {
   private static InterpreterSettingManager interpreterSettingManager;
 
   private String flinkVersion;
+  private String hadoopHome;
   private String flinkHome;
 
   public FlinkIntegrationTest(String flinkVersion) {
     LOGGER.info("Testing FlinkVersion: " + flinkVersion);
     this.flinkVersion = flinkVersion;
     this.flinkHome = DownloadUtils.downloadFlink(flinkVersion);
+    this.hadoopHome = DownloadUtils.downloadHadoop("2.7.3");
   }
 
   @Parameterized.Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][]{
-        {"1.5.1"},
-        {"1.5.2"}
+        {"1.9.0"}
     });
-
   }
 
   @BeforeClass
   public static void setUp() throws IOException {
-    hadoopCluster = new MiniHadoopCluster();
+    Configuration conf = new Configuration();
+    conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_FIXED_PORTS, true);
+    hadoopCluster = new MiniHadoopCluster(conf);
     hadoopCluster.start();
 
     zeppelin = new MiniZeppelin();
@@ -102,6 +106,9 @@ public class FlinkIntegrationTest {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertTrue(interpreterResult.message().get(0).getData().contains("2"));
 
+    interpreterResult = flinkInterpreter.interpret("val data = benv.fromElements(1, 2, 3)\ndata.collect()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertTrue(interpreterResult.message().get(0).getData().contains("1, 2, 3"));
   }
 
   @Test
@@ -121,11 +128,12 @@ public class FlinkIntegrationTest {
   }
 
   // TODO(zjffdu) enable it when make yarn integration test work
-  //  @Test
+  @Test
   public void testYarnMode() throws IOException, InterpreterException, YarnException {
     InterpreterSetting flinkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("flink");
     flinkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
     flinkInterpreterSetting.setProperty("FLINK_HOME", flinkHome);
+    flinkInterpreterSetting.setProperty("PATH", hadoopHome + "/bin:" + System.getenv("PATH"));
     flinkInterpreterSetting.setProperty("ZEPPELIN_CONF_DIR", zeppelin.getZeppelinConfDir().getAbsolutePath());
     flinkInterpreterSetting.setProperty("flink.execution.mode", "YARN");
     testInterpreterBasics();

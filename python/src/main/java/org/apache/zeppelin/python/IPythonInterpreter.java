@@ -242,6 +242,7 @@ public class IPythonInterpreter extends Interpreter {
               .replace("${JVM_GATEWAY_PORT}", jvmGatewayPort + "")
               .replace("${JVM_GATEWAY_ADDRESS}", serverAddress)).build());
       if (response.getStatus() != ExecuteStatus.SUCCESS) {
+        LOGGER.error("Fail to run additional Python init file\n" + response.getOutput());
         throw new IOException("Fail to run additional Python init file: "
             + additionalPythonInitFile + "\n" + response.getOutput());
       }
