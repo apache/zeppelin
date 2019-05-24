@@ -46,7 +46,7 @@ public class DepInterpreterTest {
   private Properties getTestProperties() throws IOException {
     Properties p = new Properties();
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
-    p.setProperty("zeppelin.dep.additionalRemoteRepository", "spark-packages,http://dl.bintray.com/spark-packages/maven,false;");
+    p.setProperty("zeppelin.dep.additionalRemoteRepository", "spark-packages,https://dl.bintray.com/spark-packages/maven,false;");
     return p;
   }
 

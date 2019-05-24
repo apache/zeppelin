@@ -310,7 +310,7 @@
 
 <property>
   <name>zeppelin.interpreter.dep.mvnRepo</name>
-  <value>http://repo1.maven.org/maven2/</value>
+  <value>https://repo1.maven.org/maven2/</value>
   <description>Remote principal repository for interpreter's additional dependency loading</description>
 </property>
 
@@ -328,7 +328,7 @@
 
 <property>
   <name>zeppelin.helium.npm.installer.url</name>
-  <value>http://registry.npmjs.org/</value>
+  <value>https://registry.npmjs.org/</value>
   <description>Remote Npm installer url for Helium dependency loader</description>
 </property>
 
