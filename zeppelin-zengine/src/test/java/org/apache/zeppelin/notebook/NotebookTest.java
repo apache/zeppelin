@@ -1094,16 +1094,19 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
     Map<String, Object> config = p1.getConfig();
-    assertTrue(config.containsKey("runOnSelectionChange"));
-    assertTrue(config.containsKey("title"));
-    assertEquals(config.get("runOnSelectionChange"), false);
-    assertEquals(config.get("title"), true);
+    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_TITLE));
+    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY));
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The config_test interpreter sets the default parameters
     // in interpreter/config_test/interpreter-setting.json
     //    "config": {
     //      "runOnSelectionChange": false,
-    //      "title": true
+    //      "title": true,
+    //      "checkEmpty": true
     //    },
     p1.setText("%config_test sleep 1000");
     note.runAll(AuthenticationInfo.ANONYMOUS, false);
@@ -1113,8 +1116,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // Check if the config_test interpreter default parameter takes effect
     LOGGER.info("p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get("runOnSelectionChange"), false);
-    assertEquals(config.get("title"), true);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The mock1 interpreter does not set default parameters
     p1.setText("%mock1 sleep 1000");
@@ -1125,8 +1129,9 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
 
     // Check if the mock1 interpreter parameter is updated
     LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get("runOnSelectionChange"), true);
-    assertEquals(config.get("title"), false);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), false);
+    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), true);
   }
 
   @Test

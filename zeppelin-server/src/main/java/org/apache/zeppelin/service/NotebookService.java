@@ -453,7 +453,7 @@ public class NotebookService {
       throw new NoteNotFoundException(noteId);
     }
     Paragraph newPara = note.insertNewParagraph(index, context.getAutheInfo());
-    newPara.setConfig(config);
+    newPara.applyConfigSetting(config);
     notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(newPara, context);
     return newPara;

@@ -132,7 +132,8 @@
         "fontSize": 9,
         "colWidth": 12,
         "runOnSelectionChange": false,
-        "title": true
+        "title": true,
+        "checkEmpty": false
       },
       "option": {
         "remote": true,
