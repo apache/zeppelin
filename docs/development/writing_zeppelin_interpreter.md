@@ -211,7 +211,7 @@ You can make the dynamic form in the notebook not trigger execution after select
 
 ### Check if the paragraph is empty before running (Optional)
 The notebook's paragraph defaults will not run if it is empty.
-You can set `config.checkEmpty=false`, Run when the paragraph of the notebook is empty.
+You can set `config.checkEmpty=false`, to run even when the paragraph of the notebook is empty.
 
 ```json
 "config": {
