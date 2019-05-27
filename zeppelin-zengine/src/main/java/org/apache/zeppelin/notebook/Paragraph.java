@@ -345,7 +345,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return null;
   }
 
-  public boolean isBlankParagraph() {
+  public boolean shouldSkipRunParagraph() {
     // check interpreter-setting.json `config.checkEmpty` is equal false
     Object configCheckEmpty = this.config.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
     if (null != configCheckEmpty) {
@@ -368,7 +368,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public boolean execute(boolean blocking) {
-    if (isBlankParagraph()) {
+    if (shouldSkipRunParagraph()) {
       LOGGER.info("Skip to run blank paragraph. {}", getId());
       setStatus(Job.Status.FINISHED);
       return true;
@@ -498,7 +498,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
               String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
               Map<String, Object> config
                       = intpSettingManager.getConfigSetting(name);
-              applyConfigSetting(config);
+              mergeConfig(config);
             }
           }
         }
@@ -622,7 +622,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   // NOTE: function setConfig(...) will overwrite all configuration
-  // Merge configuration, you need to use function applyConfigSetting(...)
+  // Merge configuration, you need to use function mergeConfig(...)
   public void setConfig(Map<String, Object> config) {
     this.config = config;
   }
@@ -638,7 +638,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // 2. The user manually modified the  interpreter types of this paragraph.
   //    Need to delete the existing configuration of this paragraph,
   //    update with the specified interpreter configuration
-  public void applyConfigSetting(Map<String, Object> newConfig) {
+  public void mergeConfig(Map<String, Object> newConfig) {
     if (null == newConfig || 0 == newConfig.size()) {
       newConfig = getDefaultConfigSetting();
     }
