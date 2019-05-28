@@ -63,6 +63,9 @@
       "language": "sh",
       "editOnDblClick": false,
       "completionSupport": false
+    },
+    "config": {
+      "checkEmpty": false
     }
   }
 ]
