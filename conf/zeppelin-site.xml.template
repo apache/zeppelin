@@ -610,7 +610,7 @@
 <property>
   <name>zeppelin.run.mode</name>
   <value>auto</value>
-  <description>'auto|local|k8s'</description>
+  <description>'auto|local|k8s|docker'</description>
 </property>
 
 <property>
@@ -636,5 +636,11 @@
   <value>k8s</value>
   <description>Kubernetes yaml spec files</description>
 </property>
+
+  <property>
+    <name>zeppelin.docker.container.image</name>
+    <value>apache/zeppelin:0.8.0</value>
+    <description>Docker image for interpreters</description>
+  </property>
 
 </configuration>
