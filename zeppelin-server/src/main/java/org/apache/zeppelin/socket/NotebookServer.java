@@ -652,7 +652,7 @@ public class NotebookServer extends WebSocketServlet
       try {
         interpreterGroup = findInterpreterGroupForParagraph(note, paragraph.getId());
       } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
+        LOG.warn(e.getMessage(), e);
       }
       if (null == interpreterGroup) {
         return;
