@@ -652,7 +652,10 @@ public class NotebookServer extends WebSocketServlet
       try {
         interpreterGroup = findInterpreterGroupForParagraph(note, paragraph.getId());
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.warn(e.getMessage(), e);
+      }
+      if (null == interpreterGroup) {
+        return;
       }
       RemoteAngularObjectRegistry registry = (RemoteAngularObjectRegistry)
           interpreterGroup.getAngularObjectRegistry();
