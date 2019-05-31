@@ -80,6 +80,8 @@ public class TerminalInterpreter extends KerberosInterpreter {
 
   @Override
   public void close() {
+    intpContext.getAngularObjectRegistry().add(TERMINAL_SOCKET_STATUS, TERMINAL_SOCKET_CLOSE,
+        intpContext.getNoteId(), intpContext.getParagraphId());
     if (null != terminalThread) {
       TerminalManager.getInstance().cleanIntpContext(intpContext.getNoteId());
       terminalThread.stopRunning();
@@ -142,7 +144,6 @@ public class TerminalInterpreter extends KerberosInterpreter {
         "?noteId=" + noteId + "&paragraphId=" + paragraphId + "&t=" + now.getTime();
     jinjaParams.put("HOST_NAME", hostName);
     jinjaParams.put("HOST_IP", hostIp);
-    jinjaParams.put("TERMINAL_STATUS", "CONNECT");
     jinjaParams.put("TERMINAL_SERVER_URL", terminalServerUrl);
     String terminalDashboardTemplate = jinjava.render(template, jinjaParams);
 

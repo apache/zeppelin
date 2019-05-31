@@ -15,11 +15,11 @@
 # limitations under the License.
 -#}
 <div class="row" style="width:100%">
-  <div class="col-md-12" ng-switch="TERMINAL_SOCKET_STATUS">
+  <div class="col-md-12" ng-switch=TERMINAL_SOCKET_STATUS>
     <b>Terminal - {{ HOST_NAME }} ({{ HOST_IP }})</b>
     <b style="color: #999; margin-left:10px;">STATUS: </b>
-    <i ng-switch-when="TERMINAL_SOCKET_CONNECT" ng-style="{'color':'green'}">CONNECTED</i>
-    <i ng-switch-when="TERMINAL_SOCKET_CLOSE" ng-style="{'color':'red'}">DISCONNECTED</i>
+    <i ng-switch-when='TERMINAL_SOCKET_CONNECT' ng-style="{'color':'green'}">CONNECTED</i>
+    <i ng-switch-when='TERMINAL_SOCKET_CLOSE' ng-style="{'color':'red'}">DISCONNECTED</i>
     <i ng-switch-default ng-style="{'color':'red'}">ERROR</i>
     <a ng-if="TERMINAL_SOCKET_STATUS!='TERMINAL_SOCKET_CONNECT'" class="fa fa-info-circle interpreter-binding-mode-info-link" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Please run this paragraph again"></a>
 
