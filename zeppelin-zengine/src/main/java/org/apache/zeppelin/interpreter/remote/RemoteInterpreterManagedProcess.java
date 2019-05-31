@@ -173,6 +173,10 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     return interpreterSettingName;
   }
 
+  public String getInterpreterGroupId() {
+    return interpreterGroupId;
+  }
+
   @VisibleForTesting
   public String getInterpreterRunner() {
     return interpreterRunner;

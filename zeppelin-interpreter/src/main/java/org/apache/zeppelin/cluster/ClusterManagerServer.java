@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.cluster;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.atomix.cluster.*;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.cluster.impl.DefaultClusterMembershipService;
@@ -30,20 +32,10 @@ import io.atomix.protocols.raft.storage.RaftStorage;
 import io.atomix.storage.StorageLevel;
 import io.atomix.utils.net.Address;
 import org.apache.commons.lang.StringUtils;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.protocol.RaftServerMessagingProtocol;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.InterpreterFactoryInterface;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
-import org.apache.zeppelin.interpreter.thrift.ClusterIntpProcParameters;
-import org.apache.zeppelin.interpreter.thrift.ClusterManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,20 +48,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiFunction;
 
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.ServerMeta;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.SERVER_META;
 
 /**
  * Cluster management server class instantiated in zeppelin-server
  * 1. Create a raft server
  * 2. Remotely create interpreter's thrift service
  */
-public class ClusterManagerServer extends ClusterManager
-    implements ClusterManagerService.Iface {
+public class ClusterManagerServer extends ClusterManager {
   private static Logger LOGGER = LoggerFactory.getLogger(ClusterManagerServer.class);
 
   private static ClusterManagerServer instance = null;
@@ -79,22 +73,15 @@ public class ClusterManagerServer extends ClusterManager
 
   protected MessagingService messagingService = null;
 
-  // zeppelin cluster manager thrift service
-  private TThreadPoolServer clusterManagerTserver = null;
-  private ClusterManagerService.Processor<ClusterManagerServer> clusterManagerProcessor = null;
-
-  // Find interpreter by note
-  private InterpreterFactoryInterface interpreterFactory = null;
-
   // Connect to the interpreter process that has been created
   public static String CONNET_EXISTING_PROCESS = "CONNET_EXISTING_PROCESS";
 
+  private List<ClusterEventListener> clusterEventListeners = new ArrayList<>();
+  // zeppelin cluster event
+  public static String ZEPL_CLUSTER_EVENT_TOPIC = "ZEPL_CLUSTER_EVENT_TOPIC";
+
   private ClusterManagerServer() {
     super();
-
-    clusterManagerProcessor = new ClusterManagerService.Processor<>(this);
-
-    deleteRaftSystemData();
   }
 
   public static ClusterManagerServer getInstance() {
@@ -106,21 +93,44 @@ public class ClusterManagerServer extends ClusterManager
     }
   }
 
-  public void start(InterpreterFactoryInterface interpreterFactory) {
+  public void start() {
     if (!zconf.isClusterMode()) {
       return;
     }
-
-    this.interpreterFactory = interpreterFactory;
 
     initThread();
 
     // Instantiated raftServer monitoring class
     String clusterName = getClusterNodeName();
     clusterMonitor = new ClusterMonitor(this);
-    clusterMonitor.start(ServerMeta, clusterName);
+    clusterMonitor.start(SERVER_META, clusterName);
 
     super.start();
+  }
+
+  @VisibleForTesting
+  public void initTestCluster(String clusterAddrList, String host, int port) {
+    this.zeplServerHost = host;
+    this.raftServerPort = port;
+
+    // clear
+    clusterNodes.clear();
+    raftAddressMap.clear();
+    clusterMemberIds.clear();
+
+    String cluster[] = clusterAddrList.split(",");
+    for (int i = 0; i < cluster.length; i++) {
+      String[] parts = cluster[i].split(":");
+      String clusterHost = parts[0];
+      int clusterPort = Integer.valueOf(parts[1]);
+
+      String memberId = clusterHost + ":" + clusterPort;
+      Address address = Address.from(clusterHost, clusterPort);
+      Node node = Node.builder().withId(memberId).withAddress(address).build();
+      clusterNodes.add(node);
+      raftAddressMap.put(MemberId.from(memberId), address);
+      clusterMemberIds.add(MemberId.from(memberId));
+    }
   }
 
   @Override
@@ -143,32 +153,6 @@ public class ClusterManagerServer extends ClusterManager
     }
 
     return true;
-  }
-
-  protected void deleteRaftSystemData() {
-    String zeppelinHome = zconf.getZeppelinHome();
-    Path directory = new File(zeppelinHome, ".data").toPath();
-    if (Files.exists(directory)) {
-      try {
-        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-              throws IOException {
-            Files.delete(file);
-            return FileVisitResult.CONTINUE;
-          }
-
-          @Override
-          public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-              throws IOException {
-            Files.delete(dir);
-            return FileVisitResult.CONTINUE;
-          }
-        });
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
   }
 
   private void initThread() {
@@ -206,11 +190,15 @@ public class ClusterManagerServer extends ClusterManager
             bootstrapService,
             new MembershipConfig());
 
+        File atomixDateDir = com.google.common.io.Files.createTempDir();
+        atomixDateDir.deleteOnExit();
+
         RaftServer.Builder builder = RaftServer.builder(member.id())
             .withMembershipService(clusterService)
             .withProtocol(protocol)
             .withStorage(RaftStorage.builder()
                 .withStorageLevel(StorageLevel.MEMORY)
+                .withDirectory(atomixDateDir)
                 .withSerializer(storageSerializer)
                 .withMaxSegmentSize(1024 * 1024)
                 .build());
@@ -218,46 +206,10 @@ public class ClusterManagerServer extends ClusterManager
         raftServer = builder.build();
         raftServer.bootstrap(clusterMemberIds);
 
+        messagingService.registerHandler(ZEPL_CLUSTER_EVENT_TOPIC,
+            subscribeClusterEvent, MoreExecutors.directExecutor());
+
         LOGGER.info("RaftServer run() <<<");
-      }
-    }).start();
-
-    // Cluster manager thrift thread
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        LOGGER.info("TServerThread run() >>>");
-
-        ZeppelinConfiguration zconf = new ZeppelinConfiguration();
-        String portRange = zconf.getZeppelinServerRPCPortRange();
-
-        try {
-          TServerSocket serverTransport = RemoteInterpreterUtils.createTServerSocket(portRange);
-          int tserverPort = serverTransport.getServerSocket().getLocalPort();
-
-          clusterManagerTserver = new TThreadPoolServer(
-              new TThreadPoolServer.Args(serverTransport).processor(clusterManagerProcessor));
-          LOGGER.info("Starting raftServer manager Tserver on port {}", tserverPort);
-
-          String nodeName = getClusterNodeName();
-          HashMap<String, Object> meta = new HashMap<String, Object>();
-          meta.put(ClusterMeta.NODE_NAME, nodeName);
-          meta.put(ClusterMeta.SERVER_TSERVER_HOST, zeplServerHost);
-          meta.put(ClusterMeta.SERVER_TSERVER_PORT, tserverPort);
-          meta.put(ClusterMeta.SERVER_START_TIME, new Date());
-
-          putClusterMeta(ServerMeta, nodeName, meta);
-        } catch (UnknownHostException e) {
-          LOGGER.error(e.getMessage());
-        } catch (SocketException e) {
-          LOGGER.error(e.getMessage());
-        } catch (IOException e) {
-          LOGGER.error(e.getMessage());
-        }
-
-        clusterManagerTserver.serve();
-
-        LOGGER.info("TServerThread run() <<<");
       }
     }).start();
   }
@@ -270,58 +222,34 @@ public class ClusterManagerServer extends ClusterManager
 
     try {
       // delete local machine meta
-      deleteClusterMeta(ServerMeta, getClusterNodeName());
+      deleteClusterMeta(SERVER_META, getClusterNodeName());
       Thread.sleep(300);
       clusterMonitor.shutdown();
       // wait raft commit metadata
       Thread.sleep(300);
     } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
 
     if (null != raftServer && raftServer.isRunning()) {
       try {
         raftServer.shutdown().get(3, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error(e.getMessage(), e);
       } catch (ExecutionException e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error(e.getMessage(), e);
       } catch (TimeoutException e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error(e.getMessage(), e);
       }
     }
 
-    clusterManagerTserver.stop();
-
     super.shutdown();
-  }
-
-  public boolean openRemoteInterpreterProcess(
-      String host, int port, final ClusterIntpProcParameters clusterIntpProcParameters)
-      throws TException {
-    LOGGER.info("host: {}, port: {}, clusterIntpProcParameters: {}",
-        host, port, clusterIntpProcParameters);
-
-    try (TTransport transport = new TSocket(host, port)) {
-      transport.open();
-      TProtocol protocol = new TBinaryProtocol(transport);
-      ClusterManagerService.Client client = new ClusterManagerService.Client(protocol);
-
-      return client.createClusterInterpreterProcess(clusterIntpProcParameters);
-    }
-  }
-
-  @Override
-  public boolean createClusterInterpreterProcess(ClusterIntpProcParameters clusterIntpProcParameters) {
-    // TODO: ZEPPELIN-3623
-
-    return true;
   }
 
   // Obtain the server node whose resources are idle in the cluster
   public HashMap<String, Object> getIdleNodeMeta() {
     HashMap<String, Object> idleNodeMeta = null;
-    HashMap<String, HashMap<String, Object>> clusterMeta = getClusterMeta(ServerMeta, "");
+    HashMap<String, HashMap<String, Object>> clusterMeta = getClusterMeta(SERVER_META, "");
 
     long memoryIdle = 0;
     for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
@@ -343,5 +271,57 @@ public class ClusterManagerServer extends ClusterManager
     }
 
     return idleNodeMeta;
+  }
+
+  public void unicastClusterEvent(String host, int port,  String msg) {
+    LOGGER.info("send unicastClusterEvent message {}", msg);
+
+    Address address = Address.from(host, port);
+    CompletableFuture<byte[]> response = messagingService.sendAndReceive(address,
+        ZEPL_CLUSTER_EVENT_TOPIC, msg.getBytes(), Duration.ofSeconds(2));
+    response.whenComplete((r, e) -> {
+      if (null == e) {
+        LOGGER.error(e.getMessage(), e);
+      } else {
+        LOGGER.info("unicastClusterEvent success! {}", msg);
+      }
+    });
+  }
+
+  public void broadcastClusterEvent(String msg) {
+    LOGGER.info("send broadcastClusterEvent message {}", msg);
+
+    for (Node node : clusterNodes) {
+      if (StringUtils.equals(node.address().host(), zeplServerHost)
+          && node.address().port() == raftServerPort) {
+        // skip myself
+        continue;
+      }
+
+      CompletableFuture<byte[]> response = messagingService.sendAndReceive(node.address(),
+          ZEPL_CLUSTER_EVENT_TOPIC, msg.getBytes(), Duration.ofSeconds(2));
+      response.whenComplete((r, e) -> {
+        if (null == e) {
+          LOGGER.error(e.getMessage(), e);
+        } else {
+          LOGGER.info("broadcastClusterNoteEvent success! {}", msg);
+        }
+      });
+    }
+  }
+
+  private BiFunction<Address, byte[], byte[]> subscribeClusterEvent = (address, data) -> {
+    String message = new String(data);
+    LOGGER.info("subscribeClusterEvent() {}", message);
+
+    for (ClusterEventListener eventListener : clusterEventListeners) {
+      eventListener.onClusterEvent(message);
+    }
+
+    return null;
+  };
+
+  public void addClusterEventListeners(ClusterEventListener listener) {
+    clusterEventListeners.add(listener);
   }
 }

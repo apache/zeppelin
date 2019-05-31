@@ -90,12 +90,12 @@ public class ClusterStateMachine extends AbstractPrimitiveService {
       logger.debug("ClusterStateMachine.backup()");
     }
 
-    // backup ServerMeta
+    // backup SERVER_META
     // cluster meta map struct
     // cluster_name -> {server_tserver_host,server_tserver_port,cpu_capacity,...}
     Map<String, Map<String, Object>> mapServerMeta
-        = clusterMeta.get(ClusterMetaType.ServerMeta, "");
-    // write all ServerMeta size
+        = clusterMeta.get(ClusterMetaType.SERVER_META, "");
+    // write all SERVER_META size
     writer.writeInt(mapServerMeta.size());
     for (Map.Entry<String, Map<String, Object>> entry : mapServerMeta.entrySet()) {
       // write cluster_name
@@ -111,11 +111,11 @@ public class ClusterStateMachine extends AbstractPrimitiveService {
       }
     }
 
-    // backup IntpProcessMeta
+    // backup INTP_PROCESS_META
     // Interpreter meta map struct
     // IntpGroupId -> {server_tserver_host,server_tserver_port,...}
     Map<String, Map<String, Object>> mapIntpProcMeta
-        = clusterMeta.get(ClusterMetaType.IntpProcessMeta, "");
+        = clusterMeta.get(ClusterMetaType.INTP_PROCESS_META, "");
     // write interpreter size
     writer.writeInt(mapIntpProcMeta.size());
     for (Map.Entry<String, Map<String, Object>> entry : mapIntpProcMeta.entrySet()) {
@@ -140,7 +140,7 @@ public class ClusterStateMachine extends AbstractPrimitiveService {
     }
 
     clusterMeta = new ClusterMeta();
-    // read all ServerMeta size
+    // read all SERVER_META size
     int nServerMeta = reader.readInt();
     for (int i = 0; i < nServerMeta; i++) {
       // read cluster_name
@@ -153,12 +153,12 @@ public class ClusterStateMachine extends AbstractPrimitiveService {
         String key = reader.readString();
         Object value = reader.readObject();
 
-        clusterMeta.put(ClusterMetaType.ServerMeta,
+        clusterMeta.put(ClusterMetaType.SERVER_META,
             clusterName, Maps.immutableEntry(key, value));
       }
     }
 
-    // read all IntpProcessMeta size
+    // read all INTP_PROCESS_META size
     int nIntpMeta = reader.readInt();
     for (int i = 0; i < nIntpMeta; i++) {
       // read interpreter name
@@ -171,7 +171,7 @@ public class ClusterStateMachine extends AbstractPrimitiveService {
         String key = reader.readString();
         Object value = reader.readObject();
 
-        clusterMeta.put(ClusterMetaType.IntpProcessMeta,
+        clusterMeta.put(ClusterMetaType.INTP_PROCESS_META,
             intpName, Maps.immutableEntry(key, value));
       }
     }

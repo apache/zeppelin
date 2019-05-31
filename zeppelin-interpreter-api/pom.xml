@@ -68,8 +68,6 @@
               <exclude>org.apache.commons:commons-exec</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
-              <exclude>com.esotericsoftware:kryo</exclude>
-              <exclude>com.esotericsoftware:reflectasm</exclude>
             </excludes>
           </artifactSet>
           <filters>
@@ -137,6 +135,10 @@
             <relocation>
               <pattern>io</pattern>
               <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
+            </relocation>
+            <relocation>
+              <pattern>com.esotericsoftware</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.com.esotericsoftware</shadedPattern>
             </relocation>
           </relocations>
         </configuration>

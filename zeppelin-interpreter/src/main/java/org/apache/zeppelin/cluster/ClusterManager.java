@@ -252,7 +252,7 @@ public abstract class ClusterManager {
               while (!raftInitialized()) {
                 retry++;
                 if (0 == retry % 30) {
-                  LOGGER.error("Raft incomplete initialization! retry[{}]", retry);
+                  LOGGER.warn("Raft incomplete initialization! retry[{}]", retry);
                 }
                 Thread.sleep(100);
               }
@@ -268,6 +268,7 @@ public abstract class ClusterManager {
               if (true == success) {
                 // The operation was successfully deleted
                 clusterMetaQueue.remove(metaEntity);
+                LOGGER.info("Cluster Meta Consume success! {}", metaEntity);
               } else {
                 LOGGER.error("Cluster Meta Consume faild!");
               }

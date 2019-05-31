@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.cluster.meta;
+package org.apache.zeppelin.cluster.event;
 
 /**
- * Type of cluster metadata
+ * Cluster Event
  */
-public enum ClusterMetaType {
-  SERVER_META,
-  INTP_PROCESS_META
+public enum ClusterEvent {
+  CREATE_INTP_PROCESS
 }
