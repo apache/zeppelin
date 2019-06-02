@@ -75,13 +75,6 @@
         "description": "Override Spark UI default URL",
         "type": "string"
       },
-      "zeppelin.spark.useNew": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.useNew",
-        "defaultValue": true,
-        "description": "Whether use new spark interpreter implementation",
-        "type": "checkbox"
-      },
       "zeppelin.spark.ui.hidden": {
         "envName": null,
         "propertyName": "zeppelin.spark.ui.hidden",
@@ -161,33 +154,6 @@
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false,
-      "completionKey": "TAB",
-      "completionSupport": true
-    }
-  },
-  {
-    "group": "spark",
-    "name": "dep",
-    "className": "org.apache.zeppelin.spark.DepInterpreter",
-    "properties": {
-      "zeppelin.dep.localrepo": {
-        "envName": "ZEPPELIN_DEP_LOCALREPO",
-        "propertyName": null,
-        "defaultValue": "local-repo",
-        "description": "local repository for dependency loader",
-        "type": "string"
-      },
-      "zeppelin.dep.additionalRemoteRepository": {
-        "envName": null,
-        "propertyName": null,
-        "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
-        "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.",
-        "type": "textarea"
-      }
-    },
-    "editor": {
-      "language": "scala",
       "editOnDblClick": false,
       "completionKey": "TAB",
       "completionSupport": true

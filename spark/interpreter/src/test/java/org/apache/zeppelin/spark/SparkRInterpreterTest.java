@@ -53,7 +53,6 @@ public class SparkRInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.R.knitr", "true");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");

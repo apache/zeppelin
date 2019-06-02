@@ -38,12 +38,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,14 +49,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 
-public class NewSparkInterpreterTest {
+public class SparkInterpreterTest {
 
   private SparkInterpreter interpreter;
-  private DepInterpreter depInterpreter;
 
   // catch the streaming output in onAppend
   private volatile String output = "";
@@ -82,7 +75,6 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -96,7 +88,6 @@ public class NewSparkInterpreterTest {
     InterpreterContext.set(context);
 
     interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
 
@@ -378,39 +369,6 @@ public class NewSparkInterpreterTest {
     interpretThread.join();
   }
 
-  //TODO(zjffdu) This unit test will fail due to classpath issue, should enable it after the classpath issue is fixed.
-  @Ignore
-  public void testDepInterpreter() throws InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
-    properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
-    properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
-    // disable color output for easy testing
-    properties.setProperty("zeppelin.spark.scala.color", "false");
-    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
-
-    InterpreterGroup intpGroup = new InterpreterGroup();
-    interpreter = new SparkInterpreter(properties);
-    depInterpreter = new DepInterpreter(properties);
-    interpreter.setInterpreterGroup(intpGroup);
-    depInterpreter.setInterpreterGroup(intpGroup);
-    intpGroup.put("session_1", new ArrayList<Interpreter>());
-    intpGroup.get("session_1").add(interpreter);
-    intpGroup.get("session_1").add(depInterpreter);
-
-    depInterpreter.open();
-    InterpreterResult result =
-        depInterpreter.interpret("z.load(\"com.databricks:spark-avro_2.11:3.2.0\")", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    interpreter.open();
-    result = interpreter.interpret("import com.databricks.spark.avro._", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
   @Test
   public void testDisableReplOutput() throws InterpreterException {
     Properties properties = new Properties();
@@ -418,7 +376,6 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -426,7 +383,6 @@ public class NewSparkInterpreterTest {
 
     InterpreterContext.set(getInterpreterContext());
     interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
 
@@ -448,14 +404,12 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.scheduler.mode", "FAIR");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     InterpreterContext.set(getInterpreterContext());
     interpreter.open();
@@ -480,14 +434,12 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.ui.enabled", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     InterpreterContext.set(getInterpreterContext());
     interpreter.open();
@@ -508,14 +460,12 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.ui.hidden", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     InterpreterContext.set(getInterpreterContext());
     interpreter.open();
@@ -535,7 +485,6 @@ public class NewSparkInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -574,9 +523,6 @@ public class NewSparkInterpreterTest {
   public void tearDown() throws InterpreterException {
     if (this.interpreter != null) {
       this.interpreter.close();
-    }
-    if (this.depInterpreter != null) {
-      this.depInterpreter.close();
     }
     SparkShims.reset();
   }

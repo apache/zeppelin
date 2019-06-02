@@ -62,7 +62,6 @@ public class IPySparkInterpreterTest extends IPythonInterpreterTest {
     p.setProperty("zeppelin.spark.useHiveContext", "false");
     p.setProperty("zeppelin.spark.maxResult", "3");
     p.setProperty("zeppelin.spark.importImplicit", "true");
-    p.setProperty("zeppelin.spark.useNew", "true");
     p.setProperty("zeppelin.pyspark.python", "python");
     p.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
