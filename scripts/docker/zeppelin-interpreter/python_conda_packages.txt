@@ -1,0 +1,14 @@
+pycodestyle
+numpy
+pandas
+scipy
+grpcio
+hvplot
+protobuf
+pandasql
+ipython
+matplotlib
+ipykernel
+jupyter_client
+bokeh
+apache-beam
