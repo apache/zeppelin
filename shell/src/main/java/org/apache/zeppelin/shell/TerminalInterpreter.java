@@ -109,13 +109,17 @@ public class TerminalInterpreter extends KerberosInterpreter {
         return new InterpreterResult(Code.ERROR, e.getMessage());
       }
 
-      for (int i = 0; i < 5 && !terminalThread.isRunning(); i++) {
+      for (int i = 0; i < 10 && !terminalThread.isRunning(); i++) {
         try {
           LOGGER.info("loop = " + i);
           Thread.sleep(500);
         } catch (InterruptedException e) {
           LOGGER.error(e.getMessage(), e);
         }
+      }
+
+      if (!terminalThread.isRunning()) {
+        LOGGER.error("Terminal interpreter can not running!");
       }
     }
     setParagraphConfig();

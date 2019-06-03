@@ -43,7 +43,7 @@
     <guava.version>20.0</guava.version>
   </properties>
 
-  <!-- pty4j library not in travis central (http://repo.maven.apache.org/maven2) -->
+  <!-- pty4j library not in maven central repository (http://repo.maven.apache.org/maven2) -->
   <repositories>
     <repository>
       <id>bintray-jetbrains-pty4j</id>
