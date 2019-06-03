@@ -31,7 +31,7 @@ This document contains instructions about making docker containers for Zeppelin.
 ### Installing Docker
 You need to [install docker](https://docs.docker.com/engine/installation/) on your machine.
 
-### Running docker image
+### Running docker image for Zeppelin distribution
 
 ```bash
 docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version> 
@@ -59,3 +59,39 @@ cd scripts/docker/zeppelin/bin
 docker build -t my-zeppelin:my-tag ./
 ```
 
+### Build docker image for Zeppelin server & interpreters
+
+Starting from 0.9, Zeppelin support to run in k8s or docker. So we add the capability to 
+build docker images for zeppelin server & interpreter. Please note that the provided Dockerfile doesn't match each environment.
+
+At first your need to build a zeppelin-distribution docker image.
+```bash
+cd $ZEPPELIN_HOME
+docker build -t zeppelin-distribution .
+```
+
+Build docker image for zeppelin server.
+```bash
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-server
+docker build -t zeppelin-server .
+```
+
+Build base docker image for zeppelin interpreter.
+```bash
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-interpreter
+docker build -t zeppelin-interpreter-base -f Dockerfile_interpreter_base .
+```
+
+Build image for zeppelin interpreter <interpreter_name>. By default, we use the `scripts/docker/zeppelin-interpreter/Dockerfile` to build the interpreter image, but we have also some customize Dockerfiles under `scripts/docker/zeppelin-interpreter/<interpreter_name>`. For examples, in offical Apache Zeppelin, we provide 3 customized images for python,r,spark.
+
+```bash
+# default interpreter by interpreter_name (e.g. md)
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-interpreter
+docker build -t zeppelin-interpreter-md -f Dockerfile --build-arg interpreter_name=md .
+```
+
+```bash
+# python interpreter
+cd $ZEPPELIN_HOME/scripts/docker/zeppelin-interpreter/python
+docker build -t zeppelin-interpreter-python -f Dockerfile .
+```
