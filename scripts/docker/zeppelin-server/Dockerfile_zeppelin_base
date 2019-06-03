@@ -1,0 +1,50 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:18.04
+MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
+
+ARG version
+
+ENV LOG_TAG="[ZEPPELIN_${version}]:" \
+    VERSION="${version}" \
+    Z_HOME="/zeppelin" \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+RUN echo "$LOG_TAG update and install basic packages" && \
+    apt-get -y update && \
+    apt-get install -y locales && \
+    locale-gen $LANG && \
+    apt-get install -y software-properties-common && \
+    apt -y dist-upgrade && \
+    echo "$LOG_TAG install tini related packages" && \
+    apt-get install -y wget curl grep dpkg && \
+    TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb && \
+    apt-get install -y bzip2 ca-certificates libglib2.0-0 libxext6 libsm6 libxrender1 apt-transport-https && \
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+    apt-get -y update && \
+    apt-get install -y kubectl && \
+    echo "$LOG_TAG Install java8" && \
+    apt-get install -y openjdk-8-jdk && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "$LOG_TAG Cleanup" && \
+    apt-get autoclean && \
+    apt-get clean
