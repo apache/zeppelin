@@ -583,48 +583,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       }
     }
   }
-
-  @Test
-  public void pySparkDepLoaderTest() throws IOException {
-    Note note = null;
-    try {
-      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
-
-      // restart spark interpreter to make dep loader work
-      TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().close();
-
-      // load dep
-      Paragraph p0 = note.addNewParagraph(anonymous);
-      p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
-      note.run(p0.getId(), true);
-      assertEquals(Status.FINISHED, p0.getStatus());
-
-      // write test csv file
-      File tmpFile = File.createTempFile("test", "csv");
-      FileUtils.write(tmpFile, "a,b\n1,2");
-
-      // load data using libraries from dep loader
-      Paragraph p1 = note.addNewParagraph(anonymous);
-
-      String sqlContextName = "sqlContext";
-      if (isSpark2()) {
-        sqlContextName = "spark";
-      }
-      p1.setText("%pyspark\n" +
-          "from pyspark.sql import SQLContext\n" +
-          "print(" + sqlContextName + ".read.format('com.databricks.spark.csv')" +
-          ".load('file://" + tmpFile.getAbsolutePath() + "').count())");
-      note.run(p1.getId(), true);
-
-      assertEquals(Status.FINISHED, p1.getStatus());
-      assertEquals("2\n", p1.getReturn().message().get(0).getData());
-    } finally {
-      if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
-      }
-    }
-  }
-
+  
   private void verifySparkVersionNumber() throws IOException {
     Note note = null;
     try {

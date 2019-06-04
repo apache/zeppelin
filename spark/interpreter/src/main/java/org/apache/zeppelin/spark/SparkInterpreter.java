@@ -17,31 +17,52 @@
 
 package org.apache.zeppelin.spark;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
- * It is the Wrapper of OldSparkInterpreter & NewSparkInterpreter.
- * Property zeppelin.spark.useNew control which one to use.
+ * SparkInterpreter of Java implementation. It is just wrapper of Spark211Interpreter
+ * and Spark210Interpreter.
  */
-public class SparkInterpreter extends AbstractSparkInterpreter {
+public class SparkInterpreter extends AbstractInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreter.class);
 
-  // either OldSparkInterpreter or NewSparkInterpreter
-  private AbstractSparkInterpreter delegation;
+  private BaseSparkScalaInterpreter innerInterpreter;
+  private Map<String, String> innerInterpreterClassMap = new HashMap<>();
+  private SparkContext sc;
+  private JavaSparkContext jsc;
+  private SQLContext sqlContext;
+  private Object sparkSession;
+
+  private SparkZeppelinContext z;
+  private SparkVersion sparkVersion;
+  private boolean enableSupportedVersionCheck;
+  private String sparkUrl;
+  private SparkShims sparkShims;
+
+  private static InterpreterHookRegistry hooks;
 
 
   public SparkInterpreter(Properties properties) {
@@ -50,46 +71,103 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
     if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.scala.color", "true"))) {
       System.setProperty("scala.color", "true");
     }
-    if (Boolean.parseBoolean(properties.getProperty("zeppelin.spark.useNew", "false"))) {
-      delegation = new NewSparkInterpreter(properties);
-    } else {
-      delegation = new OldSparkInterpreter(properties);
-    }
-    delegation.setParentSparkInterpreter(this);
+    this.enableSupportedVersionCheck = java.lang.Boolean.parseBoolean(
+        properties.getProperty("zeppelin.spark.enableSupportedVersionCheck", "true"));
+    innerInterpreterClassMap.put("2.10", "org.apache.zeppelin.spark.SparkScala210Interpreter");
+    innerInterpreterClassMap.put("2.11", "org.apache.zeppelin.spark.SparkScala211Interpreter");
   }
 
   @Override
   public void open() throws InterpreterException {
-    delegation.setInterpreterGroup(getInterpreterGroup());
-    delegation.setUserName(getUserName());
-    delegation.setClassloaderUrls(getClassloaderUrls());
+    try {
+      String scalaVersion = extractScalaVersion();
+      LOGGER.info("Using Scala Version: " + scalaVersion);
+      SparkConf conf = new SparkConf();
+      for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
+        if (!StringUtils.isBlank(entry.getValue().toString())) {
+          conf.set(entry.getKey().toString(), entry.getValue().toString());
+        }
+        // zeppelin.spark.useHiveContext & zeppelin.spark.concurrentSQL are legacy zeppelin
+        // properties, convert them to spark properties here.
+        if (entry.getKey().toString().equals("zeppelin.spark.useHiveContext")) {
+          conf.set("spark.useHiveContext", entry.getValue().toString());
+        }
+        if (entry.getKey().toString().equals("zeppelin.spark.concurrentSQL")
+            && entry.getValue().toString().equals("true")) {
+          conf.set("spark.scheduler.mode", "FAIR");
+        }
+      }
+      // use local mode for embedded spark mode when spark.master is not found
+      conf.setIfMissing("spark.master", "local");
 
-    delegation.open();
+      String innerIntpClassName = innerInterpreterClassMap.get(scalaVersion);
+      Class clazz = Class.forName(innerIntpClassName);
+      this.innerInterpreter = (BaseSparkScalaInterpreter)
+          clazz.getConstructor(SparkConf.class, List.class, Boolean.class)
+              .newInstance(conf, getDependencyFiles(),
+                  Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput", "true")));
+      this.innerInterpreter.open();
+
+      sc = this.innerInterpreter.sc();
+      jsc = JavaSparkContext.fromSparkContext(sc);
+      sparkVersion = SparkVersion.fromVersionString(sc.version());
+      if (enableSupportedVersionCheck && sparkVersion.isUnsupportedVersion()) {
+        throw new Exception("This is not officially supported spark version: " + sparkVersion
+            + "\nYou can set zeppelin.spark.enableSupportedVersionCheck to false if you really" +
+            " want to try this version of spark.");
+      }
+      sqlContext = this.innerInterpreter.sqlContext();
+      sparkSession = this.innerInterpreter.sparkSession();
+      hooks = getInterpreterGroup().getInterpreterHookRegistry();
+      sparkUrl = this.innerInterpreter.sparkUrl();
+      String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
+      if (!StringUtils.isBlank(sparkUrlProp)) {
+        sparkUrl = sparkUrlProp;
+      }
+      sparkShims = SparkShims.getInstance(sc.version(), getProperties());
+      sparkShims.setupSparkListener(sc.master(), sparkUrl, InterpreterContext.get());
+
+      z = new SparkZeppelinContext(sc, sparkShims, hooks,
+          Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
+          Lists.newArrayList("@transient"));
+    } catch (Exception e) {
+      LOGGER.error("Fail to open SparkInterpreter", e);
+      throw new InterpreterException("Fail to open SparkInterpreter", e);
+    }
   }
 
   @Override
-  public void close() throws InterpreterException {
-    delegation.close();
+  public void close() {
+    LOGGER.info("Close SparkInterpreter");
+    if (innerInterpreter != null) {
+      innerInterpreter.close();
+      innerInterpreter = null;
+    }
   }
 
   @Override
-  public InterpreterResult internalInterpret(String st, InterpreterContext context)
-      throws InterpreterException {
-    Utils.printDeprecateMessage(delegation.getSparkVersion(), context, properties);
-    return delegation.interpret(st, context);
+  public InterpreterResult internalInterpret(String st, InterpreterContext context) {
+    context.out.clear();
+    sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
+    // set spark.scheduler.pool to null to clear the pool assosiated with this paragraph
+    // sc.setLocalProperty("spark.scheduler.pool", null) will clean the pool
+    sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+
+    return innerInterpreter.interpret(st, context);
   }
 
   @Override
-  public void cancel(InterpreterContext context) throws InterpreterException {
-    delegation.cancel(context);
+  public void cancel(InterpreterContext context) {
+    sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
 
   @Override
   public List<InterpreterCompletion> completion(String buf,
                                                 int cursor,
-                                                InterpreterContext interpreterContext)
-      throws InterpreterException {
-    return delegation.completion(buf, cursor, interpreterContext);
+                                                InterpreterContext interpreterContext) {
+    LOGGER.debug("buf: " + buf + ", cursor:" + cursor);
+    return innerInterpreter.completion(buf, cursor, interpreterContext);
   }
 
   @Override
@@ -98,68 +176,70 @@ public class SparkInterpreter extends AbstractSparkInterpreter {
   }
 
   @Override
-  public int getProgress(InterpreterContext context) throws InterpreterException {
-    return delegation.getProgress(context);
+  public int getProgress(InterpreterContext context) {
+    return innerInterpreter.getProgress(Utils.buildJobGroupId(context), context);
   }
 
-  public AbstractSparkInterpreter getDelegation() {
-    return delegation;
+  public SparkZeppelinContext getZeppelinContext() {
+    return this.z;
   }
 
-
-  @Override
   public SparkContext getSparkContext() {
-    return delegation.getSparkContext();
+    return this.sc;
   }
 
-  @Override
   public SQLContext getSQLContext() {
-    return delegation.getSQLContext();
+    return sqlContext;
   }
 
-  @Override
-  public Object getSparkSession() {
-    return delegation.getSparkSession();
-  }
-
-  @Override
-  public boolean isSparkContextInitialized() {
-    return delegation.isSparkContextInitialized();
-  }
-
-  @Override
-  public SparkVersion getSparkVersion() {
-    return delegation.getSparkVersion();
-  }
-
-  @Override
   public JavaSparkContext getJavaSparkContext() {
-    return delegation.getJavaSparkContext();
+    return this.jsc;
   }
 
-  @Override
-  public BaseZeppelinContext getZeppelinContext() {
-    return delegation.getZeppelinContext();
+  public Object getSparkSession() {
+    return sparkSession;
   }
 
-  @Override
+  public SparkVersion getSparkVersion() {
+    return sparkVersion;
+  }
+
+  private String extractScalaVersion() throws IOException, InterruptedException {
+    String scalaVersionString = scala.util.Properties.versionString();
+    if (scalaVersionString.contains("version 2.10")) {
+      return "2.10";
+    } else {
+      return "2.11";
+    }
+  }
+
+  public boolean isSparkContextInitialized() {
+    return this.sc != null;
+  }
+
+  private List<String> getDependencyFiles() throws InterpreterException {
+    List<String> depFiles = new ArrayList<>();
+    // add jar from local repo
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
+        if (files != null) {
+          for (File f : files) {
+            depFiles.add(f.getAbsolutePath());
+          }
+        }
+      }
+    }
+    return depFiles;
+  }
+
   public String getSparkUIUrl() {
-    return delegation.getSparkUIUrl();
+    return sparkUrl;
   }
 
   public boolean isUnsupportedSparkVersion() {
-    return delegation.isUnsupportedSparkVersion();
-  }
-
-  public boolean isYarnMode() {
-    String master = getProperty("master");
-    if (master == null) {
-      master = getProperty("spark.master", "local[*]");
-    }
-    return master.startsWith("yarn");
-  }
-
-  public static boolean useSparkSubmit() {
-    return null != System.getenv("SPARK_SUBMIT");
+    return enableSupportedVersionCheck  && sparkVersion.isUnsupportedVersion();
   }
 }

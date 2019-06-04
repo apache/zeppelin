@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class NewSparkSqlInterpreterTest {
+public class SparkSqlInterpreterTest {
 
   private static SparkSqlInterpreter sqlInterpreter;
   private static SparkInterpreter sparkInterpreter;
@@ -53,7 +53,6 @@ public class NewSparkSqlInterpreterTest {
     p.setProperty("zeppelin.spark.maxResult", "10");
     p.setProperty("zeppelin.spark.concurrentSQL", "true");
     p.setProperty("zeppelin.spark.sql.stacktrace", "true");
-    p.setProperty("zeppelin.spark.useNew", "true");
     p.setProperty("zeppelin.spark.useHiveContext", "true");
     p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
