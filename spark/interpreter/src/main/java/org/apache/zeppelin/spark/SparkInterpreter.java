@@ -132,7 +132,7 @@ public class SparkInterpreter extends AbstractInterpreter {
       this.innerInterpreter.bind("z", z.getClass().getCanonicalName(), z,
           Lists.newArrayList("@transient"));
     } catch (Exception e) {
-      LOGGER.error("Fail to open SparkInterpreter", ExceptionUtils.getStackTrace(e));
+      LOGGER.error("Fail to open SparkInterpreter", e);
       throw new InterpreterException("Fail to open SparkInterpreter", e);
     }
   }
