@@ -4,6 +4,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,8 +18,13 @@ import static org.junit.Assert.assertTrue;
 public class ClusterInterpreterLauncherTest extends ClusterMockTest {
 
   @BeforeClass
-  public static void initClusterEnv() throws IOException, InterruptedException {
-    ClusterMockTest.initClusterEnv();
+  public static void startTest() throws IOException, InterruptedException {
+    ClusterMockTest.startCluster();
+  }
+
+  @AfterClass
+  public static void stopTest() throws IOException, InterruptedException {
+    ClusterMockTest.stopCluster();
   }
 
   @Before

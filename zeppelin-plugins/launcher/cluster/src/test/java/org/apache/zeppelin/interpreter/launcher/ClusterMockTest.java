@@ -27,8 +27,8 @@ public class ClusterMockTest {
   static int zServerPort;
   static final String metaKey = "ClusterMockKey";
 
-  public static void initClusterEnv() throws IOException, InterruptedException {
-    LOGGER.info("initCluster >>>");
+  public static void startCluster() throws IOException, InterruptedException {
+    LOGGER.info("startCluster >>>");
 
     zconf = ZeppelinConfiguration.create();
 
@@ -61,7 +61,19 @@ public class ClusterMockTest {
       }
     }
     assertEquals(true, clusterServer.isClusterLeader());
-    LOGGER.info("initCluster <<<");
+
+    LOGGER.info("startCluster <<<");
+  }
+
+  public static void stopCluster() {
+    LOGGER.info("stopCluster >>>");
+    if (null != clusterClient) {
+      clusterClient.shutdown();
+    }
+    if (null != clusterClient) {
+      clusterServer.shutdown();
+    }
+    LOGGER.info("stopCluster <<<");
   }
 
   public void getServerMeta() {
