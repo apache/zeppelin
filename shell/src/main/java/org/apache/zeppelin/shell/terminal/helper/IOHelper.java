@@ -21,10 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +53,7 @@ public class IOHelper {
       return;
     }
 
+    String jarPath = getClassPath(IOHelper.class) + File.separator;
     Set<String> nativeFiles = getNativeFiles();
     for (String nativeFile : nativeFiles) {
       Path nativePath = dataDir.resolve(nativeFile);
@@ -57,8 +61,19 @@ public class IOHelper {
       if (Files.notExists(nativePath)) {
         Files.createDirectories(nativePath.getParent());
         InputStream inputStream = IOHelper.class.getResourceAsStream("/" + nativeFile);
-        Files.copy(inputStream, nativePath);
-        close(inputStream);
+        if (null == inputStream) {
+          Path source = Paths.get(jarPath + nativeFile);
+          if (!Files.exists(source)) {
+            throw new IOException("Can't find pytlib file : " + jarPath + nativeFile);
+          } else {
+            LOGGER.info("Use the pytlib file {} outside the JAR package.", jarPath + nativeFile);
+          }
+          Files.copy(source, nativePath);
+        } else {
+          LOGGER.info("Use the libpty file {} in the JAR package resource.", nativeFile);
+          Files.copy(inputStream, nativePath);
+          close(inputStream);
+        }
       }
     }
 
@@ -90,6 +105,76 @@ public class IOHelper {
     nativeFiles.addAll(win_xp);
 
     return nativeFiles;
+  }
+
+  private static String getClassPath(Class clazz) throws UnsupportedEncodingException {
+    // Check if the parameters passed in by the user are empty
+    if (clazz == null) {
+      throw new java.lang.IllegalArgumentException("The parameter cannot be empty!");
+    }
+
+    ClassLoader loader = clazz.getClassLoader();
+    // Get the full name of the class, including the package name
+    String clsName = clazz.getName() + ".class";
+    // Get the package where the incoming parameters are located
+    Package pack = clazz.getPackage();
+    String path = "";
+    // If not an anonymous package, convert the package name to a path
+    if (pack != null) {
+      String packName = pack.getName();
+      // Here is a simple decision to determine whether it is a Java base class library,
+      // preventing users from passing in the JDK built-in class library.
+      if (packName.startsWith("java.") || packName.startsWith("javax.")) {
+        throw new java.lang.IllegalArgumentException("Do not transfer system classes!");
+      }
+
+      // In the name of the class, remove the part of the package name
+      // and get the file name of the class.
+      clsName = clsName.substring(packName.length() + 1);
+      // Determine whether the package name is a simple package name, and if so,
+      // directly convert the package name to a path.
+      if (packName.indexOf(".") < 0) {
+        path = packName + "/";
+      } else {
+        // Otherwise, the package name is converted to a path according
+        // to the component part of the package name.
+        int start = 0, end = 0;
+        end = packName.indexOf(".");
+        while (end != -1) {
+          path = path + packName.substring(start, end) + "/";
+          start = end + 1;
+          end = packName.indexOf(".", start);
+        }
+        path = path + packName.substring(start) + "/";
+      }
+    }
+    // Call the classReloader's getResource method, passing in the
+    // class file name containing the path information.
+    java.net.URL url = loader.getResource(path + clsName);
+    // Get path information from the URL object
+    String realPath = url.getPath();
+    // Remove the protocol name "file:" in the path information.
+    int pos = realPath.indexOf("file:");
+    if (pos > -1) {
+      realPath = realPath.substring(pos + 5);
+    }
+    // Remove the path information and the part that contains the class file information,
+    // and get the path where the class is located.
+    pos = realPath.indexOf(path + clsName);
+    realPath = realPath.substring(0, pos - 1);
+    // If the class file is packaged into a JAR file, etc.,
+    // remove the corresponding JAR and other package file names.
+    if (realPath.endsWith("!")) {
+      realPath = realPath.substring(0, realPath.lastIndexOf("/"));
+    }
+
+    try {
+      realPath = java.net.URLDecoder.decode(realPath, "utf-8");
+    } catch (UnsupportedEncodingException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    return realPath;
   }
 
 }
