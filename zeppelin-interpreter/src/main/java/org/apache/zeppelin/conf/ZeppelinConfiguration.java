@@ -18,8 +18,7 @@
 package org.apache.zeppelin.conf;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import java.util.function.Predicate;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -121,21 +121,33 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       url = classLoader.getResource(ZEPPELIN_SITE_XML);
     }
 
-    // Support for using ZeppelinConfiguration in RemoteInterpreterServer
     if (url == null) {
       try {
-        String zeppelinHome = getClassPath(ZeppelinConfiguration.class);
-        zeppelinHome = zeppelinHome.replace("/lib/interpreter", "");
-        String zeppelinConfDir = zeppelinHome + "/conf/" + ZEPPELIN_SITE_XML;
-        File file = new File(zeppelinConfDir);
-        if (file.exists()) {
-          url = file.toURL();
-        } else {
-          LOG.warn(zeppelinConfDir + " not exist!");
+        Map procEnv = EnvironmentUtils.getProcEnvironment();
+        if (procEnv.containsKey("ZEPPELIN_HOME")) {
+          String zconfDir = (String) procEnv.get("ZEPPELIN_HOME");
+          File file = new File(zconfDir + File.separator
+              + "conf" + File.separator + ZEPPELIN_SITE_XML);
+          if (file.exists()) {
+            url = file.toURL();
+          }
         }
-      } catch (MalformedURLException e) {
+      } catch (IOException e) {
         LOG.error(e.getMessage(), e);
-      } catch (UnsupportedEncodingException e) {
+      }
+    }
+
+    if (url == null) {
+      try {
+        Map procEnv = EnvironmentUtils.getProcEnvironment();
+        if (procEnv.containsKey("ZEPPELIN_CONF_DIR")) {
+          String zconfDir = (String) procEnv.get("ZEPPELIN_CONF_DIR");
+          File file = new File(zconfDir + File.separator + ZEPPELIN_SITE_XML);
+          if (file.exists()) {
+            url = file.toURL();
+          }
+        }
+      } catch (IOException e) {
         LOG.error(e.getMessage(), e);
       }
     }
@@ -163,72 +175,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     LOG.info("Zeppelin Version: " + Util.getVersion());
 
     return conf;
-  }
-
-  private static String getClassPath(Class cls) throws UnsupportedEncodingException {
-    // Check if the parameters passed in by the user are empty
-    if (cls == null) {
-      throw new java.lang.IllegalArgumentException("The parameter cannot be empty!");
-    }
-
-    ClassLoader loader = cls.getClassLoader();
-    // Get the full name of the class, including the package name
-    String clsName = cls.getName() + ".class";
-    // Get the package where the incoming parameters are located
-    Package pack = cls.getPackage();
-    String path = "";
-    // If not an anonymous package, convert the package name to a path
-    if (pack != null) {
-      String packName = pack.getName();
-      // Here is a simple decision to determine whether it is a Java base class library,
-      // preventing users from passing in the JDK built-in class library.
-      if (packName.startsWith("java.") || packName.startsWith("javax.")) {
-        throw new java.lang.IllegalArgumentException("Do not transfer system classes!");
-      }
-
-      // In the name of the class, remove the part of the package name
-      // and get the file name of the class.
-      clsName = clsName.substring(packName.length() + 1);
-      // Determine whether the package name is a simple package name, and if so,
-      // directly convert the package name to a path.
-      if (packName.indexOf(".") < 0) {
-        path = packName + "/";
-      } else {
-        // Otherwise, the package name is converted to a path according
-        // to the component part of the package name.
-        int start = 0, end = 0;
-        end = packName.indexOf(".");
-        while (end != -1) {
-          path = path + packName.substring(start, end) + "/";
-          start = end + 1;
-          end = packName.indexOf(".", start);
-        }
-        path = path + packName.substring(start) + "/";
-      }
-    }
-    // Call the classReloader's getResource method, passing in the
-    // class file name containing the path information.
-    java.net.URL url = loader.getResource(path + clsName);
-    // Get path information from the URL object
-    String realPath = url.getPath();
-    // Remove the protocol name "file:" in the path information.
-    int pos = realPath.indexOf("file:");
-    if (pos > -1) {
-      realPath = realPath.substring(pos + 5);
-    }
-    // Remove the path information and the part that contains the class file information,
-    // and get the path where the class is located.
-    pos = realPath.indexOf(path + clsName);
-    realPath = realPath.substring(0, pos - 1);
-    // If the class file is packaged into a JAR file, etc.,
-    // remove the corresponding JAR and other package file names.
-    if (realPath.endsWith("!")) {
-      realPath = realPath.substring(0, realPath.lastIndexOf("/"));
-    }
-
-    realPath = java.net.URLDecoder.decode(realPath, "utf-8");
-
-    return realPath;
   }
 
   private String getStringValue(String name, String d) {
