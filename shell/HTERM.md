@@ -11,9 +11,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
+Original link: https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm
+
 # Embedding hterm
 
-https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm
 
 This is a quick overview describing how to use hterm in your own application. Please direct any questions to the [chromium-hterm mailing list](https://groups.google.com/a/chromium.org/forum/?fromgroups#!forum/chromium-hterm).
 

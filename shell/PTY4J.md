@@ -11,9 +11,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-# Pty4J - Pseudo terminal(PTY) implementation in Java.
 
-https://github.com/JetBrains/pty4j
+Original link: https://github.com/JetBrains/pty4j
+
+# Pty4J - Pseudo terminal(PTY) implementation in Java.
 
 [![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
