@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -356,6 +357,18 @@ public class InterpreterSetting {
       RemoteInterpreterEventServer interpreterEventServer) {
     this.interpreterEventServer = interpreterEventServer;
     return this;
+  }
+
+  public InterpreterInfo getInterpreterInfo(String name) {
+    Iterator it = this.interpreterInfos.iterator();
+    while (it.hasNext()) {
+      InterpreterInfo info = (InterpreterInfo) it.next();
+      if (StringUtils.equals(info.getName(), name)) {
+        return info;
+      }
+    }
+
+    return null;
   }
 
   public RecoveryStorage getRecoveryStorage() {

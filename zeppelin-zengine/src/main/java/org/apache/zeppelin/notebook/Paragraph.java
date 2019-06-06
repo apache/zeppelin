@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -346,8 +347,36 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public boolean shouldSkipRunParagraph() {
+    // Because the user can arbitrarily specify the paragraph's interpreter
+    // So need to determine the configuration of the interpreter
+    // and the secondary interpreter at runtime.
+    Map<String, Object> intpConfig = this.config;
+
+    if (!StringUtils.isBlank(intpText)) {
+      String[] intpList = intpText.split("\\.");
+      if (intpList.length > 0) {
+        InterpreterSettingManager intpSettingManager = note.getInterpreterSettingManager();
+        String intpName = intpList[0];
+        try {
+          InterpreterSetting intpSetting = intpSettingManager.getInterpreterSettingByName(intpName);
+          String intpInfoName = intpName; // e.g %sh
+
+          // e.g %sh.terminal
+          if (intpList.length == 2) {
+            intpInfoName = intpList[1];
+          }
+          InterpreterInfo interpreterInfo = intpSetting.getInterpreterInfo(intpInfoName);
+          if (null != interpreterInfo && null != interpreterInfo.getConfig()) {
+            intpConfig = interpreterInfo.getConfig();
+          }
+        } catch (RuntimeException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
     // check interpreter-setting.json `config.checkEmpty` is equal false
-    Object configCheckEmpty = this.config.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
+    Object configCheckEmpty = intpConfig.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
     if (null != configCheckEmpty) {
       boolean checkEmtpy = PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT;
       try {
