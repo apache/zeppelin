@@ -38,7 +38,7 @@
     <interpreter.name>flink</interpreter.name>
     <flink.version>1.7.1</flink.version>
     <flink.akka.version>2.3.7</flink.akka.version>
-    <scala.macros.version>2.0.1</scala.macros.version>
+    <scala.macros.version>2.1.1</scala.macros.version>
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.11</scala.version>
 
