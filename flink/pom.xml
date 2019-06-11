@@ -40,7 +40,7 @@
     <flink.akka.version>2.3.7</flink.akka.version>
     <scala.macros.version>2.0.1</scala.macros.version>
     <scala.binary.version>2.11</scala.binary.version>
-    <scala.version>2.11.8</scala.version>
+    <scala.version>2.11.11</scala.version>
 
     <!--plugin versions-->
     <plugin.scalamaven.version>3.2.2</plugin.scalamaven.version>
