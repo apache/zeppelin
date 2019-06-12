@@ -24,14 +24,13 @@ import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{JobProgressUtil, SparkConf, SparkContext}
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
-import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
+import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterGroup, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
-import scala.tools.nsc.interpreter.Completion.ScalaCompleter
+import scala.tools.nsc.interpreter.Completion
 import scala.util.control.NonFatal
 
 /**
@@ -40,10 +39,15 @@ import scala.util.control.NonFatal
   *
   * @param conf
   * @param depFiles
+  * @param properties
+  * @param interpreterGroup
   */
 abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
                                          val depFiles: java.util.List[String],
-                                         val printReplOutput: java.lang.Boolean) {
+                                         val properties: java.util.Properties,
+                                         val interpreterGroup: InterpreterGroup,
+                                         val sparkInterpreterClassLoader: URLClassLoader)
+  extends AbstractSparkScalaInterpreter() {
 
   protected lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -59,7 +63,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected var sparkUrl: String = _
 
-  protected var scalaCompleter: ScalaCompleter = _
+  protected var scalaCompletion: Completion = _
+
+  protected var z: SparkZeppelinContext = _
 
   protected val interpreterOutput: InterpreterOutputStream
 
@@ -139,17 +145,19 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result
 
-  protected def completion(buf: String,
-                           cursor: Int,
-                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
-    val completions = scalaCompleter.complete(buf.substring(0, cursor), cursor).candidates
-      .map(e => new InterpreterCompletion(e, e, null))
-    scala.collection.JavaConversions.seqAsJavaList(completions)
-  }
-
   protected def getProgress(jobGroup: String, context: InterpreterContext): Int = {
     JobProgressUtil.progress(sc, jobGroup)
   }
+
+  override def getSparkContext: SparkContext = sc
+
+  override def getSqlContext: SQLContext = sqlContext
+
+  override def getSparkSession: AnyRef = sparkSession
+
+  override def getSparkUrl: String = sparkUrl
+
+  override def getZeppelinContext: BaseZeppelinContext = z
 
   protected def bind(name: String, tpe: String, value: Object, modifier: List[String]): Unit
 
@@ -161,20 +169,18 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind(name, tpe, value, modifier.asScala.toList)
 
   protected def close(): Unit = {
-    if (BaseSparkScalaInterpreter.sessionNum.decrementAndGet() == 0) {
-      if (sc != null) {
-        sc.stop()
-      }
-      if (sparkHttpServer != null) {
-        sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-      }
-      sc = null
-      sqlContext = null
-      if (sparkSession != null) {
-        sparkSession.getClass.getMethod("stop").invoke(sparkSession)
-        sparkSession = null
-      }
+    if (sparkHttpServer != null) {
+      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
     }
+    if (sc != null) {
+      sc.stop()
+    }
+    sc = null
+    if (sparkSession != null) {
+      sparkSession.getClass.getMethod("stop").invoke(sparkSession)
+      sparkSession = null
+    }
+    sqlContext = null
   }
 
   protected def createSparkContext(): Unit = {
@@ -295,6 +301,16 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     interpret("print(\"\")")
   }
 
+  protected def createZeppelinContext(): Unit = {
+    val sparkShims = SparkShims.getInstance(sc.version, properties)
+    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
+
+    z = new SparkZeppelinContext(sc, sparkShims,
+      interpreterGroup.getInterpreterHookRegistry,
+      properties.getProperty("zeppelin.spark.maxResult").toInt)
+    bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))
+  }
+
   private def isSparkSessionPresent(): Boolean = {
     try {
       Class.forName("org.apache.spark.sql.SparkSession")
@@ -392,6 +408,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         classLoader = classLoader.getParent
       }
     }
+
+    extraJars ++= sparkInterpreterClassLoader.getURLs().map(_.toString)
     LOGGER.debug("User jar for spark repl: " + extraJars.mkString(","))
     extraJars
   }

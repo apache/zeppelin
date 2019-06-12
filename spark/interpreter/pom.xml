@@ -48,7 +48,7 @@
     <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
     <datanucleus.core.version>3.2.10</datanucleus.core.version>
 
-    <scala.compile.version>${scala.version}</scala.compile.version>
+    <scala.compile.version>${spark.scala.version}</scala.compile.version>
     <!-- settings -->
     <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
@@ -59,18 +59,20 @@
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-display</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-scala-2.10</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.zeppelin</groupId>
-      <artifactId>spark-scala-2.11</artifactId>
-      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-compiler</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scalap</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -126,14 +128,14 @@
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-repl_${scala.binary.version}</artifactId>
+      <artifactId>spark-repl_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.binary.version}</artifactId>
+      <artifactId>spark-core_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
       <exclusions>
@@ -153,7 +155,7 @@
 
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${scala.binary.version}</artifactId>
+      <artifactId>spark-hive_${spark.scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -172,21 +174,21 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${spark.scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -212,7 +214,7 @@
     <!--test libraries-->
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <artifactId>scalatest_${spark.scala.binary.version}</artifactId>
       <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>

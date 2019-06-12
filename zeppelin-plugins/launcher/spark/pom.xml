@@ -53,6 +53,16 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${plugin.surefire.version}</version>
+                <configuration>
+                    <environmentVariables>
+                        <ZEPPELIN_HOME>${project.basedir}/../../..</ZEPPELIN_HOME>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

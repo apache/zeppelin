@@ -34,16 +34,14 @@ import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter._
 
 /**
-  * SparkInterpreter for scala-2.11
+  * SparkInterpreter for scala-2.12
   */
-class SparkScala211Interpreter(override val conf: SparkConf,
+class SparkScala212Interpreter(override val conf: SparkConf,
                                override val depFiles: java.util.List[String],
                                override val properties: Properties,
                                override val interpreterGroup: InterpreterGroup,
                                override val sparkInterpreterClassLoader: URLClassLoader)
   extends BaseSparkScalaInterpreter(conf, depFiles, properties, interpreterGroup, sparkInterpreterClassLoader) {
-
-  import SparkScala211Interpreter._
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -61,10 +59,6 @@ class SparkScala211Interpreter(override val conf: SparkConf,
     val outputDir = Files.createTempDirectory(Paths.get(rootDir), "spark").toFile
     outputDir.deleteOnExit()
     conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath)
-    startHttpServer(outputDir).foreach { case (server, uri) =>
-      sparkHttpServer = server
-      conf.set("spark.repl.class.uri", uri)
-    }
 
     val settings = new Settings()
     settings.processArguments(List("-Yrepl-class-based",
@@ -82,13 +76,12 @@ class SparkScala211Interpreter(override val conf: SparkConf,
     sparkILoop = new SparkILoop(None, replOut)
     sparkILoop.settings = settings
     sparkILoop.createInterpreter()
-
-    val in0 = getField(sparkILoop, "scala$tools$nsc$interpreter$ILoop$$in0").asInstanceOf[Option[BufferedReader]]
+    val in0 = getDeclareField(sparkILoop, "in0").asInstanceOf[Option[BufferedReader]]
     val reader = in0.fold(sparkILoop.chooseReader(settings))(r => SimpleReader(r, replOut, interactive = true))
 
     sparkILoop.in = reader
     sparkILoop.initializeSynchronous()
-    loopPostInit(this)
+    sparkILoop.in.postInit()
     this.scalaCompletion = reader.completion
 
     createSparkContext()
@@ -96,9 +89,9 @@ class SparkScala211Interpreter(override val conf: SparkConf,
   }
 
   protected override def completion(buf: String,
-                                    cursor: Int,
-                                    context: InterpreterContext): java.util.List[InterpreterCompletion] = {
-    val completions = scalaCompletion.completer().complete(buf.substring(0, cursor), cursor).candidates
+                           cursor: Int,
+                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
+    val completions = scalaCompletion.complete(buf.substring(0, cursor), cursor).candidates
       .map(e => new InterpreterCompletion(e, e, null))
     scala.collection.JavaConversions.seqAsJavaList(completions)
   }
@@ -112,6 +105,7 @@ class SparkScala211Interpreter(override val conf: SparkConf,
     }
   }
 
+
   override def close(): Unit = {
     super.close()
     if (sparkILoop != null) {
@@ -122,73 +116,4 @@ class SparkScala211Interpreter(override val conf: SparkConf,
   def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result =
     sparkILoop.interpret(code)
 
-}
-
-private object SparkScala211Interpreter {
-
-  /**
-    * This is a hack to call `loopPostInit` at `ILoop`. At higher version of Scala such
-    * as 2.11.12, `loopPostInit` became a nested function which is inaccessible. Here,
-    * we redefine `loopPostInit` at Scala's 2.11.8 side and ignore `loadInitFiles` being called at
-    * Scala 2.11.12 since here we do not have to load files.
-    *
-    * Both methods `loopPostInit` and `unleashAndSetPhase` are redefined, and `phaseCommand` and
-    * `asyncMessage` are being called via reflection since both exist in Scala 2.11.8 and 2.11.12.
-    *
-    * Please see the codes below:
-    * https://github.com/scala/scala/blob/v2.11.8/src/repl/scala/tools/nsc/interpreter/ILoop.scala
-    * https://github.com/scala/scala/blob/v2.11.12/src/repl/scala/tools/nsc/interpreter/ILoop.scala
-    *
-    * See also ZEPPELIN-3810.
-    */
-  private def loopPostInit(interpreter: SparkScala211Interpreter): Unit = {
-    import StdReplTags._
-    import scala.reflect.classTag
-    import scala.reflect.io
-
-    val sparkILoop = interpreter.sparkILoop
-    val intp = sparkILoop.intp
-    val power = sparkILoop.power
-    val in = sparkILoop.in
-
-    def loopPostInit() {
-      // Bind intp somewhere out of the regular namespace where
-      // we can get at it in generated code.
-      intp.quietBind(NamedParam[IMain]("$intp", intp)(tagOfIMain, classTag[IMain]))
-      // Auto-run code via some setting.
-      (replProps.replAutorunCode.option
-        flatMap (f => io.File(f).safeSlurp())
-        foreach (intp quietRun _)
-        )
-      // classloader and power mode setup
-      intp.setContextClassLoader()
-      if (isReplPower) {
-        replProps.power setValue true
-        unleashAndSetPhase()
-        asyncMessage(power.banner)
-      }
-      // SI-7418 Now, and only now, can we enable TAB completion.
-      in.postInit()
-    }
-
-    def unleashAndSetPhase() = if (isReplPower) {
-      power.unleash()
-      intp beSilentDuring phaseCommand("typer") // Set the phase to "typer"
-    }
-
-    def phaseCommand(name: String): Results.Result = {
-      interpreter.callMethod(
-        sparkILoop,
-        "scala$tools$nsc$interpreter$ILoop$$phaseCommand",
-        Array(classOf[String]),
-        Array(name)).asInstanceOf[Results.Result]
-    }
-
-    def asyncMessage(msg: String): Unit = {
-      interpreter.callMethod(
-        sparkILoop, "asyncMessage", Array(classOf[String]), Array(msg))
-    }
-
-    loopPostInit()
-  }
 }

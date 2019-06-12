@@ -33,10 +33,29 @@
   <name>Zeppelin: Spark Interpreter Scala_2.10</name>
 
   <properties>
-    <spark.version>2.2.0</spark.version>
-    <scala.version>2.10.5</scala.version>
-    <scala.binary.version>2.10</scala.binary.version>
-    <scala.compile.version>${scala.version}</scala.compile.version>
+    <spark.version>2.2.3</spark.version>
+    <spark.scala.version>2.10.5</spark.scala.version>
+    <spark.scala.binary.version>2.10</spark.scala.binary.version>
+    <spark.scala.compile.version>${spark.scala.version}</spark.scala.compile.version>
   </properties>
 
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

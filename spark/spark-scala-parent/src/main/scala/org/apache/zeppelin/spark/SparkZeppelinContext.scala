@@ -37,12 +37,11 @@ class SparkZeppelinContext(val sc: SparkContext,
                            val maxResult2: Int) extends BaseZeppelinContext(hooks2, maxResult2) {
 
   private val interpreterClassMap = Map(
-    "spark" -> "org.apache.zeppelin.spark.SparkInterpreter",
-    "sql" -> "org.apache.zeppelin.spark.SparkSqlInterpreter",
-    "dep" -> "org.apache.zeppelin.spark.DepInterpreter",
-    "pyspark" -> "org.apache.zeppelin.spark.PySparkInterpreter",
-    "ipyspark" -> "org.apache.zeppelin.spark.IPySparkInterpreter",
-    "r" -> "org.apache.zeppelin.spark.SparkRInterpreter"
+    ("spark", "org.apache.zeppelin.spark.SparkInterpreter"),
+    ("sql", "org.apache.zeppelin.spark.SparkSqlInterpreter"),
+    ("pyspark", "org.apache.zeppelin.spark.PySparkInterpreter"),
+    ("ipyspark", "org.apache.zeppelin.spark.IPySparkInterpreter"),
+    ("r", "org.apache.zeppelin.spark.SparkRInterpreter")
   )
 
   private val supportedClasses = scala.collection.mutable.ArrayBuffer[Class[_]]()

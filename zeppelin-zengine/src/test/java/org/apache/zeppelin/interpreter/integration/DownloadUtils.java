@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.integration;
+package org.apache.zeppelin.interpreter.integration;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -65,7 +65,7 @@ public class DownloadUtils {
       LOGGER.info("Skip to download flink as it is already downloaded.");
       return targetFlinkHomeFolder.getAbsolutePath();
     }
-    download("flink", version, "-bin-hadoop27-scala_2.11.tgz");
+    download("flink", version, "-bin-hadoop2.6.tgz");
     return targetFlinkHomeFolder.getAbsolutePath();
   }
 

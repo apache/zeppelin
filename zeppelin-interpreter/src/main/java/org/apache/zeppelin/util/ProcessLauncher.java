@@ -93,7 +93,6 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
   }
 
   public void onProcessRunning() {
-    LOGGER.info("Process is running");
     transition(State.RUNNING);
   }
 

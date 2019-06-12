@@ -29,7 +29,7 @@ import org.jsoup.safety.Whitelist
 import scala.collection.JavaConversions._
 import scala.util.matching.Regex
 
-case class RDisplay(content: String, `type`: Type, code: Code)
+class RDisplay(val content: String, val typ: Type, val code: Code)
 
 object ZeppelinRDisplay {
 
@@ -42,7 +42,7 @@ object ZeppelinRDisplay {
 
     val body = document.body()
 
-    if (body.getElementsByTag("p").isEmpty) return RDisplay(body.html(), HTML, SUCCESS)
+    if (body.getElementsByTag("p").isEmpty) return new RDisplay(body.html(), HTML, SUCCESS)
 
     val bodyHtml = body.html()
 
@@ -70,21 +70,21 @@ object ZeppelinRDisplay {
     // remove HTML tag while preserving whitespaces and newlines
     val text = Jsoup.clean(body.html(), "",
       Whitelist.none(), new OutputSettings().prettyPrint(false))
-    RDisplay(text, TEXT, SUCCESS)
+    new RDisplay(text, TEXT, SUCCESS)
   }
 
   private def tableDisplay(body: Element): RDisplay = {
     val p = body.getElementsByTag("p").first().html.replace("“%table " , "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val table = p.replace(r, "").replace("\\t", "\t").replace("\\n", "\n")
-    RDisplay(table, TABLE, SUCCESS)
+    new RDisplay(table, TABLE, SUCCESS)
   }
 
   private def imgDisplay(body: Element): RDisplay = {
     val p = body.getElementsByTag("p").first().html.replace("“%img " , "").replace("”", "")
     val r = (pattern findFirstIn p).getOrElse("")
     val img = p.replace(r, "")
-    RDisplay(img, IMG, SUCCESS)
+    new RDisplay(img, IMG, SUCCESS)
   }
 
   private def htmlDisplay(body: Element, imageWidth: String): RDisplay = {
@@ -112,6 +112,6 @@ object ZeppelinRDisplay {
       image.attr("width", imageWidth)
     }
 
-    RDisplay(body.html, HTML, SUCCESS)
+    new RDisplay(body.html, HTML, SUCCESS)
   }
 }
