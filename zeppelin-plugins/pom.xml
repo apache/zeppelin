@@ -64,6 +64,14 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>zeppelin-zengine</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Test libraries -->
         <dependency>
             <groupId>junit</groupId>

@@ -39,7 +39,6 @@ class Utils {
           "%html <font color=\"red\">Spark lower than 2.2 is deprecated, " +
           "if you don't want to see this message, please set " +
           "zeppelin.spark.deprecateMsg.show to false.</font>";
-  private static final String SCALA_COMPILER_VERSION = evaluateScalaCompilerVersion();
 
   static Object invokeMethod(Object o, String name) {
     return invokeMethod(o, name, new Class[]{}, new Object[]{});
@@ -104,45 +103,6 @@ class Utils {
     } catch (IncompatibleClassChangeError e) {
       return false;
     }
-  }
-
-  static boolean isScala2_11() {
-    return !isScala2_10();
-  }
-  
-  static boolean isCompilerAboveScala2_11_7() {
-    if (isScala2_10() || SCALA_COMPILER_VERSION == null) {
-      return false;
-    }
-    Pattern p = Pattern.compile("([0-9]+)[.]([0-9]+)[.]([0-9]+)");
-    Matcher m = p.matcher(SCALA_COMPILER_VERSION);
-    if (m.matches()) {
-      int major = Integer.parseInt(m.group(1));
-      int minor = Integer.parseInt(m.group(2));
-      int bugfix = Integer.parseInt(m.group(3));
-      return (major > 2 || (major == 2 && minor > 11) || (major == 2 && minor == 11 && bugfix > 7));
-    }
-    return false;
-  }
-
-  private static String evaluateScalaCompilerVersion() {
-    String version = null;
-    try {
-      Properties p = new Properties();
-      Class<?> completionClass = findClass("scala.tools.nsc.interpreter.JLineCompletion");
-      if (completionClass != null) {
-        try (java.io.InputStream in = completionClass.getClass()
-          .getResourceAsStream("/compiler.properties")) {
-          p.load(in);
-          version = p.getProperty("version.number");
-        } catch (java.io.IOException e) {
-          logger.error("Failed to evaluate Scala compiler version", e);
-        }
-      }
-    } catch (RuntimeException e) {
-      logger.error("Failed to evaluate Scala compiler version", e);
-    }
-    return version;
   }
 
   static boolean isSpark2() {

@@ -140,7 +140,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     if (context.getLocalProperties().containsKey("pool")) {
       pool = "'" + context.getLocalProperties().get("pool") + "'";
     }
-    String setPoolStmt = "sc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
+    String setPoolStmt = "if 'sc' in locals():\n\tsc.setLocalProperty('spark.scheduler.pool', " + pool + ")";
     callPython(new PythonInterpretRequest(setPoolStmt, false, false));
   }
 

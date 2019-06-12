@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.spark
+package org.apache.zeppelin.spark
+
+import org.apache.spark.SparkContext
 
 object JobProgressUtil {
 

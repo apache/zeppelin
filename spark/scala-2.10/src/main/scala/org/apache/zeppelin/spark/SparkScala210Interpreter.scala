@@ -18,14 +18,16 @@
 package org.apache.zeppelin.spark
 
 import java.io.File
+import java.net.URLClassLoader
 import java.nio.file.{Files, Paths}
+import java.util.Properties
 
 import org.apache.spark.SparkConf
 import org.apache.spark.repl.SparkILoop
 import org.apache.spark.repl.SparkILoop._
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
-import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
+import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterGroup}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.tools.nsc.Settings
@@ -36,8 +38,10 @@ import scala.tools.nsc.interpreter._
   */
 class SparkScala210Interpreter(override val conf: SparkConf,
                                override val depFiles: java.util.List[String],
-                               override val printReplOutput: java.lang.Boolean)
-  extends BaseSparkScalaInterpreter(conf, depFiles, printReplOutput) {
+                               override val properties: Properties,
+                               override val interpreterGroup: InterpreterGroup,
+                               override val sparkInterpreterClassLoader: URLClassLoader)
+  extends BaseSparkScalaInterpreter(conf, depFiles, properties, interpreterGroup, sparkInterpreterClassLoader) {
 
   lazy override val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -64,10 +68,10 @@ class SparkScala210Interpreter(override val conf: SparkConf,
     }
 
     val settings = new Settings()
-    settings.embeddedDefaults(Thread.currentThread().getContextClassLoader())
+    settings.embeddedDefaults(sparkInterpreterClassLoader)
     settings.usejavacp.value = true
     settings.classpath.value = getUserJars.mkString(File.pathSeparator)
-    if (printReplOutput) {
+    if (properties.getProperty("zeppelin.spark.printREPLOutput", "true").toBoolean) {
       Console.setOut(interpreterOutput)
     }
     sparkILoop = new SparkILoop()
@@ -80,13 +84,18 @@ class SparkScala210Interpreter(override val conf: SparkConf,
       "org$apache$spark$repl$SparkILoop$$chooseReader",
       Array(settings.getClass), Array(settings)).asInstanceOf[InteractiveReader]
     setDeclaredField(sparkILoop, "org$apache$spark$repl$SparkILoop$$in", reader)
-    scalaCompleter = reader.completion.completer()
+    this.scalaCompletion = reader.completion
 
     createSparkContext()
+    createZeppelinContext()
   }
 
-  override def close(): Unit = {
-    super.close()
+  protected def completion(buf: String,
+                                    cursor: Int,
+                                    context: InterpreterContext): java.util.List[InterpreterCompletion] = {
+    val completions = scalaCompletion.completer().complete(buf.substring(0, cursor), cursor).candidates
+      .map(e => new InterpreterCompletion(e, e, null))
+    scala.collection.JavaConversions.seqAsJavaList(completions)
   }
 
   def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result =
