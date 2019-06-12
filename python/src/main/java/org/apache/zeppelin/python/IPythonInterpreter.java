@@ -86,6 +86,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   private boolean useBuiltinPy4j = true;
   private boolean useAuth = false;
   private String secret;
+  private volatile boolean pythonProcessFailed = false;
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
@@ -161,7 +162,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   /**
    * non-empty return value mean the errors when checking ipython prerequisite.
    * empty value mean IPython prerequisite is meet.
-   * 
+   *
    * @param pythonExec
    * @return
    */
@@ -180,6 +181,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             IOUtils.toString(new FileInputStream(stderrFile));
       }
       String freezeOutput = IOUtils.toString(new FileInputStream(stdoutFile));
+      LOGGER.debug("Installed python packages:\n" + freezeOutput);
       if (!freezeOutput.contains("jupyter-client=")) {
         return "jupyter-client is not installed.";
       }
@@ -277,7 +279,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
 
     // wait until IPython kernel is started or timeout
     long startTime = System.currentTimeMillis();
-    while (true) {
+    while (!pythonProcessFailed) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -302,6 +304,9 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
             + " seconds");
       }
     }
+    if (pythonProcessFailed) {
+      throw new IOException("Fail to launch IPython Kernel as the python process is failed");
+    }
   }
 
   protected Map<String, String> setupIPythonEnv() throws IOException {
@@ -325,6 +330,11 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
     if (watchDog != null) {
       LOGGER.debug("Kill IPython Process");
       ipythonClient.stop(StopRequest.newBuilder().build());
+      try {
+        ipythonClient.shutdown();
+      } catch (InterruptedException e) {
+        LOGGER.warn("Fail to shutdown IPythonClient");
+      }
       watchDog.destroyProcess();
       gatewayServer.shutdown();
     }
@@ -396,6 +406,7 @@ public class IPythonInterpreter extends Interpreter implements ExecuteResultHand
   @Override
   public void onProcessFailed(ExecuteException e) {
     LOGGER.warn("Exception happens in Python Process", e);
+    pythonProcessFailed = true;
   }
 
   private static class ProcessLogOutputStream extends LogOutputStream {

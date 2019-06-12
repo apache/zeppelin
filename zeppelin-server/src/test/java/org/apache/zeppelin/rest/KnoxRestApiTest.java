@@ -56,7 +56,7 @@ public class KnoxRestApiTest extends AbstractTestRestApi {
   }
 
 
-  @Test
+  //  @Test
   public void testThatOtherUserCanAccessNoteIfPermissionNotSet() throws IOException {
     GetMethod loginWithoutCookie = httpGet("/api/security/ticket");
     Map result = gson.fromJson(loginWithoutCookie.getResponseBodyAsString(), Map.class);

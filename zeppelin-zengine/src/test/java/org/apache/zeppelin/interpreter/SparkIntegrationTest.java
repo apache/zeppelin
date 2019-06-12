@@ -5,24 +5,24 @@ import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsResponse;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(value = Parameterized.class)
-public class SparkIntegrationTest {
+public abstract class SparkIntegrationTest {
   private static Logger LOGGER = LoggerFactory.getLogger(SparkIntegrationTest.class);
 
   private static MiniHadoopCluster hadoopCluster;
@@ -37,18 +37,6 @@ public class SparkIntegrationTest {
     LOGGER.info("Testing SparkVersion: " + sparkVersion);
     this.sparkVersion = sparkVersion;
     this.sparkHome = SparkDownloadUtils.downloadSpark(sparkVersion);
-  }
-
-  @Parameterized.Parameters
-  public static List<Object[]> data() {
-    return Arrays.asList(new Object[][]{
-            {"2.4.0"},
-            {"2.3.2"},
-            {"2.2.1"},
-            {"2.1.2"},
-            {"2.0.2"},
-            {"1.6.3"}
-    });
   }
 
   @BeforeClass
@@ -72,7 +60,14 @@ public class SparkIntegrationTest {
     }
   }
 
-  private void testInterpreterBasics() throws IOException, InterpreterException {
+  private void testInterpreterBasics() throws IOException, InterpreterException, XmlPullParserException {
+    // add jars & packages for testing
+    InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
+    sparkInterpreterSetting.setProperty("spark.jars.packages", "com.maxmind.geoip2:geoip2:2.5.0");
+    MavenXpp3Reader reader = new MavenXpp3Reader();
+    Model model = reader.read(new FileReader("pom.xml"));
+    sparkInterpreterSetting.setProperty("spark.jars", new File("target/zeppelin-zengine-" + model.getVersion() + ".jar").getAbsolutePath());
+
     // test SparkInterpreter
     interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getInterpreterSettingIds());
     Interpreter sparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.spark");
@@ -86,6 +81,11 @@ public class SparkIntegrationTest {
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
     assertTrue(interpreterResult.msg.get(0).getData().contains("45"));
 
+    // test jars & packages can be loaded correctly
+    interpreterResult = sparkInterpreter.interpret("import org.apache.zeppelin.interpreter.install.InstallInterpreter\n" +
+            "import com.maxmind.geoip2._", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+
     // test PySparkInterpreter
     Interpreter pySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.pyspark");
     interpreterResult = pySparkInterpreter.interpret("sqlContext.createDataFrame([(1,'a'),(2,'b')], ['id','name']).registerTempTable('test')", context);
@@ -94,7 +94,7 @@ public class SparkIntegrationTest {
     // test IPySparkInterpreter
     Interpreter ipySparkInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.ipyspark");
     interpreterResult = ipySparkInterpreter.interpret("sqlContext.table('test').show()", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code);
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code);
 
     // test SparkSQLInterpreter
     Interpreter sqlInterpreter = interpreterFactory.getInterpreter("user1", "note1", "spark.sql");
@@ -116,7 +116,7 @@ public class SparkIntegrationTest {
   }
 
   @Test
-  public void testLocalMode() throws IOException, YarnException, InterpreterException, InterruptedException {
+  public void testLocalMode() throws IOException, YarnException, InterpreterException, InterruptedException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "local[*]");
     sparkInterpreterSetting.setProperty("SPARK_HOME", sparkHome);
@@ -136,7 +136,7 @@ public class SparkIntegrationTest {
   }
 
   @Test
-  public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException {
+  public void testYarnClientMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-client");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());
@@ -158,7 +158,7 @@ public class SparkIntegrationTest {
   }
 
   @Test
-  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException {
+  public void testYarnClusterMode() throws IOException, YarnException, InterruptedException, InterpreterException, XmlPullParserException {
     InterpreterSetting sparkInterpreterSetting = interpreterSettingManager.getInterpreterSettingByName("spark");
     sparkInterpreterSetting.setProperty("master", "yarn-cluster");
     sparkInterpreterSetting.setProperty("HADOOP_CONF_DIR", hadoopCluster.getConfigPath());

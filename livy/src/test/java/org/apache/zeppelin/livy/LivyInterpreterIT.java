@@ -606,7 +606,8 @@ public class LivyInterpreterIT {
       result = sparkRInterpreter.interpret("cat(a)", context);
       assertEquals(InterpreterResult.Code.ERROR, result.code());
       assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
-      assertTrue(result.message().get(0).getData().contains("object 'a' not found"));
+      assertTrue("Actual Result: " + result.message().get(0).getData(),
+              result.message().get(0).getData().contains("object 'a' not found"));
     } finally {
       sparkRInterpreter.close();
     }

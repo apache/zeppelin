@@ -159,6 +159,13 @@ public class NewSparkInterpreterTest {
         "object Counter {\n def apply(x: Long) = new Counter()\n}", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    // class extend
+    result = interpreter.interpret("import java.util.ArrayList", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    result = interpreter.interpret("class MyArrayList extends ArrayList{}", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
     // spark rdd operation
     result = interpreter.interpret("sc.range(1, 10).sum", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -355,32 +362,6 @@ public class NewSparkInterpreterTest {
     Thread.sleep(1000);
     interpreter.cancel(context3);
     interpretThread.join();
-  }
-
-  @Test
-  public void testDependencies() throws IOException, InterpreterException {
-    Properties properties = new Properties();
-    properties.setProperty("spark.master", "local");
-    properties.setProperty("spark.app.name", "test");
-    properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.useNew", "true");
-
-    // download spark-avro jar
-    URL website = new URL("http://repo1.maven.org/maven2/com/databricks/spark-avro_2.11/3.2.0/spark-avro_2.11-3.2.0.jar");
-    ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-    File avroJarFile = new File("spark-avro_2.11-3.2.0.jar");
-    FileOutputStream fos = new FileOutputStream(avroJarFile);
-    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-
-    properties.setProperty("spark.jars", avroJarFile.getAbsolutePath());
-
-    interpreter = new SparkInterpreter(properties);
-    assertTrue(interpreter.getDelegation() instanceof NewSparkInterpreter);
-    interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
-    interpreter.open();
-
-    InterpreterResult result = interpreter.interpret("import com.databricks.spark.avro._", getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   //TODO(zjffdu) This unit test will fail due to classpath issue, should enable it after the classpath issue is fixed.
