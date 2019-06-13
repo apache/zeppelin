@@ -21,6 +21,7 @@ package org.apache.zeppelin.flink
 import java.io.BufferedReader
 import java.nio.file.Files
 import java.util.Properties
+
 import org.apache.flink.api.scala.FlinkShell._
 import org.apache.flink.api.scala.{ExecutionEnvironment, FlinkILoop}
 import org.apache.flink.client.program.ClusterClient
@@ -29,19 +30,17 @@ import org.apache.flink.runtime.minicluster.MiniCluster
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.TableEnvironment
 import org.apache.flink.table.api.scala.{BatchTableEnvironment, StreamTableEnvironment}
-import org.apache.spark.repl.SparkILoop
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
+
 import scala.collection.JavaConverters._
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter
-import scala.tools.nsc.interpreter.{JPrintWriter, SimpleReader, _}
+import scala.tools.nsc.interpreter.{JPrintWriter, SimpleReader}
 
 class FlinkScalaInterpreter(val properties: Properties) {
-
-  import FlinkScalaInterpreter._
 
   lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -105,8 +104,7 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
     flinkILoop.in = reader
     flinkILoop.initializeSynchronous()
-
-    loopPostInit(this)
+    callMethod(flinkILoop, "scala$tools$nsc$interpreter$ILoop$$loopPostInit")
     this.scalaCompleter = reader.completion.completer()
 
     this.benv = flinkILoop.scalaBenv
@@ -232,72 +230,4 @@ class FlinkScalaInterpreter(val properties: Properties) {
 
   def getBatchTableEnviroment(): BatchTableEnvironment = this.btenv
 
-}
-
-private object FlinkScalaInterpreter {
-
-  /**
-    * This is a hack to call `loopPostInit` at `ILoop`. At higher version of Scala such
-    * as 2.11.12, `loopPostInit` became a nested function which is inaccessible. Here,
-    * we redefine `loopPostInit` at Scala's 2.11.8 side and ignore `loadInitFiles` being called at
-    * Scala 2.11.12 since here we do not have to load files.
-    *
-    * Both methods `loopPostInit` and `unleashAndSetPhase` are redefined, and `phaseCommand` and
-    * `asyncMessage` are being called via reflection since both exist in Scala 2.11.8 and 2.11.12.
-    *
-    * Please see the codes below:
-    * https://github.com/scala/scala/blob/v2.11.8/src/repl/scala/tools/nsc/interpreter/ILoop.scala
-    * https://github.com/scala/scala/blob/v2.11.12/src/repl/scala/tools/nsc/interpreter/ILoop.scala
-    *
-    * See also ZEPPELIN-3810/ZEPPELIN-4187.
-    */
-  private def loopPostInit(interpreter: FlinkScalaInterpreter): Unit = {
-    import StdReplTags._
-    import scala.reflect.{classTag, io}
-
-    val sparkILoop = interpreter.flinkILoop
-    val intp = sparkILoop.intp
-    val power = sparkILoop.power
-    val in = sparkILoop.in
-
-    def loopPostInit() {
-      // Bind intp somewhere out of the regular namespace where
-      // we can get at it in generated code.
-      intp.quietBind(NamedParam[IMain]("$intp", intp)(tagOfIMain, classTag[IMain]))
-      // Auto-run code via some setting.
-      (replProps.replAutorunCode.option
-          flatMap (f => io.File(f).safeSlurp())
-          foreach (intp quietRun _)
-          )
-      // classloader and power mode setup
-      intp.setContextClassLoader()
-      if (isReplPower) {
-        replProps.power setValue true
-        unleashAndSetPhase()
-        asyncMessage(power.banner)
-      }
-      // SI-7418 Now, and only now, can we enable TAB completion.
-      in.postInit()
-    }
-
-    def unleashAndSetPhase() = if (isReplPower) {
-      power.unleash()
-      intp beSilentDuring phaseCommand("typer") // Set the phase to "typer"
-    }
-
-    def phaseCommand(name: String): Results.Result = {
-      interpreter.callMethod(
-        sparkILoop,
-        "scala$tools$nsc$interpreter$ILoop$$phaseCommand",
-        Array(classOf[String]),
-        Array(name)).asInstanceOf[Results.Result]
-    }
-
-    def asyncMessage(msg: String): Unit = {
-      interpreter.callMethod(
-        sparkILoop, "asyncMessage", Array(classOf[String]), Array(msg))
-    }
-
-    loopPostInit()
-  }
 }
