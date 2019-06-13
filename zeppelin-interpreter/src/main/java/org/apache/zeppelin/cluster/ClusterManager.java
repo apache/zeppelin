@@ -91,6 +91,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
@@ -147,6 +148,8 @@ public abstract class ClusterManager {
   protected String zeplServerHost = "";
 
   protected ClusterMonitor clusterMonitor = null;
+
+  protected boolean isTest = false;
 
   public ClusterManager() {
     try {
@@ -308,7 +311,20 @@ public abstract class ClusterManager {
   }
 
   public String getClusterNodeName() {
-    return zeplServerHost + ":" + raftServerPort;
+    if (isTest) {
+      // Start three cluster servers in the test case at the same time,
+      // need to avoid duplicate names
+      return this.zeplServerHost + ":" + this.raftServerPort;
+    }
+
+    String hostName = "";
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      hostName = addr.getHostName().toString();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+    return hostName;
   }
 
   // put metadata into cluster metadata

@@ -40,7 +40,7 @@ public class ClusterMeta implements Serializable {
   public static String SERVER_START_TIME    = "SERVER_START_TIME";
 
   // interperter-process meta
-  public static String INTP_PROCESS_ID      = "INTP_PROCESS_ID";
+  public static String INTP_PROCESS_NAME    = "INTP_PROCESS_NAME";
   public static String INTP_TSERVER_HOST    = "INTP_TSERVER_HOST";
   public static String INTP_TSERVER_PORT    = "INTP_TSERVER_PORT";
   public static String INTP_START_TIME      = "INTP_START_TIME";
@@ -51,12 +51,14 @@ public class ClusterMeta implements Serializable {
   public static String MEMORY_CAPACITY      = "MEMORY_CAPACITY";
   public static String MEMORY_USED          = "MEMORY_USED";
 
-  public static String HEARTBEAT            = "HEARTBEAT";
+  public static String LAST_HEARTBEAT       = "LAST_HEARTBEAT";
 
   // zeppelin-server or interperter-process status
   public static String STATUS               = "STATUS";
   public static String ONLINE_STATUS        = "ONLINE";
   public static String OFFLINE_STATUS       = "OFFLINE";
+  public static String INTP_PROCESS_COUNT   = "INTP_PROCESS_COUNT";
+  public static String INTP_PROCESS_LIST    = "INTP_PROCESS_LIST";
 
   // cluster_name = host:port
   // Map:cluster_name -> {server_tserver_host,server_tserver_port,cpu_capacity,...}

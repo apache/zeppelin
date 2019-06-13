@@ -66,6 +66,7 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "admin = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
+      "/api/cluster/address = anon\n" +
       "/** = authc";
 
   static String originalShiro = "";

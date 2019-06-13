@@ -150,7 +150,7 @@ public class ClusterMonitor {
           continue;
         }
 
-        Object heartbeat = meta.get(ClusterMeta.HEARTBEAT);
+        Object heartbeat = meta.get(ClusterMeta.LAST_HEARTBEAT);
         if (heartbeat instanceof Date) {
           Date dHeartbeat = (Date) heartbeat;
           long diff = now.getTime() - dHeartbeat.getTime();
@@ -173,7 +173,7 @@ public class ClusterMonitor {
   // indicating that the process is still active.
   private void sendHeartbeat() {
     HashMap<String, Object> mapMonitorUtil = new HashMap<>();
-    mapMonitorUtil.put(ClusterMeta.HEARTBEAT, new Date());
+    mapMonitorUtil.put(ClusterMeta.LAST_HEARTBEAT, new Date());
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManager.putClusterMeta(INTP_PROCESS_META, metaKey, mapMonitorUtil);
@@ -212,7 +212,7 @@ public class ClusterMonitor {
     mapMonitorUtil.put(ClusterMeta.MEMORY_CAPACITY, avgMonitorUtil.memoryCapacity);
     mapMonitorUtil.put(ClusterMeta.CPU_USED, avgMonitorUtil.cpuUsed);
     mapMonitorUtil.put(ClusterMeta.CPU_CAPACITY, avgMonitorUtil.cpuCapacity);
-    mapMonitorUtil.put(ClusterMeta.HEARTBEAT, new Date());
+    mapMonitorUtil.put(ClusterMeta.LAST_HEARTBEAT, new Date());
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     String clusterName = clusterManager.getClusterNodeName();

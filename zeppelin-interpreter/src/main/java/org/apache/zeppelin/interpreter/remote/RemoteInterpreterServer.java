@@ -332,11 +332,11 @@ public class RemoteInterpreterServer extends Thread
     // commit interpreter meta
     HashMap<String, Object> meta = new HashMap<>();
     meta.put(ClusterMeta.NODE_NAME, nodeName);
-    meta.put(ClusterMeta.INTP_PROCESS_ID, interpreterGroupId);
+    meta.put(ClusterMeta.INTP_PROCESS_NAME, interpreterGroupId);
     meta.put(ClusterMeta.INTP_TSERVER_HOST, host);
     meta.put(ClusterMeta.INTP_TSERVER_PORT, port);
     meta.put(ClusterMeta.INTP_START_TIME, new Date());
-    meta.put(ClusterMeta.HEARTBEAT, new Date());
+    meta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
     meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManagerClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, interpreterGroupId, meta);
