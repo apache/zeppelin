@@ -46,9 +46,10 @@ public class DockerInterpreterLauncher extends InterpreterLauncher {
     if (connectTimeout < 200000) {
       // DockerInterpreterLauncher needs to pull the image and create the container,
       // it takes a long time, so the force is set to 200 seconds.
-      LOGGER.info("DockerInterpreterLauncher needs to pull the image and create the container, " +
-          "it takes a long time, so the force is set to 200 seconds.");
-      connectTimeout = 200000;
+      LOGGER.warn("DockerInterpreterLauncher needs to pull the image and create the container, " +
+          "it takes a long time, If the creation of the interpreter on docker fails, " +
+          "please increase the value of `zeppelin.interpreter.connect.timeout` in `zeppelin-site.xml`, " +
+          "recommend 200 seconds.");
     }
 
     StandardInterpreterLauncher interpreterLauncher = null;
