@@ -1,4 +1,3 @@
-package org.apache.zeppelin.cluster;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,11 +14,13 @@ package org.apache.zeppelin.cluster;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.cluster;
 
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -31,21 +32,20 @@ import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class ClusterManagerTest {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterManagerTest.class);
+public class ClusterSingleNodeTest {
+  private static Logger LOGGER = LoggerFactory.getLogger(ClusterSingleNodeTest.class);
+  private static ZeppelinConfiguration zconf;
 
-  private static ClusterManagerServer clusterManagerServer = null;
-  private static ClusterManagerClient clusterManagerClient = null;
-
-  private static ZeppelinConfiguration zconf = null;
+  private static ClusterManagerServer clusterServer = null;
+  private static ClusterManagerClient clusterClient = null;
 
   static String zServerHost;
   static int zServerPort;
-  static final String metaKey = "ClusterManagerTestKey";
+  static final String metaKey = "ClusterSingleNodeTestKey";
 
   @BeforeClass
-  public static void initClusterEnv() throws IOException, InterruptedException {
-    LOGGER.info("initClusterEnv >>>");
+  public static void startCluster() throws IOException, InterruptedException {
+    LOGGER.info("startCluster >>>");
 
     zconf = ZeppelinConfiguration.create();
 
@@ -55,19 +55,19 @@ public class ClusterManagerTest {
     zconf.setClusterAddress(zServerHost + ":" + zServerPort);
 
     // mock cluster manager server
-    clusterManagerServer = ClusterManagerServer.getInstance();
-    clusterManagerServer.start(null);
+    clusterServer = ClusterManagerServer.getInstance();
+    clusterServer.start();
 
     // mock cluster manager client
-    clusterManagerClient = ClusterManagerClient.getInstance();
-    clusterManagerClient.start(metaKey);
+    clusterClient = ClusterManagerClient.getInstance();
+    clusterClient.start(metaKey);
 
     // Waiting for cluster startup
     int wait = 0;
     while(wait++ < 100) {
-      if (clusterManagerServer.isClusterLeader()
-          && clusterManagerServer.raftInitialized()
-          && clusterManagerClient.raftInitialized()) {
+      if (clusterServer.isClusterLeader()
+          && clusterServer.raftInitialized()
+          && clusterClient.raftInitialized()) {
         LOGGER.info("wait {}(ms) found cluster leader", wait*3000);
         break;
       }
@@ -77,18 +77,32 @@ public class ClusterManagerTest {
         e.printStackTrace();
       }
     }
-    assertEquals(true, clusterManagerServer.isClusterLeader());
-    LOGGER.info("initClusterEnv <<<");
+    Thread.sleep(3000);
+    assertEquals(true, clusterServer.isClusterLeader());
+    LOGGER.info("startCluster <<<");
+  }
+
+  @AfterClass
+  public static void stopCluster() {
+    if (null != clusterClient) {
+      clusterClient.shutdown();
+    }
+    if (null != clusterClient) {
+      clusterServer.shutdown();
+    }
+    LOGGER.info("stopCluster");
   }
 
   @Test
   public void getServerMeta() {
-    LOGGER.info("serverMeta >>>");
+    LOGGER.info("getServerMeta >>>");
 
     // Get metadata for all services
-    Object meta = clusterManagerClient.getClusterMeta(ClusterMetaType.ServerMeta, "");
-
+    Object meta = clusterClient.getClusterMeta(ClusterMetaType.SERVER_META, "");
     LOGGER.info(meta.toString());
+
+    Object intpMeta = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
+    LOGGER.info(intpMeta.toString());
 
     assertNotNull(meta);
     assertEquals(true, (meta instanceof HashMap));
@@ -101,7 +115,7 @@ public class ClusterManagerTest {
 
     assertEquals(true, mapMetaValues.size()>0);
 
-    LOGGER.info("serverMeta <<<");
+    LOGGER.info("getServerMeta <<<");
   }
 
   @Test
@@ -110,8 +124,6 @@ public class ClusterManagerTest {
     HashMap<String, Object> meta = new HashMap<>();
     meta.put(ClusterMeta.SERVER_HOST, zServerHost);
     meta.put(ClusterMeta.SERVER_PORT, zServerPort);
-    meta.put(ClusterMeta.SERVER_TSERVER_HOST, "SERVER_TSERVER_HOST");
-    meta.put(ClusterMeta.SERVER_TSERVER_PORT, "SERVER_TSERVER_PORT");
     meta.put(ClusterMeta.INTP_TSERVER_HOST, "INTP_TSERVER_HOST");
     meta.put(ClusterMeta.INTP_TSERVER_PORT, "INTP_TSERVER_PORT");
     meta.put(ClusterMeta.CPU_CAPACITY, "CPU_CAPACITY");
@@ -120,11 +132,11 @@ public class ClusterManagerTest {
     meta.put(ClusterMeta.MEMORY_USED, "MEMORY_USED");
 
     // put IntpProcess Meta
-    clusterManagerClient.putClusterMeta(ClusterMetaType.IntpProcessMeta, metaKey, meta);
+    clusterClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey, meta);
 
     // get IntpProcess Meta
     HashMap<String, HashMap<String, Object>> check
-        = clusterManagerClient.getClusterMeta(ClusterMetaType.IntpProcessMeta, metaKey);
+        = clusterClient.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey);
 
     LOGGER.info(check.toString());
 

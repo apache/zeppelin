@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.cluster.meta;
+package org.apache.zeppelin.cluster.event;
 
 /**
- * Type of cluster metadata
+ * Listen for the NEW_NOTE、DEL_NOTE、REMOVE_NOTE_TO_TRASH ... event
+ * of the notebook in the NotebookServer#onMessage() function.
  */
-public enum ClusterMetaType {
-  SERVER_META,
-  INTP_PROCESS_META
+public interface ClusterEventListener {
+  public static final String CLUSTER_EVENT = "CLUSTER_EVENT";
+  public static final String CLUSTER_EVENT_MSG = "CLUSTER_EVENT_MSG";
+  
+  void onClusterEvent(String msg);
 }

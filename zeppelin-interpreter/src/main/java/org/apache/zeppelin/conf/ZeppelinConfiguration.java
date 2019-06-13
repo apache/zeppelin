@@ -18,6 +18,7 @@
 package org.apache.zeppelin.conf;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.function.Predicate;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.util.Util;
 import org.slf4j.Logger;
@@ -120,6 +122,37 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
 
     if (url == null) {
+      try {
+        Map procEnv = EnvironmentUtils.getProcEnvironment();
+        if (procEnv.containsKey("ZEPPELIN_HOME")) {
+          String zconfDir = (String) procEnv.get("ZEPPELIN_HOME");
+          File file = new File(zconfDir + File.separator
+              + "conf" + File.separator + ZEPPELIN_SITE_XML);
+          if (file.exists()) {
+            url = file.toURL();
+          }
+        }
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
+      }
+    }
+
+    if (url == null) {
+      try {
+        Map procEnv = EnvironmentUtils.getProcEnvironment();
+        if (procEnv.containsKey("ZEPPELIN_CONF_DIR")) {
+          String zconfDir = (String) procEnv.get("ZEPPELIN_CONF_DIR");
+          File file = new File(zconfDir + File.separator + ZEPPELIN_SITE_XML);
+          if (file.exists()) {
+            url = file.toURL();
+          }
+        }
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
+      }
+    }
+
+    if (url == null) {
       LOG.warn("Failed to load configuration, proceeding with a default");
       conf = new ZeppelinConfiguration();
     } else {
@@ -143,7 +176,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     return conf;
   }
-
 
   private String getStringValue(String name, String d) {
     String value = this.properties.get(name);

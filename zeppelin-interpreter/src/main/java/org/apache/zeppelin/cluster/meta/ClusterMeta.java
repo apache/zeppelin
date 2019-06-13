@@ -37,8 +37,6 @@ public class ClusterMeta implements Serializable {
   // zeppelin-server meta
   public static String SERVER_HOST          = "SERVER_HOST";
   public static String SERVER_PORT          = "SERVER_PORT";
-  public static String SERVER_TSERVER_HOST  = "SERVER_TSERVER_HOST";
-  public static String SERVER_TSERVER_PORT  = "SERVER_TSERVER_PORT";
   public static String SERVER_START_TIME    = "SERVER_START_TIME";
 
   // interperter-process meta
@@ -73,7 +71,7 @@ public class ClusterMeta implements Serializable {
     Map<String, Object> mapValue = (Map<String, Object>) value;
 
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         // Because it may be partially updated metadata information
         if (mapServerMeta.containsKey(key)) {
           Map<String, Object> values = mapServerMeta.get(key);
@@ -82,7 +80,7 @@ public class ClusterMeta implements Serializable {
           mapServerMeta.put(key, mapValue);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (mapInterpreterMeta.containsKey(key)) {
           Map<String, Object> values = mapInterpreterMeta.get(key);
           values.putAll(mapValue);
@@ -97,7 +95,7 @@ public class ClusterMeta implements Serializable {
     Map<String, Object> values = null;
 
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         if (null == key || StringUtils.isEmpty(key)) {
           return mapServerMeta;
         }
@@ -107,7 +105,7 @@ public class ClusterMeta implements Serializable {
           logger.warn("can not find key : {}", key);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (null == key || StringUtils.isEmpty(key)) {
           return mapInterpreterMeta;
         }
@@ -127,14 +125,14 @@ public class ClusterMeta implements Serializable {
 
   public Map<String, Object> remove(ClusterMetaType type, String key) {
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         if (mapServerMeta.containsKey(key)) {
           return mapServerMeta.remove(key);
         } else {
           logger.warn("can not find key : {}", key);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (mapInterpreterMeta.containsKey(key)) {
           return mapInterpreterMeta.remove(key);
         } else {

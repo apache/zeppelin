@@ -18,7 +18,7 @@ package org.apache.zeppelin.cluster;
 
 import io.atomix.primitive.PrimitiveState;
 
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.IntpProcessMeta;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * Cluster management client class instantiated in zeppelin-interperter
@@ -63,7 +63,7 @@ public class ClusterManagerClient extends ClusterManager {
 
     // Instantiated cluster monitoring class
     clusterMonitor = new ClusterMonitor(this);
-    clusterMonitor.start(IntpProcessMeta, metaKey);
+    clusterMonitor.start(INTP_PROCESS_META, metaKey);
   }
 
   public void shutdown() {

@@ -27,8 +27,8 @@ import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.IntpProcessMeta;
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.ServerMeta;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.SERVER_META;
 
 /**
  * cluster monitoring
@@ -94,11 +94,11 @@ public class ClusterMonitor {
       public void run() {
         while (running.get()) {
           switch (clusterMetaType) {
-            case ServerMeta:
+            case SERVER_META:
               sendMachineUsage();
               checkHealthy();
               break;
-            case IntpProcessMeta:
+            case INTP_PROCESS_META:
               sendHeartbeat();
               break;
             default:
@@ -136,6 +136,10 @@ public class ClusterMonitor {
       Map<String, HashMap<String, Object>> clusterMeta
           = clusterManager.getClusterMeta(metaType, "");
 
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("clusterMeta : {}", clusterMeta);
+      }
+
       for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
         String key = entry.getKey();
         Map<String, Object> meta = entry.getValue();
@@ -172,7 +176,7 @@ public class ClusterMonitor {
     mapMonitorUtil.put(ClusterMeta.HEARTBEAT, new Date());
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
-    clusterManager.putClusterMeta(IntpProcessMeta, metaKey, mapMonitorUtil);
+    clusterManager.putClusterMeta(INTP_PROCESS_META, metaKey, mapMonitorUtil);
   }
 
   // send the usage of each service
@@ -212,7 +216,7 @@ public class ClusterMonitor {
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     String clusterName = clusterManager.getClusterNodeName();
-    clusterManager.putClusterMeta(ServerMeta, clusterName, mapMonitorUtil);
+    clusterManager.putClusterMeta(SERVER_META, clusterName, mapMonitorUtil);
   }
 
   private UsageUtil getMachineUsage() {
