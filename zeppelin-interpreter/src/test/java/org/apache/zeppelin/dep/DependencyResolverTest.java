@@ -87,10 +87,11 @@ public class DependencyResolverTest {
     FileUtils.cleanDirectory(testCopyPath);
 
     // load from added repository
-    resolver.addRepo("sonatype",
-        "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
-    resolver.load("com.agimatec:agimatec-validation:0.12.0", testCopyPath);
-    assertEquals(testCopyPath.list().length, 8);
+    // temporarily disable until the below repo is back up
+    //    resolver.addRepo("sonatype",
+    //        "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
+    //    resolver.load("com.agimatec:agimatec-validation:0.12.0", testCopyPath);
+    //    assertEquals(testCopyPath.list().length, 8);
 
     // load invalid artifact
     resolver.delRepo("sonatype");
