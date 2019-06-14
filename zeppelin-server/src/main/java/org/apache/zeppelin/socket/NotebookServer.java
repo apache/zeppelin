@@ -583,7 +583,7 @@ public class NotebookServer extends WebSocketServlet
 
   public void broadcastReloadedNoteList(NotebookSocket conn, ServiceContext context)
       throws IOException {
-    getNotebookService().listNotesInfo(false, context,
+    getNotebookService().listNotesInfo(true, context,
         new WebSocketServiceCallback<List<NoteInfo>>(conn) {
           @Override
           public void onSuccess(List<NoteInfo> notesInfo,
