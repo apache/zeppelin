@@ -52,7 +52,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public enum RUN_MODE {
     LOCAL,
-    K8S
+    K8S,
+    DOCKER
   }
 
   public ZeppelinConfiguration(URL url) throws ConfigurationException {
@@ -735,6 +736,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_K8S_TEMPLATE_DIR);
   }
 
+  public String getDockerContainerImage() {
+    return getString(ConfVars.ZEPPELIN_DOCKER_CONTAINER_IMAGE);
+  }
+
   public Map<String, String> dumpConfigurations(Predicate<String> predicate) {
     Map<String, String> properties = new HashMap<>();
 
@@ -887,13 +892,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_CLUSTER_HEARTBEAT_INTERVAL("zeppelin.cluster.heartbeat.interval", 3000),
     ZEPPELIN_CLUSTER_HEARTBEAT_TIMEOUT("zeppelin.cluster.heartbeat.timeout", 9000),
 
-    ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s
+    ZEPPELIN_RUN_MODE("zeppelin.run.mode", "auto"),              // auto | local | k8s | Docker
 
     ZEPPELIN_K8S_PORTFORWARD("zeppelin.k8s.portforward", false), // kubectl port-forward incase of Zeppelin is running outside of kuberentes
     ZEPPELIN_K8S_KUBECTL("zeppelin.k8s.kubectl", "kubectl"),     // kubectl command
     ZEPPELIN_K8S_CONTAINER_IMAGE("zeppelin.k8s.container.image", "apache/zeppelin:" + Util.getVersion()),
     ZEPPELIN_K8S_SPARK_CONTAINER_IMAGE("zeppelin.k8s.spark.container.image", "apache/spark:latest"),
     ZEPPELIN_K8S_TEMPLATE_DIR("zeppelin.k8s.template.dir", "k8s"),
+
+    ZEPPELIN_DOCKER_CONTAINER_IMAGE("zeppelin.docker.container.image", "apache/zeppelin:" + Util.getVersion()),
 
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_URL("zeppelin.notebook.git.remote.url", ""),
     ZEPPELIN_NOTEBOOK_GIT_REMOTE_USERNAME("zeppelin.notebook.git.remote.username", "token"),

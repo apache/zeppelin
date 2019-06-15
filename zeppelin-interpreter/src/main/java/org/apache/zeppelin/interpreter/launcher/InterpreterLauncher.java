@@ -37,6 +37,10 @@ public abstract class InterpreterLauncher {
     this.recoveryStorage = recoveryStorage;
   }
 
+  public void setProperties(Properties props) {
+    this.properties = props;
+  }
+
   protected int getConnectTimeout() {
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);

@@ -672,6 +672,8 @@ public class InterpreterSetting {
       return "K8sStandardInterpreterLauncher";
     } else if (isRunningOnCluster()) {
       return "ClusterInterpreterLauncher";
+    } if (isRunningOnDocker()) {
+      return "DockerInterpreterLauncher";
     } else {
       if (group.equals("spark")) {
         return "SparkInterpreterLauncher";
@@ -685,8 +687,13 @@ public class InterpreterSetting {
     return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
   }
 
+
   private boolean isRunningOnCluster() {
     return conf.isClusterMode();
+  }
+
+  private boolean isRunningOnDocker() {
+    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {

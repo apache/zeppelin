@@ -72,6 +72,7 @@
 # export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
 # export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
 # export SPARK_APP_NAME                         # (optional) The name of spark application.
+# export SPARK_CONF_DIR                         # (optional) In the zeppelin interpreter on docker mode, Need to set the local spark conf folder path
 
 ## Use embedded spark binaries ##
 ## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
@@ -91,7 +92,6 @@
 # export ZEPPELIN_SPARK_IMPORTIMPLICIT  # Import implicits, UDF collection, and sql if set true. true by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of Spark SQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
-
 
 #### HBase interpreter configuration ####
 
