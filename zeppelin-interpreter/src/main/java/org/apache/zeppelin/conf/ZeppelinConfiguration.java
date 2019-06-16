@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -309,6 +310,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getServerAddress() {
     return getString(ConfVars.ZEPPELIN_ADDR);
+  }
+
+  @VisibleForTesting
+  public void setServerPort(int port) {
+    properties.put(ConfVars.ZEPPELIN_PORT.getVarName(), String.valueOf(port));
   }
 
   public int getServerPort() {

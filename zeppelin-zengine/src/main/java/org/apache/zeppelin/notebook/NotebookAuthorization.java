@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.lang.reflect.GenericSignatureFormatError;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -26,7 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
+import org.apache.zeppelin.cluster.event.ClusterEvent;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
+import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.scheduler.Job;
@@ -42,7 +48,7 @@ import com.google.common.collect.Sets;
 /**
  * Contains authorization information for notes
  */
-public class NotebookAuthorization implements NoteEventListener {
+public class NotebookAuthorization implements NoteEventListener, ClusterEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookAuthorization.class);
   private static NotebookAuthorization instance = null;
   /*
@@ -64,6 +70,8 @@ public class NotebookAuthorization implements NoteEventListener {
     if (instance == null) {
       instance = new NotebookAuthorization();
       conf = config;
+      ClusterManagerServer.getInstance().addClusterEventListeners(
+          ClusterManagerServer.CLUSTER_NB_AUTH_EVENT_TOPIC, instance);
       try {
         configStorage = ConfigStorage.getInstance(config);
         loadFromFile();
@@ -378,8 +386,13 @@ public class NotebookAuthorization implements NoteEventListener {
       }
     }).toList();
   }
-  
+
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
+    inlineSetNewNotePermissions(noteId, subject);
+    broadcastClusterEvent(ClusterEvent.SET_NEW_NOTE_PERMISSIONS, noteId, subject);
+  }
+  
+  public void inlineSetNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
       if (isPublic()) {
         // add current user to owners - can be public
@@ -387,16 +400,20 @@ public class NotebookAuthorization implements NoteEventListener {
         owners.add(subject.getUser());
         setOwners(noteId, owners);
       } else {
+        Map<ClusterEvent, Set<String>> mapEntities = new HashMap<>();
         // add current user to owners, readers, runners, writers - private note
         Set<String> entities = getOwners(noteId);
         entities.add(subject.getUser());
         setOwners(noteId, entities);
+
         entities = getReaders(noteId);
         entities.add(subject.getUser());
         setReaders(noteId, entities);
+
         entities = getRunners(noteId);
         entities.add(subject.getUser());
         setRunners(noteId, entities);
+
         entities = getWriters(noteId);
         entities.add(subject.getUser());
         setWriters(noteId, entities);
@@ -437,5 +454,32 @@ public class NotebookAuthorization implements NoteEventListener {
   @Override
   public void onParagraphStatusChange(Paragraph p, Job.Status status) {
 
+  }
+
+  @Override
+  public void onClusterEvent(String msg) {
+    if (LOG.isDebugEnabled()) {
+      LOG.info("onClusterEvent : {}", msg);
+    }
+    ClusterMessage message = ClusterMessage.deserializeMessage(msg);
+    String noteId  = message.get("noteId");
+    String json  = message.get("subject");
+    AuthenticationInfo subject = AuthenticationInfo.fromJson(json);
+
+    inlineSetNewNotePermissions(noteId, subject);
+  }
+
+  // broadcast cluster event
+  private void broadcastClusterEvent(ClusterEvent event, String noteId, AuthenticationInfo subject) {
+    if (!conf.isClusterMode()) {
+      return;
+    }
+
+    ClusterMessage message = new ClusterMessage(event);
+    message.put("noteId", noteId);
+    message.put("subject", subject.toJson());
+    String msg = ClusterMessage.serializeMessage(message);
+    ClusterManagerServer.getInstance().broadcastClusterEvent(
+        ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, msg);
   }
 }

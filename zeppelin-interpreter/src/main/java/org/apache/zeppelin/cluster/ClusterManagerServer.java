@@ -35,19 +35,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
 import org.apache.zeppelin.cluster.protocol.RaftServerMessagingProtocol;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -76,9 +67,15 @@ public class ClusterManagerServer extends ClusterManager {
   // Connect to the interpreter process that has been created
   public static String CONNET_EXISTING_PROCESS = "CONNET_EXISTING_PROCESS";
 
-  private List<ClusterEventListener> clusterEventListeners = new ArrayList<>();
+  private List<ClusterEventListener> clusterIntpEventListeners = new ArrayList<>();
+  private List<ClusterEventListener> clusterNoteEventListeners = new ArrayList<>();
+  private List<ClusterEventListener> clusterAuthEventListeners = new ArrayList<>();
+
   // zeppelin cluster event
-  public static String ZEPL_CLUSTER_EVENT_TOPIC = "ZEPL_CLUSTER_EVENT_TOPIC";
+  public static String CLUSTER_INTP_EVENT_TOPIC = "CLUSTER_INTP_EVENT_TOPIC";
+  public static String CLUSTER_NOTE_EVENT_TOPIC = "CLUSTER_NOTE_EVENT_TOPIC";
+  public static String CLUSTER_AUTH_EVENT_TOPIC = "CLUSTER_AUTH_EVENT_TOPIC";
+  public static String CLUSTER_NB_AUTH_EVENT_TOPIC = "CLUSTER_NB_AUTH_EVENT_TOPIC";
 
   private ClusterManagerServer() {
     super();
@@ -206,8 +203,12 @@ public class ClusterManagerServer extends ClusterManager {
         raftServer = builder.build();
         raftServer.bootstrap(clusterMemberIds);
 
-        messagingService.registerHandler(ZEPL_CLUSTER_EVENT_TOPIC,
-            subscribeClusterEvent, MoreExecutors.directExecutor());
+        messagingService.registerHandler(CLUSTER_INTP_EVENT_TOPIC,
+            subscribeClusterIntpEvent, MoreExecutors.directExecutor());
+        messagingService.registerHandler(CLUSTER_NOTE_EVENT_TOPIC,
+            subscribeClusterNoteEvent, MoreExecutors.directExecutor());
+        messagingService.registerHandler(CLUSTER_AUTH_EVENT_TOPIC,
+            subscribeClusterAuthEvent, MoreExecutors.directExecutor());
 
         LOGGER.info("RaftServer run() <<<");
       }
@@ -273,12 +274,12 @@ public class ClusterManagerServer extends ClusterManager {
     return idleNodeMeta;
   }
 
-  public void unicastClusterEvent(String host, int port,  String msg) {
+  public void unicastClusterEvent(String host, int port, String topic, String msg) {
     LOGGER.info("send unicastClusterEvent message {}", msg);
 
     Address address = Address.from(host, port);
     CompletableFuture<byte[]> response = messagingService.sendAndReceive(address,
-        ZEPL_CLUSTER_EVENT_TOPIC, msg.getBytes(), Duration.ofSeconds(2));
+        topic, msg.getBytes(), Duration.ofSeconds(2));
     response.whenComplete((r, e) -> {
       if (null == e) {
         LOGGER.error(e.getMessage(), e);
@@ -288,7 +289,7 @@ public class ClusterManagerServer extends ClusterManager {
     });
   }
 
-  public void broadcastClusterEvent(String msg) {
+  public void broadcastClusterEvent(String topic, String msg) {
     LOGGER.info("send broadcastClusterEvent message {}", msg);
 
     for (Node node : clusterNodes) {
@@ -299,7 +300,7 @@ public class ClusterManagerServer extends ClusterManager {
       }
 
       CompletableFuture<byte[]> response = messagingService.sendAndReceive(node.address(),
-          ZEPL_CLUSTER_EVENT_TOPIC, msg.getBytes(), Duration.ofSeconds(2));
+          topic, msg.getBytes(), Duration.ofSeconds(2));
       response.whenComplete((r, e) -> {
         if (null == e) {
           LOGGER.error(e.getMessage(), e);
@@ -310,18 +311,51 @@ public class ClusterManagerServer extends ClusterManager {
     }
   }
 
-  private BiFunction<Address, byte[], byte[]> subscribeClusterEvent = (address, data) -> {
+  private BiFunction<Address, byte[], byte[]> subscribeClusterIntpEvent = (address, data) -> {
     String message = new String(data);
-    LOGGER.info("subscribeClusterEvent() {}", message);
-
-    for (ClusterEventListener eventListener : clusterEventListeners) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("subscribeClusterIntpEvent() {}", message);
+    }
+    for (ClusterEventListener eventListener : clusterIntpEventListeners) {
       eventListener.onClusterEvent(message);
     }
 
     return null;
   };
 
-  public void addClusterEventListeners(ClusterEventListener listener) {
-    clusterEventListeners.add(listener);
+  private BiFunction<Address, byte[], byte[]> subscribeClusterNoteEvent = (address, data) -> {
+    String message = new String(data);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("subscribeClusterNoteEvent() {}", message);
+    }
+    for (ClusterEventListener eventListener : clusterNoteEventListeners) {
+      eventListener.onClusterEvent(message);
+    }
+
+    return null;
+  };
+
+  private BiFunction<Address, byte[], byte[]> subscribeClusterAuthEvent = (address, data) -> {
+    String message = new String(data);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("subscribeClusterAuthEvent() {}", message);
+    }
+    for (ClusterEventListener eventListener : clusterAuthEventListeners) {
+      eventListener.onClusterEvent(message);
+    }
+
+    return null;
+  };
+
+  public void addClusterEventListeners(String topic, ClusterEventListener listener) {
+    if (StringUtils.equals(topic, CLUSTER_INTP_EVENT_TOPIC)) {
+      clusterIntpEventListeners.add(listener);
+    } else if (StringUtils.equals(topic, CLUSTER_NOTE_EVENT_TOPIC)) {
+      clusterNoteEventListeners.add(listener);
+    } else if (StringUtils.equals(topic, CLUSTER_AUTH_EVENT_TOPIC)) {
+      clusterAuthEventListeners.add(listener);
+    } else {
+      LOGGER.error("Unknow cluster event topic : {}", topic);
+    }
   }
 }

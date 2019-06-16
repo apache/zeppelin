@@ -353,7 +353,12 @@ public class ZeppelinServer extends ResourceConfig {
 
   private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
     if (conf.isClusterMode()) {
-      ClusterManagerServer.getInstance().start();
+      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+      NotebookServer notebookServer = serviceLocator.getService(NotebookServer.class);
+      AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, authorizationService);
+      clusterManagerServer.start();
     }
   }
 
