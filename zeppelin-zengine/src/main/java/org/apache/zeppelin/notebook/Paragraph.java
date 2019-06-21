@@ -490,11 +490,18 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
         script = Input.getSimpleQuery(settings.getParams(), script, false);
       }
+
       LOGGER.debug("RUN : " + script);
       try {
         InterpreterContext context = getInterpreterContext();
         InterpreterContext.set(context);
-        InterpreterResult ret = interpreter.interpret(script, context);
+
+        UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
+        CredentialInjector credinjector = new CredentialInjector(creds);
+        String code = credinjector.replaceCredentials(script);
+
+        InterpreterResult ret = interpreter.interpret(code, context);
+        ret = credinjector.hidePasswords(ret);
 
         if (interpreter.getFormType() == FormType.NATIVE) {
           note.setNoteParams(context.getNoteGui().getParams());
