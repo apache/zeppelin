@@ -56,7 +56,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
   public ClusterInterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage)
       throws IOException {
     super(zConf, recoveryStorage);
-    clusterServer.addClusterEventListeners(this);
+    clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_EVENT_TOPIC, this);
   }
 
   @Override
@@ -104,7 +104,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
         mapEvent.put(CLUSTER_EVENT, CREATE_INTP_PROCESS);
         mapEvent.put(CLUSTER_EVENT_MSG, sContext);
         String strEvent = gson.toJson(mapEvent);
-        clusterServer.unicastClusterEvent(srvHost, srvPort, strEvent);
+        clusterServer.unicastClusterEvent(
+            srvHost, srvPort, ClusterManagerServer.CLUSTER_INTP_EVENT_TOPIC, strEvent);
 
         HashMap<String, Object> intpMeta = clusterServer
             .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
@@ -145,9 +146,13 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
   }
 
   @Override
-  public void onClusterEvent(String event) {
+  public void onClusterEvent(String msg) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(msg);
+    }
+
     Gson gson = new Gson();
-    Map<String, Object> mapEvent = gson.fromJson(event,
+    Map<String, Object> mapEvent = gson.fromJson(msg,
         new TypeToken<Map<String, Object>>(){}.getType());
     String sEvent = (String) mapEvent.get(CLUSTER_EVENT);
     ClusterEvent clusterEvent = ClusterEvent.valueOf(sEvent);
@@ -157,7 +162,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
         onCreateIntpProcess(mapEvent);
         break;
       default:
-        LOGGER.error("Unknown Cluster Event : {}", clusterEvent);
+        LOGGER.error("Unknown clusterEvent:{}, msg:{} ", clusterEvent, msg);
         break;
     }
   }
