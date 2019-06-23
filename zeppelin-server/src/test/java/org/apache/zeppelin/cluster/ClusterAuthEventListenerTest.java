@@ -47,8 +47,7 @@ public class ClusterAuthEventListenerTest implements ClusterEventListener {
     String user = message.get("user");
     String jsonSet = message.get("set");
     Gson gson = new Gson();
-    Set<String> set  = gson.fromJson(jsonSet, new TypeToken<Set<String>>() {
-    }.getType());
+    Set<String> set  = gson.fromJson(jsonSet, new TypeToken<Set<String>>() {}.getType());
 
     assertNotNull(set);
     switch (message.clusterEvent) {
