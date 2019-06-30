@@ -45,8 +45,8 @@
         <plugin.scala.version>2.15.2</plugin.scala.version>
         <!-- spark versions -->
         <spark.version>2.2.3</spark.version>
-        <spark.scala.version>2.11</spark.scala.version>
-        <spark.scala.binary.version>2.11.12</spark.scala.binary.version>
+        <spark.scala.version>2.11.12</spark.scala.version>
+        <spark.scala.binary.version>2.11</spark.scala.binary.version>
         <py4j.version>0.10.7</py4j.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
@@ -183,7 +183,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <spark.scala.version>2.11.8</spark.scala.version>
+                <spark.scala.version>2.11.12</spark.scala.version>
                 <spark.scala.binary.version>2.11</spark.scala.binary.version>
             </properties>
         </profile>
