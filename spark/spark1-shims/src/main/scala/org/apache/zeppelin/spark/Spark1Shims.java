@@ -45,7 +45,7 @@ public class Spark1Shims extends SparkShims {
       public void onJobStart(SparkListenerJobStart jobStart) {
         if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
             !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
-          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
+          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
         }
       }
     });
