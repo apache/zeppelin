@@ -17,13 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
-import com.google.common.io.Files;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -35,11 +33,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -49,6 +46,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
 
@@ -163,9 +161,24 @@ public class SparkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // spark rdd operation
-    result = interpreter.interpret("sc\n.range(1, 10)\n.sum", getInterpreterContext());
+    context = getInterpreterContext();
+    context.setParagraphId("pid_1");
+    result = interpreter.interpret("sc\n.range(1, 10)\n.sum", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(output.contains("45"));
+    ArgumentCaptor<Map> captorEvent = ArgumentCaptor.forClass(Map.class);
+    verify(mockRemoteEventClient).onParaInfosReceived(captorEvent.capture());
+    assertEquals("pid_1", captorEvent.getValue().get("paraId"));
+
+    reset(mockRemoteEventClient);
+    context = getInterpreterContext();
+    context.setParagraphId("pid_2");
+    result = interpreter.interpret("sc\n.range(1, 10)\n.sum", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertTrue(output.contains("45"));
+    captorEvent = ArgumentCaptor.forClass(Map.class);
+    verify(mockRemoteEventClient).onParaInfosReceived(captorEvent.capture());
+    assertEquals("pid_2", captorEvent.getValue().get("paraId"));
 
     // spark job url is sent
     verify(mockRemoteEventClient).onParaInfosReceived(any(Map.class));
@@ -325,7 +338,7 @@ public class SparkInterpreterTest {
         InterpreterResult result = null;
         try {
           result = interpreter.interpret(
-              "val df = sc.parallelize(1 to 10, 2).foreach(e=>Thread.sleep(1000))", context2);
+              "val df = sc.parallelize(1 to 10, 5).foreach(e=>Thread.sleep(1000))", context2);
         } catch (InterpreterException e) {
           e.printStackTrace();
         }
