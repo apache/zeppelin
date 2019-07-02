@@ -159,6 +159,9 @@
           <execution>
             <id>copy-to-interpreter</id>
             <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
             <configuration>
               <target>
                 <echo>ANT TASK - copying files....</echo>
