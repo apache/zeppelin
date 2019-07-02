@@ -47,7 +47,6 @@ import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -211,18 +210,6 @@ public class InterpreterSettingManager implements NoteEventListener {
         .setRecoveryStorage(recoveryStorage)
         .setInterpreterEventServer(interpreterEventServer)
         .postProcessing();
-    
-    // Since the ClusterInterpreterLauncher is lazy, dynamically generated, So in cluster mode,
-    // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,
-    // This allows the ClusterInterpreterLauncher to listen for cluster events.
-    if (conf.isClusterMode()) {
-      try {
-        String pluginName = interpreterSetting.getLauncherPlugin();
-        PluginManager.get().loadInterpreterLauncher(pluginName, recoveryStorage);
-      } catch (IOException e) {
-        LOGGER.error(e.getMessage(), e);
-      }
-    }
   }
 
   /**

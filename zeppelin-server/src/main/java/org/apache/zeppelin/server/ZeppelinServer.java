@@ -41,8 +41,10 @@ import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
@@ -60,6 +62,7 @@ import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.ReflectionUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -358,6 +361,22 @@ public class ZeppelinServer extends ResourceConfig {
       AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, authorizationService);
+
+      // Since the ClusterInterpreterLauncher is lazy, dynamically generated, So in cluster mode,
+      // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,
+      // This allows the ClusterInterpreterLauncher to listen for cluster events.
+      try {
+        InterpreterSettingManager intpSettingManager = sharedServiceLocator.getService(InterpreterSettingManager.class);
+        RecoveryStorage recoveryStorage = ReflectionUtils.createClazzInstance(
+                conf.getRecoveryStorageClass(),
+                new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+                new Object[] {conf, intpSettingManager});
+        recoveryStorage.init();
+        PluginManager.get().loadInterpreterLauncher(InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
+      }
+
       clusterManagerServer.start();
     }
   }

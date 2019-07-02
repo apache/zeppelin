@@ -131,6 +131,8 @@ public class InterpreterSetting {
   private transient LifecycleManager lifecycleManager;
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
+
+  public static final String CLUSTER_INTERPRETER_LAUNCHER_NAME = "ClusterInterpreterLauncher";
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -671,7 +673,7 @@ public class InterpreterSetting {
     if (isRunningOnKubernetes()) {
       return "K8sStandardInterpreterLauncher";
     } else if (isRunningOnCluster()) {
-      return "ClusterInterpreterLauncher";
+      return InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME;
     } if (isRunningOnDocker()) {
       return "DockerInterpreterLauncher";
     } else {
