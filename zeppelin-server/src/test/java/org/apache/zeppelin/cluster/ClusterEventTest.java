@@ -27,7 +27,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.thrift.TException;
-import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -79,7 +78,6 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   private static List<ClusterAuthEventListenerTest> clusterAuthEventListenerTests = new ArrayList<>();
   private static List<ClusterNoteEventListenerTest> clusterNoteEventListenerTests = new ArrayList<>();
-  private static List<ClusterNoteAuthEventListenerTest> clusterNoteAuthEventListenerTests = new ArrayList<>();
   private static List<ClusterIntpSettingEventListenerTest> clusterIntpSettingEventListenerTests = new ArrayList<>();
 
   private static List<ClusterManagerServer> clusterServers = new ArrayList<>();
@@ -103,6 +101,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     ZeppelinServerMock.startUp(ClusterEventTest.class.getSimpleName(), zconf);
     notebook = TestUtils.getInstance(Notebook.class);
     authorizationService = new AuthorizationService(notebook, zconf);
+
     schedulerService = new QuartzSchedulerService(zconf, notebook);
     notebookServer = spy(NotebookServer.getInstance());
     notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
@@ -222,10 +221,6 @@ public class ClusterEventTest extends ZeppelinServerMock {
       clusterNoteEventListenerTests.add(clusterNoteEventListenerTest);
       clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, clusterNoteEventListenerTest);
 
-      ClusterNoteAuthEventListenerTest clusterNoteAuthEventListenerTest = new ClusterNoteAuthEventListenerTest();
-      clusterNoteAuthEventListenerTests.add(clusterNoteAuthEventListenerTest);
-      clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NB_AUTH_EVENT_TOPIC, clusterNoteAuthEventListenerTest);
-
       ClusterIntpSettingEventListenerTest clusterIntpSettingEventListenerTest = new ClusterIntpSettingEventListenerTest();
       clusterIntpSettingEventListenerTests.add(clusterIntpSettingEventListenerTest);
       clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC, clusterIntpSettingEventListenerTest);
@@ -278,6 +273,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
     assertNotNull(srvMeta);
     assertEquals(true, (srvMeta instanceof HashMap));
     HashMap hashMap = (HashMap) srvMeta;
+
     assertEquals(hashMap.size(), 3);
 
     LOGGER.info("getClusterServerMeta <<< ");
@@ -320,6 +316,8 @@ public class ClusterEventTest extends ZeppelinServerMock {
     String clonedNoteId = null;
     try {
       note1 = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      Thread.sleep(1000);
+
       PostMethod post = httpPost("/notebook/" + note1.getId(), "");
       LOG.info("testCloneNote response\n" + post.getResponseBodyAsString());
       assertThat(post, isAllowed());
@@ -327,6 +325,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
           new TypeToken<Map<String, Object>>() {}.getType());
       clonedNoteId = (String) resp.get("body");
       post.releaseConnection();
+      Thread.sleep(1000);
 
       GetMethod get = httpGet("/notebook/" + clonedNoteId);
       assertThat(get, isAllowed());
