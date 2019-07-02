@@ -143,8 +143,8 @@ public class ClusterRestApi {
       if (properties.containsKey(ClusterMeta.STATUS)) {
         sortProperties.put(ClusterMeta.STATUS, properties.get(ClusterMeta.STATUS));
       }
-      if (properties.containsKey(ClusterMeta.LAST_HEARTBEAT)) {
-        sortProperties.put(ClusterMeta.LAST_HEARTBEAT, properties.get(ClusterMeta.LAST_HEARTBEAT));
+      if (properties.containsKey(ClusterMeta.LATEST_HEARTBEAT)) {
+        sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, properties.get(ClusterMeta.LATEST_HEARTBEAT));
       }
       if (properties.containsKey(ClusterMeta.INTP_PROCESS_LIST)) {
         sortProperties.put(ClusterMeta.INTP_PROCESS_LIST, properties.get(ClusterMeta.INTP_PROCESS_LIST));
@@ -213,7 +213,7 @@ public class ClusterRestApi {
       nodeMeta.put(ClusterMeta.SERVER_PORT, 1084);
       nodeMeta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
       nodeMeta.put(ClusterMeta.SERVER_START_TIME, new Date());
-      nodeMeta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
+      nodeMeta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
 
       serverMeta.put("127.0.0." + i.toString() + ":" + "8080", nodeMeta);
     }
@@ -234,7 +234,7 @@ public class ClusterRestApi {
       meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
       meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
       meta.put(ClusterMeta.INTP_START_TIME, new Date());
-      meta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
+      meta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
 
       intpMeta.put("sh:hzliuxun0:"+i, meta);
     }
@@ -249,7 +249,7 @@ public class ClusterRestApi {
       meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
       meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
       meta.put(ClusterMeta.INTP_START_TIME, new Date());
-      meta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
+      meta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
 
       intpMeta.put("sh:hzliuxun1:"+i, meta);
     }
@@ -264,7 +264,7 @@ public class ClusterRestApi {
       meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
       meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
       meta.put(ClusterMeta.INTP_START_TIME, new Date());
-      meta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
+      meta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
 
       intpMeta.put("sh:liuxun:"+i, meta);
     }

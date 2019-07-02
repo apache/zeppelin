@@ -51,7 +51,7 @@ public class ClusterMeta implements Serializable {
   public static String MEMORY_CAPACITY      = "MEMORY_CAPACITY";
   public static String MEMORY_USED          = "MEMORY_USED";
 
-  public static String LAST_HEARTBEAT       = "LAST_HEARTBEAT";
+  public static String LATEST_HEARTBEAT     = "LATEST_HEARTBEAT";
 
   // zeppelin-server or interperter-process status
   public static String STATUS               = "STATUS";

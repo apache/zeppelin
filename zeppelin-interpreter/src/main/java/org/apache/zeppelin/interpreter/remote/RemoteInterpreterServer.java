@@ -336,7 +336,7 @@ public class RemoteInterpreterServer extends Thread
     meta.put(ClusterMeta.INTP_TSERVER_HOST, host);
     meta.put(ClusterMeta.INTP_TSERVER_PORT, port);
     meta.put(ClusterMeta.INTP_START_TIME, new Date());
-    meta.put(ClusterMeta.LAST_HEARTBEAT, new Date());
+    meta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
     meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManagerClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, interpreterGroupId, meta);
