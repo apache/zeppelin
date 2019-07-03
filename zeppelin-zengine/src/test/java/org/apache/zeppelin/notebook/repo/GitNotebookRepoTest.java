@@ -39,6 +39,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,7 +172,7 @@ public class GitNotebookRepoTest {
   }
 
   @Test
-  public void addCheckpointTest() throws IOException {
+  public void addCheckpointTest() throws IOException, GitAPIException {
     // initial checks
     notebookRepo = new GitNotebookRepo(conf);
     assertThat(notebookRepo.list(null)).isNotEmpty();
@@ -199,6 +200,33 @@ public class GitNotebookRepoTest {
     // see if commit is added
     List<Revision> notebookHistoryAfter = notebookRepo.revisionHistory(TEST_NOTE_ID, TEST_NOTE_PATH, null);
     assertThat(notebookHistoryAfter.size()).isEqualTo(initialCount + 1);
+
+    int revCountBefore = 0;
+    Iterable<RevCommit> revCommits = notebookRepo.getGit().log().call();
+    for (RevCommit revCommit : revCommits) {
+      revCountBefore++;
+    }
+
+    // add changes to note2
+    Note note2 = notebookRepo.get(TEST_NOTE_ID2, TEST_NOTE_PATH2, null);
+    note2.setInterpreterFactory(mock(InterpreterFactory.class));
+    Paragraph p2 = note2.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    Map<String, Object> config2 = p2.getConfig();
+    config2.put("enabled", true);
+    p2.setConfig(config);
+    p2.setText("%md checkpoint test text");
+
+    // save note2 and checkpoint this note without changes
+    notebookRepo.save(note2, null);
+    notebookRepo.checkpoint(TEST_NOTE_ID, TEST_NOTE_PATH, "third commit", null);
+
+    // should not add more commit
+    int revCountAfter = 0;
+    revCommits = notebookRepo.getGit().log().call();
+    for (RevCommit revCommit : revCommits) {
+      revCountAfter++;
+    }
+    assertThat(revCountAfter).isEqualTo(revCountBefore);
   }
 
   private boolean containsNote(Map<String, NoteInfo> notes, String noteId) {

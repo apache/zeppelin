@@ -1491,7 +1491,7 @@ public class NotebookServer extends WebSocketServlet
                       revisions)));
             } else {
               conn.send(serializeMessage(new Message(OP.ERROR_INFO).put("info",
-                  "Couldn't checkpoint note revision: possibly storage doesn't support versioning. "
+                  "Couldn't checkpoint note revision: possibly no changes found or storage doesn't support versioning. "
                       + "Please check the logs for more details.")));
             }
           }

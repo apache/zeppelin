@@ -131,7 +131,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoWith
     Revision revision = Revision.EMPTY;
     try {
       List<DiffEntry> gitDiff = git.diff().call();
-      if (!gitDiff.isEmpty()) {
+      boolean modified = gitDiff.parallelStream().anyMatch(diffEntry -> diffEntry.getNewPath().equals(noteFileName));
+      if (modified) {
         LOGGER.debug("Changes found for pattern '{}': {}", noteFileName, gitDiff);
         DirCache added = git.add().addFilepattern(noteFileName).call();
         LOGGER.debug("{} changes are about to be commited", added.getEntryCount());

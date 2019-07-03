@@ -304,7 +304,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Set notebook head to current revision?',
       callback: function(result) {
         if (result) {
-          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.name, $routeParams.revisionId);
+          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
         }
       },
     });

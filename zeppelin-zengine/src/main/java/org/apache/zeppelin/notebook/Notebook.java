@@ -330,8 +330,10 @@ public class Notebook {
   public Note setNoteRevision(String noteId, String notePath, String revisionId, AuthenticationInfo subject)
       throws IOException {
     if (((NotebookRepoSync) notebookRepo).isRevisionSupportedInDefaultRepo()) {
-      return ((NotebookRepoWithVersionControl) notebookRepo)
-          .setNoteRevision(noteId, notePath, revisionId, subject);
+      Note note = ((NotebookRepoWithVersionControl) notebookRepo)
+              .setNoteRevision(noteId, notePath, revisionId, subject);
+      noteManager.saveNote(note);
+      return note;
     } else {
       return null;
     }
