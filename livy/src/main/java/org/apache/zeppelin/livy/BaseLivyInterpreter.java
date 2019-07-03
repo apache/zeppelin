@@ -86,7 +86,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterpreter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-  private static final String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
+  private static final String SESSION_NOT_FOUND_PATTERN = "(.*)\"Session '\\d+' not found.\"(.*)";
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
