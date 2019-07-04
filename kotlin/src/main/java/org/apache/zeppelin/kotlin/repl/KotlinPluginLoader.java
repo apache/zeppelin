@@ -16,7 +16,11 @@ import java.util.List;
 
 import org.jetbrains.kotlin.cli.jvm.config.JvmClasspathRoot;
 
-import static org.jetbrains.kotlin.utils.PathUtil.*;
+import static org.jetbrains.kotlin.utils.PathUtil.KOTLIN_SCRIPTING_COMPILER_PLUGIN_JAR;
+import static org.jetbrains.kotlin.utils.PathUtil.KOTLIN_SCRIPTING_COMPILER_IMPL_JAR;
+import static org.jetbrains.kotlin.utils.PathUtil.KOTLIN_SCRIPTING_COMMON_JAR;
+import static org.jetbrains.kotlin.utils.PathUtil.KOTLIN_SCRIPTING_JVM_JAR;
+import static org.jetbrains.kotlin.utils.PathUtil.KOTLIN_JAVA_STDLIB_SRC_JAR;
 
 public class KotlinPluginLoader {
 
@@ -45,7 +49,7 @@ public class KotlinPluginLoader {
   }
 
   private String findJavaRuntimeJarPath() {
-    // TODO get actual runtime jar
+    // TODO(dk) get actual runtime jar
     return "/Library/Java/JavaVirtualMachines/jdk1.8.0_212.jdk/Contents/Home/jre/lib/";
   }
 
@@ -54,7 +58,8 @@ public class KotlinPluginLoader {
             new JvmClasspathRoot(new File(path)));
   }
 
-  public CompilerConfiguration loadCompilerConfiguration() { // TODO split into two classes w/ plugin and compiler loader
+  // TODO(dk) split into two classes w/ plugin and compiler loader
+  public CompilerConfiguration loadCompilerConfiguration() {
     CompilerConfiguration configuration = new CompilerConfiguration();
 
     configuration.put(CommonConfigurationKeys.MODULE_NAME, "zeppelin-kotlin");
