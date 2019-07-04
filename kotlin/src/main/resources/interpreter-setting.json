@@ -1,0 +1,14 @@
+[
+  {
+    "group": "kotlin",
+    "name": "kotlin",
+    "className": "org.apache.zeppelin.kotlin.KotlinInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+    },
+    "editor": {
+      "language": "kotlin",
+      "editOnDblClick": false
+    }
+  }
+]
