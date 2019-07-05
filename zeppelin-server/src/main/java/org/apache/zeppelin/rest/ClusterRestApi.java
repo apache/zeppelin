@@ -32,9 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,8 +49,6 @@ public class ClusterRestApi {
 
   // Do not modify, Use by `zeppelin-web/src/app/cluster/cluster.html`
   private static String PROPERTIES = "properties";
-
-  private boolean isTest = false;
 
   @GET
   @Path("/address")
@@ -77,13 +73,8 @@ public class ClusterRestApi {
 
     Map<String, HashMap<String, Object>> clusterMeta = null;
     Map<String, HashMap<String, Object>> intpMeta = null;
-    if (isTest) {
-      clusterMeta = mockNodesMeta();
-      intpMeta = mockIntpMeta();
-    } else {
-      clusterMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.SERVER_META, "");
-      intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
-    }
+    clusterMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.SERVER_META, "");
+    intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
 
     // Number of calculation processes
     for (Map.Entry<String, HashMap<String, Object>> serverMetaEntity : clusterMeta.entrySet()) {
@@ -176,11 +167,7 @@ public class ClusterRestApi {
     ArrayList<HashMap<String, Object>> intpProcesses = new ArrayList<HashMap<String, Object>>();
 
     Map<String, HashMap<String, Object>> intpMeta = null;
-    if (isTest) {
-      intpMeta = mockIntpMeta();
-    } else {
-      intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
-    }
+    intpMeta = clusterManagerServer.getClusterMeta(ClusterMetaType.INTP_PROCESS_META, "");
 
     // Number of calculation processes
     for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
@@ -195,81 +182,5 @@ public class ClusterRestApi {
     }
 
     return new JsonResponse(Response.Status.OK, "", intpProcesses).build();
-  }
-
-
-  private Map<String, HashMap<String, Object>> mockNodesMeta() {
-    Map<String, HashMap<String, Object>> serverMeta = new HashMap<>();
-
-    for (Integer i = 0; i < 32; i ++) {
-      HashMap<String, Object> nodeMeta = new HashMap<>();
-      nodeMeta.put(ClusterMeta.NODE_NAME, "127.0.0." + i.toString() + ":" + "8080");
-      nodeMeta.put(ClusterMeta.SERVER_HOST, "127.0.0." + i.toString());
-      nodeMeta.put(ClusterMeta.SERVER_PORT, "8080");
-      nodeMeta.put(ClusterMeta.MEMORY_USED, 100);
-      nodeMeta.put(ClusterMeta.MEMORY_CAPACITY, 4800);
-      nodeMeta.put(ClusterMeta.CPU_USED, 200);
-      nodeMeta.put(ClusterMeta.CPU_CAPACITY, 10000);
-      nodeMeta.put(ClusterMeta.SERVER_HOST, "host1");
-      nodeMeta.put(ClusterMeta.SERVER_PORT, 1084);
-      nodeMeta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
-      nodeMeta.put(ClusterMeta.SERVER_START_TIME, LocalDateTime.now());
-      nodeMeta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
-
-      serverMeta.put("127.0.0." + i.toString() + ":" + "8080", nodeMeta);
-    }
-
-    return serverMeta;
-  }
-
-  private Map<String, HashMap<String, Object>> mockIntpMeta() {
-    Map<String, HashMap<String, Object>> intpMeta = new HashMap<>();
-
-    for (Integer i = 0; i < 42; i ++) {
-      HashMap<String, Object> meta = new HashMap<>();
-      meta.put(ClusterMeta.INTP_PROCESS_NAME, "sh:hzliuxun:" + i.toString());
-      meta.put(ClusterMeta.NODE_NAME, "127.0.0.0:8080");
-      meta.put(ClusterMeta.SERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.SERVER_PORT, 8080);
-      meta.put(ClusterMeta.INTP_TSERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
-      meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
-      meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
-      meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
-
-      intpMeta.put("sh:hzliuxun0:"+i, meta);
-    }
-
-    for (Integer i = 0; i < 32; i ++) {
-      HashMap<String, Object> meta = new HashMap<>();
-      meta.put(ClusterMeta.INTP_PROCESS_NAME, "sh:hzliuxun:" + i.toString());
-      meta.put(ClusterMeta.NODE_NAME, "127.0.0.1:8080");
-      meta.put(ClusterMeta.SERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.SERVER_PORT, 8080);
-      meta.put(ClusterMeta.INTP_TSERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
-      meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
-      meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
-      meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
-
-      intpMeta.put("sh:hzliuxun1:"+i, meta);
-    }
-
-    for (Integer i = 0; i < 22; i ++) {
-      HashMap<String, Object> meta = new HashMap<>();
-      meta.put(ClusterMeta.INTP_PROCESS_NAME, "sh:hzliuxun:" + i.toString());
-      meta.put(ClusterMeta.NODE_NAME, "127.0.0.2:8080");
-      meta.put(ClusterMeta.SERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.SERVER_PORT, 8080);
-      meta.put(ClusterMeta.INTP_TSERVER_HOST, "127.0.0." + i.toString());
-      meta.put(ClusterMeta.INTP_TSERVER_PORT, 1084);
-      meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
-      meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
-      meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
-
-      intpMeta.put("sh:liuxun:"+i, meta);
-    }
-
-    return intpMeta;
   }
 }

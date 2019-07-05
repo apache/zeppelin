@@ -97,7 +97,6 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
@@ -486,7 +485,6 @@ public abstract class ClusterManager {
       .register(ArrayList.class)
       .register(HashMap.class)
       .register(ClusterMetaEntity.class)
-      .register(Date.class)
       .register(LocalDateTime.class)
       .register(Collections.emptyList().getClass())
       .register(HashSet.class)
@@ -515,7 +513,6 @@ public abstract class ClusterManager {
       .register(ClusterMetaEntity.class)
       .register(HashMap.class)
       .register(HashSet.class)
-      .register(Date.class)
       .register(LocalDateTime.class)
       .register(DefaultRaftMember.class)
       .register(MemberId.class)
@@ -532,7 +529,6 @@ public abstract class ClusterManager {
       .register(ClusterMetaOperation.class)
       .register(ClusterMetaType.class)
       .register(HashMap.class)
-      .register(Date.class)
       .register(LocalDateTime.class)
       .register(Maps.immutableEntry(new String(), new Object()).getClass())
       .build());
