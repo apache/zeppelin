@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
@@ -38,8 +39,10 @@ import java.util.Map;
 import static org.apache.zeppelin.cluster.event.ClusterEvent.CREATE_INTP_PROCESS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
@@ -71,7 +74,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     HashMap<String, Object> intpProcMeta = clusterServer
         .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
     if (null != intpProcMeta && intpProcMeta.containsKey(INTP_TSERVER_HOST)
-        && intpProcMeta.containsKey(INTP_TSERVER_PORT)) {
+        && intpProcMeta.containsKey(INTP_TSERVER_PORT) && intpProcMeta.containsKey(STATUS)
+        && StringUtils.equals((String) intpProcMeta.get(STATUS), ONLINE_STATUS)) {
       // connect exist Interpreter Process
       String intpTserverHost = (String) intpProcMeta.get(INTP_TSERVER_HOST);
       int intpTserverPort = (int) intpProcMeta.get(INTP_TSERVER_PORT);
