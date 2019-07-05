@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -213,7 +214,7 @@ public class ClusterManagerServer extends ClusterManager {
         meta.put(ClusterMeta.NODE_NAME, nodeName);
         meta.put(ClusterMeta.SERVER_HOST, zeplServerHost);
         meta.put(ClusterMeta.SERVER_PORT, raftServerPort);
-        meta.put(ClusterMeta.SERVER_START_TIME, new Date());
+        meta.put(ClusterMeta.SERVER_START_TIME, LocalDateTime.now());
         putClusterMeta(SERVER_META, nodeName, meta);
 
         LOGGER.info("RaftServer run() <<<");

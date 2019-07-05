@@ -87,6 +87,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -335,8 +336,8 @@ public class RemoteInterpreterServer extends Thread
     meta.put(ClusterMeta.INTP_PROCESS_NAME, interpreterGroupId);
     meta.put(ClusterMeta.INTP_TSERVER_HOST, host);
     meta.put(ClusterMeta.INTP_TSERVER_PORT, port);
-    meta.put(ClusterMeta.INTP_START_TIME, new Date());
-    meta.put(ClusterMeta.LATEST_HEARTBEAT, new Date());
+    meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
+    meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
     meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManagerClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, interpreterGroupId, meta);
