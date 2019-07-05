@@ -103,7 +103,7 @@ public class InterpreterSetting {
    */
   private Object properties = new Properties();
 
-  private Status status;
+  private Status status = Status.READY;
   private String errorReason;
 
   @SerializedName("interpreterGroup")
@@ -265,7 +265,6 @@ public class InterpreterSetting {
   }
 
   void postProcessing() {
-    this.status = Status.READY;
     this.id = this.name;
     if (this.lifecycleManager == null) {
       this.lifecycleManager = new NullLifecycleManager(conf);
@@ -657,6 +656,7 @@ public class InterpreterSetting {
   }
 
   public void setStatus(Status status) {
+    LOGGER.info(String.format("Set interpreter %s status to %s", name, status.name()));
     this.status = status;
   }
 
@@ -867,6 +867,7 @@ public class InterpreterSetting {
           // load dependencies
           List<Dependency> deps = getDependencies();
           if (deps != null) {
+            LOGGER.info("Start to download dependencies for interpreter: " + name);
             for (Dependency d : deps) {
               File destDir = new File(
                   conf.getRelativeDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
@@ -879,6 +880,7 @@ public class InterpreterSetting {
                     .load(d.getGroupArtifactVersion(), new File(destDir, id));
               }
             }
+            LOGGER.info("Finish downloading dependencies for interpreter: " + name);
           }
 
           setStatus(Status.READY);

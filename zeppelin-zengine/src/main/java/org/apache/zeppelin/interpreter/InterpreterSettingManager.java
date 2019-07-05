@@ -639,35 +639,30 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
    * changed
    */
   private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
-    final Thread t = new Thread() {
-      public void run() {
-        try {
-          List<Dependency> deps = setting.getDependencies();
-          if (deps != null) {
-            for (Dependency d : deps) {
-              File destDir = new File(
-                  conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    try {
+      List<Dependency> deps = setting.getDependencies();
+      if (deps != null) {
+        LOGGER.info("Start to copy dependencies for interpreter: " + setting.getName());
+        for (Dependency d : deps) {
+          File destDir = new File(
+              conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
-              int numSplits = d.getGroupArtifactVersion().split(":").length;
-              if (!(numSplits >= 3 && numSplits <= 6)) {
-                dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
-                    new File(destDir, setting.getId()));
-              }
-            }
+          int numSplits = d.getGroupArtifactVersion().split(":").length;
+          if (!(numSplits >= 3 && numSplits <= 6)) {
+            dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                new File(destDir, setting.getId()));
           }
-        } catch (Exception e) {
-          LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
-                  " go to interpreter setting page click on edit and save it again to make " +
-                  "this interpreter work properly.",
-              setting.getGroup()), e);
-          setting.setErrorReason(e.getLocalizedMessage());
-          setting.setStatus(InterpreterSetting.Status.ERROR);
-        } finally {
-
         }
+        LOGGER.info("Finish copy dependencies for interpreter: " + setting.getName());
       }
-    };
-    t.start();
+    } catch (Exception e) {
+      LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
+              " go to interpreter setting page click on edit and save it again to make " +
+              "this interpreter work properly.",
+          setting.getGroup()), e);
+      setting.setErrorReason(e.getLocalizedMessage());
+      setting.setStatus(InterpreterSetting.Status.ERROR);
+    }
   }
 
   /**
@@ -777,8 +772,8 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     dependencyResolver.delRepo(id);
     saveToFile();
   }
-
-  /** Change interpreter properties and restart */
+  
+  /** restart in interpreter setting page */
   private InterpreterSetting inlineSetPropertyAndRestart(
       String id,
       InterpreterOption option,
@@ -838,6 +833,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
+  @VisibleForTesting
   public void restart(String id) throws InterpreterException {
     InterpreterSetting setting = interpreterSettings.get(id);
     copyDependenciesFromLocalPath(setting);
