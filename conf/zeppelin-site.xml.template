@@ -20,6 +20,12 @@
 <configuration>
 
 <property>
+  <name>zeppelin.cluster.addr</name>
+  <value></value>
+  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
+</property>
+
+<property>
   <name>zeppelin.server.addr</name>
   <value>0.0.0.0</value>
   <description>Server address</description>

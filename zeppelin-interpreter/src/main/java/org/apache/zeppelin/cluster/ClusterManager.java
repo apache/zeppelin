@@ -91,11 +91,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
@@ -147,6 +148,8 @@ public abstract class ClusterManager {
   protected String zeplServerHost = "";
 
   protected ClusterMonitor clusterMonitor = null;
+
+  protected boolean isTest = false;
 
   public ClusterManager() {
     try {
@@ -308,7 +311,20 @@ public abstract class ClusterManager {
   }
 
   public String getClusterNodeName() {
-    return zeplServerHost + ":" + raftServerPort;
+    if (isTest) {
+      // Start three cluster servers in the test case at the same time,
+      // need to avoid duplicate names
+      return this.zeplServerHost + ":" + this.raftServerPort;
+    }
+
+    String hostName = "";
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      hostName = addr.getHostName().toString();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+    return hostName;
   }
 
   // put metadata into cluster metadata
@@ -469,7 +485,7 @@ public abstract class ClusterManager {
       .register(ArrayList.class)
       .register(HashMap.class)
       .register(ClusterMetaEntity.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(Collections.emptyList().getClass())
       .register(HashSet.class)
       .register(DefaultRaftMember.class)
@@ -497,7 +513,7 @@ public abstract class ClusterManager {
       .register(ClusterMetaEntity.class)
       .register(HashMap.class)
       .register(HashSet.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(DefaultRaftMember.class)
       .register(MemberId.class)
       .register(RaftMember.Type.class)
@@ -513,7 +529,7 @@ public abstract class ClusterManager {
       .register(ClusterMetaOperation.class)
       .register(ClusterMetaType.class)
       .register(HashMap.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(Maps.immutableEntry(new String(), new Object()).getClass())
       .build());
 }

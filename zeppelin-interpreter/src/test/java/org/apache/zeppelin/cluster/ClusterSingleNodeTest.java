@@ -109,7 +109,7 @@ public class ClusterSingleNodeTest {
     HashMap hashMap = (HashMap) meta;
 
     // Get metadata for the current service
-    Object values = hashMap.get(zServerHost + ":" + zServerPort);
+    Object values = hashMap.get(clusterClient.getClusterNodeName());
     assertEquals(true, (values instanceof HashMap));
     HashMap mapMetaValues = (HashMap) values;
 

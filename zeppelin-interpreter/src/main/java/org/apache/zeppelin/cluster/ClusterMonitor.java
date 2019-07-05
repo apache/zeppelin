@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -130,7 +132,8 @@ public class ClusterMonitor {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("checkHealthy()");
     }
-    Date now = new Date();
+
+    LocalDateTime now = LocalDateTime.now();
     // check machine mate
     for (ClusterMetaType metaType : ClusterMetaType.values()) {
       Map<String, HashMap<String, Object>> clusterMeta
@@ -150,11 +153,12 @@ public class ClusterMonitor {
           continue;
         }
 
-        Object heartbeat = meta.get(ClusterMeta.HEARTBEAT);
-        if (heartbeat instanceof Date) {
-          Date dHeartbeat = (Date) heartbeat;
-          long diff = now.getTime() - dHeartbeat.getTime();
-          if (diff > heartbeatTimeout) {
+        Object heartbeat = meta.get(ClusterMeta.LATEST_HEARTBEAT);
+        if (heartbeat instanceof LocalDateTime) {
+          LocalDateTime dHeartbeat = (LocalDateTime) heartbeat;
+          Duration duration = Duration.between(dHeartbeat, now);
+          long timeInterval = duration.getSeconds();
+          if (timeInterval > heartbeatTimeout) {
             // Set the metadata for the heartbeat timeout to offline
             // Cannot delete metadata
             HashMap<String, Object> mapValues = new HashMap<>();
@@ -173,7 +177,7 @@ public class ClusterMonitor {
   // indicating that the process is still active.
   private void sendHeartbeat() {
     HashMap<String, Object> mapMonitorUtil = new HashMap<>();
-    mapMonitorUtil.put(ClusterMeta.HEARTBEAT, new Date());
+    mapMonitorUtil.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     clusterManager.putClusterMeta(INTP_PROCESS_META, metaKey, mapMonitorUtil);
@@ -212,7 +216,7 @@ public class ClusterMonitor {
     mapMonitorUtil.put(ClusterMeta.MEMORY_CAPACITY, avgMonitorUtil.memoryCapacity);
     mapMonitorUtil.put(ClusterMeta.CPU_USED, avgMonitorUtil.cpuUsed);
     mapMonitorUtil.put(ClusterMeta.CPU_CAPACITY, avgMonitorUtil.cpuCapacity);
-    mapMonitorUtil.put(ClusterMeta.HEARTBEAT, new Date());
+    mapMonitorUtil.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
     mapMonitorUtil.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
     String clusterName = clusterManager.getClusterNodeName();

@@ -85,6 +85,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static String zeppelinShiroKnox =
@@ -108,6 +109,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static File knoxSsoPem = null;

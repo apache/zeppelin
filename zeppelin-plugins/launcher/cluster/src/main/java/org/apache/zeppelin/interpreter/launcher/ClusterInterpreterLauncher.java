@@ -89,7 +89,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       HashMap<String, Object> meta = clusterServer.getIdleNodeMeta();
       if (null == meta) {
         LOGGER.error("Don't get idle node meta, launch interpreter on local.");
-        super.launch(context);
+        return createInterpreterProcess(context);
       }
 
       String srvHost = (String) meta.get(SERVER_HOST);

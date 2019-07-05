@@ -302,6 +302,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
       }
     }
   }
+
   @Test
   public void testCloneNoteEvent() throws IOException {
     Note note1 = null;

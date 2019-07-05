@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -63,9 +64,6 @@ public class ClusterManagerServer extends ClusterManager {
   protected RaftServer raftServer = null;
 
   protected MessagingService messagingService = null;
-
-  // Connect to the interpreter process that has been created
-  public static String CONNET_EXISTING_PROCESS = "CONNET_EXISTING_PROCESS";
 
   private List<ClusterEventListener> clusterIntpEventListeners = new ArrayList<>();
   private List<ClusterEventListener> clusterNoteEventListeners = new ArrayList<>();
@@ -107,6 +105,7 @@ public class ClusterManagerServer extends ClusterManager {
 
   @VisibleForTesting
   public void initTestCluster(String clusterAddrList, String host, int port) {
+    isTest = true;
     this.zeplServerHost = host;
     this.raftServerPort = port;
 
@@ -209,6 +208,14 @@ public class ClusterManagerServer extends ClusterManager {
             subscribeClusterNoteEvent, MoreExecutors.directExecutor());
         messagingService.registerHandler(CLUSTER_AUTH_EVENT_TOPIC,
             subscribeClusterAuthEvent, MoreExecutors.directExecutor());
+
+        HashMap<String, Object> meta = new HashMap<String, Object>();
+        String nodeName = getClusterNodeName();
+        meta.put(ClusterMeta.NODE_NAME, nodeName);
+        meta.put(ClusterMeta.SERVER_HOST, zeplServerHost);
+        meta.put(ClusterMeta.SERVER_PORT, raftServerPort);
+        meta.put(ClusterMeta.SERVER_START_TIME, LocalDateTime.now());
+        putClusterMeta(SERVER_META, nodeName, meta);
 
         LOGGER.info("RaftServer run() <<<");
       }
