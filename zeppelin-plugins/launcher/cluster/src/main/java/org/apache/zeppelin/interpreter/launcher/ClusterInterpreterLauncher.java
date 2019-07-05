@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
@@ -38,8 +39,10 @@ import java.util.Map;
 import static org.apache.zeppelin.cluster.event.ClusterEvent.CREATE_INTP_PROCESS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.SERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
@@ -71,7 +74,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     HashMap<String, Object> intpProcMeta = clusterServer
         .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
     if (null != intpProcMeta && intpProcMeta.containsKey(INTP_TSERVER_HOST)
-        && intpProcMeta.containsKey(INTP_TSERVER_PORT)) {
+        && intpProcMeta.containsKey(INTP_TSERVER_PORT) && intpProcMeta.containsKey(STATUS)
+        && StringUtils.equals((String) intpProcMeta.get(STATUS), ONLINE_STATUS)) {
       // connect exist Interpreter Process
       String intpTserverHost = (String) intpProcMeta.get(INTP_TSERVER_HOST);
       int intpTserverPort = (int) intpProcMeta.get(INTP_TSERVER_PORT);
@@ -91,9 +95,9 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       String srvHost = (String) meta.get(SERVER_HOST);
       String localhost = RemoteInterpreterUtils.findAvailableHostAddress();
 
-      if (localhost.equalsIgnoreCase(srvHost) && false) {
+      if (localhost.equalsIgnoreCase(srvHost)) {
         // launch interpreter on local
-        return super.launch(context);
+        return createInterpreterProcess(context);
       } else {
         int srvPort = (int) meta.get(SERVER_PORT);
 
@@ -104,15 +108,20 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
         mapEvent.put(CLUSTER_EVENT, CREATE_INTP_PROCESS);
         mapEvent.put(CLUSTER_EVENT_MSG, sContext);
         String strEvent = gson.toJson(mapEvent);
+        // Notify other server in the cluster that the resource is idle to create an interpreter
         clusterServer.unicastClusterEvent(
             srvHost, srvPort, ClusterManagerServer.CLUSTER_INTP_EVENT_TOPIC, strEvent);
 
+        // Find the ip and port of thrift registered by the remote interpreter process
+        // through the cluster metadata
         HashMap<String, Object> intpMeta = clusterServer
             .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
-        int retryGetMeta = connectTimeout / CHECK_META_INTERVAL;
-        while ((retryGetMeta-- > 0) &
-            (null == intpMeta || !intpMeta.containsKey(INTP_TSERVER_HOST)
-                || !intpMeta.containsKey(INTP_TSERVER_PORT)) ) {
+
+        int MAX_RETRY_GET_META = connectTimeout / ClusterInterpreterLauncher.CHECK_META_INTERVAL;
+        int retryGetMeta = 0;
+        while ((retryGetMeta++ < MAX_RETRY_GET_META)
+            && (null == intpMeta || !intpMeta.containsKey(INTP_TSERVER_HOST)
+            || !intpMeta.containsKey(INTP_TSERVER_PORT)) ) {
           try {
             Thread.sleep(CHECK_META_INTERVAL);
             intpMeta = clusterServer
@@ -126,11 +135,9 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
         // Check if the remote creation process is successful
         if (null == intpMeta || !intpMeta.containsKey(INTP_TSERVER_HOST)
             || !intpMeta.containsKey(INTP_TSERVER_PORT)) {
-          LOGGER.error("Creating process {} failed on remote server {}:{}",
+          String errorInfo = String.format("Creating process %s failed on remote server %s:%d",
               intpGroupId, srvHost, srvPort);
-
-          // launch interpreter on local
-          return super.launch(context);
+          throw new IOException(errorInfo);
         } else {
           // connnect remote interpreter process
           String intpTSrvHost = (String) intpMeta.get(INTP_TSERVER_HOST);
@@ -151,29 +158,38 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       LOGGER.debug(msg);
     }
 
-    Gson gson = new Gson();
-    Map<String, Object> mapEvent = gson.fromJson(msg,
-        new TypeToken<Map<String, Object>>(){}.getType());
-    String sEvent = (String) mapEvent.get(CLUSTER_EVENT);
-    ClusterEvent clusterEvent = ClusterEvent.valueOf(sEvent);
+    try {
+      Gson gson = new Gson();
+      Map<String, Object> mapEvent = gson.fromJson(msg,
+          new TypeToken<Map<String, Object>>(){}.getType());
+      String sEvent = (String) mapEvent.get(CLUSTER_EVENT);
+      ClusterEvent clusterEvent = ClusterEvent.valueOf(sEvent);
 
-    switch (clusterEvent) {
-      case CREATE_INTP_PROCESS:
-        onCreateIntpProcess(mapEvent);
-        break;
-      default:
-        LOGGER.error("Unknown clusterEvent:{}, msg:{} ", clusterEvent, msg);
-        break;
+      switch (clusterEvent) {
+        case CREATE_INTP_PROCESS:
+          // 1）Other zeppelin servers in the cluster send requests to create an interpreter process
+          // 2）After the interpreter process is created, and the interpreter is started,
+          //    the interpreter registers the thrift ip and port into the cluster metadata.
+          // 3）Other servers connect through the IP and port of thrift in the cluster metadata,
+          //    using this remote interpreter process
+          String eventMsg = (String) mapEvent.get(CLUSTER_EVENT_MSG);
+          InterpreterLaunchContext context = gson.fromJson(
+              eventMsg, new TypeToken<InterpreterLaunchContext>() {}.getType());
+          ClusterInterpreterProcess clusterInterpreterProcess = createInterpreterProcess(context);
+          clusterInterpreterProcess.start(context.getUserName());
+          break;
+        default:
+          LOGGER.error("Unknown clusterEvent:{}, msg:{} ", clusterEvent, msg);
+          break;
+      }
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
     }
   }
 
-  private void onCreateIntpProcess(Map<String, Object> mapEvent) {
-    String eventMsg = (String) mapEvent.get(CLUSTER_EVENT_MSG);
+  private ClusterInterpreterProcess createInterpreterProcess(InterpreterLaunchContext context) {
+    ClusterInterpreterProcess clusterInterpreterProcess = null;
     try {
-      Gson gson = new Gson();
-      InterpreterLaunchContext context = gson.fromJson(
-          eventMsg, new TypeToken<InterpreterLaunchContext>() {}.getType());
-
       this.properties = context.getProperties();
       InterpreterOption option = context.getOption();
       InterpreterRunner runner = context.getRunner();
@@ -183,8 +199,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
 
-      ClusterInterpreterProcess clusterInterpreterProcess
-          = new ClusterInterpreterProcess(
+      clusterInterpreterProcess = new ClusterInterpreterProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           context.getZeppelinServerRPCPort(),
           context.getZeppelinServerHost(),
@@ -196,10 +211,10 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
           intpSetName,
           context.getInterpreterGroupId(),
           option.isUserImpersonate());
-
-      clusterInterpreterProcess.start(context.getUserName());
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
+
+    return clusterInterpreterProcess;
   }
 }
