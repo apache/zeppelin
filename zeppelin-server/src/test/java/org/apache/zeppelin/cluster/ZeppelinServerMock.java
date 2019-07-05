@@ -21,6 +21,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -124,13 +125,17 @@ public class ZeppelinServerMock {
           ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(),
           notebookDir.getPath()
       );
+      LOG.info("zconf.getClusterAddress() = {}", zconf.getClusterAddress());
+      System.setProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_CLUSTER_ADDR.getVarName(),
+          zconf.getClusterAddress()
+      );
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
       new File("../zeppelin-web/dist").mkdirs();
 
-      LOG.info("Staring test Zeppelin up...");
-      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      LOG.info("Staring ZeppelinServerMock Zeppelin up...");
 
       executor = Executors.newSingleThreadExecutor();
       executor.submit(SERVER);
@@ -147,7 +152,7 @@ public class ZeppelinServerMock {
         throw new RuntimeException("Can not start Zeppelin server");
       }
       //ZeppelinServer.notebook.setParagraphJobListener(NotebookServer.getInstance());
-      LOG.info("Test Zeppelin stared.");
+      LOG.info("ZeppelinServerMock stared.");
     }
   }
 
@@ -169,7 +174,7 @@ public class ZeppelinServerMock {
           TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
       }
-      LOG.info("Terminating test Zeppelin...");
+      LOG.info("ZeppelinServerMock Zeppelin...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
       PluginManager.reset();
@@ -187,7 +192,7 @@ public class ZeppelinServerMock {
         throw new RuntimeException("Can not stop Zeppelin server");
       }
 
-      LOG.info("Test Zeppelin terminated.");
+      LOG.info("ZeppelinServerMock terminated.");
 
       if (deleteConfDir && !TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
@@ -196,7 +201,6 @@ public class ZeppelinServerMock {
         FileUtils.deleteDirectory(confDir);
       }
     }
-
   }
 
   protected static boolean checkIfServerIsRunning() {
@@ -264,6 +268,24 @@ public class ZeppelinServerMock {
 
   protected static PostMethod httpPost(String path, String body) throws IOException {
     return httpPost(path, body, StringUtils.EMPTY, StringUtils.EMPTY);
+  }
+
+  protected static DeleteMethod httpDelete(String path) throws IOException {
+    return httpDelete(path, StringUtils.EMPTY, StringUtils.EMPTY);
+  }
+
+  protected static DeleteMethod httpDelete(String path, String user, String pwd)
+      throws IOException {
+    LOG.info("Connecting to {}", URL + path);
+    HttpClient httpClient = new HttpClient();
+    DeleteMethod deleteMethod = new DeleteMethod(URL + path);
+    deleteMethod.addRequestHeader("Origin", URL);
+    if (userAndPasswordAreNotBlank(user, pwd)) {
+      deleteMethod.setRequestHeader("Cookie", "JSESSIONID=" + getCookie(user, pwd));
+    }
+    httpClient.executeMethod(deleteMethod);
+    LOG.info("{} - {}", deleteMethod.getStatusCode(), deleteMethod.getStatusText());
+    return deleteMethod;
   }
 
   protected static PostMethod httpPost(String path, String request, String user, String pwd)

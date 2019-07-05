@@ -357,10 +357,15 @@ public class ZeppelinServer extends ResourceConfig {
   private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
     if (conf.isClusterMode()) {
       ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+
       NotebookServer notebookServer = serviceLocator.getService(NotebookServer.class);
-      AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
+
+      AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
       clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, authorizationService);
+
+      InterpreterSettingManager interpreterSettingManager = serviceLocator.getService(InterpreterSettingManager.class);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC, interpreterSettingManager);
 
       // Since the ClusterInterpreterLauncher is lazy, dynamically generated, So in cluster mode,
       // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,

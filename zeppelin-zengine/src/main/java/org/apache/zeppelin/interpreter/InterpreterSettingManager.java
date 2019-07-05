@@ -30,6 +30,10 @@ import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
+import org.apache.zeppelin.cluster.event.ClusterEvent;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
+import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -83,6 +87,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC;
+
 
 /**
  * InterpreterSettingManager is the component which manage all the interpreter settings.
@@ -90,7 +96,7 @@ import java.util.stream.Collectors;
  * TODO(zjffdu) We could move it into another separated component.
  */
 @ManagedObject("interpreterSettingManager")
-public class InterpreterSettingManager implements NoteEventListener {
+public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -677,9 +683,29 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public InterpreterSetting createNewSetting(String name, String group,
-      List<Dependency> dependencies, InterpreterOption option, Map<String, InterpreterProperty> p)
+                                             List<Dependency> dependencies,
+                                             InterpreterOption option,
+                                             Map<String, InterpreterProperty> properties)
       throws IOException {
 
+    InterpreterSetting interpreterSetting = null;
+    try {
+      interpreterSetting = inlineCreateNewSetting(name, group, dependencies, option, properties);
+
+      broadcastClusterEvent(ClusterEvent.CREATE_INTP_SETTING, interpreterSetting);
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
+    }
+
+    return interpreterSetting;
+  }
+
+  private InterpreterSetting inlineCreateNewSetting(String name, String group,
+                                                    List<Dependency> dependencies,
+                                                    InterpreterOption option,
+                                                    Map<String, InterpreterProperty> properties)
+      throws IOException {
     if (name.indexOf(".") >= 0) {
       throw new IOException("'.' is invalid for InterpreterSetting name.");
     }
@@ -695,14 +721,13 @@ public class InterpreterSettingManager implements NoteEventListener {
     //TODO(zjffdu) Should use setDependencies
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
-    setting.setProperties(p);
+    setting.setProperties(properties);
     initInterpreterSetting(setting);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
+
     return setting;
   }
-
-
 
   @VisibleForTesting
   public void closeNote(String user, String noteId) {
@@ -753,11 +778,12 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   /** Change interpreter properties and restart */
-  public void setPropertyAndRestart(
+  private InterpreterSetting inlineSetPropertyAndRestart(
       String id,
       InterpreterOption option,
       Map<String, InterpreterProperty> properties,
-      List<Dependency> dependencies)
+      List<Dependency> dependencies,
+      boolean initiator)
       throws InterpreterException, IOException {
     InterpreterSetting intpSetting = interpreterSettings.get(id);
     if (intpSetting != null) {
@@ -767,13 +793,32 @@ public class InterpreterSettingManager implements NoteEventListener {
         intpSetting.setProperties(properties);
         intpSetting.setDependencies(dependencies);
         intpSetting.postProcessing();
-        saveToFile();
+        if (initiator) {
+          saveToFile();
+        }
       } catch (Exception e) {
         loadFromFile();
         throw new IOException(e);
       }
     } else {
       throw new InterpreterException("Interpreter setting id " + id + " not found");
+    }
+    return intpSetting;
+  }
+
+  /** Change interpreter properties and restart */
+  public void setPropertyAndRestart(
+      String id,
+      InterpreterOption option,
+      Map<String, InterpreterProperty> properties,
+      List<Dependency> dependencies)
+      throws InterpreterException, IOException {
+    try {
+      InterpreterSetting intpSetting = inlineSetPropertyAndRestart(id, option, properties, dependencies, true);
+      // broadcast cluster event
+      broadcastClusterEvent(ClusterEvent.UPDATE_INTP_SETTING, intpSetting);
+    } catch (Exception e) {
+      throw e;
     }
   }
 
@@ -813,6 +858,17 @@ public class InterpreterSettingManager implements NoteEventListener {
   }
 
   public void remove(String id) throws IOException {
+    boolean removed = inlineRemove(id, true);
+    if (removed) {
+      // broadcast cluster event
+      InterpreterSetting intpSetting = new InterpreterSetting();
+      intpSetting.setId(id);
+      broadcastClusterEvent(ClusterEvent.DELETE_INTP_SETTING, intpSetting);
+    }
+  }
+
+  private boolean inlineRemove(String id, boolean initiator) throws IOException {
+    boolean removed = false;
     // 1. close interpreter groups of this interpreter setting
     // 2. remove this interpreter setting
     // 3. remove this interpreter setting from note binding
@@ -822,11 +878,18 @@ public class InterpreterSettingManager implements NoteEventListener {
       InterpreterSetting intp = interpreterSettings.get(id);
       intp.close();
       interpreterSettings.remove(id);
-      saveToFile();
+      if (initiator) {
+        // Event initiator saves the file
+        // Cluster event accepting nodes do not need to save files repeatedly
+        saveToFile();
+      }
+      removed = true;
     }
 
     File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
     FileUtils.deleteDirectory(localRepoDir);
+
+    return removed;
   }
 
   /**
@@ -978,4 +1041,85 @@ public class InterpreterSettingManager implements NoteEventListener {
   public void onParagraphStatusChange(Paragraph p, Job.Status status) throws IOException {
 
   }
+
+  @Override
+  public void onClusterEvent(String msg) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("onClusterEvent : {}", msg);
+    }
+
+    try {
+      Gson gson = new Gson();
+      ClusterMessage message = ClusterMessage.deserializeMessage(msg);
+      String id = message.get("id");
+      String name = message.get("name");
+      String group = message.get("group");
+      InterpreterOption option = null;
+      Map<String, InterpreterProperty> properties = null;
+      List<Dependency> dependencies = null;
+      String jsonOption = message.get("option");
+      if (!StringUtils.isBlank(jsonOption)) {
+        option = InterpreterOption.fromJson(jsonOption);
+      }
+      String jsonProperties = message.get("properties");
+      if (!StringUtils.isBlank(jsonProperties)) {
+        properties = gson.fromJson(jsonProperties,
+            new TypeToken<Map<String, InterpreterProperty>>() {}.getType());
+      }
+      String jsonDependencies = message.get("dependencies");
+      if (!StringUtils.isBlank(jsonOption)) {
+        dependencies = gson.fromJson(jsonDependencies, new TypeToken<List<Dependency>>() {}.getType());
+      }
+
+      switch (message.clusterEvent) {
+        case CREATE_INTP_SETTING:
+          inlineCreateNewSetting(name, group, dependencies, option, properties);
+          break;
+        case UPDATE_INTP_SETTING:
+          inlineSetPropertyAndRestart(id, option, properties, dependencies, false);
+          break;
+        case DELETE_INTP_SETTING:
+          inlineRemove(id, false);
+          break;
+        default:
+          LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
+          break;
+      }
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (InterpreterException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+  }
+
+  // broadcast cluster event
+  private void broadcastClusterEvent(ClusterEvent event, InterpreterSetting intpSetting) {
+    if (!conf.isClusterMode()) {
+      return;
+    }
+
+    List<Dependency> dependencies = intpSetting.getDependencies();
+    Map<String, InterpreterProperty> properties
+        = (Map<String, InterpreterProperty>) intpSetting.getProperties();
+    InterpreterOption intpOption = intpSetting.getOption();
+
+    HashMap<String, String> params = new HashMap<>();
+    String jsonDep = gson.toJson(dependencies, new TypeToken<List<Dependency>>() {
+    }.getType());
+    String jsonProps = gson.toJson(properties, new TypeToken<Map<String, InterpreterProperty>>() {
+    }.getType());
+    params.put("id", intpSetting.getId());
+    params.put("name", intpSetting.getName());
+    params.put("group", intpSetting.getGroup());
+    params.put("dependencies", jsonDep);
+    params.put("option", intpOption.toJson());
+    params.put("properties", jsonProps);
+
+    ClusterMessage message = new ClusterMessage(event);
+    message.put(params);
+    String msg = ClusterMessage.serializeMessage(message);
+    ClusterManagerServer.getInstance().broadcastClusterEvent(
+        CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
+  }
+
 }

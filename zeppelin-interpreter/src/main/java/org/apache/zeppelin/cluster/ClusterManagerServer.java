@@ -68,12 +68,14 @@ public class ClusterManagerServer extends ClusterManager {
   private List<ClusterEventListener> clusterIntpEventListeners = new ArrayList<>();
   private List<ClusterEventListener> clusterNoteEventListeners = new ArrayList<>();
   private List<ClusterEventListener> clusterAuthEventListeners = new ArrayList<>();
+  private List<ClusterEventListener> clusterIntpSettingEventListeners = new ArrayList<>();
 
   // zeppelin cluster event
   public static String CLUSTER_INTP_EVENT_TOPIC = "CLUSTER_INTP_EVENT_TOPIC";
   public static String CLUSTER_NOTE_EVENT_TOPIC = "CLUSTER_NOTE_EVENT_TOPIC";
   public static String CLUSTER_AUTH_EVENT_TOPIC = "CLUSTER_AUTH_EVENT_TOPIC";
   public static String CLUSTER_NB_AUTH_EVENT_TOPIC = "CLUSTER_NB_AUTH_EVENT_TOPIC";
+  public static String CLUSTER_INTP_SETTING_EVENT_TOPIC = "CLUSTER_INTP_SETTING_EVENT_TOPIC";
 
   private ClusterManagerServer() {
     super();
@@ -208,6 +210,8 @@ public class ClusterManagerServer extends ClusterManager {
             subscribeClusterNoteEvent, MoreExecutors.directExecutor());
         messagingService.registerHandler(CLUSTER_AUTH_EVENT_TOPIC,
             subscribeClusterAuthEvent, MoreExecutors.directExecutor());
+        messagingService.registerHandler(CLUSTER_INTP_SETTING_EVENT_TOPIC,
+            subscribeIntpSettingEvent, MoreExecutors.directExecutor());
 
         HashMap<String, Object> meta = new HashMap<String, Object>();
         String nodeName = getClusterNodeName();
@@ -297,8 +301,9 @@ public class ClusterManagerServer extends ClusterManager {
   }
 
   public void broadcastClusterEvent(String topic, String msg) {
-    LOGGER.info("send broadcastClusterEvent message {}", msg);
-
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("send broadcastClusterEvent message {}", msg);
+    }
     for (Node node : clusterNodes) {
       if (StringUtils.equals(node.address().host(), zeplServerHost)
           && node.address().port() == raftServerPort) {
@@ -354,6 +359,18 @@ public class ClusterManagerServer extends ClusterManager {
     return null;
   };
 
+  private BiFunction<Address, byte[], byte[]> subscribeIntpSettingEvent = (address, data) -> {
+    String message = new String(data);
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("subscribeIntpSettingEvent() {}", message);
+    }
+    for (ClusterEventListener eventListener : clusterIntpSettingEventListeners) {
+      eventListener.onClusterEvent(message);
+    }
+
+    return null;
+  };
+
   public void addClusterEventListeners(String topic, ClusterEventListener listener) {
     if (StringUtils.equals(topic, CLUSTER_INTP_EVENT_TOPIC)) {
       clusterIntpEventListeners.add(listener);
@@ -361,6 +378,8 @@ public class ClusterManagerServer extends ClusterManager {
       clusterNoteEventListeners.add(listener);
     } else if (StringUtils.equals(topic, CLUSTER_AUTH_EVENT_TOPIC)) {
       clusterAuthEventListeners.add(listener);
+    } else if (StringUtils.equals(topic, CLUSTER_INTP_SETTING_EVENT_TOPIC)) {
+      clusterIntpSettingEventListeners.add(listener);
     } else {
       LOGGER.error("Unknow cluster event topic : {}", topic);
     }
