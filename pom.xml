@@ -117,6 +117,7 @@
     <httpcomponents.asyncclient.version>4.0.2</httpcomponents.asyncclient.version>
     <commons.lang.version>2.5</commons.lang.version>
     <commons.configuration.version>1.9</commons.configuration.version>
+    <commons.exec.version>1.3</commons.exec.version>
     <commons.codec.version>1.5</commons.codec.version>
     <commons.io.version>2.4</commons.io.version>
     <commons.collections.version>3.2.2</commons.collections.version>
@@ -207,6 +208,12 @@
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
         <version>${commons.lang.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-exec</artifactId>
+        <version>${commons.exec.version}</version>
       </dependency>
 
       <dependency>
