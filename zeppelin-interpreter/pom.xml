@@ -38,7 +38,6 @@
   <properties>
     <!--library versions-->
     <commons.pool2.version>2.3</commons.pool2.version>
-    <commons.exec.version>1.3</commons.exec.version>
     <maven.plugin.api.version>3.0</maven.plugin.api.version>
     <aether.version>1.12</aether.version>
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
@@ -116,7 +115,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
-      <version>${commons.exec.version}</version>
     </dependency>
 
     <dependency>
