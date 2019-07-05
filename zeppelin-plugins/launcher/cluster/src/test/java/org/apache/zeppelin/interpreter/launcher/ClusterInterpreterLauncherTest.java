@@ -18,7 +18,6 @@ package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -51,8 +50,8 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
   }
 
   @Test
-  public void testConnectExistIntpProcess() throws IOException {
-    mockIntpProcessMeta("intpGroupId");
+  public void testConnectExistOnlineIntpProcess() throws IOException {
+    mockIntpProcessMeta("intpGroupId", true);
 
     ClusterInterpreterLauncher launcher
         = new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
@@ -75,7 +74,9 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
   }
 
   @Test
-  public void testCreateIntpProcess() throws IOException {
+  public void testConnectExistOfflineIntpProcess() throws IOException {
+    mockIntpProcessMeta("intpGroupId2", false);
+
     ClusterInterpreterLauncher launcher
         = new ClusterInterpreterLauncher(ClusterMockTest.zconf, null);
     Properties properties = new Properties();
@@ -84,12 +85,12 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null,
-        "user1", "intpGroupId", "groupId",
+        "user1", "intpGroupId2", "groupId",
         "groupName", "name", 0, "host");
     InterpreterClient client = launcher.launch(context);
 
-    assertTrue(client instanceof RemoteInterpreterManagedProcess);
-    RemoteInterpreterManagedProcess interpreterProcess = (RemoteInterpreterManagedProcess) client;
+    assertTrue(client instanceof ClusterInterpreterProcess);
+    ClusterInterpreterProcess interpreterProcess = (ClusterInterpreterProcess) client;
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(".//interpreter/groupName", interpreterProcess.getInterpreterDir());
     assertEquals(".//local-repo/groupId", interpreterProcess.getLocalRepoDir());

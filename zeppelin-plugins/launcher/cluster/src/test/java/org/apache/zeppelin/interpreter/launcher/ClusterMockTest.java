@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.OFFLINE_STATUS;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -114,7 +116,7 @@ public class ClusterMockTest {
     LOGGER.info("serverMeta <<<");
   }
 
-  public void mockIntpProcessMeta(String metaKey) {
+  public void mockIntpProcessMeta(String metaKey, boolean online) {
     // mock IntpProcess Meta
     HashMap<String, Object> meta = new HashMap<>();
     meta.put(ClusterMeta.SERVER_HOST, "SERVER_HOST");
@@ -125,7 +127,11 @@ public class ClusterMockTest {
     meta.put(ClusterMeta.CPU_USED, "CPU_USED");
     meta.put(ClusterMeta.MEMORY_CAPACITY, "MEMORY_CAPACITY");
     meta.put(ClusterMeta.MEMORY_USED, "MEMORY_USED");
-
+    if (online) {
+      meta.put(ClusterMeta.STATUS, ONLINE_STATUS);
+    } else {
+      meta.put(ClusterMeta.STATUS, OFFLINE_STATUS);
+    }
     // put IntpProcess Meta
     clusterClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, metaKey, meta);
 
@@ -137,6 +143,6 @@ public class ClusterMockTest {
 
     assertNotNull(check);
     assertNotNull(check.get(metaKey));
-    assertEquals(true, check.get(metaKey).size() == 8);
+    assertEquals(true, check.get(metaKey).size() == 9);
   }
 }
