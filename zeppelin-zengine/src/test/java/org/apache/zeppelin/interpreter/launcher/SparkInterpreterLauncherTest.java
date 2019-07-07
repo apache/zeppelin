@@ -25,7 +25,10 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterManagedProcess;
 import org.apache.zeppelin.util.Util;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +40,8 @@ import static org.junit.Assert.assertTrue;
 
 public class SparkInterpreterLauncherTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterLauncher.class);
+
   private String sparkHome;
   private String zeppelinHome;
 
@@ -47,7 +52,11 @@ public class SparkInterpreterLauncherTest {
     }
 
     sparkHome = DownloadUtils.downloadSpark("2.3.2");
+    System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName(),
+            new File("..").getAbsolutePath());
+
     zeppelinHome = ZeppelinConfiguration.create().getZeppelinHome();
+    LOGGER.info("ZEPPELIN_HOME: " + zeppelinHome);
   }
 
   @Test

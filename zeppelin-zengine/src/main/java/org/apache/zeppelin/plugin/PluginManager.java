@@ -140,6 +140,19 @@ public class PluginManager {
       return cachedLaunchers.get(launcherPlugin);
     }
     LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
+    // load plugin from classpath directly first for these builtin InterpreterLauncher.
+    // If fails, then try to load it from plugin folder.
+    try {
+      InterpreterLauncher launcher = (InterpreterLauncher)
+              (Class.forName("org.apache.zeppelin.interpreter.launcher." + launcherPlugin))
+                      .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+                      .newInstance(zConf, recoveryStorage);
+      return launcher;
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+            | NoSuchMethodException | InvocationTargetException e) {
+      LOGGER.warn("Fail to instantiate InterpreterLauncher from classpath directly:" + launcherPlugin, e);
+    }
+
     URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
     String pluginClass = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
     InterpreterLauncher launcher = null;
