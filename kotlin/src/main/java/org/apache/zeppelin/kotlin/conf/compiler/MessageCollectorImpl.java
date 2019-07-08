@@ -1,4 +1,4 @@
-package org.apache.zeppelin.kotlin.repl;
+package org.apache.zeppelin.kotlin.conf.compiler;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

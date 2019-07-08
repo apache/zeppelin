@@ -33,7 +33,6 @@
     <name>Zeppelin: Kotlin interpreter</name>
 
     <properties>
-        <!--library versions-->
         <interpreter.name>kotlin</interpreter.name>
     </properties>
 
@@ -41,12 +40,16 @@
         <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-impl -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-scripting-compiler-impl</artifactId>
+            <artifactId>kotlin-compiler-embeddable</artifactId>
+            <version>1.3.40</version>
+        </dependency><dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-scripting-compiler-embeddable</artifactId>
             <version>1.3.40</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-compiler</artifactId>
+            <artifactId>kotlin-scripting-compiler-impl-embeddable</artifactId>
             <version>1.3.40</version>
         </dependency>
         <dependency>
@@ -64,7 +67,6 @@
             <artifactId>kotlin-scripting-jvm</artifactId>
             <version>1.3.40</version>
         </dependency>
-
     </dependencies>
 
     <build>

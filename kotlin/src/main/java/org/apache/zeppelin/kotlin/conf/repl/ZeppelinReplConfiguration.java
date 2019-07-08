@@ -1,20 +1,33 @@
-package org.apache.zeppelin.kotlin.repl;
+package org.apache.zeppelin.kotlin.conf.repl;
 
-import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.com.intellij.psi.PsiFile;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.scripting.repl.ReplExceptionReporter;
-import org.jetbrains.kotlin.scripting.repl.ReplFromTerminal;
 import org.jetbrains.kotlin.scripting.repl.configuration.ReplConfiguration;
 import org.jetbrains.kotlin.scripting.repl.configuration.SnippetExecutionInterceptor;
 import org.jetbrains.kotlin.scripting.repl.messages.DiagnosticMessageHolder;
 import org.jetbrains.kotlin.scripting.repl.reader.ReplCommandReader;
 import org.jetbrains.kotlin.scripting.repl.writer.ReplWriter;
 
+import java.io.OutputStream;
+
 
 // TODO(dk) implement everything
 public class ZeppelinReplConfiguration implements ReplConfiguration {
+
+  private ReplCommandReader reader;
+  private ReplWriter writer;
+
+  public ZeppelinReplConfiguration() {
+    reader = new ReaderStub();
+    writer = new WriterStub();
+  }
+
+  public void setOutput(OutputStream out) {
+    this.writer = new ZeppelinReplWriter(out);
+  }
+
   @Override
   public boolean getAllowIncompleteLines() {
     return false;
@@ -23,16 +36,7 @@ public class ZeppelinReplConfiguration implements ReplConfiguration {
   @NotNull
   @Override
   public ReplCommandReader getCommandReader() {
-    return new ReplCommandReader() {
-      @Nullable
-      @Override
-      public String readLine(@NotNull ReplFromTerminal.WhatNextAfterOneLine next) {
-        return "";
-      }
-
-      @Override
-      public void flushHistory() { }
-    };
+    return reader;
   }
 
   @NotNull
@@ -50,57 +54,7 @@ public class ZeppelinReplConfiguration implements ReplConfiguration {
   @NotNull
   @Override
   public ReplWriter getWriter() {
-    return new ReplWriter() {
-      @Override
-      public void printlnWelcomeMessage(@NotNull String s) {
-
-      }
-
-      @Override
-      public void printlnHelpMessage(@NotNull String s) {
-
-      }
-
-      @Override
-      public void outputCommandResult(@NotNull String s) {
-
-      }
-
-      @Override
-      public void notifyReadLineStart() {
-
-      }
-
-      @Override
-      public void notifyReadLineEnd() {
-
-      }
-
-      @Override
-      public void notifyIncomplete() {
-
-      }
-
-      @Override
-      public void notifyCommandSuccess() {
-
-      }
-
-      @Override
-      public void outputCompileError(@NotNull String s) {
-
-      }
-
-      @Override
-      public void outputRuntimeError(@NotNull String s) {
-
-      }
-
-      @Override
-      public void sendInternalErrorReport(@NotNull String s) {
-
-      }
-    };
+    return writer;
   }
 
   @NotNull
@@ -115,8 +69,9 @@ public class ZeppelinReplConfiguration implements ReplConfiguration {
 
       @Override
       public void report(@NotNull Diagnostic diagnostic,
-                         @NotNull PsiFile psiFile,
-                         @NotNull String s) { }
+                         @NotNull PsiFile psiFile, @NotNull String s) {
+
+      }
     };
   }
 }

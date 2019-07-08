@@ -4,13 +4,13 @@ package org.apache.zeppelin.kotlin;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.kotlin.repl.KotlinPluginLoader;
-import org.apache.zeppelin.kotlin.repl.ZeppelinReplConfiguration;
+import org.apache.zeppelin.kotlin.conf.compiler.KotlinPluginLoader;
+import org.apache.zeppelin.kotlin.conf.repl.ZeppelinReplConfiguration;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
 import org.jetbrains.kotlin.config.CompilerConfiguration;
 import org.jetbrains.kotlin.scripting.repl.ReplInterpreter;
-import org.jetbrains.kotlin.scripting.repl.configuration.ReplConfiguration;
 
 import java.util.Properties;
 
@@ -19,14 +19,14 @@ public class KotlinInterpreter extends Interpreter {
     super(properties);
   }
 
-  private KotlinPluginLoader loader;
   private ReplInterpreter interpreter;
+  private ZeppelinReplConfiguration replConf;
 
   @Override
   public void open() throws InterpreterException {
-    loader = new KotlinPluginLoader();
+    KotlinPluginLoader loader = new KotlinPluginLoader();
     CompilerConfiguration compilerConf = loader.loadCompilerConfiguration();
-    ReplConfiguration replConf = new ZeppelinReplConfiguration();
+    replConf = new ZeppelinReplConfiguration();
     interpreter = new ReplInterpreter(
         () -> {},
         compilerConf,
@@ -41,7 +41,11 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st,
                                      InterpreterContext context) throws InterpreterException {
+
     ReplEvalResult result = interpreter.eval(st);
+    InterpreterOutput out = context.out;
+    replConf.setOutput(out);
+
     if (result instanceof ReplEvalResult.ValueResult) {
       String value = ((ReplEvalResult.ValueResult) result).getValue().toString();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, value);
