@@ -40,7 +40,7 @@ public class ClusterAuthEventListenerTest implements ClusterEventListener {
   @Override
   public void onClusterEvent(String msg) {
     receiveMsg = msg;
-    LOGGER.info("onClusterEvent : {}", msg);
+    LOGGER.info("ClusterAuthEventListenerTest#onClusterEvent : {}", msg);
     ClusterMessage message = ClusterMessage.deserializeMessage(msg);
 
     String noteId = message.get("noteId");
@@ -49,12 +49,14 @@ public class ClusterAuthEventListenerTest implements ClusterEventListener {
     Gson gson = new Gson();
     Set<String> set  = gson.fromJson(jsonSet, new TypeToken<Set<String>>() {}.getType());
 
-    assertNotNull(set);
     switch (message.clusterEvent) {
       case SET_READERS_PERMISSIONS:
       case SET_WRITERS_PERMISSIONS:
       case SET_OWNERS_PERMISSIONS:
       case SET_RUNNERS_PERMISSIONS:
+        assertNotNull(set);
+        assertNotNull(noteId);
+        break;
       case CLEAR_PERMISSION:
         assertNotNull(noteId);
         break;

@@ -18,14 +18,20 @@ package org.apache.zeppelin.cluster;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.thrift.TException;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
@@ -41,6 +47,7 @@ import org.apache.zeppelin.service.NotebookService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.TestUtils;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -73,10 +80,11 @@ public class ClusterEventTest extends ZeppelinServerMock {
   private static List<ClusterAuthEventListenerTest> clusterAuthEventListenerTests = new ArrayList<>();
   private static List<ClusterNoteEventListenerTest> clusterNoteEventListenerTests = new ArrayList<>();
   private static List<ClusterNoteAuthEventListenerTest> clusterNoteAuthEventListenerTests = new ArrayList<>();
+  private static List<ClusterIntpSettingEventListenerTest> clusterIntpSettingEventListenerTests = new ArrayList<>();
 
   private static List<ClusterManagerServer> clusterServers = new ArrayList<>();
   private static ClusterManagerClient clusterClient = null;
-  static final String metaKey = "ClusterMultiNodeTestKey";
+  static final String metaKey = "ClusterEventTestKey";
 
   private static Notebook notebook;
   private static NotebookServer notebookServer;
@@ -94,18 +102,41 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
     ZeppelinServerMock.startUp(ClusterEventTest.class.getSimpleName(), zconf);
     notebook = TestUtils.getInstance(Notebook.class);
-    authorizationService = new AuthorizationService(notebook, notebook.getConf());
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    schedulerService = new QuartzSchedulerService(conf, notebook);
+    authorizationService = new AuthorizationService(notebook, zconf);
+    schedulerService = new QuartzSchedulerService(zconf, notebook);
     notebookServer = spy(NotebookServer.getInstance());
-    notebookService =
-        new NotebookService(notebook, authorizationService, conf, schedulerService);
+    notebookService = new NotebookService(notebook, authorizationService, zconf, schedulerService);
 
     ConfigurationService configurationService = new ConfigurationService(notebook.getConf());
     when(notebookServer.getNotebookService()).thenReturn(notebookService);
     when(notebookServer.getConfigurationService()).thenReturn(configurationService);
 
     startOtherZeppelinClusterNode(zconf);
+
+    // wait zeppelin cluster startup
+    Thread.sleep(10000);
+    // mock cluster manager client
+    clusterClient = ClusterManagerClient.getInstance();
+    clusterClient.start(metaKey);
+
+    // Waiting for cluster startup
+    int wait = 0;
+    while(wait++ < 100) {
+      if (clusterIsStartup() && clusterClient.raftInitialized()) {
+        LOGGER.info("wait {}(ms) found cluster leader", wait*500);
+        break;
+      }
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+    }
+
+    Thread.sleep(3000);
+    assertEquals(true, clusterIsStartup());
+
+    getClusterServerMeta();
   }
 
   @AfterClass
@@ -174,11 +205,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
         String clusterHost = parts[0];
         int clusterPort = Integer.valueOf(parts[1]);
 
-        // ClusterSingleNodeMock clusterSingleNodeMock = new ClusterSingleNodeMock();
         ClusterManagerServer clusterServer
             = startClusterSingleNode(clusterAddrList, clusterHost, clusterPort);
         clusterServers.add(clusterServer);
-        // clusterSingleNodeMockList.add(clusterSingleNodeMock);
       }
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
@@ -197,31 +226,13 @@ public class ClusterEventTest extends ZeppelinServerMock {
       clusterNoteAuthEventListenerTests.add(clusterNoteAuthEventListenerTest);
       clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NB_AUTH_EVENT_TOPIC, clusterNoteAuthEventListenerTest);
 
+      ClusterIntpSettingEventListenerTest clusterIntpSettingEventListenerTest = new ClusterIntpSettingEventListenerTest();
+      clusterIntpSettingEventListenerTests.add(clusterIntpSettingEventListenerTest);
+      clusterServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC, clusterIntpSettingEventListenerTest);
+
       clusterServer.start();
     }
 
-    // mock cluster manager client
-    clusterClient = ClusterManagerClient.getInstance();
-    clusterClient.start(metaKey);
-
-    // Waiting for cluster startup
-    int wait = 0;
-    while(wait++ < 100) {
-      if (clusterIsStartup() && clusterClient.raftInitialized()) {
-        LOGGER.info("wait {}(ms) found cluster leader", wait*3000);
-        break;
-      }
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException e) {
-        LOGGER.error(e.getMessage(), e);
-      }
-    }
-
-    Thread.sleep(3000);
-    assertEquals(true, clusterIsStartup());
-
-    getClusterServerMeta();
     LOGGER.info("startCluster <<<");
   }
 
@@ -237,9 +248,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
     }
   }
 
-  private void checkClusterNoteAuthEventListener() {
-    for (ClusterNoteAuthEventListenerTest clusterNoteAuthEventListenerTest : clusterNoteAuthEventListenerTests) {
-      assertNotNull(clusterNoteAuthEventListenerTest.receiveMsg);
+  private void checkClusterIntpSettingEventListener() {
+    for (ClusterIntpSettingEventListenerTest clusterIntpSettingEventListenerTest : clusterIntpSettingEventListenerTests) {
+      assertNotNull(clusterIntpSettingEventListenerTest.receiveMsg);
     }
   }
 
@@ -267,9 +278,9 @@ public class ClusterEventTest extends ZeppelinServerMock {
     assertNotNull(srvMeta);
     assertEquals(true, (srvMeta instanceof HashMap));
     HashMap hashMap = (HashMap) srvMeta;
-
     assertEquals(hashMap.size(), 3);
-    LOGGER.info("getClusterServerMeta <<<");
+
+    LOGGER.info("getClusterServerMeta <<< ");
   }
 
   @Test
@@ -437,5 +448,99 @@ public class ClusterEventTest extends ZeppelinServerMock {
         notebook.removeNote(note.getId(), anonymous);
       }
     }
+  }
+
+  @Test
+  public void testInterpreterEvent() throws IOException, InterruptedException {
+    // when: Create 1 interpreter settings `sh1`
+    String md1Name = "sh1";
+
+    String md1Dep = "org.apache.drill.exec:drill-jdbc:jar:1.7.0";
+
+    String reqBody1 = "{\"name\":\"" + md1Name + "\",\"group\":\"sh\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
+        "\"type\": \"textarea\"}}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.shell.ShellInterpreter\"," +
+        "\"name\":\"md\"}]," +
+        "\"dependencies\":[ {\n" +
+        "      \"groupArtifactVersion\": \"" + md1Dep + "\",\n" +
+        "      \"exclusions\":[]\n" +
+        "    }]," +
+        "\"option\": { \"remote\": true, \"session\": false }}";
+    PostMethod post = httpPost("/interpreter/setting", reqBody1);
+    String postResponse = post.getResponseBodyAsString();
+    LOG.info("testCreatedInterpreterDependencies create response\n" + post.getResponseBodyAsString());
+    InterpreterSetting created = convertResponseToInterpreterSetting(postResponse);
+    MatcherAssert.assertThat("test create method:", post, isAllowed());
+    post.releaseConnection();
+
+    // 1. Call settings API
+    GetMethod get = httpGet("/interpreter/setting");
+    String rawResponse = get.getResponseBodyAsString();
+    get.releaseConnection();
+
+    // 2. Parsing to List<InterpreterSettings>
+    JsonObject responseJson = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
+    JsonArray bodyArr = responseJson.getAsJsonArray("body");
+    List<InterpreterSetting> settings = new Gson().fromJson(bodyArr,
+        new TypeToken<ArrayList<InterpreterSetting>>() {
+        }.getType());
+
+    // 3. Filter interpreters out we have just created
+    InterpreterSetting md1 = null;
+    for (InterpreterSetting setting : settings) {
+      if (md1Name.equals(setting.getName())) {
+        md1 = setting;
+      }
+    }
+
+    // then: should get created interpreters which have different dependencies
+
+    // 4. Validate each md interpreter has its own dependencies
+    assertEquals(1, md1.getDependencies().size());
+    assertEquals(md1Dep, md1.getDependencies().get(0).getGroupArtifactVersion());
+    Thread.sleep(1000);
+    checkClusterIntpSettingEventListener();
+
+    // 2. test update Interpreter
+    String rawRequest = "{\"name\":\"sh1\",\"group\":\"sh\"," +
+        "\"properties\":{\"propname\": {\"value\": \"propvalue\", \"name\": \"propname\", " +
+        "\"type\": \"textarea\"}}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\"," +
+        "\"name\":\"md\"}],\"dependencies\":[]," +
+        "\"option\": { \"remote\": true, \"session\": false }}";
+    JsonObject jsonRequest = gson.fromJson(rawRequest, JsonElement.class).getAsJsonObject();
+
+    // when: call update setting API
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.addProperty("name", "propname2");
+    jsonObject.addProperty("value", "this is new prop");
+    jsonObject.addProperty("type", "textarea");
+    jsonRequest.getAsJsonObject("properties").add("propname2", jsonObject);
+    PutMethod put = httpPut("/interpreter/setting/" + created.getId(), jsonRequest.toString());
+    LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
+    // then: call update setting API
+    MatcherAssert.assertThat("test update method:", put, isAllowed());
+    put.releaseConnection();
+    Thread.sleep(1000);
+    checkClusterIntpSettingEventListener();
+
+    // 3: call delete setting API
+    DeleteMethod delete = httpDelete("/interpreter/setting/" + created.getId());
+    LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
+    // then: call delete setting API
+    MatcherAssert.assertThat("Test delete method:", delete, isAllowed());
+    delete.releaseConnection();
+    Thread.sleep(1000);
+    checkClusterIntpSettingEventListener();
+  }
+
+  private JsonObject getBodyFieldFromResponse(String rawResponse) {
+    JsonObject response = gson.fromJson(rawResponse, JsonElement.class).getAsJsonObject();
+    return response.getAsJsonObject("body");
+  }
+
+  private InterpreterSetting convertResponseToInterpreterSetting(String rawResponse) {
+    return gson.fromJson(getBodyFieldFromResponse(rawResponse), InterpreterSetting.class);
   }
 }

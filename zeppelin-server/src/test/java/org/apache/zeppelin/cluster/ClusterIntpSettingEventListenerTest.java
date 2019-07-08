@@ -16,35 +16,23 @@
  */
 package org.apache.zeppelin.cluster;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
 import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
-public class ClusterNoteAuthEventListenerTest implements ClusterEventListener {
-  private static Logger LOGGER = LoggerFactory.getLogger(ClusterNoteAuthEventListenerTest.class);
+public class ClusterIntpSettingEventListenerTest implements ClusterEventListener {
+  private static Logger LOGGER = LoggerFactory.getLogger(ClusterIntpSettingEventListenerTest.class);
 
   public String receiveMsg = null;
 
   @Override
   public void onClusterEvent(String msg) {
     receiveMsg = msg;
-    LOGGER.info("ClusterNoteAuthEventListenerTest#onClusterEvent : {}", msg);
+    LOGGER.info("ClusterIntpSettingEventListenerTest#onClusterEvent : {}", msg);
     ClusterMessage message = ClusterMessage.deserializeMessage(msg);
-    String noteId  = message.get("noteId");
-    String json  = message.get("subject");
-    AuthenticationInfo subject = AuthenticationInfo.fromJson(json);
-
-    assertNotNull(noteId);
-    assertNotNull(json);
-    assertNotNull(subject);
   }
 }

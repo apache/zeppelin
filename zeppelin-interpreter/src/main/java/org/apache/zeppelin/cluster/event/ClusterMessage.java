@@ -41,6 +41,11 @@ public class ClusterMessage {
     return this;
   }
 
+  public ClusterMessage put(Map<String, String> params) {
+    data.putAll(params);
+    return this;
+  }
+
   public String get(String k) {
     return data.get(k);
   }

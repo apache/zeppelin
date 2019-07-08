@@ -326,7 +326,6 @@ public class AuthorizationService implements ClusterEventListener {
   // broadcast cluster event
   private void broadcastClusterEvent(ClusterEvent event, String noteId,
                                      String user, Set<String> set) {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     if (!conf.isClusterMode()) {
       return;
     }

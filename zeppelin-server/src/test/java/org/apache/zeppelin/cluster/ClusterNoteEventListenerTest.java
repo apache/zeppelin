@@ -40,7 +40,7 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
   @Override
   public void onClusterEvent(String msg) {
     receiveMsg = msg;
-    LOGGER.info("onClusterEvent : {}", msg);
+    LOGGER.info("ClusterNoteEventListenerTest#onClusterEvent : {}", msg);
     ClusterMessage message = ClusterMessage.deserializeMessage(msg);
 
     Note note = null;

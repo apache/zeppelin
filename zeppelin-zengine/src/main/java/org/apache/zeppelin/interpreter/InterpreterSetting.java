@@ -20,11 +20,16 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -49,6 +54,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -383,6 +390,10 @@ public class InterpreterSetting {
 
   public String getId() {
     return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -984,5 +995,106 @@ public class InterpreterSetting {
 
   public void waitForReady() throws InterpreterException {
     waitForReady(Long.MAX_VALUE);
+  }
+
+  public static String toJson(InterpreterSetting intpSetting) {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    StringWriter stringWriter = new StringWriter();
+    JsonWriter jsonWriter = new JsonWriter(stringWriter);
+    try {
+      // id
+      jsonWriter.beginObject();
+      jsonWriter.name("id");
+      jsonWriter.value(intpSetting.getId());
+
+      // name
+      jsonWriter.name("name");
+      jsonWriter.value(intpSetting.getName());
+
+      // group
+      jsonWriter.name("group");
+      jsonWriter.value(intpSetting.getGroup());
+
+      // dependencies
+      jsonWriter.name("dependencies");
+      String jsonDep = gson.toJson(intpSetting.getDependencies(), new TypeToken<List<Dependency>>() {
+      }.getType());
+      jsonWriter.value(jsonDep);
+
+      // properties
+      jsonWriter.name("properties");
+      String jsonProps = gson.toJson(intpSetting.getProperties(), new TypeToken<Map<String, InterpreterProperty>>() {
+      }.getType());
+      jsonWriter.value(jsonProps);
+
+      // interpreterOption
+      jsonWriter.name("interpreterOption");
+      String jsonOption = gson.toJson(intpSetting.getOption(), new TypeToken<InterpreterOption>() {
+      }.getType());
+      jsonWriter.value(jsonOption);
+
+      // interpreterGroup
+      jsonWriter.name("interpreterGroup");
+      String jsonIntpInfos = gson.toJson(intpSetting.getInterpreterInfos(), new TypeToken<List<InterpreterInfo>>() {
+      }.getType());
+      jsonWriter.value(jsonIntpInfos);
+
+      jsonWriter.endObject();
+      jsonWriter.flush();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    return stringWriter.getBuffer().toString();
+  }
+
+  public static InterpreterSetting fromJson(String json) {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    StringReader stringReader = new StringReader(json);
+    JsonReader jsonReader = new JsonReader(stringReader);
+    InterpreterSetting intpSetting = new InterpreterSetting();
+    try {
+      jsonReader.beginObject();
+      while (jsonReader.hasNext()) {
+        String tag = jsonReader.nextName();
+        if (tag.equals("id")) {
+          String id = jsonReader.nextString();
+          intpSetting.setId(id);
+        } else if (tag.equals("name")) {
+          String name = jsonReader.nextString();
+          intpSetting.setName(name);
+        } else if (tag.equals("group")) {
+          String group = jsonReader.nextString();
+          intpSetting.setGroup(group);
+        } else if (tag.equals("dependencies")) {
+          String strDep = jsonReader.nextString();
+          List<Dependency> dependencies = gson.fromJson(strDep, new TypeToken<List<Dependency>>() {}.getType());
+          intpSetting.setDependencies(dependencies);
+        } else if (tag.equals("properties")) {
+          String strProp = jsonReader.nextString();
+          Map<String, InterpreterProperty> properties = gson.fromJson(strProp,
+              new TypeToken<Map<String, InterpreterProperty>>() {}.getType());
+          intpSetting.setProperties(properties);
+        } else if (tag.equals("interpreterOption")) {
+          String strOption = jsonReader.nextString();
+          InterpreterOption intpOption = gson.fromJson(strOption, new TypeToken<InterpreterOption>() {}.getType());
+          intpSetting.setOption(intpOption);
+        } else if (tag.equals("interpreterGroup")) {
+          String strIntpInfos = jsonReader.nextString();
+          List<InterpreterInfo> intpInfos = gson.fromJson(strIntpInfos, new TypeToken<List<InterpreterInfo>>() {}.getType());
+          intpSetting.setInterpreterInfos(intpInfos);
+        } else {
+          LOGGER.error("Error data type!");
+        }
+      }
+      jsonReader.endObject();
+      jsonReader.close();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    return intpSetting;
   }
 }
