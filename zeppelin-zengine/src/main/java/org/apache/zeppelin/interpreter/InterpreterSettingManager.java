@@ -25,6 +25,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
@@ -1051,25 +1052,16 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     try {
       Gson gson = new Gson();
       ClusterMessage message = ClusterMessage.deserializeMessage(msg);
-      String id = message.get("id");
-      String name = message.get("name");
-      String group = message.get("group");
-      InterpreterOption option = null;
-      Map<String, InterpreterProperty> properties = null;
-      List<Dependency> dependencies = null;
-      String jsonOption = message.get("option");
-      if (!StringUtils.isBlank(jsonOption)) {
-        option = InterpreterOption.fromJson(jsonOption);
-      }
-      String jsonProperties = message.get("properties");
-      if (!StringUtils.isBlank(jsonProperties)) {
-        properties = gson.fromJson(jsonProperties,
-            new TypeToken<Map<String, InterpreterProperty>>() {}.getType());
-      }
-      String jsonDependencies = message.get("dependencies");
-      if (!StringUtils.isBlank(jsonOption)) {
-        dependencies = gson.fromJson(jsonDependencies, new TypeToken<List<Dependency>>() {}.getType());
-      }
+      String jsonIntpSetting = message.get("intpSetting");
+      InterpreterSetting intpSetting = InterpreterSetting.fromJson(jsonIntpSetting);
+      String id = intpSetting.getId();
+      String name = intpSetting.getName();
+      String group = intpSetting.getGroup();
+      InterpreterOption option = intpSetting.getOption();
+      HashMap<String, InterpreterProperty> properties
+          = (HashMap<String, InterpreterProperty>) InterpreterSetting
+          .convertInterpreterProperties(intpSetting.getProperties());
+      List<Dependency> dependencies = intpSetting.getDependencies();
 
       switch (message.clusterEvent) {
         case CREATE_INTP_SETTING:
@@ -1098,25 +1090,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       return;
     }
 
-    List<Dependency> dependencies = intpSetting.getDependencies();
-    Map<String, InterpreterProperty> properties
-        = (Map<String, InterpreterProperty>) intpSetting.getProperties();
-    InterpreterOption intpOption = intpSetting.getOption();
-
-    HashMap<String, String> params = new HashMap<>();
-    String jsonDep = gson.toJson(dependencies, new TypeToken<List<Dependency>>() {
-    }.getType());
-    String jsonProps = gson.toJson(properties, new TypeToken<Map<String, InterpreterProperty>>() {
-    }.getType());
-    params.put("id", intpSetting.getId());
-    params.put("name", intpSetting.getName());
-    params.put("group", intpSetting.getGroup());
-    params.put("dependencies", jsonDep);
-    params.put("option", intpOption.toJson());
-    params.put("properties", jsonProps);
+    String jsonIntpSetting = InterpreterSetting.toJson(intpSetting);
 
     ClusterMessage message = new ClusterMessage(event);
-    message.put(params);
+    message.put("intpSetting", jsonIntpSetting);
     String msg = ClusterMessage.serializeMessage(message);
     ClusterManagerServer.getInstance().broadcastClusterEvent(
         CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);

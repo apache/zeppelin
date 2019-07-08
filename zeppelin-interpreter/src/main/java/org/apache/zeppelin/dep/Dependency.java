@@ -17,16 +17,13 @@
 
 package org.apache.zeppelin.dep;
 
-import com.google.gson.Gson;
-import org.apache.zeppelin.common.JsonSerializable;
-
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  *
  */
-public class Dependency implements JsonSerializable {
+public class Dependency {
   private String groupArtifactVersion;
   private boolean local = false;
   private List<String> exclusions;
@@ -89,11 +86,5 @@ public class Dependency implements JsonSerializable {
   public boolean isLocalFsArtifact() {
     int numSplits = groupArtifactVersion.split(":").length;
     return !(numSplits >= 3 && numSplits <= 6);
-  }
-
-  @Override
-  public String toJson() {
-    Gson gson = new Gson();
-    return gson.toJson(this);
   }
 }

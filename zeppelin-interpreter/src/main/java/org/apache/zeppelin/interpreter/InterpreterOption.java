@@ -21,14 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.user.AuthenticationInfo;
 
 /**
  *
  */
-public class InterpreterOption implements JsonSerializable {
+public class InterpreterOption {
   public static final transient String SHARED = "shared";
   public static final transient String SCOPED = "scoped";
   public static final transient String ISOLATED = "isolated";
@@ -167,16 +165,5 @@ public class InterpreterOption implements JsonSerializable {
 
   public void setPerUser(String perUser) {
     this.perUser = perUser;
-  }
-
-  @Override
-  public String toJson() {
-    Gson gson = new Gson();
-    return gson.toJson(this);
-  }
-
-  public static InterpreterOption fromJson(String json) {
-    Gson gson = new Gson();
-    return gson.fromJson(json, InterpreterOption.class);
   }
 }
