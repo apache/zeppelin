@@ -47,6 +47,7 @@
       "main": [
         "src-noconflict/ace.js",
         "src-noconflict/mode-scala.js",
+        "src-noconflict/mode-kotlin.js",
         "src-noconflict/mode-python.js",
         "src-noconflict/mode-sql.js",
         "src-noconflict/mode-markdown.js",
