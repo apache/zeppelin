@@ -1007,27 +1007,40 @@ public class InterpreterSetting {
       jsonWriter.beginObject();
       jsonWriter.name("id");
       jsonWriter.value(intpSetting.getId());
+
       // name
       jsonWriter.name("name");
       jsonWriter.value(intpSetting.getName());
+
       // group
       jsonWriter.name("group");
       jsonWriter.value(intpSetting.getGroup());
+
       // dependencies
       jsonWriter.name("dependencies");
       String jsonDep = gson.toJson(intpSetting.getDependencies(), new TypeToken<List<Dependency>>() {
       }.getType());
       jsonWriter.value(jsonDep);
+
       // properties
       jsonWriter.name("properties");
       String jsonProps = gson.toJson(intpSetting.getProperties(), new TypeToken<Map<String, InterpreterProperty>>() {
       }.getType());
       jsonWriter.value(jsonProps);
+
       // interpreterOption
       jsonWriter.name("interpreterOption");
       String jsonOption = gson.toJson(intpSetting.getOption(), new TypeToken<InterpreterOption>() {
       }.getType());
       jsonWriter.value(jsonOption);
+
+      // interpreterGroup
+      jsonWriter.name("interpreterGroup");
+      String jsonIntpInfos = gson.toJson(intpSetting.getInterpreterInfos(), new TypeToken<List<InterpreterInfo>>() {
+      }.getType());
+      jsonWriter.value(jsonIntpInfos);
+
+      jsonWriter.endObject();
       jsonWriter.flush();
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
@@ -1068,6 +1081,10 @@ public class InterpreterSetting {
           String strOption = jsonReader.nextString();
           InterpreterOption intpOption = gson.fromJson(strOption, new TypeToken<InterpreterOption>() {}.getType());
           intpSetting.setOption(intpOption);
+        } else if (tag.equals("interpreterGroup")) {
+          String strIntpInfos = jsonReader.nextString();
+          List<InterpreterInfo> intpInfos = gson.fromJson(strIntpInfos, new TypeToken<List<InterpreterInfo>>() {}.getType());
+          intpSetting.setInterpreterInfos(intpInfos);
         } else {
           LOGGER.error("Error data type!");
         }

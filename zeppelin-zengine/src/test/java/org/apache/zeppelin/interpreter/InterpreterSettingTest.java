@@ -24,7 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class InterpreterSettingTest {
 
@@ -431,5 +433,36 @@ public class InterpreterSettingTest {
     // close one session for user2 and note2
     interpreterSetting.closeInterpreters("user2", "note2");
     assertEquals(0, interpreterSetting.getAllInterpreterGroups().size());
+  }
+
+  @Test
+  public void testInterpreterJsonSerializable() {
+    InterpreterOption interpreterOption = new InterpreterOption();
+    interpreterOption.setPerUser(InterpreterOption.SHARED);
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
+        "echo", true, new HashMap<String, Object>(), new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(),
+        "double_echo", false, new HashMap<String, Object>(),
+        new HashMap<String, Object>());
+    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
+    interpreterInfos.add(interpreterInfo1);
+    interpreterInfos.add(interpreterInfo2);
+    InterpreterSetting interpreterSetting = new InterpreterSetting.Builder()
+        .setId("id")
+        .setName("id")
+        .setGroup("group")
+        .setInterpreterInfos(interpreterInfos)
+        .setOption(interpreterOption)
+        .create();
+
+    String json = InterpreterSetting.toJson(interpreterSetting);
+
+    InterpreterSetting checkIntpSetting = InterpreterSetting.fromJson(json);
+    assertEquals(checkIntpSetting.getId(), "id");
+    assertEquals(checkIntpSetting.getName(), "id");
+    assertEquals(checkIntpSetting.getGroup(), "group");
+    assertTrue(checkIntpSetting.getOption().perUserShared());
+    assertNotNull(checkIntpSetting.getInterpreterInfo("echo"));
+    assertNotNull(checkIntpSetting.getInterpreterInfo("double_echo"));
   }
 }
