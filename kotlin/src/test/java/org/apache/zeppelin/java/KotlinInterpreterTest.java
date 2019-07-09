@@ -34,7 +34,7 @@ public class KotlinInterpreterTest {
     interpreter.close();
   }
 
-  private static void testCodeforResult(String code, String expected) {
+  private static void testCodeForResult(String code, String expected) {
     InterpreterResult result = interpreter.interpret(code, context);
     assertEquals(SUCCESS, result.code());
     assertEquals(1, result.message().size());
@@ -43,17 +43,17 @@ public class KotlinInterpreterTest {
 
   @Test
   public void testLiteral() {
-    testCodeforResult("1", "1");
+    testCodeForResult("1", "1");
   }
 
   @Test
   public void testOperation() {
-    testCodeforResult("\"foo\" + \"bar\"", "foobar");
+    testCodeForResult("\"foo\" + \"bar\"", "foobar");
   }
 
   @Test
   public void testFunction() {
-    testCodeforResult("fun square(x: Int): Int = x * x\nsquare(10)", "100");
+    testCodeForResult("fun square(x: Int): Int = x * x\nsquare(10)", "100");
   }
 
   @Test

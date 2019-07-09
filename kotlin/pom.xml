@@ -34,6 +34,7 @@
 
     <properties>
         <interpreter.name>kotlin</interpreter.name>
+        <kotlin-version>1.3.40</kotlin-version>
     </properties>
 
     <dependencies>
@@ -41,21 +42,21 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-compiler-embeddable</artifactId>
-            <version>1.3.40</version>
+            <version>${kotlin-version}</version>
         </dependency><dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-scripting-compiler-embeddable</artifactId>
-            <version>1.3.40</version>
+            <version>${kotlin-version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-scripting-compiler-impl-embeddable</artifactId>
-            <version>1.3.40</version>
+            <version>${kotlin-version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>1.3.40</version>
+            <version>${kotlin-version}</version>
         </dependency>
     </dependencies>
 
