@@ -65,7 +65,7 @@ public class PluginManager {
               (Class.forName(notebookRepoClassName).newInstance());
       return notebookRepo;
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
+      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
@@ -109,7 +109,7 @@ public class PluginManager {
             (Class.forName(notebookRepoClassName).newInstance());
         return notebookRepo;
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
+        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
       }
     }
 
