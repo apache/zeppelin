@@ -227,7 +227,7 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     if [[ -n  "${suid}" || -z "${SPARK_SUBMIT}" ]]; then
        INTERPRETER_RUN_COMMAND=${ZEPPELIN_IMPERSONATE_RUN_CMD}" '"
        if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
-           INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'
+           INTERPRETER_RUN_COMMAND+=" source "${ZEPPELIN_CONF_DIR}'/zeppelin-env.sh;'" export PYTHONPATH=$PYTHONPATH; export ZEPPELIN_HOME=$ZEPPELIN_HOME;"
        fi
     fi
   fi
