@@ -206,15 +206,9 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
 
   @Test
   public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
-    // there's no completion for 'a.' because it is not recognized by compiler for now.
-    InterpreterContext context = getInterpreterContext();
-    String st = "a='hello'\na.";
-    List<InterpreterCompletion> completions = interpreter.completion(st, st.length(), context);
-    assertEquals(0, completions.size());
-
     // define `a` first
-    context = getInterpreterContext();
-    st = "a='hello'";
+    InterpreterContext context = getInterpreterContext();
+    String st = "a='hello'";
     InterpreterResult result = interpreter.interpret(st, context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -222,7 +216,7 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     // now we can get the completion for `a.`
     context = getInterpreterContext();
     st = "a.";
-    completions = interpreter.completion(st, st.length(), context);
+    List<InterpreterCompletion> completions = interpreter.completion(st, st.length(), context);
     // it is different for python2 and python3 and may even different for different minor version
     // so only verify it is larger than 20
     assertTrue(completions.size() > 20);
