@@ -70,6 +70,20 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     intpGroup.close();
   }
 
+  @Override
+  public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
+    // only ipython can do this kind of code completion. native Python don't support this,
+    // it requires you define a variable first in another interpret method.
+    // TODO(zjffdu) enable after we upgrade miniconda
+    //    InterpreterContext context = getInterpreterContext();
+    //    String st = "a='hello'\na.";
+    //    List<InterpreterCompletion> completions = interpreter.completion(st, st.length(),
+    //            context);
+    //    assertTrue(completions.size() > 0);
+
+    super.testCodeCompletion();
+  }
+
   @Test
   public void testIpythonKernelCrash_shouldNotHangExecution()
       throws InterpreterException, IOException {
