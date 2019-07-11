@@ -43,7 +43,7 @@ import org.apache.zeppelin.python.proto.IPythonStatus;
 import org.apache.zeppelin.python.proto.StatusRequest;
 import org.apache.zeppelin.python.proto.StatusResponse;
 import org.apache.zeppelin.python.proto.StopRequest;
-import org.apache.zeppelin.util.ProcessLauncher;
+import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
