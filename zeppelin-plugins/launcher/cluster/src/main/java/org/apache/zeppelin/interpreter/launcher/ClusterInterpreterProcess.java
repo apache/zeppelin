@@ -36,9 +36,6 @@ public class ClusterInterpreterProcess extends RemoteInterpreterManagedProcess {
 
   @Override
   public void start(String userName) throws IOException {
-    ClusterInterpreterCheckThread interpreterCheckThread = new ClusterInterpreterCheckThread(this);
-    interpreterCheckThread.start();
-
     super.start(userName);
   }
 

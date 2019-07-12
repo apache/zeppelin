@@ -27,6 +27,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterRunner;
 import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterRunningProcess;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     implements ClusterEventListener {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncher.class);
 
-  public static final int CHECK_META_INTERVAL = 500; // ms
+  public static final int CHECK_META_INTERVAL = 2000; // ms
   private InterpreterLaunchContext context;
   private ClusterManagerServer clusterServer = ClusterManagerServer.getInstance();
 
@@ -175,8 +176,8 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
           String eventMsg = (String) mapEvent.get(CLUSTER_EVENT_MSG);
           InterpreterLaunchContext context = gson.fromJson(
               eventMsg, new TypeToken<InterpreterLaunchContext>() {}.getType());
-          ClusterInterpreterProcess clusterInterpreterProcess = createInterpreterProcess(context);
-          clusterInterpreterProcess.start(context.getUserName());
+          InterpreterClient clusterOrDockerIntpProcess = createInterpreterProcess(context);
+          clusterOrDockerIntpProcess.start(context.getUserName());
           break;
         default:
           LOGGER.error("Unknown clusterEvent:{}, msg:{} ", clusterEvent, msg);
@@ -187,10 +188,9 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
     }
   }
 
-  private ClusterInterpreterProcess createInterpreterProcess(InterpreterLaunchContext context) {
-    ClusterInterpreterProcess clusterInterpreterProcess = null;
+  private RemoteInterpreterProcess createClusterIntpProcess() {
+    ClusterInterpreterProcess clusterIntpProcess = null;
     try {
-      this.properties = context.getProperties();
       InterpreterOption option = context.getOption();
       InterpreterRunner runner = context.getRunner();
       String intpSetGroupName = context.getInterpreterSettingGroup();
@@ -199,7 +199,7 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       String localRepoPath = zConf.getInterpreterLocalRepoPath() + "/"
           + context.getInterpreterSettingId();
 
-      clusterInterpreterProcess = new ClusterInterpreterProcess(
+      clusterIntpProcess = new ClusterInterpreterProcess(
           runner != null ? runner.getPath() : zConf.getInterpreterRemoteRunnerPath(),
           context.getZeppelinServerRPCPort(),
           context.getZeppelinServerHost(),
@@ -215,6 +215,32 @@ public class ClusterInterpreterLauncher extends StandardInterpreterLauncher
       LOGGER.error(e.getMessage(), e);
     }
 
-    return clusterInterpreterProcess;
+    return clusterIntpProcess;
+  }
+
+  private InterpreterClient createInterpreterProcess(InterpreterLaunchContext context)
+      throws IOException {
+    this.context = context;
+    this.properties = context.getProperties();
+    int connectTimeout = getConnectTimeout();
+
+    InterpreterClient remoteIntpProcess = null;
+    if (isRunningOnDocker(zConf)) {
+      DockerInterpreterLauncher dockerIntpLauncher = new DockerInterpreterLauncher(zConf, null);
+      dockerIntpLauncher.setProperties(context.getProperties());
+      remoteIntpProcess = dockerIntpLauncher.launch(context);
+    } else {
+      remoteIntpProcess = createClusterIntpProcess();
+    }
+
+    ClusterInterpreterCheckThread intpCheckThread = new ClusterInterpreterCheckThread(
+        remoteIntpProcess, context.getInterpreterGroupId(), connectTimeout);
+    intpCheckThread.start();
+
+    return remoteIntpProcess;
+  }
+
+  private boolean isRunningOnDocker(ZeppelinConfiguration zconf) {
+    return zconf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 }
