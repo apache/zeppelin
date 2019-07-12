@@ -95,9 +95,16 @@
       <version>${project.version}</version>
     </dependency>
 
+
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
       <artifactId>spark2-shims</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-kotlin</artifactId>
       <version>${project.version}</version>
     </dependency>
 
