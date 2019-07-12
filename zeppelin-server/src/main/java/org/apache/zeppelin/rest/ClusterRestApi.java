@@ -32,6 +32,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,13 +132,19 @@ public class ClusterRestApi {
       }
 
       if (properties.containsKey(ClusterMeta.SERVER_START_TIME)) {
-        sortProperties.put(ClusterMeta.SERVER_START_TIME, properties.get(ClusterMeta.SERVER_START_TIME));
+        // format LocalDateTime
+        Object serverStartTime = properties.get(ClusterMeta.SERVER_START_TIME);
+        String dateTime = formatDateTime(serverStartTime);
+        sortProperties.put(ClusterMeta.SERVER_START_TIME, dateTime);
       }
       if (properties.containsKey(ClusterMeta.STATUS)) {
         sortProperties.put(ClusterMeta.STATUS, properties.get(ClusterMeta.STATUS));
       }
       if (properties.containsKey(ClusterMeta.LATEST_HEARTBEAT)) {
-        sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, properties.get(ClusterMeta.LATEST_HEARTBEAT));
+        // format LocalDateTime
+        Object latestHeartbeat = properties.get(ClusterMeta.LATEST_HEARTBEAT);
+        String dateTime = formatDateTime(latestHeartbeat);
+        sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
       }
       if (properties.containsKey(ClusterMeta.INTP_PROCESS_LIST)) {
         sortProperties.put(ClusterMeta.INTP_PROCESS_LIST, properties.get(ClusterMeta.INTP_PROCESS_LIST));
@@ -152,8 +160,15 @@ public class ClusterRestApi {
     return new JsonResponse(Response.Status.OK, "", nodes).build();
   }
 
-  private String formatIntpLink(String intpName) {
-    return String.format("<a href=\"/#/cluster/%s\">%s</a>", intpName, intpName);
+  private String formatDateTime(Object localDateTime) {
+    if (localDateTime instanceof LocalDateTime) {
+      LocalDateTime ldt = (LocalDateTime) localDateTime;
+      DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+      String strDate = ldt.format(dtf);
+      return strDate;
+    }
+
+    return "Wrong time type!";
   }
 
   /**
@@ -177,6 +192,20 @@ public class ClusterRestApi {
         HashMap<String, Object> node = new HashMap<String, Object>();
         node.put(ClusterMeta.NODE_NAME, intpNodeName);
         node.put(PROPERTIES, intpMetaEntity.getValue());
+
+        // format LocalDateTime
+        HashMap<String, Object> properties = intpMetaEntity.getValue();
+        if (properties.containsKey(ClusterMeta.INTP_START_TIME)) {
+          Object latestHeartbeat = properties.get(ClusterMeta.INTP_START_TIME);
+          String dateTime = formatDateTime(latestHeartbeat);
+          properties.put(ClusterMeta.INTP_START_TIME, dateTime);
+        }
+        if (properties.containsKey(ClusterMeta.LATEST_HEARTBEAT)) {
+          Object latestHeartbeat = properties.get(ClusterMeta.LATEST_HEARTBEAT);
+          String dateTime = formatDateTime(latestHeartbeat);
+          properties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
+        }
+
         intpProcesses.add(node);
       }
     }
