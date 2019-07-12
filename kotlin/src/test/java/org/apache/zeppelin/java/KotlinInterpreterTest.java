@@ -34,7 +34,7 @@ public class KotlinInterpreterTest {
     interpreter.close();
   }
 
-  private static void testCodeForResult(String code, String expected) {
+  private static void testCodeForResult(String code, String expected) throws Exception {
     InterpreterResult result = interpreter.interpret(code, context);
     assertEquals(SUCCESS, result.code());
     assertEquals(1, result.message().size());
@@ -42,29 +42,29 @@ public class KotlinInterpreterTest {
   }
 
   @Test
-  public void testLiteral() {
+  public void testLiteral() throws Exception {
     testCodeForResult("1", "1");
   }
 
   @Test
-  public void testOperation() {
+  public void testOperation() throws Exception {
     testCodeForResult("\"foo\" + \"bar\"", "foobar");
   }
 
   @Test
-  public void testFunction() {
+  public void testFunction() throws Exception {
     testCodeForResult("fun square(x: Int): Int = x * x\nsquare(10)", "100");
   }
 
   @Test
-  public void testIncomplete() {
+  public void testIncomplete() throws Exception {
     InterpreterResult result = interpreter.interpret("if (10 > 2) {\n", context);
     assertEquals(ERROR, result.code());
     assertEquals("incomplete code", result.message().get(0).getData().trim());
   }
 
   @Test
-  public void testCompileError() {
+  public void testCompileError() throws Exception {
     InterpreterResult result = interpreter.interpret("prinln(1)", context);
     assertEquals(ERROR, result.code());
     assertEquals(

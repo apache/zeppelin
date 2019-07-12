@@ -54,7 +54,7 @@ public class KotlinInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st,
-                                     InterpreterContext context) {
+                                     InterpreterContext context) throws InterpreterException{
 
     // saving job's running thread for cancelling
     Job<?> runningJob = getRunningJob(context.getParagraphId());
@@ -120,6 +120,9 @@ public class KotlinInterpreter extends Interpreter {
     return 0;
   }
 
+  private void bind(String className, String module, String alias) {
+    interpreter.eval("import " + className + "." + module + " as " + alias);
+  }
 
   private Job<?> getRunningJob(String paragraphId) {
     Job foundJob = null;
