@@ -1,5 +1,7 @@
 package org.apache.zeppelin.spark;
 
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -9,15 +11,26 @@ import org.apache.zeppelin.kotlin.KotlinInterpreter;
 import java.util.Properties;
 
 public class KotlinSparkInterpreter extends Interpreter {
+  private KotlinInterpreter interpreter;
+
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
+    interpreter = new KotlinInterpreter(properties);
   }
+  
+  public static class SparkHolder {
+    public static SparkContext sc;
+    public static SparkSession spark;
+    public static String test = "TEST!";
 
-  private KotlinInterpreter interpreter;
+  }
 
   @Override
   public void open() throws InterpreterException {
     interpreter.open();
+    interpreter.bind(SparkHolder.class.getCanonicalName(), "sc", "sc");
+    interpreter.bind(SparkHolder.class.getCanonicalName(), "spark", "spark");
+    interpreter.bind(SparkHolder.class.getCanonicalName(), "test", "test");
   }
 
   @Override
@@ -26,7 +39,8 @@ public class KotlinSparkInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) throws InterpreterException {
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
     return interpreter.interpret(st, context);
   }
 
