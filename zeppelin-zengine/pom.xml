@@ -349,6 +349,10 @@
               <artifactId>netty</artifactId>
             </exclusion>
             <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty-all</artifactId>
+            </exclusion>
+            <exclusion>
               <groupId>commons-httpclient</groupId>
               <artifactId>commons-httpclient</artifactId>
             </exclusion>
@@ -531,6 +535,10 @@
             <exclusion>
               <groupId>com.google.guava</groupId>
               <artifactId>guava</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty-all</artifactId>
             </exclusion>
           </exclusions>
         </dependency>
