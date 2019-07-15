@@ -33,10 +33,16 @@ public class ClusterInterpreterCheckThread extends Thread {
   private static final Logger LOGGER
       = LoggerFactory.getLogger(ClusterInterpreterCheckThread.class);
 
-  private ClusterInterpreterProcess intpProcess;
+  private InterpreterClient intpProcess;
+  private String intpGroupId;
+  private int connectTimeout;
 
-  ClusterInterpreterCheckThread(ClusterInterpreterProcess intpProcess) {
+  ClusterInterpreterCheckThread(InterpreterClient intpProcess,
+                                String intpGroupId,
+                                int connectTimeout) {
     this.intpProcess = intpProcess;
+    this.intpGroupId = intpGroupId;
+    this.connectTimeout = connectTimeout;
   }
 
   @Override
@@ -45,11 +51,8 @@ public class ClusterInterpreterCheckThread extends Thread {
 
     ClusterManagerServer clusterServer = ClusterManagerServer.getInstance();
 
-    String intpGroupId = intpProcess.getInterpreterGroupId();
-
     HashMap<String, Object> intpMeta = clusterServer
         .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
-    int connectTimeout = intpProcess.getConnectTimeout();
 
     int MAX_RETRY_GET_META = connectTimeout / ClusterInterpreterLauncher.CHECK_META_INTERVAL;
     int retryGetMeta = 0;
@@ -71,7 +74,14 @@ public class ClusterInterpreterCheckThread extends Thread {
         int intpPort = (int) intpMeta.get(INTP_TSERVER_PORT);
         LOGGER.info("Found cluster interpreter {}:{}", intpHost, intpPort);
 
-        intpProcess.processStarted(intpPort, intpHost);
+        if (intpProcess instanceof DockerInterpreterProcess) {
+          ((DockerInterpreterProcess) intpProcess).processStarted(intpPort, intpHost);
+        } else if (intpProcess instanceof ClusterInterpreterProcess) {
+          ((ClusterInterpreterProcess) intpProcess).processStarted(intpPort, intpHost);
+        } else {
+          LOGGER.error("Unknown type !");
+        }
+
         break;
       }
     }

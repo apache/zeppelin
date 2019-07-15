@@ -99,4 +99,42 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     assertTrue(interpreterProcess.getEnv().size() >= 1);
     assertEquals(true, interpreterProcess.isUserImpersonated());
   }
+
+  @Test
+  public void testCreateIntpProcessDockerMode() throws IOException {
+    zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.DOCKER);
+
+    ClusterInterpreterLauncher launcher
+        = new ClusterInterpreterLauncher(zconf, null);
+    Properties properties = new Properties();
+    properties.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null,
+        "user1", "intpGroupId3", "groupId3",
+        "groupName", "name", 0, "host");
+    InterpreterClient client = launcher.launch(context);
+
+    assertTrue(client instanceof DockerInterpreterProcess);
+  }
+
+  @Test
+  public void testCreateIntpProcessLocalMode() throws IOException {
+    zconf.setRunMode(ZeppelinConfiguration.RUN_MODE.LOCAL);
+
+    ClusterInterpreterLauncher launcher
+        = new ClusterInterpreterLauncher(zconf, null);
+    Properties properties = new Properties();
+    properties.setProperty(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "1000");
+    InterpreterOption option = new InterpreterOption();
+    option.setUserImpersonate(true);
+    InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null,
+        "user1", "intpGroupId4", "groupId4",
+        "groupName", "name", 0, "host");
+    InterpreterClient client = launcher.launch(context);
+
+    assertTrue(client instanceof ClusterInterpreterProcess);
+  }
 }
