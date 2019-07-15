@@ -44,7 +44,7 @@ public abstract class InterpreterLauncher {
   protected int getConnectTimeout() {
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    if (properties.containsKey(
+    if (properties != null && properties.containsKey(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
       connectTimeout = Integer.parseInt(properties.getProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));

@@ -722,6 +722,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  @VisibleForTesting
+  public void setRunMode(RUN_MODE runMode) {
+    properties.put(ConfVars.ZEPPELIN_RUN_MODE.getVarName(), runMode.name());
+  }
+
   public boolean getK8sPortForward() {
     return getBoolean(ConfVars.ZEPPELIN_K8S_PORTFORWARD);
   }
