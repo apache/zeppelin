@@ -134,8 +134,13 @@ public class ClusterRestApi {
       if (properties.containsKey(ClusterMeta.SERVER_START_TIME)) {
         // format LocalDateTime
         Object serverStartTime = properties.get(ClusterMeta.SERVER_START_TIME);
-        String dateTime = formatDateTime(serverStartTime);
-        sortProperties.put(ClusterMeta.SERVER_START_TIME, dateTime);
+        if (serverStartTime instanceof LocalDateTime) {
+          LocalDateTime localDateTime = (LocalDateTime) serverStartTime;
+          String dateTime = formatLocalDateTime(localDateTime);
+          sortProperties.put(ClusterMeta.SERVER_START_TIME, dateTime);
+        } else {
+          sortProperties.put(ClusterMeta.SERVER_START_TIME, "Wrong time type!");
+        }
       }
       if (properties.containsKey(ClusterMeta.STATUS)) {
         sortProperties.put(ClusterMeta.STATUS, properties.get(ClusterMeta.STATUS));
@@ -143,8 +148,13 @@ public class ClusterRestApi {
       if (properties.containsKey(ClusterMeta.LATEST_HEARTBEAT)) {
         // format LocalDateTime
         Object latestHeartbeat = properties.get(ClusterMeta.LATEST_HEARTBEAT);
-        String dateTime = formatDateTime(latestHeartbeat);
-        sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
+        if (latestHeartbeat instanceof LocalDateTime) {
+          LocalDateTime localDateTime = (LocalDateTime) latestHeartbeat;
+          String dateTime = formatLocalDateTime(localDateTime);
+          sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
+        } else {
+          sortProperties.put(ClusterMeta.LATEST_HEARTBEAT, "Wrong time type!");
+        }
       }
       if (properties.containsKey(ClusterMeta.INTP_PROCESS_LIST)) {
         sortProperties.put(ClusterMeta.INTP_PROCESS_LIST, properties.get(ClusterMeta.INTP_PROCESS_LIST));
@@ -160,15 +170,10 @@ public class ClusterRestApi {
     return new JsonResponse(Response.Status.OK, "", nodes).build();
   }
 
-  private String formatDateTime(Object localDateTime) {
-    if (localDateTime instanceof LocalDateTime) {
-      LocalDateTime ldt = (LocalDateTime) localDateTime;
-      DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
-      String strDate = ldt.format(dtf);
-      return strDate;
-    }
-
-    return "Wrong time type!";
+  private String formatLocalDateTime(LocalDateTime localDateTime) {
+    DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+    String strDate = localDateTime.format(dtf);
+    return strDate;
   }
 
   /**
@@ -196,14 +201,24 @@ public class ClusterRestApi {
         // format LocalDateTime
         HashMap<String, Object> properties = intpMetaEntity.getValue();
         if (properties.containsKey(ClusterMeta.INTP_START_TIME)) {
-          Object latestHeartbeat = properties.get(ClusterMeta.INTP_START_TIME);
-          String dateTime = formatDateTime(latestHeartbeat);
-          properties.put(ClusterMeta.INTP_START_TIME, dateTime);
+          Object intpStartTime = properties.get(ClusterMeta.INTP_START_TIME);
+          if (intpStartTime instanceof LocalDateTime) {
+            LocalDateTime localDateTime = (LocalDateTime) intpStartTime;
+            String dateTime = formatLocalDateTime(localDateTime);
+            properties.put(ClusterMeta.INTP_START_TIME, dateTime);
+          } else {
+            properties.put(ClusterMeta.INTP_START_TIME, "Wrong time type!");
+          }
         }
         if (properties.containsKey(ClusterMeta.LATEST_HEARTBEAT)) {
           Object latestHeartbeat = properties.get(ClusterMeta.LATEST_HEARTBEAT);
-          String dateTime = formatDateTime(latestHeartbeat);
-          properties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
+          if (latestHeartbeat instanceof LocalDateTime) {
+            LocalDateTime localDateTime = (LocalDateTime) latestHeartbeat;
+            String dateTime = formatLocalDateTime(localDateTime);
+            properties.put(ClusterMeta.LATEST_HEARTBEAT, dateTime);
+          } else {
+            properties.put(ClusterMeta.LATEST_HEARTBEAT, "Wrong time type!");
+          }
         }
 
         intpProcesses.add(node);
