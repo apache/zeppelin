@@ -6,12 +6,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.kotlin.conf.repl.ZeppelinReplConfiguration;
 import org.apache.zeppelin.scheduler.Job;
-import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
-import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer;
-import org.jetbrains.kotlin.config.CompilerConfiguration;
-import org.jetbrains.kotlin.scripting.repl.ReplInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,15 +15,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.zeppelin.kotlin.conf.compiler.KotlinCompilerLoader.loadCompilerConfiguration;
-
 public class KotlinInterpreter extends Interpreter {
 
   private static Logger logger = LoggerFactory.getLogger(KotlinInterpreter.class);
 
-  private ReplInterpreter interpreter;
-  private ZeppelinReplConfiguration replConf;
   private InterpreterOutputStream out;
+  private KotlinRepl interpreter;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
@@ -36,12 +28,7 @@ public class KotlinInterpreter extends Interpreter {
 
   @Override
   public void open() throws InterpreterException {
-    CompilerConfiguration compilerConf = loadCompilerConfiguration();
-    replConf = new ZeppelinReplConfiguration();
-    interpreter = new ReplInterpreter(
-        Disposer.newDisposable(),
-        compilerConf,
-        replConf);
+    interpreter = new KotlinReplBuilder().build();
 
     out = new InterpreterOutputStream(logger);
     System.setOut(new PrintStream(out));
@@ -64,33 +51,7 @@ public class KotlinInterpreter extends Interpreter {
 
     out.setInterpreterOutput(context.out);
 
-    ReplEvalResult result = interpreter.eval(st);
-
-    if (result instanceof ReplEvalResult.ValueResult) {
-      Object value = ((ReplEvalResult.ValueResult) result).getValue();
-      String valueString;
-      if (value != null) {
-        valueString = value.toString();
-      } else {
-        valueString = "null";
-      }
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, valueString);
-    }
-
-    if (result instanceof ReplEvalResult.UnitResult) {
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
-    }
-
-    if (result instanceof ReplEvalResult.Error) {
-      String errorMsg = ((ReplEvalResult.Error) result).getMessage();
-      return new InterpreterResult(InterpreterResult.Code.ERROR, errorMsg);
-    }
-
-    if (result instanceof ReplEvalResult.Incomplete) {
-      return new InterpreterResult(InterpreterResult.Code.INCOMPLETE);
-    }
-
-    return new InterpreterResult(InterpreterResult.Code.ERROR, "Unknown error");
+    return interpreter.eval(st);
   }
 
   @Override
@@ -118,10 +79,6 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return 0;
-  }
-
-  private void bind(String className, String module, String alias) {
-    interpreter.eval("import " + className + "." + module + " as " + alias);
   }
 
   private Job<?> getRunningJob(String paragraphId) {
