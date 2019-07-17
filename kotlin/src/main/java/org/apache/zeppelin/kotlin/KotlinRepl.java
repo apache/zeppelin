@@ -42,7 +42,7 @@ public class KotlinRepl {
     }
     if (compileResult instanceof ReplCompileResult.Error) {
       ReplCompileResult.Error e = (ReplCompileResult.Error) compileResult;
-      return new InterpreterResult(InterpreterResult.Code.ERROR, e.toString());
+      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
     }
     if (!(compileResult instanceof ReplCompileResult.CompiledClasses)) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,

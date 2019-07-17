@@ -21,14 +21,16 @@ public class KotlinInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
+  private ExecutionContext ctx;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
+    ctx = new ExecutionContext("Hello!");
   }
 
   @Override
   public void open() throws InterpreterException {
-    interpreter = new KotlinReplBuilder().build();
+    interpreter = new KotlinReplBuilder().build(ctx);
 
     out = new InterpreterOutputStream(logger);
     System.setOut(new PrintStream(out));
@@ -91,5 +93,4 @@ public class KotlinInterpreter extends Interpreter {
     }
     return foundJob;
   }
-
 }
