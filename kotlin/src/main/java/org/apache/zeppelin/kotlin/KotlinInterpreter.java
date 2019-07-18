@@ -28,6 +28,10 @@ public class KotlinInterpreter extends Interpreter {
     ctx = new ExecutionContext("Hello!");
   }
 
+  public void setExecutionContext(ExecutionContext ctx) {
+    this.ctx = ctx;
+  }
+
   @Override
   public void open() throws InterpreterException {
     interpreter = new KotlinReplBuilder().build(ctx);
