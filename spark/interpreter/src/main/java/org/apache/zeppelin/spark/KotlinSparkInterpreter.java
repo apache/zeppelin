@@ -1,7 +1,15 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.util.Utils;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -17,13 +25,49 @@ public class KotlinSparkInterpreter extends Interpreter {
     interpreter = new KotlinInterpreter(properties);
   }
 
+
+  private String sparkClasspath() {
+    String sparkJars = System.getProperty("spark.jars");
+    Pattern isKotlinJar = Pattern.compile("/kotlin-(runtime|stdlib|compiler|reflect)(-.*)?\\.jar");
+
+    Stream<File> addedJars = Arrays.stream(Utils.resolveURIs(sparkJars).split(","))
+        .filter(s -> !s.trim().equals(""))
+        .filter(s -> !isKotlinJar.matcher(s).find())
+        .map(s -> {
+          int p = s.indexOf(':');
+          return new File(s.substring(p + 1));
+        });
+
+    Stream<File> systemJars = Arrays.stream(
+        System.getProperty("java.class.path").split(File.pathSeparator))
+        .map(File::new);
+
+    return Stream.concat(addedJars, systemJars)
+        .map(file -> {
+          try {
+            return file.getCanonicalPath();
+          } catch (IOException e) {
+            return "";
+          }
+        })
+        .collect(Collectors.joining(File.pathSeparator));
+  }
+
+
   @Override
   public void open() throws InterpreterException {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
+
+
     Object spark = sparkInterpreter.getSparkSession();
     JavaSparkContext sc = sparkInterpreter.getJavaSparkContext();
+
     interpreter.setExecutionContext(new KotlinSparkExecutionContext(spark, sc));
+
+    List<String> compilerOptions = Arrays.asList("-classpath", sparkClasspath());
+
+    interpreter.setCompilerOptions(compilerOptions);
     interpreter.open();
   }
 

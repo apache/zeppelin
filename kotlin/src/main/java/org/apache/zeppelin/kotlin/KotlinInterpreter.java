@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -20,20 +21,25 @@ public class KotlinInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
-  private ExecutionContext ctx;
+
+  private KotlinReplBuilder builder;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
-    ctx = new ExecutionContext("Hello!");
+    builder = new KotlinReplBuilder();
   }
 
   public void setExecutionContext(ExecutionContext ctx) {
-    this.ctx = ctx;
+    builder.executionContext(ctx);
+  }
+
+  public void setCompilerOptions(List<String> options) {
+    builder.compilerOptions(options);
   }
 
   @Override
   public void open() throws InterpreterException {
-    interpreter = new KotlinReplBuilder().build(ctx);
+    interpreter = new KotlinReplBuilder().build();
 
     out = new InterpreterOutputStream(logger);
     System.setOut(new PrintStream(out));

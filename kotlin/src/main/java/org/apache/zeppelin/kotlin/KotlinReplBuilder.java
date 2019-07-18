@@ -22,7 +22,10 @@ public class KotlinReplBuilder {
 
   private ScriptingHostConfiguration hostConf = getDefaultJvmScriptingHostConfiguration();
 
-  public KotlinRepl build(ExecutionContext ctx) {
+  private ExecutionContext ctx;
+  private List<String> compilerOptions;
+
+  public KotlinRepl build() {
     KJvmReplCompilerImpl compilerImpl =
         new KJvmReplCompilerImpl(JvmHostUtilKt.withDefaults(hostConf));
 
@@ -38,6 +41,16 @@ public class KotlinReplBuilder {
     return new KotlinRepl(compiler, evaluator);
   }
 
+  public KotlinReplBuilder executionContext(ExecutionContext ctx) {
+    this.ctx = ctx;
+    return this;
+  }
+
+  public KotlinReplBuilder compilerOptions(List<String> options) {
+    this.compilerOptions = options;
+    return this;
+  }
+
   private ScriptCompilationConfiguration buildCompilationConfiguration(final ExecutionContext ctx) {
     return new ScriptCompilationConfiguration((b) -> {
       b.invoke(ScriptCompilationKt.getHostConfiguration(b), hostConf);
@@ -47,6 +60,7 @@ public class KotlinReplBuilder {
       JvmScriptCompilationKt.dependenciesFromCurrentContext(
           jvmBuilder, new String[0], true, false);
 
+      b.invoke(ScriptCompilationKt.getCompilerOptions(b), compilerOptions);
 
       KotlinType kt = new KotlinType(ctx.getClass().getCanonicalName());
       List<KotlinType> receivers =
