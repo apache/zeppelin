@@ -1,19 +1,18 @@
 package org.apache.zeppelin.kotlin;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.PrintStream;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.scheduler.Job;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.PrintStream;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
 
 public class KotlinInterpreter extends Interpreter {
 

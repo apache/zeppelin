@@ -1,13 +1,12 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.spark.api.java.JavaSparkContext;
+import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
-
-import java.util.Properties;
 
 public class KotlinSparkInterpreter extends Interpreter {
   private KotlinInterpreter interpreter;
@@ -24,7 +23,7 @@ public class KotlinSparkInterpreter extends Interpreter {
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     Object spark = sparkInterpreter.getSparkSession();
     JavaSparkContext sc = sparkInterpreter.getJavaSparkContext();
-    interpreter.setExecutionContext(new SparkExecutionContext(spark, sc));
+    interpreter.setExecutionContext(new KotlinSparkExecutionContext(spark, sc));
     interpreter.open();
   }
 

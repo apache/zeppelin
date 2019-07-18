@@ -1,5 +1,9 @@
 package org.apache.zeppelin.kotlin;
 
+import static kotlin.script.experimental.jvm.JvmScriptingHostConfigurationKt.getDefaultJvmScriptingHostConfiguration;
+import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmReplCompilerImpl;
+import java.util.Collections;
+import java.util.List;
 import kotlin.Unit;
 import kotlin.script.experimental.api.KotlinType;
 import kotlin.script.experimental.api.ScriptCompilationConfiguration;
@@ -13,12 +17,6 @@ import kotlin.script.experimental.jvm.JvmScriptCompilationKt;
 import kotlin.script.experimental.jvmhost.impl.JvmHostUtilKt;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
-import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmReplCompilerImpl;
-
-import java.util.Collections;
-import java.util.List;
-
-import static kotlin.script.experimental.jvm.JvmScriptingHostConfigurationKt.getDefaultJvmScriptingHostConfiguration;
 
 public class KotlinReplBuilder {
 

@@ -1,15 +1,14 @@
 package org.apache.zeppelin.kotlin;
 
-import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
-import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
+import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class KotlinRepl {
   private JvmReplCompiler compiler;
