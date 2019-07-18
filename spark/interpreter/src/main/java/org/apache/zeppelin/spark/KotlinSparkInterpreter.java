@@ -1,7 +1,5 @@
 package org.apache.zeppelin.spark;
 
-import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -17,20 +15,10 @@ public class KotlinSparkInterpreter extends Interpreter {
     super(properties);
     interpreter = new KotlinInterpreter(properties);
   }
-  
-  public static class SparkHolder {
-    public static SparkContext sc;
-    public static SparkSession spark;
-    public static String test = "TEST!";
-
-  }
 
   @Override
   public void open() throws InterpreterException {
     interpreter.open();
-    interpreter.bind(SparkHolder.class.getCanonicalName(), "sc", "sc");
-    interpreter.bind(SparkHolder.class.getCanonicalName(), "spark", "spark");
-    interpreter.bind(SparkHolder.class.getCanonicalName(), "test", "test");
   }
 
   @Override
