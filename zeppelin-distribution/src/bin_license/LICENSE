@@ -54,7 +54,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Google Guava (com.google.guava:guava:15.0 - https://code.google.com/p/guava-libraries/)
     (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-core:2.7.0 - https://github.com/FasterXML/jackson-core)
     (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.9.9 - https://github.com/FasterXML/jackson-core)
-    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.9.9 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.9.9.1 - https://github.com/FasterXML/jackson-core)
     (Apache 2.0) Jackson Mapper ASL (org.codehaus.jackson:jackson-mapper-asl:1.9.13 - https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-asl/1.9.13)
     (Apache 2.0) javax.servlet (org.eclipse.jetty.orbit:javax.servlet:jar:3.1.0.v201112011016 - http://www.eclipse.org/jetty)
     (Apache 2.0) Joda-Time (joda-time:joda-time:2.8.1 - http://www.joda.org/joda-time/)
