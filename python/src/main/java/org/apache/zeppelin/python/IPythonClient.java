@@ -88,35 +88,47 @@ public class IPythonClient {
     LOGGER.debug("stream_execute code:\n" + request.getCode());
     asyncStub.execute(request, new StreamObserver<ExecuteResponse>() {
       int index = 0;
-      boolean isPreviousOutputImage = false;
 
       @Override
       public void onNext(ExecuteResponse executeResponse) {
+        LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getType() +
+                "\t" + executeResponse.getOutput());
+        if (index != 0) {
+          try {
+            // We need to add line separator first, because zeppelin only recoginize the % at
+            // the line beginning.
+            interpreterOutput.write("\n".getBytes());
+          } catch (IOException e) {
+            LOGGER.error("Unexpected IOException", e);
+          }
+        }
+
         if (executeResponse.getType() == OutputType.TEXT) {
           try {
-            LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getOutput());
-            if (isPreviousOutputImage) {
-              // add '\n' when switch from image to text
-              interpreterOutput.write("\n%text ".getBytes());
+            if (executeResponse.getOutput().startsWith("%")) {
+              // the output from ipython kernel maybe specify format already.
+              interpreterOutput.write((executeResponse.getOutput()).getBytes());
+            } else {
+              interpreterOutput.write(("%text " + executeResponse.getOutput()).getBytes());
             }
-            isPreviousOutputImage = false;
-            interpreterOutput.write(executeResponse.getOutput().getBytes());
             interpreterOutput.getInterpreterOutput().flush();
           } catch (IOException e) {
             LOGGER.error("Unexpected IOException", e);
           }
         }
-        if (executeResponse.getType() == OutputType.IMAGE) {
+        if (executeResponse.getType() == OutputType.PNG ||
+                executeResponse.getType() == OutputType.JPEG) {
           try {
-            LOGGER.debug("Interpreter Streaming Output: IMAGE_DATA");
-            if (index != 0) {
-              // add '\n' if this is the not the first element. otherwise it would mix the image
-              // with the text
-              interpreterOutput.write("\n".getBytes());
-            }
             interpreterOutput.write(("%img " + executeResponse.getOutput()).getBytes());
             interpreterOutput.getInterpreterOutput().flush();
-            isPreviousOutputImage = true;
+          } catch (IOException e) {
+            LOGGER.error("Unexpected IOException", e);
+          }
+        }
+        if (executeResponse.getType() == OutputType.HTML) {
+          try {
+            interpreterOutput.write(("%html\n" + executeResponse.getOutput()).getBytes());
+            interpreterOutput.getInterpreterOutput().flush();
           } catch (IOException e) {
             LOGGER.error("Unexpected IOException", e);
           }

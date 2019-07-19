@@ -185,7 +185,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     // check there must be one IMAGE output
     boolean hasImageOutput = false;
     boolean hasLineText = false;
-    boolean hasFigureText = false;
     for (InterpreterResultMessage msg : interpreterResultMessages) {
       if (msg.getType() == InterpreterResult.Type.IMG) {
         hasImageOutput = true;
@@ -194,14 +193,9 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
           && msg.getData().contains("matplotlib.lines.Line2D")) {
         hasLineText = true;
       }
-      if (msg.getType() == InterpreterResult.Type.TEXT
-          && msg.getData().contains("matplotlib.figure.Figure")) {
-        hasFigureText = true;
-      }
     }
     assertTrue("No Image Output", hasImageOutput);
     assertTrue("No Line Text", hasLineText);
-    assertTrue("No Figure Text", hasFigureText);
 
     // bokeh
     // bokeh initialization
@@ -254,6 +248,35 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
       }
     }
     assertTrue("No Image Output", hasImageOutput);
+  }
+
+
+  // TODO(zjffdu) Enable it after new altair is released with this PR.
+  // https://github.com/altair-viz/altair/pull/1620
+  //@Test
+  public void testHtmlOutput() throws InterpreterException, IOException {
+    // html output
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(
+            "        import altair as alt\n" +
+                    "        print(alt.renderers.active)\n" +
+                    "        alt.renderers.enable(\"colab\")\n" +
+                    "        import altair as alt\n" +
+                    "        # load a simple dataset as a pandas DataFrame\n" +
+                    "        from vega_datasets import data\n" +
+                    "        cars = data.cars()\n" +
+                    "        \n" +
+                    "        alt.Chart(cars).mark_point().encode(\n" +
+                    "            x='Horsepower',\n" +
+                    "            y='Miles_per_Gallon',\n" +
+                    "            color='Origin',\n" +
+                    "        ).interactive()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(2, context.out.size());
+    assertEquals(InterpreterResult.Type.TEXT,
+            context.out.toInterpreterResultMessage().get(0).getType());
+    assertEquals(InterpreterResult.Type.HTML,
+            context.out.toInterpreterResultMessage().get(1).getType());
   }
 
   @Test
