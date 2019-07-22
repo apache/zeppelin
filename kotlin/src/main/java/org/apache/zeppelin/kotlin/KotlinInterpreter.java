@@ -26,20 +26,24 @@ public class KotlinInterpreter extends Interpreter {
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
+    logger.debug("Creating KotlinInterpreter");
     builder = new KotlinReplBuilder();
   }
 
   public void setExecutionContext(ExecutionContext ctx) {
+    logger.debug("Setting ctx in KotlinIntp to " + ctx);
     builder.executionContext(ctx);
   }
 
   public void setCompilerOptions(List<String> options) {
+    logger.debug("Setting options in KotlinIntp to " + options);
     builder.compilerOptions(options);
   }
 
   @Override
   public void open() throws InterpreterException {
-    interpreter = new KotlinReplBuilder().build();
+
+    interpreter = builder.build();
 
     out = new InterpreterOutputStream(logger);
     System.setOut(new PrintStream(out));

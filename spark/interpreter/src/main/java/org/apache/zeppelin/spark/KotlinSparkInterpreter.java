@@ -2,6 +2,8 @@ package org.apache.zeppelin.spark;
 
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -16,12 +18,16 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
 
+
 public class KotlinSparkInterpreter extends Interpreter {
+  private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
+
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
 
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
+    logger.debug("Creating KotlinSparkInterpreter");
     interpreter = new KotlinInterpreter(properties);
   }
 
@@ -59,15 +65,20 @@ public class KotlinSparkInterpreter extends Interpreter {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
 
-
     Object spark = sparkInterpreter.getSparkSession();
     JavaSparkContext sc = sparkInterpreter.getJavaSparkContext();
 
+    logger.debug("setting execution ctx now");
     interpreter.setExecutionContext(new KotlinSparkExecutionContext(spark, sc));
 
-    List<String> compilerOptions = Arrays.asList("-classpath", sparkClasspath());
+    String cp = sparkClasspath();
+    logger.debug(cp);
+    List<String> compilerOptions = Arrays.asList("-classpath", cp);
 
+    logger.debug("setting compiler options now");
     interpreter.setCompilerOptions(compilerOptions);
+
+    logger.debug("opening inner intp now");
     interpreter.open();
   }
 
