@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -21,28 +20,19 @@ public class KotlinInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
-
   private KotlinReplBuilder builder;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
-    logger.debug("Creating KotlinInterpreter");
     builder = new KotlinReplBuilder();
   }
 
-  public void setExecutionContext(ExecutionContext ctx) {
-    logger.debug("Setting ctx in KotlinIntp to " + ctx);
-    builder.executionContext(ctx);
-  }
-
-  public void setCompilerOptions(List<String> options) {
-    logger.debug("Setting options in KotlinIntp to " + options);
-    builder.compilerOptions(options);
+  public KotlinReplBuilder getBuilder() {
+    return builder;
   }
 
   @Override
   public void open() throws InterpreterException {
-
     interpreter = builder.build();
 
     out = new InterpreterOutputStream(logger);
@@ -57,7 +47,6 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st,
                                      InterpreterContext context) throws InterpreterException{
-
     // saving job's running thread for cancelling
     Job<?> runningJob = getRunningJob(context.getParagraphId());
     if (runningJob != null) {

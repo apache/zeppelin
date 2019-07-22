@@ -29,16 +29,14 @@ public class KotlinReplBuilder {
 
   private ExecutionContext ctx;
   private List<String> compilerOptions;
+  private String outputDir;
 
   public KotlinReplBuilder() {
-    logger.debug("KotlinReplBuilder created");
     this.ctx = new ExecutionContext("Simple Execution Context");
     this.compilerOptions = new ArrayList<>();
   }
 
   public KotlinRepl build() {
-    logger.debug("build called");
-
     KJvmReplCompilerImpl compilerImpl =
         new KJvmReplCompilerImpl(JvmHostUtilKt.withDefaults(hostConf));
 
@@ -51,26 +49,21 @@ public class KotlinReplBuilder {
         buildEvaluationConfiguration(),
         new BasicJvmScriptEvaluator());
 
-    return new KotlinRepl(compiler, evaluator);
+    return new KotlinRepl(compiler, evaluator, outputDir);
   }
 
   public KotlinReplBuilder executionContext(ExecutionContext ctx) {
-    logger.debug("executionContext changed from" + this.ctx + " to " + ctx);
-
     this.ctx = ctx;
     return this;
   }
 
   public KotlinReplBuilder compilerOptions(List<String> options) {
-    logger.debug("options set to " + options);
     options.forEach(logger::info);
     this.compilerOptions = options;
     return this;
   }
 
   private ScriptCompilationConfiguration buildCompilationConfiguration() {
-    logger.debug("building comp conf w/ " + ctx + " and " + compilerOptions);
-
     return new ScriptCompilationConfiguration((b) -> {
       b.invoke(ScriptCompilationKt.getHostConfiguration(b), hostConf);
 
@@ -91,8 +84,6 @@ public class KotlinReplBuilder {
   }
 
   private ScriptEvaluationConfiguration buildEvaluationConfiguration() {
-    logger.debug("building eval conf w/ " + ctx);
-
     return new ScriptEvaluationConfiguration((b) -> {
       b.invoke(ScriptEvaluationKt.getHostConfiguration(b), hostConf);
 
@@ -102,5 +93,9 @@ public class KotlinReplBuilder {
 
       return Unit.INSTANCE;
     });
+  }
+
+  public void outputDir(String outputDir) {
+    this.outputDir = outputDir;
   }
 }

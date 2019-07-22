@@ -65,20 +65,21 @@ public class KotlinSparkInterpreter extends Interpreter {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
 
-    Object spark = sparkInterpreter.getSparkSession();
-    JavaSparkContext sc = sparkInterpreter.getJavaSparkContext();
-
-    logger.debug("setting execution ctx now");
-    interpreter.setExecutionContext(new KotlinSparkExecutionContext(spark, sc));
+    JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
+    KotlinSparkExecutionContext ctx = new KotlinSparkExecutionContext(
+        sparkInterpreter.getSparkSession(),
+        jsc);
 
     String cp = sparkClasspath();
-    logger.debug(cp);
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
 
-    logger.debug("setting compiler options now");
-    interpreter.setCompilerOptions(compilerOptions);
+    String outputDir = jsc.getConf().get("spark.repl.class.outputDir");
 
-    logger.debug("opening inner intp now");
+    interpreter.getBuilder()
+        .executionContext(ctx)
+        .compilerOptions(compilerOptions)
+        .outputDir(outputDir);
+
     interpreter.open();
   }
 

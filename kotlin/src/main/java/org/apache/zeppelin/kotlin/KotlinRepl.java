@@ -1,9 +1,17 @@
 package org.apache.zeppelin.kotlin;
 
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
+import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
@@ -11,16 +19,23 @@ import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class KotlinRepl {
+  private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
+
   private JvmReplCompiler compiler;
   private JvmReplEvaluator evaluator;
-
   private AggregatedReplStageState<?, ?> state;
-
   private AtomicInteger counter;
+  private String outputDir;
+
+  public KotlinRepl(JvmReplCompiler compiler,
+                    JvmReplEvaluator evaluator) {
+    this(compiler, evaluator, null);
+  }
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
-                    JvmReplEvaluator evaluator) {
+                    JvmReplEvaluator evaluator,
+                    String outputDir) {
     this.compiler = compiler;
     this.evaluator = evaluator;
     ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
@@ -30,6 +45,8 @@ public class KotlinRepl {
         stateLock);
 
     counter = new AtomicInteger(0);
+
+    this.outputDir = outputDir;
   }
 
   public InterpreterResult eval(String code) {
@@ -50,6 +67,7 @@ public class KotlinRepl {
 
     ReplCompileResult.CompiledClasses classes =
         (ReplCompileResult.CompiledClasses) compileResult;
+    writeClasses(classes);
 
     ReplEvalResult evalResult = evaluator.eval(state, classes, null, null);
 
@@ -78,5 +96,27 @@ public class KotlinRepl {
     }
     return new InterpreterResult(InterpreterResult.Code.ERROR,
         "unknown evaluation result: " + evalResult.toString());
+  }
+
+  private void writeClasses(ReplCompileResult.CompiledClasses classes) {
+    if (outputDir == null) {
+      return;
+    }
+
+    for (CompiledClassData compiledClass: classes.getClasses()) {
+      String filePath = compiledClass.getPath();
+      if (filePath.contains("/")) {
+        continue;
+      }
+      String classWritePath = outputDir + File.separator + filePath;
+
+      try (FileOutputStream fos = new FileOutputStream(classWritePath);
+           OutputStream out = new BufferedOutputStream(fos)) {
+        out.write(compiledClass.getBytes());
+        out.flush();
+      } catch (IOException e) {
+        logger.error(e.getMessage());
+      }
+    }
   }
 }
