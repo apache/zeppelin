@@ -4,13 +4,16 @@ package org.apache.zeppelin.kotlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.scheduler.Job;
 
@@ -83,6 +86,12 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return 0;
+  }
+
+  @Override
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) throws InterpreterException {
+    return new ArrayList<>();
   }
 
   private Job<?> getRunningJob(String paragraphId) {

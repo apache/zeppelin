@@ -1,5 +1,6 @@
 package org.apache.zeppelin.spark;
 
+import net.jpountz.xxhash.StreamingXXHash32;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.Utils;
 import org.slf4j.Logger;
@@ -16,8 +17,8 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
-
 
 public class KotlinSparkInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
@@ -28,9 +29,11 @@ public class KotlinSparkInterpreter extends Interpreter {
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
     logger.debug("Creating KotlinSparkInterpreter");
+    logger.info("jpountz path: " + StreamingXXHash32.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+    logger.info("classpath: " + System.getProperty("java.class.path"));
     interpreter = new KotlinInterpreter(properties);
-  }
 
+  }
 
   private String sparkClasspath() {
     String sparkJars = System.getProperty("spark.jars");
@@ -57,6 +60,7 @@ public class KotlinSparkInterpreter extends Interpreter {
           }
         })
         .collect(Collectors.joining(File.pathSeparator));
+
   }
 
 
@@ -107,5 +111,11 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return interpreter.getProgress(context);
+  }
+
+  @Override
+  public List<InterpreterCompletion> completion(String buf, int cursor,
+      InterpreterContext interpreterContext) throws InterpreterException {
+    return interpreter.completion(buf, cursor, interpreterContext);
   }
 }
