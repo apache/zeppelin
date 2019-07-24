@@ -77,6 +77,6 @@ public class JdbcIntegrationTest {
             .setAuthenticationInfo(AuthenticationInfo.ANONYMOUS)
             .build();
     InterpreterResult interpreterResult = jdbcInterpreter.interpret("show databases;", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(interpreterResult.toString(), InterpreterResult.Code.SUCCESS, interpreterResult.code());
   }
 }

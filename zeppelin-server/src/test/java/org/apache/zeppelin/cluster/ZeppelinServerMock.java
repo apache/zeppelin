@@ -126,10 +126,6 @@ public class ZeppelinServerMock {
           notebookDir.getPath()
       );
       LOG.info("zconf.getClusterAddress() = {}", zconf.getClusterAddress());
-      System.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_CLUSTER_ADDR.getVarName(),
-          zconf.getClusterAddress()
-      );
 
       // some test profile does not build zeppelin-web.
       // to prevent zeppelin starting up fail, create zeppelin-web/dist directory
@@ -174,7 +170,7 @@ public class ZeppelinServerMock {
           TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
       }
-      LOG.info("ZeppelinServerMock Zeppelin...");
+      LOG.info("ZeppelinServerMock shutDown...");
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
       PluginManager.reset();
@@ -192,12 +188,12 @@ public class ZeppelinServerMock {
         throw new RuntimeException("Can not stop Zeppelin server");
       }
 
+      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+      clusterManagerServer.shutdown();
+
       LOG.info("ZeppelinServerMock terminated.");
 
-      if (deleteConfDir && !TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
-        // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
-        // id will change after zeppelin restart, then we can not recover interpreter process
-        // properly
+      if (deleteConfDir) {
         FileUtils.deleteDirectory(confDir);
       }
     }

@@ -40,7 +40,7 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
   @Override
   public void onClusterEvent(String msg) {
     receiveMsg = msg;
-    LOGGER.info("ClusterNoteEventListenerTest#onClusterEvent : {}", msg);
+    LOGGER.debug("ClusterNoteEventListenerTest#onClusterEvent : {}", msg);
     ClusterMessage message = ClusterMessage.deserializeMessage(msg);
 
     Note note = null;
@@ -53,23 +53,23 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
       String json = entry.getValue();
       if (key.equals("AuthenticationInfo")) {
         authenticationInfo = AuthenticationInfo.fromJson(json);
-        LOGGER.info(authenticationInfo.toJson());
+        LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
         note = Note.fromJson(json);
-        LOGGER.info(note.toJson());
+        LOGGER.debug(note.toJson());
       } else if (key.equals("Paragraph")) {
         paragraph = Paragraph.fromJson(json);
-        LOGGER.info(paragraph.toJson());
+        LOGGER.debug(paragraph.toJson());
       } else if (key.equals("Set<String>")) {
         Gson gson = new Gson();
         userAndRoles = gson.fromJson(json, new TypeToken<Set<String>>() {
         }.getType());
-        LOGGER.info(userAndRoles.toString());
+        LOGGER.debug(userAndRoles.toString());
       } else if (key.equals("Map<String, Paragraph>")) {
         Gson gson = new Gson();
         userParagraphMap = gson.fromJson(json, new TypeToken<Map<String, Paragraph>>() {
         }.getType());
-        LOGGER.info(userParagraphMap.toString());
+        LOGGER.debug(userParagraphMap.toString());
       } else {
         receiveMsg = null;
         fail("Unknown clusterEvent : " + message.clusterEvent);

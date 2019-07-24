@@ -98,7 +98,7 @@ public class ClusterEventTest extends ZeppelinServerMock {
   public static void init() throws Exception {
     ZeppelinConfiguration zconf = genZeppelinConf();
 
-    ZeppelinServerMock.startUp(ClusterEventTest.class.getSimpleName(), zconf);
+    ZeppelinServerMock.startUp("ClusterEventTest", zconf);
     notebook = TestUtils.getInstance(Notebook.class);
     authorizationService = new AuthorizationService(notebook, zconf);
 
@@ -140,14 +140,21 @@ public class ClusterEventTest extends ZeppelinServerMock {
 
   @AfterClass
   public static void destroy() throws Exception {
-    ZeppelinServerMock.shutDown();
+    try {
+      if (null != clusterClient) {
+        clusterClient.shutdown();
+      }
+      for (ClusterManagerServer clusterServer : clusterServers) {
+        clusterServer.shutdown();
+      }
 
-    if (null != clusterClient) {
-      clusterClient.shutdown();
+      ZeppelinServerMock.shutDown();
+    } finally {
+      // Because zconf is a single instance, it needs clean cluster address
+      ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
+      zconf.setClusterAddress("");
     }
-    for (ClusterManagerServer clusterServer : clusterServers) {
-      clusterServer.shutdown();
-    }
+
     LOGGER.info("stopCluster <<<");
   }
 
