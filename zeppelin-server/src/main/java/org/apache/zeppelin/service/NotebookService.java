@@ -19,17 +19,7 @@
 package org.apache.zeppelin.service;
 
 
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
-
 import com.google.common.base.Strings;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -39,12 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.NoteManager;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -60,6 +45,17 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
 
 /**
@@ -312,7 +308,8 @@ public class NotebookService {
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+//      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(context.getAutheInfo().getUser());//fix for ZEPPELIN-3065 -- shoaib.rehman
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
@@ -322,7 +319,8 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      boolean result = note.run(p.getId(), blocking);
+//      boolean result = note.run(p.getId(), blocking);
+      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());//fix for ZEPPELIN-3065 -- shoaib.rehman
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {

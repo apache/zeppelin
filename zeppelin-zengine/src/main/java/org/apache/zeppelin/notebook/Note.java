@@ -26,11 +26,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -43,17 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represent the note of Zeppelin. All the note and its paragraph operations are done
@@ -836,7 +822,23 @@ public class Note implements JsonSerializable {
    * @param paragraphId ID of paragraph
    */
   public boolean run(String paragraphId, boolean blocking) {
+    return run(paragraphId, blocking, null);
+  }
+
+  /**
+   * Run a single para
+   * @param paragraphId
+   * @param blocking
+   * @param ctxUser
+   * @return
+   */
+  //fix for ZEPPELIN-3065 -- shoaib.rehman
+  public boolean run(String paragraphId, boolean blocking, String ctxUser) {
     Paragraph p = getParagraph(paragraphId);
+
+    if(isPersonalizedMode() && ctxUser != null)
+      p = p.getUserParagraph(ctxUser);
+
     p.setListener(this.paragraphJobListener);
     return p.execute(blocking);
   }
