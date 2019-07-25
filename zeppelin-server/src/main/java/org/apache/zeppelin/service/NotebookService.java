@@ -29,7 +29,12 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.NoteManager;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
@@ -308,8 +313,7 @@ public class NotebookService {
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
-//      p = note.getParagraph(paragraphId);
-      p = p.getUserParagraph(context.getAutheInfo().getUser());//fix for ZEPPELIN-3065 -- shoaib.rehman
+      p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
@@ -319,8 +323,7 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-//      boolean result = note.run(p.getId(), blocking);
-      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());//fix for ZEPPELIN-3065 -- shoaib.rehman
+      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {
