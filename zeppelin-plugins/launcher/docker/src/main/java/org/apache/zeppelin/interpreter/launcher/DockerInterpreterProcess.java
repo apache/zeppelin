@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.spotify.docker.client.DefaultDockerClient;
@@ -296,6 +297,13 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     envs.put("ZEPPELIN_FORCE_STOP", "true");
     envs.put("SPARK_HOME", this.CONTAINER_SPARK_HOME);
 
+    // set container time zone
+    String dockerTimeZone = System.getenv("DOCKER_TIME_ZONE");
+    if (StringUtils.isBlank(dockerTimeZone)) {
+      dockerTimeZone = TimeZone.getDefault().getID();
+    }
+    envs.put("TZ", dockerTimeZone);
+
     List<String> listEnv = new ArrayList<>();
     for (Map.Entry<String, String> entry : this.envs.entrySet()) {
       String env = entry.getKey() + "=" + entry.getValue();
@@ -451,10 +459,9 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // 8) ${ZEPPELIN_HOME}/lib/interpreter is uploaded to `${CONTAINER_ZEPPELIN_HOME}`
       //    directory in the container
-      String libIntpPath = "/lib/interpreter";
-      String zeplLibIntpPath = getPathByHome(zeppelinHome, libIntpPath);
-      mkdirInContainer(containerId, zeplLibIntpPath);
-      docker.copyToContainer(new File(zeplLibIntpPath).toPath(), containerId, zeplLibIntpPath);
+      String intpApiJarPath = "/interpreter/zeppelin-interpreter-api-0.9.0-SNAPSHOT.jar";
+      String zeplIntpApiJarPath = getPathByHome(zeppelinHome, intpApiJarPath);
+      copyFiles.put(zeplIntpApiJarPath, zeplIntpApiJarPath);
     }
 
     deployToContainer(containerId, copyFiles);

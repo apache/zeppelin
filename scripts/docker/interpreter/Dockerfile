@@ -20,12 +20,14 @@ ENV SPARK_VERSION=2.3.3
 ENV HADOOP_VERSION=2.7
 
 # support Kerberos certification
-RUN install -yq curl unzip wget grep sed vim krb5-user libpam-krb5 && apt-get clean
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -yq krb5-user libpam-krb5 && apt-get clean
+
+RUN apt-get update && apt-get install -y curl unzip wget grep sed vim tzdata
 
 # auto upload zeppelin interpreter lib
-RUN rm /zeppelin -R
+RUN rm -rf /zeppelin
 
-RUN rm /spark -R
+RUN rm -rf /spark
 RUN wget https://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 RUN tar zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 RUN mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark

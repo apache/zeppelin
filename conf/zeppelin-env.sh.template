@@ -60,6 +60,8 @@
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
 # export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
 
+# export DOCKER_TIME_ZONE # Set to the same time zone as the zeppelin server. E.g, "America/New_York" or "Asia/Shanghai"
+
 #### Spark interpreter configuration ####
 
 ## Kerberos ticket refresh setting
