@@ -312,7 +312,7 @@ public class NotebookService {
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
@@ -322,7 +322,7 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      boolean result = note.run(p.getId(), blocking);
+      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {

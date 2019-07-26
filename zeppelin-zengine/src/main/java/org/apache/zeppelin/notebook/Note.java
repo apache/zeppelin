@@ -836,7 +836,23 @@ public class Note implements JsonSerializable {
    * @param paragraphId ID of paragraph
    */
   public boolean run(String paragraphId, boolean blocking) {
+    return run(paragraphId, blocking, null);
+  }
+
+  /**
+   * Run a single paragraph
+   *
+   * @param paragraphId
+   * @param blocking
+   * @param ctxUser
+   * @return
+   */
+  public boolean run(String paragraphId, boolean blocking, String ctxUser) {
     Paragraph p = getParagraph(paragraphId);
+
+    if (isPersonalizedMode() && ctxUser != null)
+      p = p.getUserParagraph(ctxUser);
+
     p.setListener(this.paragraphJobListener);
     return p.execute(blocking);
   }
