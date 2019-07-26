@@ -1,6 +1,5 @@
 package org.apache.zeppelin.spark;
 
-import net.jpountz.xxhash.StreamingXXHash32;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.Utils;
 import org.slf4j.Logger;
@@ -29,10 +28,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
     logger.debug("Creating KotlinSparkInterpreter");
-    logger.info("jpountz path: " + StreamingXXHash32.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-    logger.info("classpath: " + System.getProperty("java.class.path"));
     interpreter = new KotlinInterpreter(properties);
-
   }
 
   private String sparkClasspath() {
@@ -60,7 +56,6 @@ public class KotlinSparkInterpreter extends Interpreter {
           }
         })
         .collect(Collectors.joining(File.pathSeparator));
-
   }
 
 
@@ -72,7 +67,8 @@ public class KotlinSparkInterpreter extends Interpreter {
     JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
     KotlinSparkExecutionContext ctx = new KotlinSparkExecutionContext(
         sparkInterpreter.getSparkSession(),
-        jsc);
+        jsc,
+        (SparkZeppelinContext) sparkInterpreter.getZeppelinContext());
 
     String cp = sparkClasspath();
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
