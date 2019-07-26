@@ -24,6 +24,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
+  private SparkZeppelinContext z;
 
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
@@ -63,12 +64,11 @@ public class KotlinSparkInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-
     JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
+    z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
+
     KotlinSparkExecutionContext ctx = new KotlinSparkExecutionContext(
-        sparkInterpreter.getSparkSession(),
-        jsc,
-        (SparkZeppelinContext) sparkInterpreter.getZeppelinContext());
+        sparkInterpreter.getSparkSession(), jsc, z);
 
     String cp = sparkClasspath();
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
@@ -91,6 +91,12 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    
+    z.setInterpreterContext(context);
+    z.setGui(context.getGui());
+    z.setNoteGui(context.getNoteGui());
+    InterpreterContext.set(context);
+
     return interpreter.interpret(st, context);
   }
 
