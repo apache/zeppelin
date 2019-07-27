@@ -16,6 +16,8 @@
  */
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.cluster.ClusterManagerClient;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.OFFLINE_STATUS;
@@ -44,6 +47,8 @@ public class ClusterMockTest {
   static String zServerHost;
   static int zServerPort;
   static final String metaKey = "ClusterMockKey";
+
+  static TServerSocket tSocket = null;
 
   public static void startCluster() throws IOException, InterruptedException {
     LOGGER.info("startCluster >>>");
@@ -80,6 +85,12 @@ public class ClusterMockTest {
     }
     assertEquals(true, clusterServer.isClusterLeader());
 
+    try {
+      tSocket = new TServerSocket(0);
+    } catch (TTransportException e) {
+      throw new IOException("Fail to create TServerSocket", e);
+    }
+
     LOGGER.info("startCluster <<<");
   }
 
@@ -91,6 +102,9 @@ public class ClusterMockTest {
     if (null != clusterClient) {
       clusterServer.shutdown();
     }
+
+    tSocket.close();
+
     LOGGER.info("stopCluster <<<");
   }
 
@@ -119,14 +133,16 @@ public class ClusterMockTest {
   public void mockIntpProcessMeta(String metaKey, boolean online) {
     // mock IntpProcess Meta
     HashMap<String, Object> meta = new HashMap<>();
-    meta.put(ClusterMeta.SERVER_HOST, "SERVER_HOST");
-    meta.put(ClusterMeta.SERVER_PORT, 0);
-    meta.put(ClusterMeta.INTP_TSERVER_HOST, "INTP_TSERVER_HOST");
-    meta.put(ClusterMeta.INTP_TSERVER_PORT, 0);
+    meta.put(ClusterMeta.SERVER_HOST, "127.0.0.1");
+    meta.put(ClusterMeta.SERVER_PORT, 6000);
+    meta.put(ClusterMeta.INTP_TSERVER_HOST, "127.0.0.1");
+    meta.put(ClusterMeta.INTP_TSERVER_PORT, tSocket.getServerSocket().getLocalPort());
     meta.put(ClusterMeta.CPU_CAPACITY, "CPU_CAPACITY");
     meta.put(ClusterMeta.CPU_USED, "CPU_USED");
     meta.put(ClusterMeta.MEMORY_CAPACITY, "MEMORY_CAPACITY");
     meta.put(ClusterMeta.MEMORY_USED, "MEMORY_USED");
+    meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
+
     if (online) {
       meta.put(ClusterMeta.STATUS, ONLINE_STATUS);
     } else {
@@ -143,6 +159,6 @@ public class ClusterMockTest {
 
     assertNotNull(check);
     assertNotNull(check.get(metaKey));
-    assertEquals(true, check.get(metaKey).size() == 9);
+    assertEquals(true, check.get(metaKey).size() == 10);
   }
 }
