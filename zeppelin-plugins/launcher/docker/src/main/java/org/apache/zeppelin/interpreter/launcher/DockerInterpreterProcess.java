@@ -223,8 +223,10 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       execInContainer(containerId, dockerCommand, false);
     } catch (DockerException e) {
       LOGGER.error(e.getMessage(), e);
+      throw new IOException(e.getMessage());
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
+      throw new IOException(e.getMessage());
     }
 
     long startTime = System.currentTimeMillis();
@@ -236,6 +238,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
           dockerStarted.wait(getConnectTimeout());
         } catch (InterruptedException e) {
           LOGGER.error("Remote interpreter is not accessible");
+          throw new IOException(e.getMessage());
         }
       }
     }

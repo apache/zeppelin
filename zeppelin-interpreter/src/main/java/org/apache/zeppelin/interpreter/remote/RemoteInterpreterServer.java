@@ -31,7 +31,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.cluster.ClusterManagerClient;
 import org.apache.zeppelin.cluster.meta.ClusterMeta;
-import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObject;
@@ -99,6 +98,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * Entry point for Interpreter process.
@@ -238,6 +239,9 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public void shutdown() throws TException {
     logger.info("Shutting down...");
+    // delete interpreter cluster meta
+    deleteClusterMeta();
+
     if (interpreterGroup != null) {
       synchronized (interpreterGroup) {
         for (List<Interpreter> session : interpreterGroup.values()) {
@@ -340,7 +344,21 @@ public class RemoteInterpreterServer extends Thread
     meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
     meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
 
-    clusterManagerClient.putClusterMeta(ClusterMetaType.INTP_PROCESS_META, interpreterGroupId, meta);
+    clusterManagerClient.putClusterMeta(INTP_PROCESS_META, interpreterGroupId, meta);
+  }
+
+  private void deleteClusterMeta() {
+    if (!zconf.isClusterMode()){
+      return;
+    }
+
+    try {
+      // delete interpreter cluster meta
+      clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
+      Thread.sleep(300);
+    } catch (InterruptedException e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 
   @Override

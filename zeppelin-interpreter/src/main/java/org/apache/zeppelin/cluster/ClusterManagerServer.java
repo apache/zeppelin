@@ -285,7 +285,8 @@ public class ClusterManagerServer extends ClusterManager {
   }
 
   public void unicastClusterEvent(String host, int port, String topic, String msg) {
-    LOGGER.info("send unicastClusterEvent message {}", msg);
+    LOGGER.info("send unicastClusterEvent host:{} port:{} topic:{} message:{}",
+        host, port, topic, msg);
 
     Address address = Address.from(host, port);
     CompletableFuture<byte[]> response = messagingService.sendAndReceive(address,
@@ -293,8 +294,6 @@ public class ClusterManagerServer extends ClusterManager {
     response.whenComplete((r, e) -> {
       if (null == e) {
         LOGGER.error(e.getMessage(), e);
-      } else {
-        LOGGER.info("unicastClusterEvent success! {}", msg);
       }
     });
   }

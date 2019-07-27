@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.launcher;
 
+import org.apache.zeppelin.cluster.ClusterCallback;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
 import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
-import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 // Metadata registered in the cluster by the interpreter process,
 // Keep the interpreter process started
@@ -51,45 +51,30 @@ public class ClusterInterpreterCheckThread extends Thread {
 
     ClusterManagerServer clusterServer = ClusterManagerServer.getInstance();
 
-    HashMap<String, Object> intpMeta = clusterServer
-        .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
+    clusterServer.getIntpProcessStatus(intpGroupId, connectTimeout,
+        new ClusterCallback<HashMap<String, Object>>() {
+          @Override
+          public InterpreterClient online(HashMap<String, Object> result) {
+            String intpTSrvHost = (String) result.get(INTP_TSERVER_HOST);
+            int intpTSrvPort = (int) result.get(INTP_TSERVER_PORT);
+            LOGGER.info("Found cluster interpreter {}:{}", intpTSrvHost, intpTSrvPort);
 
-    int MAX_RETRY_GET_META = connectTimeout / ClusterInterpreterLauncher.CHECK_META_INTERVAL;
-    int retryGetMeta = 0;
-    while ((retryGetMeta++ < MAX_RETRY_GET_META)
-        && (null == intpMeta || !intpMeta.containsKey(INTP_TSERVER_HOST)
-        || !intpMeta.containsKey(INTP_TSERVER_PORT))) {
-      try {
-        Thread.sleep(ClusterInterpreterLauncher.CHECK_META_INTERVAL);
-        intpMeta = clusterServer
-            .getClusterMeta(INTP_PROCESS_META, intpGroupId).get(intpGroupId);
-        LOGGER.info("retry {} times to get {} meta!", retryGetMeta, intpGroupId);
-      } catch (InterruptedException e) {
-        LOGGER.error(e.getMessage(), e);
-      }
+            if (intpProcess instanceof DockerInterpreterProcess) {
+              ((DockerInterpreterProcess) intpProcess).processStarted(intpTSrvPort, intpTSrvHost);
+            } else if (intpProcess instanceof ClusterInterpreterProcess) {
+              ((ClusterInterpreterProcess) intpProcess).processStarted(intpTSrvPort, intpTSrvHost);
+            } else {
+              LOGGER.error("Unknown type !");
+            }
 
-      if (null != intpMeta && intpMeta.containsKey(INTP_TSERVER_HOST)
-          && intpMeta.containsKey(INTP_TSERVER_PORT)) {
-        String intpHost = (String) intpMeta.get(INTP_TSERVER_HOST);
-        int intpPort = (int) intpMeta.get(INTP_TSERVER_PORT);
-        LOGGER.info("Found cluster interpreter {}:{}", intpHost, intpPort);
+            return null;
+          }
 
-        if (intpProcess instanceof DockerInterpreterProcess) {
-          ((DockerInterpreterProcess) intpProcess).processStarted(intpPort, intpHost);
-        } else if (intpProcess instanceof ClusterInterpreterProcess) {
-          ((ClusterInterpreterProcess) intpProcess).processStarted(intpPort, intpHost);
-        } else {
-          LOGGER.error("Unknown type !");
-        }
-
-        break;
-      }
-    }
-
-    if (null == intpMeta || !intpMeta.containsKey(INTP_TSERVER_HOST)
-        || !intpMeta.containsKey(INTP_TSERVER_PORT)) {
-      LOGGER.error("Can not found interpreter meta!");
-    }
+          @Override
+          public void offline() {
+            LOGGER.error("Can not found cluster interpreter!");
+          }
+        });
 
     LOGGER.info("ClusterInterpreterCheckThread run() <<<");
   }

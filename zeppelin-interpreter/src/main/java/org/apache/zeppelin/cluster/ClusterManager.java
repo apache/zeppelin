@@ -86,6 +86,7 @@ import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.cluster.protocol.LocalRaftProtocolFactory;
 import org.apache.zeppelin.cluster.protocol.RaftClientMessagingProtocol;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,9 +113,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import static io.atomix.primitive.operation.PrimitiveOperation.operation;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.DELETE_OPERATION;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.PUT_OPERATION;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.GET_OPERATION;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * The base class for cluster management, including the following implementations
@@ -430,6 +436,63 @@ public abstract class ClusterManager {
     }
 
     return clusterMeta;
+  }
+
+  public InterpreterClient getIntpProcessStatus(String intpName,
+                                                int timeout,
+                                                ClusterCallback<HashMap<String, Object>> callback) {
+    final int CHECK_META_INTERVAL = 1000;
+    int MAX_RETRY_GET_META = timeout / CHECK_META_INTERVAL;
+    int retryGetMeta = 0;
+    while (retryGetMeta++ < MAX_RETRY_GET_META) {
+      HashMap<String, Object> intpMeta = getClusterMeta(INTP_PROCESS_META, intpName).get(intpName);
+      if (interpreterMetaOnline(intpMeta)) {
+        // connect exist Interpreter Process
+        String intpTSrvHost = (String) intpMeta.get(INTP_TSERVER_HOST);
+        int intpTSrvPort = (int) intpMeta.get(INTP_TSERVER_PORT);
+        LOGGER.info("interpreter thrift {}:{} service is online!", intpTSrvHost, intpTSrvPort);
+
+        // Check if the interpreter thrift service is available
+        boolean remoteIntpAccessible =
+            RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(intpTSrvHost, intpTSrvPort);
+        if (remoteIntpAccessible) {
+          LOGGER.info("interpreter thrift {}:{} accessible!", intpTSrvHost, intpTSrvPort);
+          return callback.online(intpMeta);
+        } else {
+          LOGGER.error("interpreter thrift {}:{} service is not available!",
+              intpTSrvHost, intpTSrvPort);
+          try {
+            Thread.sleep(CHECK_META_INTERVAL);
+            LOGGER.warn("retry {} times to get {} meta!", retryGetMeta, intpName);
+          } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+          }
+        }
+      } else {
+        try {
+          Thread.sleep(CHECK_META_INTERVAL);
+        } catch (InterruptedException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    LOGGER.error("retry {} times not get {} meta!", retryGetMeta, intpName);
+    callback.offline();
+    return null;
+  }
+
+  // Check if the interpreter is online
+  private boolean interpreterMetaOnline(HashMap<String, Object> intpProcMeta) {
+    if (null != intpProcMeta
+        && intpProcMeta.containsKey(INTP_TSERVER_HOST)
+        && intpProcMeta.containsKey(INTP_TSERVER_PORT)
+        && intpProcMeta.containsKey(STATUS)
+        && StringUtils.equals((String) intpProcMeta.get(STATUS), ONLINE_STATUS)) {
+      return true;
+    }
+
+    return false;
   }
 
   protected static final Serializer protocolSerializer = Serializer.using(Namespace.builder()
