@@ -1,6 +1,7 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +68,8 @@ public class KotlinSparkInterpreter extends Interpreter {
     JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
     z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
 
-    KotlinSparkExecutionContext ctx = new KotlinSparkExecutionContext(
-        sparkInterpreter.getSparkSession(), jsc, z);
+    SparkKotlinContext ctx = new SparkKotlinContext(
+            (SparkSession) sparkInterpreter.getSparkSession(), jsc, z);
 
     String cp = sparkClasspath();
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
