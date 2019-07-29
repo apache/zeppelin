@@ -37,6 +37,9 @@ class CredentialInjector {
 
   private Set<String> passwords = new HashSet<>();
   private final UserCredentials creds;
+  private static final Pattern userpattern = Pattern.compile("\\{user\\.([^\\}]+)\\}");
+  private static final Pattern passwordpattern = Pattern.compile("\\{password\\.([^\\}]+)\\}");
+
 
   public CredentialInjector(UserCredentials creds) {
     this.creds = creds;
@@ -47,8 +50,6 @@ class CredentialInjector {
       return null;
     }
     String replaced = code;
-    Pattern userpattern = Pattern.compile("\\{user\\.([^\\}]+)\\}");
-    Pattern passwordpattern = Pattern.compile("\\{password\\.([^\\}]+)\\}");
     Matcher matcher = userpattern.matcher(replaced);
     while (matcher.find()) {
       String key = matcher.group(1);
@@ -83,8 +84,17 @@ class CredentialInjector {
   private List<InterpreterResultMessage> replacePasswords(List<InterpreterResultMessage> original) {
     List<InterpreterResultMessage> replaced = new ArrayList<>();
     for (InterpreterResultMessage msg : original) {
-      String replacedMessages = replacePasswords(msg.getData());
-      replaced.add(new InterpreterResultMessage(msg.getType(), replacedMessages));
+      switch(msg.getType()) {
+        case HTML:
+        case TEXT:
+        case TABLE: {
+          String replacedMessages = replacePasswords(msg.getData());
+          replaced.add(new InterpreterResultMessage(msg.getType(), replacedMessages));
+          break;
+        }
+        default:
+          replaced.add(msg);
+      }
     }
     return replaced;
   }
