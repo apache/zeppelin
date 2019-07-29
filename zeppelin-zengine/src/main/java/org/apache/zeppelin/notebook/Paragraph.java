@@ -40,6 +40,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -496,12 +497,19 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext context = getInterpreterContext();
         InterpreterContext.set(context);
 
-        UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
-        CredentialInjector credinjector = new CredentialInjector(creds);
-        String code = credinjector.replaceCredentials(script);
-
-        InterpreterResult ret = interpreter.interpret(code, context);
-        ret = credinjector.hidePasswords(ret);
+        // Inject credentials
+        boolean shouldInjectCredentials = Boolean.parseBoolean(
+              interpreter.getProperty(Constants.INJECT_CREDENTIALS, "false"));
+        InterpreterResult ret = null;
+        if (shouldInjectCredentials) {
+          UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
+          CredentialInjector credinjector = new CredentialInjector(creds);
+          String code = credinjector.replaceCredentials(script);
+          ret = interpreter.interpret(code, context);
+          ret = credinjector.hidePasswords(ret);
+        } else {
+          ret = interpreter.interpret(script, context);
+        }
 
         if (interpreter.getFormType() == FormType.NATIVE) {
           note.setNoteParams(context.getNoteGui().getParams());

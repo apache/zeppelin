@@ -42,6 +42,7 @@ import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -385,8 +386,14 @@ public class ParagraphTest extends AbstractInterpreterTest {
     spyParagraph.setAuthenticationInfo(user1);
     
     spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
-    spyParagraph.jobRun();
     
+    // Credentials should only be injected when it is enabled for an interpreter
+    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "false");
+    spyParagraph.jobRun();
+    verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
+    
+    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
+    spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
   }
 }
