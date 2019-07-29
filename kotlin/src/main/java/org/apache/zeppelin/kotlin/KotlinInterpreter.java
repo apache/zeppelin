@@ -39,7 +39,6 @@ public class KotlinInterpreter extends Interpreter {
     interpreter = builder.build();
 
     out = new InterpreterOutputStream(logger);
-    System.setOut(new PrintStream(out));
   }
 
   @Override
@@ -58,7 +57,11 @@ public class KotlinInterpreter extends Interpreter {
 
     out.setInterpreterOutput(context.out);
 
-    return interpreter.eval(st);
+    PrintStream oldOut = System.out;
+    System.setOut(new PrintStream(out));
+    InterpreterResult res = interpreter.eval(st);
+    System.setOut(oldOut);
+    return res;
   }
 
   @Override
