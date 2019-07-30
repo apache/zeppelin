@@ -68,7 +68,7 @@ public class KotlinSparkInterpreter extends Interpreter {
     JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
     z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
 
-    SparkKotlinContext ctx = new SparkKotlinContext(
+    SparkKotlinReceiver ctx = new SparkKotlinReceiver(
             (SparkSession) sparkInterpreter.getSparkSession(), jsc, z);
 
     String cp = sparkClasspath();

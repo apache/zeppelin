@@ -20,7 +20,7 @@ import kotlin.script.experimental.jvm.JvmScriptCompilationKt;
 import kotlin.script.experimental.jvmhost.impl.JvmHostUtilKt;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
-import org.apache.zeppelin.kotlin.context.KotlinContext;
+import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 
 public class KotlinReplBuilder {
 
@@ -28,12 +28,12 @@ public class KotlinReplBuilder {
 
   private ScriptingHostConfiguration hostConf = getDefaultJvmScriptingHostConfiguration();
 
-  private KotlinContext ctx;
+  private KotlinReceiver ctx;
   private List<String> compilerOptions;
   private String outputDir;
 
   public KotlinReplBuilder() {
-    this.ctx = new KotlinContext();
+    this.ctx = new KotlinReceiver();
     this.compilerOptions = new ArrayList<>();
   }
 
@@ -53,7 +53,7 @@ public class KotlinReplBuilder {
     return new KotlinRepl(compiler, evaluator, outputDir);
   }
 
-  public KotlinReplBuilder executionContext(KotlinContext ctx) {
+  public KotlinReplBuilder executionContext(KotlinReceiver ctx) {
     this.ctx = ctx;
     return this;
   }

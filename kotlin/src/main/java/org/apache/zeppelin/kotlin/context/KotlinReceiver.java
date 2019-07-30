@@ -7,4 +7,4 @@ package org.apache.zeppelin.kotlin.context;
     ...
   }
  */
-public class KotlinContext {}
+public class KotlinReceiver {}
