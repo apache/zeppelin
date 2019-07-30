@@ -30,7 +30,7 @@ public class KotlinInterpreter extends Interpreter {
     super(properties);
     builder = new KotlinReplBuilder();
     BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(
-        getInterpreterGroup().getInterpreterHookRegistry(),
+        null, // TODO(dk) figure out why getInterpreterGroup().getInterpreterHookRegistry() NPEs
         Integer.parseInt(properties.getProperty("zeppelin.kotlin.maxResult", "1000"))
     );
     builder.executionContext(new ZeppelinKotlinReceiver(defaultCtx));

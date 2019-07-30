@@ -31,6 +31,7 @@ public class KotlinReplBuilder {
   private KotlinReceiver ctx;
   private List<String> compilerOptions;
   private String outputDir;
+  private int maxResult;
 
   public KotlinReplBuilder() {
     this.ctx = new KotlinReceiver();
@@ -50,7 +51,12 @@ public class KotlinReplBuilder {
         buildEvaluationConfiguration(),
         new BasicJvmScriptEvaluator());
 
-    return new KotlinRepl(compiler, evaluator, outputDir);
+    return new KotlinRepl(compiler, evaluator, outputDir, maxResult);
+  }
+
+  public KotlinReplBuilder maxResult(int maxResult) {
+    this.maxResult = maxResult;
+    return this;
   }
 
   public KotlinReplBuilder executionContext(KotlinReceiver ctx) {

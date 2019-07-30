@@ -12,8 +12,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -26,16 +28,18 @@ public class KotlinRepl {
   private AggregatedReplStageState<?, ?> state;
   private AtomicInteger counter;
   private String outputDir;
+  private int maxResult;
 
   public KotlinRepl(JvmReplCompiler compiler,
                     JvmReplEvaluator evaluator) {
-    this(compiler, evaluator, null);
+    this(compiler, evaluator, null, 0);
   }
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
                     JvmReplEvaluator evaluator,
-                    String outputDir) {
+                    String outputDir,
+                    int maxResult) {
     this.compiler = compiler;
     this.evaluator = evaluator;
     ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
@@ -43,10 +47,10 @@ public class KotlinRepl {
         compiler.createState(stateLock),
         evaluator.createState(stateLock),
         stateLock);
-
     counter = new AtomicInteger(0);
 
     this.outputDir = outputDir;
+    this.maxResult = maxResult;
   }
 
   public InterpreterResult eval(String code) {
@@ -87,16 +91,32 @@ public class KotlinRepl {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
-      ReplEvalResult.ValueResult e = (ReplEvalResult.ValueResult) evalResult;
-      Object value = e.getValue();
-      String valueString = (value != null) ? value.toString() : "null";
-
+      ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
+      String valueString = prepareValueString(v.getValue());
       return new InterpreterResult(
           InterpreterResult.Code.SUCCESS,
-          e.getName() + ": " + e.getType() + " = " + valueString);
+          v.getName() + ": " + v.getType() + " = " + valueString);
     }
     return new InterpreterResult(InterpreterResult.Code.ERROR,
         "unknown evaluation result: " + evalResult.toString());
+  }
+
+  private String prepareValueString(Object value) {
+    if (value == null) {
+      return "null";
+    }
+    if (!(value instanceof Collection<?>)) {
+      return value.toString();
+    }
+    Collection<?> collection = (Collection<?>) value;
+    if (collection.size() <= maxResult) {
+      return value.toString();
+    }
+    return "[" + collection.stream()
+        .limit(maxResult)
+        .map(Object::toString)
+        .collect(Collectors.joining(","))
+        + "..." + (collection.size() - maxResult) + " more]";
   }
 
   private void writeClasses(ReplCompileResult.CompiledClasses classes) {

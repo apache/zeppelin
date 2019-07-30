@@ -249,34 +249,6 @@
     "name": "kotlin",
     "className": "org.apache.zeppelin.spark.KotlinSparkInterpreter",
     "properties": {
-      "spark.executor.memory": {
-        "envName": null,
-        "propertyName": "spark.executor.memory",
-        "defaultValue": "",
-        "description": "Executor memory per worker instance. ex) 512m, 32g",
-        "type": "string"
-      },
-      "args": {
-        "envName": null,
-        "propertyName": null,
-        "defaultValue": "",
-        "description": "spark commandline args",
-        "type": "textarea"
-      },
-      "zeppelin.spark.useHiveContext": {
-        "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
-        "propertyName": "zeppelin.spark.useHiveContext",
-        "defaultValue": true,
-        "description": "Use HiveContext instead of SQLContext if it is true.",
-        "type": "checkbox"
-      },
-      "spark.app.name": {
-        "envName": "SPARK_APP_NAME",
-        "propertyName": "spark.app.name",
-        "defaultValue": "Zeppelin",
-        "description": "The name of spark application.",
-        "type": "string"
-      },
       "zeppelin.spark.printREPLOutput": {
         "envName": null,
         "propertyName": "zeppelin.spark.printREPLOutput",
@@ -284,61 +256,12 @@
         "description": "Print REPL output",
         "type": "checkbox"
       },
-      "spark.cores.max": {
-        "envName": null,
-        "propertyName": "spark.cores.max",
-        "defaultValue": "",
-        "description": "Total number of cores to use. Empty value uses all available core.",
-        "type": "number"
-      },
       "zeppelin.spark.maxResult": {
-        "envName": "ZEPPELIN_SPARK_MAXRESULT",
-        "propertyName": "zeppelin.spark.maxResult",
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.maxResult",
         "defaultValue": "1000",
-        "description": "Max number of Spark SQL result to display.",
+        "description": "Max number of result to display.",
         "type": "number"
-      },
-      "master": {
-        "envName": "MASTER",
-        "propertyName": "spark.master",
-        "defaultValue": "local[*]",
-        "description": "Spark master uri. ex) spark://masterhost:7077",
-        "type": "string"
-      },
-      "zeppelin.spark.enableSupportedVersionCheck": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
-        "defaultValue": true,
-        "description": "Do not change - developer only setting, not for production use",
-        "type": "checkbox"
-      },
-      "zeppelin.spark.uiWebUrl": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.uiWebUrl",
-        "defaultValue": "",
-        "description": "Override Spark UI default URL",
-        "type": "string"
-      },
-      "zeppelin.spark.useNew": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.useNew",
-        "defaultValue": true,
-        "description": "Whether use new spark interpreter implementation",
-        "type": "checkbox"
-      },
-      "zeppelin.spark.ui.hidden": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.ui.hidden",
-        "defaultValue": false,
-        "description": "Whether to hide spark ui in zeppelin ui",
-        "type": "checkbox"
-      },
-      "zeppelin.spark.scala.color": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.scala.color",
-        "defaultValue": true,
-        "description": "Whether to enable color output of spark scala interpreter",
-        "type": "checkbox"
       }
     },
     "editor": {
