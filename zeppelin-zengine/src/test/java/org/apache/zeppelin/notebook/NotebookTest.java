@@ -433,6 +433,23 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
+  public void testInvalidInterpreter() throws IOException, InterruptedException {
+    Note note = notebook.createNote("note1", anonymous);
+    Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+    p1.setText("%invalid abc");
+    p1.setAuthenticationInfo(anonymous);
+    note.run(p1.getId());
+
+    Thread.sleep(2 * 1000);
+    assertEquals(p1.getStatus(), Status.ERROR);
+    InterpreterResult result = p1.getReturn();
+    assertEquals(InterpreterResult.Code.ERROR, result.code());
+    assertEquals("Interpreter invalid not found", result.message().get(0).getData());
+    assertNull(p1.getDateStarted());
+    notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
   public void testRunAll() throws IOException {
     Note note = notebook.createNote("note1", anonymous);
 
