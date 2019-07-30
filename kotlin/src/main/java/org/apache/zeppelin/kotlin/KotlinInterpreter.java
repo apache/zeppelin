@@ -15,6 +15,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.kotlin.context.ZeppelinKotlinContext;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
@@ -28,6 +29,11 @@ public class KotlinInterpreter extends Interpreter {
   public KotlinInterpreter(Properties properties) {
     super(properties);
     builder = new KotlinReplBuilder();
+    BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(
+        getInterpreterGroup().getInterpreterHookRegistry(),
+        Integer.parseInt(properties.getProperty("zeppelin.kotlin.maxResult", "1000"))
+    );
+    builder.executionContext(new ZeppelinKotlinContext(defaultCtx));
   }
 
   public KotlinReplBuilder getBuilder() {

@@ -5,6 +5,13 @@
     "className": "org.apache.zeppelin.kotlin.KotlinInterpreter",
     "defaultInterpreter": true,
     "properties": {
+      "zeppelin.kotlin.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of dataframe rows to display.",
+        "type": "number"
+      }
     },
     "editor": {
       "language": "kotlin",

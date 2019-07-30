@@ -92,7 +92,8 @@ public class KotlinRepl {
       String valueString = (value != null) ? value.toString() : "null";
 
       return new InterpreterResult(
-          InterpreterResult.Code.SUCCESS, valueString + ": " + e.getType());
+          InterpreterResult.Code.SUCCESS,
+          e.getName() + ": " + e.getType() + " = " + valueString);
     }
     return new InterpreterResult(InterpreterResult.Code.ERROR,
         "unknown evaluation result: " + evalResult.toString());
