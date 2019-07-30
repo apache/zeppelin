@@ -108,15 +108,18 @@ public class KotlinRepl {
     if (!(value instanceof Collection<?>)) {
       return value.toString();
     }
+
     Collection<?> collection = (Collection<?>) value;
+
     if (collection.size() <= maxResult) {
       return value.toString();
     }
+
     return "[" + collection.stream()
         .limit(maxResult)
         .map(Object::toString)
         .collect(Collectors.joining(","))
-        + "..." + (collection.size() - maxResult) + " more]";
+        + " ... " + (collection.size() - maxResult) + " more]";
   }
 
   private void writeClasses(ReplCompileResult.CompiledClasses classes) {

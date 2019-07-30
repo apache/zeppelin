@@ -29,11 +29,12 @@ public class KotlinInterpreter extends Interpreter {
   public KotlinInterpreter(Properties properties) {
     super(properties);
     builder = new KotlinReplBuilder();
-    BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(
-        null, // TODO(dk) figure out why getInterpreterGroup().getInterpreterHookRegistry() NPEs
-        Integer.parseInt(properties.getProperty("zeppelin.kotlin.maxResult", "1000"))
-    );
-    builder.executionContext(new ZeppelinKotlinReceiver(defaultCtx));
+    int maxResult = Integer.parseInt(
+        properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
+
+    // TODO(dk) figure out why getInterpreterGroup().getInterpreterHookRegistry() NPEs
+    BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(null, maxResult);
+    builder.executionContext(new ZeppelinKotlinReceiver(defaultCtx)).maxResult(maxResult);
   }
 
   public KotlinReplBuilder getBuilder() {
