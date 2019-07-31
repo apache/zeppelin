@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaType.SERVER_META;
 
 /**
@@ -259,10 +260,35 @@ public class ClusterManagerServer extends ClusterManager {
 
   // Obtain the server node whose resources are idle in the cluster
   public HashMap<String, Object> getIdleNodeMeta() {
-    HashMap<String, Object> idleNodeMeta = null;
-    HashMap<String, HashMap<String, Object>> clusterMeta = getClusterMeta(SERVER_META, "");
+    Map<String, HashMap<String, Object>> clusterMeta = null;
+    Map<String, HashMap<String, Object>> intpMeta = null;
 
-    long memoryIdle = 0;
+    clusterMeta = getClusterMeta(SERVER_META, "");
+    intpMeta = getClusterMeta(INTP_PROCESS_META, "");
+
+    // Number of calculation processes
+    for (Map.Entry<String, HashMap<String, Object>> serverMetaEntity : clusterMeta.entrySet()) {
+      if (!serverMetaEntity.getValue().containsKey(ClusterMeta.NODE_NAME)) {
+        continue;
+      }
+      String serverNodeName = (String) serverMetaEntity.getValue().get(ClusterMeta.NODE_NAME);
+
+      int intpProcCount = 0;
+      for (Map.Entry<String, HashMap<String, Object>> intpMetaEntity : intpMeta.entrySet()) {
+        if (!intpMetaEntity.getValue().containsKey(ClusterMeta.NODE_NAME)) {
+          continue;
+        }
+        String intpNodeName = (String) intpMetaEntity.getValue().get(ClusterMeta.NODE_NAME);
+
+        if (serverNodeName.equals(intpNodeName)) {
+          intpProcCount ++;
+        }
+      }
+      serverMetaEntity.getValue().put(ClusterMeta.INTP_PROCESS_COUNT, intpProcCount);
+    }
+
+    HashMap<String, Object> idleNodeMeta = null;
+    long machineIdle = Integer.MAX_VALUE;
     for (Map.Entry<String, HashMap<String, Object>> entry : clusterMeta.entrySet()) {
       HashMap<String, Object> meta = entry.getValue();
       // Check if the service or process is offline
@@ -272,11 +298,9 @@ public class ClusterManagerServer extends ClusterManager {
         continue;
       }
 
-      long memoryCapacity  = (long) meta.get(ClusterMeta.MEMORY_CAPACITY);
-      long memoryUsed      = (long) meta.get(ClusterMeta.MEMORY_USED);
-      long idle = memoryCapacity - memoryUsed;
-      if (idle > memoryIdle) {
-        memoryIdle = idle;
+      int intpProcCount  = (int) meta.get(ClusterMeta.INTP_PROCESS_COUNT);
+      if (machineIdle > intpProcCount) {
+        machineIdle = intpProcCount;
         idleNodeMeta = meta;
       }
     }
