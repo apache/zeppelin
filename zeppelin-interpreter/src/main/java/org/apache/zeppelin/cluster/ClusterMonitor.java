@@ -157,7 +157,7 @@ public class ClusterMonitor {
         if (heartbeat instanceof LocalDateTime) {
           LocalDateTime dHeartbeat = (LocalDateTime) heartbeat;
           Duration duration = Duration.between(dHeartbeat, now);
-          long timeInterval = duration.getSeconds();
+          long timeInterval = duration.getSeconds() * 1000; // Convert to milliseconds
           if (timeInterval > heartbeatTimeout) {
             // Set the metadata for the heartbeat timeout to offline
             // Cannot delete metadata
