@@ -203,7 +203,7 @@ Zeppelin can run locally (such as inside your IDE in debug mode) and able to run
 
 1. zeppelin-site.xml
 
-| Environment variable | Value | Description |
+| Configuration variable | Value | Description |
 | ----- | ----- | ----- |
 | ZEPPELIN_RUN_MODE | docker | Make Zeppelin run interpreter on Docker |
 | ZEPPELIN_DOCKER_CONTAINER_IMAGE | <image>:<version> | Zeppelin interpreter docker image to use |
