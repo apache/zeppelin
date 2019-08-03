@@ -132,14 +132,14 @@ public class DockerInterpreterProcessTest {
     assertTrue(null != dockerProperties.get("zeppelin.interpreter.connect.timeout"));
 
     List<String> listEnvs = intp.getListEnvs();
-    assertEquals(listEnvs.size(), 5);
+    assertEquals(listEnvs.size(), 6);
     Map<String, String> mapEnv = new HashMap<>();
     for (int i = 0; i < listEnvs.size(); i++) {
       String env = listEnvs.get(i);
       String kv[] = env.split("=");
       mapEnv.put(kv[0], kv[1]);
     }
-    assertEquals(mapEnv.size(), 5);
+    assertEquals(mapEnv.size(), 6);
     assertTrue(mapEnv.containsKey("ZEPPELIN_HOME"));
     assertTrue(mapEnv.containsKey("ZEPPELIN_CONF_DIR"));
     assertTrue(mapEnv.containsKey("ZEPPELIN_FORCE_STOP"));

@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.spotify.docker.client.DefaultDockerClient;
@@ -295,6 +296,13 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     envs.put("ZEPPELIN_CONF_DIR", zeppelinHome + "/conf");
     envs.put("ZEPPELIN_FORCE_STOP", "true");
     envs.put("SPARK_HOME", this.CONTAINER_SPARK_HOME);
+
+    // set container time zone
+    String dockerTimeZone = System.getenv("DOCKER_TIME_ZONE");
+    if (StringUtils.isBlank(dockerTimeZone)) {
+      dockerTimeZone = TimeZone.getDefault().getID();
+    }
+    envs.put("TZ", dockerTimeZone);
 
     List<String> listEnv = new ArrayList<>();
     for (Map.Entry<String, String> entry : this.envs.entrySet()) {
