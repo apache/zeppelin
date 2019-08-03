@@ -99,7 +99,7 @@ ENV HADOOP_VERSION=2.7
 # support Kerberos certification
 RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -yq krb5-user libpam-krb5 && apt-get clean
 
-RUN apt-get update && apt-get install -y curl unzip wget grep sed vim tzdata
+RUN apt-get update && apt-get install -y curl unzip wget grep sed vim tzdata && apt-get clean
 
 # auto upload zeppelin interpreter lib
 RUN rm -rf /zeppelin
