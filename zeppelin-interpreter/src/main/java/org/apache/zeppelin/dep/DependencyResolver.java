@@ -96,7 +96,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
         File destFile = new File(destPath, srcFile.getName());
         if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
           FileUtils.copyFile(srcFile, destFile);
-          logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+          logger.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
         }
       }
     }
@@ -114,7 +114,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
 
     if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
       FileUtils.copyFile(srcFile, destFile);
-      logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+      logger.debug("copy {} to {}", srcFile.getAbsolutePath(), destPath);
     }
   }
 
@@ -142,7 +142,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
     List<File> files = new LinkedList<>();
     for (ArtifactResult artifactResult : listOfArtifact) {
       files.add(artifactResult.getArtifact().getFile());
-      logger.info("load {}", artifactResult.getArtifact().getFile().getAbsolutePath());
+      logger.debug("load {}", artifactResult.getArtifact().getFile().getAbsolutePath());
     }
 
     return files;
