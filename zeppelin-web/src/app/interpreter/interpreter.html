@@ -41,10 +41,12 @@ limitations under the License.
     <div class="row">
       <div class="col-md-4">
         <div class="input-group" style="margin-top: 10px">
-          <input type="text" ng-model="searchInterpreter"
-                 class="form-control ng-pristine ng-untouched ng-valid ng-empty"
-                 ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 300, 'blur': 0 } }"
-                 placeholder="Search interpreters"/>
+          <form>
+            <input type="text" ng-model="searchInterpreter"
+                   class="form-control ng-pristine ng-untouched ng-valid ng-empty"
+                   ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 300, 'blur': 0 } }"
+                   placeholder="Search interpreters"/>
+          </form>
           <span class="input-group-btn">
             <button type="submit" class="btn btn-default" ng-disabled="!navbar.connected">
               <i class="glyphicon glyphicon-search"></i>
