@@ -498,8 +498,10 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext.set(context);
 
         // Inject credentials
-        boolean shouldInjectCredentials = Boolean.parseBoolean(
-              interpreter.getProperty(Constants.INJECT_CREDENTIALS, "false"));
+        String injectPropStr = interpreter.getProperty(Constants.INJECT_CREDENTIALS, "false");
+        injectPropStr = context.getStringLocalProperty(Constants.INJECT_CREDENTIALS, injectPropStr);
+        boolean shouldInjectCredentials = Boolean.parseBoolean(injectPropStr);
+
         InterpreterResult ret = null;
         if (shouldInjectCredentials) {
           UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
