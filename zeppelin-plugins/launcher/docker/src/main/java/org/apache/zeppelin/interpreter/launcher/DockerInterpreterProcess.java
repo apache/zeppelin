@@ -447,14 +447,16 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // 7) ${ZEPPELIN_HOME}/interpreter/spark is uploaded to `${CONTAINER_ZEPPELIN_HOME}`
       //    directory in the container
-      String intpPath = "/interpreter/" + interpreterGroupName;
-      String zeplIntpPath = getPathByHome(zeppelinHome, intpPath);
-      mkdirInContainer(containerId, zeplIntpPath);
-      docker.copyToContainer(new File(zeplIntpPath).toPath(), containerId, zeplIntpPath);
+      String intpGrpPath = "/interpreter/" + interpreterGroupName;
+      String intpGrpAllPath = getPathByHome(zeppelinHome, intpGrpPath);
+      mkdirInContainer(containerId, intpGrpAllPath);
+      docker.copyToContainer(new File(intpGrpAllPath).toPath(), containerId, intpGrpAllPath);
 
-      // 8) ${ZEPPELIN_HOME}/lib/interpreter/zeppelin-interpreter-api-0.9.0-SNAPSHOT.jar
+      // 8) ${ZEPPELIN_HOME}/lib/interpreter/zeppelin-interpreter-api-<version>.jar
       //    is uploaded to `${CONTAINER_ZEPPELIN_HOME}` directory in the container
-      Collection<File> listFiles = FileUtils.listFiles(new File(zeplIntpPath),
+      String intpPath = "/interpreter";
+      String intpAllPath = getPathByHome(zeppelinHome, intpPath);
+      Collection<File> listFiles = FileUtils.listFiles(new File(intpAllPath),
           FileFilterUtils.suffixFileFilter("jar"), null);
       for (File jarfile : listFiles) {
         String jarfilePath = jarfile.getAbsolutePath();
