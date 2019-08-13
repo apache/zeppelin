@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,8 @@ import com.spotify.docker.client.messages.ExecCreation;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
 import com.spotify.docker.client.messages.ProgressMessage;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.launcher.utils.TarFileEntry;
@@ -451,11 +454,13 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // 8) ${ZEPPELIN_HOME}/lib/interpreter/zeppelin-interpreter-api-0.9.0-SNAPSHOT.jar
       //    is uploaded to `${CONTAINER_ZEPPELIN_HOME}` directory in the container
-      ArrayList<String> zeplIntpJars = findFile(zeplIntpPath, "*.jar");
-      for (String findJarfile : zeplIntpJars) {
-        if (!StringUtils.isBlank(findJarfile)
-            && !copyFiles.containsKey(findJarfile)) {
-          copyFiles.put(findJarfile, findJarfile);
+      Collection<File> listFiles = FileUtils.listFiles(new File(zeplIntpPath),
+          FileFilterUtils.suffixFileFilter("jar"), null);
+      for (File jarfile : listFiles) {
+        String jarfilePath = jarfile.getAbsolutePath();
+        if (!StringUtils.isBlank(jarfilePath)
+            && !copyFiles.containsKey(jarfilePath)) {
+          copyFiles.put(jarfilePath, jarfilePath);
         }
       }
     }
@@ -575,70 +580,5 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     }
 
     throw new IOException("Can't find directory in " + homeDir + path + "!");
-  }
-
-  @VisibleForTesting
-  ArrayList findFile(String baseDirName, String pattern) {
-    ArrayList<String> arrFiles = new ArrayList();
-    File baseDir = new File(baseDirName);
-    if (!baseDir.exists() || !baseDir.isDirectory()) {
-      LOGGER.error("File lookup failed：" + baseDirName + " Not a directory！");
-      return arrFiles;
-    }
-
-    File[] files = baseDir.listFiles();
-    if (files.length == 0) {
-      LOGGER.error(baseDirName + " is empty folder!");
-      return arrFiles;
-    }
-
-    String tempName = null;
-    File tempFile;
-    for (int i = 0; i < files.length; i++) {
-      tempFile = files[i];
-      tempName = tempFile.getName();
-      if (wildcardMatch(pattern, tempName)) {
-        String filePath = tempFile.getAbsolutePath();
-        LOGGER.info("File lookup:" + tempFile.getAbsoluteFile().toString());
-        arrFiles.add(filePath);
-      }
-    }
-
-    return arrFiles;
-  }
-
-  // Find files by wildcard matching
-  // 1) The wildcard asterisk * indicates that any number of characters can be matched
-  // 2) Wildcard question mark? means match any character
-  private boolean wildcardMatch(String pattern, String str) {
-    int patternLength = pattern.length();
-    int strLength = str.length();
-    int strIndex = 0;
-    char ch;
-
-    for (int patternIndex = 0; patternIndex < patternLength; patternIndex++) {
-      ch = pattern.charAt(patternIndex);
-      if (ch == '*') {
-        // The wildcard asterisk * indicates that any number of characters can be matched
-        while (strIndex < strLength) {
-          if (wildcardMatch(pattern.substring(patternIndex + 1), str.substring(strIndex))) {
-            return true;
-          }
-          strIndex++;
-        }
-      } else if (ch == '?') {
-        // Wildcard question mark? means match any character
-        strIndex++;
-        if (strIndex > strLength) {
-          return false;
-        }
-      } else {
-        if ((strIndex >= strLength) || (ch != str.charAt(strIndex))) {
-          return false;
-        }
-        strIndex++;
-      }
-    }
-    return (strIndex == strLength);
   }
 }

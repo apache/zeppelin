@@ -26,9 +26,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,43 +145,5 @@ public class DockerInterpreterProcessTest {
     assertTrue(mapEnv.containsKey("ZEPPELIN_FORCE_STOP"));
     assertTrue(mapEnv.containsKey("SPARK_HOME"));
     assertTrue(mapEnv.containsKey("MY_ENV1"));
-  }
-
-  @Test
-  public void findZeppelinInterpreterApiJar() {
-    File file = null;
-    try {
-      Properties properties = new Properties();
-      properties.setProperty(
-          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName(), "5000");
-
-      HashMap<String, String> envs = new HashMap<String, String>();
-      envs.put("MY_ENV1", "V1");
-
-      DockerInterpreterProcess intp = new DockerInterpreterProcess(
-          zconf,
-          "interpreter-container:1.0",
-          "shared_process",
-          "sh",
-          "shell",
-          properties,
-          envs,
-          "zeppelin.server.hostname",
-          "12320",
-          5000);
-
-      file = new File("zeppelin-interpreter-api-0.9.0-SNAPSHOT.jar");
-      if (!file.exists()) {
-        file.createNewFile();
-      }
-      ArrayList<String> jarFiles = intp.findFile("./", "*.jar");
-      assertTrue(jarFiles.size() > 0);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
-    } finally {
-      if (null != file) {
-        file.delete();
-      }
-    }
   }
 }
