@@ -1,4 +1,8 @@
 /*
+ * @Author: curlsli@tencent.com
+ * @LastEditors: curlsli@tencent.com
+ */
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,7 +64,7 @@ export default class TableData extends Dataset {
         } else {
           let valueOfCol;
           if (!(col[0] === '0' || col[0] === '+' || col.length > float64MaxDigits)) {
-            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
+            if (!isNaN(valueOfCol = col) && isFinite(col)) {
               col = valueOfCol;
             }
           }
