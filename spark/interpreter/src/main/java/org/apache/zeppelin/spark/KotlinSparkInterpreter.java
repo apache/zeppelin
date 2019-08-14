@@ -69,7 +69,10 @@ public class KotlinSparkInterpreter extends Interpreter {
     z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
 
     SparkKotlinReceiver ctx = new SparkKotlinReceiver(
-            (SparkSession) sparkInterpreter.getSparkSession(), jsc, z);
+        (SparkSession) sparkInterpreter.getSparkSession(),
+        jsc,
+        sparkInterpreter.getSQLContext(),
+        z);
 
     String cp = sparkClasspath();
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
