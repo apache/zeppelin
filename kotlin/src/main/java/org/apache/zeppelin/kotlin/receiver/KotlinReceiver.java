@@ -1,4 +1,4 @@
-package org.apache.zeppelin.kotlin.context;
+package org.apache.zeppelin.kotlin.receiver;
 
 /**
   The execution context for lines in Kotlin REPL.

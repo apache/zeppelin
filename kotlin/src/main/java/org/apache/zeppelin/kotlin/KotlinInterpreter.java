@@ -15,7 +15,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.kotlin.context.ZeppelinKotlinReceiver;
+import org.apache.zeppelin.kotlin.receiver.ZeppelinKotlinReceiver;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
@@ -33,7 +33,9 @@ public class KotlinInterpreter extends Interpreter {
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
 
     // TODO(dk) figure out why getInterpreterGroup().getInterpreterHookRegistry() NPEs
-    BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(null, maxResult);
+    BaseKotlinZeppelinContext defaultCtx = new BaseKotlinZeppelinContext(
+        null, //getInterpreterGroup().getInterpreterHookRegistry(),
+        maxResult);
     builder.executionContext(new ZeppelinKotlinReceiver(defaultCtx)).maxResult(maxResult);
   }
 
@@ -90,7 +92,7 @@ public class KotlinInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() throws InterpreterException {
-    return FormType.SIMPLE;
+    return FormType.NATIVE;
   }
 
   @Override

@@ -1,4 +1,4 @@
-package org.apache.zeppelin.kotlin.context;
+package org.apache.zeppelin.kotlin.receiver;
 
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 

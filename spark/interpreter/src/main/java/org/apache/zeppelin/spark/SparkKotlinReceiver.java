@@ -3,7 +3,7 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
-import org.apache.zeppelin.kotlin.context.ZeppelinKotlinReceiver;
+import org.apache.zeppelin.kotlin.receiver.ZeppelinKotlinReceiver;
 
 public class SparkKotlinReceiver extends ZeppelinKotlinReceiver {
   public SparkSession spark;
