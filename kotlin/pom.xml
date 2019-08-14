@@ -34,23 +34,26 @@
 
     <properties>
         <interpreter.name>kotlin</interpreter.name>
-        <kotlin-version>1.3-SNAPSHOT</kotlin-version>
+        <kotlin-version>1.3.50-eap-86</kotlin-version>
     </properties>
 
-    <!--<repositories>
+    <repositories>
         <repository>
             <id>bintray-kotlin</id>
             <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
         </repository>
     </repositories>
--->
+
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-scripting-compiler-impl -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-scripting-jvm-host-embeddable</artifactId>
             <version>${kotlin-version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <artifactId>kotlin-stdlib</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.jetbrains.kotlin</groupId>
                     <artifactId>kotlin-stdlib-common</artifactId>
@@ -61,6 +64,12 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-compiler-embeddable</artifactId>
             <version>${kotlin-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <artifactId>kotlin-stdlib</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -86,38 +95,8 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-scripting-common</artifactId>
-            <version>${kotlin-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-            <version>${kotlin-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-script-runtime</artifactId>
-            <version>${kotlin-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-scripting-compiler-impl-embeddable</artifactId>
-            <version>${kotlin-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.intellij.deps</groupId>
-            <artifactId>trove4j</artifactId>
-            <version>1.0.20190514</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
         </dependency>
     </dependencies>
 
