@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import scala.Console;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -66,11 +67,7 @@ public class KotlinInterpreter extends Interpreter {
 
     out.setInterpreterOutput(context.out);
 
-    PrintStream oldOut = System.out;
-    System.setOut(new PrintStream(out));
-    InterpreterResult res = interpreter.eval(st);
-    System.setOut(oldOut);
-    return res;
+    return (InterpreterResult) Console.withOut(out, new RunCodeWithScalaOut(st));
   }
 
   @Override
@@ -115,5 +112,22 @@ public class KotlinInterpreter extends Interpreter {
       }
     }
     return foundJob;
+  }
+
+  class RunCodeWithScalaOut extends scala.runtime.AbstractFunction0<InterpreterResult> {
+
+    RunCodeWithScalaOut(String code) {
+      this.code = code;
+    }
+
+    public String code;
+
+    public InterpreterResult apply() {
+      PrintStream oldOut = System.out;
+      System.setOut(new PrintStream(out));
+      InterpreterResult res = interpreter.eval(code);
+      System.setOut(oldOut);
+      return res;
+    }
   }
 }
