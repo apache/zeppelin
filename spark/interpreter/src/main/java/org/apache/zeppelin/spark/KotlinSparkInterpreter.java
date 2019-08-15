@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.apache.zeppelin.spark.Utils.buildJobDesc;
+import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.Utils;
@@ -45,6 +47,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
   private SparkZeppelinContext z;
+  private JavaSparkContext jsc;
 
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
@@ -56,7 +59,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
-    JavaSparkContext jsc = sparkInterpreter.getJavaSparkContext();
+    jsc = sparkInterpreter.getJavaSparkContext();
     z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
 
     SparkKotlinReceiver ctx = new SparkKotlinReceiver(
@@ -93,11 +96,13 @@ public class KotlinSparkInterpreter extends Interpreter {
     z.setNoteGui(context.getNoteGui());
     InterpreterContext.set(context);
 
+    jsc.setJobGroup(buildJobGroupId(context), buildJobDesc(context), false);
     return interpreter.interpret(st, context);
   }
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
+    jsc.cancelJobGroup(buildJobGroupId(context));
     interpreter.cancel(context);
   }
 
@@ -108,7 +113,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
-    return interpreter.getProgress(context);
+    return sparkInterpreter.getProgress(context);
   }
 
   @Override
