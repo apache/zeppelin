@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
+import org.apache.zeppelin.spark.kotlin.KotlinZeppelinBindings;
 import org.apache.zeppelin.spark.kotlin.SparkKotlinReceiver;
 
 public class KotlinSparkInterpreter extends Interpreter {
@@ -72,7 +73,8 @@ public class KotlinSparkInterpreter extends Interpreter {
     interpreter.getBuilder()
         .executionContext(ctx)
         .compilerOptions(compilerOptions)
-        .outputDir(outputDir);
+        .outputDir(outputDir)
+        .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX);
 
     interpreter.open();
   }
