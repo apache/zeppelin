@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
+import org.apache.zeppelin.spark.kotlin.SparkKotlinReceiver;
 
 public class KotlinSparkInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
@@ -49,34 +50,6 @@ public class KotlinSparkInterpreter extends Interpreter {
     logger.debug("Creating KotlinSparkInterpreter");
     interpreter = new KotlinInterpreter(properties);
   }
-
-  private String sparkClasspath() {
-    String sparkJars = System.getProperty("spark.jars");
-    Pattern isKotlinJar = Pattern.compile("/kotlin-(runtime|stdlib|compiler|reflect)(-.*)?\\.jar");
-
-    Stream<File> addedJars = Arrays.stream(Utils.resolveURIs(sparkJars).split(","))
-        .filter(s -> !s.trim().equals(""))
-        .filter(s -> !isKotlinJar.matcher(s).find())
-        .map(s -> {
-          int p = s.indexOf(':');
-          return new File(s.substring(p + 1));
-        });
-
-    Stream<File> systemJars = Arrays.stream(
-        System.getProperty("java.class.path").split(File.pathSeparator))
-        .map(File::new);
-
-    return Stream.concat(addedJars, systemJars)
-        .map(file -> {
-          try {
-            return file.getCanonicalPath();
-          } catch (IOException e) {
-            return "";
-          }
-        })
-        .collect(Collectors.joining(File.pathSeparator));
-  }
-
 
   @Override
   public void open() throws InterpreterException {
@@ -112,7 +85,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    
+
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
     z.setNoteGui(context.getNoteGui());
@@ -140,5 +113,32 @@ public class KotlinSparkInterpreter extends Interpreter {
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
     return interpreter.completion(buf, cursor, interpreterContext);
+  }
+
+  private String sparkClasspath() {
+    String sparkJars = System.getProperty("spark.jars");
+    Pattern isKotlinJar = Pattern.compile("/kotlin-(runtime|stdlib|compiler|reflect)(-.*)?\\.jar");
+
+    Stream<File> addedJars = Arrays.stream(Utils.resolveURIs(sparkJars).split(","))
+        .filter(s -> !s.trim().equals(""))
+        .filter(s -> !isKotlinJar.matcher(s).find())
+        .map(s -> {
+          int p = s.indexOf(':');
+          return new File(s.substring(p + 1));
+        });
+
+    Stream<File> systemJars = Arrays.stream(
+        System.getProperty("java.class.path").split(File.pathSeparator))
+        .map(File::new);
+
+    return Stream.concat(addedJars, systemJars)
+        .map(file -> {
+          try {
+            return file.getCanonicalPath();
+          } catch (IOException e) {
+            return "";
+          }
+        })
+        .collect(Collectors.joining(File.pathSeparator));
   }
 }

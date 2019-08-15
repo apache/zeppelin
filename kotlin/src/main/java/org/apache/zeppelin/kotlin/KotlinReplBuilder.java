@@ -47,12 +47,14 @@ public class KotlinReplBuilder {
 
   private KotlinReceiver ctx;
   private List<String> compilerOptions;
+  private List<String> codeOnLoad;
   private String outputDir;
   private int maxResult;
 
   public KotlinReplBuilder() {
     this.ctx = new KotlinReceiver();
     this.compilerOptions = new ArrayList<>();
+    this.codeOnLoad = new ArrayList<>();
   }
 
   public KotlinRepl build() {
@@ -68,7 +70,11 @@ public class KotlinReplBuilder {
         buildEvaluationConfiguration(),
         new BasicJvmScriptEvaluator());
 
-    return new KotlinRepl(compiler, evaluator, outputDir, maxResult);
+    KotlinRepl repl = new KotlinRepl(compiler, evaluator, outputDir, maxResult);
+    for (String line: codeOnLoad) {
+      repl.eval(line);
+    }
+    return repl;
   }
 
   public KotlinReplBuilder maxResult(int maxResult) {
@@ -84,6 +90,21 @@ public class KotlinReplBuilder {
   public KotlinReplBuilder compilerOptions(List<String> options) {
     options.forEach(logger::info);
     this.compilerOptions = options;
+    return this;
+  }
+
+  public KotlinReplBuilder codeOnLoad(String code) {
+    this.codeOnLoad.add(code);
+    return this;
+  }
+
+  public KotlinReplBuilder codeOnLoad(List<String> code) {
+    this.codeOnLoad.addAll(code);
+    return this;
+  }
+
+  public KotlinReplBuilder outputDir(String outputDir) {
+    this.outputDir = outputDir;
     return this;
   }
 
@@ -117,9 +138,5 @@ public class KotlinReplBuilder {
 
       return Unit.INSTANCE;
     });
-  }
-
-  public void outputDir(String outputDir) {
-    this.outputDir = outputDir;
   }
 }

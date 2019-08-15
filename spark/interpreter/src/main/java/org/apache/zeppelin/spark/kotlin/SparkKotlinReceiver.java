@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark;
+package org.apache.zeppelin.spark.kotlin;
 
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.kotlin.receiver.ZeppelinKotlinReceiver;
+import org.apache.zeppelin.spark.SparkZeppelinContext;
 
 public class SparkKotlinReceiver extends ZeppelinKotlinReceiver {
   public SparkSession spark;
