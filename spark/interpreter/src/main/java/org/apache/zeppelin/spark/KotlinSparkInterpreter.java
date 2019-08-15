@@ -97,6 +97,8 @@ public class KotlinSparkInterpreter extends Interpreter {
     InterpreterContext.set(context);
 
     jsc.setJobGroup(buildJobGroupId(context), buildJobDesc(context), false);
+    jsc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+
     return interpreter.interpret(st, context);
   }
 
