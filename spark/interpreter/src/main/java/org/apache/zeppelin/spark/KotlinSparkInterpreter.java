@@ -74,7 +74,13 @@ public class KotlinSparkInterpreter extends Interpreter {
     String cp = sparkClasspath();
     List<String> compilerOptions = Arrays.asList("-classpath", cp);
 
-    String outputDir = jsc.getConf().get("spark.repl.class.outputDir");
+    // TODO(dk) fix NPE in tests
+    String outputDir;
+    try {
+      outputDir = jsc.getConf().getOption("spark.repl.class.outputDir").getOrElse(null);
+    } catch (NullPointerException e) {
+      outputDir = null;
+    }
 
     interpreter.getBuilder()
         .executionContext(ctx)
