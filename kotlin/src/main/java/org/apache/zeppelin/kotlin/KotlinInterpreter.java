@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import scala.Console;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -133,16 +132,10 @@ public class KotlinInterpreter extends Interpreter {
     this.out.setInterpreterOutput(out);
 
     PrintStream oldOut = System.out;
-    PrintStream scalaOut = Console.out();
-
     PrintStream newOut = new PrintStream(out);
     System.setOut(newOut);
-    Console.setOut(newOut);
-
     InterpreterResult res = interpreter.eval(code);
-
     System.setOut(oldOut);
-    Console.setOut(scalaOut);
 
     return res;
   }

@@ -26,15 +26,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import scala.Console;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinInterpreter;
@@ -99,7 +102,15 @@ public class KotlinSparkInterpreter extends Interpreter {
     jsc.setJobGroup(buildJobGroupId(context), buildJobDesc(context), false);
     jsc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
 
-    return interpreter.interpret(st, context);
+    InterpreterOutput out = context.out;
+    PrintStream scalaOut = Console.out();
+    PrintStream newOut = (out != null) ? new PrintStream(out) : null;
+
+    Console.setOut(newOut);
+    InterpreterResult result = interpreter.interpret(st, context);
+    Console.setOut(scalaOut);
+
+    return result;
   }
 
   @Override
