@@ -132,7 +132,7 @@ public class KotlinInterpreter extends Interpreter {
     this.out.setInterpreterOutput(out);
 
     PrintStream oldOut = System.out;
-    PrintStream newOut = new PrintStream(out);
+    PrintStream newOut = (out != null) ? new PrintStream(out) : null;
     System.setOut(newOut);
     InterpreterResult res = interpreter.eval(code);
     System.setOut(oldOut);
