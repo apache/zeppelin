@@ -60,7 +60,7 @@ export default class TableData extends Dataset {
         } else {
           let valueOfCol;
           if (!(col[0] === '0' || col[0] === '+' || col.length > float64MaxDigits)) {
-            if (!isNaN(valueOfCol = parseFloat(col)) && isFinite(col)) {
+            if (!isNaN(valueOfCol = col) && isFinite(col)) {
               col = valueOfCol;
             }
           }
