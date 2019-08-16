@@ -20,8 +20,9 @@ package org.apache.zeppelin.kotlin;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
 import static org.junit.Assert.assertEquals;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +44,11 @@ public class KotlinInterpreterTest {
 
   private static volatile String output = "";
 
-  @BeforeClass
-  public static void setUp() throws InterpreterException {
+  @Before
+  public void setUp() throws InterpreterException {
     context = getInterpreterContext();
     interpreter = new KotlinInterpreter(new Properties());
+    output = "";
 
     String cp = System.getProperty("java.class.path") + File.pathSeparator +
         ZeppelinKotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -55,8 +57,8 @@ public class KotlinInterpreterTest {
     interpreter.open();
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @After
+  public void tearDown() {
     interpreter.close();
   }
 
@@ -68,7 +70,7 @@ public class KotlinInterpreterTest {
       value = "";
     } else {
       String message = result.message().get(0).getData().trim();
-      System.err.println(message);
+      System.out.println(message);
       // "res0 : kotlin.Int = 1" -> "kotlin.Int = 1"
       value = message.substring(message.indexOf(':') + 2);
     }
@@ -112,6 +114,31 @@ public class KotlinInterpreterTest {
   public void testOutput() throws Exception {
     testCodeForResult("println(\"Hello Kotlin\")", "");
     assertEquals("Hello Kotlin\n", output);
+  }
+
+  @Test
+  public void testRuntimeError() throws Exception {
+    InterpreterResult result = interpreter.interpret(
+        "throw RuntimeException(\"Error Message\")", context);
+    assertEquals(ERROR, result.code());
+    assertEquals("Error Message", result.message().get(0).getData().trim());
+  }
+
+  @Test
+  public void testCancel() throws Exception {
+    Thread t = new Thread(() -> {
+      try {
+        InterpreterResult result = interpreter.interpret(
+            "repeat(10000000) { Thread.sleep(100) }", context);
+        assertEquals(ERROR, result.code());
+        assertEquals("sleep interrupted", result.message().get(0).getData().trim());
+      } catch (InterpreterException e) {
+        Assert.fail(e.getMessage());
+      }
+    });
+    t.start();
+    Thread.sleep(200);
+    interpreter.cancel(context);
   }
 
   private static InterpreterContext getInterpreterContext() {
