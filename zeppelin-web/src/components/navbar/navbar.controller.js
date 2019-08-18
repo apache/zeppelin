@@ -47,6 +47,16 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
       });
   }
 
+  function getClusterAddr() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/cluster/address').success(
+      function(data, status, headers, config) {
+        $rootScope.clusterAddr = data.body.clusterAddr;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
   function initController() {
     $scope.isDrawNavbarNoteList = false;
     angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
@@ -56,6 +66,7 @@ function NavCtrl($scope, $rootScope, $http, $routeParams, $location,
     });
 
     getZeppelinVersion();
+    getClusterAddr();
     loadNotes();
   }
 

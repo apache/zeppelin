@@ -129,7 +129,9 @@ public class SparkShimsTest {
 
     @Test
     public void runUnderLocalTest() {
-      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockContext);
+      Properties properties = new Properties();
+      properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, properties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
@@ -138,8 +140,9 @@ public class SparkShimsTest {
 
     @Test
     public void runUnderYarnTest() {
-
-      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockContext);
+      Properties properties = new Properties();
+      properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, properties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));

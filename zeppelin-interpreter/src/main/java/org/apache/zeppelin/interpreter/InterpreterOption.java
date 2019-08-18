@@ -19,6 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gson.Gson;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 /**

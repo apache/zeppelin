@@ -45,6 +45,7 @@ import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -105,10 +106,12 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
-  private static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
+  public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
-  private static String  PARAGRAPH_CONFIG_TITLE = "title";
+  public static String  PARAGRAPH_CONFIG_TITLE = "title";
   private static boolean PARAGRAPH_CONFIG_TITLE_DEFAULT = false;
+  public static String  PARAGRAPH_CONFIG_CHECK_EMTPY = "checkEmpty";
+  private static boolean PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT = true;
 
   @VisibleForTesting
   Paragraph() {
@@ -343,12 +346,58 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return null;
   }
 
-  public boolean isBlankParagraph() {
+  public boolean shouldSkipRunParagraph() {
+    // Because the user can arbitrarily specify the paragraph's interpreter
+    // So need to determine the configuration of the interpreter
+    // and the secondary interpreter at runtime.
+    Map<String, Object> intpConfig = this.config;
+
+    if (!StringUtils.isBlank(intpText)) {
+      String[] intpList = intpText.split("\\.");
+      if (intpList.length > 0) {
+        InterpreterSettingManager intpSettingManager = note.getInterpreterSettingManager();
+        String intpName = intpList[0];
+        try {
+          InterpreterSetting intpSetting = intpSettingManager.getInterpreterSettingByName(intpName);
+          String intpInfoName = intpName; // e.g %sh
+
+          // e.g %sh.terminal
+          if (intpList.length == 2) {
+            intpInfoName = intpList[1];
+          }
+          InterpreterInfo interpreterInfo = intpSetting.getInterpreterInfo(intpInfoName);
+          if (null != interpreterInfo && null != interpreterInfo.getConfig()) {
+            intpConfig = interpreterInfo.getConfig();
+          }
+        } catch (RuntimeException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    // check interpreter-setting.json `config.checkEmpty` is equal false
+    Object configCheckEmpty = intpConfig.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
+    if (null != configCheckEmpty) {
+      boolean checkEmtpy = PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT;
+      try {
+        checkEmtpy = (boolean) configCheckEmpty;
+      } catch (ClassCastException e) {
+        LOGGER.error(e.getMessage(), e);
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+      if (!checkEmtpy) {
+        LOGGER.info("This interpreter config `interpreter-setting.json` set config.{} = false", 
+            PARAGRAPH_CONFIG_CHECK_EMTPY);
+        return false;
+      }
+    }
+
     return Strings.isNullOrEmpty(scriptText);
   }
 
   public boolean execute(boolean blocking) {
-    if (isBlankParagraph()) {
+    if (shouldSkipRunParagraph()) {
       LOGGER.info("Skip to run blank paragraph. {}", getId());
       setStatus(Job.Status.FINISHED);
       return true;
@@ -377,10 +426,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
     } catch (InterpreterNotFoundException e) {
       InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR);
+          new InterpreterResult(InterpreterResult.Code.ERROR,
+                  String.format("Interpreter %s not found", this.intpText));
       setReturn(intpResult, e);
       setStatus(Job.Status.ERROR);
-      throw new RuntimeException(e);
+      return false;
     }
   }
 
@@ -478,7 +528,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
               String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
               Map<String, Object> config
                       = intpSettingManager.getConfigSetting(name);
-              applyConfigSetting(config);
+              mergeConfig(config);
             }
           }
         }
@@ -601,10 +651,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return config;
   }
 
+  // NOTE: function setConfig(...) will overwrite all configuration
+  // Merge configuration, you need to use function mergeConfig(...)
   public void setConfig(Map<String, Object> config) {
     this.config = config;
   }
 
+  // [ZEPPELIN-3919] Paragraph config default value can be customized
   // apply the `interpreter-setting.json` config
   // When creating a paragraph, it will update some of the configuration
   // parameters of the paragraph from the web side.
@@ -615,13 +668,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // 2. The user manually modified the  interpreter types of this paragraph.
   //    Need to delete the existing configuration of this paragraph,
   //    update with the specified interpreter configuration
-  public void applyConfigSetting(Map<String, Object> newConfig) {
+  public void mergeConfig(Map<String, Object> newConfig) {
     if (null == newConfig || 0 == newConfig.size()) {
       newConfig = getDefaultConfigSetting();
     }
 
     List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
-        PARAGRAPH_CONFIG_TITLE);
+        PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_CHECK_EMTPY);
     for (String removeKey : keysToRemove) {
       if ((false == newConfig.containsKey(removeKey))
           && (true == config.containsKey(removeKey))) {
@@ -637,6 +690,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     Map<String, Object> config = new HashMap<>();
     config.put(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT);
     config.put(PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_TITLE_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_CHECK_EMTPY, PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT);
 
     return config;
   }

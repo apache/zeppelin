@@ -237,7 +237,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   $scope.isTrash = function(note) {
-    return note ? note.name.split('/')[0] === TRASH_FOLDER_ID : false;
+    return note ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
   };
 
   // Export notebook
@@ -304,7 +304,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
       message: 'Set notebook head to current revision?',
       callback: function(result) {
         if (result) {
-          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.name, $routeParams.revisionId);
+          websocketMsgSrv.setNoteRevision($routeParams.noteId, $routeParams.revisionId);
         }
       },
     });

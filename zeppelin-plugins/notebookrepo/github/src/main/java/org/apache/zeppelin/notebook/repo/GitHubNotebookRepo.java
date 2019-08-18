@@ -61,6 +61,7 @@ public class GitHubNotebookRepo extends GitNotebookRepo {
 
     configureRemoteStream();
     pullFromRemoteStream();
+    pushToRemoteSteam();
   }
 
   @Override

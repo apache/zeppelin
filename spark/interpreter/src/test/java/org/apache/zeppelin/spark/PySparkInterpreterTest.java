@@ -27,7 +27,6 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
-import org.apache.zeppelin.python.PythonInterpreter;
 import org.apache.zeppelin.python.PythonInterpreterTest;
 import org.junit.Test;
 
@@ -55,7 +54,6 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.pyspark.python", "python");
     properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     properties.setProperty("zeppelin.pyspark.useIPython", "false");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
@@ -107,7 +105,6 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     intpGroup = new InterpreterGroup();
 
     Properties properties = new Properties();
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("spark.app.name", "Zeppelin Test");
     properties.setProperty("spark.pyspark.python", "invalid_python");
     properties.setProperty("zeppelin.python.useIPython", "false");

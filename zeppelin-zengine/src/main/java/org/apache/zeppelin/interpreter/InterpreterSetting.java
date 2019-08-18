@@ -20,11 +20,16 @@ package org.apache.zeppelin.interpreter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.StringMap;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -49,9 +54,12 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +103,7 @@ public class InterpreterSetting {
    */
   private Object properties = new Properties();
 
-  private Status status;
+  private Status status = Status.READY;
   private String errorReason;
 
   @SerializedName("interpreterGroup")
@@ -130,6 +138,8 @@ public class InterpreterSetting {
   private transient LifecycleManager lifecycleManager;
   private transient RecoveryStorage recoveryStorage;
   private transient RemoteInterpreterEventServer interpreterEventServer;
+
+  public static final String CLUSTER_INTERPRETER_LAUNCHER_NAME = "ClusterInterpreterLauncher";
   ///////////////////////////////////////////////////////////////////////////////////////////
 
   /**
@@ -255,7 +265,6 @@ public class InterpreterSetting {
   }
 
   void postProcessing() {
-    this.status = Status.READY;
     this.id = this.name;
     if (this.lifecycleManager == null) {
       this.lifecycleManager = new NullLifecycleManager(conf);
@@ -358,6 +367,18 @@ public class InterpreterSetting {
     return this;
   }
 
+  public InterpreterInfo getInterpreterInfo(String name) {
+    Iterator it = this.interpreterInfos.iterator();
+    while (it.hasNext()) {
+      InterpreterInfo info = (InterpreterInfo) it.next();
+      if (StringUtils.equals(info.getName(), name)) {
+        return info;
+      }
+    }
+
+    return null;
+  }
+
   public RecoveryStorage getRecoveryStorage() {
     return recoveryStorage;
   }
@@ -368,6 +389,10 @@ public class InterpreterSetting {
 
   public String getId() {
     return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 
   public String getName() {
@@ -631,6 +656,7 @@ public class InterpreterSetting {
   }
 
   public void setStatus(Status status) {
+    LOGGER.info(String.format("Set interpreter %s status to %s", name, status.name()));
     this.status = status;
   }
 
@@ -657,6 +683,10 @@ public class InterpreterSetting {
   public String getLauncherPlugin() {
     if (isRunningOnKubernetes()) {
       return "K8sStandardInterpreterLauncher";
+    } else if (isRunningOnCluster()) {
+      return InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME;
+    } if (isRunningOnDocker()) {
+      return "DockerInterpreterLauncher";
     } else {
       if (group.equals("spark")) {
         return "SparkInterpreterLauncher";
@@ -668,6 +698,15 @@ public class InterpreterSetting {
 
   private boolean isRunningOnKubernetes() {
     return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.K8S;
+  }
+
+
+  private boolean isRunningOnCluster() {
+    return conf.isClusterMode();
+  }
+
+  private boolean isRunningOnDocker() {
+    return conf.getRunMode() == ZeppelinConfiguration.RUN_MODE.DOCKER;
   }
 
   public boolean isUserAuthorized(List<String> userAndRoles) {
@@ -828,6 +867,7 @@ public class InterpreterSetting {
           // load dependencies
           List<Dependency> deps = getDependencies();
           if (deps != null) {
+            LOGGER.info("Start to download dependencies for interpreter: " + name);
             for (Dependency d : deps) {
               File destDir = new File(
                   conf.getRelativeDir(ZeppelinConfiguration.ConfVars.ZEPPELIN_DEP_LOCALREPO));
@@ -840,6 +880,7 @@ public class InterpreterSetting {
                     .load(d.getGroupArtifactVersion(), new File(destDir, id));
               }
             }
+            LOGGER.info("Finish downloading dependencies for interpreter: " + name);
           }
 
           setStatus(Status.READY);
@@ -956,5 +997,106 @@ public class InterpreterSetting {
 
   public void waitForReady() throws InterpreterException {
     waitForReady(Long.MAX_VALUE);
+  }
+
+  public static String toJson(InterpreterSetting intpSetting) {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    StringWriter stringWriter = new StringWriter();
+    JsonWriter jsonWriter = new JsonWriter(stringWriter);
+    try {
+      // id
+      jsonWriter.beginObject();
+      jsonWriter.name("id");
+      jsonWriter.value(intpSetting.getId());
+
+      // name
+      jsonWriter.name("name");
+      jsonWriter.value(intpSetting.getName());
+
+      // group
+      jsonWriter.name("group");
+      jsonWriter.value(intpSetting.getGroup());
+
+      // dependencies
+      jsonWriter.name("dependencies");
+      String jsonDep = gson.toJson(intpSetting.getDependencies(), new TypeToken<List<Dependency>>() {
+      }.getType());
+      jsonWriter.value(jsonDep);
+
+      // properties
+      jsonWriter.name("properties");
+      String jsonProps = gson.toJson(intpSetting.getProperties(), new TypeToken<Map<String, InterpreterProperty>>() {
+      }.getType());
+      jsonWriter.value(jsonProps);
+
+      // interpreterOption
+      jsonWriter.name("interpreterOption");
+      String jsonOption = gson.toJson(intpSetting.getOption(), new TypeToken<InterpreterOption>() {
+      }.getType());
+      jsonWriter.value(jsonOption);
+
+      // interpreterGroup
+      jsonWriter.name("interpreterGroup");
+      String jsonIntpInfos = gson.toJson(intpSetting.getInterpreterInfos(), new TypeToken<List<InterpreterInfo>>() {
+      }.getType());
+      jsonWriter.value(jsonIntpInfos);
+
+      jsonWriter.endObject();
+      jsonWriter.flush();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    return stringWriter.getBuffer().toString();
+  }
+
+  public static InterpreterSetting fromJson(String json) {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    StringReader stringReader = new StringReader(json);
+    JsonReader jsonReader = new JsonReader(stringReader);
+    InterpreterSetting intpSetting = new InterpreterSetting();
+    try {
+      jsonReader.beginObject();
+      while (jsonReader.hasNext()) {
+        String tag = jsonReader.nextName();
+        if (tag.equals("id")) {
+          String id = jsonReader.nextString();
+          intpSetting.setId(id);
+        } else if (tag.equals("name")) {
+          String name = jsonReader.nextString();
+          intpSetting.setName(name);
+        } else if (tag.equals("group")) {
+          String group = jsonReader.nextString();
+          intpSetting.setGroup(group);
+        } else if (tag.equals("dependencies")) {
+          String strDep = jsonReader.nextString();
+          List<Dependency> dependencies = gson.fromJson(strDep, new TypeToken<List<Dependency>>() {}.getType());
+          intpSetting.setDependencies(dependencies);
+        } else if (tag.equals("properties")) {
+          String strProp = jsonReader.nextString();
+          Map<String, InterpreterProperty> properties = gson.fromJson(strProp,
+              new TypeToken<Map<String, InterpreterProperty>>() {}.getType());
+          intpSetting.setProperties(properties);
+        } else if (tag.equals("interpreterOption")) {
+          String strOption = jsonReader.nextString();
+          InterpreterOption intpOption = gson.fromJson(strOption, new TypeToken<InterpreterOption>() {}.getType());
+          intpSetting.setOption(intpOption);
+        } else if (tag.equals("interpreterGroup")) {
+          String strIntpInfos = jsonReader.nextString();
+          List<InterpreterInfo> intpInfos = gson.fromJson(strIntpInfos, new TypeToken<List<InterpreterInfo>>() {}.getType());
+          intpSetting.setInterpreterInfos(intpInfos);
+        } else {
+          LOGGER.error("Error data type!");
+        }
+      }
+      jsonReader.endObject();
+      jsonReader.close();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+
+    return intpSetting;
   }
 }

@@ -189,6 +189,10 @@ public class InterpreterContext {
     return paragraphId;
   }
 
+  public void setParagraphId(String paragraphId) {
+    this.paragraphId = paragraphId;
+  }
+
   public String getParagraphText() {
     return paragraphText;
   }

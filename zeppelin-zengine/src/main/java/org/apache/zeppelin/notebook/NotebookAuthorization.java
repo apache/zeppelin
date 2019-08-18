@@ -378,7 +378,7 @@ public class NotebookAuthorization implements NoteEventListener {
       }
     }).toList();
   }
-  
+
   public void setNewNotePermissions(String noteId, AuthenticationInfo subject) {
     if (!AuthenticationInfo.isAnonymous(subject)) {
       if (isPublic()) {
@@ -391,12 +391,15 @@ public class NotebookAuthorization implements NoteEventListener {
         Set<String> entities = getOwners(noteId);
         entities.add(subject.getUser());
         setOwners(noteId, entities);
+
         entities = getReaders(noteId);
         entities.add(subject.getUser());
         setReaders(noteId, entities);
+
         entities = getRunners(noteId);
         entities.add(subject.getUser());
         setRunners(noteId, entities);
+
         entities = getWriters(noteId);
         entities.add(subject.getUser());
         setWriters(noteId, entities);

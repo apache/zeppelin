@@ -20,6 +20,12 @@
 <configuration>
 
 <property>
+  <name>zeppelin.cluster.addr</name>
+  <value></value>
+  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
+</property>
+
+<property>
   <name>zeppelin.server.addr</name>
   <value>0.0.0.0</value>
   <description>Server address</description>
@@ -310,7 +316,7 @@
 
 <property>
   <name>zeppelin.interpreter.dep.mvnRepo</name>
-  <value>http://repo1.maven.org/maven2/</value>
+  <value>https://repo1.maven.org/maven2/</value>
   <description>Remote principal repository for interpreter's additional dependency loading</description>
 </property>
 
@@ -328,7 +334,7 @@
 
 <property>
   <name>zeppelin.helium.npm.installer.url</name>
-  <value>http://registry.npmjs.org/</value>
+  <value>https://registry.npmjs.org/</value>
   <description>Remote Npm installer url for Helium dependency loader</description>
 </property>
 
@@ -610,7 +616,7 @@
 <property>
   <name>zeppelin.run.mode</name>
   <value>auto</value>
-  <description>'auto|local|k8s'</description>
+  <description>'auto|local|k8s|docker'</description>
 </property>
 
 <property>
@@ -636,4 +642,11 @@
   <value>k8s</value>
   <description>Kubernetes yaml spec files</description>
 </property>
+
+  <property>
+    <name>zeppelin.docker.container.image</name>
+    <value>apache/zeppelin:0.8.0</value>
+    <description>Docker image for interpreters</description>
+  </property>
+
 </configuration>

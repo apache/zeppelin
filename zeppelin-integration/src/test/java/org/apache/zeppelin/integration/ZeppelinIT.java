@@ -77,7 +77,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * print angular template
        * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
        */
-      setTextOfParagraph(1, "println(\"%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>\")");
+      setTextOfParagraph(1, "%angular <div id=\\'angularTestButton\\' ng-click=\\'myVar=myVar+1\\'>BindingTest_{{myVar}}_</div>");
       runParagraph(1);
       waitForParagraph(1, "FINISHED");
 
@@ -322,5 +322,33 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       handleException("Exception in ZeppelinIT while testAngularRunParagraph", e);
     }
 
+  }
+
+  @Test
+  public void deleteTrashNode() throws Exception {
+    try {
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      String currentUrl = driver.getCurrentUrl();
+      LOG.info("currentUrl = " + currentUrl);
+
+      //delete created notebook to trash
+      deleteTestNotebook(driver);
+      ZeppelinITUtils.sleep(3000, false);
+
+      // reopen trash note
+      driver.get(currentUrl);
+      ZeppelinITUtils.sleep(3000, false);
+
+      // delete note from trash
+      deleteTrashNotebook(driver);
+      ZeppelinITUtils.sleep(2000, false);
+      LOG.info("deleteTrashNode executed");
+    }  catch (Exception e) {
+      handleException("Exception in ZeppelinIT while deleteTrashNode", e);
+    }
   }
 }

@@ -156,6 +156,13 @@ public class NotebookService {
     }
   }
 
+  /**
+   * normalize both note name and note folder
+   *
+   * @param notePath
+   * @return
+   * @throws IOException
+   */
   String normalizeNotePath(String notePath) throws IOException {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
@@ -305,7 +312,7 @@ public class NotebookService {
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
@@ -315,7 +322,7 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      boolean result = note.run(p.getId(), blocking);
+      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {
@@ -446,7 +453,7 @@ public class NotebookService {
       throw new NoteNotFoundException(noteId);
     }
     Paragraph newPara = note.insertNewParagraph(index, context.getAutheInfo());
-    newPara.setConfig(config);
+    newPara.mergeConfig(config);
     notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(newPara, context);
     return newPara;
@@ -949,7 +956,8 @@ public class NotebookService {
     //TODO(zjffdu) folder permission check
 
     try {
-      notebook.moveFolder(folderPath, newFolderPath, context.getAutheInfo());
+      notebook.moveFolder(normalizeNotePath(folderPath),
+              normalizeNotePath(newFolderPath), context.getAutheInfo());
       List<NoteInfo> notesInfo = notebook.getNotesInfo(
               noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);

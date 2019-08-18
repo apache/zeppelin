@@ -43,7 +43,7 @@ import org.apache.zeppelin.python.proto.IPythonStatus;
 import org.apache.zeppelin.python.proto.StatusRequest;
 import org.apache.zeppelin.python.proto.StatusResponse;
 import org.apache.zeppelin.python.proto.StopRequest;
-import org.apache.zeppelin.util.ProcessLauncher;
+import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
@@ -214,7 +214,7 @@ public class IPythonInterpreter extends Interpreter {
         .setCode(StringUtils.join(lines, System.lineSeparator())
             .replace("${JVM_GATEWAY_PORT}", jvmGatewayPort + "")
             .replace("${JVM_GATEWAY_ADDRESS}", serverAddress)).build());
-    if (response.getStatus() == ExecuteStatus.ERROR) {
+    if (response.getStatus() != ExecuteStatus.SUCCESS) {
       throw new IOException("Fail to setup JVMGateway\n" + response.getOutput());
     }
 
@@ -223,14 +223,14 @@ public class IPythonInterpreter extends Interpreter {
     lines = IOUtils.readLines(input);
     response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
         .setCode(StringUtils.join(lines, System.lineSeparator())).build());
-    if (response.getStatus() == ExecuteStatus.ERROR) {
+    if (response.getStatus() != ExecuteStatus.SUCCESS) {
       throw new IOException("Fail to import ZeppelinContext\n" + response.getOutput());
     }
 
     response = ipythonClient.block_execute(ExecuteRequest.newBuilder()
         .setCode("z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)")
         .build());
-    if (response.getStatus() == ExecuteStatus.ERROR) {
+    if (response.getStatus() != ExecuteStatus.SUCCESS) {
       throw new IOException("Fail to setup ZeppelinContext\n" + response.getOutput());
     }
 
@@ -241,7 +241,7 @@ public class IPythonInterpreter extends Interpreter {
           .setCode(StringUtils.join(lines, System.lineSeparator())
               .replace("${JVM_GATEWAY_PORT}", jvmGatewayPort + "")
               .replace("${JVM_GATEWAY_ADDRESS}", serverAddress)).build());
-      if (response.getStatus() == ExecuteStatus.ERROR) {
+      if (response.getStatus() != ExecuteStatus.SUCCESS) {
         throw new IOException("Fail to run additional Python init file: "
             + additionalPythonInitFile + "\n" + response.getOutput());
       }
@@ -390,7 +390,7 @@ public class IPythonInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
-    LOGGER.debug("Call completion for: " + buf);
+    LOGGER.debug("Call completion for: " + buf + ", cursor: " + cursor);
     List<InterpreterCompletion> completions = new ArrayList<>();
     CompletionResponse response =
         ipythonClient.complete(
@@ -402,6 +402,7 @@ public class IPythonInterpreter extends Interpreter {
       if (lastIndexOfDot != -1) {
         match = match.substring(lastIndexOfDot + 1);
       }
+      LOGGER.debug("Candidate completion: " + match);
       completions.add(new InterpreterCompletion(match, match, ""));
     }
     return completions;

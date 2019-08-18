@@ -85,6 +85,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static String zeppelinShiroKnox =
@@ -108,6 +109,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static File knoxSsoPem = null;
@@ -177,7 +179,7 @@ public abstract class AbstractTestRestApi {
           throws Exception {
     LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
         withAuth, testClassName, withKnox);
-    
+
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -209,6 +211,7 @@ public abstract class AbstractTestRestApi {
 
       LOG.info("Staring test Zeppelin up...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      LOG.info("zconf.getClusterAddress() = {}", conf.getClusterAddress());
 
       if (withAuth) {
         isRunningWithAuth = true;
@@ -257,11 +260,11 @@ public abstract class AbstractTestRestApi {
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
     start(true, testClassName, true, true);
   }
-  
+
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
     start(true, testClassName, false, true);
   }
-  
+
   protected static void startUp(String testClassName) throws Exception {
     start(false, testClassName, false, true);
   }
@@ -316,7 +319,7 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-      
+
       if (isRunningWithAuth) {
         isRunningWithAuth = false;
         System
@@ -354,7 +357,7 @@ public abstract class AbstractTestRestApi {
   protected static GetMethod httpGet(String path) throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
-  
+
   protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
@@ -464,7 +467,7 @@ public abstract class AbstractTestRestApi {
     }
     return true;
   }
-  
+
   protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
     return new TypeSafeMatcher<HttpMethodBase>() {
       WeakReference<HttpMethodBase> method;

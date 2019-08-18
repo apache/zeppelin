@@ -31,6 +31,7 @@ import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -40,7 +41,10 @@ import org.apache.zeppelin.helium.HeliumApplicationFactory;
 import org.apache.zeppelin.helium.HeliumBundleFactory;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
@@ -50,6 +54,7 @@ import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.scheduler.NoSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
 import org.apache.zeppelin.notebook.scheduler.SchedulerService;
+import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.rest.exception.WebApplicationExceptionMapper;
 import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.search.SearchService;
@@ -57,6 +62,7 @@ import org.apache.zeppelin.service.*;
 import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.util.ReflectionUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
@@ -93,10 +99,10 @@ public class ZeppelinServer extends ResourceConfig {
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
 
+  private static ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
   @Inject
   public ZeppelinServer() {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
 
     packages("org.apache.zeppelin.rest");
@@ -185,6 +191,9 @@ public class ZeppelinServer extends ResourceConfig {
 
     // Notebook server
     setupNotebookServer(webApp, conf, sharedServiceLocator);
+
+    // Cluster Manager Server
+    setupClusterManagerServer(sharedServiceLocator);
 
     // JMX Enable
     Stream.of("ZEPPELIN_JMX_ENABLE")
@@ -343,6 +352,38 @@ public class ZeppelinServer extends ResourceConfig {
     final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
+  }
+
+  private static void setupClusterManagerServer(ServiceLocator serviceLocator) {
+    if (conf.isClusterMode()) {
+      ClusterManagerServer clusterManagerServer = ClusterManagerServer.getInstance();
+
+      NotebookServer notebookServer = serviceLocator.getService(NotebookServer.class);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_NOTE_EVENT_TOPIC, notebookServer);
+
+      AuthorizationService authorizationService = serviceLocator.getService(AuthorizationService.class);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, authorizationService);
+
+      InterpreterSettingManager interpreterSettingManager = serviceLocator.getService(InterpreterSettingManager.class);
+      clusterManagerServer.addClusterEventListeners(ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC, interpreterSettingManager);
+
+      // Since the ClusterInterpreterLauncher is lazy, dynamically generated, So in cluster mode,
+      // when the zeppelin service starts, Create a ClusterInterpreterLauncher object,
+      // This allows the ClusterInterpreterLauncher to listen for cluster events.
+      try {
+        InterpreterSettingManager intpSettingManager = sharedServiceLocator.getService(InterpreterSettingManager.class);
+        RecoveryStorage recoveryStorage = ReflectionUtils.createClazzInstance(
+                conf.getRecoveryStorageClass(),
+                new Class[] {ZeppelinConfiguration.class, InterpreterSettingManager.class},
+                new Object[] {conf, intpSettingManager});
+        recoveryStorage.init();
+        PluginManager.get().loadInterpreterLauncher(InterpreterSetting.CLUSTER_INTERPRETER_LAUNCHER_NAME, recoveryStorage);
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
+      }
+
+      clusterManagerServer.start();
+    }
   }
 
   private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf) {

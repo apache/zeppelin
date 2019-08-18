@@ -77,7 +77,7 @@ public class Booter {
       mvnRepo = System.getProperty("zeppelin.interpreter.dep.mvnRepo");
     }
     if (mvnRepo == null) {
-      mvnRepo = "http://repo1.maven.org/maven2/";
+      mvnRepo = "https://repo1.maven.org/maven2/";
     }
 
     return new RemoteRepository("central", "default", mvnRepo);

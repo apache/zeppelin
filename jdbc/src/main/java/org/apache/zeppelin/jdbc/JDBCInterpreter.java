@@ -409,7 +409,7 @@ public class JDBCInterpreter extends KerberosInterpreter {
     final String maxConnectionLifetime =
         StringUtils.defaultIfEmpty(getProperty("zeppelin.jdbc.maxConnLifetime"), "-1");
     poolableConnectionFactory.setMaxConnLifetimeMillis(Long.parseLong(maxConnectionLifetime));
-
+    poolableConnectionFactory.setValidationQuery("show databases");
     ObjectPool connectionPool = new GenericObjectPool(poolableConnectionFactory);
 
     poolableConnectionFactory.setPool(connectionPool);
@@ -710,9 +710,13 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
     try {
       List<String> sqlArray;
+      sql = sql.trim();
       if (splitQuery) {
         sqlArray = splitSqlQueries(sql);
       } else {
+        if (sql.endsWith(";")) {
+          sql = sql.substring(0, sql.length() - 1);
+        }
         sqlArray = Arrays.asList(sql);
       }
 

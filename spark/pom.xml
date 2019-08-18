@@ -16,9 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -44,8 +43,10 @@
         <!--plugin versions-->
         <plugin.scala.version>2.15.2</plugin.scala.version>
         <!-- spark versions -->
-        <spark.version>2.2.0</spark.version>
-        <py4j.version>0.10.4</py4j.version>
+        <spark.version>2.2.3</spark.version>
+        <spark.scala.version>2.11.12</spark.scala.version>
+        <spark.scala.binary.version>2.11</spark.scala.binary.version>
+        <py4j.version>0.10.7</py4j.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.src.download.url>
@@ -61,6 +62,7 @@
         <module>spark-scala-parent</module>
         <module>scala-2.10</module>
         <module>scala-2.11</module>
+        <module>scala-2.12</module>
         <module>spark-dependencies</module>
         <module>spark-shims</module>
         <module>spark1-shims</module>
@@ -82,13 +84,6 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -115,24 +110,6 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>${plugin.clean.version}</version>
                 <configuration combine.self="override"></configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <configuration>
-                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    <junitxml>.</junitxml>
-                    <filereports>WDF TestSuite.txt</filereports>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -189,22 +166,49 @@
 
     <profiles>
 
+        <!-- profile spark-scala-x only affect the unit test in spark/interpreter module -->
+
         <profile>
-            <id>spark-2.4</id>
+            <id>spark-scala-2.12</id>
             <properties>
-                <spark.version>2.4.0</spark.version>
-                <protobuf.version>2.5.0</protobuf.version>
-                <py4j.version>0.10.7</py4j.version>
+                <spark.scala.version>2.12.7</spark.scala.version>
+                <spark.scala.binary.version>2.12</spark.scala.binary.version>
             </properties>
+        </profile>
+
+        <profile>
+            <id>spark-scala-2.11</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <properties>
+                <spark.scala.version>2.11.12</spark.scala.version>
+                <spark.scala.binary.version>2.11</spark.scala.binary.version>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>spark-scala-2.10</id>
+            <properties>
+                <spark.scala.version>2.10.5</spark.scala.version>
+                <spark.scala.binary.version>2.10</spark.scala.binary.version>
+            </properties>
+        </profile>
+
+        <!-- profile spark-x only affect the embedded spark version in zeppelin distribution -->
+        <profile>
+            <id>spark-2.4</id>
+            <properties>
+                <spark.version>2.4.3</spark.version>
+                <protobuf.version>2.5.0</protobuf.version>
+                <py4j.version>0.10.7</py4j.version>
+            </properties>
         </profile>
 
         <profile>
             <id>spark-2.3</id>
             <properties>
-                <spark.version>2.3.2</spark.version>
+                <spark.version>2.3.3</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.7</py4j.version>
             </properties>
@@ -212,9 +216,12 @@
 
         <profile>
             <id>spark-2.2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
-                <spark.version>2.2.1</spark.version>
-                <py4j.version>0.10.4</py4j.version>
+                <spark.version>2.2.3</spark.version>
+                <py4j.version>0.10.7</py4j.version>
             </properties>
         </profile>
 

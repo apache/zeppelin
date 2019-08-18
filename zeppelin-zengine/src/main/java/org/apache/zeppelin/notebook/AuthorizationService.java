@@ -20,7 +20,13 @@ package org.apache.zeppelin.notebook;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
+import org.apache.zeppelin.cluster.event.ClusterEvent;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
+import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
@@ -37,7 +43,7 @@ import java.util.Set;
  * This class is responsible for maintain notes authorization info. And provide api for
  * setting and querying note authorization info.
  */
-public class AuthorizationService {
+public class AuthorizationService implements ClusterEventListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
   private static final Set<String> EMPTY_SET = new HashSet<>();
@@ -66,21 +72,41 @@ public class AuthorizationService {
   }
 
   public void setOwners(String noteId, Set<String> entities) {
+    inlineSetOwners(noteId, entities);
+    broadcastClusterEvent(ClusterEvent.SET_OWNERS_PERMISSIONS, noteId, null, entities);
+  }
+
+  private void inlineSetOwners(String noteId, Set<String> entities) {
     entities = validateUser(entities);
     notebook.getNote(noteId).setOwners(entities);
   }
 
   public void setReaders(String noteId, Set<String> entities) {
+    inlineSetReaders(noteId, entities);
+    broadcastClusterEvent(ClusterEvent.SET_READERS_PERMISSIONS, noteId, null, entities);
+  }
+
+  private void inlineSetReaders(String noteId, Set<String> entities) {
     entities = validateUser(entities);
     notebook.getNote(noteId).setReaders(entities);
   }
 
   public void setRunners(String noteId, Set<String> entities) {
+    inlineSetRunners(noteId, entities);
+    broadcastClusterEvent(ClusterEvent.SET_RUNNERS_PERMISSIONS, noteId, null, entities);
+  }
+
+  private void inlineSetRunners(String noteId, Set<String> entities) {
     entities = validateUser(entities);
     notebook.getNote(noteId).setRunners(entities);
   }
 
   public void setWriters(String noteId, Set<String> entities) {
+    inlineSetWriters(noteId, entities);
+    broadcastClusterEvent(ClusterEvent.SET_WRITERS_PERMISSIONS, noteId, null, entities);
+  }
+
+  private void inlineSetWriters(String noteId, Set<String> entities) {
     entities = validateUser(entities);
     notebook.getNote(noteId).setWriters(entities);
   }
@@ -211,6 +237,11 @@ public class AuthorizationService {
   }
 
   public void setRoles(String user, Set<String> roles) {
+    inlineSetRoles(user, roles);
+    broadcastClusterEvent(ClusterEvent.SET_ROLES, null, user, roles);
+  }
+
+  private void inlineSetRoles(String user, Set<String> roles) {
     if (StringUtils.isBlank(user)) {
       LOGGER.warn("Setting roles for empty user");
       return;
@@ -241,9 +272,73 @@ public class AuthorizationService {
   }
 
   public void clearPermission(String noteId) {
+    inlineClearPermission(noteId);
+    broadcastClusterEvent(ClusterEvent.CLEAR_PERMISSION, noteId, null, null);
+  }
+
+  public void inlineClearPermission(String noteId) {
     notebook.getNote(noteId).setReaders(Sets.newHashSet());
     notebook.getNote(noteId).setRunners(Sets.newHashSet());
     notebook.getNote(noteId).setWriters(Sets.newHashSet());
     notebook.getNote(noteId).setOwners(Sets.newHashSet());
+  }
+
+  @Override
+  public void onClusterEvent(String msg) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("onClusterEvent : {}", msg);
+    }
+
+    ClusterMessage message = ClusterMessage.deserializeMessage(msg);
+
+    String noteId = message.get("noteId");
+    String user = message.get("user");
+    String jsonSet = message.get("set");
+    Gson gson = new Gson();
+    Set<String> set  = gson.fromJson(jsonSet, new TypeToken<Set<String>>() {
+    }.getType());
+
+    switch (message.clusterEvent) {
+      case SET_READERS_PERMISSIONS:
+        inlineSetReaders(noteId, set);
+        break;
+      case SET_WRITERS_PERMISSIONS:
+        inlineSetWriters(noteId, set);
+        break;
+      case SET_OWNERS_PERMISSIONS:
+        inlineSetOwners(noteId, set);
+        break;
+      case SET_RUNNERS_PERMISSIONS:
+        inlineSetRunners(noteId, set);
+        break;
+      case SET_ROLES:
+        inlineSetRoles(user, set);
+        break;
+      case CLEAR_PERMISSION:
+        inlineClearPermission(noteId);
+        break;
+      default:
+        LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
+        break;
+    }
+  }
+
+  // broadcast cluster event
+  private void broadcastClusterEvent(ClusterEvent event, String noteId,
+                                     String user, Set<String> set) {
+    if (!conf.isClusterMode()) {
+      return;
+    }
+    ClusterMessage message = new ClusterMessage(event);
+    message.put("noteId", noteId);
+    message.put("user", user);
+
+    Gson gson = new Gson();
+    String json = gson.toJson(set, new TypeToken<Set<String>>() {
+    }.getType());
+    message.put("set", json);
+    String msg = ClusterMessage.serializeMessage(message);
+    ClusterManagerServer.getInstance().broadcastClusterEvent(
+        ClusterManagerServer.CLUSTER_AUTH_EVENT_TOPIC, msg);
   }
 }

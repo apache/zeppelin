@@ -47,8 +47,8 @@ if [[ -n "$PYTHON" ]] ; then
   conda info -a
   conda config --add channels conda-forge
 
-  conda install -q numpy=1.12.1 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10
-  pip install -q ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
+  conda install -q numpy=1.13.3 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10
+  pip install -q scipy==0.18.0 ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 
   if [[ -n "$TENSORFLOW" ]] ; then
     check_results=`conda search -c conda-forge tensorflow`

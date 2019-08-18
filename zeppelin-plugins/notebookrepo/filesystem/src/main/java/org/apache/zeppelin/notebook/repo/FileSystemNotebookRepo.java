@@ -91,12 +91,16 @@ public class FileSystemNotebookRepo implements NotebookRepo {
                    AuthenticationInfo subject) throws IOException {
     Path src = new Path(notebookDir, buildNoteFileName(noteId, notePath));
     Path dest = new Path(notebookDir, buildNoteFileName(noteId, newNotePath));
+    // [ZEPPELIN-4195] newNotePath parent path maybe not exist
+    this.fs.tryMkDir(new Path(notebookDir, newNotePath.substring(1)).getParent());
     this.fs.move(src, dest);
   }
 
   @Override
   public void move(String folderPath, String newFolderPath, AuthenticationInfo subject)
       throws IOException {
+    // [ZEPPELIN-4195] newFolderPath parent path maybe not exist
+    this.fs.tryMkDir(new Path(notebookDir, folderPath.substring(1)).getParent());
     this.fs.move(new Path(notebookDir, folderPath.substring(1)),
         new Path(notebookDir, newFolderPath.substring(1)));
   }

@@ -151,7 +151,7 @@ public class ZeppelinR implements ExecuteResultHandler {
       cmd.addArgument(SparkRBackend.socketSecret());
     }
     // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
-    logger.debug(cmd.toString());
+    logger.debug("R Command: " + cmd.toString());
 
     executor = new DefaultExecutor();
     outputStream = new SparkRInterpreterOutputStream(logger, sparkRInterpreter);

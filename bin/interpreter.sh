@@ -69,7 +69,8 @@ fi
 
 . "${bin}/common.sh"
 
-ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}"
+ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-api-*.jar')
+ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}:${ZEPPELIN_INTERPRETER_API_JAR}"
 
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
@@ -83,7 +84,6 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
 fi
 
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-api/target"
-addJarInDirForIntp "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDirForIntp "${INTERPRETER_DIR}"
 
 HOSTNAME=$(hostname)

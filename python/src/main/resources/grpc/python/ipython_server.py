@@ -49,22 +49,36 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         print("execute code:\n")
         print(request.code.encode('utf-8'))
         sys.stdout.flush()
-        stdout_queue = queue.Queue(maxsize = 10)
         stderr_queue = queue.Queue(maxsize = 10)
-        image_queue = queue.Queue(maxsize = 5)
+        text_queue = queue.Queue(maxsize = 10)
+        png_queue = queue.Queue(maxsize = 5)
+        jpeg_queue = queue.Queue(maxsize = 5)
+        html_queue = queue.Queue(maxsize = 10)
 
         def _output_hook(msg):
             msg_type = msg['header']['msg_type']
             content = msg['content']
+            print("******************* CONTENT ******************")
+            print(str(content)[:400])
             if msg_type == 'stream':
-                stdout_queue.put(content['text'])
+                text_queue.put(content['text'])
             elif msg_type in ('display_data', 'execute_result'):
-                stdout_queue.put(content['data'].get('text/plain', ''))
-                if 'image/png' in content['data']:
-                    image_queue.put(content['data']['image/png'])
+                if 'text/html' in content['data']:
+                    html_queue.put(content['data']['text/html'])
+                elif 'image/png' in content['data']:
+                    png_queue.put(content['data']['image/png'])
+                elif 'image/jpeg' in content['data']:
+                    jpeg_queue.put(content['data']['image/jpeg'])
+                elif 'text/plain' in content['data']:
+                    text_queue.put(content['data']['text/plain'])
+                elif 'application/javascript' in content['data']:
+                    print('add to html queue: ' + str(content)[:100])
+                    html_queue.put('<script> ' + content['data']['application/javascript'] + ' </script>\n')
+                elif 'application/vnd.holoviews_load.v0+json' in content['data']:
+                    html_queue.put('<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n')
+
             elif msg_type == 'error':
                 stderr_queue.put('\n'.join(content['traceback']))
-
 
         payload_reply = []
         def execute_worker():
@@ -80,21 +94,32 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         # Execution might be stuck there:
         # https://github.com/jupyter/jupyter_client/blob/master/jupyter_client/blocking/client.py#L32
         while t.is_alive() and self.isKernelAlive():
-            while not stdout_queue.empty():
-                output = stdout_queue.get()
+            while not text_queue.empty():
+                output = text_queue.get()
                 yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
                                                   type=ipython_pb2.TEXT,
+                                                  output=output)
+            while not html_queue.empty():
+                output = html_queue.get()
+                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
+                                                  type=ipython_pb2.HTML,
                                                   output=output)
             while not stderr_queue.empty():
                 output = stderr_queue.get()
                 yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
                                                   type=ipython_pb2.TEXT,
                                                   output=output)
-            while not image_queue.empty():
-                output = image_queue.get()
+            while not png_queue.empty():
+                output = png_queue.get()
                 yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.IMAGE,
+                                                  type=ipython_pb2.PNG,
                                                   output=output)
+            while not jpeg_queue.empty():
+                output = jpeg_queue.get()
+                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
+                                                  type=ipython_pb2.JPEG,
+                                                  output=output)
+
 
         # if kernel is not alive (should be same as thread is still alive), means that we face
         # an unexpected issue.
@@ -104,22 +129,31 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                                                 output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
             return
 
-        while not stdout_queue.empty():
-            output = stdout_queue.get()
+        while not text_queue.empty():
+            output = text_queue.get()
             yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
                                               type=ipython_pb2.TEXT,
+                                              output=output)
+        while not html_queue.empty():
+            output = html_queue.get()
+            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
+                                              type=ipython_pb2.HTML,
                                               output=output)
         while not stderr_queue.empty():
             output = stderr_queue.get()
             yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
                                               type=ipython_pb2.TEXT,
                                               output=output)
-        while not image_queue.empty():
-            output = image_queue.get()
+        while not png_queue.empty():
+            output = png_queue.get()
             yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                              type=ipython_pb2.IMAGE,
+                                              type=ipython_pb2.PNG,
                                               output=output)
-
+        while not jpeg_queue.empty():
+            output = jpeg_queue.get()
+            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
+                                              type=ipython_pb2.JPEG,
+                                              output=output)
         if payload_reply:
             result = []
             for payload in payload_reply[0]['content']['payload']:

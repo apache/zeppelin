@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
@@ -107,8 +108,7 @@ public class LocalConfigStorage extends ConfigStorage {
   }
 
   private void atomicWriteToFile(String content, File file) throws IOException {
-    File directory = file.getParentFile();
-    File tempFile = File.createTempFile(file.getName(), null, directory);
+    File tempFile = Files.createTempFile(file.getName(), null).toFile();
     FileOutputStream out = new FileOutputStream(tempFile);
     try {
       IOUtils.write(content, out);
@@ -120,10 +120,11 @@ public class LocalConfigStorage extends ConfigStorage {
     }
     out.close();
     FileSystem defaultFileSystem = FileSystems.getDefault();
-    Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
     try {
-      Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
+      file.getParentFile().mkdirs();
+      Files.move(tempFile.toPath(), destinationFilePath,
+              StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
         tempFile.deleteOnExit();

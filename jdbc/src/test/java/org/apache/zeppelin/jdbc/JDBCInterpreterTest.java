@@ -181,7 +181,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 
-    String sqlQuery = "select * from test_table WHERE ID in ('a', 'b')";
+    String sqlQuery = "select * from test_table WHERE ID in ('a', 'b'); ";
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
 
@@ -229,7 +229,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
         "select '\\', ';';" +
         "select '''', ';';" +
         "select /*+ scan */ * from test_table;" +
-        "--singleLineComment\nselect * from test_table";
+        "--singleLineComment\nselect * from test_table;";
 
 
     Properties properties = new Properties();

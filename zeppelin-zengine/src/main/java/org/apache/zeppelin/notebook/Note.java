@@ -92,10 +92,11 @@ public class Note implements JsonSerializable {
    */
   private Map<String, Object> info = new HashMap<>();
 
+  // The front end needs to judge TRASH_FOLDER according to the path
+  private String path;
 
   /********************************** transient fields ******************************************/
   private transient boolean loaded = false;
-  private transient String path;
   private transient InterpreterFactory interpreterFactory;
   private transient InterpreterSettingManager interpreterSettingManager;
   private transient ParagraphJobListener paragraphJobListener;
@@ -835,7 +836,23 @@ public class Note implements JsonSerializable {
    * @param paragraphId ID of paragraph
    */
   public boolean run(String paragraphId, boolean blocking) {
+    return run(paragraphId, blocking, null);
+  }
+
+  /**
+   * Run a single paragraph
+   *
+   * @param paragraphId
+   * @param blocking
+   * @param ctxUser
+   * @return
+   */
+  public boolean run(String paragraphId, boolean blocking, String ctxUser) {
     Paragraph p = getParagraph(paragraphId);
+
+    if (isPersonalizedMode() && ctxUser != null)
+      p = p.getUserParagraph(ctxUser);
+
     p.setListener(this.paragraphJobListener);
     return p.execute(blocking);
   }

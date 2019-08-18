@@ -94,6 +94,11 @@ public class RemoteInterpreterUtils {
   }
 
   public static String findAvailableHostAddress() throws UnknownHostException, SocketException {
+    String zeppelinServerIP = System.getenv("ZEPPELIN_LOCAL_IP");
+    if (zeppelinServerIP != null) {
+      return zeppelinServerIP;
+    }
+
     InetAddress address = InetAddress.getLocalHost();
     if (address.isLoopbackAddress()) {
       for (NetworkInterface networkInterface : Collections

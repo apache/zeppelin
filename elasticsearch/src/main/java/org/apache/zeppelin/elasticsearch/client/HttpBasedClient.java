@@ -74,7 +74,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private JSONObject getParentField(JSONObject parent, String[] fields) {
     JSONObject obj = parent;
     for (int i = 0; i < fields.length - 1; i++) {
-      obj = obj.getJSONObject(fields[i]);
+      obj = obj.optJSONObject(fields[i]);
     }
     return obj;
   }

@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.ResultMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,35 +96,42 @@ public abstract class SparkShims {
   public abstract String showDataFrame(Object obj, int maxResult);
 
 
-  protected String getNoteId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(indexOf + 1, secondIndex);
-  }
-
-  protected String getParagraphId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
-  }
-
   protected void buildSparkJobUrl(String master,
                                   String sparkWebUrl,
                                   int jobId,
+                                  Properties jobProperties,
                                   InterpreterContext context) {
     String jobUrl = sparkWebUrl + "/jobs/job?id=" + jobId;
     String version = VersionInfo.getVersion();
     if (master.toLowerCase().contains("yarn") && !supportYarn6615(version)) {
       jobUrl = sparkWebUrl + "/jobs";
     }
+    String jobGroupId = jobProperties.getProperty("spark.jobGroup.id");
 
     Map<String, String> infos = new java.util.HashMap<String, String>();
     infos.put("jobUrl", jobUrl);
     infos.put("label", "SPARK JOB");
     infos.put("tooltip", "View in Spark web UI");
-    infos.put("noteId", context.getNoteId());
-    infos.put("paraId", context.getParagraphId());
+    infos.put("noteId", getNoteId(jobGroupId));
+    infos.put("paraId", getParagraphId(jobGroupId));
+    LOGGER.debug("Send spark job url: " + infos);
     context.getIntpEventClient().onParaInfosReceived(infos);
+  }
+
+  public static String getNoteId(String jobGroupId) {
+    String[] tokens = jobGroupId.split("\\|");
+    if (tokens.length != 4) {
+      throw new RuntimeException("Invalid jobGroupId: " + jobGroupId);
+    }
+    return tokens[2];
+  }
+
+  public static String getParagraphId(String jobGroupId) {
+    String[] tokens = jobGroupId.split("\\|");
+    if (tokens.length != 4) {
+      throw new RuntimeException("Invalid jobGroupId: " + jobGroupId);
+    }
+    return tokens[3];
   }
 
   /**
