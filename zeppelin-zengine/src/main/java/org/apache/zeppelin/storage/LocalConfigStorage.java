@@ -123,8 +123,9 @@ public class LocalConfigStorage extends ConfigStorage {
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
     try {
       file.getParentFile().mkdirs();
-      Files.move(tempFile.toPath(), destinationFilePath,
-              StandardCopyOption.ATOMIC_MOVE);
+      Path tempDestinationFile = defaultFileSystem.getPath(file.getCanonicalPath() + ".tmp");
+      Files.move(tempFile.toPath(), tempDestinationFile);
+      Files.move(tempDestinationFile, destinationFilePath,  StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
         tempFile.deleteOnExit();
