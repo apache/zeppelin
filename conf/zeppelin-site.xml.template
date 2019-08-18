@@ -286,7 +286,7 @@
 <property>
   <name>zeppelin.notebook.mongo.autoimport</name>
   <value>false</value>
-  <description>import local notes into MongoDB automatically on startup</description>
+  <description>import local notes into MongoDB automatically on startup, reset to false after import to avoid repeated import</description>
 </property>
 -->
 
