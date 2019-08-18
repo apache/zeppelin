@@ -254,19 +254,19 @@ public class QueryExecutor {
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
     sb.append("Name\tRegistered?\tPartition count\tReplica Information");
     sb.append("\tConsumer count\tConsumer group count\n");
-    for (Object obj : values) {
-      Map<String, Object> entry = (Map<String, Object>) obj;
-      sb.append(entry.getOrDefault("name", ""));
+    TopicInfo[] topics = OBJECT_MAPPER.convertValue(values, TopicInfo[].class);
+    for (TopicInfo tinfo: topics) {
+      sb.append(tinfo.getName());
       sb.append('\t');
-      sb.append(entry.getOrDefault("registered", false));
+      sb.append(tinfo.isRegistered());
       sb.append('\t');
-      sb.append(entry.getOrDefault("partitionCount", 0));
+      sb.append(tinfo.getPartitionCount());
+      sb.append("\t[");
+      sb.append(StringUtils.join(tinfo.getReplicaInfo(), ','));
+      sb.append("]\t");
+      sb.append(tinfo.getConsumerCount());
       sb.append('\t');
-      sb.append(entry.getOrDefault("replicaInfo", ""));
-      sb.append('\t');
-      sb.append(entry.getOrDefault("consumerCount", 0));
-      sb.append('\t');
-      sb.append(entry.getOrDefault("consumerGroupCount", ""));
+      sb.append(tinfo.getConsumerGroupCount());
       sb.append('\n');
     }
 
