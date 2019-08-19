@@ -66,6 +66,7 @@ import org.apache.zeppelin.util.ReflectionUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
+import org.eclipse.jetty.server.ForwardedRequestCustomizer;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -295,9 +296,10 @@ public class ZeppelinServer extends ResourceConfig {
     final Server server = new Server(threadPool);
     ServerConnector connector;
 
+    HttpConfiguration httpConfig = new HttpConfiguration();
+    httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     if (conf.useSsl()) {
       LOG.debug("Enabling SSL for Zeppelin Server on port " + conf.getServerSslPort());
-      HttpConfiguration httpConfig = new HttpConfiguration();
       httpConfig.setSecureScheme("https");
       httpConfig.setSecurePort(conf.getServerSslPort());
       httpConfig.setOutputBufferSize(32768);
@@ -314,7 +316,7 @@ public class ZeppelinServer extends ResourceConfig {
               new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
               new HttpConnectionFactory(httpsConfig));
     } else {
-      connector = new ServerConnector(server);
+      connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
     }
 
     configureRequestHeaderSize(conf, connector);
