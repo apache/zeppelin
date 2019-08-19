@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -155,16 +156,24 @@ public class KotlinRepl {
       writeClass(compiledClass.getBytes(), classWritePath);
     }
 
-    // TODO(dk) refactor this nonsense
+    writeModuleInMemory(classes);
+  }
+
+  private void writeModuleInMemory(ReplCompileResult.CompiledClasses classes) {
     try {
-      ((KJvmCompiledModuleInMemory) ((KJvmCompiledScript<?>) classes.getData()).getCompiledModule())
-          .getCompilerOutputFiles().forEach((name, bytes) -> {
-            if (name.contains("class")) {
-              writeClass(bytes, outputDir + File.separator + name);
-            }
-          });
-    } catch (Exception e) {
-      logger.info(e.getMessage());
+      KJvmCompiledScript<?> compiledScript = Objects.requireNonNull(
+          (KJvmCompiledScript<?>) classes.getData());
+
+      KJvmCompiledModuleInMemory moduleInMemory = Objects.requireNonNull(
+          (KJvmCompiledModuleInMemory) compiledScript.getCompiledModule());
+
+      moduleInMemory.getCompilerOutputFiles().forEach((name, bytes) -> {
+        if (name.contains("class")) {
+          writeClass(bytes, outputDir + File.separator + name);
+        }
+      });
+    } catch (ClassCastException | NullPointerException e) {
+      logger.info("Compiled line #" + classes.getLineId().getNo() + "has no in-memory modules");
     }
   }
 
