@@ -162,7 +162,7 @@ public class KotlinSparkInterpreterTest {
     Thread t = new Thread(() -> {
       try {
         InterpreterResult result = interpreter.interpret(
-            "spark.range(90000000, 0, -1).sort(\"id\").show(1000)", context);
+            "spark.range(10).foreach { Thread.sleep(1000) }", context);
         assertEquals(ERROR, result.code());
         assertTrue(result.message().get(0).getData().trim().contains("cancelled"));
       } catch (InterpreterException e) {
