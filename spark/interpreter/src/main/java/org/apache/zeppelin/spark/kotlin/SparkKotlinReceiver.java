@@ -20,10 +20,10 @@ package org.apache.zeppelin.spark.kotlin;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SparkSession;
-import org.apache.zeppelin.kotlin.receiver.ZeppelinKotlinReceiver;
+import org.apache.zeppelin.kotlin.KotlinReceiver;
 import org.apache.zeppelin.spark.SparkZeppelinContext;
 
-public class SparkKotlinReceiver extends ZeppelinKotlinReceiver {
+public class SparkKotlinReceiver extends KotlinReceiver {
   public SparkSession spark;
   public JavaSparkContext sc;
   public SQLContext sqlContext;
@@ -33,7 +33,6 @@ public class SparkKotlinReceiver extends ZeppelinKotlinReceiver {
                              JavaSparkContext sc,
                              SQLContext sqlContext,
                              SparkZeppelinContext z) {
-    super(z);
     this.spark = spark;
     this.sc = sc;
     this.sqlContext = sqlContext;

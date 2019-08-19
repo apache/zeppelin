@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin.receiver;
+package org.apache.zeppelin.kotlin;
 
-import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-
-public class ZeppelinKotlinReceiver extends KotlinReceiver {
-  public BaseZeppelinContext z;
-  public ZeppelinKotlinReceiver(BaseZeppelinContext z) {
-    this.z = z;
+/**
+  The execution context for lines in Kotlin REPL.
+  It is passed to the script as an implicit receiver, identical to:
+  with (context) {
+    ...
   }
-}
+ */
+public class KotlinReceiver {}

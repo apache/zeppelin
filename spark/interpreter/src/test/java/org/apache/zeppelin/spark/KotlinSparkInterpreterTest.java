@@ -75,7 +75,6 @@ public class KotlinSparkInterpreterTest {
       value = "";
     } else {
       String message = result.message().get(0).getData().trim();
-      System.out.println(message);
       // "res0 : kotlin.Int = 1" -> "kotlin.Int = 1"
       value = message.substring(message.indexOf(':') + 2);
     }
@@ -179,7 +178,6 @@ public class KotlinSparkInterpreterTest {
     InterpreterResult result = interpreter.interpret(
         "sc.conf.all.map{ it.toString() }", context);
     String message = result.message().get(0).getData().trim();
-    System.out.println("MSG: " + message);
     assertTrue(message.contains("(property_1,value_1)"));
   }
 

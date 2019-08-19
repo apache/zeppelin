@@ -34,7 +34,6 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.kotlin.receiver.ZeppelinKotlinReceiver;
 
 
 public class KotlinInterpreterTest {
@@ -51,7 +50,7 @@ public class KotlinInterpreterTest {
     output = "";
 
     String cp = System.getProperty("java.class.path") + File.pathSeparator +
-        ZeppelinKotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        KotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
     interpreter.getBuilder().compilerOptions(Arrays.asList("-classpath", cp));
     interpreter.open();
