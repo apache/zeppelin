@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
+import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmCompiledModuleInMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.BufferedOutputStream;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -150,14 +152,29 @@ public class KotlinRepl {
         continue;
       }
       String classWritePath = outputDir + File.separator + filePath;
+      writeClass(compiledClass.getBytes(), classWritePath);
+    }
 
-      try (FileOutputStream fos = new FileOutputStream(classWritePath);
-           OutputStream out = new BufferedOutputStream(fos)) {
-        out.write(compiledClass.getBytes());
-        out.flush();
-      } catch (IOException e) {
-        logger.error(e.getMessage());
-      }
+    // TODO(dk) refactor this nonsense
+    try {
+      ((KJvmCompiledModuleInMemory) ((KJvmCompiledScript<?>) classes.getData()).getCompiledModule())
+          .getCompilerOutputFiles().forEach((name, bytes) -> {
+            if (name.contains("class")) {
+              writeClass(bytes, outputDir + File.separator + name);
+            }
+          });
+    } catch (Exception e) {
+      logger.info(e.getMessage());
+    }
+  }
+
+  private void writeClass(byte[] classBytes, String path) {
+    try (FileOutputStream fos = new FileOutputStream(path);
+         OutputStream out = new BufferedOutputStream(fos)) {
+      out.write(classBytes);
+      out.flush();
+    } catch (IOException e) {
+      logger.error(e.getMessage());
     }
   }
 }
