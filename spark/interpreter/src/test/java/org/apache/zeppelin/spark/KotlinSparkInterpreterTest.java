@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -140,7 +141,7 @@ public class KotlinSparkInterpreterTest {
   }
 
   @Test
-  public void simpleSparkTest() throws Exception {
+  public void simpleKotlinTest() throws Exception {
     testCodeForResult("1 + 1", "kotlin.Int = 2");
   }
 
@@ -154,6 +155,23 @@ public class KotlinSparkInterpreterTest {
         "|  1|\n" +
         "|  2|\n" +
         "+---+"));
+  }
+
+  @Test
+  public void testCancel() throws Exception {
+    Thread t = new Thread(() -> {
+      try {
+        InterpreterResult result = interpreter.interpret(
+            "spark.range(90000000, 0, -1).sort(\"id\").show(1000)", context);
+        assertEquals(ERROR, result.code());
+        assertTrue(result.message().get(0).getData().trim().contains("cancelled"));
+      } catch (InterpreterException e) {
+        Assert.fail(e.getMessage());
+      }
+    });
+    t.start();
+    Thread.sleep(1000);
+    interpreter.cancel(context);
   }
 
   @Test
