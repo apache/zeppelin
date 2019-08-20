@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import scala.Console;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -49,7 +50,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
-  private SparkZeppelinContext z;
+  private BaseZeppelinContext z;
   private JavaSparkContext jsc;
 
   public KotlinSparkInterpreter(Properties properties) {
@@ -63,7 +64,7 @@ public class KotlinSparkInterpreter extends Interpreter {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     jsc = sparkInterpreter.getJavaSparkContext();
-    z = (SparkZeppelinContext) sparkInterpreter.getZeppelinContext();
+    z = sparkInterpreter.getZeppelinContext();
 
     SparkKotlinReceiver ctx = new SparkKotlinReceiver(
         (SparkSession) sparkInterpreter.getSparkSession(),
