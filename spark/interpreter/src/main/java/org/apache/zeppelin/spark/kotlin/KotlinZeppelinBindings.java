@@ -19,19 +19,16 @@ package org.apache.zeppelin.spark.kotlin;
 
 public class KotlinZeppelinBindings {
   public static final String Z_SELECT_KOTLIN_SYNTAX =
-      "import org.apache.zeppelin.display.ui.OptionInput.ParamOption;\n" +
-      "import org.apache.zeppelin.spark.SparkZeppelinContext\n" +
-      "import scala.collection.JavaConverters;\n" +
-      "fun SparkZeppelinContext.select(" +
-          "name: String, defaultValue: Any?, options: List<Pair<Any?, String>>): Any {\n" +
-      "    val tupleList = options.map{scala.Tuple2(it.first, it.second)}\n" +
-      "    val seq = JavaConverters" +
-          ".asScalaIteratorConverter(tupleList.iterator())" +
-          ".asScala().toSeq()\n" +
-      "    return select(name, seq)\n" +
+      "import org.apache.zeppelin.display.ui.OptionInput.ParamOption\n" +
+      "import org.apache.zeppelin.interpreter.BaseZeppelinContext\n" +
+      "\n" +
+      "fun BaseZeppelinContext.select(name: String, defaultValue: Any?, " +
+          "options: List<Pair<Any?, String>>): Any? {\n" +
+      "    return select(name, defaultValue, " +
+          "options.map{ ParamOption(it.first, it.second) }.toTypedArray())\n" +
       "}\n" +
       "\n" +
-      "fun SparkZeppelinContext.select(name: String, options: List<Pair<Any?, String>>): Any? {\n" +
+      "fun BaseZeppelinContext.select(name: String, options: List<Pair<Any?, String>>): Any? {\n" +
       "    return select(name, \"\", options)\n" +
       "}";
 }
