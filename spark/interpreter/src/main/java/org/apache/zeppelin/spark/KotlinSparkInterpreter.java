@@ -87,7 +87,8 @@ public class KotlinSparkInterpreter extends Interpreter {
         .executionContext(ctx)
         .compilerOptions(compilerOptions)
         .outputDir(outputDir)
-        .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX);
+        .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX)
+        .codeOnLoad(KotlinZeppelinBindings.SPARK_UDF_IMPORTS);
 
     interpreter.open();
   }

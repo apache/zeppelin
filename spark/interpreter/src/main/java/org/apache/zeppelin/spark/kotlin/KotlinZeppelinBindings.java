@@ -31,4 +31,10 @@ public class KotlinZeppelinBindings {
       "fun BaseZeppelinContext.select(name: String, options: List<Pair<Any?, String>>): Any? {\n" +
       "    return select(name, \"\", options)\n" +
       "}";
+
+  public static final String SPARK_UDF_IMPORTS =
+      "import org.apache.spark.sql.types.DataTypes\n" +
+      "import org.apache.spark.sql.functions.*\n" +
+      "import org.apache.spark.sql.expressions.UserDefinedFunction\n" +
+      "import org.apache.spark.sql.api.java.*";
 }
