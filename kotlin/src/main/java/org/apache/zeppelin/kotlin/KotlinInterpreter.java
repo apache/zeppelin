@@ -112,6 +112,10 @@ public class KotlinInterpreter extends Interpreter {
     return new ArrayList<>();
   }
 
+  public Map<String, Object> vars() {
+    return interpreter.runtimeVariables();
+  }
+
   private Job<?> getRunningJob(String paragraphId) {
     Job foundJob = null;
     Collection<Job> jobsRunning = getScheduler().getAllJobs();

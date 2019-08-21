@@ -140,6 +140,12 @@ public class KotlinInterpreterTest {
     interpreter.cancel(context);
   }
 
+  @Test
+  public void testVariables() throws Exception {
+    interpreter.interpret("val x = 1", context);
+    System.out.println(interpreter.vars());
+  }
+
   private static InterpreterContext getInterpreterContext() {
     output = "";
     InterpreterContext context = InterpreterContext.builder()
