@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -162,6 +161,16 @@ public class KotlinInterpreterTest {
 
     assertEquals(2, varX.getValue());
     assertEquals(int.class, varX.getDescriptor().getType());
+  }
+
+  @Test
+  public void testGetVariablesFromCode() throws Exception {
+    interpreter.interpret("val x = 1", context);
+    interpreter.interpret("val y = 2", context);
+    interpreter.interpret("val x = 3", context);
+    InterpreterResult res = interpreter.interpret("kotlinVars", context);
+    System.out.println(res.message().get(0).getData());
+    assertTrue(res.message().get(0).getData().contains("x: int = 3"));
   }
 
   private static InterpreterContext getInterpreterContext() {

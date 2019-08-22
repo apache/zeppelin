@@ -17,13 +17,18 @@
 
 package org.apache.zeppelin.kotlin.context;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+
 /**
-  The execution context for lines in Kotlin REPL.
-  It is passed to the script as an implicit receiver, identical to:
-  with (context) {
-    ...
-  }
+ The execution context for lines in Kotlin REPL.
+ It is passed to the script as an implicit receiver, identical to:
+ with (context) {
+ ...
+ }
  */
 public class KotlinReceiver {
-
+  public List<KotlinVariableInfo> kotlinVars = new ArrayList<>();
 }
+

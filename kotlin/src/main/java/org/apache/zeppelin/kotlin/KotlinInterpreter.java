@@ -115,7 +115,7 @@ public class KotlinInterpreter extends Interpreter {
   }
 
   public List<KotlinVariableInfo> vars() {
-    return interpreter.runtimeVariables();
+    return interpreter.getRuntimeVariables();
   }
 
   private Job<?> getRunningJob(String paragraphId) {

@@ -40,6 +40,7 @@ import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinStateUtil;
 
@@ -51,17 +52,14 @@ public class KotlinRepl {
   private AggregatedReplStageState<?, ?> state;
   private AtomicInteger counter;
   private String outputDir;
+  private KotlinReceiver ctx;
   private int maxResult;
-
-  public KotlinRepl(JvmReplCompiler compiler,
-                    JvmReplEvaluator evaluator) {
-    this(compiler, evaluator, null, 0);
-  }
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
                     JvmReplEvaluator evaluator,
                     String outputDir,
+                    KotlinReceiver ctx,
                     int maxResult) {
     this.compiler = compiler;
     this.evaluator = evaluator;
@@ -74,6 +72,8 @@ public class KotlinRepl {
 
     this.outputDir = outputDir;
     this.maxResult = maxResult;
+
+    this.ctx = ctx;
   }
 
   public InterpreterResult eval(String code) {
@@ -111,9 +111,12 @@ public class KotlinRepl {
           InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo());
     }
     if (evalResult instanceof ReplEvalResult.UnitResult) {
+      ctx.kotlinVars = getRuntimeVariables();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
+      ctx.kotlinVars = getRuntimeVariables();
+
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
       String valueString = prepareValueString(v.getValue());
       return new InterpreterResult(
@@ -124,7 +127,7 @@ public class KotlinRepl {
         "unknown evaluation result: " + evalResult.toString());
   }
 
-  public List<KotlinVariableInfo> runtimeVariables() {
+  public List<KotlinVariableInfo> getRuntimeVariables() {
     return KotlinStateUtil.runtimeVariables(state);
   }
 

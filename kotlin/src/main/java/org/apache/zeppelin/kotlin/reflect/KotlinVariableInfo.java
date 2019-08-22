@@ -41,4 +41,9 @@ public class KotlinVariableInfo {
   public Field getDescriptor() {
     return descriptor;
   }
+
+  @Override
+  public String toString() {
+    return name + ": " + descriptor.getType().getCanonicalName() + " = " + getValue();
+  }
 }

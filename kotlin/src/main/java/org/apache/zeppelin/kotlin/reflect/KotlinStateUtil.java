@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,28 +45,46 @@ public class KotlinStateUtil {
       return new ArrayList<>();
     }
 
-    getVariablesFromScript(script, vars);
+    try {
+      getVariablesFromScript(script, vars);
+    } catch (ReflectiveOperationException e) {
+      e.printStackTrace();
+    }
     return new ArrayList<>(vars.values());
   }
 
-  private static void getVariablesFromScript(Object script, Map<String, KotlinVariableInfo> vars) {
-    Field[] fields = script.getClass().getDeclaredFields();
-    for (Field field : fields) {
-      String fieldName = field.getName();
-      if (vars.containsKey(fieldName)) {
-        continue;
-      }
+  private static Object getImplicitReceiver(Object script)
+      throws ReflectiveOperationException {
+    Field receiverField = script.getClass().getDeclaredField("$$implicitReceiver0");
+    return receiverField.get(script);
+  }
 
-      field.setAccessible(true);
-      try {
-        Object value = field.get(script);
+  private static void getVariablesFromScript(Object script, Map<String, KotlinVariableInfo> vars)
+      throws ReflectiveOperationException {
+    ArrayDeque<Object> valuesToVisit = new ArrayDeque<>();
+    valuesToVisit.add(script);
+    valuesToVisit.add(getImplicitReceiver(script));
+
+    while (!valuesToVisit.isEmpty()) {
+      Object o = valuesToVisit.poll();
+      Field[] fields = o.getClass().getDeclaredFields();
+
+      for (Field field : fields) {
+        String fieldName = field.getName();
+
+        if (vars.containsKey(fieldName)
+            || fieldName.contains("$$implicitReceiver")
+            || fieldName.contains("kotlinVars")) {
+          continue;
+        }
+        field.setAccessible(true);
+
+        Object value = field.get(o);
         if (fieldName.contains("script$")) {
-          getVariablesFromScript(value, vars);
+          valuesToVisit.add(value);
         } else {
           vars.put(fieldName, new KotlinVariableInfo(fieldName, value, field));
         }
-      } catch (IllegalAccessException | IllegalArgumentException e) {
-        logger.error("Exception in getVariablesFromScript", e);
       }
     }
   }

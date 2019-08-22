@@ -70,7 +70,7 @@ public class KotlinReplBuilder {
         buildEvaluationConfiguration(),
         new BasicJvmScriptEvaluator());
 
-    KotlinRepl repl = new KotlinRepl(compiler, evaluator, outputDir, maxResult);
+    KotlinRepl repl = new KotlinRepl(compiler, evaluator, outputDir, ctx, maxResult);
     for (String line: codeOnLoad) {
       repl.eval(line);
     }
