@@ -15,13 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin;
+package org.apache.zeppelin.kotlin.reflect;
 
-/**
-  The execution context for lines in Kotlin REPL.
-  It is passed to the script as an implicit receiver, identical to:
-  with (context) {
-    ...
+import java.lang.reflect.Field;
+
+public class KotlinVariableInfo {
+  private final String name;
+  private final Object value;
+  private final Field descriptor;
+
+  public KotlinVariableInfo(String name, Object value, Field descriptor) {
+    this.name = name;
+    this.value = value;
+    this.descriptor = descriptor;
   }
- */
-public class KotlinReceiver {}
+
+  public String getName() {
+    return name;
+  }
+
+  public Object getValue() {
+    return value;
+  }
+
+  public Field getDescriptor() {
+    return descriptor;
+  }
+}

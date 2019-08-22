@@ -37,6 +37,7 @@ import kotlin.script.experimental.jvm.JvmScriptCompilationKt;
 import kotlin.script.experimental.jvmhost.impl.JvmHostUtilKt;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
+import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 
 public class KotlinReplBuilder {
 

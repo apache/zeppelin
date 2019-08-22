@@ -30,19 +30,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-import kotlin.Pair;
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.apache.zeppelin.kotlin.reflect.KotlinStateUtil;
 
 public class KotlinRepl {
   private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
@@ -125,32 +124,8 @@ public class KotlinRepl {
         "unknown evaluation result: " + evalResult.toString());
   }
 
-  public Map<String, Object> runtimeVariables() {
-    Object script = ((Pair<?, ?>)state.getHistory().peek().getItem().getSecond()).getSecond();
-    Map<String, Object> vars = new HashMap<>();
-    getVariablesFromScript(script, vars);
-    return vars;
-  }
-
-  private void getVariablesFromScript(Object script, Map<String, Object> vars) {
-    Field[] fields = script.getClass().getDeclaredFields();
-    for (Field field : fields) {
-      String fieldName = field.getName();
-      if (vars.containsKey(fieldName)) {
-        continue;
-      }
-      field.setAccessible(true);
-      try {
-        Object value = field.get(script);
-        if (fieldName.contains("script$")) {
-          getVariablesFromScript(value, vars);
-        } else {
-          vars.put(fieldName, value);
-        }
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-      }
-    }
+  public List<KotlinVariableInfo> runtimeVariables() {
+    return KotlinStateUtil.runtimeVariables(state);
   }
 
   private String prepareValueString(Object value) {

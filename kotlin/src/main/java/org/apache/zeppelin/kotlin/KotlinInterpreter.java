@@ -32,6 +32,8 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.kotlin.context.KotlinReceiver;
+import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
@@ -112,7 +114,7 @@ public class KotlinInterpreter extends Interpreter {
     return new ArrayList<>();
   }
 
-  public Map<String, Object> vars() {
+  public List<KotlinVariableInfo> vars() {
     return interpreter.runtimeVariables();
   }
 

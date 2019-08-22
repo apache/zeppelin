@@ -20,6 +20,7 @@ package org.apache.zeppelin.kotlin;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -34,6 +37,8 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.kotlin.context.KotlinReceiver;
+import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 
 public class KotlinInterpreterTest {
@@ -143,7 +148,20 @@ public class KotlinInterpreterTest {
   @Test
   public void testVariables() throws Exception {
     interpreter.interpret("val x = 1", context);
-    System.out.println(interpreter.vars());
+    interpreter.interpret("val x = 2", context);
+    List<KotlinVariableInfo> vars = interpreter.vars();
+    assertEquals(2, vars.size());
+
+    KotlinVariableInfo varX = vars.stream()
+        .filter(info -> info.getName().equals("x"))
+        .findFirst()
+        .orElseGet( () -> {
+          Assert.fail();
+          return null;
+        });
+
+    assertEquals(2, varX.getValue());
+    assertEquals(int.class, varX.getDescriptor().getType());
   }
 
   private static InterpreterContext getInterpreterContext() {
