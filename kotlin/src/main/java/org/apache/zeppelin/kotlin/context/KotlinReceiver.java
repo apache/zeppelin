@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.kotlin.context;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.apache.zeppelin.kotlin.KotlinRepl;
 
 /**
  The execution context for lines in Kotlin REPL.
@@ -29,6 +27,6 @@ import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
  }
  */
 public class KotlinReceiver {
-  public List<KotlinVariableInfo> kotlinVars = new ArrayList<>();
+  public KotlinRepl.KotlinContext kc;
 }
 

@@ -168,9 +168,11 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val x = 1", context);
     interpreter.interpret("val y = 2", context);
     interpreter.interpret("val x = 3", context);
-    InterpreterResult res = interpreter.interpret("kotlinVars", context);
+    InterpreterResult res = interpreter.interpret("kc.vars", context);
     System.out.println(res.message().get(0).getData());
     assertTrue(res.message().get(0).getData().contains("x: int = 3"));
+    res = interpreter.interpret("kc.vars = null", context);
+    assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }
 
   private static InterpreterContext getInterpreterContext() {

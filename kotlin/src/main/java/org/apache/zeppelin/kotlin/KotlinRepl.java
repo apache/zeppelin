@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -41,8 +42,8 @@ import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
-import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinStateUtil;
+import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinRepl {
   private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
@@ -52,14 +53,14 @@ public class KotlinRepl {
   private AggregatedReplStageState<?, ?> state;
   private AtomicInteger counter;
   private String outputDir;
-  private KotlinReceiver ctx;
+  private KotlinContext ctx;
   private int maxResult;
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
                     JvmReplEvaluator evaluator,
+                    KotlinReceiver receiver,
                     String outputDir,
-                    KotlinReceiver ctx,
                     int maxResult) {
     this.compiler = compiler;
     this.evaluator = evaluator;
@@ -73,7 +74,8 @@ public class KotlinRepl {
     this.outputDir = outputDir;
     this.maxResult = maxResult;
 
-    this.ctx = ctx;
+    ctx = new KotlinContext();
+    receiver.kc = ctx;
   }
 
   public InterpreterResult eval(String code) {
@@ -111,11 +113,11 @@ public class KotlinRepl {
           InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo());
     }
     if (evalResult instanceof ReplEvalResult.UnitResult) {
-      ctx.kotlinVars = getRuntimeVariables();
+      ctx.setVars(getRuntimeVariables());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
-      ctx.kotlinVars = getRuntimeVariables();
+      ctx.setVars(getRuntimeVariables());
 
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
       String valueString = prepareValueString(v.getValue());
@@ -194,6 +196,18 @@ public class KotlinRepl {
       out.flush();
     } catch (IOException e) {
       logger.error(e.getMessage());
+    }
+  }
+
+  public static class KotlinContext {
+    private List<KotlinVariableInfo> vars = new ArrayList<>();
+
+    public List<KotlinVariableInfo> getVars() {
+      return vars;
+    }
+
+    private void setVars(List<KotlinVariableInfo> vars) {
+      this.vars = vars;
     }
   }
 }
