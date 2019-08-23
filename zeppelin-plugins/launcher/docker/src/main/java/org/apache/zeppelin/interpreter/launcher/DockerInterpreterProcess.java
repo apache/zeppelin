@@ -194,6 +194,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
+        .hostname(this.zeppelinServiceHost)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
@@ -416,14 +417,18 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       intpKeytab = properties.getProperty("submarine.hadoop.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.4) jdbc interpreter properties keytab file
+      // 3.4) livy interpreter properties keytab file
+      intpKeytab = properties.getProperty("zeppelin.livy.keytab", "");
+    }
+    if (StringUtils.isBlank(intpKeytab)) {
+      // 3.5) jdbc interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.jdbc.keytab.location", "");
     }
     if (!StringUtils.isBlank(intpKeytab) && !copyFiles.containsKey(intpKeytab)) {
       LOGGER.info("intpKeytab : {}", intpKeytab);
       copyFiles.put(intpKeytab, intpKeytab);
     }
-    // 3.5) zeppelin server keytab file
+    // 3.6) zeppelin server keytab file
     String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)
         && !copyFiles.containsKey(zeppelinServerKeytab)) {
