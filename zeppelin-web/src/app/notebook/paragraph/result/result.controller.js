@@ -744,7 +744,9 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       }, newParagraphConfig.results[resultIndex], paragraph, resultIndex);
       renderResult($scope.type, true);
     } else {
-      return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      if (! $scope.viewOnly) {
+        return websocketMsgSrv.commitParagraph(paragraph.id, title, text, newParagraphConfig, params);
+      }
     }
   };
 
