@@ -52,7 +52,10 @@ public class KotlinInterpreter extends Interpreter {
     int maxResult = Integer.parseInt(
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
 
-    builder.executionContext(new KotlinReceiver()).maxResult(maxResult);
+    builder
+        .executionContext(new KotlinReceiver())
+        .maxResult(maxResult)
+        .codeOnLoad("");
   }
 
   public KotlinReplBuilder getBuilder() {

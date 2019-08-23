@@ -53,7 +53,7 @@ public class KotlinStateUtil {
     try {
       Object script = getScript(state);
       getNewMethods(script, methods);
-    } catch (ReflectiveOperationException | NullPointerException e) {
+    } catch (NullPointerException e) {
       logger.error("Exception updating current methods", e);
     }
   }
@@ -96,10 +96,11 @@ public class KotlinStateUtil {
 
   private static void getNewMethods(
       Object script,
-      Set<Method> methods) throws ReflectiveOperationException {
+      Set<Method> methods) {
     Set<Method> newMethods = new HashSet<>(Arrays.asList(
         script.getClass().getMethods()));
     newMethods.removeAll(objectMethods);
+    newMethods.removeIf(method -> method.getName().equals("main"));
     methods.addAll(newMethods);
   }
 

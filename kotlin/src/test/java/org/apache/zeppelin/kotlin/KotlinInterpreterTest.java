@@ -182,6 +182,13 @@ public class KotlinInterpreterTest {
     interpreter.getMethods().stream().anyMatch(method -> method.getName().equals("sq"));
   }
 
+  @Test
+  public void testCompletion() throws Exception {
+    interpreter.interpret("val x = 1", context);
+    List<InterpreterCompletion> completions = interpreter.completion("", 0, context);
+    System.out.println(completions);
+  }
+
   private static InterpreterContext getInterpreterContext() {
     output = "";
     InterpreterContext context = InterpreterContext.builder()

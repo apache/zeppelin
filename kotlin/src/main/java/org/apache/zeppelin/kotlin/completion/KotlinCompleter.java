@@ -17,12 +17,10 @@
 
 package org.apache.zeppelin.kotlin.completion;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinRepl;
@@ -37,13 +35,38 @@ public class KotlinCompleter {
 
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext)  {
-    List<KotlinVariableInfo> vars = ctx.getVars();
-    return vars.stream()
-        .flatMap(var -> getFieldsAndMethods(var).stream())
-        .collect(Collectors.toList());
+    List<InterpreterCompletion> result = new ArrayList<>();
+    for (KotlinVariableInfo var : ctx.getVars()) {
+      result.add(new InterpreterCompletion(
+          var.getName(),
+          var.getName(),
+          var.getDescriptor().getType().getSimpleName()
+      ));
+    }
+
+    List<Method> methods = ctx.getMethods();
+    for (Method method : methods) {
+      result.add(new InterpreterCompletion(
+          method.getName(),
+          method.getName(),
+          methodSignature(method)
+      ));
+    }
+    return result;
   }
 
+  private String methodSignature(Method method) {
+    StringJoiner joiner = new StringJoiner(", ");
+    for (Class<?> param : method.getParameterTypes()) {
+      joiner.add(param.getSimpleName());
+    }
+    return method.getName() +
+        "(" + joiner.toString() + "): " +
+        method.getReturnType().getSimpleName();
+  }
+  /*
   private List<InterpreterCompletion> getFieldsAndMethods(KotlinVariableInfo var) {
+
     Class<?> varClass = var.getDescriptor().getType();
     List<InterpreterCompletion> result = new ArrayList<>();
 
@@ -61,13 +84,5 @@ public class KotlinCompleter {
     return result;
   }
 
-  private String getMethodSignature(Method method) {
-    StringJoiner joiner = new StringJoiner(", ");
-    for (Class<?> param : method.getParameterTypes()) {
-      joiner.add(param.getSimpleName());
-    }
-    return method.getName() +
-        "(" + joiner.toString() + "): " +
-        method.getReturnType().getSimpleName();
-  }
+  */
 }
