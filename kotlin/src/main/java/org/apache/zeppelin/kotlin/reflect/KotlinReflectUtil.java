@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.kotlin.reflect;
 
+import static kotlin.jvm.internal.Reflection.typeOf;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import kotlin.Pair;
+import kotlin.reflect.KType;
 
-public class KotlinStateUtil {
-  private static Logger logger = LoggerFactory.getLogger(KotlinStateUtil.class);
+public class KotlinReflectUtil {
+  private static Logger logger = LoggerFactory.getLogger(KotlinReflectUtil.class);
   private static final Set<Method> objectMethods =
       new HashSet<>(Arrays.asList(Object.class.getMethods()));
 
@@ -56,6 +59,24 @@ public class KotlinStateUtil {
     } catch (NullPointerException e) {
       logger.error("Exception updating current methods", e);
     }
+  }
+
+  public static KType kotlinTypeOf(Object o) {
+    return typeOf(o.getClass());
+  }
+
+  public static String kotlinTypeName(Object o) {
+    return kotlinTypeOf(o).toString();
+  }
+
+  public static String kotlinMethodSignature(Method method) {
+    StringJoiner joiner = new StringJoiner(", ");
+    for (Class<?> param : method.getParameterTypes()) {
+      joiner.add(typeOf(param).toString());
+    }
+    return method.getName() +
+        "(" + joiner.toString() + "): " +
+        typeOf(method.getReturnType());
   }
 
   private static Object getScript(AggregatedReplStageState<?, ?> state)

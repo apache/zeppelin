@@ -42,8 +42,12 @@ public class KotlinVariableInfo {
     return descriptor;
   }
 
+  public String kotlinTypeName() {
+    return KotlinReflectUtil.kotlinTypeName(value);
+  }
+
   @Override
   public String toString() {
-    return name + ": " + descriptor.getType().getCanonicalName() + " = " + getValue();
+    return name + ": " + kotlinTypeName() + " = " + getValue();
   }
 }

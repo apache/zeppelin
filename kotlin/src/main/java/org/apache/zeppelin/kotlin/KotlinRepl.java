@@ -47,7 +47,7 @@ import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
-import org.apache.zeppelin.kotlin.reflect.KotlinStateUtil;
+import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinRepl {
@@ -214,8 +214,8 @@ public class KotlinRepl {
   }
 
   private void updateContext() {
-    KotlinStateUtil.updateVars(ctx.vars, state);
-    KotlinStateUtil.updateMethods(ctx.methods, state);
+    KotlinReflectUtil.updateVars(ctx.vars, state);
+    KotlinReflectUtil.updateMethods(ctx.methods, state);
   }
 
   public static class KotlinContext {

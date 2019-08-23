@@ -74,7 +74,6 @@ public class KotlinInterpreterTest {
       value = "";
     } else {
       String message = result.message().get(0).getData().trim();
-      System.out.println(message);
       // "res0 : kotlin.Int = 1" -> "kotlin.Int = 1"
       value = message.substring(message.indexOf(':') + 2);
     }
@@ -171,7 +170,7 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val x = 3", context);
     InterpreterResult res = interpreter.interpret("kc.vars", context);
     System.out.println(res.message().get(0).getData());
-    assertTrue(res.message().get(0).getData().contains("x: int = 3"));
+    assertTrue(res.message().get(0).getData().contains("x: kotlin.Int = 3"));
     res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }

@@ -20,11 +20,11 @@ package org.apache.zeppelin.kotlin.completion;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinRepl;
+import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinCompleter {
@@ -45,7 +45,7 @@ public class KotlinCompleter {
       result.add(new InterpreterCompletion(
           var.getName(),
           var.getName(),
-          var.getDescriptor().getType().getSimpleName()
+          var.kotlinTypeName()
       ));
     }
 
@@ -54,41 +54,10 @@ public class KotlinCompleter {
       result.add(new InterpreterCompletion(
           method.getName(),
           method.getName(),
-          methodSignature(method)
+          KotlinReflectUtil.kotlinMethodSignature(method)
       ));
     }
     result.addAll(keywords);
     return result;
   }
-
-  private String methodSignature(Method method) {
-    StringJoiner joiner = new StringJoiner(", ");
-    for (Class<?> param : method.getParameterTypes()) {
-      joiner.add(param.getSimpleName());
-    }
-    return method.getName() +
-        "(" + joiner.toString() + "): " +
-        method.getReturnType().getSimpleName();
-  }
-  /*
-  private List<InterpreterCompletion> getFieldsAndMethods(KotlinVariableInfo var) {
-
-    Class<?> varClass = var.getDescriptor().getType();
-    List<InterpreterCompletion> result = new ArrayList<>();
-
-    for (Field field : varClass.getFields()) {
-      String name = field.getName();
-      String meta = field.getType().getSimpleName();
-      result.add(new InterpreterCompletion(name, name, meta));
-    }
-    for (Method method : varClass.getMethods()) {
-      String name = method.getName();
-      String meta = getMethodSignature(method);
-      result.add(new InterpreterCompletion(name, name, meta));
-    }
-
-    return result;
-  }
-
-  */
 }
