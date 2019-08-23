@@ -24,5 +24,6 @@ public enum CompletionType {
   setting,
   command,
   keyword,
-  path
+  path,
+  universe
 }

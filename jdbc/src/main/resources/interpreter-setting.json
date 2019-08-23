@@ -48,9 +48,16 @@
       },
       "default.precode": {
         "envName": null,
-        "propertyName": "zeppelin.jdbc.precode",
+        "propertyName": "default.precode",
         "defaultValue": "",
         "description": "SQL which executes while opening connection",
+        "type": "textarea"
+      },
+      "default.statementPrecode": {
+        "envName": null,
+        "propertyName": "default.statementPrecode",
+        "defaultValue": "",
+        "description": "Runs before each run of the paragraph, in the same connection",
         "type": "textarea"
       },
       "default.splitQueries": {
@@ -101,11 +108,33 @@
         "defaultValue": "",
         "description": "Kerberos principal",
         "type": "string"
+      },
+      "zeppelin.jdbc.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
+      "zeppelin.jdbc.maxConnLifetime": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.maxConnLifetime",
+        "defaultValue": "-1",
+        "description": "Maximum of connection lifetime in milliseconds. A value of zero or less means the connection has an infinite lifetime.",
+        "type": "number"
+      },
+      "zeppelin.jdbc.maxRows": {
+        "envName": null,
+        "propertyName": "zeppelin.jdbc.maxRows",
+        "defaultValue": "1000",
+        "description": "Maximum number of rows fetched from the query.",
+        "type": "number"
       }
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   }
 ]

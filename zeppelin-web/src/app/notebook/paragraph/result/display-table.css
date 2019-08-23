@@ -34,8 +34,18 @@
 /** support `height: auto` for cells */
 .ui-grid-viewport .ui-grid-cell-contents {
   word-wrap: break-word;
-  white-space: normal !important;
+  white-space: pre-wrap !important;
   border-bottom: 1px solid #e8e8e8;
+}
+
+input[class *=coltuiGrid] {
+  white-space: pre-wrap !important;
+}
+
+.ui-grid-zeppelin-special-textarea {
+  width: 100%;
+  overflow: hidden;
+  resize: none;
 }
 
 .ui-grid-row, .ui-grid-cell {

@@ -14,17 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.StringMap;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.zeppelin.helium.*;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.junit.*;
+import org.apache.zeppelin.helium.Helium;
+import org.apache.zeppelin.utils.TestUtils;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -32,192 +40,197 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.helium.HeliumRegistry;
+import org.apache.zeppelin.helium.HeliumType;
 
 public class HeliumRestApiTest extends AbstractTestRestApi {
-    Gson gson = new Gson();
+  private Gson gson = new Gson();
+  private static Helium helium;
 
-    @BeforeClass
-    public static void init() throws Exception {
-        AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
-    }
+  @BeforeClass
+  public static void init() throws Exception {
+    AbstractTestRestApi.startUp(HeliumRestApi.class.getSimpleName());
+    helium = TestUtils.getInstance(Helium.class);
+  }
 
-    @AfterClass
-    public static void destroy() throws Exception {
-        AbstractTestRestApi.shutDown();
-    }
+  @AfterClass
+  public static void destroy() throws Exception {
+    AbstractTestRestApi.shutDown();
+  }
 
-    @Before
-    public void setUp() throws IOException {
-        HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
-        ZeppelinServer.helium.clear();
-        ZeppelinServer.helium.addRegistry(registry);
+  @Before
+  public void setUp() throws IOException {
+    HeliumTestRegistry registry = new HeliumTestRegistry("r1", "r1");
+    helium.clear();
 
-        registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name1",
-                "desc1",
-                "artifact1",
-                "className1",
-                new String[][]{},
-                "",
-                ""));
+    registry.add(new HeliumPackage(
+        HeliumType.APPLICATION,
+        "name1",
+        "desc1",
+        "artifact1",
+        "className1",
+        new String[][]{},
+        "",
+        ""));
 
-        registry.add(new HeliumPackage(
-                HeliumType.APPLICATION,
-                "name2",
-                "desc2",
-                "artifact2",
-                "className2",
-                new String[][]{},
-                "",
-                ""));
-    }
+    registry.add(new HeliumPackage(
+        HeliumType.APPLICATION,
+        "name2",
+        "desc2",
+        "artifact2",
+        "className2",
+        new String[][]{},
+        "",
+        ""));
 
-    @After
-    public void tearDown() throws Exception {
-        ZeppelinServer.helium.clear();
-    }
+    helium.addRegistry(registry);
+  }
 
-    @Test
-    public void testGetAllPackageInfo() throws IOException {
-        GetMethod get = httpGet("/helium/package");
-        assertThat(get, isAllowed());
-        Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+  @After
+  public void tearDown() {
+    helium.clear();
+  }
+
+  @Test
+  public void testGetAllPackageInfo() throws IOException {
+    GetMethod get = httpGet("/helium/package");
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    Map<String, Set<String>> body = (Map<String, Set<String>>) resp.get("body");
+
+    assertEquals(2, body.size());
+    assertTrue(body.containsKey("name1"));
+    assertTrue(body.containsKey("name2"));
+  }
+
+  @Test
+  public void testGetAllEnabledPackageInfo() throws IOException {
+    // No enabled packages initially
+    GetMethod get1 = httpGet("/helium/enabledPackage");
+    assertThat(get1, isAllowed());
+    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
                 new TypeToken<Map<String, Object>>() { }.getType());
-        Map<String, Set<String>> body = (Map<String, Set<String>>) resp.get("body");
+    List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
+    assertEquals(body1.size(), 0);
 
-        assertEquals(body.size(), 2);
-        assertTrue(body.containsKey("name1"));
-        assertTrue(body.containsKey("name2"));
-    }
+    // Enable "name1" package
+    helium.enable("name1", "artifact1");
 
-    @Test
-    public void testGetAllEnabledPackageInfo() throws IOException {
-        // No enabled packages initially
-        GetMethod get1 = httpGet("/helium/enabledPackage");
-        assertThat(get1, isAllowed());
-        Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
-        assertEquals(body1.size(), 0);
+    GetMethod get2 = httpGet("/helium/enabledPackage");
+    assertThat(get2, isAllowed());
+    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
 
-        // Enable "name1" package
-        ZeppelinServer.helium.enable("name1","artifact1");
+    assertEquals(body2.size(), 1);
+    StringMap<Object> pkg = (StringMap<Object>) body2.get(0).get("pkg");
+    assertEquals(pkg.get("name"), "name1");
+  }
 
-        GetMethod get2 = httpGet("/helium/enabledPackage");
-        assertThat(get2, isAllowed());
-        Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
+  @Test
+  public void testGetSinglePackageInfo() throws IOException {
+    String packageName = "name1";
+    GetMethod get = httpGet("/helium/package/" + packageName);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<StringMap<Object>> body = (List<StringMap<Object>>) resp.get("body");
 
-        assertEquals(body2.size(), 1);
-        StringMap<Object> pkg = (StringMap<Object>) body2.get(0).get("pkg");
-        assertEquals(pkg.get("name"), "name1");
-    }
+    assertEquals(body.size(), 1);
+    StringMap<Object> pkg = (StringMap<Object>) body.get(0).get("pkg");
+    assertEquals(pkg.get("name"), "name1");
+  }
 
-    @Test
-    public void testGetSinglePackageInfo() throws IOException {
-        String packageName = "name1";
-        GetMethod get = httpGet("/helium/package/" + packageName);
-        assertThat(get, isAllowed());
-        Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<StringMap<Object>> body = (List<StringMap<Object>>) resp.get("body");
+  @Test
+  public void testGetAllPackageConfigs() throws IOException {
+    GetMethod get = httpGet("/helium/config/");
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    StringMap<Object> body = (StringMap<Object>) resp.get("body");
+    // ToDo: Apply config with POST command and check update
+    assertEquals(body.size(), 0);
+  }
 
-        assertEquals(body.size(), 1);
-        StringMap<Object> pkg = (StringMap<Object>) body.get(0).get("pkg");
-        assertEquals(pkg.get("name"), "name1");
-    }
+  @Test
+  public void testGetPackageConfig() throws IOException {
+    String packageName = "name1";
+    String artifact = "artifact1";
+    GetMethod get = httpGet("/helium/config/" + packageName + "/" + artifact);
+    assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    StringMap<Object> body = (StringMap<Object>) resp.get("body");
+    assertTrue(body.containsKey("confPersisted"));
+  }
 
-    @Test
-    public void testGetAllPackageConfigs() throws IOException {
-        GetMethod get = httpGet("/helium/config/");
-        assertThat(get, isAllowed());
-        Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        StringMap<Object> body = (StringMap<Object>) resp.get("body");
-        // ToDo: Apply config with POST command and check update
-        assertEquals(body.size(), 0);
-    }
+  @Test
+  public void testEnableDisablePackage() throws IOException {
+    String packageName = "name1";
+    PostMethod post1 = httpPost("/helium/enable/" + packageName, "");
+    assertThat(post1, isAllowed());
+    post1.releaseConnection();
 
-    @Test
-    public void testGetPackageConfig() throws IOException {
-        String packageName = "name1";
-        String artifact = "artifact1";
-        GetMethod get = httpGet("/helium/config/" + packageName + "/" + artifact);
-        assertThat(get, isAllowed());
-        Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        StringMap<Object> body = (StringMap<Object>) resp.get("body");
-        assertTrue(body.containsKey("confPersisted"));
-    }
+    GetMethod get1 = httpGet("/helium/package/" + packageName);
+    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
+    assertEquals(body1.get(0).get("enabled"), true);
 
-    @Test
-    public void testEnableDisablePackage() throws IOException {
-        String packageName = "name1";
-        PostMethod post1 = httpPost("/helium/enable/" + packageName, "");
-        assertThat(post1, isAllowed());
-        post1.releaseConnection();
+    PostMethod post2 = httpPost("/helium/disable/" + packageName, "");
+    assertThat(post2, isAllowed());
+    post2.releaseConnection();
 
-        GetMethod get1 = httpGet("/helium/package/" + packageName);
-        Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<StringMap<Object>> body1 = (List<StringMap<Object>>) resp1.get("body");
-        assertEquals(body1.get(0).get("enabled"), true);
+    GetMethod get2 = httpGet("/helium/package/" + packageName);
+    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
+    assertEquals(body2.get(0).get("enabled"), false);
+  }
 
-        PostMethod post2 = httpPost("/helium/disable/" + packageName, "");
-        assertThat(post2, isAllowed());
-        post2.releaseConnection();
+  @Test
+  public void testVisualizationPackageOrder() throws IOException {
+    GetMethod get1 = httpGet("/helium/order/visualization");
+    assertThat(get1, isAllowed());
+    Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<Object> body1 = (List<Object>) resp1.get("body");
+    assertEquals(body1.size(), 0);
 
-        GetMethod get2 = httpGet("/helium/package/" + packageName);
-        Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<StringMap<Object>> body2 = (List<StringMap<Object>>) resp2.get("body");
-        assertEquals(body2.get(0).get("enabled"), false);
-    }
+    //We assume allPackages list has been refreshed before sorting
+    helium.getAllPackageInfo();
 
-    @Test
-    public void testVisualizationPackageOrder() throws IOException {
-        GetMethod get1 = httpGet("/helium/order/visualization");
-        assertThat(get1, isAllowed());
-        Map<String, Object> resp1 = gson.fromJson(get1.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<Object> body1 = (List<Object>) resp1.get("body");
-        assertEquals(body1.size(), 0);
+    String postRequestJson = "[name2, name1]";
+    PostMethod post = httpPost("/helium/order/visualization", postRequestJson);
+    assertThat(post, isAllowed());
+    post.releaseConnection();
 
-        //We assume allPackages list has been refreshed before sorting
-        ZeppelinServer.helium.getAllPackageInfo();
-
-        String postRequestJson = "[name2, name1]";
-        PostMethod post = httpPost("/helium/order/visualization", postRequestJson);
-        assertThat(post, isAllowed());
-        post.releaseConnection();
-
-        GetMethod get2 = httpGet("/helium/order/visualization");
-        assertThat(get2, isAllowed());
-        Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
-                new TypeToken<Map<String, Object>>() { }.getType());
-        List<Object> body2 = (List<Object>) resp2.get("body");
-        assertEquals(body2.size(), 2);
-        assertEquals(body2.get(0), "name2");
-        assertEquals(body2.get(1), "name1");
-    }
+    GetMethod get2 = httpGet("/helium/order/visualization");
+    assertThat(get2, isAllowed());
+    Map<String, Object> resp2 = gson.fromJson(get2.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() { }.getType());
+    List<Object> body2 = (List<Object>) resp2.get("body");
+    assertEquals(body2.size(), 2);
+    assertEquals(body2.get(0), "name2");
+    assertEquals(body2.get(1), "name1");
+  }
 }
 
 class HeliumTestRegistry extends HeliumRegistry {
-    private List<HeliumPackage> infos = new LinkedList<>();
+  private List<HeliumPackage> infos = new LinkedList<>();
 
-    public HeliumTestRegistry(String name, String uri) {
-        super(name, uri);
-    }
+  HeliumTestRegistry(String name, String uri) {
+    super(name, uri);
+  }
 
-    @Override
-    public List<HeliumPackage> getAll() throws IOException {
-        return infos;
-    }
+  @Override
+  public List<HeliumPackage> getAll() throws IOException {
+    return infos;
+  }
 
-    public void add(HeliumPackage info) {
-        infos.add(info);
-    }
+  public void add(HeliumPackage info) {
+    infos.add(info);
+  }
 }

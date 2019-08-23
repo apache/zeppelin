@@ -12,107 +12,107 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl)
+angular.module('zeppelinWebApp').controller('SearchResultCtrl', SearchResultCtrl);
 
-function SearchResultCtrl ($scope, $routeParams, searchService) {
-  'ngInject'
+function SearchResultCtrl($scope, $routeParams, searchService) {
+  'ngInject';
 
-  $scope.isResult = true
-  $scope.searchTerm = $routeParams.searchTerm
-  let results = searchService.search({'q': $routeParams.searchTerm}).query()
+  $scope.isResult = true;
+  $scope.searchTerm = $routeParams.searchTerm;
+  let results = searchService.search({'q': $routeParams.searchTerm}).query();
 
-  results.$promise.then(function (result) {
-    $scope.notes = result.body.map(function (note) {
+  results.$promise.then(function(result) {
+    $scope.notes = result.body.map(function(note) {
       // redirect to notebook when search result is a notebook itself,
       // not a paragraph
       if (!/\/paragraph\//.test(note.id)) {
-        return note
+        return note;
       }
 
       note.id = note.id.replace('paragraph/', '?paragraph=') +
-        '&term=' + $routeParams.searchTerm
+        '&term=' + $routeParams.searchTerm;
 
-      return note
-    })
+      return note;
+    });
     if ($scope.notes.length === 0) {
-      $scope.isResult = false
+      $scope.isResult = false;
     } else {
-      $scope.isResult = true
+      $scope.isResult = true;
     }
 
-    $scope.$on('$routeChangeStart', function (event, next, current) {
+    $scope.$on('$routeChangeStart', function(event, next, current) {
       if (next.originalPath !== '/search/:searchTerm') {
-        searchService.searchTerm = ''
+        searchService.searchTerm = '';
       }
-    })
-  })
+    });
+  });
 
-  $scope.page = 0
-  $scope.allResults = false
+  $scope.page = 0;
+  $scope.allResults = false;
 
-  $scope.highlightSearchResults = function (note) {
-    return function (_editor) {
-      function getEditorMode (text) {
+  $scope.highlightSearchResults = function(note) {
+    return function(_editor) {
+      function getEditorMode(text) {
         let editorModes = {
           'ace/mode/scala': /^%(\w*\.)?spark/,
           'ace/mode/python': /^%(\w*\.)?(pyspark|python)/,
           'ace/mode/r': /^%(\w*\.)?(r|sparkr|knitr)/,
           'ace/mode/sql': /^%(\w*\.)?\wql/,
           'ace/mode/markdown': /^%md/,
-          'ace/mode/sh': /^%sh/
-        }
+          'ace/mode/sh': /^%sh/,
+        };
 
-        return Object.keys(editorModes).reduce(function (res, mode) {
-          return editorModes[mode].test(text) ? mode : res
-        }, 'ace/mode/scala')
+        return Object.keys(editorModes).reduce(function(res, mode) {
+          return editorModes[mode].test(text) ? mode : res;
+        }, 'ace/mode/scala');
       }
 
-      let Range = ace.require('ace/range').Range
+      let Range = ace.require('ace/range').Range;
 
-      _editor.setOption('highlightActiveLine', false)
-      _editor.$blockScrolling = Infinity
-      _editor.setReadOnly(true)
-      _editor.renderer.setShowGutter(false)
-      _editor.setTheme('ace/theme/chrome')
-      _editor.getSession().setMode(getEditorMode(note.text))
+      _editor.setOption('highlightActiveLine', false);
+      _editor.$blockScrolling = Infinity;
+      _editor.setReadOnly(true);
+      _editor.renderer.setShowGutter(false);
+      _editor.setTheme('ace/theme/chrome');
+      _editor.getSession().setMode(getEditorMode(note.text));
 
-      function getIndeces (term) {
-        return function (str) {
-          let indeces = []
-          let i = -1
+      function getIndeces(term) {
+        return function(str) {
+          let indeces = [];
+          let i = -1;
           while ((i = str.indexOf(term, i + 1)) >= 0) {
-            indeces.push(i)
+            indeces.push(i);
           }
-          return indeces
-        }
+          return indeces;
+        };
       }
 
-      let result = ''
+      let result = '';
       if (note.header !== '') {
-        result = note.header + '\n\n' + note.snippet
+        result = note.header + '\n\n' + note.snippet;
       } else {
-        result = note.snippet
+        result = note.snippet;
       }
 
       let lines = result
         .split('\n')
-        .map(function (line, row) {
-          let match = line.match(/<B>(.+?)<\/B>/)
+        .map(function(line, row) {
+          let match = line.match(/<B>(.+?)<\/B>/);
 
           // return early if nothing to highlight
           if (!match) {
-            return line
+            return line;
           }
 
-          let term = match[1]
+          let term = match[1];
           let __line = line
             .replace(/<B>/g, '')
-            .replace(/<\/B>/g, '')
+            .replace(/<\/B>/g, '');
 
-          let indeces = getIndeces(term)(__line)
+          let indeces = getIndeces(term)(__line);
 
-          indeces.forEach(function (start) {
-            let end = start + term.length
+          indeces.forEach(function(start) {
+            let end = start + term.length;
             if (note.header !== '' && row === 0) {
               _editor
                 .getSession()
@@ -120,14 +120,14 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
                   new Range(row, 0, row, line.length),
                   'search-results-highlight-header',
                   'background'
-                )
+                );
               _editor
                 .getSession()
                 .addMarker(
                   new Range(row, start, row, end),
                   'search-results-highlight',
                   'line'
-                )
+                );
             } else {
               _editor
                 .getSession()
@@ -135,19 +135,22 @@ function SearchResultCtrl ($scope, $routeParams, searchService) {
                   new Range(row, start, row, end),
                   'search-results-highlight',
                   'line'
-                )
+                );
             }
-          })
-          return __line
-        })
+          });
+          return __line;
+        });
 
       // resize editor based on content length
       _editor.setOption(
         'maxLines',
-        lines.reduce(function (len, line) { return len + line.length }, 0)
-      )
+        lines.reduce(function(len, line) {
+          return len + line.length;
+        }, 0)
+      );
 
-      _editor.getSession().setValue(lines.join('\n'))
-    }
-  }
+      _editor.getSession().setValue(lines.join('\n'));
+      note.searchResult = lines;
+    };
+  };
 }

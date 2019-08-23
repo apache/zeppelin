@@ -132,7 +132,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
@@ -344,12 +344,48 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
     </tr>
   </table>
+
+<br/>
+### Rename a note
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method renames a note by the given id using the given name.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[noteId]/rename```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+       <td>Bad Request code</td>
+       <td>400</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input </td>
+      <td><pre>{"name": "new name of a note"}</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>{"status":"OK"}</pre></td>
+    </tr>
+  </table>
+
 
 <br />
 ### Export a note
@@ -455,7 +491,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td>sample JSON response</td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "2AZPHY918"
 }</pre></td>
@@ -636,7 +672,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
       <td> sample JSON response </td>
       <td><pre>
 {
-  "status": "CREATED",
+  "status": "OK",
   "message": "",
   "body": "20151218-100330\_1754029574"
 }</pre></td>
@@ -1144,7 +1180,8 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method adds cron job by the given note id.
+      <td>This ```POST``` method adds cron job by the given note id. 
+          Default value of ```releaseResource``` is ```false```.
       </td>
     </tr>
     <tr>
@@ -1161,7 +1198,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"cron": "cron expression of note"}</pre></td>
+      <td><pre>{"cron": "cron expression of note", "releaseResource": "false"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
@@ -1205,7 +1242,7 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     <tr>
       <td>Description</td>
       <td>This ```GET``` method gets cron job expression of given note id.
-          The body field of the returned JSON contains the cron expression.
+          The body field of the returned JSON contains the cron expression and ```releaseResource``` flag.
       </td>
     </tr>
     <tr>
@@ -1222,7 +1259,14 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status": "OK", "body": "* * * * * ?"}</pre></td>
+      <td><pre>
+{
+   "status": "OK", 
+   "body": {
+      "cron": "0 0/1 * * * ?", 
+      "releaseResource": true
+   }
+}</pre></td>
     </tr>
   </table>
 

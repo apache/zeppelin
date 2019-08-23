@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import HeliumController from './helium.controller'
+import HeliumController from './helium.controller';
 
 angular.module('zeppelinWebApp')
-  .controller('HeliumCtrl', HeliumController)
+  .controller('HeliumCtrl', HeliumController);

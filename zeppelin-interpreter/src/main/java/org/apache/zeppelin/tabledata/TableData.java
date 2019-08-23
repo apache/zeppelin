@@ -26,12 +26,12 @@ public interface TableData {
    * Get column definitions
    * @return
    */
-  public ColumnDef [] columns();
+  ColumnDef [] columns();
 
   /**
    * Get row iterator
    * @param
    * @return
    */
-  public Iterator<Row> rows();
+  Iterator<Row> rows();
 }

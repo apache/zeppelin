@@ -18,10 +18,7 @@
 
 package org.apache.zeppelin.display.ui;
 
-import java.awt.*;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Html Checkbox

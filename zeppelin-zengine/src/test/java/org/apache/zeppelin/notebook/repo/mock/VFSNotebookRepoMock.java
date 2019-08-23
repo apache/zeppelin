@@ -16,27 +16,21 @@
  */
 package org.apache.zeppelin.notebook.repo.mock;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 
+import java.io.IOException;
+
 public class VFSNotebookRepoMock extends VFSNotebookRepo {
 
-  private static ZeppelinConfiguration modifyNotebookDir(ZeppelinConfiguration conf) {
-    String secNotebookDir = conf.getNotebookDir() + "_secondary";
+  public VFSNotebookRepoMock() {
+    String secNotebookDir = ZeppelinConfiguration.create().getNotebookDir() + "_secondary";
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), secNotebookDir);
-    ZeppelinConfiguration secConf = ZeppelinConfiguration.create();
-    return secConf;
   }
 
-  public VFSNotebookRepoMock(ZeppelinConfiguration conf) throws IOException {
-    super(modifyNotebookDir(conf));
+  public void init(ZeppelinConfiguration conf) throws IOException {
+    super.init(conf);
   }
 
 }

@@ -17,10 +17,26 @@
 
 package org.apache.zeppelin.groovy;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.runtime.StackTraceUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
-import java.util.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -30,21 +46,11 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.runtime.StackTraceUtils;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Groovy interpreter for Zeppelin.
  */
 public class GroovyInterpreter extends Interpreter {
-
   Logger log = LoggerFactory.getLogger(GroovyInterpreter.class);
   GroovyShell shell = null; //new GroovyShell();
   //here we will store Interpreters shared variables. concurrent just in case.
@@ -52,7 +58,6 @@ public class GroovyInterpreter extends Interpreter {
   //cache for groovy compiled scripts
   Map<String, Class<Script>> scriptCache = Collections
       .synchronizedMap(new WeakHashMap<String, Class<Script>>(100));
-
 
   public GroovyInterpreter(Properties property) {
     super(property);
@@ -71,6 +76,7 @@ public class GroovyInterpreter extends Interpreter {
                 .getPath());
         classes = new File(jar.getParentFile(), "classes").toString();
       } catch (Exception e) {
+        log.error(e.getMessage());
       }
     }
     log.info("groovy classes classpath: " + classes);
@@ -105,14 +111,7 @@ public class GroovyInterpreter extends Interpreter {
   }
 
   private Job getRunningJob(String paragraphId) {
-    Job foundJob = null;
-    Collection<Job> jobsRunning = getScheduler().getJobsRunning();
-    for (Job job : jobsRunning) {
-      if (job.getId().equals(paragraphId)) {
-        foundJob = job;
-      }
-    }
-    return foundJob;
+    return getScheduler().getJob(paragraphId);
   }
 
   @Override
@@ -187,7 +186,6 @@ public class GroovyInterpreter extends Interpreter {
     }
   }
 
-
   @Override
   public void cancel(InterpreterContext context) {
     Job runningJob = getRunningJob(context.getParagraphId());
@@ -206,6 +204,4 @@ public class GroovyInterpreter extends Interpreter {
       }
     }
   }
-
-
 }

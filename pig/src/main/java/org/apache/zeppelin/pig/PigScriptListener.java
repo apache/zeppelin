@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.pig;
 
 import org.apache.pig.impl.plan.OperatorPlan;
@@ -32,8 +31,7 @@ import java.util.Set;
  *
  */
 public class PigScriptListener implements PigProgressNotificationListener {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(PigScriptListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PigScriptListener.class);
 
   private Set<String> jobIds = new HashSet();
   private int progress;

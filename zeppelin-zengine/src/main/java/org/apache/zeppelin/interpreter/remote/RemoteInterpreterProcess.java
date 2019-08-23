@@ -19,8 +19,6 @@ package org.apache.zeppelin.interpreter.remote;
 import com.google.gson.Gson;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
-import org.apache.zeppelin.helium.ApplicationEventListener;
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
@@ -33,29 +31,12 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
 
   private GenericObjectPool<Client> clientPool;
-  private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
-  private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
   public RemoteInterpreterProcess(
       int connectTimeout) {
-    this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     this.connectTimeout = connectTimeout;
   }
-
-  public RemoteInterpreterEventPoller getRemoteInterpreterEventPoller() {
-    return remoteInterpreterEventPoller;
-  }
-
-  public void setRemoteInterpreterEventPoller(RemoteInterpreterEventPoller eventPoller) {
-    this.remoteInterpreterEventPoller = eventPoller;
-  }
-
-  public abstract String getHost();
-  public abstract int getPort();
-  public abstract void start(String userName, Boolean isUserImpersonate);
-  public abstract void stop();
-  public abstract boolean isRunning();
 
   public int getConnectTimeout() {
     return connectTimeout;
@@ -128,10 +109,6 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
     }
   }
 
-  public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
-    return interpreterContextRunnerPool;
-  }
-
   public <T> T callRemoteFunction(RemoteFunction<T> func) {
     Client client = null;
     boolean broken = false;
@@ -160,4 +137,11 @@ public abstract class RemoteInterpreterProcess implements InterpreterClient {
   public interface RemoteFunction<T> {
     T call(Client client) throws Exception;
   }
+
+  /**
+   * called by RemoteInterpreterEventServer to notify that RemoteInterpreter Process is started
+   */
+  public abstract void processStarted(int port, String host);
+
+  public abstract String getErrorMessage();
 }

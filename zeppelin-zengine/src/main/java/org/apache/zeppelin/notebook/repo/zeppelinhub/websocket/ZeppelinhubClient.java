@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.ZeppelinHubRepo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.ZeppelinhubWebsocket;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinHubOp;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.protocol.ZeppelinhubMessage;
@@ -62,6 +61,7 @@ public class ZeppelinhubClient {
   private final URI zeppelinhubWebsocketUrl;
   private final String zeppelinhubToken;
 
+  private static final String TOKEN_HEADER = "X-Zeppelin-Token";
   private static final long CONNECTION_IDLE_TIME = TimeUnit.SECONDS.toMillis(30);
   private static ZeppelinhubClient instance = null;
   private static Gson gson;
@@ -177,7 +177,7 @@ public class ZeppelinhubClient {
 
   private ClientUpgradeRequest getConnectionRequest(String token) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
-    request.setCookies(Lists.newArrayList(new HttpCookie(ZeppelinHubRepo.TOKEN_HEADER, token)));
+    request.setCookies(Lists.newArrayList(new HttpCookie(TOKEN_HEADER, token)));
     return request;
   }
   

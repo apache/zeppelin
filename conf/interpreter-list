@@ -17,22 +17,24 @@
 #
 # [name]  [maven artifact]  [description]
 
-alluxio         org.apache.zeppelin:zeppelin-alluxio:0.7.0              Alluxio interpreter
-angular         org.apache.zeppelin:zeppelin-angular:0.7.0              HTML and AngularJS view rendering
-beam            org.apache.zeppelin:zeppelin-beam:0.7.0                 Beam interpreter
-bigquery        org.apache.zeppelin:zeppelin-bigquery:0.7.0             BigQuery interpreter
-cassandra       org.apache.zeppelin:zeppelin-cassandra_2.11:0.7.0       Cassandra interpreter built with Scala 2.11
-elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.7.0        Elasticsearch interpreter
-file            org.apache.zeppelin:zeppelin-file:0.7.0                 HDFS file interpreter
-flink           org.apache.zeppelin:zeppelin-flink_2.11:0.7.0           Flink interpreter built with Scala 2.11
-hbase           org.apache.zeppelin:zeppelin-hbase:0.7.0                Hbase interpreter
-ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.7.0          Ignite interpreter built with Scala 2.11
-jdbc            org.apache.zeppelin:zeppelin-jdbc:0.7.0                 Jdbc interpreter
-kylin           org.apache.zeppelin:zeppelin-kylin:0.7.0                Kylin interpreter
-lens            org.apache.zeppelin:zeppelin-lens:0.7.0                 Lens interpreter
-livy            org.apache.zeppelin:zeppelin-livy:0.7.0                 Livy interpreter
-md              org.apache.zeppelin:zeppelin-markdown:0.7.0             Markdown support
-pig             org.apache.zeppelin:zeppelin-pig:0.7.0                  Pig interpreter
-python          org.apache.zeppelin:zeppelin-python:0.7.0               Python interpreter
-scio            org.apache.zeppelin:zeppelin-scio_2.11:0.7.0            Scio interpreter
-shell           org.apache.zeppelin:zeppelin-shell:0.7.0                Shell command
+alluxio         org.apache.zeppelin:zeppelin-alluxio:0.9.0              Alluxio interpreter
+angular         org.apache.zeppelin:zeppelin-angular:0.9.0              HTML and AngularJS view rendering
+beam            org.apache.zeppelin:zeppelin-beam:0.9.0                 Beam interpreter
+bigquery        org.apache.zeppelin:zeppelin-bigquery:0.9.0             BigQuery interpreter
+cassandra       org.apache.zeppelin:zeppelin-cassandra_2.11:0.9.0       Cassandra interpreter built with Scala 2.11
+elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.9.0        Elasticsearch interpreter
+file            org.apache.zeppelin:zeppelin-file:0.9.0                 HDFS file interpreter
+flink           org.apache.zeppelin:zeppelin-flink_2.11:0.9.0           Flink interpreter built with Scala 2.11
+hazelcastjet    org.apache.zeppelin:zeppelin-hazelcastjet:0.9.0         Hazelcast Jet interpreter
+hbase           org.apache.zeppelin:zeppelin-hbase:0.9.0                Hbase interpreter
+ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.9.0          Ignite interpreter built with Scala 2.11
+jdbc            org.apache.zeppelin:zeppelin-jdbc:0.9.0                 Jdbc interpreter
+kylin           org.apache.zeppelin:zeppelin-kylin:0.9.0                Kylin interpreter
+java            org.apache.zeppelin:zeppelin-java:0.9.0                 Java interpreter
+lens            org.apache.zeppelin:zeppelin-lens:0.9.0                 Lens interpreter
+livy            org.apache.zeppelin:zeppelin-livy:0.9.0                 Livy interpreter
+md              org.apache.zeppelin:zeppelin-markdown:0.9.0             Markdown support
+pig             org.apache.zeppelin:zeppelin-pig:0.9.0                  Pig interpreter
+python          org.apache.zeppelin:zeppelin-python:0.9.0               Python interpreter
+scio            org.apache.zeppelin:zeppelin-scio_2.11:0.9.0            Scio interpreter
+shell           org.apache.zeppelin:zeppelin-shell:0.9.0                Shell command

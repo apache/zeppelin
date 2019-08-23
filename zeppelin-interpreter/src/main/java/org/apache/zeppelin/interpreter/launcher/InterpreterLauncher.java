@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.launcher;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.recovery.RecoveryStorage;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -29,10 +30,27 @@ public abstract class InterpreterLauncher {
 
   protected ZeppelinConfiguration zConf;
   protected Properties properties;
+  protected RecoveryStorage recoveryStorage;
 
-  public InterpreterLauncher(ZeppelinConfiguration zConf) {
+  public InterpreterLauncher(ZeppelinConfiguration zConf, RecoveryStorage recoveryStorage) {
     this.zConf = zConf;
+    this.recoveryStorage = recoveryStorage;
   }
 
-  public abstract  InterpreterClient launch(InterpreterLaunchContext context) throws IOException;
+  public void setProperties(Properties props) {
+    this.properties = props;
+  }
+
+  protected int getConnectTimeout() {
+    int connectTimeout =
+        zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    if (properties != null && properties.containsKey(
+        ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
+      connectTimeout = Integer.parseInt(properties.getProperty(
+          ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));
+    }
+    return connectTimeout;
+  }
+
+  public abstract InterpreterClient launch(InterpreterLaunchContext context) throws IOException;
 }

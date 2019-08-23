@@ -19,7 +19,8 @@ package org.apache.zeppelin.interpreter;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,13 +31,13 @@ public class LazyOpenInterpreterTest {
   @Test
   public void isOpenTest() throws InterpreterException {
     InterpreterResult interpreterResult = new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
-    when(interpreter.interpret(any(String.class), any(InterpreterContext.class))).thenReturn(interpreterResult);
+    when(interpreter.interpret(any(String.class), any(InterpreterContext.class)))
+        .thenReturn(interpreterResult);
 
     LazyOpenInterpreter lazyOpenInterpreter = new LazyOpenInterpreter(interpreter);
 
     assertFalse("Interpreter is not open", lazyOpenInterpreter.isOpen());
-    InterpreterContext interpreterContext =
-        new InterpreterContext("note", "id", null, "title", "text", null, null, null, null, null, null, null);
+    InterpreterContext interpreterContext = mock(InterpreterContext.class);
     lazyOpenInterpreter.interpret("intp 1", interpreterContext);
     assertTrue("Interpeter is open", lazyOpenInterpreter.isOpen());
   }

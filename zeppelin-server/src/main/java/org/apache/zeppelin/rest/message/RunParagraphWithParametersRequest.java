@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest.message;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.common.JsonSerializable;
 
 import java.util.Map;
 
+import org.apache.zeppelin.common.JsonSerializable;
+
 /**
- * RunParagraphWithParametersRequest rest api request message
+ * RunParagraphWithParametersRequest rest api request message.
  */
 public class RunParagraphWithParametersRequest implements JsonSerializable {
   private static final Gson gson = new Gson();
@@ -31,7 +31,6 @@ public class RunParagraphWithParametersRequest implements JsonSerializable {
   Map<String, Object> params;
 
   public RunParagraphWithParametersRequest() {
-
   }
 
   public Map<String, Object> getParams() {

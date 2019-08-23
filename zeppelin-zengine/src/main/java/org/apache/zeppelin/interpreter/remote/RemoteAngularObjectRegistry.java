@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -61,7 +62,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
                                                  final String paragraphId) {
 
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
-    if (!remoteInterpreterProcess.isRunning()) {
+    if (null == remoteInterpreterProcess || !remoteInterpreterProcess.isRunning()) {
       return super.add(name, o, noteId, paragraphId, true);
     }
 

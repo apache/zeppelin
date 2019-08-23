@@ -18,11 +18,14 @@
 package org.apache.zeppelin.notebook.socket;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.common.JsonSerializable;
-
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
+import java.util.Set;
+import org.apache.zeppelin.common.JsonSerializable;
+import org.slf4j.Logger;
 /**
  * Zeppelin websocket massage template class.
  */
@@ -154,6 +157,10 @@ public class Message implements JsonSerializable {
     SET_NOTE_REVISION,            // [c-s] set current notebook head to this revision
                                   // @param noteId
                                   // @param revisionId
+    NOTE_REVISION_FOR_COMPARE,    // [c-s] get certain revision of note for compare
+                                  // @param noteId
+                                  // @param revisionId
+                                  // @param position
     APP_APPEND_OUTPUT,            // [s-c] append output
     APP_UPDATE_OUTPUT,            // [s-c] update (replace) output
     APP_LOAD,                     // [s-c] on app load
@@ -162,13 +169,10 @@ public class Message implements JsonSerializable {
     LIST_NOTE_JOBS,               // [c-s] get note job management information
     LIST_UPDATE_NOTE_JOBS,        // [c-s] get job management information for until unixtime
     UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
-                                  // @param unixTime
-    GET_INTERPRETER_BINDINGS,     // [c-s] get interpreter bindings
-                                  // @param noteId
-    SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
-                                  // @param noteId
-                                  // @param selectedSettingIds
+    // @param unixTime
+    GET_INTERPRETER_BINDINGS,    // [c-s] get interpreter bindings
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
+
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
     INTERPRETER_SETTINGS,         // [s-c] interpreter settings
     ERROR_INFO,                   // [s-c] error information to be sent
@@ -180,9 +184,34 @@ public class Message implements JsonSerializable {
     NOTE_UPDATED,                 // [s-c] paragraph updated(name, config)
     RUN_ALL_PARAGRAPHS,           // [c-s] run all paragraphs
     PARAGRAPH_EXECUTED_BY_SPELL,  // [c-s] paragraph was executed by spell
-    RUN_PARAGRAPH_USING_SPELL,     // [s-c] run paragraph using spell
-    PARAS_INFO                    // [s-c] paragraph runtime infos
+    RUN_PARAGRAPH_USING_SPELL,    // [s-c] run paragraph using spell
+    PARAS_INFO,                   // [s-c] paragraph runtime infos
+    SAVE_NOTE_FORMS,              // save note forms
+    REMOVE_NOTE_FORMS,            // remove note forms
+    INTERPRETER_INSTALL_STARTED,  // [s-c] start to download an interpreter
+    INTERPRETER_INSTALL_RESULT,   // [s-c] Status of an interpreter installation
+    COLLABORATIVE_MODE_STATUS,    // [s-c] collaborative mode status
+    PATCH_PARAGRAPH,              // [c-s][s-c] patch editor text
+    NOTE_RUNNING_STATUS,        // [s-c] sequential run status will be change
+    NOTICE                        // [s-c] Notice
   }
+
+  // these messages will be ignored during the sequential run of the note
+  private static final Set<OP> disabledForRunningNoteMessages = Collections
+      .unmodifiableSet(new HashSet<>(Arrays.asList(
+          OP.COMMIT_PARAGRAPH,
+          OP.RUN_PARAGRAPH,
+          OP.RUN_PARAGRAPH_USING_SPELL,
+          OP.RUN_ALL_PARAGRAPHS,
+          OP.PARAGRAPH_CLEAR_OUTPUT,
+          OP.PARAGRAPH_CLEAR_ALL_OUTPUT,
+          OP.INSERT_PARAGRAPH,
+          OP.MOVE_PARAGRAPH,
+          OP.COPY_PARAGRAPH,
+          OP.PARAGRAPH_REMOVE,
+          OP.MOVE_NOTE_TO_TRASH,
+          OP.DEL_NOTE,
+          OP.PATCH_PARAGRAPH)));
 
   private static final Gson gson = new Gson();
   public static final Message EMPTY = new Message(null);
@@ -206,8 +235,21 @@ public class Message implements JsonSerializable {
     return data.get(k);
   }
 
+  public static boolean isDisabledForRunningNotes(OP eventType) {
+    return disabledForRunningNoteMessages.contains(eventType);
+  }
+
   public <T> T getType(String key) {
     return (T) data.get(key);
+  }
+
+  public <T> T getType(String key, Logger LOG) {
+    try {
+      return getType(key);
+    } catch (ClassCastException e) {
+      LOG.error("Failed to get " + key + " from message (Invalid type). " , e);
+      return null;
+    }
   }
 
   @Override

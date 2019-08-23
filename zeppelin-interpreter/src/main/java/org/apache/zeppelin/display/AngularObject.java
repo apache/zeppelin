@@ -17,16 +17,16 @@
 
 package org.apache.zeppelin.display;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * AngularObject provides binding between back-end (interpreter) and front-end
@@ -150,7 +150,7 @@ public class AngularObject<T> implements JsonSerializable {
    * fire updated() event for listener
    * Note that it does not invoke watcher.watch()
    */
-  public void emit(){
+  public void emit() {
     if (listener != null) {
       listener.updated(this);
     }

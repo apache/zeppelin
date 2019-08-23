@@ -27,8 +27,7 @@ Apache Zeppelin provides pluggable interpreter architecture which results in a w
 Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview: Zeppelin Interpreter](./overview.html) first.
 
 ## Overview 
-In the past, Zeppelin was loading interpreter binaries from `/interpreter/[interpreter_name]` directory. They were configured by `zeppelin.interpreters` property in `conf/zeppelin-site.xml` or `ZEPPELIN_INTERPRETERS` env variables in `conf/zeppelin-env.sh`. They were loaded on Zeppelin server startup and stayed alive until the server was stopped.
-In order to simplify using 3rd party interpreters, we changed this way to **dynamically** load interpreters from **Maven Repository** using **REST API**. Hopefully, the picture below will help you to understand the process. 
+In order to simplify using 3rd party interpreters, we **dynamically** load interpreters from **Maven Repository** using **REST API**. Hopefully, the picture below will help you to understand the process. 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin_user.png" height="85%" width="85%"></center>
 
 ## Load & Unload Interpreters Using REST API
@@ -55,7 +54,7 @@ For example, if you want to load `markdown` interpreter to your Zeppelin, the pa
 http://127.0.0.1:8080/api/interpreter/load/md/markdown
 ```
 
-```
+```json
 {
   "artifact": "org.apache.zeppelin:zeppelin-markdown:0.6.0-SNAPSHOT",
   "className": "org.apache.zeppelin.markdown.Markdown",

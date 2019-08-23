@@ -16,92 +16,17 @@
 #
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-
-from io import BytesIO
-try:
-  from StringIO import StringIO
-except ImportError:
-  from io import StringIO
-
-class PyZeppelinContext(object):
-  """ A context impl that uses Py4j to communicate to JVM
-  """
-
-  def __init__(self, z):
-    self.z = z
-    self.paramOption = gateway.jvm.org.apache.zeppelin.display.ui.OptionInput.ParamOption
-    self.javaList = gateway.jvm.java.util.ArrayList
-    self.max_result = z.getMaxResult()
-
-  def input(self, name, defaultValue=""):
-    return self.z.getGui().input(name, defaultValue)
-
-  def select(self, name, options, defaultValue=""):
-    javaOptions = gateway.new_array(self.paramOption, len(options))
-    i = 0
-    for tuple in options:
-      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
-      i += 1
-    return self.z.getGui().select(name, defaultValue, javaOptions)
-
-  def checkbox(self, name, options, defaultChecked=[]):
-    javaOptions = gateway.new_array(self.paramOption, len(options))
-    i = 0
-    for tuple in options:
-      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
-      i += 1
-    javaDefaultCheck = self.javaList()
-    for check in defaultChecked:
-      javaDefaultCheck.append(check)
-    return self.z.getGui().checkbox(name, javaDefaultCheck, javaOptions)
-
-  def show(self, p, **kwargs):
-    if type(p).__name__ == "DataFrame": # does not play well with sub-classes
-      # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
-      # and so a dependency on pandas
-      self.show_dataframe(p, **kwargs)
-    elif hasattr(p, '__call__'):
-      p() #error reporting
-
-  def show_dataframe(self, df, show_index=False, **kwargs):
-    """Pretty prints DF using Table Display System
-    """
-    limit = len(df) > self.max_result
-    header_buf = StringIO("")
-    if show_index:
-      idx_name = str(df.index.name) if df.index.name is not None else ""
-      header_buf.write(idx_name + "\t")
-    header_buf.write(str(df.columns[0]))
-    for col in df.columns[1:]:
-      header_buf.write("\t")
-      header_buf.write(str(col))
-    header_buf.write("\n")
-
-    body_buf = StringIO("")
-    rows = df.head(self.max_result).values if limit else df.values
-    index = df.index.values
-    for idx, row in zip(index, rows):
-      if show_index:
-        body_buf.write("%html <strong>{}</strong>".format(idx))
-        body_buf.write("\t")
-      body_buf.write(str(row[0]))
-      for cell in row[1:]:
-        body_buf.write("\t")
-        body_buf.write(str(cell))
-      body_buf.write("\n")
-    body_buf.seek(0); header_buf.seek(0)
-    #TODO(bzz): fix it, so it shows red notice, as in Spark
-    print("%table " + header_buf.read() + body_buf.read()) # +
-    #      ("\n<font color=red>Results are limited by {}.</font>" \
-    #          .format(self.max_result) if limit else "")
-    #)
-    body_buf.close(); header_buf.close()
-
+import os
 
 # start JVM gateway
-client = GatewayClient(address='127.0.0.1', port=${JVM_GATEWAY_PORT})
-gateway = JavaGateway(client)
-java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-intp = gateway.entry_point
-z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext())
-
+if "PY4J_GATEWAY_SECRET" in os.environ:
+    from py4j.java_gateway import GatewayParameters
+    gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
+    gateway = JavaGateway(gateway_parameters=GatewayParameters(address="${JVM_GATEWAY_ADDRESS}",
+        port=${JVM_GATEWAY_PORT}, auth_token=gateway_secret, auto_convert=True))
+    java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
+    intp = gateway.entry_point
+else:
+    gateway = JavaGateway(GatewayClient(address="${JVM_GATEWAY_ADDRESS}", port=${JVM_GATEWAY_PORT}), auto_convert=True)
+    java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
+    intp = gateway.entry_point

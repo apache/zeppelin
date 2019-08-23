@@ -14,18 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.server;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 
-/**
- * Created by eranw on 8/30/15.
- */
 public class JsonExclusionStrategy implements ExclusionStrategy {
-
   public boolean shouldSkipClass(Class<?> arg0) {
     return false;
   }

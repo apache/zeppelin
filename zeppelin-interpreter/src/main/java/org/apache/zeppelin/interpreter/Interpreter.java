@@ -18,25 +18,27 @@
 package org.apache.zeppelin.interpreter;
 
 
-import java.lang.reflect.Field;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.zeppelin.annotation.Experimental;
 import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.interpreter.launcher.InterpreterLauncher;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Interface for interpreters.
@@ -77,6 +79,35 @@ public abstract class Interpreter {
       return interpret(precode, interpreterContext);
     }
     return null;
+  }
+
+  protected String interpolate(String cmd, ResourcePool resourcePool) {
+    Pattern zVariablePattern = Pattern.compile("([^{}]*)([{]+[^{}]*[}]+)(.*)", Pattern.DOTALL);
+    StringBuilder sb = new StringBuilder();
+    Matcher m;
+    String st = cmd;
+    while ((m = zVariablePattern.matcher(st)).matches()) {
+      sb.append(m.group(1));
+      String varPat = m.group(2);
+      if (varPat.matches("[{][^{}]+[}]")) {
+        // substitute {variable} only if 'variable' has a value ...
+        Resource resource = resourcePool.get(varPat.substring(1, varPat.length() - 1));
+        Object variableValue = resource == null ? null : resource.get();
+        if (variableValue != null)
+          sb.append(variableValue);
+        else
+          return cmd;
+      } else if (varPat.matches("[{]{2}[^{}]+[}]{2}")) {
+        // escape {{text}} ...
+        sb.append("{").append(varPat.substring(2, varPat.length() - 2)).append("}");
+      } else {
+        // mismatched {{ }} or more than 2 braces ...
+        return cmd;
+      }
+      st = m.group(3);
+    }
+    sb.append(st);
+    return sb.toString();
   }
 
   /**
@@ -164,24 +195,7 @@ public abstract class Interpreter {
   public Properties getProperties() {
     Properties p = new Properties();
     p.putAll(properties);
-
-    RegisteredInterpreter registeredInterpreter = Interpreter.findRegisteredInterpreterByClassName(
-        getClassName());
-    if (null != registeredInterpreter) {
-      Map<String, DefaultInterpreterProperty> defaultProperties =
-          registeredInterpreter.getProperties();
-      for (String k : defaultProperties.keySet()) {
-        if (!p.containsKey(k)) {
-          Object value = defaultProperties.get(k).getValue();
-          if (value != null) {
-            p.put(k, defaultProperties.get(k).getValue().toString());
-          }
-        }
-      }
-    }
-
     replaceContextParameters(p);
-
     return p;
   }
 
@@ -241,7 +255,7 @@ public abstract class Interpreter {
    * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
-  public void registerHook(String noteId, String event, String cmd) {
+  public void registerHook(String noteId, String event, String cmd) throws InvalidHookException {
     InterpreterHookRegistry hooks = interpreterGroup.getInterpreterHookRegistry();
     String className = getClassName();
     hooks.register(noteId, className, event, cmd);
@@ -254,7 +268,7 @@ public abstract class Interpreter {
    * @param cmd The code to be executed by the interpreter on given event
    */
   @Experimental
-  public void registerHook(String event, String cmd) {
+  public void registerHook(String event, String cmd) throws InvalidHookException {
     registerHook(null, event, cmd);
   }
 
@@ -305,13 +319,14 @@ public abstract class Interpreter {
   }
 
   @ZeppelinApi
-  public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
+  public <T> T getInterpreterInTheSameSessionByClassName(Class<T> interpreterClass, boolean open)
+      throws InterpreterException {
     synchronized (interpreterGroup) {
       for (List<Interpreter> interpreters : interpreterGroup.values()) {
         boolean belongsToSameNoteGroup = false;
         Interpreter interpreterFound = null;
         for (Interpreter intp : interpreters) {
-          if (intp.getClassName().equals(className)) {
+          if (intp.getClassName().equals(interpreterClass.getName())) {
             interpreterFound = intp;
           }
 
@@ -324,12 +339,30 @@ public abstract class Interpreter {
           }
         }
 
-        if (belongsToSameNoteGroup) {
-          return interpreterFound;
+        if (belongsToSameNoteGroup && interpreterFound != null) {
+          LazyOpenInterpreter lazy = null;
+          T innerInterpreter = null;
+          while (interpreterFound instanceof WrappedInterpreter) {
+            if (interpreterFound instanceof LazyOpenInterpreter) {
+              lazy = (LazyOpenInterpreter) interpreterFound;
+            }
+            interpreterFound = ((WrappedInterpreter) interpreterFound).getInnerInterpreter();
+          }
+          innerInterpreter = (T) interpreterFound;
+
+          if (lazy != null && open) {
+            lazy.open();
+          }
+          return innerInterpreter;
         }
       }
     }
     return null;
+  }
+
+  public <T> T getInterpreterInTheSameSessionByClassName(Class<T> interpreterClass)
+      throws InterpreterException {
+    return getInterpreterInTheSameSessionByClassName(interpreterClass, true);
   }
 
   /**
@@ -371,7 +404,7 @@ public abstract class Interpreter {
   /**
    * Type of interpreter.
    */
-  public static enum FormType {
+  public enum FormType {
     NATIVE, SIMPLE, NONE
   }
 
@@ -386,6 +419,7 @@ public abstract class Interpreter {
     private boolean defaultInterpreter;
     private Map<String, DefaultInterpreterProperty> properties;
     private Map<String, Object> editor;
+    private Map<String, Object> config;
     private String path;
     private InterpreterOption option;
     private InterpreterRunner runner;
@@ -453,52 +487,21 @@ public abstract class Interpreter {
     public InterpreterRunner getRunner() {
       return runner;
     }
+
+    public Map<String, Object> getConfig() {
+      return config;
+    }
+
+    public void setConfig(Map<String, Object> config) {
+      this.config = config;
+    }
   }
 
   /**
    * Type of Scheduling.
    */
-  public static enum SchedulingMode {
+  public enum SchedulingMode {
     FIFO, PARALLEL
   }
 
-  public static Map<String, RegisteredInterpreter> registeredInterpreters = Collections
-      .synchronizedMap(new HashMap<String, RegisteredInterpreter>());
-
-  @Deprecated
-  public static void register(String name, String group, String className,
-      Map<String, DefaultInterpreterProperty> properties) {
-    register(name, group, className, false, properties);
-  }
-
-  @Deprecated
-  public static void register(String name, String group, String className,
-      boolean defaultInterpreter, Map<String, DefaultInterpreterProperty> properties) {
-    logger.warn("Static initialization is deprecated for interpreter {}, You should change it " +
-        "to use interpreter-setting.json in your jar or " +
-        "interpreter/{interpreter}/interpreter-setting.json", name);
-    register(new RegisteredInterpreter(name, group, className, defaultInterpreter, properties));
-  }
-
-  @Deprecated
-  public static void register(RegisteredInterpreter registeredInterpreter) {
-    String interpreterKey = registeredInterpreter.getInterpreterKey();
-    if (!registeredInterpreters.containsKey(interpreterKey)) {
-      registeredInterpreters.put(interpreterKey, registeredInterpreter);
-    } else {
-      RegisteredInterpreter existInterpreter = registeredInterpreters.get(interpreterKey);
-      if (!existInterpreter.getProperties().equals(registeredInterpreter.getProperties())) {
-        logger.error("exist registeredInterpreter with the same key but has different settings.");
-      }
-    }
-  }
-
-  public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
-    for (RegisteredInterpreter ri : registeredInterpreters.values()) {
-      if (ri.getClassName().equals(className)) {
-        return ri;
-      }
-    }
-    return null;
-  }
 }

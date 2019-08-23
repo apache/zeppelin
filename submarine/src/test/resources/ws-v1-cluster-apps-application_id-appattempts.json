@@ -1,0 +1,19 @@
+{
+  "appAttempts": {
+    "appAttempt": [
+      {
+        "id": 1,
+        "startTime": 1547637729548,
+        "finishedTime": 0,
+        "containerId": "container_e312_1547632280649_0002_01_000001",
+        "nodeHttpAddress": "ml2.jd.163.org:8042",
+        "nodeId": "ml2.jd.163.org:34216",
+        "logsLink": "http://ml2.jd.163.org:8042/node/containerlogs/container_e312_1547632280649_0002_01_000001/hadoop",
+        "blacklistedNodes": "",
+        "nodesBlacklistedBySystem": "",
+        "appAttemptId": "appattempt_1547632280649_0002_000001",
+        "exportPorts": "null"
+      }
+    ]
+  }
+}

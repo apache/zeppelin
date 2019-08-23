@@ -20,14 +20,14 @@ package org.apache.zeppelin.interpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * InterpreterOutput is OutputStream that supposed to print content on notebook
@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InterpreterOutput extends OutputStream {
   Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
   private final int NEW_LINE_CHAR = '\n';
+  private final int LINE_FEED_CHAR = '\r';
 
   private List<InterpreterResultMessageOutput> resultMessageOutputs = new LinkedList<>();
   private InterpreterResultMessageOutput currentOut;
@@ -47,6 +48,7 @@ public class InterpreterOutput extends OutputStream {
   private final InterpreterOutputChangeListener changeListener;
 
   private int size = 0;
+  private int lastCRIndex = -1;
 
   // change static var to set interpreter output limit
   // limit will be applied to all InterpreterOutput object.
@@ -84,6 +86,7 @@ public class InterpreterOutput extends OutputStream {
 
       buffer.reset();
       size = 0;
+      lastCRIndex = -1;
 
       if (currentOut != null) {
         currentOut.flush();
@@ -116,16 +119,6 @@ public class InterpreterOutput extends OutputStream {
     };
   }
 
-  public List<InterpreterResultMessage> getInterpreterResultMessages() throws IOException {
-    synchronized (resultMessageOutputs) {
-      List<InterpreterResultMessage> resultMessages = new ArrayList<>();
-      for (InterpreterResultMessageOutput output : this.resultMessageOutputs) {
-        resultMessages.add(output.toInterpreterResultMessage());
-      }
-      return resultMessages;
-    }
-  }
-
   public InterpreterResultMessageOutput getCurrentOutput() {
     synchronized (resultMessageOutputs) {
       return currentOut;
@@ -146,6 +139,7 @@ public class InterpreterOutput extends OutputStream {
 
   public void clear() {
     size = 0;
+    lastCRIndex = -1;
     truncated = false;
     buffer.reset();
 
@@ -202,6 +196,14 @@ public class InterpreterOutput extends OutputStream {
             return;
           }
         }
+      }
+
+      if (b == LINE_FEED_CHAR) {
+        if (lastCRIndex == -1) {
+          lastCRIndex = size;
+        }
+        // reset size to index of last carriage return
+        size = lastCRIndex;
       }
 
       if (startOfTheNewLine) {
@@ -295,7 +297,12 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public void write(String string) throws IOException {
-    write(string.getBytes());
+    if (string.startsWith("%") && !startOfTheNewLine) {
+      // prepend "\n" if it starts with another type of output and startOfTheNewLine is false
+      write(("\n" + string).getBytes());
+    } else {
+      write(string.getBytes());
+    }
   }
 
   /**

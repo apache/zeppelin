@@ -4,38 +4,15 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package org.apache.zeppelin.geode;
-
-import static org.apache.zeppelin.geode.GeodeOqlInterpreter.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.Test;
 
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
@@ -45,6 +22,26 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class GeodeOqlInterpreterTest {
 
@@ -81,9 +78,9 @@ public class GeodeOqlInterpreterTest {
 
   @Test
   public void oqlStructResponse() throws Exception {
-    String[] fields = new String[] {"field1", "field2"};
-    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[] {"val11", "val12"});
-    Struct s2 = new StructImpl(new StructTypeImpl(fields), new String[] {"val21", "val22"});
+    String[] fields = new String[]{"field1", "field2"};
+    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[]{"val11", "val12"});
+    Struct s2 = new StructImpl(new StructTypeImpl(fields), new String[]{"val21", "val22"});
 
     testOql(asIterator(s1, s2), "field1\tfield2\t\nval11\tval12\t\nval21\tval22\t\n", 10);
     testOql(asIterator(s1, s2), "field1\tfield2\t\nval11\tval12\t\n", 1);
@@ -91,8 +88,8 @@ public class GeodeOqlInterpreterTest {
 
   @Test
   public void oqlStructResponseWithReservedCharacters() throws Exception {
-    String[] fields = new String[] {"fi\teld1", "f\nield2"};
-    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[] {"v\nal\t1", "val2"});
+    String[] fields = new String[]{"fi\teld1", "f\nield2"};
+    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[]{"v\nal\t1", "val2"});
 
     testOql(asIterator(s1), "fi eld1\tf ield2\t\nv al 1\tval2\t\n", 10);
   }
@@ -103,8 +100,8 @@ public class GeodeOqlInterpreterTest {
     PdxInstance pdx1 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
     PdxInstance pdx2 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
 
-    testOql(asIterator(pdx1, pdx2), "\n\n\n", 10);
-    testOql(asIterator(pdx1, pdx2), "\n\n", 1);
+    testOql(asIterator(pdx1, pdx2), "\n", 10);
+    testOql(asIterator(pdx1, pdx2), "\n", 1);
   }
 
   private static class DummyUnspportedType {

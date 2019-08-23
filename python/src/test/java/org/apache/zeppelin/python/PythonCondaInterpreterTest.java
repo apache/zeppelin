@@ -18,19 +18,30 @@
 package org.apache.zeppelin.python;
 
 
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class PythonCondaInterpreterTest {
   private PythonCondaInterpreter conda;
@@ -39,14 +50,14 @@ public class PythonCondaInterpreterTest {
   @Before
   public void setUp() throws InterpreterException {
     conda = spy(new PythonCondaInterpreter(new Properties()));
+    when(conda.getClassName()).thenReturn(PythonCondaInterpreter.class.getName());
     python = mock(PythonInterpreter.class);
+    when(python.getClassName()).thenReturn(PythonInterpreter.class.getName());
 
     InterpreterGroup group = new InterpreterGroup();
     group.put("note", Arrays.asList(python, conda));
     python.setInterpreterGroup(group);
     conda.setInterpreterGroup(group);
-
-    doReturn(python).when(conda).getPythonInterpreter();
   }
 
   private void setMockCondaEnvList() throws IOException, InterruptedException {
@@ -79,7 +90,7 @@ public class PythonCondaInterpreterTest {
     conda.interpret("activate " + envname, context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("/path1/bin/python");
+    verify(python).setPythonExec("/path1/bin/python");
     assertTrue(envname.equals(conda.getCurrentCondaEnvName()));
   }
 
@@ -89,7 +100,7 @@ public class PythonCondaInterpreterTest {
     conda.interpret("deactivate", context);
     verify(python, times(1)).open();
     verify(python, times(1)).close();
-    verify(python).setPythonCommand("python");
+    verify(python).setPythonExec("python");
     assertTrue(conda.getCurrentCondaEnvName().isEmpty());
   }
 
@@ -122,19 +133,9 @@ public class PythonCondaInterpreterTest {
   }
 
   private InterpreterContext getInterpreterContext() {
-    return new InterpreterContext(
-        "noteId",
-        "paragraphId",
-        null,
-        "paragraphTitle",
-        "paragraphText",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        null,
-        null,
-        null,
-        new InterpreterOutput(null));
+    return InterpreterContext.builder()
+        .setInterpreterOut(new InterpreterOutput(null))
+        .build();
   }
 
 

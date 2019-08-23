@@ -21,22 +21,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.lang.math.RandomUtils;
-import org.apache.zeppelin.completer.CompletionType;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -50,9 +35,24 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+
 @RunWith(Theories.class)
 public class ElasticsearchInterpreterTest {
-
   @DataPoint public static ElasticsearchInterpreter transportInterpreter;
   @DataPoint public static ElasticsearchInterpreter httpInterpreter;
 
@@ -70,17 +70,15 @@ public class ElasticsearchInterpreterTest {
 
   private static final AtomicInteger deleteId = new AtomicInteger(2);
 
-
   @BeforeClass
   public static void populate() throws IOException {
-
     final Settings settings = Settings.settingsBuilder()
-      .put("cluster.name", ELS_CLUSTER_NAME)
-      .put("network.host", ELS_HOST)
-      .put("http.port", ELS_HTTP_PORT)
-      .put("transport.tcp.port", ELS_TRANSPORT_PORT)
-      .put("path.home", ELS_PATH)
-      .build();
+            .put("cluster.name", ELS_CLUSTER_NAME)
+            .put("network.host", ELS_HOST)
+            .put("http.port", ELS_HTTP_PORT)
+            .put("transport.tcp.port", ELS_TRANSPORT_PORT)
+            .put("path.home", ELS_PATH)
+            .build();
 
     elsNode = NodeBuilder.nodeBuilder().settings(settings).node();
     elsClient = elsNode.client();
@@ -163,14 +161,15 @@ public class ElasticsearchInterpreterTest {
   }
 
   private InterpreterContext buildContext(String noteAndParagraphId) {
-    final AngularObjectRegistry angularObjReg = new AngularObjectRegistry("elasticsearch", null);
-    return new InterpreterContext(noteAndParagraphId, noteAndParagraphId, null, null, null, null, null,
-        null, angularObjReg , null, null, null);
+    return InterpreterContext.builder()
+        .setNoteId(noteAndParagraphId)
+        .setParagraphId(noteAndParagraphId)
+        .setAngularObjectRegistry(new AngularObjectRegistry("elasticsearch", null))
+        .build();
   }
 
   @Theory
   public void testCount(ElasticsearchInterpreter interpreter) {
-
     final InterpreterContext ctx = buildContext("testCount");
 
     InterpreterResult res = interpreter.interpret("count /unknown", ctx);
@@ -180,15 +179,15 @@ public class ElasticsearchInterpreterTest {
     assertEquals(Code.SUCCESS, res.code());
     assertEquals("50", res.message().get(0).getData());
     assertNotNull(ctx.getAngularObjectRegistry().get("count_testCount", null, null));
-    assertEquals(50l, ctx.getAngularObjectRegistry().get("count_testCount", null, null).get());
+    assertEquals(50L, ctx.getAngularObjectRegistry().get("count_testCount", null, null).get());
 
-    res = interpreter.interpret("count /logs { \"query\": { \"match\": { \"status\": 500 } } }", ctx);
+    res = interpreter.interpret("count /logs { \"query\": { \"match\": { \"status\": 500 } } }",
+            ctx);
     assertEquals(Code.SUCCESS, res.code());
   }
 
   @Theory
   public void testGet(ElasticsearchInterpreter interpreter) {
-
     final InterpreterContext ctx = buildContext("get");
 
     InterpreterResult res = interpreter.interpret("get /logs/http/unknown", ctx);
@@ -212,7 +211,6 @@ public class ElasticsearchInterpreterTest {
 
   @Theory
   public void testSearch(ElasticsearchInterpreter interpreter) {
-
     final InterpreterContext ctx = buildContext("search");
 
     InterpreterResult res = interpreter.interpret("size 10\nsearch /logs *", ctx);
@@ -221,23 +219,25 @@ public class ElasticsearchInterpreterTest {
     res = interpreter.interpret("search /logs {{{hello}}}", ctx);
     assertEquals(Code.ERROR, res.code());
 
-    res = interpreter.interpret("search /logs { \"query\": { \"match\": { \"status\": 500 } } }", ctx);
+    res = interpreter.interpret("search /logs { \"query\": { \"match\": { \"status\": 500 } } }",
+            ctx);
     assertEquals(Code.SUCCESS, res.code());
 
     res = interpreter.interpret("search /logs status:404", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
-    res = interpreter.interpret("search /logs { \"fields\": [ \"date\", \"request.headers\" ], \"query\": { \"match\": { \"status\": 500 } } }", ctx);
+    res = interpreter.interpret("search /logs { \"fields\": [ \"date\", \"request.headers\" ], " +
+            "\"query\": { \"match\": { \"status\": 500 } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
   }
 
   @Theory
   public void testAgg(ElasticsearchInterpreter interpreter) {
-
     final InterpreterContext ctx = buildContext("agg");
 
     // Single-value metric
-    InterpreterResult res = interpreter.interpret("search /logs { \"aggs\" : { \"distinct_status_count\" : " +
+    InterpreterResult res = interpreter.interpret("search /logs { \"aggs\" : " +
+            "{ \"distinct_status_count\" : " +
             " { \"cardinality\" : { \"field\" : \"status\" } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
@@ -249,7 +249,8 @@ public class ElasticsearchInterpreterTest {
     // Single bucket
     res = interpreter.interpret("search /logs { \"aggs\" : { " +
             " \"200_OK\" : { \"filter\" : { \"term\": { \"status\": \"200\" } }, " +
-            "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", ctx);
+            "   \"aggs\" : { \"avg_length\" : { \"avg\" : " +
+            "{ \"field\" : \"content_length\" } } } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
 
     // Multi-buckets
@@ -259,29 +260,31 @@ public class ElasticsearchInterpreterTest {
 
     res = interpreter.interpret("search /logs { \"aggs\" : { " +
             " \"length\" : { \"terms\": { \"field\": \"status\" }, " +
-            "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, \"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", ctx);
+            "   \"aggs\" : { \"sum_length\" : { \"sum\" : { \"field\" : \"content_length\" } }, " +
+            "\"sum_status\" : { \"sum\" : { \"field\" : \"status\" } } } } } }", ctx);
     assertEquals(Code.SUCCESS, res.code());
   }
 
   @Theory
   public void testIndex(ElasticsearchInterpreter interpreter) {
-
-    InterpreterResult res = interpreter.interpret("index /logs { \"date\": \"" + new Date() + "\", \"method\": \"PUT\", \"status\": \"500\" }", null);
+    InterpreterResult res = interpreter.interpret("index /logs { \"date\": \"" + new Date() +
+            "\", \"method\": \"PUT\", \"status\": \"500\" }", null);
     assertEquals(Code.ERROR, res.code());
 
     res = interpreter.interpret("index /logs/http { bad ", null);
     assertEquals(Code.ERROR, res.code());
 
-    res = interpreter.interpret("index /logs/http { \"date\": \"2015-12-06T14:54:23.368Z\", \"method\": \"PUT\", \"status\": \"500\" }", null);
+    res = interpreter.interpret("index /logs/http { \"date\": \"2015-12-06T14:54:23.368Z\", " +
+            "\"method\": \"PUT\", \"status\": \"500\" }", null);
     assertEquals(Code.SUCCESS, res.code());
 
-    res = interpreter.interpret("index /logs/http/1000 { \"date\": \"2015-12-06T14:54:23.368Z\", \"method\": \"PUT\", \"status\": \"500\" }", null);
+    res = interpreter.interpret("index /logs/http/1000 { \"date\": " +
+            "\"2015-12-06T14:54:23.368Z\", \"method\": \"PUT\", \"status\": \"500\" }", null);
     assertEquals(Code.SUCCESS, res.code());
   }
 
   @Theory
   public void testDelete(ElasticsearchInterpreter interpreter) {
-
     InterpreterResult res = interpreter.interpret("delete /logs/http/unknown", null);
     assertEquals(Code.ERROR, res.code());
 
@@ -296,7 +299,6 @@ public class ElasticsearchInterpreterTest {
 
   @Theory
   public void testMisc(ElasticsearchInterpreter interpreter) {
-
     InterpreterResult res = interpreter.interpret(null, null);
     assertEquals(Code.SUCCESS, res.code());
 
@@ -306,8 +308,10 @@ public class ElasticsearchInterpreterTest {
 
   @Theory
   public void testCompletion(ElasticsearchInterpreter interpreter) {
-    final List<InterpreterCompletion> expectedResultOne = Arrays.asList(new InterpreterCompletion("count", "count", CompletionType.command.name()));
-    final List<InterpreterCompletion> expectedResultTwo = Arrays.asList(new InterpreterCompletion("help", "help", CompletionType.command.name()));
+    final List<InterpreterCompletion> expectedResultOne = Arrays.asList(
+            new InterpreterCompletion("count", "count", CompletionType.command.name()));
+    final List<InterpreterCompletion> expectedResultTwo = Arrays.asList(
+            new InterpreterCompletion("help", "help", CompletionType.command.name()));
 
     final List<InterpreterCompletion> resultOne = interpreter.completion("co", 0, null);
     final List<InterpreterCompletion> resultTwo = interpreter.completion("he", 0, null);
@@ -322,5 +326,4 @@ public class ElasticsearchInterpreterTest {
     }
     Assert.assertEquals(ElasticsearchInterpreter.COMMANDS, allCompletionList);
   }
-
 }

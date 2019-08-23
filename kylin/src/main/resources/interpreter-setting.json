@@ -56,7 +56,8 @@
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   }
 ]

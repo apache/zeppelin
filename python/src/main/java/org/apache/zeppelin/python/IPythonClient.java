@@ -20,6 +20,7 @@ package org.apache.zeppelin.python;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.python.proto.CancelRequest;
 import org.apache.zeppelin.python.proto.CancelResponse;
@@ -37,10 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.security.SecureRandom;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,6 +53,7 @@ public class IPythonClient {
   private final ManagedChannel channel;
   private final IPythonGrpc.IPythonBlockingStub blockingStub;
   private final IPythonGrpc.IPythonStub asyncStub;
+  private volatile boolean maybeIPythonFailed = false;
 
   private SecureRandom random = new SecureRandom();
 
@@ -84,38 +84,51 @@ public class IPythonClient {
     final ExecuteResponse.Builder finalResponseBuilder = ExecuteResponse.newBuilder()
         .setStatus(ExecuteStatus.SUCCESS);
     final AtomicBoolean completedFlag = new AtomicBoolean(false);
+    maybeIPythonFailed = false;
     LOGGER.debug("stream_execute code:\n" + request.getCode());
     asyncStub.execute(request, new StreamObserver<ExecuteResponse>() {
       int index = 0;
-      boolean isPreviousOutputImage = false;
 
       @Override
       public void onNext(ExecuteResponse executeResponse) {
+        LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getType() +
+                "\t" + executeResponse.getOutput());
+        if (index != 0) {
+          try {
+            // We need to add line separator first, because zeppelin only recoginize the % at
+            // the line beginning.
+            interpreterOutput.write("\n".getBytes());
+          } catch (IOException e) {
+            LOGGER.error("Unexpected IOException", e);
+          }
+        }
+
         if (executeResponse.getType() == OutputType.TEXT) {
           try {
-            LOGGER.debug("Interpreter Streaming Output: " + executeResponse.getOutput());
-            if (isPreviousOutputImage) {
-              // add '\n' when switch from image to text
-              interpreterOutput.write("\n%text ".getBytes());
+            if (executeResponse.getOutput().startsWith("%")) {
+              // the output from ipython kernel maybe specify format already.
+              interpreterOutput.write((executeResponse.getOutput()).getBytes());
+            } else {
+              interpreterOutput.write(("%text " + executeResponse.getOutput()).getBytes());
             }
-            isPreviousOutputImage = false;
-            interpreterOutput.write(executeResponse.getOutput().getBytes());
             interpreterOutput.getInterpreterOutput().flush();
           } catch (IOException e) {
             LOGGER.error("Unexpected IOException", e);
           }
         }
-        if (executeResponse.getType() == OutputType.IMAGE) {
+        if (executeResponse.getType() == OutputType.PNG ||
+                executeResponse.getType() == OutputType.JPEG) {
           try {
-            LOGGER.debug("Interpreter Streaming Output: IMAGE_DATA");
-            if (index != 0) {
-              // add '\n' if this is the not the first element. otherwise it would mix the image
-              // with the text
-              interpreterOutput.write("\n".getBytes());
-            }
             interpreterOutput.write(("%img " + executeResponse.getOutput()).getBytes());
             interpreterOutput.getInterpreterOutput().flush();
-            isPreviousOutputImage = true;
+          } catch (IOException e) {
+            LOGGER.error("Unexpected IOException", e);
+          }
+        }
+        if (executeResponse.getType() == OutputType.HTML) {
+          try {
+            interpreterOutput.write(("%html\n" + executeResponse.getOutput()).getBytes());
+            interpreterOutput.getInterpreterOutput().flush();
           } catch (IOException e) {
             LOGGER.error("Unexpected IOException", e);
           }
@@ -131,11 +144,18 @@ public class IPythonClient {
       @Override
       public void onError(Throwable throwable) {
         try {
+          interpreterOutput.getInterpreterOutput().write(ExceptionUtils.getStackTrace(throwable));
           interpreterOutput.getInterpreterOutput().flush();
         } catch (IOException e) {
           LOGGER.error("Unexpected IOException", e);
         }
         LOGGER.error("Fail to call IPython grpc", throwable);
+        finalResponseBuilder.setStatus(ExecuteStatus.ERROR);
+        maybeIPythonFailed = true;
+        completedFlag.set(true);
+        synchronized (completedFlag) {
+          completedFlag.notify();
+        }
       }
 
       @Override
@@ -198,6 +218,9 @@ public class IPythonClient {
     asyncStub.stop(request, null);
   }
 
+  public boolean isMaybeIPythonFailed() {
+    return maybeIPythonFailed;
+  }
 
   public static void main(String[] args) {
     IPythonClient client = new IPythonClient("localhost", 50053);

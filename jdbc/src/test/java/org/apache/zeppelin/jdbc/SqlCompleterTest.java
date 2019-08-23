@@ -14,6 +14,20 @@
  */
 package org.apache.zeppelin.jdbc;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import com.google.common.base.Joiner;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,29 +37,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.completer.CompletionType;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
 import jline.console.completer.ArgumentCompleter;
 
-import static com.google.common.collect.Sets.newHashSet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.zeppelin.completer.CompletionType;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
- * SQL completer unit tests
+ * SQL completer unit tests.
  */
 public class SqlCompleterTest {
-
   public class CompleterTester {
-
     private SqlCompleter completer;
 
     private String buffer;
@@ -133,7 +134,7 @@ public class SqlCompleterTest {
 
   private Logger logger = LoggerFactory.getLogger(SqlCompleterTest.class);
 
-  private final static Set<String> EMPTY = new HashSet<>();
+  private static final Set<String> EMPTY = new HashSet<>();
 
   private CompleterTester tester;
 
@@ -162,35 +163,35 @@ public class SqlCompleterTest {
 
     sqlCompleter.initSchemas(schemas);
 
-    Set<String> prod_dds_tables = new HashSet<>();
-    prod_dds_tables.add("financial_account");
-    prod_dds_tables.add("customer");
+    Set<String> prodDdsTables = new HashSet<>();
+    prodDdsTables.add("financial_account");
+    prodDdsTables.add("customer");
 
-    sqlCompleter.initTables("prod_dds", prod_dds_tables);
+    sqlCompleter.initTables("prod_dds", prodDdsTables);
 
-    Set<String> prod_emart_tables = new HashSet<>();
-    prod_emart_tables.add("financial_account");
+    Set<String> prodEmartTables = new HashSet<>();
+    prodEmartTables.add("financial_account");
 
-    sqlCompleter.initTables("prod_emart", prod_emart_tables);
+    sqlCompleter.initTables("prod_emart", prodEmartTables);
 
-    Set<String> prod_dds_financial_account_columns = new HashSet<>();
-    prod_dds_financial_account_columns.add("account_rk");
-    prod_dds_financial_account_columns.add("account_id");
+    Set<String> prodDdsFinancialAccountColumns = new HashSet<>();
+    prodDdsFinancialAccountColumns.add("account_rk");
+    prodDdsFinancialAccountColumns.add("account_id");
 
-    sqlCompleter.initColumns("prod_dds.financial_account", prod_dds_financial_account_columns);
+    sqlCompleter.initColumns("prod_dds.financial_account", prodDdsFinancialAccountColumns);
 
-    Set<String> prod_dds_customer_columns = new HashSet<>();
-    prod_dds_customer_columns.add("customer_rk");
-    prod_dds_customer_columns.add("name");
-    prod_dds_customer_columns.add("birth_dt");
+    Set<String> prodDdsCustomerColumns = new HashSet<>();
+    prodDdsCustomerColumns.add("customer_rk");
+    prodDdsCustomerColumns.add("name");
+    prodDdsCustomerColumns.add("birth_dt");
 
-    sqlCompleter.initColumns("prod_dds.customer", prod_dds_customer_columns);
+    sqlCompleter.initColumns("prod_dds.customer", prodDdsCustomerColumns);
 
-    Set<String> prod_emart_financial_account_columns = new HashSet<>();
-    prod_emart_financial_account_columns.add("account_rk");
-    prod_emart_financial_account_columns.add("balance_amt");
+    Set<String> prodEmartFinancialAccountColumns = new HashSet<>();
+    prodEmartFinancialAccountColumns.add("account_rk");
+    prodEmartFinancialAccountColumns.add("balance_amt");
 
-    sqlCompleter.initColumns("prod_emart.financial_account", prod_emart_financial_account_columns);
+    sqlCompleter.initColumns("prod_emart.financial_account", prodEmartFinancialAccountColumns);
 
     tester = new CompleterTester(sqlCompleter);
   }
@@ -198,7 +199,8 @@ public class SqlCompleterTest {
   @Test
   public void testFindAliasesInSQL_Simple() {
     String sql = "select * from prod_emart.financial_account a";
-    Map<String, String> res = sqlCompleter.findAliasesInSQL(delimiter.delimit(sql, 0).getArguments());
+    Map<String, String> res = sqlCompleter.findAliasesInSQL(
+            delimiter.delimit(sql, 0).getArguments());
     assertEquals(1, res.size());
     assertTrue(res.get("a").equals("prod_emart.financial_account"));
   }
@@ -206,7 +208,8 @@ public class SqlCompleterTest {
   @Test
   public void testFindAliasesInSQL_Two() {
     String sql = "select * from prod_dds.financial_account a, prod_dds.customer b";
-    Map<String, String> res = sqlCompleter.findAliasesInSQL(sqlCompleter.getSqlDelimiter().delimit(sql, 0).getArguments());
+    Map<String, String> res = sqlCompleter.findAliasesInSQL(
+            sqlCompleter.getSqlDelimiter().delimit(sql, 0).getArguments());
     assertEquals(2, res.size());
     assertTrue(res.get("a").equals("prod_dds.financial_account"));
     assertTrue(res.get("b").equals("prod_dds.customer"));
@@ -215,7 +218,8 @@ public class SqlCompleterTest {
   @Test
   public void testFindAliasesInSQL_WrongTables() {
     String sql = "select * from prod_ddsxx.financial_account a, prod_dds.customerxx b";
-    Map<String, String> res = sqlCompleter.findAliasesInSQL(sqlCompleter.getSqlDelimiter().delimit(sql, 0).getArguments());
+    Map<String, String> res = sqlCompleter.findAliasesInSQL(
+            sqlCompleter.getSqlDelimiter().delimit(sql, 0).getArguments());
     assertEquals(0, res.size());
   }
 
@@ -227,15 +231,24 @@ public class SqlCompleterTest {
     Map<String, String> aliases = new HashMap<>();
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(9, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("prod_dds", "prod_dds", CompletionType.schema.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("prod_emart", "prod_emart", CompletionType.schema.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("SUM", "SUM", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("SUBSTRING", "SUBSTRING", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("prod_dds", "prod_dds",
+            CompletionType.schema.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("prod_emart", "prod_emart",
+            CompletionType.schema.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("SUM", "SUM",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("SUBSTRING", "SUBSTRING",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("SELECT", "SELECT",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("ORDER", "ORDER",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("LIMIT", "LIMIT",
+            CompletionType.keyword.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("FROM", "FROM",
+            CompletionType.keyword.name())));
   }
 
   @Test
@@ -246,8 +259,10 @@ public class SqlCompleterTest {
     Map<String, String> aliases = new HashMap<>();
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(2, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("prod_dds", "prod_dds", CompletionType.schema.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("prod_emart", "prod_emart", CompletionType.schema.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("prod_dds", "prod_dds",
+            CompletionType.schema.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("prod_emart", "prod_emart",
+            CompletionType.schema.name())));
   }
 
   @Test
@@ -258,7 +273,9 @@ public class SqlCompleterTest {
     Map<String, String> aliases = new HashMap<>();
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(1, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("financial_account", "financial_account", CompletionType.table.name())));
+    assertTrue(candidates.contains(
+            new InterpreterCompletion("financial_account", "financial_account",
+                    CompletionType.table.name())));
   }
 
   @Test
@@ -269,8 +286,10 @@ public class SqlCompleterTest {
     Map<String, String> aliases = new HashMap<>();
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(2, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk", CompletionType.column.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id", CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk",
+            CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id",
+            CompletionType.column.name())));
   }
 
   @Test
@@ -282,8 +301,10 @@ public class SqlCompleterTest {
     aliases.put("a", "prod_dds.financial_account");
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(2, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk", CompletionType.column.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id", CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk",
+            CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id",
+            CompletionType.column.name())));
   }
 
   @Test
@@ -295,24 +316,32 @@ public class SqlCompleterTest {
     aliases.put("a", "prod_dds.financial_account");
     sqlCompleter.completeName(buffer, cursor, candidates, aliases);
     assertEquals(2, candidates.size());
-    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk", CompletionType.column.name())));
-    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id", CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_rk", "account_rk",
+            CompletionType.column.name())));
+    assertTrue(candidates.contains(new InterpreterCompletion("account_id", "account_id",
+            CompletionType.column.name())));
   }
 
   @Test
   public void testSchemaAndTable() {
     String buffer = "select * from prod_emart.fi";
-    tester.buffer(buffer).from(20).to(23).expect(newHashSet(new InterpreterCompletion("prod_emart", "prod_emart", CompletionType.schema.name()))).test();
-    tester.buffer(buffer).from(25).to(27).expect(newHashSet(new InterpreterCompletion("financial_account", "financial_account", CompletionType.table.name()))).test();
+    tester.buffer(buffer).from(20).to(23).expect(newHashSet(
+            new InterpreterCompletion("prod_emart", "prod_emart",
+                    CompletionType.schema.name()))).test();
+    tester.buffer(buffer).from(25).to(27).expect(newHashSet(
+            new InterpreterCompletion("financial_account", "financial_account",
+                    CompletionType.table.name()))).test();
   }
 
   @Test
   public void testEdges() {
     String buffer = "  ORDER  ";
-    tester.buffer(buffer).from(3).to(7).expect(newHashSet(new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(3).to(7).expect(newHashSet(
+            new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name()))).test();
     tester.buffer(buffer).from(0).to(1).expect(newHashSet(
         new InterpreterCompletion("ORDER", "ORDER", CompletionType.keyword.name()),
-        new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN", CompletionType.keyword.name()),
+        new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN",
+                CompletionType.keyword.name()),
         new InterpreterCompletion("SUBSTRING", "SUBSTRING", CompletionType.keyword.name()),
         new InterpreterCompletion("prod_emart", "prod_emart", CompletionType.schema.name()),
         new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name()),
@@ -326,23 +355,29 @@ public class SqlCompleterTest {
   @Test
   public void testMultipleWords() {
     String buffer = "SELE FRO LIM";
-    tester.buffer(buffer).from(2).to(4).expect(newHashSet(new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(6).to(8).expect(newHashSet(new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(10).to(12).expect(newHashSet(new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(2).to(4).expect(newHashSet(
+            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(6).to(8).expect(newHashSet(
+            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(10).to(12).expect(newHashSet(
+            new InterpreterCompletion("LIMIT", "LIMIT", CompletionType.keyword.name()))).test();
   }
 
   @Test
   public void testMultiLineBuffer() {
     String buffer = " \n SELE\nFRO";
-    tester.buffer(buffer).from(5).to(7).expect(newHashSet(new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
-    tester.buffer(buffer).from(9).to(11).expect(newHashSet(new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(5).to(7).expect(newHashSet(
+            new InterpreterCompletion("SELECT", "SELECT", CompletionType.keyword.name()))).test();
+    tester.buffer(buffer).from(9).to(11).expect(newHashSet(
+            new InterpreterCompletion("FROM", "FROM", CompletionType.keyword.name()))).test();
   }
 
   @Test
   public void testMultipleCompletionSuggestions() {
     String buffer = "SU";
     tester.buffer(buffer).from(2).to(2).expect(newHashSet(
-        new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN", CompletionType.keyword.name()),
+        new InterpreterCompletion("SUBCLASS_ORIGIN", "SUBCLASS_ORIGIN",
+                CompletionType.keyword.name()),
         new InterpreterCompletion("SUM", "SUM", CompletionType.keyword.name()),
         new InterpreterCompletion("SUBSTRING", "SUBSTRING", CompletionType.keyword.name()))
     ).test();

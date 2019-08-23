@@ -14,16 +14,17 @@ limitations under the License.
 <headroom tolerance="10" offset="30" class="noteAction"
           ng-show="note.id && !paragraphUrl">
   <h3>
-    <div style="float: left; width: auto; max-width: 40%"
-      ng-controller="ElasticInputCtrl as input">
-      <input type="text" pu-elastic-input class="form-control2" placeholder="New name" style="min-width: 0px; max-width: 95%;"
-           ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
-           ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
-      <p class="form-control-static2"
+    <div class="notebook-actionBar-title"
+         ng-controller="ElasticInputCtrl as input">
+      <input type="text" pu-elastic-input class="form-control-title-input" placeholder="New name"
+             ng-if="input.showEditor" ng-model="input.value" ng-escape="input.showEditor = false" focus-if="input.showEditor"
+             ng-blur="updateNoteName(input.value);input.showEditor = false;" ng-enter="updateNoteName(input.value);input.showEditor = false;" />
+      <p class="form-control-title"
+         ng-class="{'reverse-ellipsis ellipsis':noteName(note).length > 45}"
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
-         ng-show="!input.showEditor">{{noteName(note)}}</p>
+         ng-show="!input.showEditor"><span>{{noteName(note)}}</span></p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -107,7 +108,7 @@ limitations under the License.
       </button>
     </span>
 
-    <span class="labelBtn btn-group" role="group">
+    <span class="labelBtn btn-group" role="group" ng-if="isRevisionSupported()" >
       <div class="btn-group" role="group">
         <button type="button"
                 class="btn btn-default btn-xs dropdown-toggle"
@@ -151,6 +152,12 @@ limitations under the License.
             </div>
           </li>
         </ul>
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-click="toggleRevisionsComparator()"
+                tooltip-placement="bottom" uib-tooltip="Compare revisions">
+          <i class="fa fa-exchange"></i>
+        </button>
       </div>
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-default btn-xs revisionName" title="{{currentRevision}}">
@@ -226,13 +233,14 @@ limitations under the License.
     </span>
 
 <!-- put the delete action by itself for your protection -->
-      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+      <span class="labelBtn btn-group" style="vertical-align:middle; display:inline-block;">
         <!-- if the note is in the trash, remove note permanently -->
         <button ng-if="isTrash(note)"
                 type="button"
                 class="btn btn-default btn-xs"
                 ng-click="removeNote(note.id)"
                 ng-hide="viewOnly"
+                ng-class="{'disabled':isNoteRunning()}"
                 tooltip-placement="bottom" uib-tooltip="Remove this note permanently"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
@@ -243,20 +251,31 @@ limitations under the License.
                 class="btn btn-default btn-xs"
                 ng-click="moveNoteToTrash(note.id)"
                 ng-hide="viewOnly"
+                ng-class="{'disabled':isNoteRunning()}"
                 tooltip-placement="bottom" uib-tooltip="Move this note to trash"
                 ng-disabled="revisionView">
           <i class="icon-trash"></i>
         </button>
       </span>
 
+      <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+        <button type="button"
+                class="btn btn-default btn-xs"
+                ng-show="collaborativeMode"
+                tooltip-placement="bottom" uib-tooltip="Users who watch this note: {{collaborativeModeUsers.join(', ')}}"
+                style="background-color: rgba(0,151,255,0.36)">
+          <i class="icon-eye"> {{collaborativeModeUsers.length}}</i>
+        </button>
+      </span>
+
       <span ng-hide="viewOnly">
-      <div class="labelBtn btn-group">
+      <div class="labelBtn btn-group" ng-if="note.config.isZeppelinNotebookCronEnable">
         <div class="btn btn-default btn-xs dropdown-toggle"
              type="button"
              data-toggle="dropdown"
              ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
              tooltip-placement="bottom" uib-tooltip="Run scheduler"
-             ng-disabled="revisionView">
+             ng-disabled="revisionView || isTrash(note)">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
         <ul class="dropdown-menu" role="menu" style="width:300px">
@@ -282,14 +301,7 @@ limitations under the License.
                 </p>
               </div>
               <div>
-                <span>- Cron executing user (click enter in field to submit)</span>
-                <input type="text"
-                       ng-model="note.config.cronExecutingUser"
-                       ng-enter="setCronExecutingUser(note.config.cronExecutingUser)"
-                       dropdown-input />
-              </div>
-              <div>
-                <span>- auto-restart interpreter on cron execution </span>
+                <span>- After execution stop the interpreter </span>
                 <input type="checkbox"
                        ng-model="note.config.releaseresource"
                        ng-click="setReleaseResource(note.config.releaseresource)"/>

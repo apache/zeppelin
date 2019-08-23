@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('codeEditor', CodeEditorDirective)
+angular.module('zeppelinWebApp').directive('codeEditor', CodeEditorDirective);
 
 function CodeEditorDirective($templateRequest, $compile) {
   return {
@@ -23,16 +23,16 @@ function CodeEditorDirective($templateRequest, $compile) {
       dirtyText: '=dirtyText',
       originalText: '=originalText',
       onLoad: '=onLoad',
-      revisionView: '=revisionView'
+      revisionView: '=revisionView',
     },
-    link: function (scope, element, attrs, controller) {
-      $templateRequest('app/notebook/paragraph/code-editor/code-editor.directive.html').then(function (editorHtml) {
-        let editor = angular.element(editorHtml)
-        editor.attr('id', scope.paragraphId + '_editor')
-        element.append(editor)
-        $compile(editor)(scope)
-        console.debug('codeEditor directive revision view is ' + scope.revisionView)
-      })
-    }
-  }
+    link: function(scope, element, attrs, controller) {
+      $templateRequest('app/notebook/paragraph/code-editor/code-editor.directive.html').then(function(editorHtml) {
+        let editor = angular.element(editorHtml);
+        editor.attr('id', scope.paragraphId + '_editor');
+        element.append(editor);
+        $compile(editor)(scope);
+        console.debug('codeEditor directive revision view is ' + scope.revisionView);
+      });
+    },
+  };
 }

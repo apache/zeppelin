@@ -18,20 +18,15 @@
 package org.apache.zeppelin.interpreter.lifecycle;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -51,16 +46,21 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
   @Test
   public void testTimeout_1() throws InterpreterException, InterruptedException, IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.echo") instanceof RemoteInterpreter);
-    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo");
-    InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-        "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
-        null, null, new ArrayList<InterpreterContextRunner>(), null);
-    remoteInterpreter.interpret("hello world", context);
-    assertTrue(remoteInterpreter.isOpened());
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test") instanceof RemoteInterpreter);
+    RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.echo", "test");
+    assertFalse(remoteInterpreter.isOpened());
     InterpreterSetting interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
     assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+    Thread.sleep(15*1000);
+    // InterpreterGroup is not removed after 15 seconds, as TimeoutLifecycleManager only manage it after it is started
+    assertEquals(1, interpreterSetting.getAllInterpreterGroups().size());
+
+    InterpreterContext context = InterpreterContext.builder()
+        .setNoteId("noteId")
+        .setParagraphId("paragraphId")
+        .build();
+    remoteInterpreter.interpret("hello world", context);
+    assertTrue(remoteInterpreter.isOpened());
 
     Thread.sleep(15 * 1000);
     // interpreterGroup is timeout, so is removed.
@@ -70,9 +70,8 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
   @Test
   public void testTimeout_2() throws InterpreterException, InterruptedException, IOException {
-    interpreterSettingManager.setInterpreterBinding("user1", "note1", interpreterSettingManager.getSettingIds());
-    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.sleep") instanceof RemoteInterpreter);
-    final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.sleep");
+    assertTrue(interpreterFactory.getInterpreter("user1", "note1", "test.sleep", "test") instanceof RemoteInterpreter);
+    final RemoteInterpreter remoteInterpreter = (RemoteInterpreter) interpreterFactory.getInterpreter("user1", "note1", "test.sleep", "test");
 
     // simulate how zeppelin submit paragraph
     remoteInterpreter.getScheduler().submit(new Job("test-job", null) {
@@ -93,9 +92,10 @@ public class TimeoutLifecycleManagerTest extends AbstractInterpreterTest {
 
       @Override
       protected Object jobRun() throws Throwable {
-        InterpreterContext context = new InterpreterContext("noteId", "paragraphId", "repl",
-            "title", "text", AuthenticationInfo.ANONYMOUS, new HashMap<String, Object>(), new GUI(),
-            null, null, new ArrayList<InterpreterContextRunner>(), null);
+        InterpreterContext context = InterpreterContext.builder()
+            .setNoteId("noteId")
+            .setParagraphId("paragraphId")
+            .build();
         return remoteInterpreter.interpret("100000", context);
       }
 

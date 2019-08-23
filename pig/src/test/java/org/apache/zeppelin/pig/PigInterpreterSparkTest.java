@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Test;
 
@@ -30,9 +30,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 public class PigInterpreterSparkTest {
   private PigInterpreter pigInterpreter;
@@ -44,8 +43,7 @@ public class PigInterpreterSparkTest {
     properties.put("zeppelin.pig.includeJobStats", includeJobStats + "");
     pigInterpreter = new PigInterpreter(properties);
     pigInterpreter.open();
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
-        null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
 
   }
   @After
@@ -86,7 +84,8 @@ public class PigInterpreterSparkTest {
     result = pigInterpreter.interpret(pigscript, context);
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // syntax error
     pigscript = "a = load '" + tmpFile.getAbsolutePath() + "';"
@@ -133,7 +132,8 @@ public class PigInterpreterSparkTest {
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     // no job is launched, so no jobStats
-    assertTrue(result.message().get(0).getData().contains("Syntax error, unexpected symbol at or near 'a'"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Syntax error, unexpected symbol at or near 'a'"));
 
     // execution error
     pigscript = "a = load 'invalid_path';"

@@ -28,7 +28,11 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Load application
@@ -55,7 +59,7 @@ public class ApplicationLoader {
     String noteId;
     String paragraphId;
 
-    public RunningApplication(HeliumPackage packageInfo, String noteId, String paragraphId) {
+    RunningApplication(HeliumPackage packageInfo, String noteId, String paragraphId) {
       this.packageInfo = packageInfo;
       this.noteId = noteId;
       this.paragraphId = paragraphId;

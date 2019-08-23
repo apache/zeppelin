@@ -1,38 +1,23 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.zeppelin.python;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -40,24 +25,30 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * In order for this test to work, test env must have installed:
  * <ol>
- *  - <li>Python</li>
- *  - <li>NumPy</li>
- *  - <li>Pandas</li>
- *  - <li>PandaSql</li>
+ * - <li>Python</li>
+ * - <li>NumPy</li>
+ * - <li>Pandas</li>
+ * - <li>PandaSql</li>
  * <ol>
- *
+ * <p>
  * To run manually on such environment, use:
  * <code>
- *   mvn -Dpython.test.exclude='' test -pl python -am
+ * mvn -Dpython.test.exclude='' test -pl python -am
  * </code>
  */
 public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener {
@@ -79,14 +70,9 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     intpGroup = new InterpreterGroup();
 
     out = new InterpreterOutput(this);
-    context = new InterpreterContext("note", "id", null, "title", "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
-        new LocalResourcePool("id"),
-        new LinkedList<InterpreterContextRunner>(),
-        out);
+    context = InterpreterContext.builder()
+        .setInterpreterOut(out)
+        .build();
     InterpreterContext.set(context);
 
     python = new PythonInterpreter(p);
@@ -99,9 +85,8 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     intpGroup.put("note", Arrays.asList(python, sql));
 
 
-
     // to make sure python is running.
-    InterpreterResult ret = python.interpret("\n", context);
+    InterpreterResult ret = python.interpret("print(\"python initialized\")\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
     sql.open();
@@ -114,7 +99,8 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
 
   @Test
   public void dependenciesAreInstalled() throws InterpreterException {
-    InterpreterResult ret = python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
+    InterpreterResult ret =
+        python.interpret("import pandas\nimport pandasql\nimport numpy\n", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
   }
 
@@ -136,7 +122,7 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = python.interpret("import pandas as pd", context);
     ret = python.interpret("import numpy as np", context);
     // DataFrame df2 \w test data
-    ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), "+
+    ret = python.interpret("df2 = pd.DataFrame({ 'age'  : np.array([33, 51, 51, 34]), " +
         "'name' : pd.Categorical(['moon','jobs','gates','park'])})", context);
     assertEquals(ret.message().toString(), InterpreterResult.Code.SUCCESS, ret.code());
 
@@ -144,12 +130,16 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = sql.interpret("select name, age from df2 where age < 40", context);
 
     //then
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
+    assertEquals(new String(out.getOutputAt(1).toByteArray()),
+        InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE,
+        out.getOutputAt(1).getType());
     assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("moon\t33") > 0);
     assertTrue(new String(out.getOutputAt(1).toByteArray()).indexOf("park\t34") > 0);
 
-    assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from df2", context).code());
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        sql.interpret("select case when name==\"aa\" then name else name end from df2",
+            context).code());
   }
 
   @Test
@@ -178,8 +168,10 @@ public class PythonInterpreterPandasSqlTest implements InterpreterOutputListener
     ret = python.interpret("z.show(df1, show_index=True)", context);
 
     // then
-    assertEquals(new String(out.getOutputAt(0).toByteArray()), InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(new String(out.getOutputAt(1).toByteArray()), Type.TABLE, out.getOutputAt(1).getType());
+    assertEquals(new String(out.getOutputAt(0).toByteArray()),
+        InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(new String(out.getOutputAt(1).toByteArray()),
+        Type.TABLE, out.getOutputAt(1).getType());
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("index_name"));
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("nan"));
     assertTrue(new String(out.getOutputAt(1).toByteArray()).contains("6.7"));

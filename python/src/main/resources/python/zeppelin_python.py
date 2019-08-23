@@ -15,24 +15,12 @@
 # limitations under the License.
 #
 
-import os, sys, getopt, traceback, json, re
+import os, sys, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-from py4j.protocol import Py4JJavaError, Py4JNetworkError
-import warnings
+from py4j.protocol import Py4JJavaError
+
 import ast
-import traceback
-import warnings
-import signal
-import base64
-
-from io import BytesIO
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-# for back compatibility
 
 class Logger(object):
   def __init__(self):
@@ -48,222 +36,116 @@ class Logger(object):
     pass
 
 
-class PyZeppelinContext(object):
-  """ A context impl that uses Py4j to communicate to JVM
-  """
+class PythonCompletion:
+  def __init__(self, interpreter, userNameSpace):
+    self.interpreter = interpreter
+    self.userNameSpace = userNameSpace
 
-  def __init__(self, z):
-    self.z = z
-    self.paramOption = gateway.jvm.org.apache.zeppelin.display.ui.OptionInput.ParamOption
-    self.javaList = gateway.jvm.java.util.ArrayList
-    self.max_result = 1000
-    self._displayhook = lambda *args: None
-    self._setup_matplotlib()
+  def getObjectCompletion(self, text_value):
+    completions = [completion for completion in list(self.userNameSpace.keys()) if completion.startswith(text_value)]
+    builtinCompletions = [completion for completion in dir(__builtins__) if completion.startswith(text_value)]
+    return completions + builtinCompletions
 
-  def getInterpreterContext(self):
-    return self.z.getCurrentInterpreterContext()
-
-  def input(self, name, defaultValue=""):
-    return self.z.getGui().input(name, defaultValue)
-
-  def select(self, name, options, defaultValue=""):
-    javaOptions = gateway.new_array(self.paramOption, len(options))
-    i = 0
-    for tuple in options:
-      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
-      i += 1
-    return self.z.getGui().select(name, defaultValue, javaOptions)
-
-  def checkbox(self, name, options, defaultChecked=[]):
-    javaOptions = gateway.new_array(self.paramOption, len(options))
-    i = 0
-    for tuple in options:
-      javaOptions[i] = self.paramOption(tuple[0], tuple[1])
-      i += 1
-    javaDefaultCheck = self.javaList()
-    for check in defaultChecked:
-      javaDefaultCheck.append(check)
-    return self.z.getGui().checkbox(name, javaDefaultCheck, javaOptions)
-
-  def show(self, p, **kwargs):
-    if hasattr(p, '__name__') and p.__name__ == "matplotlib.pyplot":
-      self.show_matplotlib(p, **kwargs)
-    elif type(p).__name__ == "DataFrame": # does not play well with sub-classes
-      # `isinstance(p, DataFrame)` would req `import pandas.core.frame.DataFrame`
-      # and so a dependency on pandas
-      self.show_dataframe(p, **kwargs)
-    elif hasattr(p, '__call__'):
-      p() #error reporting
-
-  def show_dataframe(self, df, show_index=False, **kwargs):
-    """Pretty prints DF using Table Display System
-    """
-    limit = len(df) > self.max_result
-    header_buf = StringIO("")
-    if show_index:
-      idx_name = str(df.index.name) if df.index.name is not None else ""
-      header_buf.write(idx_name + "\t")
-    header_buf.write(str(df.columns[0]))
-    for col in df.columns[1:]:
-      header_buf.write("\t")
-      header_buf.write(str(col))
-    header_buf.write("\n")
-
-    body_buf = StringIO("")
-    rows = df.head(self.max_result).values if limit else df.values
-    index = df.index.values
-    for idx, row in zip(index, rows):
-      if show_index:
-        body_buf.write("%html <strong>{}</strong>".format(idx))
-        body_buf.write("\t")
-      body_buf.write(str(row[0]))
-      for cell in row[1:]:
-        body_buf.write("\t")
-        body_buf.write(str(cell))
-      body_buf.write("\n")
-    body_buf.seek(0); header_buf.seek(0)
-    #TODO(bzz): fix it, so it shows red notice, as in Spark
-    print("%table " + header_buf.read() + body_buf.read()) # +
-    #      ("\n<font color=red>Results are limited by {}.</font>" \
-    #          .format(self.max_result) if limit else "")
-    #)
-    body_buf.close(); header_buf.close()
-
-  def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
-                      **kwargs):
-    """Matplotlib show function
-    """
-    if fmt == "png":
-      img = BytesIO()
-      p.savefig(img, format=fmt)
-      img_str = b"data:image/png;base64,"
-      img_str += base64.b64encode(img.getvalue().strip())
-      img_tag = "<img src={img} style='width={width};height:{height}'>"
-      # Decoding is necessary for Python 3 compability
-      img_str = img_str.decode("ascii")
-      img_str = img_tag.format(img=img_str, width=width, height=height)
-    elif fmt == "svg":
-      img = StringIO()
-      p.savefig(img, format=fmt)
-      img_str = img.getvalue()
+  def getMethodCompletion(self, objName, methodName):
+    execResult = locals()
+    try:
+      exec("{} = dir({})".format("objectDefList", objName), _zcUserQueryNameSpace, execResult)
+    except:
+      self.interpreter.logPythonOutput("Fail to run dir on " + objName)
+      self.interpreter.logPythonOutput(traceback.format_exc())
+      return None
     else:
-      raise ValueError("fmt must be 'png' or 'svg'")
+      objectDefList = execResult['objectDefList']
+      return [completion for completion in execResult['objectDefList'] if completion.startswith(methodName)]
 
-    html = "%html <div style='width:{width};height:{height}'>{img}<div>"
-    print(html.format(width=width, height=height, img=img_str))
-    img.close()
+  def getCompletion(self, text_value):
+    if text_value == None:
+      return None
 
-  def configure_mpl(self, **kwargs):
-    import mpl_config
-    mpl_config.configure(**kwargs)
+    dotPos = text_value.find(".")
+    if dotPos == -1:
+      objName = text_value
+      completionList = self.getObjectCompletion(objName)
+    else:
+      objName = text_value[:dotPos]
+      methodName = text_value[dotPos + 1:]
+      completionList = self.getMethodCompletion(objName, methodName)
 
-  def _setup_matplotlib(self):
-    # If we don't have matplotlib installed don't bother continuing
-    try:
-      import matplotlib
-    except ImportError:
-      return
-    # Make sure custom backends are available in the PYTHONPATH
-    rootdir = os.environ.get('ZEPPELIN_HOME', os.getcwd())
-    mpl_path = os.path.join(rootdir, 'interpreter', 'lib', 'python')
-    if mpl_path not in sys.path:
-      sys.path.append(mpl_path)
+    if completionList is None or len(completionList) <= 0:
+      self.interpreter.setStatementsFinished("", False)
+    else:
+      result = json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList))))
+      self.interpreter.setStatementsFinished(result, False)
 
-    # Finally check if backend exists, and if so configure as appropriate
-    try:
-      matplotlib.use('module://backend_zinline')
-      import backend_zinline
+host = sys.argv[1]
+port = int(sys.argv[2])
 
-      # Everything looks good so make config assuming that we are using
-      # an inline backend
-      self._displayhook = backend_zinline.displayhook
-      self.configure_mpl(width=600, height=400, dpi=72,
-                         fontsize=10, interactive=True, format='png')
-    except ImportError:
-      # Fall back to Agg if no custom backend installed
-      matplotlib.use('Agg')
-      warnings.warn("Unable to load inline matplotlib backend, "
-                    "falling back to Agg")
-
-
-def handler_stop_signals(sig, frame):
-  sys.exit("Got signal : " + str(sig))
-
-
-signal.signal(signal.SIGINT, handler_stop_signals)
-
-host = "127.0.0.1"
-if len(sys.argv) >= 3:
-  host = sys.argv[2]
-
-_zcUserQueryNameSpace = {}
-client = GatewayClient(address=host, port=int(sys.argv[1]))
-
-#gateway = JavaGateway(client, auto_convert = True)
-gateway = JavaGateway(client)
+if "PY4J_GATEWAY_SECRET" in os.environ:
+  from py4j.java_gateway import GatewayParameters
+  gateway_secret = os.environ["PY4J_GATEWAY_SECRET"]
+  gateway = JavaGateway(gateway_parameters=GatewayParameters(
+    address=host, port=port, auth_token=gateway_secret, auto_convert=True))
+else:
+  gateway = JavaGateway(GatewayClient(address=host, port=port), auto_convert=True)
 
 intp = gateway.entry_point
+_zcUserQueryNameSpace = {}
+
+completion = PythonCompletion(intp, _zcUserQueryNameSpace)
+_zcUserQueryNameSpace["__zeppelin_completion__"] = completion
+_zcUserQueryNameSpace["gateway"] = gateway
+
+from zeppelin_context import PyZeppelinContext
+if intp.getZeppelinContext():
+  z = __zeppelin__ = PyZeppelinContext(intp.getZeppelinContext(), gateway)
+  __zeppelin__._setup_matplotlib()
+  _zcUserQueryNameSpace["z"] = z
+  _zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
+
 intp.onPythonScriptInitialized(os.getpid())
-
-java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
-z = __zeppelin__ = PyZeppelinContext(intp)
-__zeppelin__._setup_matplotlib()
-
-_zcUserQueryNameSpace["__zeppelin__"] = __zeppelin__
-_zcUserQueryNameSpace["z"] = z
-
+# redirect stdout/stderr to java side so that PythonInterpreter can capture the python execution result
 output = Logger()
 sys.stdout = output
-#sys.stderr = output
+sys.stderr = output
 
 while True :
   req = intp.getStatements()
-  if req == None:
-    break
-
   try:
     stmts = req.statements().split("\n")
-    final_code = []
+    isForCompletion = req.isForCompletion()
 
     # Get post-execute hooks
     try:
-      global_hook = intp.getHook('post_exec_dev')
+      if req.isCallHooks():
+        global_hook = intp.getHook('post_exec_dev')
+      else:
+        global_hook = None
     except:
       global_hook = None
 
     try:
-      user_hook = __zeppelin__.getHook('post_exec')
+      if req.isCallHooks():
+        user_hook = __zeppelin__.getHook('post_exec')
+      else:
+        user_hook = None
     except:
       user_hook = None
-      
+
     nhooks = 0
-    for hook in (global_hook, user_hook):
-      if hook:
-        nhooks += 1
+    if not isForCompletion:
+      for hook in (global_hook, user_hook):
+        if hook:
+          nhooks += 1
 
-    for s in stmts:
-      if s == None:
-        continue
-
-      # skip comment
-      s_stripped = s.strip()
-      if len(s_stripped) == 0 or s_stripped.startswith("#"):
-        continue
-
-      final_code.append(s)
-
-    if final_code:
+    if stmts:
       # use exec mode to compile the statements except the last statement,
       # so that the last statement's evaluation will be printed to stdout
-      code = compile('\n'.join(final_code), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
-
+      code = compile('\n'.join(stmts), '<stdin>', 'exec', ast.PyCF_ONLY_AST, 1)
       to_run_hooks = []
       if (nhooks > 0):
         to_run_hooks = code.body[-nhooks:]
-
       to_run_exec, to_run_single = (code.body[:-(nhooks + 1)],
-                                    [code.body[-(nhooks + 1)]])
-
+                                   [code.body[-(nhooks + 1)]] if len(code.body) > nhooks else [])
       try:
         for node in to_run_exec:
           mod = ast.Module([node])
@@ -279,19 +161,37 @@ while True :
           mod = ast.Module([node])
           code = compile(mod, '<stdin>', 'exec')
           exec(code, _zcUserQueryNameSpace)
-      except:
-        raise Exception(traceback.format_exc())
 
-    intp.setStatementsFinished("", False)
+        if not isForCompletion:
+          # only call it when it is not for code completion. code completion will call it in
+          # PythonCompletion.getCompletion
+          intp.setStatementsFinished("", False)
+      except Py4JJavaError:
+        # raise it to outside try except
+        raise
+      except:
+        if not isForCompletion:
+          # extract which line incur error from error message. e.g.
+          # Traceback (most recent call last):
+          # File "<stdin>", line 1, in <module>
+          # ZeroDivisionError: integer division or modulo by zero
+          exception = traceback.format_exc()
+          m = re.search("File \"<stdin>\", line (\d+).*", exception)
+          if m:
+            line_no = int(m.group(1))
+            intp.setStatementsFinished(
+              "Fail to execute line {}: {}\n".format(line_no, stmts[line_no - 1]) + exception, True)
+          else:
+            intp.setStatementsFinished(exception, True)
+    else:
+      intp.setStatementsFinished("", False)
+
   except Py4JJavaError:
     excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
     innerErrorStart = excInnerError.find("Py4JJavaError:")
     if innerErrorStart > -1:
-       excInnerError = excInnerError[innerErrorStart:]
+      excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
-  except Py4JNetworkError:
-    # lost connection from gateway server. exit
-    sys.exit(1)
   except:
     intp.setStatementsFinished(traceback.format_exc(), True)
 

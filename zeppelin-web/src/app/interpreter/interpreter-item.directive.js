@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('interpreterItem', InterpreterItemDirective)
+angular.module('zeppelinWebApp').directive('interpreterItem', InterpreterItemDirective);
 
-function InterpreterItemDirective ($timeout) {
-  'ngInject'
+function InterpreterItemDirective($timeout) {
+  'ngInject';
 
   return {
     restrict: 'A',
-    link: function (scope, element, attr) {
+    link: function(scope, element, attr) {
       if (scope.$last === true) {
-        $timeout(function () {
-          let id = 'ngRenderFinished'
-          scope.$emit(id)
-        })
+        $timeout(function() {
+          let id = 'ngRenderFinished';
+          scope.$emit(id);
+        });
       }
-    }
-  }
+    },
+  };
 }

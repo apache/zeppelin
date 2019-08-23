@@ -33,10 +33,9 @@ import java.net.URLEncoder;
 import java.util.Map;
 
 /**
- * Pegdown plugin for YUML
+ * Pegdown plugin for YUML.
  */
 public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
-
   public PegdownYumlPlugin() {
     super(PegdownParser.OPTIONS,
         PegdownParser.PARSING_TIMEOUT_AS_MILLIS,
@@ -52,41 +51,41 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   public static final String TAG = "%%%";
 
-  Rule StartMarker() {
+  Rule startMarker() {
     return Sequence(Spn1(), TAG, Sp(), "yuml", Sp());
   }
 
-  String EndMarker() {
+  String endMarker() {
     return TAG;
   }
 
-  Rule ParameterName() {
+  Rule parameterName() {
     return FirstOf("type", "style", "scale", "format", "dir");
   }
 
-  Rule Body() {
+  Rule body() {
     return OneOrMore(TestNot(TAG), BaseParser.ANY);
   }
 
-  Rule BlockRule() {
-    ParamVar<String, String> params = new ParamVar<String, String>();
+  Rule blockRule() {
+    ParamVar<String, String> params = new ParamVar<>();
     StringBuilderVar name = new StringBuilderVar();
     StringBuilderVar value = new StringBuilderVar();
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-        StartMarker(),
+        startMarker(),
         ZeroOrMore(
             Sequence(
-                ParameterName(), name.append(match()),
+                parameterName(), name.append(match()),
                 String("="),
                 OneOrMore(Alphanumeric()), value.append(match())),
             Sp(),
             params.put(name.getString(), value.getString()),
             name.clear(), value.clear()),
-        Body(),
+        body(),
         body.append(match()),
-        EndMarker(),
+        endMarker(),
         push(
             new ExpImageNode(
                 "title", createYumlUrl(params.get(), body.getString()), new TextNode("")))
@@ -138,6 +137,6 @@ public class PegdownYumlPlugin extends Parser implements BlockPluginParser {
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[]{BlockRule()};
+    return new Rule[]{blockRule()};
   }
 }

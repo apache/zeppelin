@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('ElasticInputCtrl', ElasticInputCtrl)
+angular.module('zeppelinWebApp').controller('ElasticInputCtrl', ElasticInputCtrl);
 
-function ElasticInputCtrl () {
-  let vm = this
-  vm.showEditor = false
-  vm.value = ''
+function ElasticInputCtrl() {
+  let vm = this;
+  vm.showEditor = false;
+  vm.value = '';
 }

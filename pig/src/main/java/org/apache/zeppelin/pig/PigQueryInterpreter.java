@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-
 package org.apache.zeppelin.pig;
-
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -28,8 +26,6 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.tools.pigscript.parser.ParseException;
 import org.apache.pig.tools.pigstats.PigStats;
 import org.apache.pig.tools.pigstats.ScriptState;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,12 +36,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.ResultMessages;
+
 /**
  *
  */
 public class PigQueryInterpreter extends BasePigInterpreter {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(PigQueryInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PigQueryInterpreter.class);
   private static final String MAX_RESULTS = "zeppelin.pig.maxResult";
   private PigServer pigServer;
   private int maxResult;
@@ -56,7 +57,7 @@ public class PigQueryInterpreter extends BasePigInterpreter {
 
   @Override
   public void open() throws InterpreterException {
-    pigServer = getPigInterpreter().getPigServer();
+    pigServer = getInterpreterInTheSameSessionByClassName(PigInterpreter.class).getPigServer();
     maxResult = Integer.parseInt(getProperty(MAX_RESULTS));
   }
 
@@ -157,24 +158,5 @@ public class PigQueryInterpreter extends BasePigInterpreter {
   @Override
   public PigServer getPigServer() {
     return this.pigServer;
-  }
-
-  private PigInterpreter getPigInterpreter() throws InterpreterException {
-    LazyOpenInterpreter lazy = null;
-    PigInterpreter pig = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(PigInterpreter.class.getName());
-
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-    pig = (PigInterpreter) p;
-
-    if (lazy != null) {
-      lazy.open();
-    }
-    return pig;
   }
 }

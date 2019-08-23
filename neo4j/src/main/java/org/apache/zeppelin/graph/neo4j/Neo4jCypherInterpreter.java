@@ -17,25 +17,7 @@
 
 package org.apache.zeppelin.graph.neo4j;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.graph.GraphResult;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.internal.util.Iterables;
 import org.neo4j.driver.v1.Record;
@@ -46,7 +28,26 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.neo4j.driver.v1.types.TypeSystem;
 import org.neo4j.driver.v1.util.Pair;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.zeppelin.graph.neo4j.utils.Neo4jConversionUtils;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.graph.GraphResult;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Neo4j interpreter for Zeppelin.
@@ -200,12 +201,28 @@ public class Neo4jCypherInterpreter extends Interpreter {
           value = val.asList();
         } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.MAP())) {
           value = val.asMap();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.POINT())) {
+          value = val.asPoint();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DATE())) {
+          value = val.asLocalDate();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.TIME())) {
+          value = val.asOffsetTime();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.LOCAL_TIME())) {
+          value = val.asLocalTime();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.LOCAL_DATE_TIME())) {
+          value = val.asLocalDateTime();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DATE_TIME())) {
+          value = val.asZonedDateTime();
+        } else if (val.hasType(InternalTypeSystem.TYPE_SYSTEM.DURATION())) {
+          value = val.asIsoDuration();
         }
       }
       if (value instanceof Collection) {
         try {
           value = jsonMapper.writer().writeValueAsString(value);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+          logger.debug("ignored exception: " + e.getMessage());
+        }
       }
     }
     line.set(position, value == null ? null : value.toString());
@@ -270,5 +287,4 @@ public class Neo4jCypherInterpreter extends Interpreter {
   @Override
   public void cancel(InterpreterContext context) {
   }
-
 }

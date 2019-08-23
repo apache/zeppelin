@@ -24,14 +24,14 @@ public interface ResourcePool {
    * Get unique id of the resource pool
    * @return
    */
-  public String id();
+  String id();
 
   /**
    * Get resource from name
    * @param name Resource name
    * @return null if resource not found
    */
-  public Resource get(String name);
+  Resource get(String name);
 
   /**
    * Get resource from name
@@ -40,20 +40,20 @@ public interface ResourcePool {
    * @param name Resource name
    * @return null if resource not found
    */
-  public Resource get(String noteId, String paragraphId, String name);
+  Resource get(String noteId, String paragraphId, String name);
 
   /**
    * Get all resources
    * @return
    */
-  public ResourceSet getAll();
+  ResourceSet getAll();
 
   /**
    * Put an object into resource pool
    * @param name
    * @param object
    */
-  public void put(String name, Object object);
+  void put(String name, Object object);
 
   /**
    * Put an object into resource pool
@@ -65,14 +65,14 @@ public interface ResourcePool {
    * @param name
    * @param object
    */
-  public void put(String noteId, String paragraphId, String name, Object object);
+  void put(String noteId, String paragraphId, String name, Object object);
 
   /**
    * Remove object
    * @param name Resource name to remove
    * @return removed Resource. null if resource not found
    */
-  public Resource remove(String name);
+  Resource remove(String name);
 
   /**
    * Remove object
@@ -81,5 +81,5 @@ public interface ResourcePool {
    * @param name Resource name to remove
    * @return removed Resource. null if resource not found
    */
-  public Resource remove(String noteId, String paragraphId, String name);
+  Resource remove(String noteId, String paragraphId, String name);
 }

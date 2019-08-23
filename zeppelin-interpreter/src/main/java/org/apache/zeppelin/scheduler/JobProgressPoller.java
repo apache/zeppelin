@@ -60,6 +60,8 @@ public class JobProgressPoller extends Thread {
         }
         Thread.sleep(intervalMs);
       }
-    } catch (InterruptedException ignored) {}
+    } catch (InterruptedException ignored) {
+      // just ignore this exception
+    }
   }
 }

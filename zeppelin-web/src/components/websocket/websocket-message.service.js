@@ -12,100 +12,100 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMessageService)
+angular.module('zeppelinWebApp').service('websocketMsgSrv', WebsocketMessageService);
 
-function WebsocketMessageService ($rootScope, websocketEvents) {
-  'ngInject'
+function WebsocketMessageService($rootScope, websocketEvents) {
+  'ngInject';
 
   return {
 
-    getHomeNote: function () {
-      websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'})
+    getHomeNote: function() {
+      websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
     },
 
-    createNotebook: function (noteName, defaultInterpreterId) {
+    createNotebook: function(noteName, defaultInterpreterGroup) {
       websocketEvents.sendNewEvent({
         op: 'NEW_NOTE',
         data: {
           name: noteName,
-          defaultInterpreterId: defaultInterpreterId
-        }
-      })
+          defaultInterpreterGroup: defaultInterpreterGroup,
+        },
+      });
     },
 
-    moveNoteToTrash: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}})
+    moveNoteToTrash: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
     },
 
-    moveFolderToTrash: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}})
+    moveFolderToTrash: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderPath}});
     },
 
-    restoreNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}})
+    restoreNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
     },
 
-    restoreFolder: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}})
+    restoreFolder: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderPath}});
     },
 
-    restoreAll: function () {
-      websocketEvents.sendNewEvent({op: 'RESTORE_ALL'})
+    restoreAll: function() {
+      websocketEvents.sendNewEvent({op: 'RESTORE_ALL'});
     },
 
-    deleteNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}})
+    deleteNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
     },
 
-    removeFolder: function (folderId) {
-      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}})
+    removeFolder: function(folderPath) {
+      websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderPath}});
     },
 
-    emptyTrash: function () {
-      websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'})
+    emptyTrash: function() {
+      websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
     },
 
-    cloneNote: function (noteIdToClone, newNoteName) {
-      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}})
+    cloneNote: function(noteIdToClone, newNoteName) {
+      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
     },
 
-    getNoteList: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_NOTES'})
+    getNoteList: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
     },
 
-    reloadAllNotesFromRepo: function () {
-      websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'})
+    reloadAllNotesFromRepo: function() {
+      websocketEvents.sendNewEvent({op: 'RELOAD_NOTES_FROM_REPO'});
     },
 
-    getNote: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}})
+    getNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
     },
 
-    updateNote: function (noteId, noteName, noteConfig) {
-      websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}})
+    updateNote: function(noteId, noteName, noteConfig) {
+      websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
     },
 
-    updatePersonalizedMode: function (noteId, modeValue) {
-      websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}})
+    updatePersonalizedMode: function(noteId, modeValue) {
+      websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
     },
 
-    renameNote: function (noteId, noteName) {
-      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName}})
+    renameNote: function(noteId, noteName, relative) {
+      websocketEvents.sendNewEvent({op: 'NOTE_RENAME', data: {id: noteId, name: noteName, relative: relative}});
     },
 
-    renameFolder: function (folderId, folderName) {
-      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderName}})
+    renameFolder: function(folderId, folderPath) {
+      websocketEvents.sendNewEvent({op: 'FOLDER_RENAME', data: {id: folderId, name: folderPath}});
     },
 
-    moveParagraph: function (paragraphId, newIndex) {
-      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}})
+    moveParagraph: function(paragraphId, newIndex) {
+      websocketEvents.sendNewEvent({op: 'MOVE_PARAGRAPH', data: {id: paragraphId, index: newIndex}});
     },
 
-    insertParagraph: function (newIndex) {
-      websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}})
+    insertParagraph: function(newIndex) {
+      websocketEvents.sendNewEvent({op: 'INSERT_PARAGRAPH', data: {index: newIndex}});
     },
 
-    copyParagraph: function (newIndex, paragraphTitle, paragraphData,
+    copyParagraph: function(newIndex, paragraphTitle, paragraphData,
                             paragraphConfig, paragraphParams) {
       websocketEvents.sendNewEvent({
         op: 'COPY_PARAGRAPH',
@@ -114,12 +114,12 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
-      })
+          params: paragraphParams,
+        },
+      });
     },
 
-    updateAngularObject: function (noteId, paragraphId, name, value, interpreterGroupId) {
+    updateAngularObject: function(noteId, paragraphId, name, value, interpreterGroupId) {
       websocketEvents.sendNewEvent({
         op: 'ANGULAR_OBJECT_UPDATED',
         data: {
@@ -127,39 +127,39 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           paragraphId: paragraphId,
           name: name,
           value: value,
-          interpreterGroupId: interpreterGroupId
-        }
-      })
+          interpreterGroupId: interpreterGroupId,
+        },
+      });
     },
 
-    clientBindAngularObject: function (noteId, name, value, paragraphId) {
+    clientBindAngularObject: function(noteId, name, value, paragraphId) {
       websocketEvents.sendNewEvent({
         op: 'ANGULAR_OBJECT_CLIENT_BIND',
         data: {
           noteId: noteId,
           name: name,
           value: value,
-          paragraphId: paragraphId
-        }
-      })
+          paragraphId: paragraphId,
+        },
+      });
     },
 
-    clientUnbindAngularObject: function (noteId, name, paragraphId) {
+    clientUnbindAngularObject: function(noteId, name, paragraphId) {
       websocketEvents.sendNewEvent({
         op: 'ANGULAR_OBJECT_CLIENT_UNBIND',
         data: {
           noteId: noteId,
           name: name,
-          paragraphId: paragraphId
-        }
-      })
+          paragraphId: paragraphId,
+        },
+      });
     },
 
-    cancelParagraphRun: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}})
+    cancelParagraphRun: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
 
-    paragraphExecutedBySpell: function (paragraphId, paragraphTitle,
+    paragraphExecutedBySpell: function(paragraphId, paragraphTitle,
                                         paragraphText, paragraphResultsMsg,
                                         paragraphStatus, paragraphErrorMessage,
                                         paragraphConfig, paragraphParams,
@@ -172,10 +172,10 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           paragraph: paragraphText,
           results: {
             code: paragraphStatus,
-            msg: paragraphResultsMsg.map(dataWithType => {
-              let serializedData = dataWithType.data
-              return { type: dataWithType.type, data: serializedData, }
-            })
+            msg: paragraphResultsMsg.map((dataWithType) => {
+              let serializedData = dataWithType.data;
+              return {type: dataWithType.type, data: serializedData};
+            }),
           },
           status: paragraphStatus,
           errorMessage: paragraphErrorMessage,
@@ -183,11 +183,11 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           params: paragraphParams,
           dateStarted: paragraphDateStarted,
           dateFinished: paragraphDateFinished,
-        }
-      })
+        },
+      });
     },
 
-    runParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
       websocketEvents.sendNewEvent({
         op: 'RUN_PARAGRAPH',
         data: {
@@ -195,45 +195,45 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
-      })
+          params: paragraphParams,
+        },
+      });
     },
 
-    runAllParagraphs: function (noteId, paragraphs) {
+    runAllParagraphs: function(noteId, paragraphs) {
       websocketEvents.sendNewEvent({
         op: 'RUN_ALL_PARAGRAPHS',
         data: {
           noteId: noteId,
-          paragraphs: JSON.stringify(paragraphs)
-        }
-      })
+          paragraphs: JSON.stringify(paragraphs),
+        },
+      });
     },
 
-    removeParagraph: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}})
+    removeParagraph: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
 
-    clearParagraphOutput: function (paragraphId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}})
+    clearParagraphOutput: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_OUTPUT', data: {id: paragraphId}});
     },
 
-    clearAllParagraphOutput: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}})
+    clearAllParagraphOutput: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_CLEAR_ALL_OUTPUT', data: {id: noteId}});
     },
 
-    completion: function (paragraphId, buf, cursor) {
+    completion: function(paragraphId, buf, cursor) {
       websocketEvents.sendNewEvent({
         op: 'COMPLETION',
         data: {
           id: paragraphId,
           buf: buf,
-          cursor: cursor
-        }
-      })
+          cursor: cursor,
+        },
+      });
     },
 
-    commitParagraph: function (paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId) {
+    commitParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams, noteId) {
       return websocketEvents.sendNewEvent({
         op: 'COMMIT_PARAGRAPH',
         data: {
@@ -242,18 +242,32 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
           title: paragraphTitle,
           paragraph: paragraphData,
           config: paragraphConfig,
-          params: paragraphParams
-        }
-      })
+          params: paragraphParams,
+        },
+      });
     },
 
-    importNote: function (note) {
+    patchParagraph: function(paragraphId, noteId, patch) {
+      // javascript add "," if change contains several patches
+      // but java library requires patch list without ","
+      patch = patch.replace(/,@@/g, '@@');
+      return websocketEvents.sendNewEvent({
+        op: 'PATCH_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          noteId: noteId,
+          patch: patch,
+        },
+      });
+    },
+
+    importNote: function(note) {
       websocketEvents.sendNewEvent({
         op: 'IMPORT_NOTE',
         data: {
-          note: note
-        }
-      })
+          note: note,
+        },
+      });
     },
 
     convertNote: function (note, name) {
@@ -266,89 +280,118 @@ function WebsocketMessageService ($rootScope, websocketEvents) {
       })
     },
 
-    checkpointNote: function (noteId, commitMessage) {
+    checkpointNote: function(noteId, commitMessage) {
       websocketEvents.sendNewEvent({
         op: 'CHECKPOINT_NOTE',
         data: {
           noteId: noteId,
-          commitMessage: commitMessage
-        }
-      })
+          commitMessage: commitMessage,
+        },
+      });
     },
 
-    setNoteRevision: function (noteId, revisionId) {
+    setNoteRevision: function(noteId, revisionId) {
       websocketEvents.sendNewEvent({
         op: 'SET_NOTE_REVISION',
         data: {
           noteId: noteId,
-          revisionId: revisionId
-        }
-      })
+          revisionId: revisionId,
+        },
+      });
     },
 
-    listRevisionHistory: function (noteId) {
+    listRevisionHistory: function(noteId) {
       websocketEvents.sendNewEvent({
         op: 'LIST_REVISION_HISTORY',
         data: {
-          noteId: noteId
-        }
-      })
+          noteId: noteId,
+        },
+      });
     },
 
-    getNoteByRevision: function (noteId, revisionId) {
+    getNoteByRevision: function(noteId, revisionId) {
       websocketEvents.sendNewEvent({
         op: 'NOTE_REVISION',
         data: {
           noteId: noteId,
-          revisionId: revisionId
-        }
-      })
+          revisionId: revisionId,
+        },
+      });
     },
 
-    getEditorSetting: function (paragraphId, replName) {
+    getNoteByRevisionForCompare: function(noteId, revisionId, position) {
+      websocketEvents.sendNewEvent({
+        op: 'NOTE_REVISION_FOR_COMPARE',
+        data: {
+          noteId: noteId,
+          revisionId: revisionId,
+          position: position,
+        },
+      });
+    },
+
+    getEditorSetting: function(paragraphId, replName) {
       websocketEvents.sendNewEvent({
         op: 'EDITOR_SETTING',
         data: {
           paragraphId: paragraphId,
-          magic: replName
-        }
-      })
+          magic: replName,
+        },
+      });
     },
 
-    isConnected: function () {
-      return websocketEvents.isConnected()
+    isConnected: function() {
+      return websocketEvents.isConnected();
     },
 
-    getJobs: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'})
+    getJobs: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_NOTE_JOBS'});
     },
 
-    disconnectJobEvent: function () {
-      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'})
+    disconnectJobEvent: function() {
+      websocketEvents.sendNewEvent({op: 'UNSUBSCRIBE_UPDATE_NOTE_JOBS'});
     },
 
-    getUpdateNoteJobsList: function (lastUpdateServerUnixTime) {
+    getUpdateNoteJobsList: function(lastUpdateServerUnixTime) {
       websocketEvents.sendNewEvent(
         {op: 'LIST_UPDATE_NOTE_JOBS', data: {lastUpdateUnixTime: lastUpdateServerUnixTime * 1}}
-      )
+      );
     },
 
-    getInterpreterBindings: function (noteId) {
-      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}})
+    getInterpreterBindings: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_BINDINGS', data: {noteId: noteId}});
     },
 
-    saveInterpreterBindings: function (noteId, selectedSettingIds) {
-      websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-        data: {noteId: noteId, selectedSettingIds: selectedSettingIds}})
+    saveInterpreterBindings: function(noteId, selectedSettingIds) {
+      // websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
+      //   data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
     },
 
-    listConfigurations: function () {
-      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'})
+    listConfigurations: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_CONFIGURATIONS'});
     },
 
-    getInterpreterSettings: function () {
-      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'})
+    getInterpreterSettings: function() {
+      websocketEvents.sendNewEvent({op: 'GET_INTERPRETER_SETTINGS'});
     },
 
-  }
+    saveNoteForms: function(note) {
+      websocketEvents.sendNewEvent({op: 'SAVE_NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          noteParams: note.noteParams,
+        },
+      });
+    },
+
+    removeNoteForms: function(note, formName) {
+      websocketEvents.sendNewEvent({op: 'REMOVE_NOTE_FORMS',
+        data: {
+          noteId: note.id,
+          formName: formName,
+        },
+      });
+    },
+
+  };
 }

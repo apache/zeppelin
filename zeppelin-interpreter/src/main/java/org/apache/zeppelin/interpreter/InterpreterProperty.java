@@ -34,6 +34,7 @@ public class InterpreterProperty {
   public InterpreterProperty(String name, Object value) {
     this.name = name;
     this.value = value;
+    this.type = InterpreterPropertyType.TEXTAREA.getValue();
   }
 
   public String getName() {

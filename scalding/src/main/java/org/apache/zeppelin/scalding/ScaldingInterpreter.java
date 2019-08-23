@@ -17,19 +17,9 @@
 
 package org.apache.zeppelin.scalding;
 
-import com.twitter.scalding.ScaldingILoop;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Console;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,6 +31,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import com.twitter.scalding.ScaldingILoop;
+
+import scala.Console;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Scalding interpreter for Zeppelin. Based off the Spark interpreter code.
@@ -54,8 +56,7 @@ public class ScaldingInterpreter extends Interpreter {
   static final String MAX_OPEN_INSTANCES = "max.open.instances";
   static final String MAX_OPEN_INSTANCES_DEFAULT = "50";
 
-  public static final List NO_COMPLETION =
-    Collections.unmodifiableList(new ArrayList<>());
+  public static final List NO_COMPLETION = Collections.unmodifiableList(new ArrayList<>());
 
   static int numOpenInstances = 0;
   private ScaldingILoop interpreter;
@@ -111,7 +112,7 @@ public class ScaldingInterpreter extends Interpreter {
 
     if (interpreter == null) {
       logger.error(
-        "interpreter == null, open may not have been called because max.open.instances reached");
+          "interpreter == null, open may not have been called because max.open.instances reached");
       return new InterpreterResult(Code.ERROR,
         "interpreter == null\n" +
         "open may not have been called because max.open.instances reached"
@@ -135,11 +136,11 @@ public class ScaldingInterpreter extends Interpreter {
         final String cmd1 = cmd;
         final InterpreterContext contextInterpreter1 = contextInterpreter;
         PrivilegedExceptionAction<InterpreterResult> action =
-          new PrivilegedExceptionAction<InterpreterResult>() {
-            public InterpreterResult run() throws Exception {
-              return interpret(cmd1.split("\n"), contextInterpreter1);
-            }
-          };
+            new PrivilegedExceptionAction<InterpreterResult>() {
+              public InterpreterResult run() throws Exception {
+                return interpret(cmd1.split("\n"), contextInterpreter1);
+              }
+            };
         interpreterResult = ugi.doAs(action);
       } catch (Exception e) {
         logger.error("Error running command with ugi.doAs", e);

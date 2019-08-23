@@ -12,37 +12,37 @@
  * limitations under the License.
  */
 
-import './expand-collapse.css'
+import './expand-collapse.css';
 
-angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapseDirective)
+angular.module('zeppelinWebApp').directive('expandCollapse', expandCollapseDirective);
 
 function expandCollapseDirective() {
   return {
     restrict: 'EA',
-    link: function (scope, element, attrs) {
-      angular.element(element).click(function (event) {
-        if (angular.element(element).find('.expandable:visible').length > 1) {
-          angular.element(element).find('.expandable:visible').slideUp('slow')
-          angular.element(element).find('i.fa-folder-open').toggleClass('fa-folder fa-folder-open')
+    link: function(scope, element, attrs) {
+      angular.element(element).click(function(event) {
+        if (angular.element(element).next('.expandable:visible').length > 1) {
+          angular.element(element).next('.expandable:visible').slideUp('slow');
+          angular.element(element).find('i.fa-folder-open').toggleClass('fa-folder fa-folder-open');
         } else {
-          angular.element(element).find('.expandable').first().slideToggle('200', function () {
+          angular.element(element).next('.expandable').first().slideToggle('200', function() {
             // do not toggle trash folder
             if (angular.element(element).find('.fa-trash-o').length === 0) {
-              angular.element(element).find('i').first().toggleClass('fa-folder fa-folder-open')
+              angular.element(element).find('i').first().toggleClass('fa-folder fa-folder-open');
             }
-          })
+          });
         }
 
-        let target = event.target
+        let target = event.target;
 
         // add note
         if (target.classList !== undefined && target.classList.contains('fa-plus') &&
           target.tagName.toLowerCase() === 'i') {
-          return
+          return;
         }
 
-        event.stopPropagation()
-      })
-    }
-  }
+        event.stopPropagation();
+      });
+    },
+  };
 }

@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.dep;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Collections;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,6 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.sonatype.aether.RepositoryException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 
 public class DependencyResolverTest {
   private static DependencyResolver resolver;
@@ -42,12 +42,13 @@ public class DependencyResolverTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" +
+        System.currentTimeMillis());
     testPath = tmpDir.getAbsolutePath() + "/test-repo";
     testCopyPath = new File(tmpDir, "test-copy-repo");
     resolver = new DependencyResolver(testPath);
   }
-  
+
   @AfterClass
   public static void tearDown() throws Exception {
     FileUtils.deleteDirectory(tmpDir);
@@ -65,6 +66,7 @@ public class DependencyResolverTest {
 
   @Test
   public void testDelRepo() {
+    resolver.addRepo("securecentral", "https://repo1.maven.org/maven2", false);
     int reposCnt = resolver.getRepos().size();
     resolver.delRepo("securecentral");
     resolver.delRepo("badId");
@@ -85,14 +87,15 @@ public class DependencyResolverTest {
     FileUtils.cleanDirectory(testCopyPath);
 
     // load from added repository
-    resolver.addRepo("sonatype", "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
-    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
-    assertEquals(testCopyPath.list().length, 8);
+    resolver.addRepo("sonatype",
+        "https://oss.sonatype.org/content/repositories/ksoap2-android-releases/", false);
+    resolver.load("com.google.code.ksoap2-android:ksoap2-jsoup:3.6.3", testCopyPath);
+    assertEquals(testCopyPath.list().length, 10);
 
     // load invalid artifact
     resolver.delRepo("sonatype");
     exception.expect(RepositoryException.class);
-    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
+    resolver.load("com.agimatec:agimatec-validation:0.12.0", testCopyPath);
   }
 
   @Test

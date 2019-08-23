@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.repo.mock.VFSNotebookRepoMock;
@@ -32,6 +26,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+//TODO(zjffdu) move it to zeppelin-zengine
 public class NotebookRepoSyncInitializationTest {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncInitializationTest.class);
   private String validFirstStorageClass = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
@@ -42,15 +43,16 @@ public class NotebookRepoSyncInitializationTest {
   private String invalidTwoStorageConf = validFirstStorageClass + "," + invalidStorageClass;
   private String unsupportedStorageConf = validFirstStorageClass + "," + validSecondStorageClass + "," + validSecondStorageClass;
   private String emptyStorageConf = "";
-  
+
   @Before
   public void setUp(){
+    System.setProperty(ConfVars.ZEPPELIN_PLUGINS_DIR.getVarName(), new File("../../../plugins").getAbsolutePath());
     //setup routine
   }
-  
+
   @After
   public void tearDown() {
-    //tear-down routine 
+    //tear-down routine
   }
 
   @Test
@@ -79,7 +81,7 @@ public class NotebookRepoSyncInitializationTest {
     File secNotebookDir = new File(secNotePath);
     mainNotebookDir.mkdirs();
     secNotebookDir.mkdirs();
-    
+
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), mainZepDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
@@ -92,7 +94,7 @@ public class NotebookRepoSyncInitializationTest {
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
     assertTrue(notebookRepoSync.getRepo(1) instanceof VFSNotebookRepoMock);
   }
-  
+
   @Test
   public void invalidInitTwoStorageTest() throws IOException {
     // set confs
@@ -105,7 +107,7 @@ public class NotebookRepoSyncInitializationTest {
     assertEquals(notebookRepoSync.getRepoCount(), 1);
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
   }
-  
+
   @Test
   public void initUnsupportedNumberStoragesTest() throws IOException {
     // initialize folders for each storage, currently for 2 only
@@ -119,7 +121,7 @@ public class NotebookRepoSyncInitializationTest {
     File secNotebookDir = new File(secNotePath);
     mainNotebookDir.mkdirs();
     secNotebookDir.mkdirs();
-    
+
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), mainZepDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), mainNotebookDir.getAbsolutePath());
@@ -127,7 +129,7 @@ public class NotebookRepoSyncInitializationTest {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     // create repo
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
-    // check that first two storages initialized instead of three 
+    // check that first two storages initialized instead of three
     assertEquals(notebookRepoSync.getRepoCount(), 2);
     assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
     assertTrue(notebookRepoSync.getRepo(1) instanceof VFSNotebookRepoMock);
@@ -142,9 +144,9 @@ public class NotebookRepoSyncInitializationTest {
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     // check initialization of one default storage
     assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
+    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepoWithVersionControl);
   }
-  
+
   @Test
   public void initOneDummyStorageTest() throws IOException {
  // set confs
@@ -154,6 +156,6 @@ public class NotebookRepoSyncInitializationTest {
     NotebookRepoSync notebookRepoSync = new NotebookRepoSync(conf);
     // check initialization of one default storage instead of invalid one
     assertEquals(notebookRepoSync.getRepoCount(), 1);
-    assertTrue(notebookRepoSync.getRepo(0) instanceof VFSNotebookRepo);
+    assertTrue(notebookRepoSync.getRepo(0) instanceof NotebookRepo);
   }
 }

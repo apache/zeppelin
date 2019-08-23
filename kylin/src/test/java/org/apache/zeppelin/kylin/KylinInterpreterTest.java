@@ -19,13 +19,6 @@ package org.apache.zeppelin.kylin;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Locale;
-import java.util.Properties;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,23 +26,31 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.AbstractHttpMessage;
-import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Locale;
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterResult;
+
 public class KylinInterpreterTest {
-  static final Properties kylinProperties = new Properties();
+  static final Properties KYLIN_PROPERTIES = new Properties();
 
   @BeforeClass
   public static void setUpClass() {
-    kylinProperties.put("kylin.api.url", "http://localhost:7070/kylin/api/query");
-    kylinProperties.put("kylin.api.user", "ADMIN");
-    kylinProperties.put("kylin.api.password", "KYLIN");
-    kylinProperties.put("kylin.query.project", "default");
-    kylinProperties.put("kylin.query.offset", "0");
-    kylinProperties.put("kylin.query.limit", "5000");
-    kylinProperties.put("kylin.query.ispartial", "true");
+    KYLIN_PROPERTIES.put("kylin.api.url", "http://localhost:7070/kylin/api/query");
+    KYLIN_PROPERTIES.put("kylin.api.user", "ADMIN");
+    KYLIN_PROPERTIES.put("kylin.api.password", "KYLIN");
+    KYLIN_PROPERTIES.put("kylin.query.project", "default");
+    KYLIN_PROPERTIES.put("kylin.query.offset", "0");
+    KYLIN_PROPERTIES.put("kylin.query.limit", "5000");
+    KYLIN_PROPERTIES.put("kylin.query.ispartial", "true");
   }
 
   @Test
@@ -58,51 +59,90 @@ public class KylinInterpreterTest {
     InterpreterResult result = t.interpret(
         "select a.date,sum(b.measure) as measure from kylin_fact_table a " +
             "inner join kylin_lookup_table b on a.date=b.date group by a.date", null);
-    assertEquals("default", t.getProject("select a.date,sum(b.measure) as measure " +
-                    "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
-    assertEquals(InterpreterResult.Type.TABLE,result.message().get(0).getType());
+    assertEquals("default", t.getProject("select a.date,sum(b.measure) as measure "
+            + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+            + "group by a.date"));
+    assertEquals(InterpreterResult.Type.TABLE, result.message().get(0).getType());
   }
 
   @Test
   public void testWithProject() {
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
-    assertEquals("project2", t.getProject("(project2)\n select a.date,sum(b.measure) as measure " +
-            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
-    assertEquals("", t.getProject("()\n select a.date,sum(b.measure) as measure " +
-            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
-    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a inner join " +
-            "kylin_lookup_table b on a.date=b.date group by a.date", t.getSQL("(project2)\n select a.date," +
-            "sum(b.measure) as measure from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date " +
-            "group by a.date"));
-    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a inner join kylin_lookup_table b " +
-            "on a.date=b.date group by a.date", t.getSQL("()\n select a.date,sum(b.measure) as measure " +
-            "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date group by a.date"));
+    assertEquals("project2", t.getProject("(project2)\n select a.date,sum(b.measure) "
+            + "as measure from kylin_fact_table a inner join kylin_lookup_table b on "
+            + "a.date=b.date group by a.date"));
+    assertEquals("", t.getProject("()\n select a.date,sum(b.measure) as measure "
+            + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+            + "group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+            + "inner join kylin_lookup_table b on a.date=b.date group by a.date",
+            t.getSQL("(project2)\n select a.date,sum(b.measure) as measure "
+                    + "from kylin_fact_table a inner join kylin_lookup_table b on a.date=b.date "
+                    + "group by a.date"));
+    assertEquals("\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+            + "inner join kylin_lookup_table b on a.date=b.date group by a.date",
+            t.getSQL("()\n select a.date,sum(b.measure) as measure from kylin_fact_table a "
+                    + "inner join kylin_lookup_table b on a.date=b.date group by a.date"));
   }
 
   @Test
   public void testParseResult() {
-    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\",\"name\":\"COUNTRY\","
-            + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\",\"precision\":256,"
-            + "\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
-            + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
-            + "\"currency\":false,\"signed\":true},{\"isNullable\":1,\"displaySize\":256,\"label\":\"CURRENCY\","
-            + "\"name\":\"CURRENCY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\","
-            + "\"precision\":256,\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\",\"writable\":false,"
-            + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,"
-            + "\"searchable\":false,\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
-            + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
-            + "\"tableName\":\"SALES_TABLE\",\"precision\":19,\"scale\":0,\"columnType\":-5,\"columnTypeName\":"
-            + "\"BIGINT\",\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
-            + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],\"results\":"
-            + "[[\"AMERICA\",\"USD\",null],[null,\"RMB\",0],[\"KOR\",null,100],[\"\\\"abc\\\"\",\"a,b,c\",-1]],"
-            + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,\"isException\":false,\"exceptionMessage\":null,"
-            + "\"duration\":134,\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
+            + "\"name\":\"COUNTRY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
+            + "\"tableName\":\"SALES_TABLE\",\"precision\":256,\"scale\":0,\"columnType\":12,"
+            + "\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
+            + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,"
+            + "\"searchable\":false,\"currency\":false,\"signed\":true},{\"isNullable\":1,"
+            + "\"displaySize\":256,\"label\":\"CURRENCY\",\"name\":\"CURRENCY\","
+            + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\","
+            + "\"precision\":256,\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\","
+            + "\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,"
+            + "\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
+            + "\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
+            + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\","
+            + "\"catelogName\":null,\"tableName\":\"SALES_TABLE\",\"precision\":19,\"scale\":0,"
+            + "\"columnType\":-5,\"columnTypeName\":\"BIGINT\",\"writable\":false,"
+            + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
+            + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],"
+            + "\"results\":[[\"AMERICA\",\"USD\",null],[null,\"RMB\",0],[\"KOR\",null,100],"
+            + "[\"\\\"abc\\\"\",\"a,b,c\",-1]],\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,"
+            + "\"isException\":false,\"exceptionMessage\":null,\"duration\":134,"
+            + "\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
             + "\"partial\":false}";
-    String expected="%table COUNTRY \tCURRENCY \tCOUNT__ \t \n" +
+    String expected = "%table COUNTRY \tCURRENCY \tCOUNT__ \t \n" +
             "AMERICA \tUSD \tnull \t \n" +
             "null \tRMB \t0 \t \n" +
             "KOR \tnull \t100 \t \n" +
             "\\\"abc\\\" \ta,b,c \t-1 \t \n";
+    KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
+    String actual = t.formatResult(msg);
+    Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testParseEmptyResult() {
+    String msg = "{\"columnMetas\":[{\"isNullable\":1,\"displaySize\":256,\"label\":\"COUNTRY\","
+            + "\"name\":\"COUNTRY\",\"schemaName\":\"DEFAULT\",\"catelogName\":null,"
+            + "\"tableName\":\"SALES_TABLE\",\"precision\":256,\"scale\":0,\"columnType\":12,"
+            + "\"columnTypeName\":\"VARCHAR\",\"writable\":false,\"readOnly\":true,"
+            + "\"definitelyWritable\":false,\"autoIncrement\":false,\"caseSensitive\":true,"
+            + "\"searchable\":false,\"currency\":false,\"signed\":true},{\"isNullable\":1,"
+            + "\"displaySize\":256,\"label\":\"CURRENCY\",\"name\":\"CURRENCY\","
+            + "\"schemaName\":\"DEFAULT\",\"catelogName\":null,\"tableName\":\"SALES_TABLE\","
+            + "\"precision\":256,\"scale\":0,\"columnType\":12,\"columnTypeName\":\"VARCHAR\","
+            + "\"writable\":false,\"readOnly\":true,\"definitelyWritable\":false,"
+            + "\"autoIncrement\":false,\"caseSensitive\":true,\"searchable\":false,"
+            + "\"currency\":false,\"signed\":true},{\"isNullable\":0,\"displaySize\":19,"
+            + "\"label\":\"COUNT__\",\"name\":\"COUNT__\",\"schemaName\":\"DEFAULT\","
+            + "\"catelogName\":null,\"tableName\":\"SALES_TABLE\",\"precision\":19,\"scale\":0,"
+            + "\"columnType\":-5,\"columnTypeName\":\"BIGINT\",\"writable\":false,"
+            + "\"readOnly\":true,\"definitelyWritable\":false,\"autoIncrement\":false,"
+            + "\"caseSensitive\":true,\"searchable\":false,\"currency\":false,\"signed\":true}],"
+            + "\"results\":[]," + "\"cube\":\"Sample_Cube\",\"affectedRowCount\":0,"
+            + "\"isException\":false,\"exceptionMessage\":null,\"duration\":134,"
+            + "\"totalScanCount\":1,\"hitExceptionCache\":false,\"storageCacheUsed\":false,"
+            + "\"partial\":false}";
+    String expected = "%table COUNTRY \tCURRENCY \tCOUNT__ \t \n";
     KylinInterpreter t = new MockKylinInterpreter(getDefaultProperties());
     String actual = t.formatResult(msg);
     Assert.assertEquals(expected, actual);
@@ -122,8 +162,7 @@ public class KylinInterpreterTest {
 }
 
 class MockKylinInterpreter extends KylinInterpreter {
-
-  public MockKylinInterpreter(Properties property) {
+  MockKylinInterpreter(Properties property) {
     super(property);
   }
 
@@ -132,7 +171,6 @@ class MockKylinInterpreter extends KylinInterpreter {
     MockHttpClient client = new MockHttpClient();
     return client.execute(new HttpPost());
   }
-
 }
 
 class MockHttpClient{
@@ -142,7 +180,6 @@ class MockHttpClient{
 }
 
 class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
-
   @Override
   public StatusLine getStatusLine() {
     return new MockStatusLine();
@@ -150,27 +187,22 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
 
   @Override
   public void setStatusLine(StatusLine statusLine) {
-
   }
 
   @Override
   public void setStatusLine(ProtocolVersion protocolVersion, int i) {
-
   }
 
   @Override
   public void setStatusLine(ProtocolVersion protocolVersion, int i, String s) {
-
   }
 
   @Override
   public void setStatusCode(int i) throws IllegalStateException {
-
   }
 
   @Override
   public void setReasonPhrase(String s) throws IllegalStateException {
-
   }
 
   @Override
@@ -180,7 +212,6 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
 
   @Override
   public void setEntity(HttpEntity httpEntity) {
-
   }
 
   @Override
@@ -190,7 +221,6 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
 
   @Override
   public void setLocale(Locale locale) {
-
   }
 
   @Override
@@ -200,7 +230,6 @@ class MockHttpResponse extends AbstractHttpMessage implements HttpResponse{
 }
 
 class MockStatusLine implements StatusLine{
-
   @Override
   public ProtocolVersion getProtocolVersion() {
     return null;
@@ -218,7 +247,6 @@ class MockStatusLine implements StatusLine{
 }
 
 class MockEntity implements HttpEntity{
-
   @Override
   public boolean isRepeatable() {
     return false;
@@ -254,7 +282,6 @@ class MockEntity implements HttpEntity{
 
   @Override
   public void writeTo(OutputStream outputStream) throws IOException {
-
   }
 
   @Override
@@ -264,6 +291,5 @@ class MockEntity implements HttpEntity{
 
   @Override
   public void consumeContent() throws IOException {
-
   }
 }

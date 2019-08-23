@@ -16,12 +16,12 @@
  * Base class for visualization.
  */
 export default class Visualization {
-  constructor (targetEl, config) {
-    this.targetEl = targetEl
-    this.config = config
-    this._dirty = false
-    this._active = false
-    this._emitter = () => {}
+  constructor(targetEl, config) {
+    this.targetEl = targetEl;
+    this.config = config;
+    this._dirty = false;
+    this._active = false;
+    this._emitter = () => {};
   }
 
   /**
@@ -29,32 +29,33 @@ export default class Visualization {
    * @abstract
    * @return {Transformation}
    */
-  getTransformation () {
+  getTransformation() {
     // override this
-    throw new TypeError('Visualization.getTransformation() should be overrided')
+    throw new TypeError('Visualization.getTransformation() should be overrided');
   }
 
   /**
    * Method will be invoked when data or configuration changed.
    * @abstract
    */
-  render (tableData) {
+  render(tableData) {
     // override this
-    throw new TypeError('Visualization.render() should be overrided')
+    throw new TypeError('Visualization.render() should be overrided');
   }
 
   /**
    * Refresh visualization.
    */
-  refresh () {
+  refresh() {
     // override this
+    console.warn('A chart is missing refresh function, it might not work preperly');
   }
 
   /**
    * Method will be invoked when visualization need to be destroyed.
    * Don't need to destroy this.targetEl.
    */
-  destroy () {
+  destroy() {
     // override this
   }
 
@@ -64,113 +65,117 @@ export default class Visualization {
    *   scope : an object to bind to template scope
    * }
    */
-  getSetting () {
+  getSetting() {
     // override this
   }
 
   /**
    * Activate. Invoked when visualization is selected.
    */
-  activate () {
+  activate() {
     if (!this._active || this._dirty) {
-      this.refresh()
-      this._dirty = false
+      this.refresh();
+      this._dirty = false;
     }
-    this._active = true
+    this._active = true;
   }
 
   /**
    * Deactivate. Invoked when visualization is de selected.
    */
-  deactivate () {
-    this._active = false
+  deactivate() {
+    this._active = false;
   }
 
   /**
    * Is active.
    */
-  isActive () {
-    return this._active
+  isActive() {
+    return this._active;
   }
 
   /**
    * When window or paragraph is resized.
    */
-  resize () {
+  resize() {
     if (this.isActive()) {
-      this.refresh()
+      this.refresh();
     } else {
-      this._dirty = true
+      this._dirty = true;
     }
   }
 
   /**
    * Set new config.
    */
-  setConfig (config) {
-    this.config = config
+  setConfig(config) {
+    this.config = config;
     if (this.isActive()) {
-      this.refresh()
+      this.refresh();
     } else {
-      this._dirty = true
+      this._dirty = true;
     }
   }
 
   /**
    * Emit config. config will sent to server and saved.
    */
-  emitConfig (config) {
-    this._emitter(config)
+  emitConfig(config) {
+    this._emitter(config);
   }
 
   /**
    * Render setting.
    */
-  renderSetting (targetEl) {
-    let setting = this.getSetting()
+  renderSetting(targetEl) {
+    let setting = this.getSetting();
     if (!setting) {
-      return
+      return;
     }
 
     // already readered
     if (this._scope) {
-      let self = this
-      this._scope.$apply(function () {
+      let self = this;
+      this._scope.$apply(function() {
         for (let k in setting.scope) {
-          self._scope[k] = setting.scope[k]
+          if (setting.scope.hasOwnProperty(k)) {
+            self._scope[k] = setting.scope[k];
+          }
         }
 
         for (let k in self._prevSettingScope) {
           if (!setting.scope[k]) {
-            self._scope[k] = setting.scope[k]
+            self._scope[k] = setting.scope[k];
           }
         }
-      })
-      return
+      });
+      return;
     } else {
-      this._prevSettingScope = setting.scope
+      this._prevSettingScope = setting.scope;
     }
 
-    let scope = this._createNewScope()
+    let scope = this._createNewScope();
     for (let k in setting.scope) {
-      scope[k] = setting.scope[k]
+      if (setting.scope.hasOwnProperty(k)) {
+        scope[k] = setting.scope[k];
+      }
     }
-    let template = setting.template
+    let template = setting.template;
 
     if (template.split('\n').length === 1 &&
         template.endsWith('.html')) { // template is url
-      this._templateRequest(template).then(t =>
+      this._templateRequest(template).then((t) =>
       _renderSetting(this, targetEl, t, scope)
-      )
+      );
     } else {
-      _renderSetting(this, targetEl, template, scope)
+      _renderSetting(this, targetEl, template, scope);
     }
   }
 }
 
-function _renderSetting (instance, targetEl, template, scope) {
-  instance._targetEl = targetEl
-  targetEl.html(template)
-  instance._compile(targetEl.contents())(scope)
-  instance._scope = scope
+function _renderSetting(instance, targetEl, template, scope) {
+  instance._targetEl = targetEl;
+  targetEl.html(template);
+  instance._compile(targetEl.contents())(scope);
+  instance._scope = scope;
 }

@@ -28,7 +28,7 @@ limitations under the License.
 ## Building the Scalding Interpreter
 You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
 
-```
+```bash
 mvn clean package -Pscalding -DskipTests
 ```
 
@@ -66,20 +66,19 @@ and directories with custom jar files you need for your scalding commands.
 
 **Set arguments to the scalding repl**
 
-The default arguments are: "--local --repl"
+The default arguments are: `--local --repl`
 
-For hdfs mode you need to add: "--hdfs --repl"
+For hdfs mode you need to add: `--hdfs --repl`
 
-If you want to add custom jars, you need to add:
-"-libjars directory/*:directory/*"
+If you want to add custom jars, you need to add: `-libjars directory/*:directory/*`
 
 For reducer estimation, you need to add something like:
-"-Dscalding.reducer.estimator.classes=com.twitter.scalding.reducer_estimation.InputSizeReducerEstimator"
+`-Dscalding.reducer.estimator.classes=com.twitter.scalding.reducer_estimation.InputSizeReducerEstimator`
 
 **Set max.open.instances**
 
 If you want to control the maximum number of open interpreters, you have to select "scoped" interpreter for note
-option and set max.open.instances argument.
+option and set `max.open.instances` argument.
 
 ## Testing the Interpreter
 
@@ -88,7 +87,7 @@ option and set max.open.instances argument.
 In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, 
 we will count words (of course!), and plot a graph of the top 10 words in the book.
 
-```
+```scala
 %scalding
 
 import scala.io.Source
@@ -144,7 +143,7 @@ res4: com.twitter.scalding.Mode = Hdfs(true,Configuration: core-default.xml, cor
 
 **Test HDFS read**
 
-```
+```scala
 val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
 testfile.dump
 ```
@@ -153,7 +152,7 @@ This command should print the contents of the hdfs file /user/x/testfile.
 
 **Test map-reduce job**
 
-```
+```scala
 val testfile = TypedPipe.from(TextLine("/user/x/testfile"))
 val a = testfile.groupAll.size.values
 a.toList

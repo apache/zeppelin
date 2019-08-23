@@ -20,6 +20,12 @@
 <configuration>
 
 <property>
+  <name>zeppelin.cluster.addr</name>
+  <value></value>
+  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
+</property>
+
+<property>
   <name>zeppelin.server.addr</name>
   <value>0.0.0.0</value>
   <description>Server address</description>
@@ -67,6 +73,38 @@
   <description>hide homescreen notebook from list when this value set to true</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.collaborative.mode.enable</name>
+  <value>true</value>
+  <description>Enable collaborative mode</description>
+</property>
+
+<!-- Google Cloud Storage notebook storage -->
+<!--
+<property>
+  <name>zeppelin.notebook.gcs.dir</name>
+  <value></value>
+  <description>
+    A GCS path in the form gs://bucketname/path/to/dir.
+    Notes are stored at {zeppelin.notebook.gcs.dir}/{notebook-id}/note.json
+ </description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.gcs.credentialsJsonFilePath</name>
+  <value>path/to/key.json</value>
+  <description>
+    Path to GCS credential key file for authentication with Google Storage.
+ </description>
+</property>
+
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GCSNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
 
 <!-- Amazon S3 notebook storage -->
 <!-- Creates the following directory structure: s3://{bucket}/{username}/{notebook-id}/note.json -->
@@ -90,10 +128,17 @@
 </property>
 
 <property>
+  <name>zeppelin.notebook.s3.timeout</name>
+  <value>120000</value>
+  <description>s3 bucket endpoint request timeout in msec.</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
+
 -->
 
 <!-- Additionally, encryption is supported for notebook data stored in S3 -->
@@ -271,7 +316,7 @@
 
 <property>
   <name>zeppelin.interpreter.dep.mvnRepo</name>
-  <value>http://repo1.maven.org/maven2/</value>
+  <value>https://repo1.maven.org/maven2/</value>
   <description>Remote principal repository for interpreter's additional dependency loading</description>
 </property>
 
@@ -289,7 +334,7 @@
 
 <property>
   <name>zeppelin.helium.npm.installer.url</name>
-  <value>http://registry.npmjs.org/</value>
+  <value>https://registry.npmjs.org/</value>
   <description>Remote Npm installer url for Helium dependency loader</description>
 </property>
 
@@ -300,20 +345,14 @@
 </property>
 
 <property>
-  <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.rinterpreter.RRepl,org.apache.zeppelin.rinterpreter.KnitR,org.apache.zeppelin.spark.SparkRInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.file.HDFSFileInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,,org.apache.zeppelin.python.PythonInterpreter,org.apache.zeppelin.python.PythonInterpreterPandasSql,org.apache.zeppelin.python.PythonCondaInterpreter,org.apache.zeppelin.python.PythonDockerInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.jdbc.JDBCInterpreter,org.apache.zeppelin.kylin.KylinInterpreter,org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,org.apache.zeppelin.scalding.ScaldingInterpreter,org.apache.zeppelin.alluxio.AlluxioInterpreter,org.apache.zeppelin.hbase.HbaseInterpreter,org.apache.zeppelin.livy.LivySparkInterpreter,org.apache.zeppelin.livy.LivyPySparkInterpreter,org.apache.zeppelin.livy.LivyPySpark3Interpreter,org.apache.zeppelin.livy.LivySparkRInterpreter,org.apache.zeppelin.livy.LivySparkSQLInterpreter,org.apache.zeppelin.bigquery.BigQueryInterpreter,org.apache.zeppelin.beam.BeamInterpreter,org.apache.zeppelin.pig.PigInterpreter,org.apache.zeppelin.pig.PigQueryInterpreter,org.apache.zeppelin.scio.ScioInterpreter,org.apache.zeppelin.groovy.GroovyInterpreter</value>
-  <description>Comma separated interpreter configurations. First interpreter become a default</description>
-</property>
-
-<property>
-  <name>zeppelin.interpreter.group.order</name>
-  <value>spark,md,angular,sh,livy,alluxio,file,psql,flink,python,ignite,lens,cassandra,geode,kylin,elasticsearch,scalding,jdbc,hbase,bigquery,beam,groovy</value>
+  <name>zeppelin.interpreter.group.default</name>
+  <value>spark</value>
   <description></description>
 </property>
 
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
-  <value>30000</value>
+  <value>60000</value>
   <description>Interpreter process connect timeout in msec.</description>
 </property>
 
@@ -394,6 +433,18 @@
 </property>
 
 <property>
+  <name>zeppelin.username.force.lowercase</name>
+  <value>false</value>
+  <description>Force convert username case to lower case, useful for Active Directory/LDAP. Default is not to change case</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.default.owner.username</name>
+  <value></value>
+  <description>Set owner role by default</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.public</name>
   <value>true</value>
   <description>Make notebook public by default when created, private otherwise</description>
@@ -411,6 +462,7 @@
   <description>Enable directory listings on server.</description>
 </property>
 
+<!--
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.class</name>
   <value>org.apache.zeppelin.interpreter.lifecycle.TimeoutLifecycleManager</value>
@@ -421,14 +473,15 @@
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.checkinterval</name>
   <value>60000</value>
-  <description>milliseconds of the interval to checking whether interpreter is time out</description>
+  <description>Milliseconds of the interval to checking whether interpreter is time out</description>
 </property>
 
 <property>
   <name>zeppelin.interpreter.lifecyclemanager.timeout.threshold</name>
   <value>3600000</value>
-  <description>milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
+  <description>Milliseconds of the interpreter timeout threshold, by default it is 1 hour</description>
 </property>
+-->
 
 <!--
 <property>
@@ -437,6 +490,45 @@
     <description>Hardcoding Application Server name to Prevent Fingerprinting</description>
 </property>
 -->
+
+<!--
+<property>
+    <name>zeppelin.server.jetty.request.header.size</name>
+    <value>8192</value>
+    <description>Http Request Header Size Limit (to prevent HTTP 413)</description>
+</property>
+-->
+
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.max</name>
+    <value>400</value>
+    <description>Max Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.min</name>
+    <value>8</value>
+    <description>Min Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.timeout</name>
+    <value>30</value>
+    <description>Timeout number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+
+<!--
+<property>
+    <name>zeppelin.server.authorization.header.clear</name>
+    <value>true</value>
+    <description>Authorization header to be cleared if server is running as authcBasic</description>
+</property>
+-->
+
 <!--
 <property>
   <name>zeppelin.server.xframe.options</name>
@@ -453,16 +545,108 @@
 </property>
 -->
 <!--
+
 <property>
   <name>zeppelin.server.xxss.protection</name>
   <value>1</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
 </property>
 -->
+
 <!--
 <property>
   <name>zeppelin.interpreter.callback.portRange</name>
   <value>10000:10010</value>
 </property>
 -->
+
+<!--
+<property>
+  <name>zeppelin.recovery.storage.class</name>
+  <value>org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage</value>
+  <description>ReoveryStorage implementation</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.recovery.dir</name>
+  <value>recovery</value>
+  <description>Location where recovery metadata is stored</description>
+</property>
+-->
+
+<!-- GitHub configurations
+<property>
+  <name>zeppelin.notebook.git.remote.url</name>
+  <value></value>
+  <description>remote Git repository URL</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.username</name>
+  <value>token</value>
+  <description>remote Git repository username</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.access-token</name>
+  <value></value>
+  <description>remote Git repository password</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.git.remote.origin</name>
+  <value>origin</value>
+  <description>Git repository remote</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.cron.enable</name>
+  <value>false</value>
+  <description>Notebook enable cron scheduler feature</description>
+</property>
+<property>
+  <name>zeppelin.notebook.cron.folders</name>
+  <value></value>
+  <description>Notebook cron folders</description>
+</property>
+-->
+
+<property>
+  <name>zeppelin.run.mode</name>
+  <value>auto</value>
+  <description>'auto|local|k8s|docker'</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.portforward</name>
+  <value>false</value>
+  <description>Port forward to interpreter rpc port. Set 'true' only on local development when zeppelin.k8s.mode 'on'</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.container.image</name>
+  <value>apache/zeppelin:0.9.0-SNAPSHOT</value>
+  <description>Docker image for interpreters</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.spark.container.image</name>
+  <value>apache/spark:latest</value>
+  <description>Docker image for Spark executors</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.template.dir</name>
+  <value>k8s</value>
+  <description>Kubernetes yaml spec files</description>
+</property>
+
+  <property>
+    <name>zeppelin.docker.container.image</name>
+    <value>apache/zeppelin:0.8.0</value>
+    <description>Docker image for interpreters</description>
+  </property>
+
 </configuration>

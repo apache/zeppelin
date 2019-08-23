@@ -22,23 +22,26 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.pig.PigServer;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.tools.pigscript.parser.ParseException;
-import org.apache.pig.tools.pigstats.*;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.pig.tools.pigstats.PigStats;
+import org.apache.pig.tools.pigstats.ScriptState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 /**
  * Pig interpreter for Zeppelin.
  */
 public class PigInterpreter extends BasePigInterpreter {
-  private static Logger LOGGER = LoggerFactory.getLogger(PigInterpreter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PigInterpreter.class);
 
   private PigServer pigServer;
   private boolean includeJobStats = false;

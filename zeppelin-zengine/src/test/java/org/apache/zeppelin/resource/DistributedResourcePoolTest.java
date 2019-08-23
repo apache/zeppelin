@@ -17,21 +17,20 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-
+import static org.apache.zeppelin.interpreter.InterpreterOption.ISOLATED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * Unittest for DistributedResourcePool
@@ -41,36 +40,23 @@ public class DistributedResourcePoolTest extends AbstractInterpreterTest {
   private RemoteInterpreter intp1;
   private RemoteInterpreter intp2;
   private InterpreterContext context;
-  private RemoteInterpreterEventPoller eventPoller1;
-  private RemoteInterpreterEventPoller eventPoller2;
 
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
     InterpreterSetting interpreterSetting = interpreterSettingManager.getByName("mock_resource_pool");
+    interpreterSetting.getOption().setPerNote(ISOLATED);
     intp1 = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_resource_pool");
-    intp2 = (RemoteInterpreter) interpreterSetting.getInterpreter("user2", "note1", "mock_resource_pool");
+    intp2 = (RemoteInterpreter) interpreterSetting.getInterpreter("user2", "note2", "mock_resource_pool");
 
-    context = new InterpreterContext(
-        "note",
-        "id",
-        null,
-        "title",
-        "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        null,
-        null,
-        new LinkedList<InterpreterContextRunner>(),
-        null);
+    context = InterpreterContext.builder()
+        .setNoteId("note")
+        .setParagraphId("id")
+        .build();
 
     intp1.open();
     intp2.open();
-
-    eventPoller1 = intp1.getInterpreterGroup().getRemoteInterpreterProcess().getRemoteInterpreterEventPoller();
-    eventPoller2 = intp1.getInterpreterGroup().getRemoteInterpreterProcess().getRemoteInterpreterEventPoller();
   }
 
   @After

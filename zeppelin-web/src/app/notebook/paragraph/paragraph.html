@@ -49,7 +49,16 @@ limitations under the License.
     </div>
 
     <div ng-include src="'app/notebook/paragraph/paragraph-progress-bar.html'"></div>
-    <div ng-include src="'app/notebook/paragraph/paragraph-parameterized-query-form.html'"></div>
+    <div>
+      <dynamic-forms
+        id="paragraph.id"
+        hide="paragraph.config.tableHide"
+        disable="paragraph.status == 'RUNNING' || paragraph.status == 'PENDING'"
+        actiononchange="paragraph.config.runOnSelectionChange"
+        forms="paragraph.settings.forms"
+        params="paragraph.settings.params"
+        action="runParagraphFromButton"></dynamic-forms>
+    </div>
 
     <!-- Rendering -->
     <div class="tableDisplay"

@@ -18,12 +18,21 @@
 package org.apache.zeppelin.display;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.common.JsonSerializable;
-import org.apache.zeppelin.display.ui.*;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.OptionInput;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +50,7 @@ public class Input<T> implements Serializable {
           .registerSubtype(TextBox.class, "TextBox")
           .registerSubtype(Select.class, "Select")
           .registerSubtype(CheckBox.class, "CheckBox")
+          .registerSubtype(Password.class, "Password")
           .registerSubtype(OldInput.OldTextBox.class, "input")
           .registerSubtype(OldInput.OldSelect.class, "select")
           .registerSubtype(OldInput.OldCheckBox.class, "checkbox")
@@ -155,6 +165,8 @@ public class Input<T> implements Serializable {
   //                                                checkbox form with " or " as delimiter: will be
   //                                                expanded to "US or JP"
   private static final Pattern VAR_PTN = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
+  private static final Pattern VAR_NOTE_PTN =
+      Pattern.compile("([_])?[$]{2}[{]([^=}]*([=][^}]*)?)[}]");
 
   private static String[] getNameAndDisplayName(String str) {
     Pattern p = Pattern.compile("([^(]*)\\s*[(]([^)]*)[)]");
@@ -272,6 +284,8 @@ public class Input<T> implements Serializable {
       }
     } else if (type.equals("checkbox")) {
       input = new CheckBox(varName, (Object[]) defaultValue, paramOptions);
+    } else if (type.equals("password")) {
+      input = new Password(varName);
     } else {
       throw new RuntimeException("Could not recognize dynamic form with type: " + type);
     }
@@ -281,15 +295,21 @@ public class Input<T> implements Serializable {
     return input;
   }
 
-  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script) {
+  public static LinkedHashMap<String, Input> extractSimpleQueryForm(String script,
+                                                                    boolean noteForm) {
     LinkedHashMap<String, Input> forms = new LinkedHashMap<>();
     if (script == null) {
       return forms;
     }
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input form = getInputForm(match);
       forms.put(form.name, form);
     }
@@ -300,11 +320,18 @@ public class Input<T> implements Serializable {
 
   private static final String DEFAULT_DELIMITER = ",";
 
-  public static String getSimpleQuery(Map<String, Object> params, String script) {
+  public static String getSimpleQuery(Map<String, Object> params, String script, boolean noteForm) {
     String replaced = script;
 
-    Matcher match = VAR_PTN.matcher(replaced);
+    Pattern pattern = noteForm ? VAR_NOTE_PTN : VAR_PTN;
+
+    Matcher match = pattern.matcher(replaced);
     while (match.find()) {
+      int first = match.start();
+
+      if (!noteForm && first > 0 && replaced.charAt(first - 1) == '$') {
+        continue;
+      }
       Input input = getInputForm(match);
       Object value;
       if (params.containsKey(input.name)) {
@@ -337,7 +364,7 @@ public class Input<T> implements Serializable {
         expanded = value.toString();
       }
       replaced = match.replaceFirst(expanded);
-      match = VAR_PTN.matcher(replaced);
+      match = pattern.matcher(replaced);
     }
 
     return replaced;

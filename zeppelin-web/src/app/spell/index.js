@@ -18,8 +18,8 @@
 export {
   DefaultDisplayType,
   SpellResult,
-} from './spell-result'
+} from './spell-result';
 
 export {
   SpellBase,
-} from './spell-base'
+} from './spell-base';

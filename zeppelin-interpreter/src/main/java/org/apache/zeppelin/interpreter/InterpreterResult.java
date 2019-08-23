@@ -17,15 +17,15 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.IOException;
-import java.io.Serializable;
-
 import com.google.gson.Gson;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Interpreter result template.
@@ -37,7 +37,7 @@ public class InterpreterResult implements Serializable, JsonSerializable {
   /**
    *  Type of result after code execution.
    */
-  public static enum Code {
+  public enum Code {
     SUCCESS,
     INCOMPLETE,
     ERROR,
@@ -47,7 +47,7 @@ public class InterpreterResult implements Serializable, JsonSerializable {
   /**
    * Type of Data.
    */
-  public static enum Type {
+  public enum Type {
     TEXT,
     HTML,
     ANGULAR,

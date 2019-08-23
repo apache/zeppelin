@@ -17,40 +17,21 @@
 
 package org.apache.zeppelin.pig;
 
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.pig.PigRunner;
-import org.apache.pig.backend.hadoop.executionengine.spark.plan.SparkOperator;
-import org.apache.pig.backend.hadoop.executionengine.tez.TezExecType;
-import org.apache.pig.tools.pigstats.InputStats;
-import org.apache.pig.tools.pigstats.JobStats;
-import org.apache.pig.tools.pigstats.OutputStats;
-import org.apache.pig.tools.pigstats.PigStats;
-import org.apache.pig.tools.pigstats.mapreduce.MRJobStats;
-import org.apache.pig.tools.pigstats.mapreduce.SimplePigStats;
-import org.apache.pig.tools.pigstats.spark.SparkJobStats;
-import org.apache.pig.tools.pigstats.spark.SparkPigStats;
-import org.apache.pig.tools.pigstats.spark.SparkScriptState;
-import org.apache.pig.tools.pigstats.tez.TezDAGStats;
-import org.apache.pig.tools.pigstats.tez.TezPigScriptStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.List;
 
 /**
  *
  */
 public class PigUtils {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(PigUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PigUtils.class);
 
   protected static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -66,5 +47,4 @@ public class PigUtils {
   public static File createTempPigScript(List<String> lines) throws IOException {
     return createTempPigScript(StringUtils.join(lines, "\n"));
   }
-
 }

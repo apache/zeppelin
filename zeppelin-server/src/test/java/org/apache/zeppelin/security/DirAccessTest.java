@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.security;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.junit.Test;
 
-public class DirAccessTest extends AbstractTestRestApi {
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.rest.AbstractTestRestApi;
 
+public class DirAccessTest extends AbstractTestRestApi {
   @Test
   public void testDirAccessForbidden() throws Exception {
     synchronized (this) {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "false");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+              .getVarName(), "false");
       AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
       HttpClient httpClient = new HttpClient();
       GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");
@@ -42,7 +42,8 @@ public class DirAccessTest extends AbstractTestRestApi {
   @Test
   public void testDirAccessOk() throws Exception {
     synchronized (this) {
-      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED.getVarName(), "true");
+      System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED
+              .getVarName(), "true");
       AbstractTestRestApi.startUp(DirAccessTest.class.getSimpleName());
       HttpClient httpClient = new HttpClient();
       GetMethod getMethod = new GetMethod(getUrlToTest() + "/app/");

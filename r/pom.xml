@@ -15,22 +15,24 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>zeppelin</artifactId>
+    <artifactId>zeppelin-interpreter-parent</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <version>0.9.0-SNAPSHOT</version>
+    <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>zeppelin-zrinterpreter_2.10</artifactId>
+  <groupId>org.apache.zeppelin</groupId>
+  <artifactId>zeppelin-zrinterpreter_${scala.binary.version}</artifactId>
   <packaging>jar</packaging>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: R Interpreter</name>
   <description>R Interpreter for Zeppelin</description>
+  <url>https://zeppelin.apache.org</url>
 
   <properties>
     <script.extension>.sh</script.extension>
@@ -50,41 +52,10 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-spark-dependencies_${scala.binary.version}</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-interpreter</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-spark_${scala.binary.version}</artifactId>
+      <artifactId>spark-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -358,7 +329,6 @@
       </plugin>
     </plugins>
   </build>
-
 
   <profiles>
     <profile>

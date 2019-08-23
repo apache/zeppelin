@@ -41,8 +41,10 @@ public class ManagedInterpreterGroupTest {
   public void setUp() throws IOException, RepositoryException {
     InterpreterOption interpreterOption = new InterpreterOption();
     interpreterOption.setPerUser(InterpreterOption.SCOPED);
-    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(), "echo", true, new HashMap<String, Object>());
-    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(), "double_echo", false, new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo1 = new InterpreterInfo(EchoInterpreter.class.getName(),
+        "echo", true, new HashMap<String, Object>(), new HashMap<String, Object>());
+    InterpreterInfo interpreterInfo2 = new InterpreterInfo(DoubleEchoInterpreter.class.getName(),
+        "double_echo", false, new HashMap<String, Object>(), new HashMap<String, Object>());
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     interpreterInfos.add(interpreterInfo1);
     interpreterInfos.add(interpreterInfo2);
@@ -62,7 +64,7 @@ public class ManagedInterpreterGroupTest {
 
     // create session_1
     List<Interpreter> interpreters = interpreterGroup.getOrCreateSession("user1", "session_1");
-    assertEquals(2, interpreters.size());
+    assertEquals(3, interpreters.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters.get(1).getClassName());
     assertEquals(1, interpreterGroup.getSessionNum());
@@ -73,7 +75,7 @@ public class ManagedInterpreterGroupTest {
 
     // create session_2
     List<Interpreter> interpreters2 = interpreterGroup.getOrCreateSession("user1", "session_2");
-    assertEquals(2, interpreters2.size());
+    assertEquals(3, interpreters2.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters2.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters2.get(1).getClassName());
     assertEquals(2, interpreterGroup.getSessionNum());

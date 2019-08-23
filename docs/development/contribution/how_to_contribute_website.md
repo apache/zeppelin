@@ -31,16 +31,16 @@ The online documentation at [zeppelin.apache.org](https://zeppelin.apache.org/do
 Any contributions to Zeppelin (Source code, Documents, Image, Website) means you agree with license all your contributions as Apache2 License.
 
 ## Getting the source code
-First of all, you need Zeppelin source code. The official location of Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
+First of all, you need Zeppelin source code. The official location of Zeppelin is [https://gitbox.apache.org/repos/asf/zeppelin.git](https://gitbox.apache.org/repos/asf/zeppelin.git).
 Documentation website is hosted in 'master' branch under `/docs/` dir.
 
 ### git access
 
-First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/zeppelin.git](http://git.apache.org/zeppelin.git).
+First of all, you need the website source code. The official location of mirror for Zeppelin is [https://gitbox.apache.org/repos/asf/zeppelin.git](https://gitbox.apache.org/repos/asf/zeppelin.git).
 Get the source code on your development machine using git.
 
-```
-git clone git://git.apache.org/zeppelin.git
+```bash
+git clone git://gitbox.apache.org/repos/asf/zeppelin.git
 cd docs
 ```
 Apache Zeppelin follows [Fork & Pull](https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) as a source control workflow.

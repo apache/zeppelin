@@ -39,15 +39,8 @@
       <useTransitiveDependencies>false</useTransitiveDependencies>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>/lib/interpreter</outputDirectory>
-      <includes>
-        <include>${project.groupId}:zeppelin-interpreter</include>
-      </includes>
-    </dependencySet>
-    <dependencySet>
       <outputDirectory>/lib</outputDirectory>
       <excludes>
-        <exclude>${project.groupId}:zeppelin-interpreter</exclude>
         <exclude>${project.groupId}:zeppelin-web</exclude>
       </excludes>
       <useProjectArtifact>false</useProjectArtifact>
@@ -92,8 +85,10 @@
       <directory>../notebook</directory>
     </fileSet>
     <fileSet>
-      <outputDirectory>/lib/interpreter</outputDirectory>
-      <directory>../zeppelin-interpreter/target/lib</directory>
+      <directory>../plugins</directory>
+    </fileSet>
+    <fileSet>
+      <directory>../k8s</directory>
     </fileSet>
     <fileSet>
       <outputDirectory>/lib/node_modules/zeppelin-vis</outputDirectory>

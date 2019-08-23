@@ -16,20 +16,21 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.8.0-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
@@ -45,8 +46,7 @@
 
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
-    <plugin.frontend.npmDownloadRoot>http://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
-    <plugin.frontend.yarnDownloadRoot>https://github.com/yarnpkg/yarn/releases/download/</plugin.frontend.yarnDownloadRoot>
+    <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
   </properties>
 
   <build>
@@ -67,28 +67,25 @@
         <configuration>
           <nodeDownloadRoot>${plugin.frontend.nodeDownloadRoot}</nodeDownloadRoot>
           <npmDownloadRoot>${plugin.frontend.npmDownloadRoot}</npmDownloadRoot>
-          <yarnDownloadRoot>${plugin.frontend.yarnDownloadRoot}</yarnDownloadRoot>
         </configuration>
 
         <executions>
 
           <execution>
-            <id>install node and yarn</id>
+            <id>install node</id>
             <goals>
-              <goal>install-node-and-yarn</goal>
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <yarnVersion>${yarn.version}</yarnVersion>
               <npmVersion>${npm.version}</npmVersion>
             </configuration>
           </execution>
 
           <execution>
-            <id>yarn install</id>
+            <id>npm install</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
@@ -97,9 +94,9 @@
           </execution>
 
           <execution>
-            <id>yarn build</id>
+            <id>npm build</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <configuration>
               <skip>${web.e2e.enabled}</skip>
@@ -108,21 +105,21 @@
           </execution>
 
           <execution>
-            <id>yarn test</id>
+            <id>npm test</id>
             <goals>
-              <goal>yarn</goal>
+              <goal>npm</goal>
             </goals>
             <phase>test</phase>
             <configuration>
               <skip>${web.e2e.disabled}</skip>
-              <arguments>run test</arguments>
+              <arguments>run karma-test</arguments>
             </configuration>
           </execution>
 
             <execution>
-              <id>yarn e2e</id>
+              <id>npm e2e</id>
               <goals>
-                <goal>yarn</goal>
+                <goal>npm</goal>
               </goals>
               <phase>integration-test</phase>
               <configuration>
@@ -144,7 +141,7 @@
             <configuration>
               <skip>${web.e2e.disabled}</skip>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="true">
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
                   <arg value="start" />
                 </exec>
               </target>
@@ -177,7 +174,7 @@
           and results in https://issues.apache.org/jira/browse/ZEPPELIN-69
 
           There is no better way to do it, as per
-          http://jira.codehaus.org/browse/MCOBERTURA-154
+          https://jira.codehaus.org/browse/MCOBERTURA-154
       -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -211,6 +208,11 @@
             </fileset>
           </filesets>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${plugin.resource.version}</version>
       </plugin>
     </plugins>
   </build>

@@ -19,9 +19,8 @@
 
 var path = require('path');
 var webpack = require('webpack');
-var autoprefixer = require('autoprefixer');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var InsertLiveReloadPlugin = function InsertLiveReloadPlugin(options) {
   this.options = options || {};
@@ -138,19 +137,18 @@ module.exports = function makeWebpackConfig () {
 
   // Initialize module
   config.module = {
-    preLoaders: [],
-    loaders: [{
+    rules: [{
       // headroom 0.9.3 doesn't work with webpack
       // https://github.com/WickyNilliams/headroom.js/issues/213#issuecomment-281106943
       test: require.resolve('headroom.js'),
-      loader: 'imports-loader?this=>window,define=>false,exports=>false'
+      use: 'imports-loader?this=>window,define=>false,exports=>false'
     }, {
       // JS LOADER
       // Reference: https://github.com/babel/babel-loader
       // Transpile .js files using babel-loader
       // Compiles ES6 and ES7 into ES5 code
-      test: /\.js$/,
-      loaders: ['ng-annotate', 'babel-loader'],
+      test: /\.(js|jsx)$/,
+      use: ['ng-annotate-loader', 'babel-loader'],
       exclude: /(node_modules|bower_components)/,
     }, {
       // CSS LOADER
@@ -159,13 +157,23 @@ module.exports = function makeWebpackConfig () {
       //
       // Reference: https://github.com/postcss/postcss-loader
       // Postprocess your css with PostCSS plugins
-      test: /\.css$/,
-      // Reference: https://github.com/webpack/extract-text-webpack-plugin
+      test: /\.(sa|sc|c)ss$/,
+      // Reference: https://github.com/webpack-contrib/mini-css-extract-plugin
       // Extract css files in production builds
       //
-      // Reference: https://github.com/webpack/style-loader
       // Use style-loader in development.
-      loader: ExtractTextPlugin.extract('style-loader', 'css-loader?sourceMap!postcss-loader')
+      use: [
+        !isProd ? 'style-loader' : MiniCssExtractPlugin.loader,
+        'css-loader',
+        {
+          loader: 'postcss-loader',
+          options: {
+            ident: 'postcss',
+            plugins: [
+              require('autoprefixer')()
+            ]
+          }
+        }]
     }, {
       // ASSET LOADER
       // Reference: https://github.com/webpack/file-loader
@@ -174,20 +182,20 @@ module.exports = function makeWebpackConfig () {
       // Pass along the updated reference to your code
       // You can add here any file extension you want to get copied to your output
       test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
-      loader: 'file'
+      use: 'file-loader'
     }, {
       // HTML LOADER
       // Reference: https://github.com/webpack/raw-loader
       // Allow loading html through js
       test: /\.html$/,
-      loader: 'raw'
+      use: 'raw-loader'
     }, {
       // STRING REPLACE PLUGIN
       // reference: https://www.npmjs.com/package/string-replace-webpack-plugin
       // Allow for arbitrary strings to be replaced as part of the module build process
       // Configure replacements for file patterns
       test: /index.html$/,
-      loader: stringReplacePlugin.replace({
+      use: stringReplacePlugin.replace({
         replacements: [{
           pattern: /WEB_PORT/ig,
           replacement: function (match, p1, offset, string) {
@@ -199,26 +207,16 @@ module.exports = function makeWebpackConfig () {
   };
 
   /**
-   * PostCSS
-   * Reference: https://github.com/postcss/autoprefixer-core
-   * Add vendor prefixes to your css
-   */
-  config.postcss = [
-    autoprefixer({
-      browsers: ['last 2 version']
-    })
-  ];
-
-  /**
    * Plugins
    * Reference: http://webpack.github.io/docs/configuration.html#plugins
    * List: http://webpack.github.io/docs/list-of-plugins.html
    */
   config.plugins = [
-      // Reference: https://github.com/webpack/extract-text-webpack-plugin
-      // Extract css files
-      // Disabled when in test mode or not in build mode
-      new ExtractTextPlugin('[name].[hash].css', {disable: !isProd}),
+      // Reference: https://github.com/webpack-contrib/mini-css-extract-plugin
+      new MiniCssExtractPlugin({
+        filename: !isProd ? '[name].css' : '[name].[hash].css',
+        chunkFilename: !isProd ? '[id].css' : '[id].[hash].css'
+      })
   ];
 
   // Skip rendering index.html in test mode
@@ -242,48 +240,26 @@ module.exports = function makeWebpackConfig () {
       })
     )
   }
-  
+
   if (isTest) {
-    config.module.postLoaders = [
+    config.module.rules = [
       {
         // COVERAGE
         test: /\.js$/,
         exclude: /(node_modules|bower_components|\.test\.js)/,
-        loader: 'istanbul-instrumenter'
+        loader: 'istanbul-instrumenter',
+        enforce: 'post'
       }
     ]
   }
 
   // Add build specific plugins
   if (isProd) {
+    config.optimization = {
+      noEmitOnErrors: true,
+      minimize: true
+    }
     config.plugins.push(
-      // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
-      // Only emit files when there are no errors
-      new webpack.NoErrorsPlugin(),
-
-      // Reference: http://webpack.github.io/docs/list-of-plugins.html#dedupeplugin
-      // Dedupe modules in the output
-      new webpack.optimize.DedupePlugin(),
-
-      // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
-      // Minify all javascript, switch loaders to minimizing mode
-      new webpack.optimize.UglifyJsPlugin({
-        mangle: { screw_ie8: true },
-        preserveComments: 'some',
-        compress: {
-          screw_ie8: true,
-          warnings: false,
-          sequences: true,
-          dead_code: true,
-          conditionals: true,
-          booleans: true,
-          unused: true,
-          if_return: true,
-          join_vars: true,
-          drop_console: true,
-        }
-      }),
-
       // Copy assets from the public folder
       // Reference: https://github.com/kevlened/copy-webpack-plugin
       new CopyWebpackPlugin([])
@@ -308,7 +284,7 @@ module.exports = function makeWebpackConfig () {
     hot: true,
     progress: true,
     contentBase: './src',
-    setup: function(app) {
+    before: function(app) {
       app.use('**/bower_components/', express.static(path.resolve(__dirname, './bower_components/')));
       app.use('**/app/', express.static(path.resolve(__dirname, './src/app/')));
       app.use('**/assets/', express.static(path.resolve(__dirname, './src/assets/')));

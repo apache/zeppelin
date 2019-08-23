@@ -51,7 +51,7 @@ limitations under the License.
 * [Spark with Zeppelin](./quickstart/spark_with_zeppelin.html)
 * [SQL with Zeppelin](./quickstart/sql_with_zeppelin.html)
 * [Python with Zeppelin](./quickstart/python_with_zeppelin.html)
-  
+
 #### Usage 
 * Dynamic Form 
   * [What is Dynamic Form](./usage/dynamic_form/intro.html): a step by step guide for creating dynamic forms
@@ -59,6 +59,7 @@ limitations under the License.
   * [Text Display (`%text`)](./usage/display_system/basic.html#text)
   * [HTML Display (`%html`)](./usage/display_system/basic.html#html)
   * [Table Display (`%table`)](./usage/display_system/basic.html#table)
+  * [Network Display (`%network`)](./usage/display_system/basic.html#network)
   * [Angular Display using Backend API (`%angular`)](./usage/display_system/angular_backend.html)
   * [Angular Display using Frontend API (`%angular`)](./usage/display_system/angular_frontend.html)
 * Interpreter  
@@ -72,6 +73,8 @@ limitations under the License.
   * [Publishing Paragraphs](./usage/other_features/publishing_paragraphs.html) results into your external website
   * [Personalized Mode](./usage/other_features/personalized_mode.html) 
   * [Customizing Zeppelin Homepage](./usage/other_features/customizing_homepage.html) with one of your notebooks
+  * [Notebook actions](./usage/other_features/notebook_actions.html)
+  * [Zeppelin-Context](./usage/other_features/zeppelin_context.html)
 * REST API: available REST API list in Apache Zeppelin
   * [Interpreter API](./usage/rest_api/interpreter.html)
   * [Zeppelin Server API](./usage/rest_api/zeppelin_server.html)
@@ -80,10 +83,11 @@ limitations under the License.
   * [Configuration API](./usage/rest_api/configuration.html)
   * [Credential API](./usage/rest_api/credential.html)
   * [Helium API](./usage/rest_api/helium.html)
-  
+
 #### Setup 
 * Basics 
   * [How to Build Zeppelin](./setup/basics/how_to_build.html)
+  * [Manage Zeppelin with systemd](./setup/basics/systemd.html)
   * [Multi-user Support](./setup/basics/multi_user_support.html)
 * Deployment 
   * [Spark Cluster Mode: Standalone](./setup/deployment/spark_cluster_mode.html#spark-standalone-mode)
@@ -102,6 +106,7 @@ limitations under the License.
   * [Git Storage](./setup/storage/storage.html#notebook-storage-in-local-git-repository)
   * [S3 Storage](./setup/storage/storage.html#notebook-storage-in-s3)
   * [Azure Storage](./setup/storage/storage.html#notebook-storage-in-azure)
+  * [Google Cloud Storage](./setup/storage/storage.html#notebook-storage-in-gcs)
   * [ZeppelinHub Storage](./setup/storage/storage.html#notebook-storage-in-zeppelinhub)
   * [MongoDB Storage](./setup/storage/storage.html#notebook-storage-in-mongodb)
 * Operation 
@@ -109,7 +114,7 @@ limitations under the License.
   * [Proxy Setting](./setup/operation/proxy_setting.html)
   * [Upgrading](./setup/operation/upgrading.html): a manual procedure of upgrading Apache Zeppelin version
   * [Trouble Shooting](./setup/operation/trouble_shooting.html)
-  
+
 #### Developer Guide
 * Extending Zeppelin
   * [Writing Zeppelin Interpreter](./development/writing_zeppelin_interpreter.html)
@@ -123,14 +128,14 @@ limitations under the License.
   * [Useful Developer Tools](./development/contribution/useful_developer_tools.html)
   * [How to Contribute (code)](./development/contribution/how_to_contribute_code.html)
   * [How to Contribute (website)](./development/contribution/how_to_contribute_website.html)
-  
+
 #### Available Interpreters 
   * [Alluxio](./interpreter/alluxio.html)
   * [Beam](./interpreter/beam.html)
   * [BigQuery](./interpreter/bigquery.html)
   * [Cassandra](./interpreter/cassandra.html)
   * [Elasticsearch](./interpreter/elasticsearch.html)
-  * [flink](./interpreter/flink.html)
+  * [Flink](./interpreter/flink.html)
   * [Geode](./interpreter/geode.html)
   * [Groovy](./interpreter/groovy.html)
   * [HBase](./interpreter/hbase.html)
@@ -141,18 +146,22 @@ limitations under the License.
   * [Kylin](./interpreter/kylin.html)
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
-  * [markdown](./interpreter/markdown.html)
+  * [Mahout](./interpreter/mahout.html)
+  * [Markdown](./interpreter/markdown.html)
   * [Neo4j](./interpreter/neo4j.html)
   * [Pig](./interpreter/pig.html)
   * [Postgresql, HAWQ](./interpreter/postgresql.html)
   * [Python](./interpreter/python.html)
   * [R](./interpreter/r.html)
+  * [SAP](./interpreter/sap.html)
   * [Scalding](./interpreter/scalding.html)
   * [Scio](./interpreter/scio.html)
-  * [Shell](./interpreter/Shell.html)
+  * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
-  
+  * [Submarine](./interpreter/submarine.html)
+
 #### External Resources
   * [Mailing List](https://zeppelin.apache.org/community.html)
   * [Apache Zeppelin Wiki](https://cwiki.apache.org/confluence/display/ZEPPELIN/Zeppelin+Home)
   * [Stackoverflow Questions about Zeppelin (tag: `apache-zeppelin`)](http://stackoverflow.com/questions/tagged/apache-zeppelin)
+

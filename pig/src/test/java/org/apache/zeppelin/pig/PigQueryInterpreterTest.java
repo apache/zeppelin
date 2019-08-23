@@ -18,15 +18,13 @@
 
 package org.apache.zeppelin.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -36,16 +34,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 /**
  *
  */
 public class PigQueryInterpreterTest {
 
-  private PigInterpreter pigInterpreter;
-  private PigQueryInterpreter pigQueryInterpreter;
+  private Interpreter pigInterpreter;
+  private Interpreter pigQueryInterpreter;
   private InterpreterContext context;
 
   @Before
@@ -54,8 +55,8 @@ public class PigQueryInterpreterTest {
     properties.put("zeppelin.pig.execType", "local");
     properties.put("zeppelin.pig.maxResult", "20");
 
-    pigInterpreter = new PigInterpreter(properties);
-    pigQueryInterpreter = new PigQueryInterpreter(properties);
+    pigInterpreter = new LazyOpenInterpreter(new PigInterpreter(properties));
+    pigQueryInterpreter = new LazyOpenInterpreter(new PigQueryInterpreter(properties));
     List<Interpreter> interpreters = new ArrayList();
     interpreters.add(pigInterpreter);
     interpreters.add(pigQueryInterpreter);
@@ -66,18 +67,17 @@ public class PigQueryInterpreterTest {
     pigInterpreter.open();
     pigQueryInterpreter.open();
 
-    context = new InterpreterContext(null, "paragraph_id", null, null, null, null, null, null, null, null,
-            null, null);
+    context = InterpreterContext.builder().setParagraphId("paragraphId").build();
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws InterpreterException {
     pigInterpreter.close();
     pigQueryInterpreter.close();
   }
 
   @Test
-  public void testBasics() throws IOException {
+  public void testBasics() throws IOException, InterpreterException {
     String content = "andy\tmale\t10\n"
             + "peter\tmale\t20\n"
             + "amy\tfemale\t14\n";
@@ -93,7 +93,8 @@ public class PigQueryInterpreterTest {
     InterpreterResult result = pigInterpreter.interpret(pigscript, context);
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertTrue(result.message().get(0).getData().contains("(andy,male,10)\n(peter,male,20)\n(amy,female,14)"));
+    assertTrue(result.message().get(0).getData().contains(
+            "(andy,male,10)\n(peter,male,20)\n(amy,female,14)"));
 
     // run single line query in PigQueryInterpreter
     String query = "foreach a generate name, age;";
@@ -117,11 +118,13 @@ public class PigQueryInterpreterTest {
     assertEquals("group\tcol_1\nmale\t2\nfemale\t1\n", result.message().get(0).getData());
 
     // syntax error in PigQueryInterpereter
-    query = "b = group a by invalid_column;\nforeach b generate group as gender, COUNT($1) as count;";
+    query = "b = group a by invalid_column;\nforeach b generate group as gender, " +
+            "COUNT($1) as count;";
     result = pigQueryInterpreter.interpret(query, context);
     assertEquals(InterpreterResult.Type.TEXT, result.message().get(0).getType());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(result.message().get(0).getData().contains("Projected field [invalid_column] does not exist in schema"));
+    assertTrue(result.message().get(0).getData().contains(
+            "Projected field [invalid_column] does not exist in schema"));
 
     // execution error in PigQueryInterpreter
     query = "foreach a2 generate name, age;";
@@ -132,9 +135,9 @@ public class PigQueryInterpreterTest {
   }
 
   @Test
-  public void testMaxResult() throws IOException {
+  public void testMaxResult() throws IOException, InterpreterException {
     StringBuilder content = new StringBuilder();
-    for (int i=0;i<30;++i) {
+    for (int i = 0; i < 30; ++i) {
       content.append(i + "\tname_" + i + "\n");
     }
     File tmpFile = File.createTempFile("zeppelin", "test");

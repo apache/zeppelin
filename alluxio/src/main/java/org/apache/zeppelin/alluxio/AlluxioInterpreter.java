@@ -18,10 +18,20 @@
 
 package org.apache.zeppelin.alluxio;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
+import alluxio.Configuration;
+import alluxio.shell.AlluxioShell;
 
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -29,11 +39,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import alluxio.Configuration;
-import alluxio.shell.AlluxioShell;
 
 /**
  * Alluxio interpreter for Zeppelin.
@@ -71,7 +76,7 @@ public class AlluxioInterpreter extends Interpreter {
   @Override
   public void open() {
     logger.info("Starting Alluxio shell to connect to " + alluxioMasterHostname +
-      " on port " + alluxioMasterPort);
+        " on port " + alluxioMasterPort);
 
     System.setProperty(ALLUXIO_MASTER_HOSTNAME, alluxioMasterHostname);
     System.setProperty(ALLUXIO_MASTER_PORT, alluxioMasterPort);

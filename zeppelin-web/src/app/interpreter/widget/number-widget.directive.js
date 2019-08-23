@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('numberWidget', InterpreterNumberDirective)
+angular.module('zeppelinWebApp').directive('numberWidget', InterpreterNumberDirective);
 
 function InterpreterNumberDirective() {
   return {
     require: 'ngModel',
-    link: function (scope, element, attrs, modelCtrl) {
-      modelCtrl.$parsers.push(function (inputValue) {
-        let transformedInput = inputValue ? inputValue.replace(/[^\d.-]/g, '') : null
+    link: function(scope, element, attrs, modelCtrl) {
+      modelCtrl.$parsers.push(function(inputValue) {
+        let transformedInput = inputValue ? inputValue.replace(/[^\d.-]/g, '') : null;
         if (transformedInput !== inputValue) {
-          modelCtrl.$setViewValue(transformedInput)
-          modelCtrl.$render()
+          modelCtrl.$setViewValue(transformedInput);
+          modelCtrl.$render();
         }
-        return transformedInput
-      })
-    }
-  }
+        return transformedInput;
+      });
+    },
+  };
 }

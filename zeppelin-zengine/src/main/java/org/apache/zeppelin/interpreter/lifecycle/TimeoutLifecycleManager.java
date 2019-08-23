@@ -7,9 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
 /**
@@ -30,46 +32,43 @@ public class TimeoutLifecycleManager implements LifecycleManager {
   private long checkInterval;
   private long timeoutThreshold;
 
-  private Timer checkTimer;
+  private ScheduledExecutorService checkScheduler;
 
   public TimeoutLifecycleManager(ZeppelinConfiguration zConf) {
     this.checkInterval = zConf.getLong(ZeppelinConfiguration.ConfVars
             .ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_CHECK_INTERVAL);
     this.timeoutThreshold = zConf.getLong(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_LIFECYCLE_MANAGER_TIMEOUT_THRESHOLD);
-    this.checkTimer = new Timer(true);
-    this.checkTimer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<ManagedInterpreterGroup, Long> entry : interpreterGroups.entrySet()) {
-          ManagedInterpreterGroup interpreterGroup = entry.getKey();
-          Long lastTimeUsing = entry.getValue();
-          if ((now - lastTimeUsing) > timeoutThreshold )  {
-            LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
+    this.checkScheduler = Executors.newScheduledThreadPool(1);
+    this.checkScheduler.scheduleAtFixedRate(() -> {
+      long now = System.currentTimeMillis();
+      for (Map.Entry<ManagedInterpreterGroup, Long> entry : interpreterGroups.entrySet()) {
+        ManagedInterpreterGroup interpreterGroup = entry.getKey();
+        Long lastTimeUsing = entry.getValue();
+        if ((now - lastTimeUsing) > timeoutThreshold) {
+          LOGGER.info("InterpreterGroup {} is timeout.", interpreterGroup.getId());
+          try {
             interpreterGroup.close();
-            interpreterGroups.remove(entry.getKey());
+          } catch (Exception e) {
+            LOGGER.warn("Fail to close interpreterGroup: " + interpreterGroup.getId(), e);
           }
+          interpreterGroups.remove(entry.getKey());
         }
       }
-    }, checkInterval, checkInterval);
+    }, checkInterval, checkInterval, MILLISECONDS);
     LOGGER.info("TimeoutLifecycleManager is started with checkinterval: " + checkInterval
         + ", timeoutThreshold: " + timeoutThreshold);
   }
 
   @Override
-  public void onInterpreterGroupCreated(ManagedInterpreterGroup interpreterGroup) {
+  public void onInterpreterProcessStarted(ManagedInterpreterGroup interpreterGroup) {
+    LOGGER.info("Process of InterpreterGroup {} is started", interpreterGroup.getId());
     interpreterGroups.put(interpreterGroup, System.currentTimeMillis());
   }
 
   @Override
-  public void onInterpreterSessionCreated(ManagedInterpreterGroup interpreterGroup,
-                                          String sessionId) {
-
-  }
-
-  @Override
   public void onInterpreterUse(ManagedInterpreterGroup interpreterGroup, String sessionId) {
+    LOGGER.debug("InterpreterGroup {} is used in session {}", interpreterGroup.getId(), sessionId);
     interpreterGroups.put(interpreterGroup, System.currentTimeMillis());
   }
 }

@@ -1,0 +1,247 @@
+[
+  {
+    "group": "spark",
+    "name": "spark",
+    "className": "org.apache.zeppelin.spark.SparkInterpreter",
+    "defaultInterpreter": true,
+    "properties": {
+      "spark.executor.memory": {
+        "envName": null,
+        "propertyName": "spark.executor.memory",
+        "defaultValue": "",
+        "description": "Executor memory per worker instance. ex) 512m, 32g",
+        "type": "string"
+      },
+      "args": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "spark commandline args",
+        "type": "textarea"
+      },
+      "zeppelin.spark.useHiveContext": {
+        "envName": "ZEPPELIN_SPARK_USEHIVECONTEXT",
+        "propertyName": "zeppelin.spark.useHiveContext",
+        "defaultValue": true,
+        "description": "Use HiveContext instead of SQLContext if it is true.",
+        "type": "checkbox"
+      },
+      "spark.app.name": {
+        "envName": "SPARK_APP_NAME",
+        "propertyName": "spark.app.name",
+        "defaultValue": "Zeppelin",
+        "description": "The name of spark application.",
+        "type": "string"
+      },
+      "zeppelin.spark.printREPLOutput": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.printREPLOutput",
+        "defaultValue": true,
+        "description": "Print REPL output",
+        "type": "checkbox"
+      },
+      "spark.cores.max": {
+        "envName": null,
+        "propertyName": "spark.cores.max",
+        "defaultValue": "",
+        "description": "Total number of cores to use. Empty value uses all available core.",
+        "type": "number"
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of Spark SQL result to display.",
+        "type": "number"
+      },
+      "master": {
+        "envName": "MASTER",
+        "propertyName": "spark.master",
+        "defaultValue": "local[*]",
+        "description": "Spark master uri. ex) spark://masterhost:7077",
+        "type": "string"
+      },
+      "zeppelin.spark.enableSupportedVersionCheck": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.enableSupportedVersionCheck",
+        "defaultValue": true,
+        "description": "Do not change - developer only setting, not for production use",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.uiWebUrl": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.uiWebUrl",
+        "defaultValue": "",
+        "description": "Override Spark UI default URL",
+        "type": "string"
+      },
+      "zeppelin.spark.ui.hidden": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.ui.hidden",
+        "defaultValue": false,
+        "description": "Whether to hide spark ui in zeppelin ui",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.scala.color": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.scala.color",
+        "defaultValue": true,
+        "description": "Whether to enable color output of spark scala interpreter",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.deprecatedMsg.show": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.deprecatedMsg.show",
+        "defaultValue": true,
+        "description": "Whether show the spark deprecated message",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "scala",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark",
+    "name": "sql",
+    "className": "org.apache.zeppelin.spark.SparkSqlInterpreter",
+    "properties": {
+      "zeppelin.spark.concurrentSQL": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL",
+        "propertyName": "zeppelin.spark.concurrentSQL",
+        "defaultValue": false,
+        "description": "Execute multiple SQL concurrently if set true.",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.concurrentSQL.max": {
+        "envName": "ZEPPELIN_SPARK_CONCURRENTSQL_MAX",
+        "propertyName": "zeppelin.spark.concurrentSQL.max",
+        "defaultValue": 10,
+        "description": "Max number of SQL concurrently executed",
+        "type": "number"
+      },
+      "zeppelin.spark.sql.stacktrace": {
+        "envName": "ZEPPELIN_SPARK_SQL_STACKTRACE",
+        "propertyName": "zeppelin.spark.sql.stacktrace",
+        "defaultValue": false,
+        "description": "Show full exception stacktrace for SQL queries if set to true.",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.sql.interpolation": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.sql.interpolation",
+        "defaultValue": false,
+        "description": "Enable ZeppelinContext variable interpolation into paragraph text",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": "ZEPPELIN_SPARK_MAXRESULT",
+        "propertyName": "zeppelin.spark.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of Spark SQL result to display.",
+        "type": "number"
+      },
+      "zeppelin.spark.importImplicit": {
+        "envName": "ZEPPELIN_SPARK_IMPORTIMPLICIT",
+        "propertyName": "zeppelin.spark.importImplicit",
+        "defaultValue": true,
+        "description": "Import implicits, UDF collection, and sql if set true. true by default.",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "sql",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark",
+    "name": "pyspark",
+    "className": "org.apache.zeppelin.spark.PySparkInterpreter",
+    "properties": {
+      "PYSPARK_PYTHON": {
+        "envName": "PYSPARK_PYTHON",
+        "propertyName": "PYSPARK_PYTHON",
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with",
+        "type": "string"
+      },
+      "PYSPARK_DRIVER_PYTHON": {
+        "envName": "PYSPARK_DRIVER_PYTHON",
+        "propertyName": "PYSPARK_DRIVER_PYTHON",
+        "defaultValue": "python",
+        "description": "Python command to run pyspark with",
+        "type": "string"
+      },
+      "zeppelin.pyspark.useIPython": {
+        "envName": null,
+        "propertyName": "zeppelin.pyspark.useIPython",
+        "defaultValue": true,
+        "description": "whether use IPython when it is available",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark",
+    "name": "ipyspark",
+    "className": "org.apache.zeppelin.spark.IPySparkInterpreter",
+    "properties": {},
+    "editor": {
+      "language": "python",
+      "editOnDblClick": false,
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark",
+    "name": "r",
+    "className": "org.apache.zeppelin.spark.SparkRInterpreter",
+    "properties": {
+      "zeppelin.R.knitr": {
+        "envName": "ZEPPELIN_R_KNITR",
+        "propertyName": "zeppelin.R.knitr",
+        "defaultValue": true,
+        "description": "whether use knitr or not",
+        "type": "checkbox"
+      },
+      "zeppelin.R.cmd": {
+        "envName": "ZEPPELIN_R_CMD",
+        "propertyName": "zeppelin.R.cmd",
+        "defaultValue": "R",
+        "description": "R repl path",
+        "type": "string"
+      },
+      "zeppelin.R.image.width": {
+        "envName": "ZEPPELIN_R_IMAGE_WIDTH",
+        "propertyName": "zeppelin.R.image.width",
+        "defaultValue": "100%",
+        "description": "",
+        "type": "number"
+      },
+      "zeppelin.R.render.options": {
+        "envName": "ZEPPELIN_R_RENDER_OPTIONS",
+        "propertyName": "zeppelin.R.render.options",
+        "defaultValue": "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, warning = F, fig.retina = 2",
+        "description": "",
+        "type": "textarea"
+      }
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
+  }
+]

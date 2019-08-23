@@ -6,7 +6,8 @@
     "properties": {
     },
     "editor": {
-      "editOnDblClick": true
+      "editOnDblClick": true,
+      "completionSupport": false
     }
   }
 ]

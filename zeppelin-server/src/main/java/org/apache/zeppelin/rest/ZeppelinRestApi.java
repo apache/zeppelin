@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
 
+import javax.inject.Singleton;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,16 +31,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.util.Util;
+
 /**
  * Zeppelin root rest api endpoint.
  *
  * @since 0.3.4
  */
 @Path("/")
+@Singleton
 public class ZeppelinRestApi {
-
-  public ZeppelinRestApi() {
-  }
 
   /**
    * Get the root endpoint Return always 200.
@@ -68,7 +67,8 @@ public class ZeppelinRestApi {
   }
 
   /**
-   * Set the log level for root logger
+   * Set the log level for root logger.
+   *
    * @param request
    * @param logLevel new log level for Rootlogger
    * @return

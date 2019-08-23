@@ -41,8 +41,10 @@ public class PegdownParser implements MarkdownParser {
   @Override
   public String render(String markdownText) {
     String html = "";
-    String parsed = processor.markdownToHtml(markdownText);
-
+    String parsed;
+    synchronized (processor) {
+      parsed = processor.markdownToHtml(markdownText);
+    }
     if (null == parsed) {
       throw new RuntimeException("Cannot parse markdown text to HTML using pegdown");
     }

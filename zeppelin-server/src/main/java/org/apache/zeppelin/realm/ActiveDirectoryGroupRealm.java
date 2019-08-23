@@ -16,19 +16,16 @@
  */
 package org.apache.zeppelin.realm;
 
+import java.util.LinkedHashMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.ldap.AbstractLdapRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
@@ -37,6 +34,16 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -44,11 +51,9 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.util.*;
-
 
 /**
- * A {@link Realm} that authenticates with an active directory LDAP
+ * A {@link org.apache.shiro.realm.Realm} that authenticates with an active directory LDAP
  * server to determine the roles for a particular user.  This implementation
  * queries for the user's groups and then maps the group names to roles using the
  * {@link #groupRolesMap}.
@@ -56,40 +61,39 @@ import java.util.*;
  * @since 0.1
  */
 public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
-
   private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryGroupRealm.class);
 
   private static final String ROLE_NAMES_DELIMETER = ",";
 
-  String KEYSTORE_PASS = "activeDirectoryRealm.systemPassword";
+  final String keystorePass = "activeDirectoryRealm.systemPassword";
+
+  private String userSearchAttributeName = "sAMAccountName";
+
   private String hadoopSecurityCredentialPath;
+
+  public String getUserSearchAttributeName() {
+    return userSearchAttributeName;
+  }
+
+  public void setUserSearchAttributeName(String userSearchAttributeName) {
+    this.userSearchAttributeName = userSearchAttributeName;
+  }
+
 
   public void setHadoopSecurityCredentialPath(String hadoopSecurityCredentialPath) {
     this.hadoopSecurityCredentialPath = hadoopSecurityCredentialPath;
   }
-
-    /*--------------------------------------------
-    |    I N S T A N C E   V A R I A B L E S    |
-    ============================================*/
 
   /**
    * Mapping from fully qualified active directory
    * group names (e.g. CN=Group,OU=Company,DC=MyDomain,DC=local)
    * as returned by the active directory LDAP server to role names.
    */
-  private Map<String, String> groupRolesMap;
-
-    /*--------------------------------------------
-    |         C O N S T R U C T O R S           |
-    ============================================*/
+  private Map<String, String> groupRolesMap = new LinkedHashMap<>();
 
   public void setGroupRolesMap(Map<String, String> groupRolesMap) {
-    this.groupRolesMap = groupRolesMap;
+    this.groupRolesMap.putAll(groupRolesMap);
   }
-
-    /*--------------------------------------------
-    |               M E T H O D S               |
-    ============================================*/
 
   LdapContextFactory ldapContextFactory;
 
@@ -117,7 +121,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
-      throws AuthenticationException {
+          throws AuthenticationException {
     try {
       AuthenticationInfo info = this.queryForAuthenticationInfo(token,
           this.getLdapContextFactory());
@@ -147,20 +151,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     if (StringUtils.isEmpty(this.hadoopSecurityCredentialPath)) {
       password = this.systemPassword;
     } else {
-      try {
-        Configuration configuration = new Configuration();
-        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          this.hadoopSecurityCredentialPath);
-        CredentialProvider provider =
-          CredentialProviderFactory.getProviders(configuration).get(0);
-        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
-            KEYSTORE_PASS);
-        if (credEntry != null) {
-          password = new String(credEntry.getCredential());
-        }
-      } catch (Exception e) {
-
-      }
+      password = LdapRealm.getSystemPassword(hadoopSecurityCredentialPath, keystorePass);
     }
     return password;
   }
@@ -177,9 +168,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return an {@link AuthenticationInfo} instance containing information retrieved from LDAP.
    * @throws NamingException if any LDAP errors occur during the search.
    */
-  protected AuthenticationInfo queryForAuthenticationInfo(
-      AuthenticationToken token, LdapContextFactory ldapContextFactory) throws NamingException {
-
+  protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
+          LdapContextFactory ldapContextFactory) throws NamingException {
     UsernamePasswordToken upToken = (UsernamePasswordToken) token;
 
     // Binds using the username and password provided by the user.
@@ -222,7 +212,6 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return new SimpleAuthenticationInfo(username, password, getName());
   }
 
-
   /**
    * Builds an {@link org.apache.shiro.authz.AuthorizationInfo} object by querying the active
    * directory LDAP context for the groups that a user is a member of.  The groups are then
@@ -239,10 +228,8 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
    * @return the AuthorizationInfo for the given Subject principal.
    * @throws NamingException if an error occurs when searching the LDAP server.
    */
-  protected AuthorizationInfo queryForAuthorizationInfo(
-      PrincipalCollection principals,
-      LdapContextFactory ldapContextFactory) throws NamingException {
-
+  protected AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
+          LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);
 
     // Perform context search
@@ -263,14 +250,17 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     return new SimpleAuthorizationInfo(roleNames);
   }
 
-  public List<String> searchForUserName(String containString, LdapContext ldapContext) throws
-      NamingException {
+  public List<String> searchForUserName(String containString, LdapContext ldapContext,
+      int numUsersToFetch)
+          throws NamingException {
     List<String> userNameList = new ArrayList<>();
 
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    searchCtls.setCountLimit(numUsersToFetch);
 
-    String searchFilter = "(&(objectClass=*)(userPrincipalName=*" + containString + "*))";
+    String searchFilter = String.format("(&(objectClass=*)(%s=*%s*))", this.getUserSearchAttributeName(), containString);
+
     Object[] searchArguments = new Object[]{containString};
 
     NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
@@ -288,7 +278,7 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
         NamingEnumeration ae = attrs.getAll();
         while (ae.hasMore()) {
           Attribute attr = (Attribute) ae.next();
-          if (attr.getID().toLowerCase().equals("cn")) {
+          if (attr.getID().toLowerCase().equals(this.getUserSearchAttributeName().toLowerCase())) {
             userNameList.addAll(LdapUtils.getAllAttributeValues(attr));
           }
         }
@@ -308,17 +298,17 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
   }
 
   private Set<String> getRoleNamesForUser(String username, LdapContext ldapContext)
-      throws NamingException {
+          throws NamingException {
     Set<String> roleNames = new LinkedHashSet<>();
 
     SearchControls searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     String userPrincipalName = username;
-    if (this.principalSuffix != null && userPrincipalName.indexOf('@') < 0) {
-      userPrincipalName += principalSuffix;
+    if (this.principalSuffix != null && userPrincipalName.indexOf('@') > 1) {
+      userPrincipalName = userPrincipalName.split("@")[0];
     }
 
-    String searchFilter = "(&(objectClass=*)(userPrincipalName=" + userPrincipalName + "))";
+    String searchFilter = String.format("(&(objectClass=*)(%s=%s))", this.getUserSearchAttributeName(), userPrincipalName);
     Object[] searchArguments = new Object[]{userPrincipalName};
 
     NamingEnumeration answer = ldapContext.search(searchBase, searchFilter, searchArguments,
@@ -385,6 +375,4 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     }
     return roleNames;
   }
-
 }
-

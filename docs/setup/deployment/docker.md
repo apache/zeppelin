@@ -33,7 +33,7 @@ You need to [install docker](https://docs.docker.com/engine/installation/) on yo
 
 ### Running docker image
 
-```
+```bash
 docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version> 
 ```
 
@@ -41,7 +41,7 @@ docker run -p 8080:8080 --rm --name zeppelin apache/zeppelin:<release-version>
 
 If you want to specify `logs` and `notebook` dir, 
 
-```
+```bash
 docker run -p 8080:8080 --rm \
 -v $PWD/logs:/logs \
 -v $PWD/notebook:/notebook \
@@ -52,7 +52,7 @@ docker run -p 8080:8080 --rm \
 
 ### Building dockerfile locally
 
-```
+```bash
 cd $ZEPPELIN_HOME
 cd scripts/docker/zeppelin/bin
 

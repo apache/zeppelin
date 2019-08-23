@@ -17,18 +17,18 @@
 
 package org.apache.zeppelin.display;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.apache.thrift.TException;
+import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class AngularObjectRegistryTest {
 
   @Test
-  public void testBasic() {
+  public void testBasic() throws TException {
     final AtomicInteger onAdd = new AtomicInteger(0);
     final AtomicInteger onUpdate = new AtomicInteger(0);
     final AtomicInteger onRemove = new AtomicInteger(0);
@@ -47,10 +47,13 @@ public class AngularObjectRegistryTest {
           }
 
           @Override
-          public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
+          public void onRemove(String interpreterGroupId,
+                               String name,
+                               String noteId,
+                               String paragraphId) {
             onRemove.incrementAndGet();
           }
-    });
+        });
 
     registry.add("name1", "value1", "note1", null);
     assertEquals(1, registry.getAll("note1", null).size());
@@ -65,19 +68,19 @@ public class AngularObjectRegistryTest {
     assertEquals(1, onRemove.get());
 
     assertEquals(null, registry.get("name1", "note1", null));
-    
+
     // namespace
     registry.add("name1", "value11", "note2", null);
     assertEquals("value11", registry.get("name1", "note2", null).get());
     assertEquals(null, registry.get("name1", "note1", null));
-    
+
     // null namespace
     registry.add("name1", "global1", null, null);
     assertEquals("global1", registry.get("name1", null, null).get());
   }
 
   @Test
-  public void testGetDependOnScope() {
+  public void testGetDependOnScope() throws TException {
     AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
     AngularObject ao1 = registry.add("name1", "o1", "noteId1", "paragraphId1");
     AngularObject ao2 = registry.add("name2", "o2", "noteId1", "paragraphId1");
@@ -96,7 +99,7 @@ public class AngularObjectRegistryTest {
   }
 
   @Test
-  public void testGetAllDependOnScope() {
+  public void testGetAllDependOnScope() throws TException {
     AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
     AngularObject ao1 = registry.add("name1", "o", "noteId1", "paragraphId1");
     AngularObject ao2 = registry.add("name2", "o", "noteId1", "paragraphId1");

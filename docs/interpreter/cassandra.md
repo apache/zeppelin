@@ -69,27 +69,27 @@ The **Cassandra** interpreter accepts the following commands
     </tr>
     <tr>
       <td nowrap>Help command</td>
-      <td>HELP</td>
+      <td>`HELP`</td>
       <td>Display the interactive help menu</td>
     </tr>
     <tr>
       <td nowrap>Schema commands</td>
-      <td>DESCRIBE KEYSPACE, DESCRIBE CLUSTER, DESCRIBE TABLES ...</td>
+      <td>`DESCRIBE KEYSPACE`, `DESCRIBE CLUSTER`, `DESCRIBE TABLES` ...</td>
       <td>Custom commands to describe the Cassandra schema</td>
     </tr>
     <tr>
       <td nowrap>Option commands</td>
-      <td>@consistency, @retryPolicy, @fetchSize ...</td>
+      <td>`@consistency`, `@retryPolicy`, `@fetchSize` ...</td>
       <td>Inject runtime options to all statements in the paragraph</td>
     </tr>
     <tr>
       <td nowrap>Prepared statement commands</td>
-      <td>@prepare, @bind, @remove_prepared</td>
+      <td>`@prepare`, `@bind`, `@remove_prepared`</td>
       <td>Let you register a prepared command and re-use it later by injecting bound values</td>
     </tr>
     <tr>
       <td nowrap>Native CQL statements</td>
-      <td>All CQL-compatible statements (SELECT, INSERT, CREATE ...)</td>
+      <td>All CQL-compatible statements (`SELECT`, `INSERT`, `CREATE`, ...)</td>
       <td>All CQL statements are executed directly against the Cassandra server</td>
     </tr>
   </table>
@@ -107,15 +107,15 @@ SELECT * FROM users WHERE login='jdoe';
 
 Each statement should be separated by a semi-colon ( **;** ) except the special commands below:
 
-1. @prepare
-2. @bind
-3. @remove_prepare
-4. @consistency
-5. @serialConsistency
-6. @timestamp
-7. @retryPolicy
-8. @fetchSize
-9. @requestTimeOut
+1. `@prepare`
+2. `@bind`
+3. `@remove_prepare`
+4. `@consistency`
+5. `@serialConsistency`
+6. `@timestamp`
+7. `@retryPolicy`
+8. `@fetchSize`
+9. `@requestTimeOut`
 
 Multi-line statements as well as multiple statements on the same line are also supported as long as they are separated by a semi-colon. Ex:
 
@@ -130,7 +130,7 @@ FROM artists
 WHERE login='jlennon';
 ```
 
-Batch statements are supported and can span multiple lines, as well as DDL(CREATE/ALTER/DROP) statements:
+Batch statements are supported and can span multiple lines, as well as DDL (`CREATE`/`ALTER`/`DROP`) statements:
 
 ```sql
 
@@ -429,7 +429,7 @@ Some remarks about query parameters:
 
 > 1. **many** query parameters can be set in the same paragraph
 > 2. if the **same** query parameter is set many time with different values, the interpreter only take into account the first value
-> 3. each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text (like forcing timestamp with the USING clause)
+> 3. each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text (like forcing timestamp with the `USING` clause)
 > 4. the order of each query parameter with regard to CQL statement does not matter
 
 ## Support for Prepared Statements
@@ -463,7 +463,7 @@ saves the generated prepared statement in an **internal hash map**, using the pr
 > Please note that this internal prepared statement map is shared with **all notebooks** and **all paragraphs** because
 there is only one instance of the interpreter for Cassandra
 
-> If the interpreter encounters **many** @prepare for the **same _statement-name_ (key)**, only the **first** statement will be taken into account.
+> If the interpreter encounters **many** `@prepare` for the **same _statement-name_ (key)**, only the **first** statement will be taken into account.
 
 Example:
 
@@ -474,7 +474,7 @@ Example:
 ```
 
 For the above example, the prepared statement is `SELECT * FROM spark_demo.albums LIMIT ?`.
-`SELECT * FROM spark_demo.artists LIMIT ? is ignored because an entry already exists in the prepared statements map with the key select.
+`SELECT * FROM spark_demo.artists LIMIT ?` is ignored because an entry already exists in the prepared statements map with the key _select_.
 
 In the context of **Zeppelin**, a notebook can be scheduled to be executed at regular interval,
 thus it is necessary to **avoid re-preparing many time the same statement (considered an anti-pattern)**.
@@ -488,18 +488,18 @@ Once the statement is prepared (possibly in a separated notebook/paragraph). You
 
 Bound values are not mandatory for the **@bind** statement. However if you provide bound values, they need to comply to some syntax:
 
-* String values should be enclosed between simple quotes ( ‘ )
-* Date values should be enclosed between simple quotes ( ‘ ) and respect the formats:
+* String values should be enclosed between simple quotes (**'**)
+* Date values should be enclosed between simple quotes (**'**) and respect the formats (full list is in the [documentation](https://docs.datastax.com/en/cql/3.3/cql/cql_reference/timestamp_type_r.html)):
   1. yyyy-MM-dd HH:MM:ss
   2. yyyy-MM-dd HH:MM:ss.SSS
 * **null** is parsed as-is
-* **boolean** (true|false) are parsed as-is
+* **boolean** (`true`|`false`) are parsed as-is
 * collection values must follow the **[standard CQL syntax]**:
-  * list: [‘list_item1’, ’list_item2’, ...]
-  * set: {‘set_item1’, ‘set_item2’, …}
-  * map: {‘key1’: ‘val1’, ‘key2’: ‘val2’, …}
-* **tuple** values should be enclosed between parenthesis (see **[Tuple CQL syntax]**): (‘text’, 123, true)
-* **udt** values should be enclosed between brackets (see **[UDT CQL syntax]**): {stree_name: ‘Beverly Hills’, number: 104, zip_code: 90020, state: ‘California’, …}
+  * list: ['list_item1', 'list_item2', ...]
+  * set: {'set_item1', 'set_item2', …}
+  * map: {'key1': 'val1', 'key2': 'val2', …}
+* **tuple** values should be enclosed between parenthesis (see **[Tuple CQL syntax]**): ('text', 123, true)
+* **udt** values should be enclosed between brackets (see **[UDT CQL syntax]**): {stree_name: 'Beverly Hills', number: 104, zip_code: 90020, state: 'California', …}
 
 > It is possible to use the @bind statement inside a batch:
 >
@@ -540,8 +540,7 @@ Example:
     AND styles CONTAINS '${style=Rock}';
 {% endraw %}
 
-
-In the above example, the first CQL query will be executed for _performer='Sheryl Crow' AND style='Rock'_.
+In the above example, the first CQL query will be executed for `performer='Sheryl Crow' AND style='Rock'`.
 For subsequent queries, you can change the value directly using the form.
 
 > Please note that we enclosed the **$\{ \}** block between simple quotes ( **'** ) because Cassandra expects a String here.
@@ -550,14 +549,12 @@ For subsequent queries, you can change the value directly using the form.
 It is also possible to use dynamic forms for **prepared statements**:
 
 {% raw %}
-
     @bind[select]=='${performer=Sheryl Crow|Doof|Fanfarlo|Los Paranoia}', '${style=Rock}'
-
 {% endraw %}
 
 ## Shared states
 
-It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using synchronous queries.
+It is possible to execute many paragraphs in parallel. However, at the back-end side, we're still using synchronous queries.
 _Asynchronous execution_ is only possible when it is possible to return a `Future` value in the `InterpreterResult`.
 It may be an interesting proposal for the **Zeppelin** project.
 
@@ -570,7 +567,7 @@ Long story short, you have 3 available bindings:
  - **isolated**: _different JVM_ running a _single Interpreter instance_, one JVM for each note
      
 Using the **shared** binding, the same `com.datastax.driver.core.Session` object is used for **all** notes and paragraphs.
-Consequently, if you use the **USE _keyspace name_;** statement to log into a keyspace, it will change the keyspace for
+Consequently, if you use the `USE keyspace_name;` statement to log into a keyspace, it will change the keyspace for
 **all current users** of the **Cassandra** interpreter because we only create 1 `com.datastax.driver.core.Session` object
 per instance of **Cassandra** interpreter.
 
@@ -588,7 +585,7 @@ To configure the **Cassandra** interpreter, go to the **Interpreter** menu and s
 The **Cassandra** interpreter is using the official **[Cassandra Java Driver]** and most of the parameters are used
 to configure the Java driver
 
-Below are the configuration parameters and their default value.
+Below are the configuration parameters and their default values.
 
  <table class="table-configuration">
    <tr>
@@ -597,41 +594,41 @@ Below are the configuration parameters and their default value.
      <th>Default Value</th>
    </tr>
    <tr>
-     <td>cassandra.cluster</td>
+     <td>`cassandra.cluster`</td>
      <td>Name of the Cassandra cluster to connect to</td>
      <td>Test Cluster</td>
    </tr>
    <tr>
-     <td>cassandra.compression.protocol</td>
-     <td>On wire compression. Possible values are: NONE, SNAPPY, LZ4</td>
-     <td>NONE</td>
+     <td>`cassandra.compression.protocol`</td>
+     <td>On wire compression. Possible values are: `NONE`, `SNAPPY`, `LZ4`</td>
+     <td>`NONE`</td>
    </tr>
    <tr>
-     <td>cassandra.credentials.username</td>
+     <td>`cassandra.credentials.username`</td>
      <td>If security is enable, provide the login</td>
      <td>none</td>
    </tr>
    <tr>
-     <td>cassandra.credentials.password</td>
+     <td>`cassandra.credentials.password`</td>
      <td>If security is enable, provide the password</td>
      <td>none</td>
    </tr>
    <tr>
-     <td>cassandra.hosts</td>
+     <td>`cassandra.hosts`</td>
      <td>
         Comma separated Cassandra hosts (DNS name or IP address).
         <br/>
-        Ex: '192.168.0.12,node2,node3'
+        Ex: `192.168.0.12,node2,node3`
       </td>
-     <td>localhost</td>
+     <td>`localhost`</td>
    </tr>
    <tr>
-     <td>cassandra.interpreter.parallelism</td>
+     <td>`cassandra.interpreter.parallelism`</td>
      <td>Number of concurrent paragraphs(queries block) that can be executed</td>
      <td>10</td>
    </tr>
    <tr>
-     <td>cassandra.keyspace</td>
+     <td>`cassandra.keyspace`</td>
      <td>
         Default keyspace to connect to.
         <strong>
@@ -640,80 +637,80 @@ Below are the configuration parameters and their default value.
           in all of your queries
         </strong>
      </td>
-     <td>system</td>
+     <td>`system`</td>
    </tr>
    <tr>
-     <td>cassandra.load.balancing.policy</td>
+     <td>`cassandra.load.balancing.policy`</td>
      <td>
-        Load balancing policy. Default = <em>new TokenAwarePolicy(new DCAwareRoundRobinPolicy())</em>
-        To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
+        Load balancing policy. Default = `new TokenAwarePolicy(new DCAwareRoundRobinPolicy())`
+        To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
         At runtime the interpreter will instantiate the policy using
         <strong>Class.forName(FQCN)</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>cassandra.max.schema.agreement.wait.second</td>
+     <td>`cassandra.max.schema.agreement.wait.second`</td>
      <td>Cassandra max schema agreement wait in second</td>
      <td>10</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.core.connection.per.host.local</td>
+     <td>`cassandra.pooling.core.connection.per.host.local`</td>
      <td>Protocol V2 and below default = 2. Protocol V3 and above default = 1</td>
      <td>2</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.core.connection.per.host.remote</td>
+     <td>`cassandra.pooling.core.connection.per.host.remote`</td>
      <td>Protocol V2 and below default = 1. Protocol V3 and above default = 1</td>
      <td>1</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.heartbeat.interval.seconds</td>
+     <td>`cassandra.pooling.heartbeat.interval.seconds`</td>
      <td>Cassandra pool heartbeat interval in secs</td>
      <td>30</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.idle.timeout.seconds</td>
+     <td>`cassandra.pooling.idle.timeout.seconds`</td>
      <td>Cassandra idle time out in seconds</td>
      <td>120</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.max.connection.per.host.local</td>
+     <td>`cassandra.pooling.max.connection.per.host.local`</td>
      <td>Protocol V2 and below default = 8. Protocol V3 and above default = 1</td>
      <td>8</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.max.connection.per.host.remote</td>
+     <td>`cassandra.pooling.max.connection.per.host.remote`</td>
      <td>Protocol V2 and below default = 2. Protocol V3 and above default = 1</td>
      <td>2</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.max.request.per.connection.local</td>
+     <td>`cassandra.pooling.max.request.per.connection.local`</td>
      <td>Protocol V2 and below default = 128. Protocol V3 and above default = 1024</td>
      <td>128</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.max.request.per.connection.remote</td>
+     <td>`cassandra.pooling.max.request.per.connection.remote`</td>
      <td>Protocol V2 and below default = 128. Protocol V3 and above default = 256</td>
      <td>128</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.new.connection.threshold.local</td>
+     <td>`cassandra.pooling.new.connection.threshold.local`</td>
      <td>Protocol V2 and below default = 100. Protocol V3 and above default = 800</td>
      <td>100</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.new.connection.threshold.remote</td>
+     <td>`cassandra.pooling.new.connection.threshold.remote`</td>
      <td>Protocol V2 and below default = 100. Protocol V3 and above default = 200</td>
      <td>100</td>
    </tr>
    <tr>
-     <td>cassandra.pooling.pool.timeout.millisecs</td>
+     <td>`cassandra.pooling.pool.timeout.millisecs`</td>
      <td>Cassandra pool time out in millisecs</td>
      <td>5000</td>
    </tr>
    <tr>
-     <td>cassandra.protocol.version</td>
+     <td>`cassandra.protocol.version`</td>
      <td>Cassandra binary protocol version</td>
      <td>4</td>
    </tr>
@@ -722,74 +719,74 @@ Below are the configuration parameters and their default value.
      <td>
       Cassandra query default consistency level
       <br/>
-      Available values: ONE, TWO, THREE, QUORUM, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM, ALL
+      Available values: `ONE`, `TWO`, `THREE`, `QUORUM`, `LOCAL_ONE`, `LOCAL_QUORUM`, `EACH_QUORUM`, `ALL`
      </td>
-     <td>ONE</td>
+     <td>`ONE`</td>
    </tr>
    <tr>
-     <td>cassandra.query.default.fetchSize</td>
+     <td>`cassandra.query.default.fetchSize`</td>
      <td>Cassandra query default fetch size</td>
      <td>5000</td>
    </tr>
    <tr>
-     <td>cassandra.query.default.serial.consistency</td>
+     <td>`cassandra.query.default.serial.consistency`</td>
      <td>
       Cassandra query default serial consistency level
       <br/>
-      Available values: SERIAL, LOCAL_SERIAL
+      Available values: `SERIAL`, `LOCAL_SERIAL`
      </td>
-     <td>SERIAL</td>
+     <td>`SERIAL`</td>
    </tr>
    <tr>
-     <td>cassandra.reconnection.policy</td>
+     <td>`cassandra.reconnection.policy`</td>
      <td>
         Cassandra Reconnection Policy.
-        Default = new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)
-        To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
+        Default = `new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)`
+        To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
         At runtime the interpreter will instantiate the policy using
         <strong>Class.forName(FQCN)</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>cassandra.retry.policy</td>
+     <td>`cassandra.retry.policy`</td>
      <td>
         Cassandra Retry Policy.
-        Default = DefaultRetryPolicy.INSTANCE
-        To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
+        Default = `DefaultRetryPolicy.INSTANCE`
+        To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
         At runtime the interpreter will instantiate the policy using
         <strong>Class.forName(FQCN)</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>cassandra.socket.connection.timeout.millisecs</td>
+     <td>`cassandra.socket.connection.timeout.millisecs`</td>
      <td>Cassandra socket default connection timeout in millisecs</td>
      <td>500</td>
    </tr>
    <tr>
-     <td>cassandra.socket.read.timeout.millisecs</td>
+     <td>`cassandra.socket.read.timeout.millisecs`</td>
      <td>Cassandra socket read timeout in millisecs</td>
      <td>12000</td>
    </tr>
    <tr>
-     <td>cassandra.socket.tcp.no_delay</td>
+     <td>`cassandra.socket.tcp.no_delay`</td>
      <td>Cassandra socket TCP no delay</td>
      <td>true</td>
    </tr>
    <tr>
-     <td>cassandra.speculative.execution.policy</td>
+     <td>`cassandra.speculative.execution.policy`</td>
      <td>
         Cassandra Speculative Execution Policy.
-        Default = NoSpeculativeExecutionPolicy.INSTANCE
-        To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
+        Default = `NoSpeculativeExecutionPolicy.INSTANCE`
+        To Specify your own policy, provide the <em>fully qualify class name (FQCN)</em> of your policy.
         At runtime the interpreter will instantiate the policy using
         <strong>Class.forName(FQCN)</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
    <tr>
-     <td>cassandra.ssl.enabled</td>
+     <td>`cassandra.ssl.enabled`</td>
      <td>
         Enable support for connecting to the Cassandra configured with SSL.
         To connect to Cassandra configured with SSL use <strong>true</strong>
@@ -798,14 +795,14 @@ Below are the configuration parameters and their default value.
      <td>false</td>
    </tr>
    <tr>
-     <td>cassandra.ssl.truststore.path</td>
+     <td>`cassandra.ssl.truststore.path`</td>
      <td>
         Filepath for the truststore file to use for connection to Cassandra with SSL.
      </td>
      <td></td>
    </tr>
    <tr>
-     <td>cassandra.ssl.truststore.password</td>
+     <td>`cassandra.ssl.truststore.password`</td>
      <td>
         Password for the truststore file to use for connection to Cassandra with SSL.
      </td>

@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-import TableData from './tabledata'
-import NetworkData from './networkdata'
-import {DatasetType} from './dataset'
+import TableData from './tabledata';
+import NetworkData from './networkdata';
+import {DatasetType} from './dataset';
 
 /**
  * Create table data object from paragraph table type result
@@ -23,11 +23,11 @@ export default class DatasetFactory {
   createDataset(datasetType) {
     switch (datasetType) {
       case DatasetType.NETWORK:
-        return new NetworkData()
+        return new NetworkData();
       case DatasetType.TABLE:
-        return new TableData()
+        return new TableData();
       default:
-        throw new Error('Dataset type not found')
+        throw new Error('Dataset type not found');
     }
   }
 }

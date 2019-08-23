@@ -17,7 +17,7 @@ FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
-ENV Z_VERSION="0.8.0-SNAPSHOT"
+ENV Z_VERSION="0.9.0-SNAPSHOT"
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
@@ -63,12 +63,11 @@ RUN echo "$LOG_TAG Install python related packages" && \
     apt-get install -y gfortran && \
     # numerical/algebra packages
     apt-get install -y libblas-dev libatlas-dev liblapack-dev && \
-    # font, image for matplotlib
+    # font, image
     apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
     # for tkinter
     apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev && \
-    pip install numpy && \
-    pip install matplotlib
+    pip install numpy==1.12.1 pandas==0.21.1 matplotlib==2.1.1 pandasql==0.7.3 ipython==5.4.1 jupyter_client==5.1.0 ipykernel==4.7.0 bokeh==0.12.10 ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
@@ -86,15 +85,24 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
+# Install kubectl
+RUN apt-get install -y apt-transport-https && \
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+    apt-get update && \
+    apt-get install -y kubectl
+
+RUN echo "$LOG_TAG Cleanup" && \
+    apt-get autoclean && \
+    apt-get clean
+
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
 
-RUN echo "$LOG_TAG Cleanup" && \
-    apt-get autoclean && \
-    apt-get clean
+COPY log4j.properties ${Z_HOME}/conf/
 
 EXPOSE 8080
 

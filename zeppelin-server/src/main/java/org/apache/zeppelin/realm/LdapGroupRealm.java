@@ -24,6 +24,10 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -31,30 +35,23 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 
 /**
- * Created for org.apache.zeppelin.server on 09/06/16.
+ * Created for org.apache.zeppelin.server.
  */
 public class LdapGroupRealm extends JndiLdapRealm {
   private static final Logger LOG = LoggerFactory.getLogger(LdapGroupRealm.class);
 
-  public AuthorizationInfo queryForAuthorizationInfo(
-      PrincipalCollection principals,
-      LdapContextFactory ldapContextFactory) throws NamingException {
+  public AuthorizationInfo queryForAuthorizationInfo(PrincipalCollection principals,
+          LdapContextFactory ldapContextFactory) throws NamingException {
     String username = (String) getAvailablePrincipal(principals);
     LdapContext ldapContext = ldapContextFactory.getSystemLdapContext();
     Set<String> roleNames = getRoleNamesForUser(username, ldapContext, getUserDnTemplate());
     return new SimpleAuthorizationInfo(roleNames);
   }
 
-
-  public Set<String> getRoleNamesForUser(String username,
-                                         LdapContext ldapContext,
-                                         String userDnTemplate) throws NamingException {
+  public Set<String> getRoleNamesForUser(String username, LdapContext ldapContext,
+          String userDnTemplate) throws NamingException {
     try {
       Set<String> roleNames = new LinkedHashSet<>();
 

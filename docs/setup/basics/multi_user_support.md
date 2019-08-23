@@ -25,8 +25,8 @@ limitations under the License.
 
 This page describes about multi-user support.
 
-- multiple users login / logout using [Shiro Authentication](../setup/security/shiro_authentication.html)
-- managing [Notebook Permission](../setup/security/notebook_authorization.html)
+- multiple users login / logout using [Shiro Authentication](../security/shiro_authentication.html)
+- managing [Notebook Permission](../security/notebook_authorization.html)
 - how to setup [impersonation for interpreters](../../usage/interpreter/user_impersonation.html)
 - different contexts per user / note using [Interpreter Binding Mode](../../usage/interpreter/interpreter_binding_mode.html)
 - a paragraph in a notebook can be [Personalized](../../usage/other_features/personalized_mode.html) 

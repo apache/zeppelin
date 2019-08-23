@@ -161,4 +161,17 @@ public class InterpreterGroup {
   public int hashCode() {
     return id != null ? id.hashCode() : 0;
   }
+
+  public void close() {
+    for (List<Interpreter> session : sessions.values()) {
+      for (Interpreter interpreter : session) {
+        try {
+          interpreter.close();
+        } catch (InterpreterException e) {
+          LOGGER.warn("Fail to close interpreter: " + interpreter.getClassName(), e);
+        }
+      }
+    }
+    sessions.clear();
+  }
 }

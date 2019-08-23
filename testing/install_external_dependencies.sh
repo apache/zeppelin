@@ -30,6 +30,7 @@ if [[ "${SPARKR}" = "true" ]] ; then
     R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
     R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+    R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   fi
 fi
 
@@ -39,11 +40,20 @@ if [[ -n "$PYTHON" ]] ; then
   bash miniconda.sh -b -p $HOME/miniconda
   echo "export PATH='$HOME/miniconda/bin:$PATH'" >> ~/.environ
   source ~/.environ
+
   hash -r
   conda config --set always_yes yes --set changeps1 no
   conda update -q conda
   conda info -a
   conda config --add channels conda-forge
-  conda install -q matplotlib pandasql ipython jupyter_client ipykernel matplotlib bokeh=0.12.6
-  pip install -q grpcio ggplot
+
+  conda install -q numpy=1.13.3 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10
+  pip install -q scipy==0.18.0 ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
+
+  if [[ -n "$TENSORFLOW" ]] ; then
+    check_results=`conda search -c conda-forge tensorflow`
+    echo "search tensorflow = $check_results"
+
+    pip install tensorflow==${TENSORFLOW}
+  fi
 fi

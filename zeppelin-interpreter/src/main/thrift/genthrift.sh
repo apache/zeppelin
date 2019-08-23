@@ -20,6 +20,7 @@
 rm -rf gen-java
 rm -rf ../java/org/apache/zeppelin/interpreter/thrift
 thrift --gen java RemoteInterpreterService.thrift
+thrift --gen java RemoteInterpreterEventService.thrift
 for file in gen-java/org/apache/zeppelin/interpreter/thrift/* ; do
   cat java_license_header.txt ${file} > ${file}.tmp
   mv -f ${file}.tmp ${file}

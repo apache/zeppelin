@@ -53,6 +53,10 @@
         "description": "Hadoop cluster username",
         "type": "string"
       }
+    },
+    "editor": {
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

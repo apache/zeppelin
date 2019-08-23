@@ -28,6 +28,9 @@ limitations under the License.
 
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
+## Important Note
+By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Secure the Websocket channel), or only deploy and use Zeppelin in a secured and trusted environment.
+
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
@@ -46,8 +49,8 @@ Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-si
 
 ### 3. Start Zeppelin
 
-```
-bin/zeppelin-daemon.sh start (or restart)
+```bash
+bin/zeppelin-daemon.sh start #(or restart)
 ```
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
@@ -80,7 +83,7 @@ activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=C
 activeDirectoryRealm.authorizationCachingEnabled = false
 activeDirectoryRealm.principalSuffix = @corp.company.net
 
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389
@@ -103,6 +106,9 @@ Realms are responsible for authentication and authorization in Apache Zeppelin. 
 To learn more about Apache Shiro Realm, please check [this documentation](http://shiro.apache.org/realm.html).
 
 We also provide community custom Realms.
+
+**Note**: When using any of the below realms the default 
+      password-based (IniRealm) authentication needs to be disabled.
 
 ### Active Directory
 
@@ -182,6 +188,17 @@ securityManager.sessionManager = $sessionManager
 securityManager.realms = $ldapRealm
 ```
 
+Also instead of specifying systemPassword in clear text in `shiro.ini` administrator can choose to specify the same in "hadoop credential". 
+Create a keystore file using the hadoop credential command line:
+``` 
+hadoop credential create ldapRealm.systemPassword -provider jceks://file/user/zeppelin/conf/zeppelin.jceks
+```
+
+Add the following line in the `shiro.ini` file:
+``` 
+ldapRealm.hadoopSecurityCredentialPath = jceks://file/user/zeppelin/conf/zeppelin.jceks
+```
+
 ### PAM
 [PAM](https://en.wikipedia.org/wiki/Pluggable_authentication_module) authentication support allows the reuse of existing authentication
 moduls on the host where Zeppelin is running. On a typical system modules are configured per service for example sshd, passwd, etc. under `/etc/pam.d/`. You can
@@ -208,7 +225,77 @@ zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
 securityManager.realms = $zeppelinHubRealm
 ```
 
-> Note: ZeppelinHub is not releated to Apache Zeppelin project.
+> Note: ZeppelinHub is not related to Apache Zeppelin project.
+
+### Knox SSO
+[KnoxSSO](https://knox.apache.org/books/knox-0-13-0/dev-guide.html#KnoxSSO+Integration) provides an abstraction for integrating any number of authentication systems and SSO solutions and enables participating web applications to scale to those solutions more easily. Without the token exchange capabilities offered by KnoxSSO each component UI would need to integrate with each desired solution on its own.
+
+To enable this, apply the following change in `conf/shiro.ini` under `[main]` section.
+
+```
+### A sample for configuring Knox JWT Realm
+knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm
+## Domain of Knox SSO
+knoxJwtRealm.providerUrl = https://domain.example.com/
+## Url for login
+knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html
+## Url for logout
+knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout
+knoxJwtRealm.redirectParam = originalUrl
+knoxJwtRealm.cookieName = hadoop-jwt
+knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
+knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
+knoxJwtRealm.principalMapping = principal.mapping
+# This is required if KNOX SSO is enabled, to check if "knoxJwtRealm.cookieName" cookie was expired/deleted.  
+authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
+```
+
+### HTTP SPNEGO Authentication
+HTTP SPNEGO (Simple and Protected GSS-API NEGOtiation) is the standard way to support Kerberos Ticket based user authentication for Web Services. Based on [Apache Hadoop Auth](https://hadoop.apache.org/docs/current/hadoop-auth/index.html), Zeppelin supports ability to authenticate users by accepting and validating their Kerberos Ticket.
+
+When HTTP SPNEGO Authentication is enabled for Zeppelin, the [Apache Hadoop Groups Mapping](https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html) configuration will used internally to determine group membership of user who is trying to log in. Role-based access permission can be set based on groups as seen by Hadoop.
+
+To enable this, apply the following change in `conf/shiro.ini` under `[main]` section.
+
+```
+krbRealm = org.apache.zeppelin.realm.kerberos.KerberosRealm
+krbRealm.principal=HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+krbRealm.keytab=/etc/security/keytabs/spnego.service.keytab
+krbRealm.nameRules=DEFAULT
+krbRealm.signatureSecretFile=/etc/security/http_secret
+krbRealm.tokenValidity=36000
+krbRealm.cookieDomain=domain.com
+krbRealm.cookiePath=/
+authc = org.apache.zeppelin.realm.kerberos.KerberosAuthenticationFilter
+```
+For above configuration to work, user need to do some more configurations outside Zeppelin.
+
+1). A valid SPNEGO keytab should be available on the Zeppelin node and should be readable by 'zeppelin' user. If there is a SPNEGO keytab already available (because of other Hadoop service), it can be reused here and no need to generate a new keytab. An example of working SPNEGO keytab could be:
+```
+$ klist -kt /etc/security/keytabs/spnego.service.keytab
+Keytab name: FILE:/etc/security/keytabs/spnego.service.keytab
+KVNO Timestamp           Principal
+---- ------------------- ------------------------------------------------------
+   2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+   2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+   2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+   2 11/26/2018 16:58:38 HTTP/zeppelin.fqdn.domain.com@EXAMPLE.COM
+```
+and the keytab permission should be: (VERY IMPORTANT to not to set this to 777 or readable by all !!!):
+```
+$ ls -l /etc/security/keytabs/spnego.service.keytab
+-r--r-----. 1 root hadoop 346 Nov 26 16:58 /etc/security/keytabs/spnego.service.keytab
+```
+Above 'zeppelin' user happens to be member of 'hadoop' group.
+
+2). A secret signature file must be present on Zeppelin node (readable to 'zeppelin' user). This file contains the random binary numbers which is used to sign 'hadoop.auth' cookie, generated during SPNEGO exchange. If such a file is already generated and available on the Zeppelin node, it should be used rather than generating a new file.
+
+Commands to generate a secret signature file (if required):
+```
+dd if=/dev/urandom of=/etc/security/http_secret bs=1024 count=1
+chown hdfs:hadoop /etc/security/http_secret
+chmod 440 /etc/security/http_secret
+```
 
 ## Secure Cookie for Zeppelin Sessions (optional)
 Zeppelin can be configured to set `HttpOnly` flag in the session cookie. With this configuration, Zeppelin cookies can 
@@ -243,20 +330,23 @@ If you want to grant this permission to other users, you can change **roles[ ]**
 
 ### Apply multiple roles in Shiro configuration
 By default, Shiro will allow access to a URL if only user is part of "**all the roles**" defined like this:
+
 ```
 [urls]
 
 /api/interpreter/** = authc, roles[admin, role1]
 ```
 
-If there is a need that user with "**any of the defined roles**" should be allowed, then following Shiro configuration can be used:
+### Apply multiple roles or user in Shiro configuration
+If there is a need that user with "**any of the defined roles or user itself**" should be allowed, then following Shiro configuration can be used:
+
 ```
 [main]
-anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
+anyofrolesuser = org.apache.zeppelin.utils.AnyOfRolesUserAuthorizationFilter
 
 [urls]
 
-/api/interpreter/** = authc, anyofroles[admin, role1]
+/api/interpreter/** = authc, anyofrolesuser[admin, user1]
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]
 ```
@@ -265,6 +355,12 @@ anyofroles = org.apache.zeppelin.utils.AnyOfRolesAuthorizationFilter
 
 > **NOTE :** All of the above configurations are defined in the `conf/shiro.ini` file.
 
+
+## FAQ
+
+Zeppelin sever is configured as form-based authentication but is behind proxy configured as basic-authentication for example [NGINX](./authentication_nginx.html#http-basic-authentication-using-nginx) and don't want Zeppelin-Server to clear authentication headers. 
+
+> Set `zeppelin.server.authorization.header.clear` to `false` in zeppelin-site.xml
 
 ## Other authentication methods
 

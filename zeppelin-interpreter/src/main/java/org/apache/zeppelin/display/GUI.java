@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
+import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 
@@ -43,7 +44,7 @@ public class GUI implements Serializable {
       .create();
 
   Map<String, Object> params = new HashMap<>(); // form parameters from client
-  LinkedHashMap<String, Input> forms = new LinkedHashMap<>(); // form configuration
+  Map<String, Input> forms = new LinkedHashMap<>(); // form configuration
 
   public GUI() {
 
@@ -57,11 +58,11 @@ public class GUI implements Serializable {
     return params;
   }
 
-  public LinkedHashMap<String, Input> getForms() {
+  public Map<String, Input> getForms() {
     return forms;
   }
 
-  public void setForms(LinkedHashMap<String, Input> forms) {
+  public void setForms(Map<String, Input> forms) {
     this.forms = forms;
   }
 
@@ -90,12 +91,21 @@ public class GUI implements Serializable {
     return textbox(id, "");
   }
 
+  public Object password(String id) {
+    forms.put(id, new Password(id));
+    return params.get(id);
+  }
+
   public Object select(String id, Object defaultValue, ParamOption[] options) {
+    if (defaultValue == null && options != null && options.length > 0) {
+      defaultValue = options[0].getValue();
+    }
+    forms.put(id, new Select(id, defaultValue, options));
     Object value = params.get(id);
     if (value == null) {
       value = defaultValue;
+      params.put(id, value);
     }
-    forms.put(id, new Select(id, defaultValue, options));
     return value;
   }
 

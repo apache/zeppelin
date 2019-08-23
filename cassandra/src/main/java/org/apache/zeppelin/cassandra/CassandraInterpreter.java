@@ -16,21 +16,11 @@
  */
 package org.apache.zeppelin.cassandra;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.JdkSSLOptions;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.Session;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
+import static java.lang.Integer.parseInt;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -39,10 +29,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static java.lang.Integer.parseInt;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.JdkSSLOptions;
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.Session;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
- * Interpreter for Apache Cassandra CQL query language
+ * Interpreter for Apache Cassandra CQL query language.
  */
 public class CassandraInterpreter extends Interpreter {
 
@@ -128,14 +131,14 @@ public class CassandraInterpreter extends Interpreter {
   public static final String DEFAULT_CREDENTIAL = "none";
   public static final String DEFAULT_POLICY = "DEFAULT";
   public static final String DEFAULT_PARALLELISM = "10";
-  static String DEFAULT_NEW_CONNECTION_THRESHOLD_LOCAL = "100";
-  static String DEFAULT_NEW_CONNECTION_THRESHOLD_REMOTE = "100";
-  static String DEFAULT_CORE_CONNECTION_PER_HOST_LOCAL = "2";
-  static String DEFAULT_CORE_CONNECTION_PER_HOST_REMOTE = "1";
-  static String DEFAULT_MAX_CONNECTION_PER_HOST_LOCAL = "8";
-  static String DEFAULT_MAX_CONNECTION_PER_HOST_REMOTE = "2";
-  static String DEFAULT_MAX_REQUEST_PER_CONNECTION_LOCAL = "1024";
-  static String DEFAULT_MAX_REQUEST_PER_CONNECTION_REMOTE = "256";
+  static String defaultNewConnectionThresholdLocal = "100";
+  static String defaultNewConnectionThresholdRemote = "100";
+  static String defaultCoreConnectionPerHostLocal = "2";
+  static String defaultCoreConnectionPerHostRemote = "1";
+  static String defaultMaxConnectionPerHostLocal = "8";
+  static String defaultMaxConnectionPerHostRemote = "2";
+  static String defaultMaxRequestPerConnectionLocal = "1024";
+  static String defaultMaxRequestPerConnectionRemote = "256";
   public static final String DEFAULT_IDLE_TIMEOUT = "120";
   public static final String DEFAULT_POOL_TIMEOUT = "5000";
   public static final String DEFAULT_HEARTBEAT_INTERVAL = "30";
@@ -244,7 +247,6 @@ public class CassandraInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-
   }
 
   @Override

@@ -22,6 +22,8 @@ REM set ZEPPELIN_JAVA_OPTS      		REM Additional jvm options. for example, set Z
 REM set ZEPPELIN_MEM            		REM Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 REM set ZEPPELIN_INTP_MEM       		REM zeppelin interpreter process jvm mem options. Default -Xmx1024m -Xms1024m -XX:MaxPermSize=512m
 REM set ZEPPELIN_INTP_JAVA_OPTS 		REM zeppelin interpreter process jvm options.
+REM set ZEPPELIN_JMX_ENABLE     		REM Enable JMX feature by defining it like "true"
+REM set ZEPPELIN_JMX_PORT       		REM Port number which JMX uses. If not set, JMX won't be enabled
 
 REM set ZEPPELIN_LOG_DIR        		REM Where log files are stored.  PWD by default.
 REM set ZEPPELIN_PID_DIR        		REM The pid files are stored. /tmp by default.

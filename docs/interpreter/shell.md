@@ -24,8 +24,14 @@ limitations under the License.
 <div id="toc"></div>
 
 ## Overview
+Zeppelin Shell has two interpreters the default is the %sh interpreter.
+
+### Shell interpreter
 Shell interpreter uses [Apache Commons Exec](https://commons.apache.org/proper/commons-exec) to execute external processes. 
 In Zeppelin notebook, you can use ` %sh ` in the beginning of a paragraph to invoke system shell and run commands.
+
+### Terminal interpreter
+Terminal interpreter uses [hterm](https://chromium.googlesource.com/apps/libapps/+/HEAD/hterm), [Pty4J](https://github.com/JetBrains/pty4j) analog terminal operation.
 
 > **Note :** Currently each command runs as the user Zeppelin server is running as.
 
@@ -35,7 +41,7 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
 <table class="table-configuration">
   <tr>
     <th>Name</th>
-    <th>Value</th>
+    <th>Default</th>
     <th>Description</th>
   </tr>
   <tr>
@@ -63,9 +69,16 @@ At the "Interpreters" menu in Zeppelin dropdown menu, you can set the property v
     <td></td>
     <td>The path to the keytab file</td>
   </tr>
+  <tr>
+    <td>zeppelin.shell.interpolation</td>
+    <td>false</td>
+    <td>Enable ZeppelinContext variable interpolation into paragraph text</td>
+  </tr>
 </table>
 
 ## Example
+
+### Shell interpreter
 The following example demonstrates the basic usage of Shell in a Zeppelin notebook.
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-example.png" />
@@ -73,7 +86,7 @@ The following example demonstrates the basic usage of Shell in a Zeppelin notebo
 If you need further information about **Zeppelin Interpreter Setting** for using Shell interpreter, 
 please read [What is interpreter setting?](../usage/interpreter/overview.html#what-is-interpreter-setting) section first.
 
-## Kerberos refresh interval
+### Kerberos refresh interval
 For changing the default behavior of when to renew Kerberos ticket following changes can be made in `conf/zeppelin-env.sh`.
 
 ```bash
@@ -82,3 +95,37 @@ export LAUNCH_KERBEROS_REFRESH_INTERVAL=4h
 # Change kinit number retries (default value is 5), which means if the kinit command fails for 5 retries consecutively it will close the interpreter. 
 export KINIT_FAIL_THRESHOLD=10
 ```
+
+### Object Interpolation
+The shell interpreter also supports interpolation of `ZeppelinContext` objects into the paragraph text.
+The following example shows one use of this facility:
+
+####In Scala cell:
+
+```scala
+z.put("dataFileName", "members-list-003.parquet")
+    // ...
+val members = spark.read.parquet(z.get("dataFileName"))
+    // ...
+```
+
+####In later Shell cell:
+
+```bash
+%sh
+rm -rf {dataFileName}
+```
+
+Object interpolation is disabled by default, and can be enabled (for the Shell interpreter) by
+setting the value of the property `zeppelin.shell.interpolation` to `true` (see _Configuration_ above).
+More details of this feature can be found in [Zeppelin-Context](../usage/other_features/zeppelin_context.html)
+
+### Terminal interpreter
+The following example demonstrates the basic usage of terminal in a Zeppelin notebook.
+
+```bash
+%sh.terminal
+input any char
+```
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/shell-terminal.gif" />

@@ -14,117 +14,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.rest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.server.ZeppelinServer;
-import org.apache.zeppelin.user.UserCredentials;
-import org.apache.zeppelin.utils.SecurityUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import static org.junit.Assert.*;
+import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.service.NoAuthenticationService;
+import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.junit.Before;
+import org.junit.Test;
 
-public class CredentialsRestApiTest extends AbstractTestRestApi {
-  protected static final Logger LOG = LoggerFactory.getLogger(CredentialsRestApiTest.class);
-  Gson gson = new Gson();
+public class CredentialsRestApiTest {
+  private final Gson gson = new Gson();
 
-  @BeforeClass
-  public static void init() throws Exception {
-    AbstractTestRestApi.startUp(CredentialsRestApiTest.class.getSimpleName());
-  }
+  private CredentialRestApi credentialRestApi;
+  private Credentials credentials;
+  private AuthenticationService authenticationService;
 
-  @AfterClass
-  public static void destroy() throws Exception {
-    AbstractTestRestApi.shutDown();
+  @Before
+  public void setUp() throws IOException {
+    credentials =
+        new Credentials(false, Files.createTempFile("credentials", "test").toString(), null);
+    authenticationService = new NoAuthenticationService();
+    credentialRestApi = new CredentialRestApi(credentials, authenticationService);
   }
 
   @Test
   public void testInvalidRequest() throws IOException {
-    String jsonInvalidRequestEntityNull = "{\"entity\" : null, \"username\" : \"test\", \"password\" : \"testpass\"}";
-    String jsonInvalidRequestNameNull = "{\"entity\" : \"test\", \"username\" : null, \"password\" : \"testpass\"}";
-    String jsonInvalidRequestPasswordNull = "{\"entity\" : \"test\", \"username\" : \"test\", \"password\" : null}";
-    String jsonInvalidRequestAllNull = "{\"entity\" : null, \"username\" : null, \"password\" : null}";
+    String jsonInvalidRequestEntityNull =
+        "{\"entity\" : null, \"username\" : \"test\", " + "\"password\" : \"testpass\"}";
+    String jsonInvalidRequestNameNull =
+        "{\"entity\" : \"test\", \"username\" : null, " + "\"password\" : \"testpass\"}";
+    String jsonInvalidRequestPasswordNull =
+        "{\"entity\" : \"test\", \"username\" : \"test\", " + "\"password\" : null}";
+    String jsonInvalidRequestAllNull =
+        "{\"entity\" : null, \"username\" : null, " + "\"password\" : null}";
 
-    PutMethod entityNullPut = httpPut("/credential", jsonInvalidRequestEntityNull);
-    entityNullPut.addRequestHeader("Origin", "http://localhost");
-    assertThat(entityNullPut, isBadRequest());
-    entityNullPut.releaseConnection();
+    Response response = credentialRestApi.putCredentials(jsonInvalidRequestEntityNull);
+    assertEquals(Status.BAD_REQUEST, response.getStatusInfo().toEnum());
 
-    PutMethod nameNullPut = httpPut("/credential", jsonInvalidRequestNameNull);
-    nameNullPut.addRequestHeader("Origin", "http://localhost");
-    assertThat(nameNullPut, isBadRequest());
-    nameNullPut.releaseConnection();
+    response = credentialRestApi.putCredentials(jsonInvalidRequestNameNull);
+    assertEquals(Status.BAD_REQUEST, response.getStatusInfo().toEnum());
 
-    PutMethod passwordNullPut = httpPut("/credential", jsonInvalidRequestPasswordNull);
-    passwordNullPut.addRequestHeader("Origin", "http://localhost");
-    assertThat(passwordNullPut, isBadRequest());
-    passwordNullPut.releaseConnection();
+    response = credentialRestApi.putCredentials(jsonInvalidRequestPasswordNull);
+    assertEquals(Status.BAD_REQUEST, response.getStatusInfo().toEnum());
 
-    PutMethod allNullPut = httpPut("/credential", jsonInvalidRequestAllNull);
-    allNullPut.addRequestHeader("Origin", "http://localhost");
-    assertThat(allNullPut, isBadRequest());
-    allNullPut.releaseConnection();
+    response = credentialRestApi.putCredentials(jsonInvalidRequestAllNull);
+    assertEquals(Status.BAD_REQUEST, response.getStatusInfo().toEnum());
   }
 
   public Map<String, UserCredentials> testGetUserCredentials() throws IOException {
-    GetMethod getMethod = httpGet("/credential");
-    getMethod.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> resp = gson.fromJson(getMethod.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>(){}.getType());
+    Response response = credentialRestApi.getCredentials();
+    Map<String, Object> resp =
+        gson.fromJson(
+            response.getEntity().toString(), new TypeToken<Map<String, Object>>() {}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    Map<String, UserCredentials> credentialMap = (Map<String, UserCredentials>)body.get("userCredentials");
-    getMethod.releaseConnection();
+    Map<String, UserCredentials> credentialMap =
+        (Map<String, UserCredentials>) body.get("userCredentials");
     return credentialMap;
-  }
-
-  public void testPutUserCredentials(String requestData) throws IOException {
-    PutMethod putMethod = httpPut("/credential", requestData);
-    putMethod.addRequestHeader("Origin", "http://localhost");
-    assertThat(putMethod, isAllowed());
-    putMethod.releaseConnection();
-  }
-
-  public void testRemoveUserCredentials() throws IOException {
-    DeleteMethod deleteMethod = httpDelete("/credential/");
-    assertThat("Test delete method:", deleteMethod, isAllowed());
-    deleteMethod.releaseConnection();
-  }
-
-  public void testRemoveCredentialEntity(String entity) throws IOException {
-    DeleteMethod deleteMethod = httpDelete("/credential/" + entity);
-    assertThat("Test delete method:", deleteMethod, isAllowed());
-    deleteMethod.releaseConnection();
   }
 
   @Test
   public void testCredentialsAPIs() throws IOException {
-    String requestData1 = "{\"entity\" : \"entityname\", \"username\" : \"myuser\", \"password\" : \"mypass\"}";
+    String requestData1 =
+        "{\"entity\" : \"entityname\", \"username\" : \"myuser\", \"password\" " + ": \"mypass\"}";
     String entity = "entityname";
-    Map<String, UserCredentials> credentialMap;
 
-    testPutUserCredentials(requestData1);
-    credentialMap = testGetUserCredentials();
-    assertNotNull("CredentialMap should be null", credentialMap);
+    credentialRestApi.putCredentials(requestData1);
+    assertNotNull("CredentialMap should be null", testGetUserCredentials());
 
-    testRemoveCredentialEntity(entity);
-    credentialMap = testGetUserCredentials();
-    assertNull("CredentialMap should be null", credentialMap.get("entity1"));
+    credentialRestApi.removeCredentialEntity(entity);
+    assertNull("CredentialMap should be null", testGetUserCredentials().get("entity1"));
 
-    testRemoveUserCredentials();
-    credentialMap = testGetUserCredentials();
-    assertEquals("Compare CredentialMap", credentialMap.toString(), "{}");
+    credentialRestApi.removeCredentials();
+    assertEquals("Compare CredentialMap", testGetUserCredentials().toString(), "{}");
   }
 }

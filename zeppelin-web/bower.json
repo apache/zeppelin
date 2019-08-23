@@ -14,9 +14,9 @@
     "angular-resource": "1.5.7",
     "angular-bootstrap": "~2.5.0",
     "angular-websocket": "~1.0.13",
-    "ace-builds": "1.2.7",
+    "ace-builds": "1.3.2",
     "angular-ui-ace": "0.1.3",
-    "jquery.scrollTo": "~1.4.13",
+    "jquery.scrollTo": "~2.1.2",
     "nvd3": "~1.8.5",
     "angular-dragdrop": "~1.0.8",
     "perfect-scrollbar": "~0.5.4",
@@ -32,7 +32,11 @@
     "bootstrap3-dialog": "bootstrap-dialog#~1.34.7",
     "select2": "^4.0.3",
     "MathJax": "2.7.0",
-    "ngclipboard": "^1.1.1"
+    "ngclipboard": "^1.1.1",
+    "jsdiff": "3.3.0",
+    "ngInfiniteScroll": "^1.3.4",
+    "jszip": "2.6.1",
+    "excel-builder-js": "excelbuilder#2.0.0"
   },
   "devDependencies": {
     "angular-mocks": "1.5.7"
@@ -53,7 +57,7 @@
         "src-noconflict/ext-language_tools.js",
         "src-noconflict/theme-chrome.js"
       ],
-      "version": "1.2.7",
+      "version": "1.3.2",
       "name": "ace-builds"
     },
     "highlightjs": {
@@ -66,7 +70,8 @@
     }
   },
   "resolutions": {
-    "ace-builds": "1.2.7",
-    "angular": ">=1.5.0 <1.6"
+    "ace-builds": "1.3.2",
+    "angular": ">=1.5.0 <1.6",
+    "jquery.scrollTo": "~2.1.2"
   }
 }

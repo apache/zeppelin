@@ -212,6 +212,11 @@
   float: left;
 }
 
+.item-disable {
+  color: rgba(128, 128, 128, 0.61) !important;
+  cursor: default !important;
+}
+
 .dropdown-menu .shortcut-keys {
   float: right;
   color: #999;
@@ -301,28 +306,6 @@ table.table-shortcut {
   font-weight: bold;
   padding: 0 2px;
   margin-left: -3px;
-}
-
-/*
-  Paragraph Forms CSS
-*/
-
-.paragraphForm.form-horizontal .form-group {
-  margin-right: 0;
-  margin-left:  0;
-}
-
-.paragraphForm.form-horizontal .form-group label {
-  padding-left: 0;
-}
-
-.paragraphForm.form-horizontal .form-group .checkbox-item {
-  padding-left: 0;
-  padding-right: 10px;
-}
-
-.paragraphForm.form-horizontal .form-group .checkbox-item input {
-  margin-right: 2px;
 }
 
 /*

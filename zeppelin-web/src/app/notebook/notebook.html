@@ -14,6 +14,14 @@ limitations under the License.
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div id="actionbar" ng-include src="'app/notebook/notebook-actionBar.html'"></div>
 <div id="content" class="notebookContent">
+  <!-- revisions comparator-->
+  <div ng-if="showRevisionsComparator" class="revisions-comparator">
+    <div>
+      <h4>Revisions comparator</h4>
+    </div>
+    <hr />
+    <revisions-comparator note-revisions="noteRevisions"></revisions-comparator>
+  </div>
   <!-- settings -->
   <div ng-if="showSetting" class="setting">
     <div>
@@ -111,6 +119,38 @@ limitations under the License.
   </div>
 
   <div class="note-jump"></div>
+  <div id="noteForms" ng-if="isShowNoteForms()" class="paragraph-space box">
+      <h4>
+        <div ng-controller="ElasticInputCtrl as input" class="title" style="min-height: 25px;">
+          <input type="text"
+                 pu-elastic-input
+                 style="min-width: 400px; max-width: 80%;"
+                 placeholder="Untitled form"
+                 ng-model="note.config.noteFormTitle"
+                 ng-if="input.showEditor"
+                 ng-escape="input.showEditor = false; note.config.noteFormTitle = oldTitle;"
+                 ng-blur="setNoteFormTitle(note.config.noteFormTitle); input.showEditor = false"
+                 ng-enter="setNoteFormTitle(note.config.noteFormTitle); input.showEditor = false"
+                 focus-if="input.showEditor" />
+          <div ng-show="!input.showEditor" class="notebook-form-title"
+               ng-bind-html="note.config.noteFormTitle || 'Untitled form'"
+               ng-click="input.showEditor = true; oldTitle = note.config.noteFormTitle;">
+          </div>
+        </div>
+      </h4>
+    <hr />
+    <div>
+      <dynamic-forms
+        id="note.id"
+        hide="hideForms"
+        disable="disableForms"
+        actiononchange="actionOnFormSelectionChange"
+        forms="note.noteForms"
+        params="note.noteParams"
+        action="saveNoteForms"
+        removeaction="removeNoteForms"></dynamic-forms>
+    </div>
+  </div>
 
   <!-- Include the paragraphs according to the note, pass the note to init function -->
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
@@ -127,7 +167,7 @@ limitations under the License.
          ng-click="insertNew('above')"
          ng-hide="viewOnly || asIframe || revisionView"
          ng-class="{'first-paragraph': $first}">
-      <h4 class="plus-sign">&#43; Add Paragraph</h4>
+      <h4 class="plus-sign" ng-class="{'new-paragraph-disable': isNoteRunning}">&#43; Add Paragraph</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'app/notebook/paragraph/paragraph.html'"
@@ -137,7 +177,7 @@ limitations under the License.
          ng-dblclick="paragraphOnDoubleClick(currentParagraph.id);">
     </div>
     <div class="new-paragraph last-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly || asIframe || revisionView">
-      <h4 class="plus-sign">&#43; Add Paragraph</h4>
+      <h4 class="plus-sign" ng-class="{'new-paragraph-disable': isNoteRunning}">&#43; Add Paragraph</h4>
     </div>
   </div>
   <div style="clear:both;height:10px"></div>

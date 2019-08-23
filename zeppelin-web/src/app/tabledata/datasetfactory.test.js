@@ -12,35 +12,37 @@
  * limitations under the License.
  */
 
-import NetworkData from './networkdata.js'
-import TableData from './tabledata.js'
-import {DatasetType} from './dataset.js'
-import DatasetFactory from './datasetfactory.js'
+import NetworkData from './networkdata.js';
+import TableData from './tabledata.js';
+import {DatasetType} from './dataset.js';
+import DatasetFactory from './datasetfactory.js';
 
 describe('DatasetFactory build', function() {
-  let df
+  let df;
 
   beforeAll(function() {
-    df = new DatasetFactory()
-  })
+    df = new DatasetFactory();
+  });
 
   it('should create a TableData instance', function() {
-    let td = df.createDataset(DatasetType.TABLE)
-    expect(td instanceof TableData).toBeTruthy()
-    expect(td.columns.length).toBe(0)
-    expect(td.rows.length).toBe(0)
-  })
+    let td = df.createDataset(DatasetType.TABLE);
+    expect(td instanceof TableData).toBeTruthy();
+    expect(td.columns.length).toBe(0);
+    expect(td.rows.length).toBe(0);
+  });
 
   it('should create a NetworkData instance', function() {
-    let nd = df.createDataset(DatasetType.NETWORK)
-    expect(nd instanceof NetworkData).toBeTruthy()
-    expect(nd.columns.length).toBe(0)
-    expect(nd.rows.length).toBe(0)
-    expect(nd.graph).toEqual({})
-  })
+    let nd = df.createDataset(DatasetType.NETWORK);
+    expect(nd instanceof NetworkData).toBeTruthy();
+    expect(nd.columns.length).toBe(0);
+    expect(nd.rows.length).toBe(0);
+    expect(nd.graph).toEqual({});
+  });
 
   it('should thrown an Error', function() {
-    expect(function() { df.createDataset('text') })
-        .toThrow(new Error('Dataset type not found'))
-  })
-})
+    expect(function() {
+      df.createDataset('text');
+    })
+    .toThrow(new Error('Dataset type not found'));
+  });
+});

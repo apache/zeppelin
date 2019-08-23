@@ -21,8 +21,8 @@ export const DefaultDisplayType = {
   HTML: 'HTML',
   ANGULAR: 'ANGULAR',
   TEXT: 'TEXT',
-  NETWORK: 'NETWORK'
-}
+  NETWORK: 'NETWORK',
+};
 
 export const DefaultDisplayMagic = {
   '%element': DefaultDisplayType.ELEMENT,
@@ -31,12 +31,12 @@ export const DefaultDisplayMagic = {
   '%angular': DefaultDisplayType.ANGULAR,
   '%text': DefaultDisplayType.TEXT,
   '%network': DefaultDisplayType.NETWORK,
-}
+};
 
 export class DataWithType {
-  constructor (data, type, magic, text) {
-    this.data = data
-    this.type = type
+  constructor(data, type, magic, text) {
+    this.data = data;
+    this.type = type;
 
     /**
      * keep for `DefaultDisplayType.ELEMENT` (function data type)
@@ -46,29 +46,29 @@ export class DataWithType {
      * since they don't have context where they are created.
      */
 
-    this.magic = magic
-    this.text = text
+    this.magic = magic;
+    this.text = text;
   }
 
-  static handleDefaultMagic (m) {
+  static handleDefaultMagic(m) {
     // let's use default display type instead of magic in case of default
     // to keep consistency with backend interpreter
     if (DefaultDisplayMagic[m]) {
-      return DefaultDisplayMagic[m]
+      return DefaultDisplayMagic[m];
     } else {
-      return m
+      return m;
     }
   }
 
-  static createPropagable (dataWithType) {
+  static createPropagable(dataWithType) {
     if (!SpellResult.isFunction(dataWithType.data)) {
-      return dataWithType
+      return dataWithType;
     }
 
-    const data = dataWithType.getText()
-    const type = dataWithType.getMagic()
+    const data = dataWithType.getText();
+    const type = dataWithType.getMagic();
 
-    return new DataWithType(data, type)
+    return new DataWithType(data, type);
   }
 
   /**
@@ -77,45 +77,45 @@ export class DataWithType {
    * @param customDisplayType
    * @return {Array<DataWithType>}
    */
-  static parseStringData (data, customDisplayMagic) {
-    function availableMagic (magic) {
-      return magic && (DefaultDisplayMagic[magic] || customDisplayMagic[magic])
+  static parseStringData(data, customDisplayMagic) {
+    function availableMagic(magic) {
+      return magic && (DefaultDisplayMagic[magic] || customDisplayMagic[magic]);
     }
 
-    const splited = data.split('\n')
+    const splited = data.split('\n');
 
-    const gensWithTypes = []
-    let mergedGens = []
-    let previousMagic = DefaultDisplayType.TEXT
+    const gensWithTypes = [];
+    let mergedGens = [];
+    let previousMagic = DefaultDisplayType.TEXT;
 
     // create `DataWithType` whenever see available display type.
     for (let i = 0; i < splited.length; i++) {
-      const g = splited[i]
-      const magic = SpellResult.extractMagic(g)
+      const g = splited[i];
+      const magic = SpellResult.extractMagic(g);
 
       // create `DataWithType` only if see new magic
       if (availableMagic(magic) && mergedGens.length > 0) {
-        gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic))
-        mergedGens = []
+        gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic));
+        mergedGens = [];
       }
 
       // accumulate `data` to mergedGens
       if (availableMagic(magic)) {
-        const withoutMagic = g.split(magic)[1]
-        mergedGens.push(`${withoutMagic}\n`)
-        previousMagic = DataWithType.handleDefaultMagic(magic)
+        const withoutMagic = g.split(magic)[1];
+        mergedGens.push(`${withoutMagic}\n`);
+        previousMagic = DataWithType.handleDefaultMagic(magic);
       } else {
-        mergedGens.push(`${g}\n`)
+        mergedGens.push(`${g}\n`);
       }
     }
 
     // cleanup the last `DataWithType`
     if (mergedGens.length > 0) {
-      previousMagic = DataWithType.handleDefaultMagic(previousMagic)
-      gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic))
+      previousMagic = DataWithType.handleDefaultMagic(previousMagic);
+      gensWithTypes.push(new DataWithType(mergedGens.join(''), previousMagic));
     }
 
-    return gensWithTypes
+    return gensWithTypes;
   }
 
   /**
@@ -128,44 +128,46 @@ export class DataWithType {
    * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  static produceMultipleData (dataWithType, customDisplayType,
+  static produceMultipleData(dataWithType, customDisplayType,
                              magic, textWithoutMagic) {
-    const data = dataWithType.getData()
-    const type = dataWithType.getType()
+    const data = dataWithType.getData();
+    const type = dataWithType.getType();
 
     // if the type is specified, just return it
     // handle non-specified dataWithTypes only
     if (type) {
-      return new Promise((resolve) => { resolve([dataWithType]) })
+      return new Promise((resolve) => {
+        resolve([dataWithType]);
+      });
     }
 
-    let wrapped
+    let wrapped;
 
     if (SpellResult.isFunction(data)) {
       // if data is a function, we consider it as ELEMENT type.
       wrapped = new Promise((resolve) => {
         const dt = new DataWithType(
-          data, DefaultDisplayType.ELEMENT, magic, textWithoutMagic)
-        const result = [dt]
-        return resolve(result)
-      })
+          data, DefaultDisplayType.ELEMENT, magic, textWithoutMagic);
+        const result = [dt];
+        return resolve(result);
+      });
     } else if (SpellResult.isPromise(data)) {
       // if data is a promise,
-      wrapped = data.then(generated => {
+      wrapped = data.then((generated) => {
         const result =
-          DataWithType.parseStringData(generated, customDisplayType)
-        return result
-      })
+          DataWithType.parseStringData(generated, customDisplayType);
+        return result;
+      });
     } else {
       // if data is a object, parse it to multiples
       wrapped = new Promise((resolve) => {
         const result =
-          DataWithType.parseStringData(data, customDisplayType)
-        return resolve(result)
-      })
+          DataWithType.parseStringData(data, customDisplayType);
+        return resolve(result);
+      });
     }
 
-    return wrapped
+    return wrapped;
   }
 
   /**
@@ -177,8 +179,8 @@ export class DataWithType {
    *   will be called in `then()` of this promise.
    * @returns {*} `data` which can be object, function or promise.
    */
-  getData () {
-    return this.data
+  getData() {
+    return this.data;
   }
 
   /**
@@ -187,66 +189,66 @@ export class DataWithType {
    * by `SpellResult.parseStringData()`
    * @returns {string}
    */
-  getType () {
-    return this.type
+  getType() {
+    return this.type;
   }
 
-  getMagic () {
-    return this.magic
+  getMagic() {
+    return this.magic;
   }
 
-  getText () {
-    return this.text
+  getText() {
+    return this.text;
   }
 }
 
 export class SpellResult {
-  constructor (resultData, resultType) {
-    this.dataWithTypes = []
-    this.add(resultData, resultType)
+  constructor(resultData, resultType) {
+    this.dataWithTypes = [];
+    this.add(resultData, resultType);
   }
 
-  static isFunction (data) {
-    return (data && typeof data === 'function')
+  static isFunction(data) {
+    return (data && typeof data === 'function');
   }
 
-  static isPromise (data) {
-    return (data && typeof data.then === 'function')
+  static isPromise(data) {
+    return (data && typeof data.then === 'function');
   }
 
-  static isObject (data) {
+  static isObject(data) {
     return (data &&
       !SpellResult.isFunction(data) &&
-      !SpellResult.isPromise(data))
+      !SpellResult.isPromise(data));
   }
 
-  static extractMagic (allParagraphText) {
-    const pattern = /^\s*%(\S+)\s*/g
+  static extractMagic(allParagraphText) {
+    const pattern = /^\s*%(\S+)\s*/g;
     try {
-      let match = pattern.exec(allParagraphText)
+      let match = pattern.exec(allParagraphText);
       if (match) {
-        return `%${match[1].trim()}`
+        return `%${match[1].trim()}`;
       }
     } catch (error) {
       // failed to parse, ignore
     }
 
-    return undefined
+    return undefined;
   }
 
-  static createPropagable (resultMsg) {
-    return resultMsg.map(dt => {
-      return DataWithType.createPropagable(dt)
-    })
+  static createPropagable(resultMsg) {
+    return resultMsg.map((dt) => {
+      return DataWithType.createPropagable(dt);
+    });
   }
 
-  add (resultData, resultType) {
+  add(resultData, resultType) {
     if (resultData) {
       this.dataWithTypes.push(
-        new DataWithType(resultData, resultType))
+        new DataWithType(resultData, resultType));
     }
 
-    return this
+    return this;
   }
 
   /**
@@ -254,23 +256,23 @@ export class SpellResult {
    * @param textWithoutMagic
    * @return {Promise<Array<DataWithType>>}
    */
-  getAllParsedDataWithTypes (customDisplayType, magic, textWithoutMagic) {
-    const promises = this.dataWithTypes.map(dt => {
+  getAllParsedDataWithTypes(customDisplayType, magic, textWithoutMagic) {
+    const promises = this.dataWithTypes.map((dt) => {
       return DataWithType.produceMultipleData(
-        dt, customDisplayType, magic, textWithoutMagic)
-    })
+        dt, customDisplayType, magic, textWithoutMagic);
+    });
 
     // some promises can include an array so we need to flatten them
-    const flatten = Promise.all(promises).then(values => {
+    const flatten = Promise.all(promises).then((values) => {
       return values.reduce((acc, cur) => {
         if (Array.isArray(cur)) {
-          return acc.concat(cur)
+          return acc.concat(cur);
         } else {
-          return acc.concat([cur])
+          return acc.concat([cur]);
         }
-      })
-    })
+      });
+    });
 
-    return flatten
+    return flatten;
   }
 }

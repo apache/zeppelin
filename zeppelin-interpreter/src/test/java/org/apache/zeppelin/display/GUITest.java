@@ -17,22 +17,16 @@
 
 package org.apache.zeppelin.display;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption;
 import org.apache.zeppelin.display.ui.Select;
 import org.apache.zeppelin.display.ui.TextBox;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +44,22 @@ public class GUITest {
   public void setUp() {
     checkedItems = new ArrayList<>();
     checkedItems.add("1");
+  }
+
+  @Test
+  public void testSelect() {
+    GUI gui = new GUI();
+    Object selected = gui.select("list_1", null, options);
+    // use the first one as the default value
+    assertEquals("1", selected);
+
+    gui = new GUI();
+    selected = gui.select("list_1", "2", options);
+    assertEquals("2", selected);
+    // "2" is selected by above statement, so even this default value is "1", the selected value is
+    // still "2"
+    selected = gui.select("list_1", "1", options);
+    assertEquals("2", selected);
   }
 
   @Test

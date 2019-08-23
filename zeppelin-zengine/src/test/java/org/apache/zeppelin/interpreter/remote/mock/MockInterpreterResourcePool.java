@@ -25,12 +25,16 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MockInterpreterResourcePool extends Interpreter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MockInterpreterResourcePool.class);
 
   AtomicInteger numWatch = new AtomicInteger(0);
 
@@ -86,11 +90,14 @@ public class MockInterpreterResourcePool extends Interpreter {
       ret = resourcePool.getAll();
     } else if (cmd.equals("invoke")) {
       Resource resource = resourcePool.get(noteId, paragraphId, name);
+      LOGGER.info("Resource: " + resource);
       if (stmt.length >=4) {
-        Resource res = resource.invokeMethod(value, null, null, stmt[3]);
+        Resource res = resource.invokeMethod(value, stmt[3]);
+        LOGGER.info("After invokeMethod: " + resource);
         ret = res.get();
       } else {
-        ret = resource.invokeMethod(value, null, null);
+        ret = resource.invokeMethod(value);
+        LOGGER.info("After invokeMethod: " + ret);
       }
     }
 
@@ -119,7 +126,7 @@ public class MockInterpreterResourcePool extends Interpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     return null;
   }
 }

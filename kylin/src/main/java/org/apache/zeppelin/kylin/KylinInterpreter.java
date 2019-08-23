@@ -18,25 +18,25 @@
 package org.apache.zeppelin.kylin;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * Kylin interpreter for Zeppelin. (http://kylin.apache.org)
@@ -166,28 +166,42 @@ public class KylinInterpreter extends Interpreter {
   }
 
   private InterpreterResult executeQuery(String sql) throws IOException {
-
     HttpResponse response = prepareRequest(sql);
+    String result;
 
-    if (response.getStatusLine().getStatusCode() != 200) {
-      logger.error("failed to execute query: " + response.getEntity().getContent().toString());
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "Failed : HTTP error code " + response.getStatusLine().getStatusCode());
+    try {
+      int code = response.getStatusLine().getStatusCode();
+      result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+      if (code != 200) {
+        StringBuilder errorMessage = new StringBuilder("Failed : HTTP error code " + code + " .");
+        logger.error("Failed to execute query: " + result);
+
+        KylinErrorResponse kylinErrorResponse = KylinErrorResponse.fromJson(result);
+        if (kylinErrorResponse == null) {
+          logger.error("Cannot get json from string: " + result);
+          // when code is 401, the response is html, not json
+          if (code == 401) {
+            errorMessage.append(" Error message: Unauthorized. This request requires "
+                + "HTTP authentication. Please make sure your have set your credentials "
+                + "correctly.");
+          } else {
+            errorMessage.append(" Error message: " + result + " .");
+          }
+        } else {
+          String exception = kylinErrorResponse.getException();
+          logger.error("The exception is " + exception);
+          errorMessage.append(" Error message: " + exception + " .");
+        }
+
+        return new InterpreterResult(InterpreterResult.Code.ERROR, errorMessage.toString());
+      }
+    } catch (NullPointerException | IOException e) {
+      throw new IOException(e);
     }
 
-    BufferedReader br = new BufferedReader(
-        new InputStreamReader((response.getEntity().getContent())));
-    StringBuilder sb = new StringBuilder();
-
-    String output;
-    logger.info("Output from Server .... \n");
-    while ((output = br.readLine()) != null) {
-      logger.info(output);
-      sb.append(output).append('\n');
-    }
-    InterpreterResult rett = new InterpreterResult(InterpreterResult.Code.SUCCESS, 
-        formatResult(sb.toString()));
-    return rett;
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+        formatResult(result));
   }
 
   String formatResult(String msg) {
@@ -205,18 +219,19 @@ public class KylinInterpreter extends Interpreter {
       table = mr.group(1);
     }
 
-    String[] row = table.split("],\\[");
-    for (int i = 0; i < row.length; i++) {
-      String[] col = row[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
-      for (int j = 0; j < col.length; j++) {
-        if (col[j] != null) {
-          col[j] = col[j].replaceAll("^\"|\"$", "");
+    if (table != null && !table.isEmpty()) {
+      String[] row = table.split("],\\[");
+      for (int i = 0; i < row.length; i++) {
+        String[] col = row[i].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
+        for (int j = 0; j < col.length; j++) {
+          if (col[j] != null) {
+            col[j] = col[j].replaceAll("^\"|\"$", "");
+          }
+          res.append(col[j] + " \t");
         }
-        res.append(col[j] + " \t");
+        res.append(" \n");
       }
-      res.append(" \n");
     }
     return res.toString();
   }
-
 }

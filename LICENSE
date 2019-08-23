@@ -235,6 +235,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (The MIT License) Simple line icons v1.0.0 (http://thesabbir.github.io/simple-line-icons/) - https://github.com/thesabbir/simple-line-icons/tree/1.0.0
     (The MIT License) jekyll-bootstrap 0.3.0 (https://github.com/plusjade/jekyll-bootstrap) - https://github.com/plusjade/jekyll-bootstrap
     (The MIT License) jekyll 1.3.0 (http://jekyllrb.com/) - https://github.com/jekyll/jekyll/blob/v1.3.0/LICENSE
+    (The MIT License) ngInfiniteScroll 1.3.4 (https://github.com/sroze/ngInfiniteScroll) - https://github.com/sroze/ngInfiniteScroll/blob/master/LICENSE
 
 ========================================================================
 MIT-style licenses
@@ -256,6 +257,10 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) Software under ./bigquery/*  was developed at Google (http://www.google.com/). Licensed under the Apache v2.0 License.
     (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
     (Apache 2.0) Gson extra (https://github.com/DanySK/gson-extras)
+    (Apache 2.0) Nimbus JOSE+JWT (https://bitbucket.org/connect2id/nimbus-jose-jwt/wiki/Home)
+    (Apache 2.0) jarchivelib (https://github.com/thrau/jarchivelib)
+    (Apache 2.0) Google Cloud Client Library for Java (https://github.com/GoogleCloudPlatform/google-cloud-java)
+    (Apache 2.0) concurrentunit (https://github.com/jhalterman/concurrentunit)
 
 ========================================================================
 BSD 3-Clause licenses
@@ -268,6 +273,10 @@ The following components are provided under the BSD 3-Clause license.  See file 
 
   (BSD 3 Clause) portions of Scala (http://www.scala-lang.org/download) - http://www.scala-lang.org/download/#License
    r/src/main/scala/scala/Console.scala
+
+  (BSD 3 Clause) diff.js (https://github.com/kpdecker/jsdiff)
+
+  (BSD 3-Clause) Google Auth Library for Java (https://github.com/google/google-auth-library-java)
 
 ========================================================================
 BSD 2-Clause licenses
@@ -283,3 +292,10 @@ Jython Software License
 The following components are provided under the Jython Software License.  See file headers and project links for details.
 
   (Jython Software License) jython-standalone - http://www.jython.org/
+
+========================================================================
+Eclipse Public License - v 1.0
+========================================================================
+The following components are provided under the Eclipse Public License, version 1.0.  See file headers and project links for details.
+
+  (Eclipse Public License) pty4j - http://www.eclipse.org/legal/epl-v10.html

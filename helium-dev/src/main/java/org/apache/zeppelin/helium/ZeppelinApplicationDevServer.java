@@ -138,7 +138,7 @@ public class ZeppelinApplicationDevServer extends ZeppelinDevServer {
   protected InterpreterOutput createInterpreterOutput(
       final String noteId, final String paragraphId) {
     if (out == null) {
-      final RemoteInterpreterEventClient eventClient = getEventClient();
+      final RemoteInterpreterEventClient eventClient = getIntpEventClient();
       try {
         out = new InterpreterOutput(new InterpreterOutputListener() {
           @Override

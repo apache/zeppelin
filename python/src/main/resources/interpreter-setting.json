@@ -27,7 +27,8 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   },
   {
@@ -40,12 +41,19 @@
         "defaultValue": "30000",
         "description": "time out for ipython launch",
         "type": "number"
+      },
+      "zeppelin.ipython.grpc.message_size": {
+        "propertyName": "zeppelin.ipython.grpc.message_size",
+        "defaultValue": "33554432",
+        "description": "grpc message size, default is 32M",
+        "type": "number"
       }
     },
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
   {
@@ -57,7 +65,8 @@
     "editor":{
       "language": "sql",
       "editOnDblClick": false,
-      "completionKey": "TAB"
+      "completionKey": "TAB",
+      "completionSupport": false
     }
   },
   {
@@ -68,7 +77,8 @@
     },
     "editor": {
       "language": "sh",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   },
   {
@@ -79,7 +89,8 @@
     },
     "editor":{
       "language": "sh",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   }
 ]

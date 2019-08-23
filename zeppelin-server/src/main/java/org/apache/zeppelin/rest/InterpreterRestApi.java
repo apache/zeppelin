@@ -17,23 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import com.google.common.collect.Maps;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
@@ -41,38 +27,65 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyType;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.notebook.socket.Message;
+import org.apache.zeppelin.notebook.socket.Message.OP;
+import org.apache.zeppelin.rest.message.InterpreterInstallationRequest;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.AuthenticationService;
+import org.apache.zeppelin.service.InterpreterService;
+import org.apache.zeppelin.service.ServiceContext;
+import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Interpreter Rest API
+ * Interpreter Rest API.
  */
 @Path("/interpreter")
 @Produces("application/json")
+@Singleton
 public class InterpreterRestApi {
+
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private InterpreterSettingManager interpreterSettingManager;
-  private NotebookServer notebookServer;
+  private final AuthenticationService authenticationService;
+  private final InterpreterService interpreterService;
+  private final InterpreterSettingManager interpreterSettingManager;
+  private final NotebookServer notebookServer;
 
-  public InterpreterRestApi() {
-  }
-
-  public InterpreterRestApi(InterpreterSettingManager interpreterSettingManager,
+  @Inject
+  public InterpreterRestApi(
+      AuthenticationService authenticationService,
+      InterpreterService interpreterService,
+      InterpreterSettingManager interpreterSettingManager,
       NotebookServer notebookWsServer) {
+    this.authenticationService = authenticationService;
+    this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
   }
 
   /**
-   * List all interpreter settings
+   * List all interpreter settings.
    */
   @GET
   @Path("setting")
@@ -82,7 +95,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Get a setting
+   * Get a setting.
    */
   @GET
   @Path("setting/{settingId}")
@@ -103,7 +116,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new interpreter setting
+   * Add new interpreter setting.
    *
    * @param message NewInterpreterSettingRequest
    */
@@ -159,7 +172,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Remove interpreter setting
+   * Remove interpreter setting.
    */
   @DELETE
   @Path("setting/{settingId}")
@@ -171,7 +184,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Restart interpreter setting
+   * Restart interpreter setting.
    */
   @PUT
   @Path("setting/restart/{settingId}")
@@ -187,9 +200,8 @@ public class InterpreterRestApi {
       if (null == noteId) {
         interpreterSettingManager.close(settingId);
       } else {
-        interpreterSettingManager.restart(settingId, noteId, SecurityUtils.getPrincipal());
+        interpreterSettingManager.restart(settingId, noteId, authenticationService.getPrincipal());
       }
-      notebookServer.clearParagraphRuntimeInfo(setting);
 
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while restartSetting ", e);
@@ -203,17 +215,17 @@ public class InterpreterRestApi {
   }
 
   /**
-   * List all available interpreters by group
+   * List all available interpreters by group.
    */
   @GET
   @ZeppelinApi
-  public Response listInterpreter(String message) {
+  public Response listInterpreter() {
     Map<String, InterpreterSetting> m = interpreterSettingManager.getInterpreterSettingTemplates();
     return new JsonResponse<>(Status.OK, "", m).build();
   }
 
   /**
-   * List of dependency resolving repositories
+   * List of dependency resolving repositories.
    */
   @GET
   @Path("repository")
@@ -224,7 +236,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * Add new repository
+   * Add new repository.
    *
    * @param message Repository
    */
@@ -246,23 +258,7 @@ public class InterpreterRestApi {
   }
 
   /**
-   * get metadata values
-   */
-  @GET
-  @Path("metadata/{settingId}")
-  @ZeppelinApi
-  public Response getMetaInfo(@Context HttpServletRequest req,
-      @PathParam("settingId") String settingId) {
-    InterpreterSetting interpreterSetting = interpreterSettingManager.get(settingId);
-    if (interpreterSetting == null) {
-      return new JsonResponse<>(Status.NOT_FOUND).build();
-    }
-    Map<String, String> infos = interpreterSetting.getInfos();
-    return new JsonResponse<>(Status.OK, "metadata", infos).build();
-  }
-
-  /**
-   * Delete repository
+   * Delete repository.
    *
    * @param repoId ID of repository
    */
@@ -290,4 +286,52 @@ public class InterpreterRestApi {
     return new JsonResponse<>(Status.OK, InterpreterPropertyType.getTypes()).build();
   }
 
+  /** Install interpreter */
+  @POST
+  @Path("install")
+  @ZeppelinApi
+  public Response installInterpreter(@NotNull String message) {
+    logger.info("Install interpreter: {}", message);
+    InterpreterInstallationRequest request = InterpreterInstallationRequest.fromJson(message);
+
+    try {
+      interpreterService.installInterpreter(
+          request,
+          new SimpleServiceCallback<String>() {
+            @Override
+            public void onStart(String message, ServiceContext context) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_STARTED);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Starting");
+              data.put("message", message);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+
+            @Override
+            public void onSuccess(String message, ServiceContext context) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Succeed");
+              data.put("message", message);
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+
+            @Override
+            public void onFailure(Exception ex, ServiceContext context) {
+              Message m = new Message(OP.INTERPRETER_INSTALL_RESULT);
+              Map<String, Object> data = Maps.newHashMap();
+              data.put("result", "Failed");
+              data.put("message", ex.getMessage());
+              m.data = data;
+              notebookServer.broadcast(m);
+            }
+          });
+    } catch (Throwable t) {
+      return new JsonResponse<>(Status.INTERNAL_SERVER_ERROR, t.getMessage()).build();
+    }
+
+    return new JsonResponse<>(Status.OK).build();
+  }
 }

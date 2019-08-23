@@ -12,58 +12,80 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('resizable', ResizableDirective)
+angular.module('zeppelinWebApp').directive('resizable', ResizableDirective);
 
-function ResizableDirective () {
+function ResizableDirective() {
   let resizableConfig = {
     autoHide: true,
     handles: 'se',
     helper: 'resizable-helper',
-    stop: function () {
-      angular.element(this).css({'width': '100%', 'height': '100%'})
-    }
-  }
+    stop: function() {
+      angular.element(this).css({'width': '100%', 'height': '100%'});
+    },
+  };
+
+  let addEvent = function(config) {
+    let removeEventByID = function(id) {
+      let events = jQuery._data(config.element, 'events')[config.eventType];
+      for (let i=0; i < events.length; i++) {
+        if (events[i].data && events[i].data.eventID === id) {
+          events.splice(i, 1);
+          i--;
+        }
+      }
+    };
+    removeEventByID(config.eventID);
+    angular.element(config.element).bind(config.eventType, {eventID: config.eventID}, config.handler);
+    angular.element(config.onDestroyElement).scope().$on('$destroy', () => {
+      removeEventByID(config.eventID);
+    });
+  };
 
   return {
     restrict: 'A',
     scope: {
-      callback: '&onResize'
+      callback: '&onResize',
     },
-    link: function postLink (scope, elem, attrs) {
-      attrs.$observe('resize', function (resize) {
-        let resetResize = function (elem, resize) {
-          let colStep = window.innerWidth / 12
-          elem.off('resizestop')
-          let conf = angular.copy(resizableConfig)
+    link: function postLink(scope, elem, attrs) {
+      attrs.$observe('resize', function(resize) {
+        let resetResize = function(elem, resize) {
+          let colStep = window.innerWidth / 12;
+          elem.off('resizestop');
+          let conf = angular.copy(resizableConfig);
           if (resize.graphType === 'TABLE' || resize.graphType === 'NETWORK' || resize.graphType === 'TEXT') {
-            conf.grid = [colStep, 10]
-            conf.minHeight = 100
+            conf.grid = [colStep, 10];
+            conf.minHeight = 100;
           } else {
-            conf.grid = [colStep, 10000]
-            conf.minHeight = 0
+            conf.grid = [colStep, 10000];
+            conf.minHeight = 0;
           }
-          conf.maxWidth = window.innerWidth
+          conf.maxWidth = window.innerWidth;
 
-          elem.resizable(conf)
-          elem.on('resizestop', function () {
+          elem.resizable(conf);
+          elem.on('resizestop', function() {
             if (scope.callback) {
-              let height = elem.height()
+              let height = elem.height();
               if (height < 50) {
-                height = 300
+                height = 300;
               }
-              scope.callback({width: Math.ceil(elem.width() / colStep), height: height})
+              scope.callback({width: Math.ceil(elem.width() / colStep), height: height});
             }
-          })
-        }
+          });
+        };
 
-        resize = JSON.parse(resize)
+        resize = JSON.parse(resize);
         if (resize.allowresize === 'true') {
-          resetResize(elem, resize)
-          angular.element(window).resize(function () {
-            resetResize(elem, resize)
-          })
+          resetResize(elem, resize);
+
+          addEvent({
+            eventID: elem[0].id,
+            eventType: 'resize',
+            element: window,
+            onDestroyElement: elem[0],
+            handler: () => resetResize(elem, resize),
+          });
         }
-      })
-    }
-  }
+      });
+    },
+  };
 }

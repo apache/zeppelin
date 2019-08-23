@@ -20,29 +20,21 @@ package org.apache.zeppelin.interpreter.remote;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
+import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
-public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
-  private static final String INTERPRETER_SCRIPT =
-      System.getProperty("os.name").startsWith("Windows") ?
-          "../bin/interpreter.cmd" :
-          "../bin/interpreter.sh";
+public class RemoteAngularObjectTest extends AbstractInterpreterTest
+    implements AngularObjectRegistryListener {
 
   private RemoteInterpreter intp;
   private InterpreterContext context;
@@ -55,48 +47,25 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
   @Before
   public void setUp() throws Exception {
+    super.setUp();
+
     onAdd = new AtomicInteger(0);
     onUpdate = new AtomicInteger(0);
     onRemove = new AtomicInteger(0);
 
-    InterpreterOption interpreterOption = new InterpreterOption();
-    InterpreterInfo interpreterInfo1 = new InterpreterInfo(MockInterpreterAngular.class.getName(), "mock", true, new HashMap<String, Object>());
-    List<InterpreterInfo> interpreterInfos = new ArrayList<>();
-    interpreterInfos.add(interpreterInfo1);
-    InterpreterRunner runner = new InterpreterRunner(INTERPRETER_SCRIPT, INTERPRETER_SCRIPT);
-    interpreterSetting = new InterpreterSetting.Builder()
-        .setId("test")
-        .setName("test")
-        .setGroup("test")
-        .setInterpreterInfos(interpreterInfos)
-        .setOption(interpreterOption)
-        .setRunner(runner)
-        .setInterpreterDir("../interpeters/test")
-        .create();
-
-    intp = (RemoteInterpreter) interpreterSetting.getDefaultInterpreter("user1", "note1");
+    interpreterSetting = interpreterSettingManager.getInterpreterSettingByName("test");
+    intp = (RemoteInterpreter) interpreterSetting.getInterpreter("user1", "note1", "mock_ao");
     localRegistry = (RemoteAngularObjectRegistry) intp.getInterpreterGroup().getAngularObjectRegistry();
 
-    context = new InterpreterContext(
-        "note",
-        "id",
-        null,
-        "title",
-        "text",
-        new AuthenticationInfo(),
-        new HashMap<String, Object>(),
-        new GUI(),
-        new AngularObjectRegistry(intp.getInterpreterGroup().getId(), null),
-        new LocalResourcePool("pool1"),
-        new LinkedList<InterpreterContextRunner>(), null);
+    context = InterpreterContext.builder()
+        .setNoteId("note")
+        .setParagraphId("id")
+        .setAngularObjectRegistry(new AngularObjectRegistry(intp.getInterpreterGroup().getId(), null))
+        .setResourcePool(new LocalResourcePool("pool1"))
+        .build();
 
     intp.open();
 
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    interpreterSetting.close();
   }
 
   @Test

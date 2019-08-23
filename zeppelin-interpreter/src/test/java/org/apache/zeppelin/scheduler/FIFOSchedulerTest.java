@@ -17,101 +17,67 @@
 
 package org.apache.zeppelin.scheduler;
 
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.scheduler.Job.Status;
-
 import junit.framework.TestCase;
+import org.apache.zeppelin.scheduler.Job.Status;
+import org.junit.Test;
 
 public class FIFOSchedulerTest extends TestCase {
 
-	private SchedulerFactory schedulerSvc;
+  private SchedulerFactory schedulerSvc;
 
-	@Override
-  public void setUp() throws Exception{
-		schedulerSvc = new SchedulerFactory();
-	}
+  @Override
+  public void setUp() throws Exception {
+    schedulerSvc = new SchedulerFactory();
+  }
 
-	@Override
-  public void tearDown(){
+  @Override
+  public void tearDown() {
+    schedulerSvc.destroy();
+  }
 
-	}
+  @Test
+  public void testRun() throws InterruptedException {
+    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
 
-	public void testRun() throws InterruptedException{
-		Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
-		assertEquals(0, s.getJobsRunning().size());
-		assertEquals(0, s.getJobsWaiting().size());
+    Job job1 = new SleepingJob("job1", null, 500);
+    Job job2 = new SleepingJob("job2", null, 500);
 
-		Job job1 = new SleepingJob("job1", null, 500);
-		Job job2 = new SleepingJob("job2", null, 500);
+    s.submit(job1);
+    s.submit(job2);
+    Thread.sleep(200);
 
-		s.submit(job1);
-		s.submit(job2);
-		Thread.sleep(200);
+    assertEquals(Status.RUNNING, job1.getStatus());
+    assertEquals(Status.PENDING, job2.getStatus());
 
-		assertEquals(Status.RUNNING, job1.getStatus());
-		assertEquals(Status.PENDING, job2.getStatus());
-		assertEquals(1, s.getJobsRunning().size());
-		assertEquals(1, s.getJobsWaiting().size());
+    Thread.sleep(500);
+    assertEquals(Status.FINISHED, job1.getStatus());
+    assertEquals(Status.RUNNING, job2.getStatus());
+    assertTrue((500 < (Long) job1.getReturn()));
+    s.stop();
+  }
 
+  @Test
+  public void testAbort() throws InterruptedException {
+    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
 
-		Thread.sleep(500);
-		assertEquals(Status.FINISHED, job1.getStatus());
-		assertEquals(Status.RUNNING, job2.getStatus());
-		assertTrue((500 < (Long)job1.getReturn()));
-		assertEquals(1, s.getJobsRunning().size());
-		assertEquals(0, s.getJobsWaiting().size());
+    Job job1 = new SleepingJob("job1", null, 500);
+    Job job2 = new SleepingJob("job2", null, 500);
 
-	}
+    s.submit(job1);
+    s.submit(job2);
 
-	public void testAbort() throws InterruptedException{
-		Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
-		assertEquals(0, s.getJobsRunning().size());
-		assertEquals(0, s.getJobsWaiting().size());
+    Thread.sleep(200);
 
-		Job job1 = new SleepingJob("job1", null, 500);
-		Job job2 = new SleepingJob("job2", null, 500);
+    job1.abort();
+    job2.abort();
 
-		s.submit(job1);
-		s.submit(job2);
+    Thread.sleep(200);
 
-		Thread.sleep(200);
+    assertEquals(Status.ABORT, job1.getStatus());
+    assertEquals(Status.ABORT, job2.getStatus());
 
-		job1.abort();
-		job2.abort();
-
-		Thread.sleep(200);
-
-		assertEquals(Status.ABORT, job1.getStatus());
-		assertEquals(Status.ABORT, job2.getStatus());
-
-		assertTrue((500 > (Long)job1.getReturn()));
-		assertEquals(null, job2.getReturn());
-	}
-
-	 public void testRemoveFromWaitingQueue() throws InterruptedException{
-	    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
-	    assertEquals(0, s.getJobsRunning().size());
-	    assertEquals(0, s.getJobsWaiting().size());
-
-	    Job job1 = new SleepingJob("job1", null, 500);
-	    Job job2 = new SleepingJob("job2", null, 500);
-
-	    s.submit(job1);
-	    s.submit(job2);
-
-	    Thread.sleep(200);
-
-	    job1.abort();
-	    job2.abort();
-
-	    Thread.sleep(200);
-
-	    assertEquals(Status.ABORT, job1.getStatus());
-	    assertEquals(Status.ABORT, job2.getStatus());
-
-	    assertTrue((500 > (Long)job1.getReturn()));
-	    assertEquals(null, job2.getReturn());
-	  }
+    assertTrue((500 > (Long) job1.getReturn()));
+    assertEquals(null, job2.getReturn());
+    s.stop();
+  }
 }

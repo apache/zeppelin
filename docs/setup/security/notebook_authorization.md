@@ -53,13 +53,13 @@ By default, owners and writers have **write** permission, owners, writers and ru
 ## Separate notebook workspaces (public vs. private)
 By default, the authorization rights allow other users to see the newly created note, meaning the workspace is `public`. This behavior is controllable and can be set through either `ZEPPELIN_NOTEBOOK_PUBLIC` variable in `conf/zeppelin-env.sh`, or through `zeppelin.notebook.public` property in `conf/zeppelin-site.xml`. Thus, in order to make newly created note appear only in your `private` workspace by default, you can set either `ZEPPELIN_NOTEBOOK_PUBLIC` to `false` in your `conf/zeppelin-env.sh` as follows:
 
-```
+```bash
 export ZEPPELIN_NOTEBOOK_PUBLIC="false"
 ```
 
 or set `zeppelin.notebook.public` property to `false` in `conf/zeppelin-site.xml` as follows:
 
-```
+```xml
 <property>
   <name>zeppelin.notebook.public</name>
   <value>false</value>

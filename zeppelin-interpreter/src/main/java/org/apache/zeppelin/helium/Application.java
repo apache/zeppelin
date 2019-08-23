@@ -17,7 +17,6 @@
 package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.annotation.Experimental;
-import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.ResourceSet;
 
 import java.io.IOException;

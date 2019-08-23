@@ -46,13 +46,13 @@ limitations under the License.
             <li class="divider hidden-xs"></li>
             <div id="notebook-list" class="scrollbar-container" ng-if="isDrawNavbarNoteList">
               <li class="filter-names" ng-include="'components/note-name-filter/note-name-filter.html'"></li>
-              <div ng-if="!query.q || query.q === ''">
-              <li ng-repeat="node in navbar.notes.root.children | orderBy:node:false:navbar.arrayOrderingSrv.noteComparator track by node.id"
+              <div ng-if="!query.q || query.q === ''" infinite-scroll="loadMoreNotes()">
+              <li ng-repeat="node in navbar.notes.root.children | limitTo:navbar.numberOfNotesDisplayed track by node.id"
                   ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
-            <div ng-if="query.q">
-              <li ng-repeat="node in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering track by node.id"
+            <div ng-if="query.q" infinite-scroll="myPagingFunction()">
+              <li ng-repeat="node in navbar.notes.flatList | filter : query.q | orderBy:navbar.arrayOrderingSrv.noteFlatListOrdering | limitTo:navbar.numberOfNotesDisplayed track by node.id"
                   ng-class="{'active' : navbar.isActive(node.id)}" ng-include="'components/navbar/navbar-note-list-elem.html'">
               </li>
             </div>
@@ -102,6 +102,7 @@ limitations under the License.
               <li><a href="#/credential">Credential</a></li>
               <li><a href="#/helium">Helium</a></li>
               <li><a href="#/configuration">Configuration</a></li>
+              <li ng-if="clusterAddr !== ''"><a href="#/cluster">Cluster</a> </li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="navbar.logout()">Logout</a></li>
             </ul>

@@ -190,7 +190,7 @@ e.g.
 
 #### 4. Run in dev mode
 
-Place your __Helium package file__ in local registry (ZEPPELIN_HOME/helium).
+Place your __Helium package file__ in local registry (`ZEPPELIN_HOME/helium`).
 Run Zeppelin. And then run zeppelin-web in visualization dev mode.
 
 ```bash
@@ -198,7 +198,7 @@ cd zeppelin-web
 yarn run dev:helium
 ```
 
-You can browse localhost:9000. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
+You can browse `localhost:9000`. Everytime refresh your browser, Zeppelin will rebuild your visualization and reload changes.
 
 
 #### 5. Publish your visualization

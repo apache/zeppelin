@@ -33,7 +33,8 @@ limitations under the License.
        div.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line { z-index: -1 !important; }
     </style>
 
-    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
@@ -68,8 +69,52 @@ limitations under the License.
     <!-- endbuild -->
     <link rel="stylesheet" ng-href="assets/styles/looknfeel/{{looknfeel}}.css" />
     <link rel="stylesheet" href="assets/styles/printMode.css" />
+    <style>
+
+      /* This is kept here puropsly to show preloader */
+      #pre-loader {
+        height: 100%;
+        min-height: 100%;
+        background-color: #ECF0F1;
+        width: 100%;
+        position: fixed;
+        top: 0px;
+        margin-left: -8px;
+        z-index: 99
+      }
+
+      .pre-loader-content {
+        position: absolute;
+        top: 45%;
+        left: 50%
+      }
+
+      .loader {
+        border: 4px solid #666666;
+        border-top: 4px solid #3071A9;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body ng-class="{'bodyAsIframe': asIframe}">
+  <div id="pre-loader">
+    <div class="pre-loader-content">
+      <div class="loader"></div>
+      <div style="margin-top: 5px; margin-left: -10px;">Loading ...</div>
+    </div>
+  </div>
     <!--[if lt IE 7]>
     <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -165,6 +210,10 @@ limitations under the License.
     <script src="bower_components/MathJax/MathJax.js"></script>
     <script src="bower_components/clipboard/dist/clipboard.js"></script>
     <script src="bower_components/ngclipboard/dist/ngclipboard.js"></script>
+    <script src="bower_components/jsdiff/diff.js"></script>
+    <script src="bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js"></script>
+    <script src="bower_components/jszip/dist/jszip.js"></script>
+    <script src="bower_components/excel-builder-js/dist/excel-builder.dist.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
   </body>

@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.model.UserTokenContainer;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.listener.WatcherWebsocket;
@@ -81,7 +81,7 @@ public class ZeppelinClient {
       "RUN_PARAGRAPH",
       "CANCEL_PARAGRAPH"));
 
-  public static ZeppelinClient initialize(String zeppelinUrl, String token, 
+  public static ZeppelinClient initialize(String zeppelinUrl, String token,
       ZeppelinConfiguration conf) {
     if (instance == null) {
       instance = new ZeppelinClient(zeppelinUrl, token, conf);
@@ -192,7 +192,7 @@ public class ZeppelinClient {
       return null;
     }
   }
-  
+
   private Session openWatcherSession() {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader(WatcherSecurityKey.HTTP_HEADER, WatcherSecurityKey.getKey());
@@ -218,7 +218,7 @@ public class ZeppelinClient {
     }
     noteSession.getRemote().sendStringByFuture(serialize(msg));
   }
-  
+
   public Session getZeppelinConnection(String noteId, String principal, String ticket) {
     if (StringUtils.isBlank(noteId)) {
       LOG.warn("Cannot get Websocket session with blanck noteId");
@@ -226,7 +226,7 @@ public class ZeppelinClient {
     }
     return getNoteSession(noteId, principal, ticket);
   }
-  
+
 /*
   private Message zeppelinGetNoteMsg(String noteId) {
     Message getNoteMsg = new Message(Message.OP.GET_NOTE);
@@ -247,7 +247,7 @@ public class ZeppelinClient {
     }
     return session;
   }
-  
+
   private Session openNoteSession(String noteId, String principal, String ticket) {
     ClientUpgradeRequest request = new ClientUpgradeRequest();
     request.setHeader(ORIGIN, "*");
@@ -272,7 +272,7 @@ public class ZeppelinClient {
     }
     return session;
   }
-  
+
   private boolean isSessionOpen(Session session) {
     return (session != null) && (session.isOpen());
   }
@@ -299,7 +299,7 @@ public class ZeppelinClient {
     if (!isActionable(zeppelinMsg.op)) {
       return;
     }
-    
+
     token = UserTokenContainer.getInstance().getUserToken(zeppelinMsg.principal);
     Client client = Client.getInstance();
     if (client == null) {
@@ -319,7 +319,7 @@ public class ZeppelinClient {
     if (StringUtils.isBlank(noteId)) {
       return;
     }
-    NotebookAuthorization noteAuth = NotebookAuthorization.getInstance();
+    AuthorizationService noteAuth = null; // AuthorizationService.get();
     Map<String, String> userTokens = UserTokenContainer.getInstance().getAllUserTokens();
     Client client = Client.getInstance();
     Set<String> userAndRoles;
@@ -341,7 +341,7 @@ public class ZeppelinClient {
     }
     return actionable.contains(action.name());
   }
-  
+
   public void removeNoteConnection(String noteId) {
     if (StringUtils.isBlank(noteId)) {
       LOG.error("Cannot remove session for empty noteId");
@@ -356,7 +356,7 @@ public class ZeppelinClient {
     }
     LOG.info("Removed note websocket connection for note {}", noteId);
   }
-  
+
   private void removeAllConnections() {
     if (watcherSession != null && watcherSession.isOpen()) {
       watcherSession.close();
@@ -379,7 +379,7 @@ public class ZeppelinClient {
     }
     watcherSession.getRemote().sendStringByFuture(serialize(new Message(OP.PING)));
   }
-  
+
   /**
    * Only used in test.
    */

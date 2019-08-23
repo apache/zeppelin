@@ -17,6 +17,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.helium.ApplicationEventListener;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,13 +28,16 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   private final Logger logger = LoggerFactory.getLogger(RemoteInterpreterRunningProcess.class);
   private final String host;
   private final int port;
+  private final String interpreterSettingName;
 
   public RemoteInterpreterRunningProcess(
+      String interpreterSettingName,
       int connectTimeout,
       String host,
       int port
   ) {
     super(connectTimeout);
+    this.interpreterSettingName = interpreterSettingName;
     this.host = host;
     this.port = port;
   }
@@ -49,17 +53,49 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   }
 
   @Override
-  public void start(String userName, Boolean isUserImpersonate) {
+  public String getInterpreterSettingName() {
+    return interpreterSettingName;
+  }
+
+  @Override
+  public void start(String userName) {
     // assume process is externally managed. nothing to do
   }
 
   @Override
   public void stop() {
-    // assume process is externally managed. nothing to do
+    // assume process is externally managed. nothing to do. But will kill it
+    // when you want to force stop it. ENV ZEPPELIN_FORCE_STOP control that.
+    if (System.getenv("ZEPPELIN_FORCE_STOP") != null) {
+      if (isRunning()) {
+        logger.info("Kill interpreter process");
+        try {
+          callRemoteFunction(new RemoteFunction<Void>() {
+            @Override
+            public Void call(RemoteInterpreterService.Client client) throws Exception {
+              client.shutdown();
+              return null;
+            }
+          });
+        } catch (Exception e) {
+          logger.warn("ignore the exception when shutting down interpreter process.", e);
+        }
+      }
+    }
   }
 
   @Override
   public boolean isRunning() {
     return RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort());
+  }
+
+  @Override
+  public void processStarted(int port, String host) {
+    // assume process is externally managed. nothing to do
+  }
+
+  @Override
+  public String getErrorMessage() {
+    return null;
   }
 }

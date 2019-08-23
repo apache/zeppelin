@@ -17,102 +17,107 @@
 
 package org.apache.zeppelin.notebook.repo;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.user.AuthenticationInfo;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
-  /**
-   * Lists notebook information about all notebooks in storage.
-   * @param subject contains user information.
-   * @return
-   * @throws IOException
-   */
-  @ZeppelinApi public List<NoteInfo> list(AuthenticationInfo subject) throws IOException;
+
+  void init(ZeppelinConfiguration zConf) throws IOException;
 
   /**
-   * Get the notebook with the given id.
-   * @param noteId is note id.
+   * Lists notebook information about all notebooks in storage. This method should only read
+   * the metadata of note, rather than reading all notes which usually takes long time.
+   *
    * @param subject contains user information.
    * @return
    * @throws IOException
    */
-  @ZeppelinApi public Note get(String noteId, AuthenticationInfo subject) throws IOException;
+  @ZeppelinApi
+  Map<String, NoteInfo> list(AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Get the notebook with the given id and given notePath.
+   *
+   * @param noteId   is note id.
+   * @param notePath is note path
+   * @param subject  contains user information.
+   * @return
+   * @throws IOException
+   */
+  @ZeppelinApi
+  Note get(String noteId, String notePath, AuthenticationInfo subject) throws IOException;
 
   /**
    * Save given note in storage
-   * @param note is the note itself.
+   *
+   * @param note    is the note itself.
    * @param subject contains user information.
    * @throws IOException
    */
-  @ZeppelinApi public void save(Note note, AuthenticationInfo subject) throws IOException;
+  @ZeppelinApi
+  void save(Note note, AuthenticationInfo subject) throws IOException;
 
   /**
-   * Remove note with given id.
-   * @param noteId is the note id.
-   * @param subject contains user information.
+   *
+   * Move given note to another path
+   *
+   * @param noteId
+   * @param notePath
+   * @param newNotePath
    * @throws IOException
    */
-  @ZeppelinApi public void remove(String noteId, AuthenticationInfo subject) throws IOException;
+  @ZeppelinApi
+  void move(String noteId, String notePath, String newNotePath,
+            AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Move folder to another path
+   *
+   * @param folderPath
+   * @param newFolderPath
+   * @param subject
+   * @throws IOException
+   */
+  void move(String folderPath, String newFolderPath,
+            AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Remove note with given id and notePath
+   *
+   * @param noteId   is note id.
+   * @param notePath is note path
+   * @param subject  contains user information.
+   * @throws IOException
+   */
+  @ZeppelinApi
+  void remove(String noteId, String notePath, AuthenticationInfo subject) throws IOException;
+
+  /**
+   * Remove folder
+   *
+   * @param folderPath
+   * @param subject
+   * @throws IOException
+   */
+  @ZeppelinApi
+  void remove(String folderPath, AuthenticationInfo subject) throws IOException;
 
   /**
    * Release any underlying resources
    */
-  @ZeppelinApi public void close();
-
-  /**
-   * Versioning API (optional, preferred to have).
-   */
-
-  /**
-   * chekpoint (set revision) for notebook.
-   * @param noteId Id of the Notebook
-   * @param checkpointMsg message description of the checkpoint
-   * @return Rev
-   * @throws IOException
-   */
-  @ZeppelinApi public Revision checkpoint(String noteId, String checkpointMsg, 
-      AuthenticationInfo subject) throws IOException;
-
-  /**
-   * Get particular revision of the Notebook.
-   * 
-   * @param noteId Id of the Notebook
-   * @param rev revision of the Notebook
-   * @return a Notebook
-   * @throws IOException
-   */
-  @ZeppelinApi public Note get(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException;
-
-  /**
-   * List of revisions of the given Notebook.
-   * 
-   * @param noteId id of the Notebook
-   * @return list of revisions
-   */
-  @ZeppelinApi public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject);
-
-  /**
-   * Set note to particular revision.
-   * 
-   * @param noteId Id of the Notebook
-   * @param rev revision of the Notebook
-   * @return a Notebook
-   * @throws IOException
-   */
   @ZeppelinApi
-  public Note setNoteRevision(String noteId, String revId, AuthenticationInfo subject)
-      throws IOException;
+  void close();
+
 
   /**
    * Get NotebookRepo settings got the given user.
@@ -120,7 +125,8 @@ public interface NotebookRepo {
    * @param subject
    * @return
    */
-  @ZeppelinApi public List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject);
+  @ZeppelinApi
+  List<NotebookRepoSettingsInfo> getSettings(AuthenticationInfo subject);
 
   /**
    * update notebook repo settings.
@@ -128,27 +134,49 @@ public interface NotebookRepo {
    * @param settings
    * @param subject
    */
-  @ZeppelinApi public void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
+  @ZeppelinApi
+  void updateSettings(Map<String, String> settings, AuthenticationInfo subject);
 
-  /**
-   * Represents the 'Revision' a point in life of the notebook
-   */
-  static class Revision {
-    public static final Revision EMPTY = new Revision(StringUtils.EMPTY, StringUtils.EMPTY, 0);
-    
-    public String id;
-    public String message;
-    public int time;
-    
-    public Revision(String revId, String message, int time) {
-      this.id = revId;
-      this.message = message;
-      this.time = time;
+  default String buildNoteFileName(String noteId, String notePath) throws IOException {
+    if (!notePath.startsWith("/")) {
+      throw new IOException("Invalid notePath: " + notePath);
     }
+    return (notePath + "_" + noteId + ".zpln").substring(1);
+  }
 
-    public static boolean isEmpty(Revision revision) {
-      return revision == null || EMPTY.equals(revision);
+  default String buildNoteFileName(Note note) throws IOException {
+    return buildNoteFileName(note.getId(), note.getPath());
+  }
+
+  default String buildNoteTempFileName(Note note) {
+    return (note.getPath() + "_" + note.getId() + ".tmp").substring(1);
+  }
+
+  default String getNoteId(String noteFileName) throws IOException {
+    int separatorIndex = noteFileName.lastIndexOf("_");
+    if (separatorIndex == -1) {
+      throw new IOException(
+          "Invalid note name, no '_' in note name: " + noteFileName);
+    }
+    try {
+      int dotIndex = noteFileName.lastIndexOf(".");
+      return noteFileName.substring(separatorIndex + 1, dotIndex);
+    } catch (StringIndexOutOfBoundsException e) {
+      throw new IOException("Invalid note name: " + noteFileName);
     }
   }
 
+  default String getNotePath(String rootNoteFolder, String noteFileName)
+      throws IOException {
+    int index = noteFileName.lastIndexOf("_");
+    if (index == -1) {
+      throw new IOException(
+          "Invalid note name, no '_' in note name: " + noteFileName);
+    }
+    try {
+      return noteFileName.substring(rootNoteFolder.length(), index);
+    } catch (StringIndexOutOfBoundsException e) {
+      throw new IOException("Invalid note name: " + noteFileName);
+    }
+  }
 }

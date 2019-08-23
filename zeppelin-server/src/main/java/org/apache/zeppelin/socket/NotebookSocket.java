@@ -16,19 +16,18 @@
  */
 package org.apache.zeppelin.socket;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
 /**
- * Notebook websocket
+ * Notebook websocket.
  */
 public class NotebookSocket extends WebSocketAdapter {
-
   private Session connection;
   private NotebookSocketListener listener;
   private HttpServletRequest request;
@@ -59,7 +58,6 @@ public class NotebookSocket extends WebSocketAdapter {
     listener.onMessage(this, message);
   }
 
-
   public HttpServletRequest getRequest() {
     return request;
   }
@@ -78,5 +76,10 @@ public class NotebookSocket extends WebSocketAdapter {
 
   public void setUser(String user) {
     this.user = user;
+  }
+
+  @Override
+  public String toString() {
+    return request.getRemoteHost() + ":" + request.getRemotePort();
   }
 }

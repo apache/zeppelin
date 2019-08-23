@@ -18,6 +18,17 @@
 
 package org.apache.zeppelin.file;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -27,11 +38,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 
 /**
  * File interpreter for Zeppelin.
@@ -48,7 +54,7 @@ public abstract class FileInterpreter extends Interpreter {
   }
 
   /**
-   * Handling the arguments of the command
+   * Handling the arguments of the command.
    */
   public class CommandArgs {
     public String input = null;
@@ -74,25 +80,25 @@ public abstract class FileInterpreter extends Interpreter {
     }
 
     public void parseArgs() {
-      if (input == null)
+      if (input == null) {
         return;
+      }
       StringTokenizer st = new StringTokenizer(input);
       if (st.hasMoreTokens()) {
         command = st.nextToken();
-        while (st.hasMoreTokens())
+        while (st.hasMoreTokens()) {
           parseArg(st.nextToken());
+        }
       }
     }
   }
 
   // Functions that each file system implementation must override
-
   public abstract String listAll(String path) throws InterpreterException;
 
   public abstract boolean isDirectory(String path);
 
   // Combine paths, takes care of arguments such as ..
-
   protected String getNewPath(String argument){
     Path arg = Paths.get(argument);
     Path ret = arg.isAbsolute() ? arg : Paths.get(currentDir, argument);
@@ -100,7 +106,6 @@ public abstract class FileInterpreter extends Interpreter {
   }
 
   // Handle the command handling uniformly across all file systems
-
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.info("Run File command '" + cmd + "'");
@@ -114,18 +119,15 @@ public abstract class FileInterpreter extends Interpreter {
     }
 
     // Simple parsing of the command
-
     if (args.command.equals("cd")) {
-
       String newPath = !args.args.isEmpty() ? getNewPath(args.args.get(0)) : currentDir;
-      if (!isDirectory(newPath))
+      if (!isDirectory(newPath)) {
         return new InterpreterResult(Code.ERROR, Type.TEXT, newPath + ": No such directory");
+      }
 
       currentDir = newPath;
       return new InterpreterResult(Code.SUCCESS, Type.TEXT, "OK");
-
     } else if (args.command.equals("ls")) {
-
       String newPath = !args.args.isEmpty() ? getNewPath(args.args.get(0)) : currentDir;
       try {
         String results = listAll(newPath);
@@ -136,13 +138,9 @@ public abstract class FileInterpreter extends Interpreter {
       }
 
     } else if (args.command.equals("pwd")) {
-
       return new InterpreterResult(Code.SUCCESS, Type.TEXT, currentDir);
-
     } else {
-
       return new InterpreterResult(Code.ERROR, Type.TEXT, "Unknown command");
-
     }
   }
 

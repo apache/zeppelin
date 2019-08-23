@@ -12,76 +12,76 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('NotebookRepositoryCtrl', NotebookRepositoryCtrl)
+angular.module('zeppelinWebApp').controller('NotebookRepositoryCtrl', NotebookRepositoryCtrl);
 
 function NotebookRepositoryCtrl($http, baseUrlSrv, ngToast) {
-  'ngInject'
+  'ngInject';
 
-  let vm = this
-  vm.notebookRepos = []
-  vm.showDropdownSelected = showDropdownSelected
-  vm.saveNotebookRepo = saveNotebookRepo
+  let vm = this;
+  vm.notebookRepos = [];
+  vm.showDropdownSelected = showDropdownSelected;
+  vm.saveNotebookRepo = saveNotebookRepo;
 
-  _init()
+  _init();
 
   // Public functions
 
-  function saveNotebookRepo (valueform, repo, data) {
-    console.log('data %o', data)
+  function saveNotebookRepo(valueform, repo, data) {
+    console.log('data %o', data);
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook-repositories', {
       'name': repo.className,
-      'settings': data
-    }).success(function (data) {
-      let index = _.findIndex(vm.notebookRepos, {'className': repo.className})
+      'settings': data,
+    }).success(function(data) {
+      let index = _.findIndex(vm.notebookRepos, {'className': repo.className});
       if (index >= 0) {
-        vm.notebookRepos[index] = data.body
-        console.log('repos %o, data %o', vm.notebookRepos, data.body)
+        vm.notebookRepos[index] = data.body;
+        console.log('repos %o, data %o', vm.notebookRepos, data.body);
       }
-      valueform.$show()
-    }).error(function () {
+      valueform.$show();
+    }).error(function() {
       ngToast.danger({
         content: 'We couldn\'t save that NotebookRepo\'s settings',
         verticalPosition: 'bottom',
-        timeout: '3000'
-      })
-      valueform.$show()
-    })
+        timeout: '3000',
+      });
+      valueform.$show();
+    });
 
-    return 'manual'
+    return 'manual';
   }
 
-  function showDropdownSelected (setting) {
-    let index = _.findIndex(setting.value, {'value': setting.selected})
+  function showDropdownSelected(setting) {
+    let index = _.findIndex(setting.value, {'value': setting.selected});
     if (index < 0) {
-      return 'No value'
+      return 'No value';
     } else {
-      return setting.value[index].name
+      return setting.value[index].name;
     }
   }
 
   // Private functions
 
-  function _getInterpreterSettings () {
+  function _getInterpreterSettings() {
     $http.get(baseUrlSrv.getRestApiBase() + '/notebook-repositories')
-      .success(function (data, status, headers, config) {
-        vm.notebookRepos = data.body
-        console.log('ya notebookRepos %o', vm.notebookRepos)
-      }).error(function (data, status, headers, config) {
+      .success(function(data, status, headers, config) {
+        vm.notebookRepos = data.body;
+        console.log('ya notebookRepos %o', vm.notebookRepos);
+      }).error(function(data, status, headers, config) {
         if (status === 401) {
           ngToast.danger({
             content: 'You don\'t have permission on this page',
             verticalPosition: 'bottom',
-            timeout: '3000'
-          })
-          setTimeout(function () {
-            window.location = baseUrlSrv.getBase()
-          }, 3000)
+            timeout: '3000',
+          });
+          setTimeout(function() {
+            window.location = baseUrlSrv.getBase();
+          }, 3000);
         }
-        console.log('Error %o %o', status, data.message)
-      })
+        console.log('Error %o %o', status, data.message);
+      });
   }
 
-  function _init () {
-    _getInterpreterSettings()
+  function _init() {
+    _getInterpreterSettings();
   }
 }

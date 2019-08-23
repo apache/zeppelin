@@ -18,11 +18,14 @@
 
 # export JAVA_HOME=
 # export MASTER=                 		# Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
+# export ZEPPELIN_LOCAL_IP              # Zeppelin's thrift server ip address, if not specified, one random IP address will be choosen.
 # export ZEPPELIN_JAVA_OPTS      		# Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
 # export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 # export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
 # export ZEPPELIN_SSL_PORT       		# ssl port (used when ssl environment variable is set to true)
+# export ZEPPELIN_JMX_ENABLE    		# Enable JMX feature by defining "true"
+# export ZEPPELIN_JMX_PORT      		# Port number which JMX uses. If not set, JMX won't be enabled
 
 # export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.
@@ -30,16 +33,22 @@
 # export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
+
 # export ZEPPELIN_NOTEBOOK_S3_BUCKET        # Bucket where notebook saved
 # export ZEPPELIN_NOTEBOOK_S3_ENDPOINT      # Endpoint of the bucket
 # export ZEPPELIN_NOTEBOOK_S3_USER          # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_ID    # AWS KMS key ID
 # export ZEPPELIN_NOTEBOOK_S3_KMS_KEY_REGION      # AWS KMS key region
 # export ZEPPELIN_NOTEBOOK_S3_SSE      # Server-side encryption enabled for notebooks
+
+# export ZEPPELIN_NOTEBOOK_GCS_STORAGE_DIR      # GCS "directory" (prefix) under which notebooks are saved. E.g. gs://example-bucket/path/to/dir
+# export GOOGLE_APPLICATION_CREDENTIALS         # Provide a service account key file for GCS and BigQuery API calls (overrides application default credentials)
+
 # export ZEPPELIN_NOTEBOOK_MONGO_URI				# MongoDB connection URI used to connect to a MongoDB database server. Default "mongodb://localhost"
 # export ZEPPELIN_NOTEBOOK_MONGO_DATABASE		# Database name to store notebook. Default "zeppelin"
 # export ZEPPELIN_NOTEBOOK_MONGO_COLLECTION # Collection name to store notebook. Default "notes"
 # export ZEPPELIN_NOTEBOOK_MONGO_AUTOIMPORT	# If "true" import local notes under ZEPPELIN_NOTEBOOK_DIR on startup. Default "false"
+
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
@@ -50,6 +59,8 @@
 # export ZEPPELIN_NOTEBOOK_STORAGE 		# Refers to pluggable notebook storage class, can have two classes simultaneously with a sync between them (e.g. local and remote).
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
 # export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
+
+# export DOCKER_TIME_ZONE # Set to the same time zone as the zeppelin server. E.g, "America/New_York" or "Asia/Shanghai"
 
 #### Spark interpreter configuration ####
 
@@ -64,6 +75,7 @@
 # export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
 # export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
 # export SPARK_APP_NAME                         # (optional) The name of spark application.
+# export SPARK_CONF_DIR                         # (optional) In the zeppelin interpreter on docker mode, Need to set the local spark conf folder path
 
 ## Use embedded spark binaries ##
 ## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
@@ -83,7 +95,6 @@
 # export ZEPPELIN_SPARK_IMPORTIMPLICIT  # Import implicits, UDF collection, and sql if set true. true by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of Spark SQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
-
 
 #### HBase interpreter configuration ####
 

@@ -12,35 +12,35 @@
  * limitations under the License.
  */
 
-import moment from 'moment'
+import moment from 'moment';
 
-import { ParagraphStatus, } from '../../notebook/paragraph/paragraph.status'
-import { getJobColorByStatus, getJobIconByStatus } from '../job-status'
+import {ParagraphStatus} from '../../notebook/paragraph/paragraph.status';
+import {getJobColorByStatus, getJobIconByStatus} from '../job-status';
 
-import jobTemplate from './job.html'
-import './job.css'
+import jobTemplate from './job.html';
+import './job.css';
 
 class JobController {
   constructor($http, JobManagerService) {
-    'ngInject'
-    this.$http = $http
-    this.JobManagerService = JobManagerService
+    'ngInject';
+    this.$http = $http;
+    this.JobManagerService = JobManagerService;
   }
 
   isRunning() {
-    return this.note.isRunningJob
+    return this.note.isRunningJob;
   }
 
   getParagraphs() {
-    return this.note.paragraphs
+    return this.note.paragraphs;
   }
 
   getNoteId() {
-    return this.note.noteId
+    return this.note.noteId;
   }
 
   getNoteName() {
-    return this.note.noteName
+    return this.note.noteName;
   }
 
   runJob() {
@@ -48,19 +48,21 @@ class JobController {
       closable: true,
       title: 'Job Dialog',
       message: 'Run all paragraphs?',
-      callback: clickOk => {
-        if (!clickOk) { return }
+      callback: (clickOk) => {
+        if (!clickOk) {
+          return;
+        }
 
-        const noteId = this.getNoteId()
+        const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
         this.JobManagerService.sendRunJobRequest(noteId)
-          .catch(response => {
+          .catch((response) => {
             let message = (response.data && response.data.message)
-              ? response.data.message : 'SERVER ERROR'
-            this.showErrorDialog('Execution Failure', message)
-          })
-      }
-    })
+              ? response.data.message : 'SERVER ERROR';
+            this.showErrorDialog('Execution Failure', message);
+          });
+      },
+    });
   }
 
   stopJob() {
@@ -68,81 +70,85 @@ class JobController {
       closable: true,
       title: 'Job Dialog',
       message: 'Stop all paragraphs?',
-      callback: clickOk => {
-        if (!clickOk) { return }
+      callback: (clickOk) => {
+        if (!clickOk) {
+          return;
+        }
 
-        const noteId = this.getNoteId()
+        const noteId = this.getNoteId();
         // if the request is handled successfully, the job page will get updated using websocket
         this.JobManagerService.sendStopJobRequest(noteId)
-          .catch(response => {
+          .catch((response) => {
             let message = (response.data && response.data.message)
-              ? response.data.message : 'SERVER ERROR'
-            this.showErrorDialog('Stop Failure', message)
-          })
-      }
-    })
+              ? response.data.message : 'SERVER ERROR';
+            this.showErrorDialog('Stop Failure', message);
+          });
+      },
+    });
   }
 
   showErrorDialog(title, errorMessage) {
-    if (!errorMessage) { errorMessage = 'SERVER ERROR' }
+    if (!errorMessage) {
+      errorMessage = 'SERVER ERROR';
+    }
     BootstrapDialog.alert({
       closable: true,
       title: title,
-      message: errorMessage
-    })
+      message: _.escape(errorMessage),
+    });
   }
 
   lastExecuteTime() {
-    const timestamp = this.note.unixTimeLastRun
-    return moment.unix(timestamp / 1000).fromNow()
+    const timestamp = this.note.unixTimeLastRun;
+    return moment.unix(timestamp / 1000).fromNow();
   }
 
   getInterpreterName() {
     return typeof this.note.interpreter === 'undefined'
-      ? 'interpreter is not set' : this.note.interpreter
+      ? 'interpreter is not set' : this.note.interpreter;
   }
 
   getInterpreterNameStyle() {
     return typeof this.note.interpreter === 'undefined'
-      ? { color: 'gray' } : { color: 'black' }
+      ? {color: 'gray'} : {color: 'black'};
   }
 
   getJobTypeIcon() {
-    const noteType = this.note.noteType
+    const noteType = this.note.noteType;
     if (noteType === 'normal') {
-      return 'icon-doc'
+      return 'icon-doc';
     } else if (noteType === 'cron') {
-      return 'icon-clock'
+      return 'icon-clock';
     } else {
-      return 'icon-question'
+      return 'icon-question';
     }
   }
 
   getJobColorByStatus(status) {
-    return getJobColorByStatus(status)
+    return getJobColorByStatus(status);
   }
 
   getJobIconByStatus(status) {
-    return getJobIconByStatus(status)
+    return getJobIconByStatus(status);
   }
 
   getProgress() {
-    const paragraphs = this.getParagraphs()
-    let paragraphStatuses = paragraphs.map(p => p.status)
-    let runningOrFinishedParagraphs = paragraphStatuses.filter(status => {
-      return status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED
-    })
+    const paragraphs = this.getParagraphs();
+    let paragraphStatuses = paragraphs.map((p) => p.status);
+    let runningOrFinishedParagraphs = paragraphStatuses.filter((status) => {
+      return status === ParagraphStatus.RUNNING || status === ParagraphStatus.FINISHED;
+    });
 
-    let totalCount = paragraphStatuses.length
-    let runningCount = runningOrFinishedParagraphs.length
-    let result = Math.ceil(runningCount / totalCount * 100)
-    result = isNaN(result) ? 0 : result
+    let totalCount = paragraphStatuses.length;
+    let runningCount = runningOrFinishedParagraphs.length;
+    let result = Math.ceil(runningCount / totalCount * 100);
+    result = isNaN(result) ? 0 : result;
 
-    return `${result}%`
+    return `${result}%`;
   }
 
   showPercentProgressBar() {
-    return this.getProgress() > 0 && this.getProgress() < 100
+    return this.getProgress() > 0 && this.getProgress() < 100;
   }
 }
 
@@ -152,9 +158,9 @@ export const JobComponent = {
   },
   template: jobTemplate,
   controller: JobController,
-}
+};
 
 export const JobModule = angular
   .module('zeppelinWebApp')
   .component('job', JobComponent)
-  .name
+  .name;

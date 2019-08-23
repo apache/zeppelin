@@ -1,338 +1,315 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.apache.zeppelin.python;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.environment.EnvironmentUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InvalidHookException;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.interpreter.util.ProcessLauncher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import py4j.GatewayServer;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
-
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.environment.EnvironmentUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import py4j.GatewayServer;
 
 /**
- * Python interpreter for Zeppelin.
+ * Interpreter for Python, it is the first implementation of interpreter for Python, so with less
+ * features compared to IPythonInterpreter, but requires less prerequisites than
+ * IPythonInterpreter, only python installation is required.
  */
-public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(PythonInterpreter.class);
-  public static final String ZEPPELIN_PYTHON = "python/zeppelin_python.py";
-  public static final String ZEPPELIN_PY4JPATH = "interpreter/python/py4j-0.9.2/src";
-  public static final String ZEPPELIN_PYTHON_LIBS = "interpreter/lib/python";
-  public static final String DEFAULT_ZEPPELIN_PYTHON = "python";
-  public static final String MAX_RESULT = "zeppelin.python.maxResult";
-
-  private InterpreterContext context;
-  private Pattern errorInLastLine = Pattern.compile(".*(Error|Exception): .*$");
-  private String pythonPath;
-  private int maxResult;
-  private String py4jLibPath;
-  private String pythonLibPath;
-
-  private String pythonCommand;
+public class PythonInterpreter extends Interpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
+  private static final int MAX_TIMEOUT_SEC = 30;
 
   private GatewayServer gatewayServer;
-  private DefaultExecutor executor;
-  private int port;
+  private PythonProcessLauncher pythonProcessLauncher;
+  private File pythonWorkDir;
+  protected boolean useBuiltinPy4j = true;
+
+  // used to forward output from python process to InterpreterOutput
   private InterpreterOutputStream outputStream;
-  private BufferedWriter ins;
-  private PipedInputStream in;
-  private ByteArrayOutputStream input;
-  private String scriptPath;
-  boolean pythonscriptRunning = false;
-  private static final int MAX_TIMEOUT_SEC = 10;
-
-  private long pythonPid = 0;
+  private long pythonPid = -1;
   private IPythonInterpreter iPythonInterpreter;
-
-  Integer statementSetNotifier = new Integer(0);
+  private BaseZeppelinContext zeppelinContext;
+  // set by PythonCondaInterpreter
+  private String condaPythonExec;
+  private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
     super(property);
-    try {
-      File scriptFile = File.createTempFile("zeppelin_python-", ".py", new File("/tmp"));
-      scriptPath = scriptFile.getAbsolutePath();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String workingDir() {
-    URL myURL = getClass().getProtectionDomain().getCodeSource().getLocation();
-    java.net.URI myURI = null;
-    try {
-      myURI = myURL.toURI();
-    } catch (URISyntaxException e1)
-    {}
-    String path = java.nio.file.Paths.get(myURI).toFile().toString();
-    return path;
-  }
-
-  private void createPythonScript() throws InterpreterException {
-    File out = new File(scriptPath);
-
-    if (out.exists() && out.isDirectory()) {
-      throw new InterpreterException("Can't create python script " + out.getAbsolutePath());
-    }
-
-    copyFile(out, ZEPPELIN_PYTHON);
-    logger.info("File {} created", scriptPath);
-  }
-
-  public String getScriptPath() {
-    return scriptPath;
-  }
-
-  private void copyFile(File out, String sourceFile) throws InterpreterException {
-    ClassLoader classLoader = getClass().getClassLoader();
-    try {
-      FileOutputStream outStream = new FileOutputStream(out);
-      IOUtils.copy(
-          classLoader.getResourceAsStream(sourceFile),
-          outStream);
-      outStream.close();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-  }
-
-  private void createGatewayServerAndStartScript()
-      throws UnknownHostException, InterpreterException {
-    createPythonScript();
-    if (System.getenv("ZEPPELIN_HOME") != null) {
-      py4jLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PY4JPATH;
-      pythonLibPath = System.getenv("ZEPPELIN_HOME") + File.separator + ZEPPELIN_PYTHON_LIBS;
-    } else {
-      Path workingPath = Paths.get("..").toAbsolutePath();
-      py4jLibPath = workingPath + File.separator + ZEPPELIN_PY4JPATH;
-      pythonLibPath = workingPath + File.separator + ZEPPELIN_PYTHON_LIBS;
-    }
-
-    port = findRandomOpenPortOnAllLocalInterfaces();
-    gatewayServer = new GatewayServer(this,
-        port,
-        GatewayServer.DEFAULT_PYTHON_PORT,
-        InetAddress.getByName("0.0.0.0"),
-        InetAddress.getByName("0.0.0.0"),
-        GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-        GatewayServer.DEFAULT_READ_TIMEOUT,
-        (List) null);
-
-    gatewayServer.start();
-
-    // Run python shell
-    String pythonCmd = getPythonCommand();
-    CommandLine cmd = CommandLine.parse(pythonCmd);
-
-    if (!pythonCmd.endsWith(".py")) {
-      // PythonDockerInterpreter set pythoncmd with script
-      cmd.addArgument(getScriptPath(), false);
-    }
-    cmd.addArgument(Integer.toString(port), false);
-    cmd.addArgument(getLocalIp(), false);
-
-    executor = new DefaultExecutor();
-    outputStream = new InterpreterOutputStream(logger);
-    PipedOutputStream ps = new PipedOutputStream();
-    in = null;
-    try {
-      in = new PipedInputStream(ps);
-    } catch (IOException e1) {
-      throw new InterpreterException(e1);
-    }
-    ins = new BufferedWriter(new OutputStreamWriter(ps));
-    input = new ByteArrayOutputStream();
-
-    PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, in);
-    executor.setStreamHandler(streamHandler);
-    executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-
-    try {
-      Map env = EnvironmentUtils.getProcEnvironment();
-      if (!env.containsKey("PYTHONPATH")) {
-        env.put("PYTHONPATH", py4jLibPath + File.pathSeparator + pythonLibPath);
-      } else {
-        env.put("PYTHONPATH", env.get("PYTHONPATH") + File.pathSeparator +
-                py4jLibPath + File.pathSeparator + pythonLibPath);
-      }
-
-      logger.info("cmd = {}", cmd.toString());
-      executor.execute(cmd, env, this);
-      pythonscriptRunning = true;
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-
-    try {
-      input.write("import sys, getopt\n".getBytes());
-      ins.flush();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
   }
 
   @Override
   public void open() throws InterpreterException {
-    // try IPythonInterpreter first. If it is not available, we will fallback to the original
-    // python interpreter implementation.
+    // try IPythonInterpreter first
     iPythonInterpreter = getIPythonInterpreter();
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
-      iPythonInterpreter.checkIPythonPrerequisite()) {
+        StringUtils.isEmpty(
+            iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
       try {
         iPythonInterpreter.open();
-        if (InterpreterContext.get() != null) {
-          InterpreterContext.get().out.write(("IPython is available, " +
-              "use IPython for PythonInterpreter\n")
-              .getBytes());
-        }
-        LOG.info("Use IPythonInterpreter to replace PythonInterpreter");
+        LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
         return;
       } catch (Exception e) {
         iPythonInterpreter = null;
+        LOGGER.warn("Fail to open IPythonInterpreter", e);
       }
     }
-    // reset iPythonInterpreter to null
+
+    // reset iPythonInterpreter to null as it is not available
     iPythonInterpreter = null;
-
-    try {
-      if (InterpreterContext.get() != null) {
-        InterpreterContext.get().out.write(("IPython is not available, " +
-            "use the native PythonInterpreter\n")
-            .getBytes());
-      }
-    } catch (IOException e) {
-      LOG.warn("Fail to write InterpreterOutput", e.getMessage());
-    }
-
+    LOGGER.info("IPython is not available, use the native PythonInterpreter");
     // Add matplotlib display hook
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup != null && intpGroup.getInterpreterHookRegistry() != null) {
-      registerHook(HookType.POST_EXEC_DEV, "__zeppelin__._displayhook()");
+      try {
+        // just for unit test I believe (zjffdu)
+        registerHook(HookType.POST_EXEC_DEV.getName(), "__zeppelin__._displayhook()");
+      } catch (InvalidHookException e) {
+        throw new InterpreterException(e);
+      }
     }
-    // Add matplotlib display hook
+
     try {
+      this.usePy4jAuth = Boolean.parseBoolean(getProperty("zeppelin.py4j.useAuth", "true"));
       createGatewayServerAndStartScript();
-    } catch (UnknownHostException e) {
-      throw new InterpreterException(e);
+    } catch (IOException e) {
+      LOGGER.error("Fail to open PythonInterpreter", e);
+      throw new InterpreterException("Fail to open PythonInterpreter", e);
     }
   }
 
-  private IPythonInterpreter getIPythonInterpreter() {
-    LazyOpenInterpreter lazy = null;
-    IPythonInterpreter ipython = null;
-    Interpreter p = getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class.getName());
+  // start gateway sever and start python process
+  private void createGatewayServerAndStartScript() throws IOException {
+    // start gateway server in JVM side
+    int port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+    // use the FQDN as the server address instead of 127.0.0.1 so that python process in docker
+    // container can also connect to this gateway server.
+    String serverAddress = PythonUtils.getLocalIP(properties);
+    String secret = PythonUtils.createSecret(256);
+    this.gatewayServer = PythonUtils.createGatewayServer(this, serverAddress, port, secret,
+        usePy4jAuth);
+    gatewayServer.start();
 
-    while (p instanceof WrappedInterpreter) {
-      if (p instanceof LazyOpenInterpreter) {
-        lazy = (LazyOpenInterpreter) p;
-      }
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    // launch python process to connect to the gateway server in JVM side
+    createPythonScript();
+    String pythonExec = getPythonExec();
+    CommandLine cmd = CommandLine.parse(pythonExec);
+    if (!pythonExec.endsWith(".py")) {
+      // PythonDockerInterpreter set pythonExec with script
+      cmd.addArgument(pythonWorkDir + "/zeppelin_python.py", false);
     }
-    ipython = (IPythonInterpreter) p;
-    return ipython;
+    cmd.addArgument(serverAddress, false);
+    cmd.addArgument(Integer.toString(port), false);
+
+    outputStream = new InterpreterOutputStream(LOGGER);
+    Map<String, String> env = setupPythonEnv();
+    if (usePy4jAuth) {
+      env.put("PY4J_GATEWAY_SECRET", secret);
+    }
+    LOGGER.info("Launching Python Process Command: " + cmd.getExecutable() +
+        " " + StringUtils.join(cmd.getArguments(), " "));
+
+    pythonProcessLauncher = new PythonProcessLauncher(cmd, env);
+    pythonProcessLauncher.launch();
+    pythonProcessLauncher.waitForReady(MAX_TIMEOUT_SEC * 1000);
+
+    if (!pythonProcessLauncher.isRunning()) {
+      if (pythonProcessLauncher.isLaunchTimeout()) {
+        throw new IOException("Launch python process is time out.\n" +
+                pythonProcessLauncher.getErrorMessage());
+      } else {
+        throw new IOException("Fail to launch python process.\n" +
+                pythonProcessLauncher.getErrorMessage());
+      }
+    }
+  }
+
+  @VisibleForTesting
+  public PythonProcessLauncher getPythonProcessLauncher() {
+    return pythonProcessLauncher;
+  }
+
+  private void createPythonScript() throws IOException {
+    // set java.io.tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
+    // cause PythonDockerInterpreter fails.
+    // https://stackoverflow.com/questions/45122459/docker-mounts-denied-the-paths-are-not-shared-
+    // from-os-x-and-are-not-known
+    if (System.getProperty("os.name", "").contains("Mac")) {
+      System.setProperty("java.io.tmpdir", "/tmp");
+    }
+    this.pythonWorkDir = Files.createTempDir();
+    this.pythonWorkDir.deleteOnExit();
+    LOGGER.info("Create Python working dir: " + pythonWorkDir.getAbsolutePath());
+    copyResourceToPythonWorkDir("python/zeppelin_python.py", "zeppelin_python.py");
+    copyResourceToPythonWorkDir("python/zeppelin_context.py", "zeppelin_context.py");
+    copyResourceToPythonWorkDir("python/backend_zinline.py", "backend_zinline.py");
+    copyResourceToPythonWorkDir("python/mpl_config.py", "mpl_config.py");
+    copyResourceToPythonWorkDir("python/py4j-src-0.10.7.zip", "py4j-src-0.10.7.zip");
+  }
+
+  protected boolean useIPython() {
+    return this.iPythonInterpreter != null;
+  }
+
+  private void copyResourceToPythonWorkDir(String srcResourceName,
+                                           String dstFileName) throws IOException {
+    FileOutputStream out = null;
+    try {
+      out = new FileOutputStream(pythonWorkDir.getAbsoluteFile() + "/" + dstFileName);
+      IOUtils.copy(
+          getClass().getClassLoader().getResourceAsStream(srcResourceName),
+          out);
+    } finally {
+      if (out != null) {
+        out.close();
+      }
+    }
+  }
+
+  protected Map<String, String> setupPythonEnv() throws IOException {
+    Map<String, String> env = EnvironmentUtils.getProcEnvironment();
+    appendToPythonPath(env, pythonWorkDir.getAbsolutePath());
+    if (useBuiltinPy4j) {
+      appendToPythonPath(env, pythonWorkDir.getAbsolutePath() + "/py4j-src-0.10.7.zip");
+    }
+    LOGGER.info("PYTHONPATH: " + env.get("PYTHONPATH"));
+    return env;
+  }
+
+  private void appendToPythonPath(Map<String, String> env, String path) {
+    if (!env.containsKey("PYTHONPATH")) {
+      env.put("PYTHONPATH", path);
+    } else {
+      env.put("PYTHONPATH", env.get("PYTHONPATH") + ":" + path);
+    }
+  }
+
+  // Run python script
+  // Choose python in the order of
+  // condaPythonExec > zeppelin.python
+  protected String getPythonExec() {
+    if (condaPythonExec != null) {
+      return condaPythonExec;
+    } else {
+      return getProperty("zeppelin.python", "python");
+    }
+  }
+
+  public File getPythonWorkDir() {
+    return pythonWorkDir;
   }
 
   @Override
-  public void close() {
+  public void close() throws InterpreterException {
     if (iPythonInterpreter != null) {
       iPythonInterpreter.close();
       return;
     }
-    pythonscriptRunning = false;
-    pythonScriptInitialized = false;
-
-    try {
-      ins.flush();
-      ins.close();
-      input.flush();
-      input.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    executor.getWatchdog().destroyProcess();
-    new File(scriptPath).delete();
-    gatewayServer.shutdown();
-
-    // wait until getStatements stop
-    synchronized (statementSetNotifier) {
-      try {
-        statementSetNotifier.wait(1500);
-      } catch (InterruptedException e) {
+    if (pythonProcessLauncher != null) {
+      if (pythonProcessLauncher.isRunning()) {
+        LOGGER.info("Kill python process");
+        pythonProcessLauncher.stop();
       }
-      statementSetNotifier.notify();
     }
+    if (gatewayServer != null) {
+      gatewayServer.shutdown();
+    }
+
+    // reset these 2 monitors otherwise when you restart PythonInterpreter it would fails to execute
+    // python code as these 2 objects are in incorrect state.
+    statementSetNotifier = new Integer(0);
+    statementFinishedNotifier = new Integer(0);
   }
 
-  PythonInterpretRequest pythonInterpretRequest = null;
+  private PythonInterpretRequest pythonInterpretRequest = null;
+  private Integer statementSetNotifier = new Integer(0);
+  private Integer statementFinishedNotifier = new Integer(0);
+  private String statementOutput = null;
+  private boolean statementError = false;
+
+  public void setPythonExec(String pythonExec) {
+    LOGGER.info("Set Python Command : {}", pythonExec);
+    this.condaPythonExec = pythonExec;
+  }
+
   /**
-   * Result class of python interpreter
+   * Request send to Python Daemon
    */
   public class PythonInterpretRequest {
     public String statements;
+    public boolean isForCompletion;
+    public boolean isCallHooks;
 
-    public PythonInterpretRequest(String statements) {
+    public PythonInterpretRequest(String statements, boolean isForCompletion) {
+      this(statements, isForCompletion, true);
+    }
+
+    public PythonInterpretRequest(String statements, boolean isForCompletion, boolean isCallHooks) {
       this.statements = statements;
+      this.isForCompletion = isForCompletion;
+      this.isCallHooks = isCallHooks;
     }
 
     public String statements() {
       return statements;
     }
+
+    public boolean isForCompletion() {
+      return isForCompletion;
+    }
+
+    public boolean isCallHooks() {
+      return isCallHooks;
+    }
   }
 
+  // called by Python Process
   public PythonInterpretRequest getStatements() {
     synchronized (statementSetNotifier) {
-      while (pythonInterpretRequest == null && pythonscriptRunning && pythonScriptInitialized) {
+      while (pythonInterpretRequest == null) {
         try {
           statementSetNotifier.wait(1000);
         } catch (InterruptedException e) {
+          e.printStackTrace();
         }
       }
       PythonInterpretRequest req = pythonInterpretRequest;
@@ -341,138 +318,109 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
   }
 
-  String statementOutput = null;
-  boolean statementError = false;
-  Integer statementFinishedNotifier = new Integer(0);
-
+  // called by Python Process
   public void setStatementsFinished(String out, boolean error) {
     synchronized (statementFinishedNotifier) {
+      LOGGER.debug("Setting python statement output: " + out + ", error: " + error);
       statementOutput = out;
       statementError = error;
       statementFinishedNotifier.notify();
     }
   }
 
-  boolean pythonScriptInitialized = false;
-  Integer pythonScriptInitializeNotifier = new Integer(0);
-
+  // called by Python Process
   public void onPythonScriptInitialized(long pid) {
     pythonPid = pid;
-    synchronized (pythonScriptInitializeNotifier) {
-      pythonScriptInitialized = true;
-      pythonScriptInitializeNotifier.notifyAll();
+    synchronized (pythonProcessLauncher) {
+      LOGGER.debug("onPythonScriptInitialized is called");
+      pythonProcessLauncher.initialized();
     }
   }
 
+  // called by Python Process
   public void appendOutput(String message) throws IOException {
+    LOGGER.debug("Output from python process: " + message);
     outputStream.getInterpreterOutput().write(message);
   }
 
-  @Override
-  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter)
-      throws InterpreterException {
-    if (iPythonInterpreter != null) {
-      return iPythonInterpreter.interpret(cmd, contextInterpreter);
-    }
-    if (cmd == null || cmd.isEmpty()) {
-      return new InterpreterResult(Code.SUCCESS, "");
-    }
+  // used by subclass such as PySparkInterpreter to set JobGroup before executing spark code
+  protected void preCallPython(InterpreterContext context) {
 
-    this.context = contextInterpreter;
+  }
 
-    if (!pythonscriptRunning) {
-      return new InterpreterResult(Code.ERROR, "python process not running"
-        + outputStream.toString());
-    }
-
-    outputStream.setInterpreterOutput(context.out);
-
-    synchronized (pythonScriptInitializeNotifier) {
-      long startTime = System.currentTimeMillis();
-      while (pythonScriptInitialized == false
-        && pythonscriptRunning
-        && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
-        try {
-          pythonScriptInitializeNotifier.wait(1000);
-        } catch (InterruptedException e) {
-        }
-      }
-    }
-
-    List<InterpreterResultMessage> errorMessage;
-    try {
-      context.out.flush();
-      errorMessage = context.out.toInterpreterResultMessage();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-
-    if (pythonscriptRunning == false) {
-      // python script failed to initialize and terminated
-      errorMessage.add(new InterpreterResultMessage(
-        InterpreterResult.Type.TEXT, "failed to start python"));
-      return new InterpreterResult(Code.ERROR, errorMessage);
-    }
-    if (pythonScriptInitialized == false) {
-      // timeout. didn't get initialized message
-      errorMessage.add(new InterpreterResultMessage(
-        InterpreterResult.Type.TEXT, "python is not responding"));
-      return new InterpreterResult(Code.ERROR, errorMessage);
-    }
-
-    pythonInterpretRequest = new PythonInterpretRequest(cmd);
-    statementOutput = null;
-
+  // blocking call. Send python code to python process and get response
+  protected void callPython(PythonInterpretRequest request) {
     synchronized (statementSetNotifier) {
+      this.pythonInterpretRequest = request;
+      statementOutput = null;
       statementSetNotifier.notify();
     }
 
     synchronized (statementFinishedNotifier) {
-      while (statementOutput == null) {
+      while (statementOutput == null && pythonProcessLauncher.isRunning()) {
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
+          // ignore this exception
         }
       }
     }
+  }
+
+  @Override
+  public InterpreterResult interpret(String st, InterpreterContext context)
+      throws InterpreterException {
+    if (iPythonInterpreter != null) {
+      return iPythonInterpreter.interpret(st, context);
+    }
+
+    outputStream.setInterpreterOutput(context.out);
+    BaseZeppelinContext z = getZeppelinContext();
+    z.setInterpreterContext(context);
+    z.setGui(context.getGui());
+    z.setNoteGui(context.getNoteGui());
+    InterpreterContext.set(context);
+
+    preCallPython(context);
+    callPython(new PythonInterpretRequest(st, false));
 
     if (statementError) {
       return new InterpreterResult(Code.ERROR, statementOutput);
     } else {
-
       try {
         context.out.flush();
       } catch (IOException e) {
         throw new InterpreterException(e);
       }
-
-      return new InterpreterResult(Code.SUCCESS);
+      if (pythonProcessLauncher.isRunning()) {
+        return new InterpreterResult(Code.SUCCESS);
+      } else {
+        return new InterpreterResult(Code.ERROR,
+                "Python process is abnormally exited, please check your code and log.");
+      }
     }
   }
 
-  public InterpreterContext getCurrentInterpreterContext() {
-    return context;
-  }
-
-  public void interrupt() throws IOException {
+  public void interrupt() throws IOException, InterpreterException {
     if (pythonPid > -1) {
-      logger.info("Sending SIGINT signal to PID : " + pythonPid);
+      LOGGER.info("Sending SIGINT signal to PID : " + pythonPid);
       Runtime.getRuntime().exec("kill -SIGINT " + pythonPid);
     } else {
-      logger.warn("Non UNIX/Linux system, close the interpreter");
+      LOGGER.warn("Non UNIX/Linux system, close the interpreter");
       close();
     }
   }
 
   @Override
-  public void cancel(InterpreterContext context) {
+  public void cancel(InterpreterContext context) throws InterpreterException {
     if (iPythonInterpreter != null) {
       iPythonInterpreter.cancel(context);
+      return;
     }
     try {
       interrupt();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.error("Error", e);
     }
   }
 
@@ -482,121 +430,192 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   }
 
   @Override
-  public int getProgress(InterpreterContext context) {
+  public int getProgress(InterpreterContext context) throws InterpreterException {
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.getProgress(context);
     }
     return 0;
   }
 
-  @Override
-  public Scheduler getScheduler() {
-    if (iPythonInterpreter != null) {
-      return iPythonInterpreter.getScheduler();
-    }
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        PythonInterpreter.class.getName() + this.hashCode());
-  }
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext)
+      throws InterpreterException {
     if (iPythonInterpreter != null) {
       return iPythonInterpreter.completion(buf, cursor, interpreterContext);
     }
-    return null;
-  }
-
-  public void setPythonCommand(String cmd) {
-    logger.info("Set Python Command : {}", cmd);
-    pythonCommand = cmd;
-  }
-
-  private String getPythonCommand() {
-    if (pythonCommand == null) {
-      return getPythonBindPath();
-    } else {
-      return pythonCommand;
+    if (buf.length() < cursor) {
+      cursor = buf.length();
     }
-  }
+    String completionString = getCompletionTargetString(buf, cursor);
+    String completionCommand = "__zeppelin_completion__.getCompletion('" + completionString + "')";
+    LOGGER.debug("completionCommand: " + completionCommand);
 
-  public String getPythonBindPath() {
-    String path = getProperty("zeppelin.python");
-    if (path == null) {
-      return DEFAULT_ZEPPELIN_PYTHON;
-    } else {
-      return path;
+    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, true);
+    statementOutput = null;
+
+    synchronized (statementSetNotifier) {
+      statementSetNotifier.notify();
     }
-  }
 
-  private Job getRunningJob(String paragraphId) {
-    Job foundJob = null;
-    Collection<Job> jobsRunning = getScheduler().getJobsRunning();
-    for (Job job : jobsRunning) {
-      if (job.getId().equals(paragraphId)) {
-        foundJob = job;
-        break;
+    String[] completionList = null;
+    synchronized (statementFinishedNotifier) {
+      long startTime = System.currentTimeMillis();
+      while (statementOutput == null
+          && pythonProcessLauncher.isRunning()) {
+        try {
+          if (System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
+            LOGGER.error("Python completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
+            break;
+          }
+          statementFinishedNotifier.wait(1000);
+        } catch (InterruptedException e) {
+          // not working
+          LOGGER.info("wait drop");
+          return new LinkedList<>();
+        }
       }
+      if (statementError) {
+        return new LinkedList<>();
+      }
+      Gson gson = new Gson();
+      completionList = gson.fromJson(statementOutput, String[].class);
     }
-    return foundJob;
+    //end code for completion
+    if (completionList == null) {
+      return new LinkedList<>();
+    }
+
+    List<InterpreterCompletion> results = new LinkedList<>();
+    for (String name : completionList) {
+      results.add(new InterpreterCompletion(name, name, StringUtils.EMPTY));
+    }
+    return results;
   }
 
-  void bootStrapInterpreter(String file) throws IOException {
-    BufferedReader bootstrapReader = new BufferedReader(
-        new InputStreamReader(
-            PythonInterpreter.class.getResourceAsStream(file)));
-    String line = null;
-    String bootstrapCode = "";
+  private String getCompletionTargetString(String text, int cursor) {
+    String[] completionSeqCharaters = {" ", "\n", "\t"};
+    int completionEndPosition = cursor;
+    int completionStartPosition = cursor;
+    int indexOfReverseSeqPostion = cursor;
 
-    while ((line = bootstrapReader.readLine()) != null) {
-      bootstrapCode += line + "\n";
+    String resultCompletionText = "";
+    String completionScriptText = "";
+    try {
+      completionScriptText = text.substring(0, cursor);
+    } catch (Exception e) {
+      LOGGER.error(e.toString());
+      return null;
+    }
+    completionEndPosition = completionScriptText.length();
+
+    String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
+
+    for (String seqCharacter : completionSeqCharaters) {
+      indexOfReverseSeqPostion = tempReverseCompletionText.indexOf(seqCharacter);
+
+      if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
+        completionStartPosition = indexOfReverseSeqPostion;
+      }
+
     }
 
+    if (completionStartPosition == completionEndPosition) {
+      completionStartPosition = 0;
+    } else {
+      completionStartPosition = completionEndPosition - completionStartPosition;
+    }
+    resultCompletionText = completionScriptText.substring(
+        completionStartPosition, completionEndPosition);
+
+    return resultCompletionText;
+  }
+
+  protected IPythonInterpreter getIPythonInterpreter() throws InterpreterException {
+    return getInterpreterInTheSameSessionByClassName(IPythonInterpreter.class, false);
+  }
+
+  protected BaseZeppelinContext createZeppelinContext() {
+    return new PythonZeppelinContext(
+        getInterpreterGroup().getInterpreterHookRegistry(),
+        Integer.parseInt(getProperty("zeppelin.python.maxResult", "1000")));
+  }
+
+  public BaseZeppelinContext getZeppelinContext() {
+    if (zeppelinContext == null) {
+      zeppelinContext = createZeppelinContext();
+    }
+    return zeppelinContext;
+  }
+
+  protected void bootstrapInterpreter(String resourceName) throws IOException {
+    LOGGER.info("Bootstrap interpreter via " + resourceName);
+    String bootstrapCode =
+        IOUtils.toString(getClass().getClassLoader().getResourceAsStream(resourceName));
     try {
-      interpret(bootstrapCode, context);
+      // Add hook explicitly, otherwise python will fail to execute the statement
+      InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
+          InterpreterContext.get());
+      if (result.code() != Code.SUCCESS) {
+        throw new IOException("Fail to run bootstrap script: " + resourceName);
+      }
     } catch (InterpreterException e) {
       throw new IOException(e);
     }
   }
 
-  public GUI getGui() {
-    return context.getGui();
+  // Called by Python Process, used for debugging purpose
+  public void logPythonOutput(String message) {
+    LOGGER.debug("Python Process Output: " + message);
   }
 
-  String getLocalIp() {
-    try {
-      return Inet4Address.getLocalHost().getHostAddress();
-    } catch (UnknownHostException e) {
-      logger.error("can't get local IP", e);
+  class PythonProcessLauncher extends ProcessLauncher {
+
+    PythonProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
+      super(commandLine, envs);
     }
-    // fall back to loopback addreess
-    return "127.0.0.1";
-  }
 
-  private int findRandomOpenPortOnAllLocalInterfaces() {
-    Integer port = -1;
-    try (ServerSocket socket = new ServerSocket(0);) {
-      port = socket.getLocalPort();
-      socket.close();
-    } catch (IOException e) {
-      LOG.error("Can't find an open port", e);
+    @Override
+    public void waitForReady(int timeout) {
+      long startTime = System.currentTimeMillis();
+      synchronized (this) {
+        while (state == State.LAUNCHED) {
+          LOGGER.info("Waiting for python process initialized");
+          try {
+            wait(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          if ((System.currentTimeMillis() - startTime) > timeout) {
+            onTimeout();
+            break;
+          }
+        }
+      }
     }
-    return port;
-  }
 
-  public int getMaxResult() {
-    return maxResult;
-  }
+    public void initialized() {
+      synchronized (this) {
+        this.state = State.RUNNING;
+        notify();
+      }
+    }
 
-  @Override
-  public void onProcessComplete(int exitValue) {
-    pythonscriptRunning = false;
-    logger.info("python process terminated. exit code " + exitValue);
-  }
+    @Override
+    public void onProcessFailed(ExecuteException e) {
+      super.onProcessFailed(e);
+      synchronized (statementFinishedNotifier) {
+        statementFinishedNotifier.notify();
+      }
+    }
 
-  @Override
-  public void onProcessFailed(ExecuteException e) {
-    pythonscriptRunning = false;
-    logger.error("python process failed", e);
+    @Override
+    public void onProcessComplete(int exitValue) {
+      super.onProcessComplete(exitValue);
+      synchronized (statementFinishedNotifier) {
+        statementFinishedNotifier.notify();
+      }
+    }
   }
 }

@@ -75,7 +75,7 @@ To get start with Apache Kylin, please see [Apache Kylin Quickstart](https://kyl
 ## Using the Apache Kylin Interpreter
 In a paragraph, use `%kylin(project_name)` to select the **kylin** interpreter, **project name** and then input **sql**. If no project name defined, will use the default project name from the above configuration.
 
-```
+```sql
 %kylin(learn_project)
 select count(*) from kylin_sales group by part_dt
 ```

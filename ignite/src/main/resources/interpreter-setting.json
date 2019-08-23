@@ -32,6 +32,10 @@
         "description": "Peer class loading enabled. True or false",
         "type": "checkbox"
       }
+    },
+    "editor": {
+      "editOnDblClick": false,
+      "completionSupport": false
     }
   },
   { 
@@ -46,6 +50,10 @@
         "description": "Ignite JDBC connection URL.",
         "type": "string"
         }
-    }   
+    },
+    "editor": {
+      "editOnDblClick": false,
+      "completionSupport": false
+    }
   }
 ]

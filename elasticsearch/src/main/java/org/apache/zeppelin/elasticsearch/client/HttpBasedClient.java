@@ -17,26 +17,21 @@
 
 package org.apache.zeppelin.elasticsearch.client;
 
+import com.google.common.base.Joiner;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
-import org.apache.zeppelin.elasticsearch.action.ActionException;
-import org.apache.zeppelin.elasticsearch.action.ActionResponse;
-import org.apache.zeppelin.elasticsearch.action.AggWrapper;
-import org.apache.zeppelin.elasticsearch.action.AggWrapper.AggregationType;
-import org.apache.zeppelin.elasticsearch.action.HitWrapper;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.google.common.base.Joiner;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -44,11 +39,17 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
 import com.mashape.unirest.request.HttpRequestWithBody;
 
+import org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter;
+import org.apache.zeppelin.elasticsearch.action.ActionException;
+import org.apache.zeppelin.elasticsearch.action.ActionResponse;
+import org.apache.zeppelin.elasticsearch.action.AggWrapper;
+import org.apache.zeppelin.elasticsearch.action.AggWrapper.AggregationType;
+import org.apache.zeppelin.elasticsearch.action.HitWrapper;
+
 /**
  * Elasticsearch client using the HTTP API.
  */
 public class HttpBasedClient implements ElasticsearchClient {
-
   private static final String QUERY_STRING_TEMPLATE =
       "{ \"query\": { \"query_string\": { \"query\": \"_Q_\", \"analyze_wildcard\": \"true\" } } }";
 
@@ -73,7 +74,7 @@ public class HttpBasedClient implements ElasticsearchClient {
   private JSONObject getParentField(JSONObject parent, String[] fields) {
     JSONObject obj = parent;
     for (int i = 0; i < fields.length - 1; i++) {
-      obj = obj.getJSONObject(fields[i]);
+      obj = obj.optJSONObject(fields[i]);
     }
     return obj;
   }
@@ -114,24 +115,20 @@ public class HttpBasedClient implements ElasticsearchClient {
               if (id.equals(encodedId)) {
                 // No difference, use directly the id
                 buffer.append("/").append(id);
-              }
-              else {
+              } else {
                 // There are differences: to avoid problems with some special characters
                 // such as / and # in id, use a "terms" query
-                buffer.append("/_search?source=")
-                  .append(URLEncoder
+                buffer.append("/_search?source=").append(URLEncoder
                       .encode("{\"query\":{\"terms\":{\"_id\":[\"" + id + "\"]}}}", "UTF-8"));
               }
-            }
-            else {
+            } else {
               buffer.append("/").append(id);
             }
           }
         }
       }
       return buffer.toString();
-    }
-    catch (final UnsupportedEncodingException e) {
+    } catch (final UnsupportedEncodingException e) {
       throw new ActionException(e);
     }
   }
@@ -164,8 +161,7 @@ public class HttpBasedClient implements ElasticsearchClient {
                   getFieldAsString(body, "_type"),
                   getFieldAsString(body, "_id"),
                   getFieldAsString(body, "_source")));
-        }
-        else {
+        } else {
           final JSONArray hits = getFieldAsArray(body.getObject(), "hits/hits");
           final JSONObject hit = (JSONObject) hits.iterator().next();
           response = new ActionResponse()
@@ -176,18 +172,15 @@ public class HttpBasedClient implements ElasticsearchClient {
                   hit.getString("_id"),
                   hit.opt("_source").toString()));
         }
-      }
-      else {
+      } else {
         if (result.getStatus() == 404) {
           response = new ActionResponse()
               .succeeded(false);
-        }
-        else {
+        } else {
           throw new ActionException(result.getBody());
         }
       }
-    }
-    catch (final UnirestException e) {
+    } catch (final UnirestException e) {
       throw new ActionException(e);
     }
     return response;
@@ -214,12 +207,10 @@ public class HttpBasedClient implements ElasticsearchClient {
                 getFieldAsString(body, "_type"),
                 getFieldAsString(body, "_id"),
                 null));
-      }
-      else {
+      } else {
         throw new ActionException(result.getBody());
       }
-    }
-    catch (final UnirestException e) {
+    } catch (final UnirestException e) {
       throw new ActionException(e);
     }
     return response;
@@ -232,8 +223,7 @@ public class HttpBasedClient implements ElasticsearchClient {
       HttpRequestWithBody request = null;
       if (StringUtils.isEmpty(id)) {
         request = Unirest.post(getUrl(index, type, id, false));
-      }
-      else {
+      } else {
         request = Unirest.put(getUrl(index, type, id, false));
       }
       request
@@ -255,12 +245,10 @@ public class HttpBasedClient implements ElasticsearchClient {
                 getFieldAsString(result, "_type"),
                 getFieldAsString(result, "_id"),
                 null));
-      }
-      else {
+      } else {
         throw new ActionException(result.getBody().toString());
       }
-    }
-    catch (final UnirestException e) {
+    } catch (final UnirestException e) {
       throw new ActionException(e);
     }
     return response;
@@ -275,8 +263,7 @@ public class HttpBasedClient implements ElasticsearchClient {
       // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
       try {
         gson.fromJson(query, Map.class);
-      }
-      catch (final JsonParseException e) {
+      } catch (final JsonParseException e) {
         // This is not a JSON (or maybe not well formatted...)
         query = QUERY_STRING_TEMPLATE.replace("_Q_", query);
       }
@@ -320,15 +307,13 @@ public class HttpBasedClient implements ElasticsearchClient {
                 response.addAggregation(
                     new AggWrapper(AggregationType.MULTI_BUCKETS, buckets.next().toString()));
               }
-            }
-            else {
+            } else {
               response.addAggregation(
                   new AggWrapper(AggregationType.SIMPLE, aggregationsMap.toString()));
             }
             break; // Keep only one aggregation
           }
-        }
-        else if (size > 0 && total > 0) {
+        } else if (size > 0 && total > 0) {
           final JSONArray hits = getFieldAsArray(body, "hits/hits");
           final Iterator<Object> iter = hits.iterator();
 
@@ -343,12 +328,10 @@ public class HttpBasedClient implements ElasticsearchClient {
                 data.toString()));
           }
         }
-      }
-      else {
+      } else {
         throw new ActionException(body.get("error").toString());
       }
-    }
-    catch (final UnirestException e) {
+    } catch (final UnirestException e) {
       throw new ActionException(e);
     }
 

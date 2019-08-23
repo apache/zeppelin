@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * ManagedInterpreterGroup runs under zeppelin server
@@ -47,18 +49,28 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   ManagedInterpreterGroup(String id, InterpreterSetting interpreterSetting) {
     super(id);
     this.interpreterSetting = interpreterSetting;
-    interpreterSetting.getLifecycleManager().onInterpreterGroupCreated(this);
   }
 
   public InterpreterSetting getInterpreterSetting() {
     return interpreterSetting;
   }
 
-  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess() throws IOException {
+  public synchronized RemoteInterpreterProcess getOrCreateInterpreterProcess(String userName,
+                                                                             Properties properties)
+      throws IOException {
     if (remoteInterpreterProcess == null) {
       LOGGER.info("Create InterpreterProcess for InterpreterGroup: " + getId());
-      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess();
+      remoteInterpreterProcess = interpreterSetting.createInterpreterProcess(id, userName,
+          properties);
+      remoteInterpreterProcess.start(userName);
+      interpreterSetting.getLifecycleManager().onInterpreterProcessStarted(this);
+      getInterpreterSetting().getRecoveryStorage()
+          .onInterpreterClientStart(remoteInterpreterProcess);
     }
+    return remoteInterpreterProcess;
+  }
+
+  public RemoteInterpreterProcess getInterpreterProcess() {
     return remoteInterpreterProcess;
   }
 
@@ -70,7 +82,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
   /**
    * Close all interpreter instances in this group
    */
-  public synchronized void close() {
+  public void close() {
     LOGGER.info("Close InterpreterGroup: " + id);
     for (String sessionId : sessions.keySet()) {
       close(sessionId);
@@ -83,7 +95,7 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
    */
   public synchronized void close(String sessionId) {
     LOGGER.info("Close Session: " + sessionId + " for interpreter setting: " +
-        interpreterSetting.getName());
+            interpreterSetting.getName());
     close(sessions.remove(sessionId));
     //TODO(zjffdu) whether close InterpreterGroup if there's no session left in Zeppelin Server
     if (sessions.isEmpty() && interpreterSetting != null) {
@@ -92,6 +104,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
       if (remoteInterpreterProcess != null) {
         LOGGER.info("Kill RemoteInterpreterProcess");
         remoteInterpreterProcess.stop();
+        try {
+          interpreterSetting.getRecoveryStorage().onInterpreterClientStop(remoteInterpreterProcess);
+        } catch (IOException e) {
+          LOGGER.error("Fail to store recovery data", e);
+        }
         remoteInterpreterProcess = null;
       }
     }
@@ -101,42 +118,55 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     if (interpreters == null) {
       return;
     }
+    List<Thread> closeThreads = interpreters.stream()
+            .map(interpreter -> new Thread(() ->
+                    closeInterpreter(interpreter),
+                    interpreter.getClass().getSimpleName() + "-close"))
+            .peek(t -> t.setUncaughtExceptionHandler((th, e) ->
+                    LOGGER.error("Interpreter close error", e)))
+            .peek(Thread::start)
+            .collect(Collectors.toList());
 
-    for (Interpreter interpreter : interpreters) {
-      Scheduler scheduler = interpreter.getScheduler();
-      for (Job job : scheduler.getJobsRunning()) {
-        job.abort();
-        job.setStatus(Job.Status.ABORT);
-        LOGGER.info("Job " + job.getJobName() + " aborted ");
-      }
-      for (Job job : scheduler.getJobsWaiting()) {
-        job.abort();
-        job.setStatus(Job.Status.ABORT);
-        LOGGER.info("Job " + job.getJobName() + " aborted ");
-      }
-
+    for (Thread t : closeThreads) {
       try {
-        interpreter.close();
-      } catch (InterpreterException e) {
-        LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
-      }
-      //TODO(zjffdu) move the close of schedule to Interpreter
-      if (null != scheduler) {
-        SchedulerFactory.singleton().removeScheduler(scheduler.getName());
+        t.join();
+      } catch (InterruptedException e) {
+        LOGGER.error("Can't wait interpreter close threads", e);
+        Thread.currentThread().interrupt();
+        break;
       }
     }
+  }
+
+  private void closeInterpreter(Interpreter interpreter) {
+    Scheduler scheduler = interpreter.getScheduler();
+
+    for (final Job job : scheduler.getAllJobs()) {
+      job.abort();
+      job.setStatus(Job.Status.ABORT);
+      LOGGER.info("Job " + job.getJobName() + " aborted ");
+    }
+
+    try {
+      LOGGER.info("Trying to close interpreter " + interpreter.getClassName());
+      interpreter.close();
+    } catch (InterpreterException e) {
+      LOGGER.warn("Fail to close interpreter " + interpreter.getClassName(), e);
+    }
+
+    //TODO(zjffdu) move the close of schedule to Interpreter
+    SchedulerFactory.singleton().removeScheduler(scheduler.getName());
   }
 
   public synchronized List<Interpreter> getOrCreateSession(String user, String sessionId) {
     if (sessions.containsKey(sessionId)) {
       return sessions.get(sessionId);
     } else {
-      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, sessionId);
+      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, id, sessionId);
       for (Interpreter interpreter : interpreters) {
         interpreter.setInterpreterGroup(this);
       }
       LOGGER.info("Create Session: {} in InterpreterGroup: {} for user: {}", sessionId, id, user);
-      interpreterSetting.getLifecycleManager().onInterpreterSessionCreated(this, sessionId);
       sessions.put(sessionId, interpreters);
       return interpreters;
     }

@@ -4,6 +4,11 @@ package org.apache.zeppelin.jdbc;
  * This source file is based on code taken from SQLLine 1.0.2 See SQLLine notice in LICENSE
  */
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,28 +27,22 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import jline.console.completer.ArgumentCompleter.ArgumentList;
+import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
+
 import org.apache.zeppelin.completer.CachedCompleter;
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.completer.StringsCompleter;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import jline.console.completer.ArgumentCompleter.ArgumentList;
-import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 
 /**
  * SQL auto complete functionality for the JdbcInterpreter.
  */
 public class SqlCompleter {
-
   private static Logger logger = LoggerFactory.getLogger(SqlCompleter.class);
 
-
   /**
-   * Delimiter that can split SQL statement in keyword list
+   * Delimiter that can split SQL statement in keyword list.
    */
   private WhitespaceArgumentDelimiter sqlDelimiter = new WhitespaceArgumentDelimiter() {
 
@@ -57,35 +56,33 @@ public class SqlCompleter {
   };
 
   /**
-   * Schema completer
+   * Schema completer.
    */
   private CachedCompleter schemasCompleter;
 
   /**
-   * Contain different completer with table list for every schema name
+   * Contain different completer with table list for every schema name.
    */
   private Map<String, CachedCompleter> tablesCompleters = new HashMap<>();
 
   /**
    * Contains different completer with column list for every table name
-   * Table names store as schema_name.table_name
+   * Table names store as schema_name.table_name.
    */
   private Map<String, CachedCompleter> columnsCompleters = new HashMap<>();
 
   /**
-   * Completer for sql keywords
+   * Completer for sql keywords.
    */
   private CachedCompleter keywordCompleter;
 
   private int ttlInSeconds;
-
 
   public SqlCompleter(int ttlInSeconds) {
     this.ttlInSeconds = ttlInSeconds;
   }
 
   public int complete(String buffer, int cursor, List<InterpreterCompletion> candidates) {
-
     logger.debug("Complete with buffer = " + buffer + ", cursor = " + cursor);
 
     // The delimiter breaks the buffer into separate words (arguments), separated by the
@@ -110,7 +107,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Return list of schema names within the database
+   * Return list of schema names within the database.
    *
    * @param meta metadata from connection to database
    * @param schemaFilters a schema name patterns; must match the schema name
@@ -146,7 +143,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Return list of catalog names within the database
+   * Return list of catalog names within the database.
    *
    * @param meta metadata from connection to database
    * @param schemaFilters a catalog name patterns; must match the catalog name
@@ -177,7 +174,6 @@ public class SqlCompleter {
     return res;
   }
 
-
   private static void fillTableNames(String schema, DatabaseMetaData meta, Set<String> tables) {
     try (ResultSet tbls = meta.getTables(schema, schema, "%",
         new String[]{"TABLE", "VIEW", "ALIAS", "SYNONYM", "GLOBAL TEMPORARY", "LOCAL TEMPORARY"})) {
@@ -191,7 +187,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Fill two map with list of tables and list of columns
+   * Fill two map with list of tables and list of columns.
    *
    * @param schema name of a scheme
    * @param table name of a table
@@ -213,7 +209,6 @@ public class SqlCompleter {
 
   public static Set<String> getSqlKeywordsCompletions(DatabaseMetaData meta) throws IOException,
           SQLException {
-
     // Add the default SQL completions
     String keywords =
             new BufferedReader(new InputStreamReader(
@@ -222,7 +217,6 @@ public class SqlCompleter {
     Set<String> completions = new TreeSet<>();
 
     if (null != meta) {
-
       // Add the driver specific SQL completions
       String driverSpecificKeywords =
               "/" + meta.getDriverName().replace(" ", "-").toLowerCase() + "-sql.keywords";
@@ -239,7 +233,6 @@ public class SqlCompleter {
         logger.debug("fail to get driver specific SQL completions for " +
                 driverSpecificKeywords + " : " + e, e);
       }
-
 
       // Add the keywords from the current JDBC connection
       try {
@@ -270,7 +263,6 @@ public class SqlCompleter {
 
       // Set all keywords to lower-case versions
       keywords = keywords.toLowerCase();
-
     }
 
     StringTokenizer tok = new StringTokenizer(keywords, ", ");
@@ -282,7 +274,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Initializes all local completers from database connection
+   * Initializes all local completers from database connection.
    *
    * @param connection database connection
    * @param schemaFiltersString a comma separated schema name patterns, supports '%'  symbol;
@@ -350,8 +342,6 @@ public class SqlCompleter {
     }
   }
 
-
-
   public void initKeywords(Set<String> keywords) {
     if (keywords != null && !keywords.isEmpty()) {
       keywordCompleter = new CachedCompleter(new StringsCompleter(keywords), 0);
@@ -380,7 +370,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Find aliases in sql command
+   * Find aliases in sql command.
    *
    * @param sqlArguments sql command divided on arguments
    * @return for every alias contains table name in format schema_name.table_name
@@ -397,7 +387,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Complete buffer in case it is a keyword
+   * Complete buffer in case it is a keyword.
    *
    * @return -1 in case of no candidates found, 0 otherwise
    */
@@ -406,7 +396,7 @@ public class SqlCompleter {
   }
 
   /**
-   * Complete buffer in case it is a schema name
+   * Complete buffer in case it is a schema name.
    *
    * @return -1 in case of no candidates found, 0 otherwise
    */
@@ -415,22 +405,22 @@ public class SqlCompleter {
   }
 
   /**
-   * Complete buffer in case it is a table name
+   * Complete buffer in case it is a table name.
    *
    * @return -1 in case of no candidates found, 0 otherwise
    */
   private int completeTable(String schema, String buffer, int cursor,
                             List<CharSequence> candidates) {
     // Wrong schema
-    if (schema == null || !tablesCompleters.containsKey(schema))
+    if (schema == null || !tablesCompleters.containsKey(schema)) {
       return -1;
-    else {
+    } else {
       return tablesCompleters.get(schema).getCompleter().complete(buffer, cursor, candidates);
     }
   }
 
   /**
-   * Complete buffer in case it is a column name
+   * Complete buffer in case it is a column name.
    *
    * @return -1 in case of no candidates found, 0 otherwise
    */

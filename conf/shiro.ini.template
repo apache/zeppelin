@@ -56,6 +56,20 @@ user3 = password4, role2
 #zeppelinHubRealm.zeppelinhubUrl = https://www.zeppelinhub.com
 #securityManager.realms = $zeppelinHubRealm
 
+## A same for configuring Knox SSO Realm
+#knoxJwtRealm = org.apache.zeppelin.realm.jwt.KnoxJwtRealm
+#knoxJwtRealm.providerUrl = https://domain.example.com/
+#knoxJwtRealm.login = gateway/knoxsso/knoxauth/login.html
+#knoxJwtRealm.logout = gateway/knoxssout/api/v1/webssout
+#knoxJwtRealm.logoutAPI = true
+#knoxJwtRealm.redirectParam = originalUrl
+#knoxJwtRealm.cookieName = hadoop-jwt
+#knoxJwtRealm.publicKeyPath = /etc/zeppelin/conf/knox-sso.pem
+#
+#knoxJwtRealm.groupPrincipalMapping = group.principal.mapping
+#knoxJwtRealm.principalMapping = principal.mapping
+#authc = org.apache.zeppelin.realm.jwt.KnoxAuthenticationFilter
+
 sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
 
 ### If caching of user is required then uncomment below lines
@@ -96,8 +110,14 @@ admin = *
 # uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
 #
 /api/version = anon
+/api/cluster/address = anon
+# Allow all authenticated users to restart interpreters on a notebook page.
+# Comment out the following line if you would like to authorize only admin users to restart interpreters.
+/api/interpreter/setting/restart/** = authc
 /api/interpreter/** = authc, roles[admin]
+/api/notebook-repositories/** = authc, roles[admin]
 /api/configurations/** = authc, roles[admin]
 /api/credential/** = authc, roles[admin]
+/api/admin/** = authc, roles[admin]
 #/** = anon
 /** = authc

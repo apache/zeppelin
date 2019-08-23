@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HeliumPackageTest {
 
@@ -71,7 +71,7 @@ public class HeliumPackageTest {
     Map<String, Object> config = p.getConfig();
     Map<String, Object> accessToken = (Map<String, Object>) config.get("access-token");
 
-    assertEquals((String) accessToken.get("type"),"string");
+    assertEquals((String) accessToken.get("type"), "string");
     assertEquals((String) accessToken.get("description"),
         "access token for Google Translation API");
     assertEquals((String) accessToken.get("defaultValue"),

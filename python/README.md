@@ -17,19 +17,14 @@ mvn -Dpython.test.exclude='' test -pl python -am
  - **Py4j support**
 
   [Py4j](https://www.py4j.org/) enables Python programs to dynamically access Java objects in a JVM.
-  It is required in order to use Zeppelin [dynamic forms](http://zeppelin.apache.org/docs/0.6.0-SNAPSHOT/manual/dynamicform.html) feature.
-
- - bootstrap process
-
-  Interpreter environment is setup with thex [bootstrap.py](https://github.com/apache/zeppelin/blob/master/python/src/main/resources/bootstrap.py)
-  It defines `help()` and `z` convenience functions
+  It is required in order to use Zeppelin [dynamic forms](https://zeppelin.apache.org/docs/latest/manual/dynamicform.html) feature.
 
 
 ### Dev prerequisites
 
  * Python 2 or 3 installed with py4j (0.9.2) and matplotlib (1.31 or later) installed on each
 
- * Tests only checks the interpreter logic and starts any Python process! Python process is mocked with a class that simply output it input.
+ * Tests only checks the interpreter logic and starts any Python process! Python process is mocked with a class that simply output its input.
 
  * Code wrote in `bootstrap.py` and `bootstrap_input.py` should always be Python 2 and 3 compliant.
 
@@ -43,13 +38,13 @@ mvn -Dpython.test.exclude='' test -pl python -am
 
  * When interpreter is starting, it sends some Python code (bootstrap.py and bootstrap_input.py) to initialize default behavior and functions (`help(), z.input()...`). bootstrap_input.py is sent only if py4j library is detected inside Python process.
 
- * [Py4J](https://www.py4j.org/) python and java libraries is used to load Input zeppelin Java class into the python process (make java code with python code !). Therefore the interpreter can directly create Zeppelin input form inside the Python process (and eventually with some python variable already defined). JVM opens a random open port to be accessible from python process.
+ * [Py4J](https://www.py4j.org/) Python and Java libraries are used to load input zeppelin Java class into the python process (make java code with python code !). Therefore the interpreter can directly create Zeppelin input form inside the Python process (and eventually with some python variable already defined). JVM opens a random open port to be accessible from python process.
 
- * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter directly  send a `kill SIGINT PID` to python process to interrupt execution. Python process catch SIGINT signal with some code defined in bootstrap.py
+ * JavaBuilder can't send SIGINT signal to interrupt paragraph execution. Therefore interpreter will directly send a `kill SIGINT PID` to python process to interrupt execution. Python process catches SIGINT signal with some code defined in bootstrap.py
 
  * Matplotlib figures are displayed inline with the notebook automatically using a built-in backend for zeppelin in conjunction with a post-execute hook.
 
- * `%python.sql` support for Pandas DataFrames is optional and provided using https://github.com/yhat/pandasql if user have one installed
+ * `%python.sql` support for Pandas DataFrames is optional but can be downloaded from [here](https://github.com/yhat/pandasql) if user does not have one installed.
 
 
 # IPython Overview

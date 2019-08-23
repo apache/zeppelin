@@ -1,0 +1,188 @@
+{
+  "paragraphs": [
+    {
+      "text": "%angular\n\n\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"paragraphId\"\u003eParagraph Id: \u003c/label\u003e\n    \u003cinput type\u003d\"text\" style\u003d\"width:300px\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-model\u003d\"paragraph\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"z.runParagraph(paragraph)\"\u003e Run Paragraph\u003c/button\u003e\n\u003c/form\u003e\n\u003cbr/\u003e\n\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"paragraphId\"\u003eParagraph Id: \u003c/label\u003e\n    \u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-model\u003d\"paragraph2\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n\u003c/form\u003e",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-30 11:11:13.493",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/undefined",
+        "fontSize": 9.0,
+        "editorHide": false,
+        "runOnSelectionChange": false,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"paragraphId\"\u003eParagraph Id: \u003c/label\u003e\n    \u003cinput type\u003d\"text\" style\u003d\"width:300px\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-model\u003d\"paragraph\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"z.runParagraph(paragraph)\"\u003e Run Paragraph\u003c/button\u003e\n\u003c/form\u003e\n\u003cbr/\u003e\n\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"paragraphId\"\u003eParagraph Id: \u003c/label\u003e\n    \u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-model\u003d\"paragraph2\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n\u003c/form\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1545988535211_-832334376",
+      "id": "paragraph_1545878497556_-1717616036",
+      "dateCreated": "2018-12-28 17:15:35.211",
+      "dateStarted": "2018-12-30 11:11:13.678",
+      "dateFinished": "2018-12-30 11:11:13.683",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%angular\n \n\u003ch2\u003ethis : {{COMMAND_TYPE}}\u003c/h2\u003e\n\u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-value\u003d\"{{COMMAND_TYPE}}\"\u003e\u003c/input\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-30 14:47:10.849",
+      "config": {
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/undefined",
+        "fontSize": 9.0,
+        "runOnSelectionChange": false,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003ch2\u003ethis : {{COMMAND_TYPE}}\u003c/h2\u003e\n\u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"paragraphId\" placeholder\u003d\"Paragraph Id ...\" ng-value\u003d\"{{COMMAND_TYPE}}\"\u003e\u003c/input\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1545988535212_-2086109774",
+      "id": "paragraph_1545881601069_1553190230",
+      "dateCreated": "2018-12-28 17:15:35.212",
+      "dateStarted": "2018-12-30 14:47:10.895",
+      "dateFinished": "2018-12-30 14:47:11.690",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%angular\n\n\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"superheroId\"\u003eSuper Hero: {{COMMAND_TYPE}}\u003c/label\u003e\n    \u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"superheroId\" placeholder\u003d\"Superhero name ...\" ng-model\u003d\"superhero\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"z.angularBind(\u0027COMMAND_TYPE\u0027,superhero,\u0027paragraph_1545881601069_1553190230\u0027);\"\u003e Bind\u003c/button\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"isUndefinedOrNull\"\u003e run \u003c/button\u003e  \n\u003c/form\u003e\n",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-30 11:11:17.496",
+      "config": {
+        "editorSetting": {
+          "editOnDblClick": false,
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/undefined",
+        "fontSize": 9.0,
+        "runOnSelectionChange": false,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"superheroId\"\u003eSuper Hero: {{COMMAND_TYPE}}\u003c/label\u003e\n    \u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"superheroId\" placeholder\u003d\"Superhero name ...\" ng-model\u003d\"superhero\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"z.angularBind(\u0027COMMAND_TYPE\u0027,superhero,\u0027paragraph_1545881601069_1553190230\u0027);\"\u003e Bind\u003c/button\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"isUndefinedOrNull\"\u003e run \u003c/button\u003e  \n\u003c/form\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1545988535212_711026158",
+      "id": "paragraph_1545881216236_725482559",
+      "dateCreated": "2018-12-28 17:15:35.212",
+      "dateStarted": "2018-12-30 11:11:17.535",
+      "dateFinished": "2018-12-30 11:11:17.539",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%angular\n\u003cform class\u003d\"form-inline\"\u003e\n  \u003cdiv class\u003d\"form-group\"\u003e\n    \u003clabel for\u003d\"superheroId\"\u003eSuper Hero: \u003c/label\u003e\n    \u003cinput type\u003d\"text\" class\u003d\"form-control\" id\u003d\"superheroId\" placeholder\u003d\"Superhero name ...\" ng-model\u003d\"superhero\"\u003e\u003c/input\u003e\n  \u003c/div\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"z.angularBind(\u0027COMMAND_TYPE\u0027,superhero,\u0027paragraph_1545881601069_1553190230\u0027);\n  z.angularBind(\u0027INPUT_PATH\u0027,superhero,\u0027paragraph_1545881601069_1553190230\u0027);z.runParagraph(\u0027paragraph_1545881601069_1553190230\u0027)\"\u003e Bind\u003c/button\u003e\n  \u003cbutton type\u003d\"submit\" class\u003d\"btn btn-primary\" ng-click\u003d\"isUndefinedOrNull\"\u003e run \u003c/button\u003e  \n\u003c/form\u003e",
+      "user": "anonymous",
+      "dateUpdated": "2018-12-28 21:58:58.034",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "editOnDblClick": false,
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/undefined"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1545988714036_1708666246",
+      "id": "paragraph_1545988714036_1708666246",
+      "dateCreated": "2018-12-28 17:18:34.036",
+      "status": "READY"
+    }
+  ],
+  "name": "angularObject",
+  "id": "2E1YA3X1U",
+  "defaultInterpreterGroup": "angular",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "angular-shared_process": [
+      {
+        "name": "COMMAND_TYPE",
+        "object": "333",
+        "noteId": "2E1YA3X1U",
+        "paragraphId": "paragraph_1545881601069_1553190230"
+      },
+      {
+        "name": "COMMAND_TYPE",
+        "object": "333",
+        "noteId": "2E1YA3X1U",
+        "paragraphId": "paragraph_1545881601069_1553190230"
+      },
+      {
+        "name": "COMMAND_TYPE",
+        "object": "4",
+        "noteId": "2E1YA3X1U",
+        "paragraphId": "paragraph_1545881601069_1553190230"
+      },
+      {
+        "name": "COMMAND_TYPE",
+        "object": "111",
+        "noteId": "2E1YA3X1U",
+        "paragraphId": "paragraph_1545881601069_1553190230"
+      }
+    ]
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

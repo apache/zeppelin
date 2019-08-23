@@ -12,38 +12,39 @@
  * limitations under the License.
  */
 
-import Nvd3ChartVisualization from './visualization-nvd3chart'
-import PivotTransformation from '../../tabledata/pivot'
+import Nvd3ChartVisualization from './visualization-nvd3chart';
+import PivotTransformation from '../../tabledata/pivot';
+import moment from 'moment';
 
 /**
  * Visualize data in line chart
  */
 export default class LinechartVisualization extends Nvd3ChartVisualization {
-  constructor (targetEl, config) {
-    super(targetEl, config)
+  constructor(targetEl, config) {
+    super(targetEl, config);
 
-    this.pivot = new PivotTransformation(config)
+    this.pivot = new PivotTransformation(config);
 
     try {
-      this.config.rotate = {degree: config.rotate.degree}
+      this.config.rotate = {degree: config.rotate.degree};
     } catch (e) {
-      this.config.rotate = {degree: '-45'}
+      this.config.rotate = {degree: '-45'};
     }
   }
 
-  type () {
+  type() {
     if (this.config.lineWithFocus) {
-      return 'lineWithFocusChart'
+      return 'lineWithFocusChart';
     } else {
-      return 'lineChart'
+      return 'lineChart';
     }
   }
 
-  getTransformation () {
-    return this.pivot
+  getTransformation() {
+    return this.pivot;
   }
 
-  render (pivot) {
+  render(pivot) {
     let d3Data = this.d3DataFromPivot(
       pivot.schema,
       pivot.rows,
@@ -52,99 +53,113 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
       pivot.values,
       false,
       true,
-      false)
+      false);
 
-    this.xLabels = d3Data.xLabels
-    super.render(d3Data)
-    this.config.changeXLabel(this.config.xLabelStatus)
+    this.xLabels = d3Data.xLabels;
+    super.render(d3Data);
+    this.config.changeXLabel(this.config.xLabelStatus);
   }
 
   /**
    * Set new config
    */
-  setConfig (config) {
-    super.setConfig(config)
-    this.pivot.setConfig(config)
+  setConfig(config) {
+    super.setConfig(config);
+    this.pivot.setConfig(config);
 
     // change mode
     if (this.currentMode !== config.lineWithFocus) {
-      super.destroy()
-      this.currentMode = config.lineWithFocus
+      super.destroy();
+      this.currentMode = config.lineWithFocus;
     }
   }
 
-  configureChart (chart) {
-    let self = this
-    let configObj = self.config
+  configureChart(chart) {
+    let self = this;
+    let configObj = self.config;
 
-    chart.xAxis.tickFormat(function (d) { return self.xAxisTickFormat(d, self.xLabels) })
-    chart.yAxis.tickFormat(function (d) {
-      if (d === undefined) {
-        return 'N/A'
+    chart.xAxis.tickFormat(function(d) {
+      if (self.config.isDateFormat) {
+        if (self.config.dateFormat) {
+          return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format(self.config.dateFormat);
+        } else {
+          return moment(new Date(self.xAxisTickFormat(d, self.xLabels))).format('YYYY-MM-DD HH:mm:ss');
+        }
       }
-      return self.yAxisTickFormat(d, self.xLabels)
-    })
-    chart.yAxis.axisLabelDistance(50)
+      return self.xAxisTickFormat(d, self.xLabels);
+    });
+    chart.yAxis.tickFormat(function(d) {
+      if (d === undefined) {
+        return 'N/A';
+      }
+      return self.yAxisTickFormat(d, self.xLabels);
+    });
+    chart.yAxis.axisLabelDistance(50);
     if (chart.useInteractiveGuideline) {   // lineWithFocusChart hasn't got useInteractiveGuideline
-      chart.useInteractiveGuideline(true) // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+      chart.useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
     }
     if (this.config.forceY) {
-      chart.forceY([0]) // force y-axis minimum to 0 for line chart.
+      chart.forceY([0]); // force y-axis minimum to 0 for line chart.
     } else {
-      chart.forceY([])
+      chart.forceY([]);
     }
 
     self.config.changeXLabel = function(type) {
       switch (type) {
         case 'default':
-          self.chart._options['showXAxis'] = true
-          self.chart._options['margin'] = {bottom: 50}
-          self.chart.xAxis.rotateLabels(0)
-          configObj.xLabelStatus = 'default'
-          break
+          self.chart._options['showXAxis'] = true;
+          self.chart._options['margin'] = {bottom: 50};
+          self.chart.xAxis.rotateLabels(0);
+          configObj.xLabelStatus = 'default';
+          break;
         case 'rotate':
-          self.chart._options['showXAxis'] = true
-          self.chart._options['margin'] = {bottom: 140}
-          self.chart.xAxis.rotateLabels(configObj.rotate.degree)
-          configObj.xLabelStatus = 'rotate'
-          break
+          self.chart._options['showXAxis'] = true;
+          self.chart._options['margin'] = {bottom: 140};
+          self.chart.xAxis.rotateLabels(configObj.rotate.degree);
+          configObj.xLabelStatus = 'rotate';
+          break;
         case 'hide':
-          self.chart._options['showXAxis'] = false
-          self.chart._options['margin'] = {bottom: 50}
-          d3.select('#' + self.targetEl[0].id + '> svg').select('g.nv-axis.nv-x').selectAll('*').remove()
-          configObj.xLabelStatus = 'hide'
-          break
+          self.chart._options['showXAxis'] = false;
+          self.chart._options['margin'] = {bottom: 50};
+          d3.select('#' + self.targetEl[0].id + '> svg').select('g.nv-axis.nv-x').selectAll('*').remove();
+          configObj.xLabelStatus = 'hide';
+          break;
       }
-      self.emitConfig(configObj)
-    }
+      self.emitConfig(configObj);
+    };
 
     self.config.isXLabelStatus = function(type) {
       if (configObj.xLabelStatus === type) {
-        return true
+        return true;
       } else {
-        return false
+        return false;
       }
-    }
+    };
 
     self.config.setDegree = function(type) {
-      configObj.rotate.degree = type
-      self.chart.xAxis.rotateLabels(type)
-      self.emitConfig(configObj)
-    }
+      configObj.rotate.degree = type;
+      self.chart.xAxis.rotateLabels(type);
+      self.emitConfig(configObj);
+    };
+
+    self.config.setDateFormat = function(format) {
+      configObj.dateFormat = format;
+      self.emitConfig(configObj);
+    };
   }
 
-  getSetting (chart) {
-    let self = this
-    let configObj = self.config
+  getSetting(chart) {
+    let self = this;
+    let configObj = self.config;
 
     // default to visualize xLabel
     if (typeof (configObj.xLabelStatus) === 'undefined') {
-      configObj.changeXLabel('default')
+      configObj.changeXLabel('default');
     }
 
     if (typeof (configObj.rotate.degree) === 'undefined' || configObj.rotate.degree === '') {
-      configObj.rotate.degree = '-45'
-      self.emitConfig(configObj)
+      configObj.rotate.degree = '-45';
+      self.emitConfig(configObj);
     }
 
     return {
@@ -163,19 +178,35 @@ export default class LinechartVisualization extends Nvd3ChartVisualization {
                ng-click="save()" />
           zoom
         </label>
+        
+        <br/>        
+        <label>
+          <input type="checkbox"
+               ng-model="config.isDateFormat"
+               ng-click="save()" />
+          Date format
+        </label>
+        <span ng-show="config.isDateFormat">
+          <input type="text"
+           placeholder="YYYY-MM-DD HH:mm:ss"
+           ng-model="config.dateFormat"
+           ng-enter="config.setDateFormat(config.dateFormat)"
+           ng-blur="config.setDateFormat(config.dateFormat)"
+            />
+        </span>
       </div>
       <ng-include src="'app/visualization/builtins/visualization-displayXAxis.html'">
       </ng-include>`,
       scope: {
         config: configObj,
-        save: function () {
-          self.emitConfig(configObj)
-        }
-      }
-    }
+        save: function() {
+          self.emitConfig(configObj);
+        },
+      },
+    };
   }
 
-  defaultY () {
-    return undefined
+  defaultY() {
+    return undefined;
   }
 }

@@ -18,11 +18,17 @@
 
 package org.apache.zeppelin.file;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import com.google.gson.Gson;
+
+import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.zeppelin.completer.CompletionType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -30,7 +36,6 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * HDFS implementation of File interpreter for Zeppelin.
- *
  */
 public class HDFSFileInterpreter extends FileInterpreter {
   static final String HDFS_URL = "hdfs.url";
@@ -55,7 +60,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   /**
-   * Status of one file
+   * Status of one file.
    *
    * matches returned JSON
    */
@@ -73,6 +78,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
     public int replication;
     public int storagePolicy;
     public String type;
+
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("\nAccessTime = ").append(accessTime);
@@ -93,38 +99,41 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   /**
-   * Status of one file
+   * Status of one file.
    *
    * matches returned JSON
    */
   public class SingleFileStatus {
-    public OneFileStatus FileStatus;
+    @SerializedName("FileStatus")
+    public OneFileStatus fileStatus;
   }
 
   /**
-   * Status of all files in a directory
+   * Status of all files in a directory.
    *
    * matches returned JSON
    */
   public class MultiFileStatus {
-    public OneFileStatus[] FileStatus;
+    @SerializedName("FileStatus")
+    public OneFileStatus[] fileStatus;
   }
 
   /**
-   * Status of all files in a directory
+   * Status of all files in a directory.
    *
    * matches returned JSON
    */
   public class AllFileStatus {
-    public MultiFileStatus FileStatuses;
+    @SerializedName("FileStatuses")
+    public MultiFileStatus fileStatuses;
   }
 
   // tests whether we're able to connect to HDFS
-
   private void testConnection() {
     try {
-      if (isDirectory("/"))
+      if (isDirectory("/")) {
         logger.info("Successfully created WebHDFS connection");
+      }
     } catch (Exception e) {
       logger.error("testConnection: Cannot open WebHDFS connection. Bad URL: " + "/", e);
       exceptionOnConnect = e;
@@ -159,9 +168,11 @@ public class HDFSFileInterpreter extends FileInterpreter {
     sb.append(((p & 0x1)   == 0) ? '-' : 'x');
     return sb.toString();
   }
+
   private String listDate(OneFileStatus fs) {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
   }
+
   private String listOne(String path, OneFileStatus fs) {
     if (args.flags.contains(new Character('l'))) {
       StringBuilder sb = new StringBuilder();
@@ -183,7 +194,11 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
   private String humanReadableByteCount(long bytes) {
     int unit = 1024;
-    if (bytes < unit) return bytes + " B";
+
+    if (bytes < unit) {
+      return bytes + " B";
+    }
+
     int exp = (int) (Math.log(bytes) / Math.log(unit));
     String pre = "KMGTPE".charAt(exp - 1) + "";
     return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
@@ -194,7 +209,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       String str = cmd.runCommand(cmd.getFileStatus, filePath, null);
       SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
       if (sfs != null) {
-        return listOne(filePath, sfs.FileStatus);
+        return listOne(filePath, sfs.fileStatus);
       }
     } catch (Exception e) {
       logger.error("listFile: " + filePath, e);
@@ -204,8 +219,10 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
   public String listAll(String path) throws InterpreterException {
     String all = "";
-    if (exceptionOnConnect != null)
+    if (exceptionOnConnect != null) {
       return "Error connecting to provided endpoint.";
+    }
+
     try {
       //see if directory.
       if (isDirectory(path)) {
@@ -214,13 +231,12 @@ public class HDFSFileInterpreter extends FileInterpreter {
           AllFileStatus allFiles = gson.fromJson(sfs, AllFileStatus.class);
 
           if (allFiles != null &&
-                  allFiles.FileStatuses != null &&
-                  allFiles.FileStatuses.FileStatus != null)
-          {
-            int length = cmd.maxLength < allFiles.FileStatuses.FileStatus.length ? cmd.maxLength :
-                    allFiles.FileStatuses.FileStatus.length;
+                  allFiles.fileStatuses != null &&
+                  allFiles.fileStatuses.fileStatus != null) {
+            int length = cmd.maxLength < allFiles.fileStatuses.fileStatus.length ? cmd.maxLength :
+                    allFiles.fileStatuses.fileStatus.length;
             for (int index = 0; index < length; index++) {
-              OneFileStatus fs = allFiles.FileStatuses.FileStatus[index];
+              OneFileStatus fs = allFiles.fileStatuses.fileStatus[index];
               all = all + listOne(path, fs) + '\n';
             }
           }
@@ -237,20 +253,22 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
   public boolean isDirectory(String path) {
     boolean ret = false;
-    if (exceptionOnConnect != null)
+    if (exceptionOnConnect != null) {
       return ret;
+    }
+
     try {
       String str = cmd.runCommand(cmd.getFileStatus, path, null);
       SingleFileStatus sfs = gson.fromJson(str, SingleFileStatus.class);
-      if (sfs != null)
-        return sfs.FileStatus.type.equals("DIRECTORY");
+      if (sfs != null) {
+        return sfs.fileStatus.type.equals("DIRECTORY");
+      }
     } catch (Exception e) {
       logger.error("IsDirectory: " + path, e);
       return false;
     }
     return ret;
   }
-
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
@@ -266,16 +284,21 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
     //part of a command == no spaces
     if (buf.split(" ").length == 1){
-      if ("cd".contains(buf)) suggestions.add(new InterpreterCompletion("cd", "cd",
-          CompletionType.command.name()));
-      if ("ls".contains(buf)) suggestions.add(new InterpreterCompletion("ls", "ls",
-          CompletionType.command.name()));
-      if ("pwd".contains(buf)) suggestions.add(new InterpreterCompletion("pwd", "pwd",
-          CompletionType.command.name()));
+      if ("cd".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("cd", "cd",
+                CompletionType.command.name()));
+      }
+      if ("ls".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("ls", "ls",
+                CompletionType.command.name()));
+      }
+      if ("pwd".contains(buf)) {
+        suggestions.add(new InterpreterCompletion("pwd", "pwd",
+                CompletionType.command.name()));
+      }
 
       return suggestions;
     }
-
 
     // last word will contain the path we're working with.
     String lastToken = buf.substring(buf.lastIndexOf(" ") + 1);
@@ -298,12 +321,10 @@ public class HDFSFileInterpreter extends FileInterpreter {
           AllFileStatus allFiles = gson.fromJson(fileStatusString, AllFileStatus.class);
 
           if (allFiles != null &&
-                  allFiles.FileStatuses != null &&
-                  allFiles.FileStatuses.FileStatus != null)
-          {
-            for (OneFileStatus fs : allFiles.FileStatuses.FileStatus) {
+                  allFiles.fileStatuses != null &&
+                  allFiles.fileStatuses.fileStatus != null) {
+            for (OneFileStatus fs : allFiles.fileStatuses.fileStatus) {
               if (fs.pathSuffix.contains(unfinished)) {
-
                 //only suggest the text after the last .
                 String beforeLastPeriod = unfinished.substring(0, unfinished.lastIndexOf('.') + 1);
                 //beforeLastPeriod should be the start of fs.pathSuffix, so take the end of it.

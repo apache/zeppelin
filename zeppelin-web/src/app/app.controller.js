@@ -12,48 +12,48 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').controller('MainCtrl', MainCtrl)
+angular.module('zeppelinWebApp').controller('MainCtrl', MainCtrl);
 
-function MainCtrl ($scope, $rootScope, $window, arrayOrderingSrv) {
-  'ngInject'
+function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
+  'ngInject';
 
-  $scope.looknfeel = 'default'
+  $scope.looknfeel = 'default';
 
-  let init = function () {
-    $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false)
-  }
+  let init = function() {
+    $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
+  };
 
-  init()
+  init();
 
-  $rootScope.$on('setIframe', function (event, data) {
+  $rootScope.$on('setIframe', function(event, data) {
     if (!event.defaultPrevented) {
-      $scope.asIframe = data
-      event.preventDefault()
+      $scope.asIframe = data;
+      event.preventDefault();
     }
-  })
+  });
 
-  $rootScope.$on('setLookAndFeel', function (event, data) {
+  $rootScope.$on('setLookAndFeel', function(event, data) {
     if (!event.defaultPrevented && data && data !== '' && data !== $scope.looknfeel) {
-      $scope.looknfeel = data
-      event.preventDefault()
+      $scope.looknfeel = data;
+      event.preventDefault();
     }
-  })
+  });
 
   // Set The lookAndFeel to default on every page
-  $rootScope.$on('$routeChangeStart', function (event, next, current) {
-    $rootScope.$broadcast('setLookAndFeel', 'default')
-  })
+  $rootScope.$on('$routeChangeStart', function(event, next, current) {
+    $rootScope.$broadcast('setLookAndFeel', 'default');
+  });
 
-  $rootScope.noteName = function (note) {
+  $rootScope.noteName = function(note) {
     if (!_.isEmpty(note)) {
-      return arrayOrderingSrv.getNoteName(note)
+      return arrayOrderingSrv.getNoteName(note);
     }
-  }
+  };
 
-  BootstrapDialog.defaultOptions.onshown = function () {
-    angular.element('#' + this.id).find('.btn:last').focus()
-  }
+  BootstrapDialog.defaultOptions.onshown = function() {
+    angular.element('#' + this.id).find('.btn:last').focus();
+  };
 
   // Remove BootstrapDialog animation
-  BootstrapDialog.configDefaultOptions({animate: false})
+  BootstrapDialog.configDefaultOptions({animate: false});
 }

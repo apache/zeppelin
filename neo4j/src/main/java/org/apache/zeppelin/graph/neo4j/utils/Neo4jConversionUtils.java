@@ -17,15 +17,15 @@
 
 package org.apache.zeppelin.graph.neo4j.utils;
 
+import org.neo4j.driver.v1.types.Node;
+import org.neo4j.driver.v1.types.Relationship;
+
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.neo4j.driver.v1.types.Node;
-import org.neo4j.driver.v1.types.Relationship;
-
 /**
- * Neo4jConversionUtils
+ * Neo4jConversionUtils.
  */
 public class Neo4jConversionUtils {
   private Neo4jConversionUtils() {}
@@ -48,8 +48,7 @@ public class Neo4jConversionUtils {
         labels);
   }
   
-  public static org.apache.zeppelin.tabledata.Relationship
-  toZeppelinRelationship(Relationship r) {
+  public static org.apache.zeppelin.tabledata.Relationship toZeppelinRelationship(Relationship r) {
     return new org.apache.zeppelin.tabledata.Relationship(r.id(), r.asMap(),
         r.startNodeId(), r.endNodeId(), r.type());
   }
@@ -62,5 +61,4 @@ public class Neo4jConversionUtils {
     }
     return new String(color);
   }
-  
 }

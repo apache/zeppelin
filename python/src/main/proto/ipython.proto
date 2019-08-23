@@ -53,7 +53,12 @@ enum IPythonStatus {
 
 enum OutputType {
   TEXT = 0;
-  IMAGE = 1;
+  PNG = 1;
+  JPEG = 2;
+  HTML = 3;
+  SVG = 4;
+  JSON = 5;
+  LaTeX = 6;
 }
 
 // The request message containing the code

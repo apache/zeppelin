@@ -1,0 +1,88 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+[
+  {
+    "name": "-checkpoint_path <arg>",
+    "description": "Training output directory of the job, could be local or other FS directory. This typically includes checkpoint files and exported model"
+  },
+  {
+    "name": "-docker_image <arg>",
+    "description": "Docker image name/tag"
+  },
+  {
+    "name": "-env <arg>",
+    "description": "Common environment variable of worker/ps"
+  },
+  {
+    "name": "-input_path <arg>",
+    "description": "Input of the job, could be local or other FS directory"
+  },
+  {
+    "name": "-name <arg>",
+    "description": "Name of the job"
+  },
+  {
+    "name": "-num_ps <arg>",
+    "description": "Number of PS tasks of the job, by default it's 0"
+  },
+  {
+    "name": "-num_workers <arg>",
+    "description": "Numnber of worker tasks of the job, by default it's 1"
+  },
+  {
+    "name": "-ps_docker_image <arg>",
+    "description": "Specify docker image for PS, when this is not specified, PS uses --docker_image as default."
+  },
+  {
+    "name": "-ps_launch_cmd <arg>",
+    "description": "Commandline of worker, arguments will be directly used to launch the PS"
+  },
+  {
+    "name": "-ps_resources <arg>",
+    "description": "Resource of each PS, for example memory-mb=2048,vcores=2,yarn.io/gpu=2"
+  },
+  {
+    "name": "-queue <arg>",
+    "description": "Name of queue to run the job, by default it uses default queue"
+  },
+  {
+    "name": "-saved_model_path <arg>",
+    "description": "Model exported path (savedmodel) of the job, which is needed when exported model is not placed under ${checkpoint_path}could be local or other FS directory. This will be used to serve."
+  },
+  {
+    "name": "-tensorboard <arg>",
+    "description": "Should we run TensorBoard for this job? By default it's true"
+  },
+  {
+    "name": "-verbose",
+    "description": "Print verbose log for troubleshooting"
+  },
+  {
+    "name": "-wait_job_finish",
+    "description": "Specified when user want to wait the job finish"
+  },
+  {
+    "name": "-worker_docker_image <arg>",
+    "description": "Specify docker image for WORKER, when this is not specified, WORKER uses --docker_image as default."
+  },
+  {
+    "name": "-worker_resources <arg>",
+    "description": "Resource of each worker, for example memory-mb=2048,vcores=2,yarn.io/gpu=2"
+  },
+  {
+    "name": "-localization <arg>",
+    "description": "Specify localization to remote/local file/directory available to all container(Docker). Argument format is \"RemoteUri:LocalFilePath[:rw]\" (ro permission is not supported yet). <br>The RemoteUri can be a file or directory in local or HDFS or s3 or abfs or http .etc. <br>The LocalFilePath can be absolute or relative. If relative, it'll be under container's implied working directory. <br>This option can be set mutiple times. <br>Examples are <br>-localization \"hdfs:///user/yarn/mydir2:/opt/data\" <br>-localization \"s3a:///a/b/myfile1:./\" <br>-localization \"https:///a/b/myfile2:./myfile\" <br>-localization \"/user/yarn/mydir3:/opt/mydir3\" <br>-localization \"./mydir1:.\""
+  }
+]

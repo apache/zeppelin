@@ -18,21 +18,21 @@
 
 package org.apache.zeppelin.file;
 
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javax.ws.rs.core.UriBuilder;
+
 /**
- * Definition and HTTP invocation methods for all WebHDFS commands
- *
+ * Definition and HTTP invocation methods for all WebHDFS commands.
  */
 public class HDFSCommand {
-
   /**
-   * Type of HTTP request
+   * Type of HTTP request.
    */
   public enum HttpType {
     GET,
@@ -40,7 +40,7 @@ public class HDFSCommand {
   }
 
   /**
-   * Definition of WebHDFS operator
+   * Definition of WebHDFS operator.
    */
   public class Op {
     public String op;
@@ -55,7 +55,7 @@ public class HDFSCommand {
   }
 
   /**
-   * Definition of argument to an operator
+   * Definition of argument to an operator.
    */
   public class Arg {
     public String key;
@@ -90,8 +90,7 @@ public class HDFSCommand {
         path == null ||
         (op.minArgs > 0 &&
             (args == null ||
-                args.length != op.minArgs)))
-    {
+                args.length != op.minArgs))) {
       String a = "";
       a = (op != null) ? a + op.op + "\n" : a;
       a = (path != null) ? a + path + "\n" : a;
@@ -101,10 +100,8 @@ public class HDFSCommand {
     return null;
   }
 
-
   // The operator that runs all commands
   public String runCommand(Op op, String path, Arg[] args) throws Exception {
-
     // Check arguments
     String error = checkArgs(op, path, args);
     if (error != null) {

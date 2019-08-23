@@ -38,10 +38,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Pegdown plugin for Websequence diagram
+ * Pegdown plugin for Websequence diagram.
  */
 public class PegdownWebSequencelPlugin extends Parser implements BlockPluginParser {
-
   private static final String WEBSEQ_URL = "http://www.websequencediagrams.com";
 
   public PegdownWebSequencelPlugin() {
@@ -57,29 +56,29 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   public static final String TAG = "%%%";
 
-  Rule StartMarker() {
+  Rule startMarker() {
     return Sequence(Spn1(), TAG, Sp(), "sequence", Sp());
   }
 
-  String EndMarker() {
+  String endMarker() {
     return TAG;
   }
 
-  Rule Body() {
+  Rule body() {
     return OneOrMore(TestNot(TAG), BaseParser.ANY);
   }
 
-  Rule BlockRule() {
+  Rule blockRule() {
     StringBuilderVar style = new StringBuilderVar();
     StringBuilderVar body = new StringBuilderVar();
 
     return NodeSequence(
-        StartMarker(),
+        startMarker(),
         Optional(
             String("style="),
             Sequence(OneOrMore(Letter()), style.append(match()), Spn1())),
-        Sequence(Body(), body.append(match())),
-        EndMarker(),
+        Sequence(body(), body.append(match())),
+        endMarker(),
         push(
             new ExpImageNode("title",
                 createWebsequenceUrl(style.getString(), body.getString()),
@@ -87,9 +86,7 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
     );
   }
 
-  public static String createWebsequenceUrl(String style,
-                                            String content) {
-
+  public static String createWebsequenceUrl(String style, String content) {
     style = StringUtils.defaultString(style, "default");
 
     OutputStreamWriter writer = null;
@@ -144,6 +141,6 @@ public class PegdownWebSequencelPlugin extends Parser implements BlockPluginPars
 
   @Override
   public Rule[] blockPluginRules() {
-    return new Rule[]{BlockRule()};
+    return new Rule[]{blockRule()};
   }
 }
