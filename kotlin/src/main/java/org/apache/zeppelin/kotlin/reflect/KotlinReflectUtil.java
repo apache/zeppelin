@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,7 +33,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import kotlin.Pair;
-import kotlin.reflect.KType;
 
 public class KotlinReflectUtil {
   private static Logger logger = LoggerFactory.getLogger(KotlinReflectUtil.class);
@@ -61,22 +61,32 @@ public class KotlinReflectUtil {
     }
   }
 
-  public static KType kotlinTypeOf(Object o) {
-    return typeOf(o.getClass());
+  public static String kotlinTypeName(Object o) {
+    Class oc = o.getClass();
+    if (oc.getGenericSuperclass() instanceof ParameterizedType) {
+      return oc.getSimpleName();
+    }
+
+    String kotlinName = typeOf(oc).toString();
+    if (kotlinName.startsWith("kotlin.")) {
+      String[] tokens = kotlinName.split("\\.");
+      return tokens[tokens.length - 1];
+    }
+    return kotlinName;
   }
 
-  public static String kotlinTypeName(Object o) {
-    return kotlinTypeOf(o).toString();
+  private static String kotlinTypeName(Class<?> c) {
+    return typeOf(c).toString();
   }
 
   public static String kotlinMethodSignature(Method method) {
     StringJoiner joiner = new StringJoiner(", ");
     for (Class<?> param : method.getParameterTypes()) {
-      joiner.add(typeOf(param).toString());
+      joiner.add(kotlinTypeName(param));
     }
     return method.getName() +
         "(" + joiner.toString() + "): " +
-        typeOf(method.getReturnType());
+        kotlinTypeName(method.getReturnType());
   }
 
   private static Object getScript(AggregatedReplStageState<?, ?> state)
