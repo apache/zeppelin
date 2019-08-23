@@ -21,12 +21,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinRepl;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinCompleter {
+  private static final List<InterpreterCompletion> keywords = KotlinKeywords.KEYWORDS.stream()
+      .map(keyword -> new InterpreterCompletion(keyword, keyword, null))
+      .collect(Collectors.toList());
+
   private KotlinRepl.KotlinContext ctx;
 
   public KotlinCompleter(KotlinRepl.KotlinContext ctx) {
@@ -52,6 +57,7 @@ public class KotlinCompleter {
           methodSignature(method)
       ));
     }
+    result.addAll(keywords);
     return result;
   }
 

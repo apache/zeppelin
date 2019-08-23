@@ -185,8 +185,10 @@ public class KotlinInterpreterTest {
   @Test
   public void testCompletion() throws Exception {
     interpreter.interpret("val x = 1", context);
+    interpreter.interpret("fun inc(n: Int): Int = n + 1", context);
     List<InterpreterCompletion> completions = interpreter.completion("", 0, context);
-    System.out.println(completions);
+    assertTrue(completions.stream().anyMatch(c -> c.name.equals("x")));
+    assertTrue(completions.stream().anyMatch(c -> c.name.equals("inc")));
   }
 
   private static InterpreterContext getInterpreterContext() {
