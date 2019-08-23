@@ -20,6 +20,7 @@ package org.apache.zeppelin.kotlin;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Assert;
@@ -27,6 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -48,8 +51,7 @@ public class KotlinInterpreterTest {
 
   private static volatile String output = "";
 
-  @Before
-  public void setUp() throws InterpreterException {
+  public void prepareInterpreter() {
     context = getInterpreterContext();
     interpreter = new KotlinInterpreter(new Properties());
     output = "";
@@ -58,6 +60,11 @@ public class KotlinInterpreterTest {
         KotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
     interpreter.getBuilder().compilerOptions(Arrays.asList("-classpath", cp));
+  }
+
+  @Before
+  public void setUp() throws InterpreterException {
+    prepareInterpreter();
     interpreter.open();
   }
 
@@ -188,6 +195,26 @@ public class KotlinInterpreterTest {
     List<InterpreterCompletion> completions = interpreter.completion("", 0, context);
     assertTrue(completions.stream().anyMatch(c -> c.name.equals("x")));
     assertTrue(completions.stream().anyMatch(c -> c.name.equals("inc")));
+  }
+
+  @Test
+  public void testOutputClasses() throws Exception {
+    prepareInterpreter();
+    Path tempPath = Files.createTempDirectory("tempKotlinClasses");
+    interpreter.getBuilder().outputDir(tempPath.toAbsolutePath().toString());
+    interpreter.open();
+    interpreter.interpret("val x = 1\nx", context);
+    File[] dir = tempPath.toFile().listFiles();
+    assertNotNull(dir);
+    assertTrue(dir.length > 0);
+    assertTrue(Arrays.stream(dir)
+        .anyMatch(file -> file.getName().matches("Line_\\d+\\.class")));
+
+    int oldLength = dir.length;
+    interpreter.interpret("x + 1", context);
+    dir = tempPath.toFile().listFiles();
+    assertNotNull(dir);
+    assertTrue(dir.length > oldLength);
   }
 
   private static InterpreterContext getInterpreterContext() {
