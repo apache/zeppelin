@@ -36,6 +36,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
@@ -148,7 +149,7 @@ public class KotlinInterpreterTest {
   public void testVariables() throws Exception {
     interpreter.interpret("val x = 1", context);
     interpreter.interpret("val x = 2", context);
-    List<KotlinVariableInfo> vars = interpreter.vars();
+    List<KotlinVariableInfo> vars = interpreter.getVariables();
     assertEquals(2, vars.size());
 
     KotlinVariableInfo varX = vars.stream()
@@ -173,6 +174,12 @@ public class KotlinInterpreterTest {
     assertTrue(res.message().get(0).getData().contains("x: int = 3"));
     res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
+  }
+
+  @Test
+  public void testMethods() throws Exception {
+    interpreter.interpret("fun sq(x: Int): Int = x * x", context);
+    interpreter.getMethods().stream().anyMatch(method -> method.getName().equals("sq"));
   }
 
   private static InterpreterContext getInterpreterContext() {

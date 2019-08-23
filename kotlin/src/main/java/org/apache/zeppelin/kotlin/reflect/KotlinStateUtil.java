@@ -21,71 +21,92 @@ import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
-import java.util.ArrayDeque;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import kotlin.Pair;
 
 public class KotlinStateUtil {
   private static Logger logger = LoggerFactory.getLogger(KotlinStateUtil.class);
+  private static final Set<Method> objectMethods =
+      new HashSet<>(Arrays.asList(Object.class.getMethods()));
 
-  public static List<KotlinVariableInfo> runtimeVariables(AggregatedReplStageState<?, ?> state) {
-    Map<String, KotlinVariableInfo> vars = new HashMap<>();
-    Object script;
+  public static void updateVars(
+      Map<String, KotlinVariableInfo> vars,
+      AggregatedReplStageState<?, ?> state) {
     try {
-      Object statePair = Objects.requireNonNull(
-          state.getHistory().peek())
-          .getItem()
-          .getSecond();
-      script = ((Pair<?, ?>) statePair).getSecond();
-    } catch (NullPointerException e) {
-      return new ArrayList<>();
+      Object script = getScript(state);
+      getNewFields(script, vars);
+    } catch (ReflectiveOperationException | NullPointerException e) {
+      logger.error("Exception updating current variables", e);
     }
-
-    try {
-      getVariablesFromScript(script, vars);
-    } catch (ReflectiveOperationException e) {
-      e.printStackTrace();
-    }
-    return new ArrayList<>(vars.values());
   }
+
+  public static void updateMethods(
+      Set<Method> methods,
+      AggregatedReplStageState<?, ?> state) {
+    try {
+      Object script = getScript(state);
+      getNewMethods(script, methods);
+    } catch (ReflectiveOperationException | NullPointerException e) {
+      logger.error("Exception updating current methods", e);
+    }
+  }
+
+  private static Object getScript(AggregatedReplStageState<?, ?> state)
+      throws NullPointerException {
+    Object script;
+    Object statePair = Objects.requireNonNull(state.getHistory().peek())
+        .getItem()
+        .getSecond();
+    script = ((Pair<?, ?>) statePair).getSecond();
+    return script;
+  }
+
+  private static void getNewFields(
+      Object script,
+      Map<String, KotlinVariableInfo> vars) throws ReflectiveOperationException {
+
+    List<Object> classesToVisit = new ArrayList<>();
+    classesToVisit.add(script);
+    classesToVisit.add(getImplicitReceiver(script));
+
+    for (Object o : classesToVisit) {
+      Field[] fields = o.getClass().getDeclaredFields();
+
+      for (Field field : fields) {
+        String fieldName = field.getName();
+        if (fieldName.contains("$$implicitReceiver") || fieldName.contains("kotlinVars")) {
+          continue;
+        }
+
+        field.setAccessible(true);
+        Object value = field.get(o);
+        if (!fieldName.contains("script$")) {
+          vars.put(fieldName, new KotlinVariableInfo(fieldName, value, field));
+        }
+      }
+    }
+  }
+
+  private static void getNewMethods(
+      Object script,
+      Set<Method> methods) throws ReflectiveOperationException {
+    Set<Method> newMethods = new HashSet<>(Arrays.asList(
+        script.getClass().getMethods()));
+    newMethods.removeAll(objectMethods);
+    methods.addAll(newMethods);
+  }
+
 
   private static Object getImplicitReceiver(Object script)
       throws ReflectiveOperationException {
     Field receiverField = script.getClass().getDeclaredField("$$implicitReceiver0");
     return receiverField.get(script);
-  }
-
-  private static void getVariablesFromScript(Object script, Map<String, KotlinVariableInfo> vars)
-      throws ReflectiveOperationException {
-    ArrayDeque<Object> valuesToVisit = new ArrayDeque<>();
-    valuesToVisit.add(script);
-    valuesToVisit.add(getImplicitReceiver(script));
-
-    while (!valuesToVisit.isEmpty()) {
-      Object o = valuesToVisit.poll();
-      Field[] fields = o.getClass().getDeclaredFields();
-
-      for (Field field : fields) {
-        String fieldName = field.getName();
-
-        if (vars.containsKey(fieldName)
-            || fieldName.contains("$$implicitReceiver")
-            || fieldName.contains("kotlinVars")) {
-          continue;
-        }
-        field.setAccessible(true);
-
-        Object value = field.get(o);
-        if (fieldName.contains("script$")) {
-          valuesToVisit.add(value);
-        } else {
-          vars.put(fieldName, new KotlinVariableInfo(fieldName, value, field));
-        }
-      }
-    }
   }
 }

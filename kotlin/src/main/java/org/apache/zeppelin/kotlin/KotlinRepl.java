@@ -30,10 +30,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -75,6 +80,7 @@ public class KotlinRepl {
     this.maxResult = maxResult;
 
     ctx = new KotlinContext();
+    updateContext();
     receiver.kc = ctx;
   }
 
@@ -113,11 +119,11 @@ public class KotlinRepl {
           InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo());
     }
     if (evalResult instanceof ReplEvalResult.UnitResult) {
-      ctx.setVars(getRuntimeVariables());
+      updateContext();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
-      ctx.setVars(getRuntimeVariables());
+      updateContext();
 
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
       String valueString = prepareValueString(v.getValue());
@@ -130,7 +136,15 @@ public class KotlinRepl {
   }
 
   public List<KotlinVariableInfo> getRuntimeVariables() {
-    return KotlinStateUtil.runtimeVariables(state);
+    return ctx.getVars();
+  }
+
+  public List<Method> getMethods() {
+    return ctx.getMethods();
+  }
+
+  public KotlinContext getKotlinContext() {
+    return ctx;
   }
 
   private String prepareValueString(Object value) {
@@ -199,15 +213,21 @@ public class KotlinRepl {
     }
   }
 
+  private void updateContext() {
+    KotlinStateUtil.updateVars(ctx.vars, state);
+    KotlinStateUtil.updateMethods(ctx.methods, state);
+  }
+
   public static class KotlinContext {
-    private List<KotlinVariableInfo> vars = new ArrayList<>();
+    private Map<String, KotlinVariableInfo> vars = new HashMap<>();
+    private Set<Method> methods = new HashSet<>();
 
     public List<KotlinVariableInfo> getVars() {
-      return vars;
+      return new ArrayList<>(vars.values());
     }
 
-    private void setVars(List<KotlinVariableInfo> vars) {
-      this.vars = vars;
+    public List<Method> getMethods() {
+      return new ArrayList<>(methods);
     }
   }
 }

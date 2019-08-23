@@ -20,7 +20,7 @@ package org.apache.zeppelin.kotlin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.kotlin.completion.KotlinCompleter;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.scheduler.Job;
@@ -43,6 +44,7 @@ public class KotlinInterpreter extends Interpreter {
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
   private KotlinReplBuilder builder;
+  private KotlinCompleter completer;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
@@ -61,6 +63,7 @@ public class KotlinInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     interpreter = builder.build();
 
+    completer = new KotlinCompleter(interpreter.getKotlinContext());
     out = new InterpreterOutputStream(logger);
   }
 
@@ -111,11 +114,15 @@ public class KotlinInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
-    return new ArrayList<>();
+    return completer.completion(buf, cursor, interpreterContext);
   }
 
-  public List<KotlinVariableInfo> vars() {
+  public List<KotlinVariableInfo> getVariables() {
     return interpreter.getRuntimeVariables();
+  }
+
+  public List<Method> getMethods() {
+    return interpreter.getMethods();
   }
 
   private Job<?> getRunningJob(String paragraphId) {
