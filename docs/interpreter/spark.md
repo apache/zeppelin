@@ -26,7 +26,7 @@ limitations under the License.
 ## Overview
 [Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
 It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
-Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below five interpreters.
+Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below six interpreters.
 
 <table class="table-configuration">
   <tr>
@@ -38,6 +38,11 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>%spark</td>
     <td>SparkInterpreter</td>
     <td>Creates a SparkContext and provides a Scala environment</td>
+  </tr>
+  <tr>
+    <td>%spark.kotlin</td>
+    <td>KotlinSparkInterpreter</td>
+    <td>Provides a Kotlin environment</td>
   </tr>
   <tr>
     <td>%spark.pyspark</td>
@@ -217,7 +222,7 @@ in interpreter setting page means you can use multiple versions of `spark` & `ha
 Starting from 0.9, we totally removed the old spark interpreter implementation, and make the new spark interpreter as the official spark interpreter.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
-SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
+SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Kotlin, Python and R environments.
 Staring from 0.6.1 SparkSession is available as variable `spark` when you are using Spark 2.x.
 
 > Note that Scala/Python/R environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
