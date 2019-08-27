@@ -221,6 +221,27 @@ public class KotlinInterpreterTest {
     assertTrue(dir.length > oldLength);
   }
 
+  @Test
+  public void testWrapper() throws Exception {
+    String code = "import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper\n" +
+            "var k = 0\n" +
+            "val wrapper = object : InvokeWrapper {\n" +
+            "    override operator fun <T> invoke(body: () -> T): T {\n" +
+            "        println(\"START\")\n" +
+            "        val result = body()\n" +
+            "        println(\"END\")\n" +
+            "        k = k + 1\n" +
+            "        return result\n" +
+            "    }\n" +
+            "}\n" +
+            "kc.setWrapper(wrapper)\n";
+    interpreter.interpret(code, context);
+    interpreter.interpret("println(\"hello!\")", context);
+    List<KotlinVariableInfo> vars = interpreter.getVariables();
+    for (KotlinVariableInfo v: vars)
+      if (v.getName().equals("k")) System.out.println(v);
+  }
+
   private static InterpreterContext getInterpreterContext() {
     output = "";
     InterpreterContext context = InterpreterContext.builder()

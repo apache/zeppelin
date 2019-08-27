@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
+import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
 import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmCompiledModuleInMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class KotlinRepl {
   private AtomicInteger counter;
   private String outputDir;
   private KotlinContext ctx;
+  private InvokeWrapper wrapper;
   private int maxResult;
 
   @SuppressWarnings("unchecked")
@@ -104,7 +106,7 @@ public class KotlinRepl {
         (ReplCompileResult.CompiledClasses) compileResult;
     writeClasses(classes);
 
-    ReplEvalResult evalResult = evaluator.eval(state, classes, null, null);
+    ReplEvalResult evalResult = evaluator.eval(state, classes, null, wrapper);
 
     if (evalResult instanceof ReplEvalResult.Error) {
       ReplEvalResult.Error e = (ReplEvalResult.Error) evalResult;
@@ -218,12 +220,20 @@ public class KotlinRepl {
     KotlinReflectUtil.updateMethods(ctx.methods, state);
   }
 
-  public static class KotlinContext {
+  public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
     private Set<Method> methods = new HashSet<>();
 
     public List<KotlinVariableInfo> getVars() {
       return new ArrayList<>(vars.values());
+    }
+
+    public void setWrapper(InvokeWrapper wrapper) {
+      KotlinRepl.this.wrapper = wrapper;
+    }
+
+    public InvokeWrapper getWrapper() {
+      return KotlinRepl.this.wrapper;
     }
 
     public List<Method> getMethods() {
