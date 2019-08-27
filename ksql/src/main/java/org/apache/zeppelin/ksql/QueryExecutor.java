@@ -247,55 +247,66 @@ public class QueryExecutor {
   }
 
   public static InterpreterResult formatTopics(final String payload) {
-    List<Object> values = null;
     try {
-      values = getListFromSection(payload, "kafka_topics", "topics");
-    } catch (ParsingException ex) {
+      Response[] responses = OBJECT_MAPPER.readValue(payload, Response[].class);
+      // TODO(alex): think how to handle it in the more generic way - parse in the main function,
+      //  and then dispatch on the 'type's value. Think how to combine multiple results in one cell
+      if (responses.length == 0) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "No payload was returned");
+      }
+      Response response = responses[0];
+      assert("kafka_topics".equalsIgnoreCase(response.type));
+      assert(response.topics.isPresent());
+
+      StringBuilder sb = new StringBuilder(TABLE_MAGIC);
+      sb.append("Name\tRegistered?\tPartition count\tReplica Information");
+      sb.append("\tConsumer count\tConsumer group count\n");
+      for (Response.TopicInfo tinfo: response.topics.get()) {
+        sb.append(tinfo.name);
+        sb.append('\t');
+        sb.append(tinfo.registered);
+        sb.append('\t');
+        sb.append(tinfo.partitionCount);
+        sb.append("\t[");
+        sb.append(StringUtils.join(tinfo.replicaInfo, ','));
+        sb.append("]\t");
+        sb.append(tinfo.consumerCount);
+        sb.append('\t');
+        sb.append(tinfo.consumerGroupCount);
+        sb.append('\n');
+      }
+
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+    } catch (ParsingException | IOException ex) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
     }
-
-    StringBuilder sb = new StringBuilder(TABLE_MAGIC);
-    sb.append("Name\tRegistered?\tPartition count\tReplica Information");
-    sb.append("\tConsumer count\tConsumer group count\n");
-    Response.TopicInfo[] topics = OBJECT_MAPPER.convertValue(values, Response.TopicInfo[].class);
-    for (Response.TopicInfo tinfo: topics) {
-      sb.append(tinfo.name);
-      sb.append('\t');
-      sb.append(tinfo.registered);
-      sb.append('\t');
-      sb.append(tinfo.partitionCount);
-      sb.append("\t[");
-      sb.append(StringUtils.join(tinfo.replicaInfo, ','));
-      sb.append("]\t");
-      sb.append(tinfo.consumerCount);
-      sb.append('\t');
-      sb.append(tinfo.consumerGroupCount);
-      sb.append('\n');
-    }
-
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
 
   public static InterpreterResult formatFunctions(final String payload) {
-    List<Object> values = null;
     try {
-      values = getListFromSection(payload, "function_names", "functions");
-    } catch (ParsingException ex) {
+      Response[] responses = OBJECT_MAPPER.readValue(payload, Response[].class);
+      // TODO(alex): think how to handle it in the more generic way - parse in the main function,
+      //  and then dispatch on the 'type's value. Think how to combine multiple results in one cell
+      if (responses.length == 0) {
+        return new InterpreterResult(InterpreterResult.Code.ERROR, "No payload was returned");
+      }
+      Response response = responses[0];
+      assert("function_names".equalsIgnoreCase(response.type));
+      assert(response.functions.isPresent());
+      // getListFromSection(payload, "function_names", "functions")
+      StringBuilder sb = new StringBuilder(TABLE_MAGIC);
+      sb.append("Name\tType\n");
+      for (Response.FunctionInfo finfo: response.functions.get()) {
+        sb.append(finfo.name);
+        sb.append('\t');
+        sb.append(finfo.type);
+        sb.append('\n');
+      }
+
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
+    } catch (ParsingException | IOException ex) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, ex.getMessage());
     }
-
-    StringBuilder sb = new StringBuilder(TABLE_MAGIC);
-    sb.append("Name\tType\n");
-    Response.FunctionInfo[] functions = OBJECT_MAPPER.convertValue(values,
-            Response.FunctionInfo[].class);
-    for (Response.FunctionInfo finfo: functions) {
-      sb.append(finfo.name);
-      sb.append('\t');
-      sb.append(finfo.type);
-      sb.append('\n');
-    }
-
-    return new InterpreterResult(InterpreterResult.Code.SUCCESS, sb.toString());
   }
 
 

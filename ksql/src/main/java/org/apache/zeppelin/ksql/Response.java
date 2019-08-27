@@ -10,8 +10,8 @@ public class Response {
   public String type = "";
   public String statementText = "";
 
-  public Optional<TopicInfo[]> topics;
-  public Optional<FunctionInfo[]> functions;
+  public Optional<List<TopicInfo>> topics;
+  public Optional<List<FunctionInfo>> functions;
 
   // status/errors
   public Optional<CommandStatus> commandStatus;
