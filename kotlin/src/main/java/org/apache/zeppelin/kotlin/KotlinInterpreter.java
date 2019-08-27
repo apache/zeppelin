@@ -56,6 +56,8 @@ public class KotlinInterpreter extends Interpreter {
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
     String imports = properties.getProperty("zeppelin.interpreter.localRepo", "");
 
+    completer = new KotlinCompleter();
+
     builder
         .executionContext(new KotlinReceiver())
         .maxResult(maxResult)
@@ -71,7 +73,7 @@ public class KotlinInterpreter extends Interpreter {
   public void open() throws InterpreterException {
     interpreter = builder.build();
 
-    completer = new KotlinCompleter(interpreter.getKotlinContext());
+    completer.setCtx(interpreter.getKotlinContext());
     out = new InterpreterOutputStream(logger);
   }
 

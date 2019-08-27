@@ -34,13 +34,17 @@ public class KotlinCompleter {
 
   private KotlinRepl.KotlinContext ctx;
 
-  public KotlinCompleter(KotlinRepl.KotlinContext ctx) {
+  public void setCtx(KotlinRepl.KotlinContext ctx) {
     this.ctx = ctx;
   }
 
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext)  {
-    List<InterpreterCompletion> result = new ArrayList<>();
+    List<InterpreterCompletion> result = new ArrayList<>(keywords);
+    if (ctx == null) {
+      return result;
+    }
+
     for (KotlinVariableInfo var : ctx.getVars()) {
       result.add(new InterpreterCompletion(
           var.getName(),
@@ -57,7 +61,6 @@ public class KotlinCompleter {
           KotlinReflectUtil.kotlinMethodSignature(method)
       ));
     }
-    result.addAll(keywords);
     return result;
   }
 }
