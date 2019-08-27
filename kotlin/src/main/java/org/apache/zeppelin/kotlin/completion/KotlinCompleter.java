@@ -40,10 +40,11 @@ public class KotlinCompleter {
 
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext)  {
-    List<InterpreterCompletion> result = new ArrayList<>(keywords);
     if (ctx == null) {
-      return result;
+      return new ArrayList<>(keywords);
     }
+
+    List<InterpreterCompletion> result = new ArrayList<>();
 
     for (KotlinVariableInfo var : ctx.getVars()) {
       result.add(new InterpreterCompletion(
@@ -61,6 +62,8 @@ public class KotlinCompleter {
           KotlinReflectUtil.kotlinMethodSignature(method)
       ));
     }
+
+    result.addAll(keywords);
     return result;
   }
 }
