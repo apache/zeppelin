@@ -1,0 +1,1 @@
+{"@type":"statement_error","error_code":40001,"message":"Source TWEETS3 does not exist.","stackTrace":["io.confluent.ksql.ddl.commands.DropSourceCommand.run(DropSourceCommand.java:66)","io.confluent.ksql.ddl.commands.DdlCommandExec.executeOnMetaStore(DdlCommandExec.java:61)","io.confluent.ksql.ddl.commands.DdlCommandExec.execute(DdlCommandExec.java:54)"]}

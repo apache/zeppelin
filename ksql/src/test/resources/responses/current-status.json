@@ -1,0 +1,1 @@
+[{"@type":"currentStatus","statementText":"drop stream tweets3;","commandId":"stream/TWEETS3/drop","commandStatus":{"status":"SUCCESS","message":"Source TWEETS3 was dropped. "}}]

@@ -18,6 +18,7 @@ package org.apache.zeppelin.ksql;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.StatusLine;
@@ -88,6 +89,8 @@ public class QueryExecutor {
     HANDLERS.put(KsqlQuery.QueryType.CREATE_TABLE_STREAM, func);
     HANDLERS.put(KsqlQuery.QueryType.TERMINATE, func);
     HANDLERS.put(KsqlQuery.QueryType.INSERT_INTO, func);
+
+    OBJECT_MAPPER.registerModule(new Jdk8Module());
   }
 
   QueryExecutor(final String url, String fetchSize) {
@@ -123,8 +126,8 @@ public class QueryExecutor {
       // make a call to REST API & get answer...
       CloseableHttpClient httpclient = HttpClients.createDefault();
       HttpPost httpPost = new HttpPost(endpoint);
-      // TODO(alex): use correct JSON generation
-      StringEntity entity = new StringEntity("{\"ksql\":\"" + queryString + "\"}");
+      StringEntity entity = new StringEntity(
+              OBJECT_MAPPER.writeValueAsString(new Query(queryString)));
       httpPost.setEntity(entity);
       httpPost.addHeader("Content-Type", "application/json");
 
@@ -254,19 +257,19 @@ public class QueryExecutor {
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
     sb.append("Name\tRegistered?\tPartition count\tReplica Information");
     sb.append("\tConsumer count\tConsumer group count\n");
-    TopicInfo[] topics = OBJECT_MAPPER.convertValue(values, TopicInfo[].class);
-    for (TopicInfo tinfo: topics) {
-      sb.append(tinfo.getName());
+    Response.TopicInfo[] topics = OBJECT_MAPPER.convertValue(values, Response.TopicInfo[].class);
+    for (Response.TopicInfo tinfo: topics) {
+      sb.append(tinfo.name);
       sb.append('\t');
-      sb.append(tinfo.isRegistered());
+      sb.append(tinfo.registered);
       sb.append('\t');
-      sb.append(tinfo.getPartitionCount());
+      sb.append(tinfo.partitionCount);
       sb.append("\t[");
-      sb.append(StringUtils.join(tinfo.getReplicaInfo(), ','));
+      sb.append(StringUtils.join(tinfo.replicaInfo, ','));
       sb.append("]\t");
-      sb.append(tinfo.getConsumerCount());
+      sb.append(tinfo.consumerCount);
       sb.append('\t');
-      sb.append(tinfo.getConsumerGroupCount());
+      sb.append(tinfo.consumerGroupCount);
       sb.append('\n');
     }
 
@@ -283,11 +286,12 @@ public class QueryExecutor {
 
     StringBuilder sb = new StringBuilder(TABLE_MAGIC);
     sb.append("Name\tType\n");
-    for (Object obj : values) {
-      Map<String, Object> entry = (Map<String, Object>) obj;
-      sb.append(entry.getOrDefault("name", ""));
+    Response.FunctionInfo[] functions = OBJECT_MAPPER.convertValue(values,
+            Response.FunctionInfo[].class);
+    for (Response.FunctionInfo finfo: functions) {
+      sb.append(finfo.name);
       sb.append('\t');
-      sb.append(entry.getOrDefault("type", ""));
+      sb.append(finfo.type);
       sb.append('\n');
     }
 
