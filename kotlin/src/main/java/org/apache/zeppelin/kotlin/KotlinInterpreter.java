@@ -48,6 +48,7 @@ public class KotlinInterpreter extends Interpreter {
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
+    properties.forEach((k, v) -> logger.info("PROPERTY " + k + ": " + v));
     builder = new KotlinReplBuilder();
     int maxResult = Integer.parseInt(
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));

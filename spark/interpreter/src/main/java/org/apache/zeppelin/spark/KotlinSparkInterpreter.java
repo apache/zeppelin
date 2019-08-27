@@ -72,8 +72,7 @@ public class KotlinSparkInterpreter extends Interpreter {
         sparkInterpreter.getSQLContext(),
         z);
 
-    String cp = sparkClasspath();
-    List<String> compilerOptions = Arrays.asList("-classpath", cp);
+    List<String> classpath = sparkClasspath();
 
     // TODO(dk) fix NPE in tests
     String outputDir;
@@ -85,7 +84,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
     interpreter.getBuilder()
         .executionContext(ctx)
-        .compilerOptions(compilerOptions)
+        .classPath(classpath)
         .outputDir(outputDir)
         .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX)
         .codeOnLoad(KotlinZeppelinBindings.SPARK_UDF_IMPORTS);
@@ -143,7 +142,7 @@ public class KotlinSparkInterpreter extends Interpreter {
     return interpreter.completion(buf, cursor, interpreterContext);
   }
 
-  private String sparkClasspath() {
+  private List<String> sparkClasspath() {
     String sparkJars = System.getProperty("spark.jars");
     Pattern isKotlinJar = Pattern.compile("/kotlin-(runtime|stdlib|compiler|reflect)(-.*)?\\.jar");
 
@@ -167,6 +166,6 @@ public class KotlinSparkInterpreter extends Interpreter {
             return "";
           }
         })
-        .collect(Collectors.joining(File.pathSeparator));
+        .collect(Collectors.toList());
   }
 }

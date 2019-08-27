@@ -56,10 +56,10 @@ public class KotlinInterpreterTest {
     interpreter = new KotlinInterpreter(new Properties());
     output = "";
 
-    String cp = System.getProperty("java.class.path") + File.pathSeparator +
-        KotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-
-    interpreter.getBuilder().compilerOptions(Arrays.asList("-classpath", cp));
+    interpreter.getBuilder().classPath(Arrays.asList(
+        System.getProperty("java.class.path"),
+        KotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath()
+    ));
   }
 
   @Before

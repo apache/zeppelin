@@ -21,9 +21,15 @@ import static kotlin.script.experimental.jvm.JvmScriptingHostConfigurationKt.get
 import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmReplCompilerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 import kotlin.Unit;
 import kotlin.script.experimental.api.KotlinType;
 import kotlin.script.experimental.api.ScriptCompilationConfiguration;
@@ -46,14 +52,14 @@ public class KotlinReplBuilder {
   private ScriptingHostConfiguration hostConf = getDefaultJvmScriptingHostConfiguration();
 
   private KotlinReceiver ctx;
-  private List<String> compilerOptions;
+  private Set<String> classpath;
   private List<String> codeOnLoad;
   private String outputDir;
   private int maxResult;
 
   public KotlinReplBuilder() {
     this.ctx = new KotlinReceiver();
-    this.compilerOptions = new ArrayList<>();
+    this.classpath = new HashSet<>();
     this.codeOnLoad = new ArrayList<>();
   }
 
@@ -87,9 +93,13 @@ public class KotlinReplBuilder {
     return this;
   }
 
-  public KotlinReplBuilder compilerOptions(List<String> options) {
-    options.forEach(logger::info);
-    this.compilerOptions = options;
+  public KotlinReplBuilder classPath(String path) {
+    this.classpath.add(path);
+    return this;
+  }
+
+  public KotlinReplBuilder classPath(Collection<String> paths) {
+    this.classpath.addAll(paths);
     return this;
   }
 
@@ -98,7 +108,7 @@ public class KotlinReplBuilder {
     return this;
   }
 
-  public KotlinReplBuilder codeOnLoad(List<String> code) {
+  public KotlinReplBuilder codeOnLoad(Collection<String> code) {
     this.codeOnLoad.addAll(code);
     return this;
   }
@@ -106,6 +116,14 @@ public class KotlinReplBuilder {
   public KotlinReplBuilder outputDir(String outputDir) {
     this.outputDir = outputDir;
     return this;
+  }
+
+  private String buildClassPath() {
+    StringJoiner joiner = new StringJoiner(File.pathSeparator);
+    for (String path : classpath) {
+      joiner.add(path);
+    }
+    return joiner.toString();
   }
 
   private ScriptCompilationConfiguration buildCompilationConfiguration() {
@@ -117,6 +135,7 @@ public class KotlinReplBuilder {
       JvmScriptCompilationKt.dependenciesFromCurrentContext(
           jvmBuilder, new String[0], true, false);
 
+      List<String> compilerOptions = Arrays.asList("-classpath", buildClassPath());
       b.invoke(ScriptCompilationKt.getCompilerOptions(b), compilerOptions);
 
       KotlinType kt = new KotlinType(ctx.getClass().getCanonicalName());

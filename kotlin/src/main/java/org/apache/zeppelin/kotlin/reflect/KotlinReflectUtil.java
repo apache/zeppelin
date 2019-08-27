@@ -43,6 +43,9 @@ public class KotlinReflectUtil {
       Map<String, KotlinVariableInfo> vars,
       AggregatedReplStageState<?, ?> state) {
     try {
+      if (state.getHistory().isEmpty()) {
+        return;
+      }
       Object script = getScript(state);
       getNewFields(script, vars);
     } catch (ReflectiveOperationException | NullPointerException e) {
@@ -54,6 +57,9 @@ public class KotlinReflectUtil {
       Set<Method> methods,
       AggregatedReplStageState<?, ?> state) {
     try {
+      if (state.getHistory().isEmpty()) {
+        return;
+      }
       Object script = getScript(state);
       getNewMethods(script, methods);
     } catch (NullPointerException e) {
