@@ -19,19 +19,20 @@ package org.apache.zeppelin.kotlin.reflect;
 
 import static kotlin.jvm.internal.Reflection.typeOf;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
+import org.jetbrains.kotlin.cli.common.repl.ReplHistoryRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import kotlin.Pair;
 
 public class KotlinReflectUtil {
@@ -43,11 +44,8 @@ public class KotlinReflectUtil {
       Map<String, KotlinVariableInfo> vars,
       AggregatedReplStageState<?, ?> state) {
     try {
-      if (state.getHistory().isEmpty()) {
-        return;
-      }
-      Object script = getScript(state);
-      getNewFields(script, vars);
+      List<Object> lines = getLines(state);
+      refreshVariables(lines, vars);
     } catch (ReflectiveOperationException | NullPointerException e) {
       logger.error("Exception updating current variables", e);
     }
@@ -60,7 +58,7 @@ public class KotlinReflectUtil {
       if (state.getHistory().isEmpty()) {
         return;
       }
-      Object script = getScript(state);
+      Object script = getLineFromRecord(state.getHistory().peek());
       getNewMethods(script, methods);
     } catch (NullPointerException e) {
       logger.error("Exception updating current methods", e);
@@ -95,38 +93,46 @@ public class KotlinReflectUtil {
         kotlinTypeName(method.getReturnType());
   }
 
-  private static Object getScript(AggregatedReplStageState<?, ?> state)
-      throws NullPointerException {
-    Object script;
-    Object statePair = Objects.requireNonNull(state.getHistory().peek())
-        .getItem()
-        .getSecond();
-    script = ((Pair<?, ?>) statePair).getSecond();
-    return script;
+  private static List<Object> getLines(AggregatedReplStageState<?, ?> state) {
+    List<Object> lines = state.getHistory().stream()
+        .map(KotlinReflectUtil::getLineFromRecord)
+        .collect(Collectors.toList());
+    Collections.reverse(lines);
+    return lines;
   }
 
-  private static void getNewFields(
-      Object script,
+  private static Object getLineFromRecord(ReplHistoryRecord<? extends Pair<?, ?>> record) {
+    Object statePair = record.getItem().getSecond();
+    return ((Pair<?, ?>) statePair).getSecond();
+  }
+
+  private static void refreshVariables(
+      List<Object> lines,
       Map<String, KotlinVariableInfo> vars) throws ReflectiveOperationException {
 
-    List<Object> classesToVisit = new ArrayList<>();
-    classesToVisit.add(script);
-    classesToVisit.add(getImplicitReceiver(script));
+    vars.clear();
+    if (!lines.isEmpty()) {
+      Object receiver = getImplicitReceiver(lines.get(0));
+      findVariables(vars, receiver);
+    }
+    for (Object line : lines) {
+      findVariables(vars, line);
+    }
+  }
 
-    for (Object o : classesToVisit) {
-      Field[] fields = o.getClass().getDeclaredFields();
+  private static void findVariables(Map<String, KotlinVariableInfo> vars, Object line)
+      throws IllegalAccessException {
+    Field[] fields = line.getClass().getDeclaredFields();
+    for (Field field : fields) {
+      String fieldName = field.getName();
+      if (fieldName.contains("$$implicitReceiver")) {
+        continue;
+      }
 
-      for (Field field : fields) {
-        String fieldName = field.getName();
-        if (fieldName.contains("$$implicitReceiver")) {
-          continue;
-        }
-
-        field.setAccessible(true);
-        Object value = field.get(o);
-        if (!fieldName.contains("script$")) {
-          vars.put(fieldName, new KotlinVariableInfo(fieldName, value, field));
-        }
+      field.setAccessible(true);
+      Object value = field.get(line);
+      if (!fieldName.contains("script$")) {
+        vars.putIfAbsent(fieldName, new KotlinVariableInfo(fieldName, value, field));
       }
     }
   }

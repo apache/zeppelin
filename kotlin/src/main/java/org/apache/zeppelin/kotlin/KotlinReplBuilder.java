@@ -138,7 +138,7 @@ public class KotlinReplBuilder {
           jvmBuilder, new String[0], true, false);
 
       List<String> compilerOptions = Arrays.asList("-classpath", buildClassPath());
-      System.out.println(compilerOptions);
+
       b.invoke(ScriptCompilationKt.getCompilerOptions(b), compilerOptions);
 
       KotlinType kt = new KotlinType(ctx.getClass().getCanonicalName());

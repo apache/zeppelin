@@ -126,7 +126,7 @@ public class KotlinInterpreter extends Interpreter {
   }
 
   public List<KotlinVariableInfo> getVariables() {
-    return interpreter.getRuntimeVariables();
+    return interpreter.getVariables();
   }
 
   public List<Method> getMethods() {

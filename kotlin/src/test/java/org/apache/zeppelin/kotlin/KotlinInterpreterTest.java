@@ -181,6 +181,7 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val x = 3", context);
     interpreter.interpret("val l = listOf(1,2,3)", context);
     InterpreterResult res = interpreter.interpret("kc.vars", context);
+    System.out.println(res.message().get(0).getData());
     assertTrue(res.message().get(0).getData().contains("x: Int = 3"));
     res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
@@ -238,8 +239,11 @@ public class KotlinInterpreterTest {
     interpreter.interpret(code, context);
     interpreter.interpret("println(\"hello!\")", context);
     List<KotlinVariableInfo> vars = interpreter.getVariables();
-    for (KotlinVariableInfo v: vars)
-      if (v.getName().equals("k")) System.out.println(v);
+    for (KotlinVariableInfo v: vars) {
+      if (v.getName().equals("k")) {
+        assertEquals(1, v.getValue());
+      }
+    }
   }
 
   private static InterpreterContext getInterpreterContext() {

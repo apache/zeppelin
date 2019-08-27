@@ -17,12 +17,13 @@
 
 package org.apache.zeppelin.kotlin;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
+import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
-import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
 import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmCompiledModuleInMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import kotlin.jvm.functions.Function0;
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
@@ -106,7 +108,23 @@ public class KotlinRepl {
         (ReplCompileResult.CompiledClasses) compileResult;
     writeClasses(classes);
 
-    ReplEvalResult evalResult = evaluator.eval(state, classes, null, wrapper);
+    InvokeWrapper iw = new InvokeWrapper() {
+      @Override
+      public <T> T invoke(@NotNull Function0<? extends T> function0) {
+        System.out.println("Before");
+        T res = function0.invoke();
+        System.out.println("After");
+        return res;
+      }
+    };
+
+    ReplEvalResult evalResult;
+    Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);
+    if (wrapper != null) {
+      evalResult = wrapper.invoke(runEvaluator);
+    } else {
+      evalResult = runEvaluator.invoke();
+    }
 
     if (evalResult instanceof ReplEvalResult.Error) {
       ReplEvalResult.Error e = (ReplEvalResult.Error) evalResult;
@@ -137,7 +155,7 @@ public class KotlinRepl {
         "unknown evaluation result: " + evalResult.toString());
   }
 
-  public List<KotlinVariableInfo> getRuntimeVariables() {
+  public List<KotlinVariableInfo> getVariables() {
     return ctx.getVars();
   }
 
