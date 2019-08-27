@@ -123,6 +123,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
     jsc.cancelJobGroup(buildJobGroupId(context));
+
     interpreter.cancel(context);
   }
 
