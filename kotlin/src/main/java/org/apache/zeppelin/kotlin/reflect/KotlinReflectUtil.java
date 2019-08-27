@@ -71,7 +71,7 @@ public class KotlinReflectUtil {
       return oc.getSimpleName();
     }
 
-    String kotlinName = typeOf(oc).toString();
+    String kotlinName = kotlinTypeName(oc);
     if (kotlinName.startsWith("kotlin.")) {
       String[] tokens = kotlinName.split("\\.");
       return tokens[tokens.length - 1];
@@ -80,7 +80,12 @@ public class KotlinReflectUtil {
   }
 
   private static String kotlinTypeName(Class<?> c) {
-    return typeOf(c).toString();
+    try {
+      return typeOf(c).toString();
+    } catch (Throwable e) {
+      logger.info(e.getMessage());
+      return c.getSimpleName();
+    }
   }
 
   public static String kotlinMethodSignature(Method method) {

@@ -244,6 +244,9 @@ public class KotlinInterpreterTest {
         assertEquals(1, v.getValue());
       }
     }
+
+    InterpreterResult result = interpreter.interpret("kc.vars", context);
+    assertTrue(result.message().get(0).getData().contains("k: Int = 1"));
   }
 
   private static InterpreterContext getInterpreterContext() {
