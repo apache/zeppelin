@@ -121,7 +121,9 @@ public class KotlinReplBuilder {
   private String buildClassPath() {
     StringJoiner joiner = new StringJoiner(File.pathSeparator);
     for (String path : classpath) {
-      joiner.add(path);
+      if (path != null && !path.equals("")) {
+        joiner.add(path);
+      }
     }
     return joiner.toString();
   }
@@ -136,6 +138,7 @@ public class KotlinReplBuilder {
           jvmBuilder, new String[0], true, false);
 
       List<String> compilerOptions = Arrays.asList("-classpath", buildClassPath());
+      System.out.println(compilerOptions);
       b.invoke(ScriptCompilationKt.getCompilerOptions(b), compilerOptions);
 
       KotlinType kt = new KotlinType(ctx.getClass().getCanonicalName());

@@ -118,7 +118,7 @@ public class KotlinReflectUtil {
 
       for (Field field : fields) {
         String fieldName = field.getName();
-        if (fieldName.contains("$$implicitReceiver") || fieldName.contains("kotlinVars")) {
+        if (fieldName.contains("$$implicitReceiver")) {
           continue;
         }
 

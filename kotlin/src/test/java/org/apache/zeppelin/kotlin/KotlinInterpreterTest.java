@@ -52,8 +52,12 @@ public class KotlinInterpreterTest {
   private static volatile String output = "";
 
   public void prepareInterpreter() {
+    prepareInterpreter(new Properties());
+  }
+
+  public void prepareInterpreter(Properties properties) {
     context = getInterpreterContext();
-    interpreter = new KotlinInterpreter(new Properties());
+    interpreter = new KotlinInterpreter(properties);
     output = "";
 
     interpreter.getBuilder().classPath(Arrays.asList(

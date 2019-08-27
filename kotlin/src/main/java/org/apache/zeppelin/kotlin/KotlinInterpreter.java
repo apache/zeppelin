@@ -19,8 +19,10 @@ package org.apache.zeppelin.kotlin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +50,17 @@ public class KotlinInterpreter extends Interpreter {
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
-    properties.forEach((k, v) -> logger.info("PROPERTY " + k + ": " + v));
     builder = new KotlinReplBuilder();
+
     int maxResult = Integer.parseInt(
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
+    String imports = properties.getProperty("zeppelin.interpreter.localRepo", "");
 
     builder
         .executionContext(new KotlinReceiver())
         .maxResult(maxResult)
-        .codeOnLoad("");
+        .codeOnLoad("")
+        .classPath(getImportClasspath(imports));
   }
 
   public KotlinReplBuilder getBuilder() {
@@ -150,5 +154,24 @@ public class KotlinInterpreter extends Interpreter {
     System.setOut(oldOut);
 
     return res;
+  }
+
+  private List<String> getImportClasspath(String localRepo) {
+    List<String> classpath = new ArrayList<>();
+    if (localRepo.equals("")) {
+      return classpath;
+    }
+
+    File repo = new File(localRepo);
+    File[] files = repo.listFiles();
+    if (files == null) {
+      return classpath;
+    }
+    for (File file : files) {
+      if (!file.isDirectory()) {
+        classpath.add(file.getAbsolutePath());
+      }
+    }
+    return classpath;
   }
 }
