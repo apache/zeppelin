@@ -187,7 +187,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright 2012 Michael Mosmann, Martin Jöhren
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -200,103 +200,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-
-============================================================================
-   APACHE ZEPPELIN SUBCOMPONENTS:
-
-   The Apache Zeppelin project contains subcomponents with separate copyright
-   notices and license terms. Your use of the source code for the these
-   subcomponents is subject to the terms and conditions of the following
-   licenses.
-
-
-
-
-========================================================================
- The Open Font License
-========================================================================
-
-The following components are provided under the Open Font License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
-
-    (OFT 1.1) Font Awesome v4.2.0 (http://fortawesome.github.io/Font-Awesome/) - http://scripts.sil.org/OFL
-    (OFL 1.1) Patua One Font (see licenses/LICENSE-patuaOne-font)
-    (OFL 1.1) Source Code Pro Font (see licenses/LICENSE-source_code_pro-font)
-
-========================================================================
-MIT licenses
-========================================================================
-
-The following components are provided under the MIT License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
-
-    (The MIT License) Font Awesome (stylesheet) 4.2.0 (http://fortawesome.github.io/Font-Awesome/) - https://fortawesome.github.io/Font-Awesome/license/
-    (The MIT License) Simple line icons v1.0.0 (http://thesabbir.github.io/simple-line-icons/) - https://github.com/thesabbir/simple-line-icons/tree/1.0.0
-    (The MIT License) jekyll-bootstrap 0.3.0 (https://github.com/plusjade/jekyll-bootstrap) - https://github.com/plusjade/jekyll-bootstrap
-    (The MIT License) jekyll 1.3.0 (http://jekyllrb.com/) - https://github.com/jekyll/jekyll/blob/v1.3.0/LICENSE
-    (The MIT License) ngInfiniteScroll 1.3.4 (https://github.com/sroze/ngInfiniteScroll) - https://github.com/sroze/ngInfiniteScroll/blob/master/LICENSE
-
-========================================================================
-MIT-style licenses
-========================================================================
-The following components are provided under the MIT-style license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
-    
-    (MIT Style) jekyll-table-of-contents (https://github.com/ghiculescu/jekyll-table-of-contents) - https://github.com/ghiculescu/jekyll-table-of-contents/blob/master/LICENSE.txt
-    (MIT Style) lunr.js (https://github.com/olivernn/lunr.js) - https://github.com/olivernn/lunr.js/blob/v0.7.1/LICENSE
-    
-========================================================================
-Apache licenses
-========================================================================
-
-The following components are provided under the Apache License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
-
-    (Apache 2.0) Bootstrap v3.0.2 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.0.2/LICENSE
-    (Apache 2.0) Software under ./bigquery/*  was developed at Google (http://www.google.com/). Licensed under the Apache v2.0 License.
-    (Apache 2.0) Roboto Font (https://github.com/google/roboto/)
-    (Apache 2.0) Gson extra (https://github.com/DanySK/gson-extras)
-    (Apache 2.0) Nimbus JOSE+JWT (https://bitbucket.org/connect2id/nimbus-jose-jwt/wiki/Home)
-    (Apache 2.0) jarchivelib (https://github.com/thrau/jarchivelib)
-    (Apache 2.0) Google Cloud Client Library for Java (https://github.com/GoogleCloudPlatform/google-cloud-java)
-    (Apache 2.0) concurrentunit (https://github.com/jhalterman/concurrentunit)
-    (Apache 2.0) Embedded MongoDB (https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo)
-
-========================================================================
-BSD 3-Clause licenses
-========================================================================
-The following components are provided under the BSD 3-Clause license.  See file headers and project links for details.
-
-  (BSD 3 Clause) portions of rscala 1.0.6 (https://dahl.byu.edu/software/rscala/) - https://cran.r-project.org/web/packages/rscala/index.html
-   r/R/rzeppelin/R/{common.R, globals.R,protocol.R,rServer.R,scalaInterpreter.R,zzz.R }
-   r/src/main/scala/org/apache/zeppelin/rinterpreter/rscala/{Package.scala, RClient.scala}
-
-  (BSD 3 Clause) portions of Scala (http://www.scala-lang.org/download) - http://www.scala-lang.org/download/#License
-   r/src/main/scala/scala/Console.scala
-
-  (BSD 3 Clause) diff.js (https://github.com/kpdecker/jsdiff)
-
-  (BSD 3-Clause) Google Auth Library for Java (https://github.com/google/google-auth-library-java)
-
-========================================================================
-BSD 2-Clause licenses
-========================================================================
-The following components are provided under the BSD 2-Clause license.  See file headers and project links for details.
-
-  (BSD 2 Clause) portions of SQLLine (http://sqlline.sourceforge.net/) - http://sqlline.sourceforge.net/#license
-   jdbc/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java
-
-========================================================================
-Jython Software License
-========================================================================
-The following components are provided under the Jython Software License.  See file headers and project links for details.
-
-  (Jython Software License) jython-standalone - http://www.jython.org/
-
-========================================================================
-Eclipse Public License - v 1.0
-========================================================================
-The following components are provided under the Eclipse Public License, version 1.0.  See file headers and project links for details.
-
-  (Eclipse Public License) pty4j - http://www.eclipse.org/legal/epl-v10.html
