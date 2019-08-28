@@ -19,6 +19,10 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * wrap ReentrantReadWriteLock with Closeable interface, to avoid
+ * call lock's close() method every time.
+ */
 public class AutoReadWriteLock {
 
   private final ReentrantReadWriteLock rwlock;
