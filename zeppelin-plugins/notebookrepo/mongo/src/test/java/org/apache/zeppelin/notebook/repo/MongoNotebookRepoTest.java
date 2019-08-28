@@ -87,8 +87,9 @@ public class MongoNotebookRepoTest {
 
     Map<String, NoteInfo> noteInfos = notebookRepo.list(AuthenticationInfo.ANONYMOUS);
     assertEquals(1, noteInfos.size());
-    assertEquals(note1.getId(), noteInfos.get(note1.getId()).getId());
-    assertEquals(note1.getName(), noteInfos.get(note1.getId()).getNoteName());
+    Note note1Loaded = notebookRepo.get(note1.getId(), note1.getPath(), AuthenticationInfo.ANONYMOUS);
+    assertEquals(note1.getId(), note1Loaded.getId());
+    assertEquals(note1.getName(), note1Loaded.getName());
 
     // create note2
     Note note2 = new Note();
