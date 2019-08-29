@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 
 import static org.apache.zeppelin.spark.Utils.buildJobDesc;
 import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
+import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.Utils;
@@ -74,12 +75,10 @@ public class KotlinSparkInterpreter extends Interpreter {
 
     List<String> classpath = sparkClasspath();
 
-    // TODO(dk) fix NPE in tests
-    String outputDir;
-    try {
-      outputDir = jsc.getConf().getOption("spark.repl.class.outputDir").getOrElse(null);
-    } catch (NullPointerException e) {
-      outputDir = null;
+    String outputDir = null;
+    SparkConf conf = jsc.getConf();
+    if (conf != null) {
+      outputDir =  conf.getOption("spark.repl.class.outputDir").getOrElse(null);
     }
 
     interpreter.getBuilder()

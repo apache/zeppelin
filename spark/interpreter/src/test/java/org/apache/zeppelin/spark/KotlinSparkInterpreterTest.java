@@ -178,7 +178,7 @@ public class KotlinSparkInterpreterTest {
     InterpreterResult result = interpreter.interpret(
         "sc.conf.all.map{ it.toString() }", context);
     String message = result.message().get(0).getData().trim();
-    assertTrue(message.contains("(property_1,value_1)"));
+    assertTrue(message.contains("(zeppelin.spark.property_1,value_1)"));
   }
 
   @Test
