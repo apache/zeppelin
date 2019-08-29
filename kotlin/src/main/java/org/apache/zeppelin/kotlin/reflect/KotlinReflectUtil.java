@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,6 +67,9 @@ public class KotlinReflectUtil {
   }
 
   public static String kotlinTypeName(Object o) {
+    if (o == null) {
+      return "null";
+    }
     Class oc = o.getClass();
     if (oc.getGenericSuperclass() instanceof ParameterizedType) {
       return oc.getSimpleName();
@@ -118,16 +122,32 @@ public class KotlinReflectUtil {
     vars.clear();
     if (!lines.isEmpty()) {
       Object receiver = getImplicitReceiver(lines.get(0));
-      findVariables(vars, receiver);
+      findReceiverVariables(vars, receiver);
     }
     for (Object line : lines) {
-      findVariables(vars, line);
+      findLineVariables(vars, line);
     }
   }
 
-  private static void findVariables(Map<String, KotlinVariableInfo> vars, Object line)
+  // For lines, we only want fields from top level class
+  private static void findLineVariables(Map<String, KotlinVariableInfo> vars, Object line)
       throws IllegalAccessException {
     Field[] fields = line.getClass().getDeclaredFields();
+    findVariables(vars, fields, line);
+  }
+
+  // For implicit receiver, we want to also get fields in parent classes
+  private static void findReceiverVariables(Map<String, KotlinVariableInfo> vars, Object receiver)
+      throws IllegalAccessException {
+    List<Field> fieldsList = new ArrayList<>();
+    for (Class<?> cl = receiver.getClass(); cl != null; cl = cl.getSuperclass()) {
+      fieldsList.addAll(Arrays.asList(cl.getDeclaredFields()));
+    }
+    findVariables(vars, fieldsList.toArray(new Field[0]), receiver);
+  }
+
+  private static void findVariables(Map<String, KotlinVariableInfo> vars, Field[] fields, Object o)
+      throws IllegalAccessException {
     for (Field field : fields) {
       String fieldName = field.getName();
       if (fieldName.contains("$$implicitReceiver")) {
@@ -135,7 +155,7 @@ public class KotlinReflectUtil {
       }
 
       field.setAccessible(true);
-      Object value = field.get(line);
+      Object value = field.get(o);
       if (!fieldName.contains("script$")) {
         vars.putIfAbsent(fieldName, new KotlinVariableInfo(fieldName, value, field));
       }
