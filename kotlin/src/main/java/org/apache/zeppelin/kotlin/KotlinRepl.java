@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.kotlin;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
@@ -107,16 +106,6 @@ public class KotlinRepl {
     ReplCompileResult.CompiledClasses classes =
         (ReplCompileResult.CompiledClasses) compileResult;
     writeClasses(classes);
-
-    InvokeWrapper iw = new InvokeWrapper() {
-      @Override
-      public <T> T invoke(@NotNull Function0<? extends T> function0) {
-        System.out.println("Before");
-        T res = function0.invoke();
-        System.out.println("After");
-        return res;
-      }
-    };
 
     ReplEvalResult evalResult;
     Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);

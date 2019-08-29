@@ -110,11 +110,10 @@ public class KotlinInterpreterTest {
         "kotlin.Int = 100");
   }
 
-  // TODO(dkaznacheev): work out why it's not incomplete
+  @Test
   public void testIncomplete() throws Exception {
-    InterpreterResult result = interpreter.interpret("if (10 > 2) {\n", context);
+    InterpreterResult result = interpreter.interpret("val x =", context);
     assertEquals(ERROR, result.code());
-    assertEquals("incomplete code", result.message().get(0).getData().trim());
   }
 
   @Test

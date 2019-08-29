@@ -55,13 +55,6 @@
     <pyspark.test.include>**/*Test.*</pyspark.test.include>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>bintray-kotlin</id>
-      <url>https://dl.bintray.com/kotlin/kotlin-eap</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
