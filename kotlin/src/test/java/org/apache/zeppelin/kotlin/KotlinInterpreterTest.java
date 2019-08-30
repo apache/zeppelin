@@ -164,7 +164,7 @@ public class KotlinInterpreterTest {
         });
 
     assertEquals(2, varX.getValue());
-    assertEquals(int.class, varX.getDescriptor().getType());
+    assertEquals("kotlin.Int", varX.getType());
   }
 
   @Test
@@ -175,14 +175,24 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val l = listOf(1,2,3)", context);
     InterpreterResult res = interpreter.interpret("kc.vars", context);
     System.out.println(res.message().get(0).getData());
+    for (KotlinVariableInfo info : interpreter.getVariables()) {
+      System.out.println(info);
+    }
     assertTrue(res.message().get(0).getData().contains("x: Int = 3"));
     res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }
 
   @Test
+  public void testFunctionsAsValues() throws Exception {
+    System.out.println(interpreter.interpret("val f = { x: Int -> x + 1 }", context));
+    System.out.println(interpreter.getVariables());
+  }
+
+  @Test
   public void testMethods() throws Exception {
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
+    System.out.println(interpreter.getMethods());
     interpreter.getMethods().stream().anyMatch(method -> method.getName().equals("sq"));
   }
 

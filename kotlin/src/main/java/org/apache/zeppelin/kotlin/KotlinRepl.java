@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import kotlin.jvm.functions.Function0;
+import kotlin.reflect.KFunction;
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
@@ -148,7 +149,7 @@ public class KotlinRepl {
     return ctx.getVars();
   }
 
-  public List<Method> getMethods() {
+  public List<KFunction<?>> getMethods() {
     return ctx.getMethods();
   }
 
@@ -229,7 +230,7 @@ public class KotlinRepl {
 
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
-    private Set<Method> methods = new HashSet<>();
+    private Set<KFunction<?>> methods = new HashSet<>();
 
     public List<KotlinVariableInfo> getVars() {
       return new ArrayList<>(vars.values());
@@ -243,7 +244,7 @@ public class KotlinRepl {
       return KotlinRepl.this.wrapper;
     }
 
-    public List<Method> getMethods() {
+    public List<KFunction<?>> getMethods() {
       return new ArrayList<>(methods);
     }
   }

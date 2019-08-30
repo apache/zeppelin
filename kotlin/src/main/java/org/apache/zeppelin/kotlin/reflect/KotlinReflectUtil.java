@@ -17,14 +17,12 @@
 
 package org.apache.zeppelin.kotlin.reflect;
 
-import static kotlin.jvm.internal.Reflection.typeOf;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.ReplHistoryRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,9 +30,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import kotlin.Pair;
+import kotlin.reflect.KFunction;
+import kotlin.reflect.KProperty;
+import kotlin.reflect.jvm.ReflectJvmMapping;
 
 public class KotlinReflectUtil {
   private static Logger logger = LoggerFactory.getLogger(KotlinReflectUtil.class);
@@ -53,7 +53,7 @@ public class KotlinReflectUtil {
   }
 
   public static void updateMethods(
-      Set<Method> methods,
+      Set<KFunction<?>> methods,
       AggregatedReplStageState<?, ?> state) {
     try {
       if (state.getHistory().isEmpty()) {
@@ -66,41 +66,14 @@ public class KotlinReflectUtil {
     }
   }
 
-  public static String kotlinTypeName(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    Class oc = o.getClass();
-    if (oc.getGenericSuperclass() instanceof ParameterizedType) {
-      return oc.getSimpleName();
-    }
-
-    String kotlinName = kotlinTypeName(oc);
-    if (kotlinName.startsWith("kotlin.")) {
-      String[] tokens = kotlinName.split("\\.");
-      return tokens[tokens.length - 1];
-    }
-    return kotlinName;
-  }
-
-  private static String kotlinTypeName(Class<?> c) {
-    try {
-      return typeOf(c).toString();
-    } catch (Throwable e) {
-      logger.info(e.getMessage());
-      return c.getSimpleName();
-    }
-  }
-
   public static String kotlinMethodSignature(Method method) {
-    StringJoiner joiner = new StringJoiner(", ");
-    for (Class<?> param : method.getParameterTypes()) {
-      joiner.add(kotlinTypeName(param));
+    KFunction<?> kFunction = ReflectJvmMapping.getKotlinFunction(method);
+    if (kFunction == null) {
+      return method.toString();
     }
-    return method.getName() +
-        "(" + joiner.toString() + "): " +
-        kotlinTypeName(method.getReturnType());
+    return kFunction.toString();
   }
+
 
   private static List<Object> getLines(AggregatedReplStageState<?, ?> state) {
     List<Object> lines = state.getHistory().stream()
@@ -157,18 +130,28 @@ public class KotlinReflectUtil {
       field.setAccessible(true);
       Object value = field.get(o);
       if (!fieldName.contains("script$")) {
-        vars.putIfAbsent(fieldName, new KotlinVariableInfo(fieldName, value, field));
+        KProperty<?> descriptor = ReflectJvmMapping.getKotlinProperty(field);
+        if (descriptor != null) {
+          vars.putIfAbsent(fieldName, new KotlinVariableInfo(value, descriptor));
+        }
       }
     }
   }
 
   private static void getNewMethods(
       Object script,
-      Set<Method> methods) {
-    Set<Method> newMethods = new HashSet<>(Arrays.asList(
-        script.getClass().getMethods()));
-    newMethods.removeAll(objectMethods);
-    newMethods.removeIf(method -> method.getName().equals("main"));
+      Set<KFunction<?>> methods) {
+    Set<KFunction<?>> newMethods = new HashSet<>();
+    Method[] scriptMethods = script.getClass().getMethods();
+    for (Method method : scriptMethods) {
+      if (objectMethods.contains(method) || method.getName().equals("main")) {
+        continue;
+      }
+      KFunction<?> function = ReflectJvmMapping.getKotlinFunction(method);
+      if (function != null) {
+        newMethods.add(function);
+      }
+    }
     methods.addAll(newMethods);
   }
 

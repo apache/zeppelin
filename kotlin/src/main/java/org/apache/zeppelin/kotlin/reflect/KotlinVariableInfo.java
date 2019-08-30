@@ -17,37 +17,35 @@
 
 package org.apache.zeppelin.kotlin.reflect;
 
-import java.lang.reflect.Field;
+import kotlin.reflect.KProperty;
 
 public class KotlinVariableInfo {
-  private final String name;
   private final Object value;
-  private final Field descriptor;
+  private final KProperty<?> descriptor;
 
-  public KotlinVariableInfo(String name, Object value, Field descriptor) {
-    this.name = name;
+  public KotlinVariableInfo(Object value, KProperty<?> descriptor) {
     this.value = value;
     this.descriptor = descriptor;
-  }
-
-  public String getName() {
-    return name;
   }
 
   public Object getValue() {
     return value;
   }
 
-  public Field getDescriptor() {
+  public KProperty<?> getDescriptor() {
     return descriptor;
   }
 
-  public String kotlinTypeName() {
-    return KotlinReflectUtil.kotlinTypeName(value);
+  public String getName() {
+    return descriptor.getName();
+  }
+
+  public String getType() {
+    return descriptor.getReturnType().toString();
   }
 
   @Override
   public String toString() {
-    return name + ": " + kotlinTypeName() + " = " + getValue();
+    return getName() + ": " + getType() + " = " + getValue();
   }
 }

@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinRepl;
@@ -50,16 +51,16 @@ public class KotlinCompleter {
       result.add(new InterpreterCompletion(
           var.getName(),
           var.getName(),
-          var.kotlinTypeName()
+          var.getType()
       ));
     }
 
-    List<Method> methods = ctx.getMethods();
-    for (Method method : methods) {
+    List<KFunction<?>> functions = ctx.getMethods();
+    for (KFunction<?> function : functions) {
       result.add(new InterpreterCompletion(
-          method.getName(),
-          method.getName(),
-          KotlinReflectUtil.kotlinMethodSignature(method)
+          function.getName(),
+          function.getName(),
+          function.toString()
       ));
     }
 

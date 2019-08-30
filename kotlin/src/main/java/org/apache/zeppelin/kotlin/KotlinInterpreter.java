@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -131,7 +132,7 @@ public class KotlinInterpreter extends Interpreter {
     return interpreter.getVariables();
   }
 
-  public List<Method> getMethods() {
+  public List<KFunction<?>> getMethods() {
     return interpreter.getMethods();
   }
 
