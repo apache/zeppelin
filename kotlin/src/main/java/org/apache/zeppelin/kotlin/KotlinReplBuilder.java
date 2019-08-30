@@ -19,8 +19,6 @@ package org.apache.zeppelin.kotlin;
 
 import static kotlin.script.experimental.jvm.JvmScriptingHostConfigurationKt.getDefaultJvmScriptingHostConfiguration;
 import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmReplCompilerImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,23 +45,29 @@ import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 
 public class KotlinReplBuilder {
 
-  private static Logger logger = LoggerFactory.getLogger(KotlinReplBuilder.class);
-
   private ScriptingHostConfiguration hostConf = getDefaultJvmScriptingHostConfiguration();
 
   private KotlinReceiver ctx;
   private Set<String> classpath;
   private List<String> codeOnLoad;
   private String outputDir;
-  private int maxResult;
+  private int maxResult = 1000;
 
   public KotlinReplBuilder() {
     this.ctx = new KotlinReceiver();
+
     this.classpath = new HashSet<>();
+    String[] javaClasspath = System.getProperty("java.class.path").split(File.pathSeparator);
+    Collections.addAll(classpath, javaClasspath);
+
     this.codeOnLoad = new ArrayList<>();
   }
 
   public KotlinRepl build() {
+    String receiverClassPath = ctx.getClass()
+        .getProtectionDomain().getCodeSource().getLocation().getPath();
+    this.classPath(receiverClassPath);
+
     KJvmReplCompilerImpl compilerImpl =
         new KJvmReplCompilerImpl(JvmHostUtilKt.withDefaults(hostConf));
 

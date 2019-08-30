@@ -40,7 +40,6 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 
@@ -59,11 +58,6 @@ public class KotlinInterpreterTest {
     context = getInterpreterContext();
     interpreter = new KotlinInterpreter(properties);
     output = "";
-
-    interpreter.getBuilder().classPath(Arrays.asList(
-        System.getProperty("java.class.path"),
-        KotlinReceiver.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-    ));
   }
 
   @Before
