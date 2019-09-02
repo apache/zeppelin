@@ -51,7 +51,7 @@ public class KotlinCompleter {
       result.add(new InterpreterCompletion(
           var.getName(),
           var.getName(),
-          var.getType()
+          shorten(var.getType())
       ));
     }
 
