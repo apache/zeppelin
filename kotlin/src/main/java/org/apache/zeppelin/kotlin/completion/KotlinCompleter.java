@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.kotlin.completion;
 
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +26,6 @@ import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.kotlin.KotlinRepl;
-import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinCompleter {
@@ -54,12 +55,12 @@ public class KotlinCompleter {
       ));
     }
 
-    List<KFunction<?>> functions = ctx.getMethods();
+    List<KFunction<?>> functions = ctx.getFunctions();
     for (KFunction<?> function : functions) {
       result.add(new InterpreterCompletion(
           function.getName(),
           function.getName(),
-          KotlinReflectUtil.functionSignature(function)
+          shorten(functionSignature(function))
       ));
     }
 

@@ -144,7 +144,7 @@ public class KotlinSparkInterpreterTest {
 
   @Test
   public void simpleKotlinTest() throws Exception {
-    testCodeForResult("1 + 1", "kotlin.Int = 2");
+    testCodeForResult("1 + 1", "Int = 2");
   }
 
   @Test

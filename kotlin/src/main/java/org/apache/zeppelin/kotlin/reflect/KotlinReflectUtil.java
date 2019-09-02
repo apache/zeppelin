@@ -25,6 +25,9 @@ public class KotlinReflectUtil {
   }
 
   public static String shorten(String name) {
+    if (name == null) {
+      return null;
+    }
     // kotlin.collections.List<kotlin.Int> -> List<Int>
     return name.replaceAll("(\\b[_a-zA-Z$][_a-zA-Z0-9$]*\\b\\.)+", "");
   }

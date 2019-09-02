@@ -52,6 +52,7 @@ public class KotlinReplBuilder {
   private List<String> codeOnLoad;
   private String outputDir;
   private int maxResult = 1000;
+  private boolean shortenTypes = true;
 
   public KotlinReplBuilder() {
     this.ctx = new KotlinReceiver();
@@ -80,7 +81,7 @@ public class KotlinReplBuilder {
         buildEvaluationConfiguration(),
         new BasicJvmScriptEvaluator());
 
-    KotlinRepl repl = new KotlinRepl(compiler, evaluator, ctx, outputDir, maxResult);
+    KotlinRepl repl = new KotlinRepl(compiler, evaluator, ctx, outputDir, maxResult, shortenTypes);
     for (String line: codeOnLoad) {
       repl.eval(line);
     }
@@ -119,6 +120,11 @@ public class KotlinReplBuilder {
 
   public KotlinReplBuilder outputDir(String outputDir) {
     this.outputDir = outputDir;
+    return this;
+  }
+
+  public KotlinReplBuilder shortenTypes(boolean shortenTypes) {
+    this.shortenTypes = shortenTypes;
     return this;
   }
 

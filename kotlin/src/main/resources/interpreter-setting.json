@@ -11,6 +11,13 @@
         "defaultValue": "1000",
         "description": "Max number of dataframe rows to display.",
         "type": "number"
+      },
+      "zeppelin.kotlin.shortenTypes": {
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.shortenTypes",
+        "defaultValue": false,
+        "description": "Show short types instead of full, e.g. List<String> or kotlin.collections.List<kotlin.String>",
+        "type": "checkbox"
       }
     },
     "editor": {

@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.kotlin;
 
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
@@ -64,13 +66,15 @@ public class KotlinRepl {
   private InvokeWrapper wrapper;
   private int maxResult;
   private ContextUpdater contextUpdater;
+  boolean shortenTypes;
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
                     JvmReplEvaluator evaluator,
                     KotlinReceiver receiver,
                     String outputDir,
-                    int maxResult) {
+                    int maxResult,
+                    boolean shortenTypes) {
     this.compiler = compiler;
     this.evaluator = evaluator;
     ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
@@ -82,11 +86,12 @@ public class KotlinRepl {
 
     this.outputDir = outputDir;
     this.maxResult = maxResult;
+    this.shortenTypes = shortenTypes;
 
     ctx = new KotlinContext();
     receiver.kc = ctx;
 
-    contextUpdater = new ContextUpdater(state, ctx.vars, ctx.methods);
+    contextUpdater = new ContextUpdater(state, ctx.vars, ctx.functions);
   }
 
   public InterpreterResult eval(String code) {
@@ -137,10 +142,12 @@ public class KotlinRepl {
       contextUpdater.update();
 
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
+      String typeString = shortenTypes ? shorten(v.getType()) : v.getType();
       String valueString = prepareValueString(v.getValue());
+
       return new InterpreterResult(
           InterpreterResult.Code.SUCCESS,
-          v.getName() + ": " + v.getType() + " = " + valueString);
+          v.getName() + ": " + typeString + " = " + valueString);
     }
     return new InterpreterResult(InterpreterResult.Code.ERROR,
         "unknown evaluation result: " + evalResult.toString());
@@ -150,8 +157,8 @@ public class KotlinRepl {
     return ctx.getVars();
   }
 
-  public List<KFunction<?>> getMethods() {
-    return ctx.getMethods();
+  public List<KFunction<?>> getFunctions() {
+    return ctx.getFunctions();
   }
 
   public KotlinContext getKotlinContext() {
@@ -226,7 +233,7 @@ public class KotlinRepl {
 
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
-    private Set<KFunction<?>> methods = new HashSet<>();
+    private Set<KFunction<?>> functions = new HashSet<>();
 
     public List<KotlinVariableInfo> getVars() {
       return new ArrayList<>(vars.values());
@@ -240,8 +247,20 @@ public class KotlinRepl {
       return KotlinRepl.this.wrapper;
     }
 
-    public List<KFunction<?>> getMethods() {
-      return new ArrayList<>(methods);
+    public List<KFunction<?>> getFunctions() {
+      return new ArrayList<>(functions);
+    }
+
+    public void showVars() {
+      for (KotlinVariableInfo var : vars.values()) {
+        System.out.println(var.toString(shortenTypes));
+      }
+    }
+
+    public void showFunctions() {
+      for (KFunction<?> fun : functions) {
+        System.out.println(functionSignature(fun));
+      }
     }
   }
 }

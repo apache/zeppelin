@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.kotlin.reflect;
 
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import kotlin.reflect.KProperty;
 
 public class KotlinVariableInfo {
@@ -42,6 +43,13 @@ public class KotlinVariableInfo {
 
   public String getType() {
     return descriptor.getReturnType().toString();
+  }
+
+  public String toString(boolean shortenTypes) {
+    if (shortenTypes) {
+      return getName() + ": " + shorten(getType()) + " = " + getValue();
+    }
+    return toString();
   }
 
   @Override

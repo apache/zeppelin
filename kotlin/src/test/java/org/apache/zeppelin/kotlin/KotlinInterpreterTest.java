@@ -94,19 +94,19 @@ public class KotlinInterpreterTest {
 
   @Test
   public void testLiteral() throws Exception {
-    testCodeForResult("1", "kotlin.Int = 1");
+    testCodeForResult("1", "Int = 1");
   }
 
   @Test
   public void testOperation() throws Exception {
-    testCodeForResult("\"foo\" + \"bar\"", "kotlin.String = foobar");
+    testCodeForResult("\"foo\" + \"bar\"", "String = foobar");
   }
 
   @Test
   public void testFunction() throws Exception {
     testCodeForResult(
         "fun square(x: Int): Int = x * x\nsquare(10)",
-        "kotlin.Int = 100");
+        "Int = 100");
   }
 
   @Test
@@ -178,9 +178,12 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val y = 2", context);
     interpreter.interpret("val x = 3", context);
     interpreter.interpret("val l = listOf(1,2,3)", context);
-    InterpreterResult res = interpreter.interpret("kc.vars", context);
-    assertTrue(res.message().get(0).getData().contains("x: kotlin.Int = 3"));
-    res = interpreter.interpret("kc.vars = null", context);
+    interpreter.interpret("kc.showVars()", context);
+    System.out.println(output);
+    assertTrue(output.contains("x: Int = 3"));
+    assertTrue(output.contains("y: Int = 2"));
+    assertTrue(output.contains("l: List<Int> = [1, 2, 3]"));
+    InterpreterResult res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }
 
@@ -194,7 +197,7 @@ public class KotlinInterpreterTest {
   public void testMethods() throws Exception {
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
     interpreter.interpret("fun <T> singletonListOf(elem: T): List<T> = listOf(elem)", context);
-    List<String> signatures = interpreter.getMethods().stream()
+    List<String> signatures = interpreter.getFunctions().stream()
         .map(KotlinReflectUtil::functionSignature).collect(Collectors.toList());
     assertTrue(signatures.stream().anyMatch(signature ->
         signature.equals("fun sq(kotlin.Int): kotlin.Int")));
@@ -270,8 +273,24 @@ public class KotlinInterpreterTest {
     assertTrue(shorten(message).contains("(List<Int>) -> Int"));
 
     interpreter.interpret("fun first(s: String): Char = s[0]", context);
-    KFunction<?> first = interpreter.getMethods().get(0);
+    KFunction<?> first = interpreter.getFunctions().get(0);
     assertEquals("fun first(String): Char", shorten(functionSignature(first)));
+  }
+
+  @Test
+  public void fullTypeNamesTest() throws Exception {
+    prepareInterpreter();
+    interpreter.getBuilder().shortenTypes(false);
+    interpreter.open();
+
+    interpreter.interpret("val s = \"abc\"", context);
+    interpreter.interpret("fun f(l: List<String>) { }", context);
+    interpreter.interpret("kc.showFunctions()", context);
+    assertEquals("fun f(kotlin.collections.List<kotlin.String>): kotlin.Unit\n", output);
+    output = "";
+    interpreter.interpret("kc.showVars()", context);
+    System.out.println(output);
+    assertTrue(output.contains("s: kotlin.String = abc"));
   }
 
   private static InterpreterContext getInterpreterContext() {

@@ -54,6 +54,9 @@ public class KotlinInterpreter extends Interpreter {
 
     int maxResult = Integer.parseInt(
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
+
+    boolean shortenTypes = Boolean.parseBoolean(
+        properties.getProperty("zeppelin.kotlin.shortenTypes", "true"));
     String imports = properties.getProperty("zeppelin.interpreter.localRepo", "");
 
     completer = new KotlinCompleter();
@@ -62,7 +65,8 @@ public class KotlinInterpreter extends Interpreter {
         .executionContext(new KotlinReceiver())
         .maxResult(maxResult)
         .codeOnLoad("")
-        .classPath(getImportClasspath(imports));
+        .classPath(getImportClasspath(imports))
+        .shortenTypes(shortenTypes);
   }
 
   public KotlinReplBuilder getBuilder() {
@@ -131,8 +135,8 @@ public class KotlinInterpreter extends Interpreter {
     return interpreter.getVariables();
   }
 
-  public List<KFunction<?>> getMethods() {
-    return interpreter.getMethods();
+  public List<KFunction<?>> getFunctions() {
+    return interpreter.getFunctions();
   }
 
   private Job<?> getRunningJob(String paragraphId) {
