@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -40,6 +41,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 
@@ -174,11 +176,7 @@ public class KotlinInterpreterTest {
     interpreter.interpret("val x = 3", context);
     interpreter.interpret("val l = listOf(1,2,3)", context);
     InterpreterResult res = interpreter.interpret("kc.vars", context);
-    System.out.println(res.message().get(0).getData());
-    for (KotlinVariableInfo info : interpreter.getVariables()) {
-      System.out.println(info);
-    }
-    assertTrue(res.message().get(0).getData().contains("x: Int = 3"));
+    assertTrue(res.message().get(0).getData().contains("x: kotlin.Int = 3"));
     res = interpreter.interpret("kc.vars = null", context);
     assertTrue(res.message().get(0).getData().contains("Val cannot be reassigned"));
   }
@@ -192,8 +190,13 @@ public class KotlinInterpreterTest {
   @Test
   public void testMethods() throws Exception {
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
-    System.out.println(interpreter.getMethods());
-    interpreter.getMethods().stream().anyMatch(method -> method.getName().equals("sq"));
+    interpreter.interpret("fun <T> singletonListOf(elem: T): List<T> = listOf(elem)", context);
+    List<String> signatures = interpreter.getMethods().stream()
+        .map(KotlinReflectUtil::functionSignature).collect(Collectors.toList());
+    assertTrue(signatures.stream().anyMatch(signature ->
+        signature.equals("fun sq(kotlin.Int): kotlin.Int")));
+    assertTrue(signatures.stream().anyMatch(signature ->
+        signature.equals("fun singletonListOf(T): kotlin.collections.List<T>")));
   }
 
   @Test
@@ -249,7 +252,7 @@ public class KotlinInterpreterTest {
     }
 
     InterpreterResult result = interpreter.interpret("kc.vars", context);
-    assertTrue(result.message().get(0).getData().contains("k: Int = 1"));
+    assertTrue(result.message().get(0).getData().contains("k: kotlin.Int = 1"));
   }
 
   private static InterpreterContext getInterpreterContext() {

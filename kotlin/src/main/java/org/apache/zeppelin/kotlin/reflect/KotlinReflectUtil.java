@@ -66,12 +66,8 @@ public class KotlinReflectUtil {
     }
   }
 
-  public static String kotlinMethodSignature(Method method) {
-    KFunction<?> kFunction = ReflectJvmMapping.getKotlinFunction(method);
-    if (kFunction == null) {
-      return method.toString();
-    }
-    return kFunction.toString();
+  public static String functionSignature(KFunction<?> function) {
+    return function.toString().replaceAll("Line_\\d+\\.", "");
   }
 
 
@@ -154,7 +150,6 @@ public class KotlinReflectUtil {
     }
     methods.addAll(newMethods);
   }
-
 
   private static Object getImplicitReceiver(Object script)
       throws ReflectiveOperationException {

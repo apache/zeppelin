@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.kotlin.completion;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +59,7 @@ public class KotlinCompleter {
       result.add(new InterpreterCompletion(
           function.getName(),
           function.getName(),
-          function.toString()
+          KotlinReflectUtil.functionSignature(function)
       ));
     }
 
