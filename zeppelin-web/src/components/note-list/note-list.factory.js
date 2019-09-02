@@ -25,8 +25,12 @@ function NoteListFactory(arrayOrderingSrv, TRASH_FOLDER_ID) {
     setNotes: function(notesList) {
       // a flat list to boost searching
       notes.flatList = _.map(notesList, (note) => {
+        let notePath = note.path || note.id;
+        let nodes = notePath.match(/([^\/][^\/]*)/g) || [];
+
         note.isTrash = note.path
           ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
+        note.name = nodes.pop();
         return note;
       });
 
