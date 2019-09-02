@@ -15,7 +15,7 @@
       "zeppelin.kotlin.shortenTypes": {
         "envName": null,
         "propertyName": "zeppelin.kotlin.shortenTypes",
-        "defaultValue": false,
+        "defaultValue": true,
         "description": "Show short types instead of full, e.g. List<String> or kotlin.collections.List<kotlin.String>",
         "type": "checkbox"
       }

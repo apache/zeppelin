@@ -262,6 +262,13 @@
         "defaultValue": "1000",
         "description": "Max number of result to display.",
         "type": "number"
+      },
+      "zeppelin.kotlin.shortenTypes": {
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.shortenTypes",
+        "defaultValue": true,
+        "description": "Show short types instead of full, e.g. List<String> or kotlin.collections.List<kotlin.String>",
+        "type": "checkbox"
       }
     },
     "editor": {
