@@ -49,7 +49,7 @@ import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
-import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
+import org.apache.zeppelin.kotlin.reflect.ContextUpdater;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
 public class KotlinRepl {
@@ -63,6 +63,7 @@ public class KotlinRepl {
   private KotlinContext ctx;
   private InvokeWrapper wrapper;
   private int maxResult;
+  private ContextUpdater contextUpdater;
 
   @SuppressWarnings("unchecked")
   public KotlinRepl(JvmReplCompiler compiler,
@@ -83,8 +84,9 @@ public class KotlinRepl {
     this.maxResult = maxResult;
 
     ctx = new KotlinContext();
-    updateContext();
     receiver.kc = ctx;
+
+    contextUpdater = new ContextUpdater(state, ctx.vars, ctx.methods);
   }
 
   public InterpreterResult eval(String code) {
@@ -128,11 +130,11 @@ public class KotlinRepl {
           InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo());
     }
     if (evalResult instanceof ReplEvalResult.UnitResult) {
-      updateContext();
+      contextUpdater.update();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
-      updateContext();
+      contextUpdater.update();
 
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
       String valueString = prepareValueString(v.getValue());
@@ -220,11 +222,6 @@ public class KotlinRepl {
     } catch (IOException e) {
       logger.error(e.getMessage());
     }
-  }
-
-  private void updateContext() {
-    KotlinReflectUtil.updateVars(ctx.vars, state);
-    KotlinReflectUtil.updateMethods(ctx.methods, state);
   }
 
   public class KotlinContext {

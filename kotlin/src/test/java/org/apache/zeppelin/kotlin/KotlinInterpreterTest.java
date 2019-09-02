@@ -218,9 +218,9 @@ public class KotlinInterpreterTest {
     File[] dir = tempPath.toFile().listFiles();
     assertNotNull(dir);
     assertTrue(dir.length > 0);
+    System.out.println(tempPath);
     assertTrue(Arrays.stream(dir)
         .anyMatch(file -> file.getName().matches("Line_\\d+\\.class")));
-
     int oldLength = dir.length;
     interpreter.interpret("x + 1", context);
     dir = tempPath.toFile().listFiles();
