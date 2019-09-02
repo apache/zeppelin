@@ -29,6 +29,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -178,7 +181,31 @@ public class KotlinSparkInterpreterTest {
     InterpreterResult result = interpreter.interpret(
         "sc.conf.all.map{ it.toString() }", context);
     String message = result.message().get(0).getData().trim();
+    System.out.println("PROPS_1 = " + message);
     assertTrue(message.contains("(zeppelin.spark.property_1,value_1)"));
+  }
+
+  @Test
+  public void classWriteTest() throws Exception {
+    interpreter.interpret("val f = { x: Any -> println(x) }", context);
+    output = "";
+    InterpreterResult result = interpreter.interpret("spark.range(5).foreach(f)", context);
+    assertEquals(SUCCESS, result.code());
+    assertTrue(output.contains("0"));
+    assertTrue(output.contains("1"));
+    assertTrue(output.contains("2"));
+    assertTrue(output.contains("3"));
+    assertTrue(output.contains("4"));
+
+    String classOutputDir = repl.getSparkContext().getConf().get("spark.repl.class.outputDir");
+    System.out.println(classOutputDir);
+
+    Path outPath = Paths.get(classOutputDir);
+    Files.walk(outPath).forEach(System.out::println);
+    assertTrue(Files.walk(outPath).anyMatch(path -> path.toString().matches(
+        ".*Line_\\d+\\$f\\$1\\.class")));
+    assertTrue(Files.walk(outPath).anyMatch(path -> path.toString().matches(
+        ".*Line_\\d+\\$sam\\$org_apache_spark_api_java_function_ForeachFunction\\$0\\.class")));
   }
 
   @Test
