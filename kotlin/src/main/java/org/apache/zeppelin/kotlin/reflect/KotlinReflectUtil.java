@@ -20,8 +20,12 @@ package org.apache.zeppelin.kotlin.reflect;
 import kotlin.reflect.KFunction;
 
 public class KotlinReflectUtil {
-
   public static String functionSignature(KFunction<?> function) {
     return function.toString().replaceAll("Line_\\d+\\.", "");
+  }
+
+  public static String shorten(String name) {
+    // kotlin.collections.List<kotlin.Int> -> List<Int>
+    return name.replaceAll("(\\b[_a-zA-Z$][_a-zA-Z0-9$]*\\b\\.)+", "");
   }
 }

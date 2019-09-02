@@ -19,6 +19,8 @@ package org.apache.zeppelin.kotlin;
 
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.ERROR;
 import static org.apache.zeppelin.interpreter.InterpreterResult.Code.SUCCESS;
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
+import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
@@ -253,6 +256,22 @@ public class KotlinInterpreterTest {
 
     InterpreterResult result = interpreter.interpret("kc.vars", context);
     assertTrue(result.message().get(0).getData().contains("k: kotlin.Int = 1"));
+  }
+
+  @Test
+  public void testReflectUtil() throws Exception {
+    String message = interpreter.interpret("1", context)
+        .message().get(0).getData();
+    assertTrue(shorten(message).contains("Int = 1"));
+
+    interpreter.interpret("val f = { l: List<Int> -> l[0] }", context);
+    message = interpreter.interpret("f", context)
+        .message().get(0).getData();
+    assertTrue(shorten(message).contains("(List<Int>) -> Int"));
+
+    interpreter.interpret("fun first(s: String): Char = s[0]", context);
+    KFunction<?> first = interpreter.getMethods().get(0);
+    assertEquals("fun first(String): Char", shorten(functionSignature(first)));
   }
 
   private static InterpreterContext getInterpreterContext() {
