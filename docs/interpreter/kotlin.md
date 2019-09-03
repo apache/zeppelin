@@ -38,7 +38,11 @@ It is designed to interoperate fully with Java, and the JVM version of its stand
   <tr>
     <td>zeppelin.kotlin.maxResult</td>
     <td>1000</td>
-    <td>Max number of collection elements to display</td>
+    <td>Max n
+  <tr>
+    <td>zeppelin.kotlin.shortenTypes</td>
+    <td>true</td>
+    <td>Display shortened types instead of full, e.g. Int vs kotlin.Int</td>
   </tr>
 </table>
 
@@ -55,4 +59,25 @@ fun square(n: Int): Int = n * n
 
 ## Kotlin Context
 Kotlin context is accessible via `kc` object bound to the interpreter. 
-It holds `vars` and `methods` fields that return all user-defined variables and methods present in the interpreter.
+It holds `vars` and `functions` fields that return all user-defined variables and functions present in the interpreter.
+You can also print variables or functions by calling `kc.showVars()` or `kc.showFunctions()`.
+
+### Example
+
+
+```kotlin
+%kotlin 
+fun square(n: Int): Int = n * n
+
+val greeter = { s: String -> println("Hello $s!") }
+val l = listOf("Drive", "to", "develop")
+
+kc.showVars()
+kc.showFunctions()
+```
+Output:
+```
+l: List<String> = [Drive, to, develop]
+greeter: (String) -> Unit = (kotlin.String) -> kotlin.Unit
+fun square(Int): Int
+```
