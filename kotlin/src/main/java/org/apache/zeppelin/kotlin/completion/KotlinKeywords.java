@@ -21,6 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class KotlinKeywords {
+  /**
+   * List of Kotlin keywords for completion.
+   */
   public static final List<String> KEYWORDS = Arrays.asList(
       "as",
       "as?",

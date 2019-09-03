@@ -47,6 +47,19 @@ import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
 import org.apache.zeppelin.kotlin.repl.building.ReplBuilding;
 
+/**
+ * Read-evaluate-print loop for Kotlin code.
+ * Each code snippet is compiled into Line_N class and evaluated.
+ *
+ * Outside variables and functions can be bound to REPL
+ * by inheriting KotlinReceiver class and passing it to REPL properties on creation.
+ * After that, all fields and methods of receiver are seen inside the snippet scope
+ * as if the code was run in Kotlin's `with` block.
+ *
+ * By default, KotlinReceiver has KotlinContext bound by the name `kc`.
+ * It can be used to show user-defined variables and functions
+ * and setting invokeWrapper to add effects to snippet evaluation.
+ */
 public class KotlinRepl {
   private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
 
@@ -60,6 +73,8 @@ public class KotlinRepl {
   private int maxResult;
   private ContextUpdater contextUpdater;
   boolean shortenTypes;
+
+  private KotlinRepl() { }
 
   @SuppressWarnings("unchecked")
   public static KotlinRepl build(KotlinReplProperties properties) {
@@ -102,7 +117,16 @@ public class KotlinRepl {
     return ctx;
   }
 
-
+  /**
+   * REPL evaluation consists of:
+   * - Compiling code in JvmReplCompiler
+   * - Writing compiled classes to disk
+   * - Evaluating compiled classes inside InvokeWrapper
+   * - Updating list of user-defined functions and variables
+   * - Formatting result
+   * @param code Kotlin code to execute
+   * @return result of interpretation
+   */
   public InterpreterResult eval(String code) {
     ReplCompileResult compileResult = compiler.compile(state,
         new ReplCodeLine(counter.getAndIncrement(), 0, code));
@@ -211,6 +235,11 @@ public class KotlinRepl {
         + " ... " + (collection.size() - maxResult) + " more]";
   }
 
+  /**
+   * Kotlin REPL has built-in context for getting user-declared functions and variables
+   * and setting invokeWrapper for additional side effects in evaluation.
+   * It can accessed inside REPL by name `kc`, e.g. kc.showVars()
+   */
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
     private Set<KFunction<?>> functions = new HashSet<>();

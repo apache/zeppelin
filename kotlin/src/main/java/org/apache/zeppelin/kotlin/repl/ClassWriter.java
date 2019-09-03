@@ -30,6 +30,12 @@ import java.io.OutputStream;
 import java.util.Objects;
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 
+/**
+ *  Kotlin REPL compiler generates compiled classes consisting of
+ * compiled in-memory module and some other classes.
+ *  Spark may need saving them somewhere to send them to the executors,
+ * so this class provides writing classes on disk.
+ */
 public class ClassWriter {
   private static Logger logger = LoggerFactory.getLogger(ClassWriter.class);
 

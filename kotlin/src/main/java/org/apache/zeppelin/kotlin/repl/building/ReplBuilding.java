@@ -36,6 +36,9 @@ import kotlin.script.experimental.jvmhost.impl.JvmHostUtilKt;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 
+/**
+ * Util class for building REPL components.
+ */
 public class ReplBuilding {
   public static JvmReplCompiler buildCompiler(KotlinReplProperties properties) {
     String receiverClassPath = properties.getReceiver().getClass()

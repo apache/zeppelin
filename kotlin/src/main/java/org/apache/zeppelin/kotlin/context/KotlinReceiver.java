@@ -20,11 +20,16 @@ package org.apache.zeppelin.kotlin.context;
 import org.apache.zeppelin.kotlin.repl.KotlinRepl;
 
 /**
- The execution context for lines in Kotlin REPL.
- It is passed to the script as an implicit receiver, identical to:
- with (context) {
- ...
- }
+ * The implicit receiver for lines in Kotlin REPL.
+ *  It is passed to the script as an implicit receiver, identical to:
+ *  with (context) {
+ *     ...
+ *  }
+ *
+ *  KotlinReceiver can be inherited from and passed to REPL building properties,
+ *  so other variables and functions can be accessed inside REPL.
+ *  By default, it only has KotlinContext.
+ *  Inherited KotlinReceivers should be in separate java file, they can't be inner or nested.
  */
 public class KotlinReceiver {
   public KotlinRepl.KotlinContext kc;

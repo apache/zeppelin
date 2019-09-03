@@ -28,6 +28,16 @@ import java.util.Set;
 import kotlin.script.experimental.host.ScriptingHostConfiguration;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 
+/**
+ * Class that holds properties for Kotlin REPL creation,
+ * namely implicit receiver, classpath, preloaded code, directory for class bytecode output,
+ * max result limit and shortening types flag.
+ *
+ * Set its parameters by chaining corresponding methods, e.g.
+ * properties.outputDir(dir).shortenTypes(false)
+ *
+ * Get its parameters via getters.
+ */
 public class KotlinReplProperties {
 
   private ScriptingHostConfiguration hostConf = getDefaultJvmScriptingHostConfiguration();

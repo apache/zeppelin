@@ -23,11 +23,14 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 
+/**
+ * Implicit receiver for Kotlin REPL with Spark's context (see KotlinReceiver for more details)
+ */
 public class SparkKotlinReceiver extends KotlinReceiver {
-  public SparkSession spark;
-  public JavaSparkContext sc;
-  public SQLContext sqlContext;
-  public BaseZeppelinContext z;
+  public final SparkSession spark;
+  public final JavaSparkContext sc;
+  public final SQLContext sqlContext;
+  public final BaseZeppelinContext z;
 
   public SparkKotlinReceiver(SparkSession spark,
                              JavaSparkContext sc,

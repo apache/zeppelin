@@ -152,6 +152,10 @@ public class KotlinInterpreter extends Interpreter {
     return foundJob;
   }
 
+  /**
+   * Kotlin interpreter uses System.out for printing, so it is redirected to InterpreterOutput.
+   * Note that Scala's Console class needs separate output redirection
+   */
   private InterpreterResult runWithOutput(String code, InterpreterOutput out) {
     this.out.setInterpreterOutput(out);
 

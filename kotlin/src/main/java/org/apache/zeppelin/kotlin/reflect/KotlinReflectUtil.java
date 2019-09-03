@@ -19,6 +19,9 @@ package org.apache.zeppelin.kotlin.reflect;
 
 import kotlin.reflect.KFunction;
 
+/**
+ * Util class for pretty-printing Kotlin variables and functions.
+ */
 public class KotlinReflectUtil {
   public static String functionSignature(KFunction<?> function) {
     return function.toString().replaceAll("Line_\\d+\\.", "");

@@ -36,6 +36,10 @@ import kotlin.reflect.KFunction;
 import kotlin.reflect.KProperty;
 import kotlin.reflect.jvm.ReflectJvmMapping;
 
+/**
+ * ContextUpdater updates current user-defined functions and variables
+ * to use in completion and KotlinContext.
+ */
 public class ContextUpdater {
   private final Logger logger = LoggerFactory.getLogger(ContextUpdater.class);
   private final Set<Method> objectMethods =
