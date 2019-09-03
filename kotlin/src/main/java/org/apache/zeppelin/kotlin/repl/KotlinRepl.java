@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.kotlin.repl;
 
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
 import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
@@ -29,20 +28,20 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import kotlin.jvm.functions.Function0;
-import kotlin.reflect.KFunction;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.kotlin.reflect.ContextUpdater;
+import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
 import org.apache.zeppelin.kotlin.repl.building.ReplBuilding;
@@ -106,7 +105,7 @@ public class KotlinRepl {
     return ctx.getVars();
   }
 
-  public List<KFunction<?>> getFunctions() {
+  public List<KotlinFunctionInfo> getFunctions() {
     return ctx.getFunctions();
   }
 
@@ -115,6 +114,7 @@ public class KotlinRepl {
   }
 
   /**
+   * Evaluates code snippet and returns interpreter result.
    * REPL evaluation consists of:
    * - Compiling code in JvmReplCompiler
    * - Writing compiled classes to disk
@@ -239,7 +239,7 @@ public class KotlinRepl {
    */
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
-    private Set<KFunction<?>> functions = new HashSet<>();
+    private Set<KotlinFunctionInfo> functions = new TreeSet<>();
 
     public List<KotlinVariableInfo> getVars() {
       return new ArrayList<>(vars.values());
@@ -253,7 +253,7 @@ public class KotlinRepl {
       return KotlinRepl.this.wrapper;
     }
 
-    public List<KFunction<?>> getFunctions() {
+    public List<KotlinFunctionInfo> getFunctions() {
       return new ArrayList<>(functions);
     }
 
@@ -264,12 +264,8 @@ public class KotlinRepl {
     }
 
     public void showFunctions() {
-      for (KFunction<?> fun : functions) {
-        String signature = functionSignature(fun);
-        if (shortenTypes) {
-          signature = shorten(signature);
-        }
-        System.out.println(signature);
+      for (KotlinFunctionInfo fun : functions) {
+        System.out.println(fun.toString(shortenTypes));
       }
     }
   }

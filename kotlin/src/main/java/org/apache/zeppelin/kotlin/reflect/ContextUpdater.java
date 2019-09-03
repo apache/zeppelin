@@ -47,39 +47,40 @@ public class ContextUpdater {
   
   private AggregatedReplStageState<?, ?> state;
   private Map<String, KotlinVariableInfo> vars;
-  private Set<KFunction<?>> methods;
+  private Set<KotlinFunctionInfo> functions;
 
   public ContextUpdater(AggregatedReplStageState<?, ?> state,
                         Map<String, KotlinVariableInfo> vars, 
-                        Set<KFunction<?>> methods) {
+                        Set<KotlinFunctionInfo> functions) {
     this.state = state;
     this.vars = vars;
-    this.methods = methods;
+    this.functions = functions;
   }
 
   public void update() {
-    updateVars();
-    updateMethods();
-  }
-  
-  private void updateVars() {
     try {
       List<Object> lines = getLines();
       refreshVariables(lines);
+      refreshMethods(lines);
     } catch (ReflectiveOperationException | NullPointerException e) {
       logger.error("Exception updating current variables", e);
     }
   }
 
-  private void updateMethods() {
-    try {
-      if (state.getHistory().isEmpty()) {
-        return;
+  private void refreshMethods(List<Object> lines) {
+    functions.clear();
+    for (Object line : lines) {
+      Method[] methods = line.getClass().getMethods();
+      for (Method method : methods) {
+        if (objectMethods.contains(method) || method.getName().equals("main")) {
+          continue;
+        }
+        KFunction<?> function = ReflectJvmMapping.getKotlinFunction(method);
+        if (function == null) {
+          continue;
+        }
+        functions.add(new KotlinFunctionInfo(function));
       }
-      Object script = getLineFromRecord(state.getHistory().peek());
-      getNewMethods(script);
-    } catch (NullPointerException e) {
-      logger.error("Exception updating current methods", e);
     }
   }
 
@@ -145,20 +146,5 @@ public class ContextUpdater {
         }
       }
     }
-  }
-
-  private void getNewMethods(Object script) {
-    Set<KFunction<?>> newMethods = new HashSet<>();
-    Method[] scriptMethods = script.getClass().getMethods();
-    for (Method method : scriptMethods) {
-      if (objectMethods.contains(method) || method.getName().equals("main")) {
-        continue;
-      }
-      KFunction<?> function = ReflectJvmMapping.getKotlinFunction(method);
-      if (function != null) {
-        newMethods.add(function);
-      }
-    }
-    methods.addAll(newMethods);
   }
 }

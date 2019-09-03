@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -36,6 +35,7 @@ import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.kotlin.completion.KotlinCompleter;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
+import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.KotlinRepl;
 import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
@@ -137,7 +137,7 @@ public class KotlinInterpreter extends Interpreter {
     return interpreter.getVariables();
   }
 
-  public List<KFunction<?>> getFunctions() {
+  public List<KotlinFunctionInfo> getFunctions() {
     return interpreter.getFunctions();
   }
 

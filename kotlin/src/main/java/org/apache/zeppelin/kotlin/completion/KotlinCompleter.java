@@ -17,14 +17,13 @@
 
 package org.apache.zeppelin.kotlin.completion;
 
-import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.KotlinRepl;
 
@@ -55,12 +54,11 @@ public class KotlinCompleter {
       ));
     }
 
-    List<KFunction<?>> functions = ctx.getFunctions();
-    for (KFunction<?> function : functions) {
+    for (KotlinFunctionInfo fun : ctx.getFunctions()) {
       result.add(new InterpreterCompletion(
-          function.getName(),
-          function.getName(),
-          shorten(functionSignature(function))
+          fun.getName(),
+          fun.getName(),
+          fun.toString(true)
       ));
     }
 

@@ -44,6 +44,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.kotlin.reflect.KotlinFunctionInfo;
 import org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 
@@ -196,9 +197,13 @@ public class KotlinInterpreterTest {
   @Test
   public void testMethods() throws Exception {
     interpreter.interpret("fun sq(x: Int): Int = x * x", context);
+    interpreter.interpret("fun sq(x: Int): Int = x * x", context);
+    assertEquals(1, interpreter.getFunctions().size());
+
     interpreter.interpret("fun <T> singletonListOf(elem: T): List<T> = listOf(elem)", context);
     List<String> signatures = interpreter.getFunctions().stream()
-        .map(KotlinReflectUtil::functionSignature).collect(Collectors.toList());
+        .map(KotlinFunctionInfo::toString).collect(Collectors.toList());
+    System.out.println(signatures);
     assertTrue(signatures.stream().anyMatch(signature ->
         signature.equals("fun sq(kotlin.Int): kotlin.Int")));
     assertTrue(signatures.stream().anyMatch(signature ->
@@ -273,8 +278,8 @@ public class KotlinInterpreterTest {
     assertTrue(shorten(message).contains("(List<Int>) -> Int"));
 
     interpreter.interpret("fun first(s: String): Char = s[0]", context);
-    KFunction<?> first = interpreter.getFunctions().get(0);
-    assertEquals("fun first(String): Char", shorten(functionSignature(first)));
+    KotlinFunctionInfo first = interpreter.getFunctions().get(0);
+    assertEquals("fun first(String): Char", first.toString(true));
   }
 
   @Test
