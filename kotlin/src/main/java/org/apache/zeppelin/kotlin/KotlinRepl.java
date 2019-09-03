@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -85,53 +86,46 @@ public class KotlinRepl {
     contextUpdater = new ContextUpdater(state, ctx.vars, ctx.functions);
   }
 
+
+  public List<KotlinVariableInfo> getVariables() {
+    return ctx.getVars();
+  }
+
+  public List<KFunction<?>> getFunctions() {
+    return ctx.getFunctions();
+  }
+
+  public KotlinContext getKotlinContext() {
+    return ctx;
+  }
+
+
   public InterpreterResult eval(String code) {
     ReplCompileResult compileResult = compiler.compile(state,
         new ReplCodeLine(counter.getAndIncrement(), 0, code));
 
-    if (compileResult instanceof ReplCompileResult.Incomplete) {
-      return new InterpreterResult(InterpreterResult.Code.INCOMPLETE);
-    }
-    if (compileResult instanceof ReplCompileResult.Error) {
-      ReplCompileResult.Error e = (ReplCompileResult.Error) compileResult;
-      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-    }
-    if (!(compileResult instanceof ReplCompileResult.CompiledClasses)) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR,
-          "unknown compilation result:" + compileResult.toString());
+    Optional<InterpreterResult> compileError = checkCompileError(compileResult);
+    if (compileError.isPresent()) {
+      return compileError.get();
     }
 
     ReplCompileResult.CompiledClasses classes =
         (ReplCompileResult.CompiledClasses) compileResult;
     writer.writeClasses(classes);
 
-    ReplEvalResult evalResult;
-    Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);
-    if (wrapper != null) {
-      evalResult = wrapper.invoke(runEvaluator);
-    } else {
-      evalResult = runEvaluator.invoke();
+    ReplEvalResult evalResult  = evalInWrapper(classes);
+
+    Optional<InterpreterResult> evalError = checkEvalError(evalResult);
+    if (evalError.isPresent()) {
+      return evalError.get();
     }
 
-    if (evalResult instanceof ReplEvalResult.Error) {
-      ReplEvalResult.Error e = (ReplEvalResult.Error) evalResult;
-      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-    }
-    if (evalResult instanceof ReplEvalResult.Incomplete) {
-      return new InterpreterResult(InterpreterResult.Code.INCOMPLETE);
-    }
-    if (evalResult instanceof ReplEvalResult.HistoryMismatch) {
-      ReplEvalResult.HistoryMismatch e = (ReplEvalResult.HistoryMismatch) evalResult;
-      return new InterpreterResult(
-          InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo());
-    }
+    contextUpdater.update();
+
     if (evalResult instanceof ReplEvalResult.UnitResult) {
-      contextUpdater.update();
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
     if (evalResult instanceof ReplEvalResult.ValueResult) {
-      contextUpdater.update();
-
       ReplEvalResult.ValueResult v = (ReplEvalResult.ValueResult) evalResult;
       String typeString = shortenTypes ? shorten(v.getType()) : v.getType();
       String valueString = prepareValueString(v.getValue());
@@ -144,16 +138,53 @@ public class KotlinRepl {
         "unknown evaluation result: " + evalResult.toString());
   }
 
-  public List<KotlinVariableInfo> getVariables() {
-    return ctx.getVars();
+  private ReplEvalResult evalInWrapper(ReplCompileResult.CompiledClasses classes) {
+    ReplEvalResult evalResult;
+    // For now, invokeWrapper parameter in evaluator.eval does not work, so wrapping happens here
+    Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);
+    if (wrapper != null) {
+      evalResult = wrapper.invoke(runEvaluator);
+    } else {
+      evalResult = runEvaluator.invoke();
+    }
+    return evalResult;
   }
 
-  public List<KFunction<?>> getFunctions() {
-    return ctx.getFunctions();
+  private Optional<InterpreterResult> checkCompileError(ReplCompileResult compileResult) {
+    if (compileResult instanceof ReplCompileResult.Incomplete) {
+      return Optional.of(new InterpreterResult(InterpreterResult.Code.INCOMPLETE));
+    }
+
+    if (compileResult instanceof ReplCompileResult.Error) {
+      ReplCompileResult.Error e = (ReplCompileResult.Error) compileResult;
+      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage()));
+    }
+
+    if (!(compileResult instanceof ReplCompileResult.CompiledClasses)) {
+      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR,
+          "unknown compilation result:" + compileResult.toString()));
+    }
+
+    return Optional.empty();
   }
 
-  public KotlinContext getKotlinContext() {
-    return ctx;
+  private Optional<InterpreterResult> checkEvalError(ReplEvalResult evalResult) {
+    if (evalResult instanceof ReplEvalResult.Error) {
+      ReplEvalResult.Error e = (ReplEvalResult.Error) evalResult;
+      return Optional.of(new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage()));
+    }
+
+    if (evalResult instanceof ReplEvalResult.Incomplete) {
+      return Optional.of(new InterpreterResult(InterpreterResult.Code.INCOMPLETE));
+    }
+
+    if (evalResult instanceof ReplEvalResult.HistoryMismatch) {
+      ReplEvalResult.HistoryMismatch e = (ReplEvalResult.HistoryMismatch) evalResult;
+      return Optional.of(new InterpreterResult(
+          InterpreterResult.Code.ERROR, "history mismatch at " + e.getLineNo()));
+    }
+
+    return Optional.empty();
   }
 
   private String prepareValueString(Object value) {
@@ -176,7 +207,6 @@ public class KotlinRepl {
         .collect(Collectors.joining(","))
         + " ... " + (collection.size() - maxResult) + " more]";
   }
-
 
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
