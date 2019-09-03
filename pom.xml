@@ -83,7 +83,7 @@
     <module>sap</module>
     <module>scalding</module>
     <module>java</module>
-<!--    <module>beam</module>-->
+    <module>beam</module>
     <module>hazelcastjet</module>
     <module>geode</module>
     <module>zeppelin-web</module>
