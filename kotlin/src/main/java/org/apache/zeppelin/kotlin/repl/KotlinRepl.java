@@ -265,7 +265,11 @@ public class KotlinRepl {
 
     public void showFunctions() {
       for (KFunction<?> fun : functions) {
-        System.out.println(functionSignature(fun));
+        String signature = functionSignature(fun);
+        if (shortenTypes) {
+          signature = shorten(signature);
+        }
+        System.out.println(signature);
       }
     }
   }
