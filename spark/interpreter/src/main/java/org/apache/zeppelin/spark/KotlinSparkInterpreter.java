@@ -81,8 +81,8 @@ public class KotlinSparkInterpreter extends Interpreter {
       outputDir =  conf.getOption("spark.repl.class.outputDir").getOrElse(null);
     }
 
-    interpreter.getBuilder()
-        .executionContext(ctx)
+    interpreter.properties()
+        .receiver(ctx)
         .classPath(classpath)
         .outputDir(outputDir)
         .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX)

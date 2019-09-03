@@ -42,9 +42,10 @@ import kotlin.reflect.KFunction;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.ContextUpdater;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
+import org.apache.zeppelin.kotlin.repl.building.ReplBuilding;
 
 public class KotlinRepl {
   private static Logger logger = LoggerFactory.getLogger(KotlinRepl.class);
@@ -61,31 +62,33 @@ public class KotlinRepl {
   boolean shortenTypes;
 
   @SuppressWarnings("unchecked")
-  public KotlinRepl(JvmReplCompiler compiler,
-                    JvmReplEvaluator evaluator,
-                    KotlinReceiver receiver,
-                    String outputDir,
-                    int maxResult,
-                    boolean shortenTypes) {
-    this.compiler = compiler;
-    this.evaluator = evaluator;
+  public static KotlinRepl build(KotlinReplProperties properties) {
+    KotlinRepl repl = new KotlinRepl();
+    repl.compiler = ReplBuilding.buildCompiler(properties);
+    repl.evaluator = ReplBuilding.buildEvaluator(properties);
     ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
-    state = new AggregatedReplStageState(
-        compiler.createState(stateLock),
-        evaluator.createState(stateLock),
+    repl.state = new AggregatedReplStageState(
+        repl.compiler.createState(stateLock),
+        repl.evaluator.createState(stateLock),
         stateLock);
-    counter = new AtomicInteger(0);
+    repl.counter = new AtomicInteger(0);
 
-    writer = new ClassWriter(outputDir);
-    this.maxResult = maxResult;
-    this.shortenTypes = shortenTypes;
+    repl.writer = new ClassWriter(properties.getOutputDir());
+    repl.maxResult = properties.getMaxResult();
+    repl.shortenTypes = properties.getShortenTypes();
 
-    ctx = new KotlinContext();
-    receiver.kc = ctx;
+    repl.ctx = repl.new KotlinContext();
+    properties.getReceiver().kc = repl.ctx;
 
-    contextUpdater = new ContextUpdater(state, ctx.vars, ctx.functions);
+    repl.contextUpdater = new ContextUpdater(
+        repl.state, repl.ctx.vars, repl.ctx.functions);
+
+    for (String line: properties.getCodeOnLoad()) {
+      repl.eval(line);
+    }
+
+    return repl;
   }
-
 
   public List<KotlinVariableInfo> getVariables() {
     return ctx.getVars();

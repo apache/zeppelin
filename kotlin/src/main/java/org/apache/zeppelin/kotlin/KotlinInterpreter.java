@@ -38,7 +38,7 @@ import org.apache.zeppelin.kotlin.completion.KotlinCompleter;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
 import org.apache.zeppelin.kotlin.repl.KotlinRepl;
-import org.apache.zeppelin.kotlin.repl.KotlinReplBuilder;
+import org.apache.zeppelin.kotlin.repl.building.KotlinReplProperties;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {
@@ -47,12 +47,12 @@ public class KotlinInterpreter extends Interpreter {
 
   private InterpreterOutputStream out;
   private KotlinRepl interpreter;
-  private KotlinReplBuilder builder;
+  private KotlinReplProperties replProperties;
   private KotlinCompleter completer;
 
   public KotlinInterpreter(Properties properties) {
     super(properties);
-    builder = new KotlinReplBuilder();
+    replProperties = new KotlinReplProperties();
 
     int maxResult = Integer.parseInt(
         properties.getProperty("zeppelin.kotlin.maxResult", "1000"));
@@ -63,21 +63,21 @@ public class KotlinInterpreter extends Interpreter {
 
     completer = new KotlinCompleter();
 
-    builder
-        .executionContext(new KotlinReceiver())
+    replProperties
+        .receiver(new KotlinReceiver())
         .maxResult(maxResult)
         .codeOnLoad("")
         .classPath(getImportClasspath(imports))
         .shortenTypes(shortenTypes);
   }
 
-  public KotlinReplBuilder getBuilder() {
-    return builder;
+  public KotlinReplProperties properties() {
+    return replProperties;
   }
 
   @Override
   public void open() throws InterpreterException {
-    interpreter = builder.build();
+    interpreter = KotlinRepl.build(replProperties);
 
     completer.setCtx(interpreter.getKotlinContext());
     out = new InterpreterOutputStream(logger);
