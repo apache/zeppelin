@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.kotlin.context;
 
-import org.apache.zeppelin.kotlin.KotlinRepl;
+import org.apache.zeppelin.kotlin.repl.KotlinRepl;
 
 /**
  The execution context for lines in Kotlin REPL.

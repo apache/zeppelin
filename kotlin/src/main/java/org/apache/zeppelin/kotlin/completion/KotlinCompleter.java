@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 import kotlin.reflect.KFunction;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
-import org.apache.zeppelin.kotlin.KotlinRepl;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.apache.zeppelin.kotlin.repl.KotlinRepl;
 
 public class KotlinCompleter {
   private static final List<InterpreterCompletion> keywords = KotlinKeywords.KEYWORDS.stream()

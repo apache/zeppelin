@@ -37,6 +37,8 @@ import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.kotlin.completion.KotlinCompleter;
 import org.apache.zeppelin.kotlin.context.KotlinReceiver;
 import org.apache.zeppelin.kotlin.reflect.KotlinVariableInfo;
+import org.apache.zeppelin.kotlin.repl.KotlinRepl;
+import org.apache.zeppelin.kotlin.repl.KotlinReplBuilder;
 import org.apache.zeppelin.scheduler.Job;
 
 public class KotlinInterpreter extends Interpreter {

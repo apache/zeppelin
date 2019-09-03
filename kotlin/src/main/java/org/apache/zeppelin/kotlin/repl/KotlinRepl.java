@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin;
+package org.apache.zeppelin.kotlin.repl;
 
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;

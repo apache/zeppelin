@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin;
+package org.apache.zeppelin.kotlin.repl;
 
 import static kotlin.script.experimental.jvm.JvmScriptingHostConfigurationKt.getDefaultJvmScriptingHostConfiguration;
 import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmReplCompilerImpl;

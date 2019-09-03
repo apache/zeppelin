@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.kotlin;
+package org.apache.zeppelin.kotlin.repl;
 
 import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
