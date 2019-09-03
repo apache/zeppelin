@@ -20,33 +20,24 @@ package org.apache.zeppelin.kotlin;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.functionSignature;
 import static org.apache.zeppelin.kotlin.reflect.KotlinReflectUtil.shorten;
 import org.jetbrains.kotlin.cli.common.repl.AggregatedReplStageState;
-import org.jetbrains.kotlin.cli.common.repl.CompiledClassData;
 import org.jetbrains.kotlin.cli.common.repl.InvokeWrapper;
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine;
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult;
 import org.jetbrains.kotlin.cli.common.repl.ReplEvalResult;
-import org.jetbrains.kotlin.scripting.compiler.plugin.impl.KJvmCompiledModuleInMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import kotlin.jvm.functions.Function0;
 import kotlin.reflect.KFunction;
-import kotlin.script.experimental.jvm.impl.KJvmCompiledScript;
 import kotlin.script.experimental.jvmhost.repl.JvmReplCompiler;
 import kotlin.script.experimental.jvmhost.repl.JvmReplEvaluator;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -61,7 +52,7 @@ public class KotlinRepl {
   private JvmReplEvaluator evaluator;
   private AggregatedReplStageState<?, ?> state;
   private AtomicInteger counter;
-  private String outputDir;
+  private ClassWriter writer;
   private KotlinContext ctx;
   private InvokeWrapper wrapper;
   private int maxResult;
@@ -84,7 +75,7 @@ public class KotlinRepl {
         stateLock);
     counter = new AtomicInteger(0);
 
-    this.outputDir = outputDir;
+    writer = new ClassWriter(outputDir);
     this.maxResult = maxResult;
     this.shortenTypes = shortenTypes;
 
@@ -112,7 +103,7 @@ public class KotlinRepl {
 
     ReplCompileResult.CompiledClasses classes =
         (ReplCompileResult.CompiledClasses) compileResult;
-    writeClasses(classes);
+    writer.writeClasses(classes);
 
     ReplEvalResult evalResult;
     Function0<ReplEvalResult> runEvaluator = () -> evaluator.eval(state, classes, null, null);
@@ -186,50 +177,6 @@ public class KotlinRepl {
         + " ... " + (collection.size() - maxResult) + " more]";
   }
 
-  private void writeClasses(ReplCompileResult.CompiledClasses classes) {
-    if (outputDir == null) {
-      return;
-    }
-
-    for (CompiledClassData compiledClass: classes.getClasses()) {
-      String filePath = compiledClass.getPath();
-      if (filePath.contains("/")) {
-        continue;
-      }
-      String classWritePath = outputDir + File.separator + filePath;
-      writeClass(compiledClass.getBytes(), classWritePath);
-    }
-
-    writeModuleInMemory(classes);
-  }
-
-  private void writeModuleInMemory(ReplCompileResult.CompiledClasses classes) {
-    try {
-      KJvmCompiledScript<?> compiledScript = Objects.requireNonNull(
-          (KJvmCompiledScript<?>) classes.getData());
-
-      KJvmCompiledModuleInMemory moduleInMemory = Objects.requireNonNull(
-          (KJvmCompiledModuleInMemory) compiledScript.getCompiledModule());
-
-      moduleInMemory.getCompilerOutputFiles().forEach((name, bytes) -> {
-        if (name.contains("class")) {
-          writeClass(bytes, outputDir + File.separator + name);
-        }
-      });
-    } catch (ClassCastException | NullPointerException e) {
-      logger.info("Compiled line #" + classes.getLineId().getNo() + "has no in-memory modules");
-    }
-  }
-
-  private void writeClass(byte[] classBytes, String path) {
-    try (FileOutputStream fos = new FileOutputStream(path);
-         OutputStream out = new BufferedOutputStream(fos)) {
-      out.write(classBytes);
-      out.flush();
-    } catch (IOException e) {
-      logger.error(e.getMessage());
-    }
-  }
 
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();
