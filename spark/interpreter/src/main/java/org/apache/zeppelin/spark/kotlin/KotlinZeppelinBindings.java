@@ -22,9 +22,7 @@ package org.apache.zeppelin.spark.kotlin;
  */
 public class KotlinZeppelinBindings {
 
-  /**
-   * Simpler Kotlin syntax for z.select
-   */
+  //Simpler Kotlin syntax for z.select
   public static final String Z_SELECT_KOTLIN_SYNTAX =
       "import org.apache.zeppelin.display.ui.OptionInput.ParamOption\n" +
       "import org.apache.zeppelin.interpreter.BaseZeppelinContext\n" +
