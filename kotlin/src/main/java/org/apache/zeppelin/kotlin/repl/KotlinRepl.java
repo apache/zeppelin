@@ -77,32 +77,29 @@ public class KotlinRepl {
   private KotlinRepl() { }
 
   @SuppressWarnings("unchecked")
-  public static KotlinRepl build(KotlinReplProperties properties) {
-    KotlinRepl repl = new KotlinRepl();
-    repl.compiler = ReplBuilding.buildCompiler(properties);
-    repl.evaluator = ReplBuilding.buildEvaluator(properties);
+  public KotlinRepl(KotlinReplProperties properties) {
+    compiler = ReplBuilding.buildCompiler(properties);
+    evaluator = ReplBuilding.buildEvaluator(properties);
     ReentrantReadWriteLock stateLock = new ReentrantReadWriteLock();
-    repl.state = new AggregatedReplStageState(
-        repl.compiler.createState(stateLock),
-        repl.evaluator.createState(stateLock),
+    state = new AggregatedReplStageState(
+        compiler.createState(stateLock),
+        evaluator.createState(stateLock),
         stateLock);
-    repl.counter = new AtomicInteger(0);
+    counter = new AtomicInteger(0);
 
-    repl.writer = new ClassWriter(properties.getOutputDir());
-    repl.maxResult = properties.getMaxResult();
-    repl.shortenTypes = properties.getShortenTypes();
+    writer = new ClassWriter(properties.getOutputDir());
+    maxResult = properties.getMaxResult();
+    shortenTypes = properties.getShortenTypes();
 
-    repl.ctx = repl.new KotlinContext();
-    properties.getReceiver().kc = repl.ctx;
+    ctx = new KotlinContext();
+    properties.getReceiver().kc = ctx;
 
-    repl.contextUpdater = new ContextUpdater(
-        repl.state, repl.ctx.vars, repl.ctx.functions);
+    contextUpdater = new ContextUpdater(
+        state, ctx.vars, ctx.functions);
 
     for (String line: properties.getCodeOnLoad()) {
-      repl.eval(line);
+      eval(line);
     }
-
-    return repl;
   }
 
   public List<KotlinVariableInfo> getVariables() {

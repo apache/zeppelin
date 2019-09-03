@@ -77,7 +77,7 @@ public class KotlinInterpreter extends Interpreter {
 
   @Override
   public void open() throws InterpreterException {
-    interpreter = KotlinRepl.build(replProperties);
+    interpreter = new KotlinRepl(replProperties);
 
     completer.setCtx(interpreter.getKotlinContext());
     out = new InterpreterOutputStream(logger);
