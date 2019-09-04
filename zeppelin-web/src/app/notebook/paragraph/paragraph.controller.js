@@ -374,9 +374,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
     try {
       // remove magic from paragraphText
-      const splited = paragraphText.split(magic);
+      const splited = paragraphText.slice(paragraphText.indexOf(magic) + magic.length);
       // remove leading spaces
-      const textWithoutMagic = splited[1].replace(/^\s+/g, '');
+      const textWithoutMagic = splited.replace(/^\s+/g, '');
 
       if (!propagated) {
         $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime();
