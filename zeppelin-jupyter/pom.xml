@@ -36,7 +36,7 @@
 
   <properties>
     <zeppelin.version>${project.version}</zeppelin.version>
-    <guava.version>22.0</guava.version>
+    <guava.version>20.0</guava.version>
   </properties>
 
   <dependencies>

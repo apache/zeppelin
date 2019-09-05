@@ -44,7 +44,7 @@
 
     <!--plugin library versions-->
     <plugin.failsafe.version>2.16</plugin.failsafe.version>
-    <guava.version>22.0</guava.version>
+    <guava.version>20.0</guava.version>
   </properties>
 
   <dependencies>

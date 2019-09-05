@@ -49,9 +49,16 @@
 
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
+    <guava.version>20.0</guava.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix</artifactId>
@@ -64,6 +71,10 @@
         <exclusion>
           <groupId>org.apache.commons</groupId>
           <artifactId>commons-lang3</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
