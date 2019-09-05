@@ -24,9 +24,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,11 +55,15 @@ public class KotlinSparkInterpreterTest {
   @ClassRule
   public static TemporaryFolder tmpDir = new TemporaryFolder();
 
+  @Rule
+  public ExpectedException exceptionRule = ExpectedException.none();
+
   private static SparkInterpreter repl;
   private static InterpreterGroup intpGroup;
   private static InterpreterContext context;
   private static KotlinSparkInterpreter interpreter;
   private static String output;
+  private static boolean sparkSupported;
 
   public static Properties getSparkTestProperties(TemporaryFolder tmpDir) throws IOException {
     Properties p = new Properties();
@@ -134,12 +141,24 @@ public class KotlinSparkInterpreterTest {
     interpreter = new KotlinSparkInterpreter(properties);
     interpreter.setInterpreterGroup(intpGroup);
     intpGroup.get("note").add(interpreter);
-    interpreter.open();
+    try {
+      interpreter.open();
+      sparkSupported = true;
+    } catch (UnsupportedClassVersionError e) {
+      sparkSupported = false;
+    }
   }
 
   @AfterClass
   public static void tearDown() throws InterpreterException {
     repl.close();
+  }
+
+  @Before
+  public void expectUnsupportedError() {
+    if (!sparkSupported) {
+      exceptionRule.expect(UnsupportedClassVersionError.class);
+    }
   }
 
   @Test
@@ -167,6 +186,10 @@ public class KotlinSparkInterpreterTest {
             "spark.range(10).foreach { Thread.sleep(1000) }", context);
         assertEquals(ERROR, result.code());
         assertTrue(result.message().get(0).getData().trim().contains("cancelled"));
+      } catch (UnsupportedClassVersionError e) {
+        if (sparkSupported) {
+          Assert.fail(e.getMessage());
+        }
       } catch (InterpreterException e) {
         Assert.fail(e.getMessage());
       }

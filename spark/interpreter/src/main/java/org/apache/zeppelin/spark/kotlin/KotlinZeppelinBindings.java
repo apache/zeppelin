@@ -45,4 +45,8 @@ public class KotlinZeppelinBindings {
       "import org.apache.spark.sql.functions.*\n" +
       "import org.apache.spark.sql.expressions.UserDefinedFunction\n" +
       "import org.apache.spark.sql.api.java.*";
+
+  public static final String CAST_SPARK_SESSION = "" +
+      "import org.apache.spark.sql.SparkSession\n" +
+      "val spark = _sparkObject as SparkSession";
 }

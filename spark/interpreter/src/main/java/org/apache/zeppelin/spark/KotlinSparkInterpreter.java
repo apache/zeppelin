@@ -21,7 +21,6 @@ import static org.apache.zeppelin.spark.Utils.buildJobDesc;
 import static org.apache.zeppelin.spark.Utils.buildJobGroupId;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -48,11 +48,13 @@ import org.apache.zeppelin.spark.kotlin.SparkKotlinReceiver;
 
 public class KotlinSparkInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
+  private static final SparkVersion KOTLIN_SPARK_SUPPORTED_VERSION = SparkVersion.SPARK_2_4_0;
 
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
   private BaseZeppelinContext z;
   private JavaSparkContext jsc;
+  private SparkVersion sparkVersion;
 
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
@@ -65,10 +67,14 @@ public class KotlinSparkInterpreter extends Interpreter {
     sparkInterpreter =
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     jsc = sparkInterpreter.getJavaSparkContext();
+
+    sparkVersion = SparkVersion.fromVersionString(jsc.version());
+    assertVersion();
+
     z = sparkInterpreter.getZeppelinContext();
 
     SparkKotlinReceiver ctx = new SparkKotlinReceiver(
-        (SparkSession) sparkInterpreter.getSparkSession(),
+        sparkInterpreter.getSparkSession(),
         jsc,
         sparkInterpreter.getSQLContext(),
         z);
@@ -86,8 +92,8 @@ public class KotlinSparkInterpreter extends Interpreter {
         .classPath(classpath)
         .outputDir(outputDir)
         .codeOnLoad(KotlinZeppelinBindings.Z_SELECT_KOTLIN_SYNTAX)
-        .codeOnLoad(KotlinZeppelinBindings.SPARK_UDF_IMPORTS);
-
+        .codeOnLoad(KotlinZeppelinBindings.SPARK_UDF_IMPORTS)
+        .codeOnLoad(KotlinZeppelinBindings.CAST_SPARK_SESSION);
     interpreter.open();
   }
 
@@ -99,6 +105,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
+    assertVersion();
 
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
@@ -121,8 +128,9 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    jsc.cancelJobGroup(buildJobGroupId(context));
+    assertVersion();
 
+    jsc.cancelJobGroup(buildJobGroupId(context));
     interpreter.cancel(context);
   }
 
@@ -133,13 +141,31 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
+    if (unsupportedVersion()) {
+      return 0;
+    }
     return sparkInterpreter.getProgress(context);
   }
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
+    if (unsupportedVersion()) {
+      return Collections.emptyList();
+    }
     return interpreter.completion(buf, cursor, interpreterContext);
+  }
+
+  public boolean unsupportedVersion() {
+    return sparkVersion.olderThan(KOTLIN_SPARK_SUPPORTED_VERSION);
+  }
+
+  private void assertVersion() throws UnsupportedClassVersionError {
+    if (unsupportedVersion()) {
+      throw new UnsupportedClassVersionError(
+          "Spark version is " + sparkVersion + ", only " +
+              KOTLIN_SPARK_SUPPORTED_VERSION + " and newer are supported");
+    }
   }
 
   private List<String> sparkClasspath() {
