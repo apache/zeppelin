@@ -37,7 +37,7 @@
         <spark.version>2.4.0</spark.version>
         <spark.scala.binary.version>2.11</spark.scala.binary.version>
         <spark.scala.version>2.11.12</spark.scala.version>
-        <saprk.scala.compile.version>${spark.scala.binary.version}</saprk.scala.compile.version>
+        <spark.scala.compile.version>${spark.scala.binary.version}</spark.scala.compile.version>
     </properties>
 
     <dependencies>
