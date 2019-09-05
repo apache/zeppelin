@@ -115,7 +115,9 @@ public class LocalConfigStorage extends ConfigStorage {
   static void atomicWriteToFile(String content, File file) throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
-    File tempFile = Files.createTempFile(destinationFilePath.getParent(), file.getName(), null).toFile();
+    Path destinationDirectory = destinationFilePath.getParent();
+    Files.createDirectories(destinationDirectory);
+    File tempFile = Files.createTempFile(destinationDirectory, file.getName(), null).toFile();
     try (FileOutputStream out = new FileOutputStream(tempFile)) {
       IOUtils.write(content, out);
     } catch (IOException iox) {
