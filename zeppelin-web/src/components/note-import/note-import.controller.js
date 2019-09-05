@@ -123,10 +123,10 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
       // angular.element('#noteImportModal').modal('hide');
     } else if (result.cells && result.cells.length > 0) { // nbviewer notebook format
       if (!$scope.note.noteImportName) {
-        $scope.note.noteImportName = result.metadata.kernelspec.display_name
+        $scope.note.noteImportName = result.metadata.kernelspec.display_name;
       }
-      result.name = $scope.note.noteImportName
-      websocketMsgSrv.importNote(result)
+      result.name = $scope.note.noteImportName;
+      websocketMsgSrv.importNote(result);
       // angular.element('#noteImportModal').modal('hide');
     } else {
       $scope.note.errorText = 'Invalid JSON';

@@ -267,9 +267,9 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   // Export nbformat
-  $scope.exportNbformat = function () {
-    websocketMsgSrv.convertNote($scope.note, $scope.note.name)
-  }
+  $scope.exportNbformat = function() {
+    websocketMsgSrv.convertNote($scope.note, $scope.note.name);
+  };
 
   // Clone note
   $scope.cloneNote = function(noteId) {
