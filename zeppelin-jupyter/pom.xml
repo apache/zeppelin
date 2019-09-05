@@ -36,6 +36,7 @@
 
   <properties>
     <zeppelin.version>${project.version}</zeppelin.version>
+    <guava.version>22.0</guava.version>
   </properties>
 
   <dependencies>
@@ -52,7 +53,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>15.0</version>
+      <version>${guava.version}</version>
     </dependency>
 
     <dependency>

@@ -35,12 +35,20 @@
 
   <properties>
     <interpreter.name>md</interpreter.name>
-    <commons.lang3.version>3.4</commons.lang3.version>
+    <commons.lang3.version>3.7</commons.lang3.version>
     <markdown4j.version>2.2-cj-1.0</markdown4j.version>
     <pegdown.version>1.6.0</pegdown.version>
+    <asm.version>5.0.4</asm.version> <!-- For resolving dependency convergence error -->
   </properties>
 
   <dependencies>
+
+    <!-- For resolving dependency convergence error -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>${asm.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.commonjava.googlecode.markdown4j</groupId>
@@ -52,6 +60,12 @@
       <groupId>org.pegdown</groupId>
       <artifactId>pegdown</artifactId>
       <version>${pegdown.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
