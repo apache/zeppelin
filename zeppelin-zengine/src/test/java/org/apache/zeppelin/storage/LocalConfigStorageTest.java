@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -44,6 +46,24 @@ public class LocalConfigStorageTest {
             }
         } finally {
             Files.deleteIfExists(destination);
+        }
+    }
+
+    @Test
+    public void testWritingAtomicallyNonExistingDir() throws IOException {
+        Random rnd = new Random();
+        final Path destDir = Paths.get(System.getProperty("java.io.tmpdir"), "non-existing-" + rnd.nextLong());
+        final Path destination = Paths.get(destDir.toString(),"test-" + rnd.nextLong() + "-file");
+        final File destinationFile = destination.toFile();
+        try {
+            LocalConfigStorage.atomicWriteToFile(TEST_STRING, destinationFile);
+            try (InputStream is = Files.newInputStream(destination)) {
+                String read = IOUtils.toString(is);
+                assertEquals(TEST_STRING, read);
+            }
+        } finally {
+            Files.deleteIfExists(destination);
+            Files.deleteIfExists(destDir);
         }
     }
 
