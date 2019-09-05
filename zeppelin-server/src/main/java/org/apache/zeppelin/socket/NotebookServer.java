@@ -1145,6 +1145,8 @@ public class NotebookServer extends WebSocketServlet
   protected Note importNote(NotebookSocket conn, Message fromMessage) throws IOException {
     String noteJson;
     String noteName = (String) ((Map) fromMessage.get("note")).get("name");
+    // Checking whether the notebook data is from a Jupyter or a Zeppelin Notebook.
+    // Jupyter notebooks have paragraphs under the "cells" label.
     if (((Map) fromMessage.get("note")).get("cells") == null) {
       noteJson = gson.toJson(fromMessage.get("note"));
     } else {
