@@ -161,10 +161,12 @@ public class KotlinInterpreter extends Interpreter {
 
     PrintStream oldOut = System.out;
     PrintStream newOut = (out != null) ? new PrintStream(out) : null;
-    System.setOut(newOut);
-    InterpreterResult res = interpreter.eval(code);
-    System.setOut(oldOut);
-
+    try {
+      System.setOut(newOut);
+      InterpreterResult res = interpreter.eval(code);
+    } finally {
+      System.setOut(oldOut);
+    }
     return res;
   }
 
