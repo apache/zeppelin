@@ -261,6 +261,7 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (Apache 2.0) jarchivelib (https://github.com/thrau/jarchivelib)
     (Apache 2.0) Google Cloud Client Library for Java (https://github.com/GoogleCloudPlatform/google-cloud-java)
     (Apache 2.0) concurrentunit (https://github.com/jhalterman/concurrentunit)
+    (Apache 2.0) Kotlin (https://github.com/JetBrains/kotlin)
 
 ========================================================================
 BSD 3-Clause licenses
