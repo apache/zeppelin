@@ -48,6 +48,8 @@
     <aws.sdk.s3.version>1.10.62</aws.sdk.s3.version>
     <commons.vfs2.version>2.2</commons.vfs2.version>
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
+    <jettison.version>1.4.0</jettison.version>
+    <kerberos-client.version>2.0.0-M15</kerberos-client.version>
     <!--test library versions-->
     <google.truth.version>0.27</google.truth.version>
     <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
@@ -157,12 +159,6 @@
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-highlighter</artifactId>
       <version>${lucene.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>${aws.sdk.s3.version}</version>
     </dependency>
 
     <dependency>
@@ -312,6 +308,12 @@
       </activation>
 
       <dependencies>
+        <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-s3</artifactId>
+          <version>${aws.sdk.s3.version}</version>
+        </dependency>
+
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-client</artifactId>
@@ -650,6 +652,21 @@
           <version>${hadoop.version}</version>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.codehaus.jettison</groupId>
+          <artifactId>jettison</artifactId>
+          <version>${jettison.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-aws</artifactId>
+          <version>${hadoop.version}</version>
+        </dependency>
+		<dependency>
+		  <groupId>org.apache.directory.server</groupId>
+		  <artifactId>kerberos-client</artifactId>
+		  <version>${kerberos-client.version}</version>
+	    </dependency>
       </dependencies>
     </profile>
   </profiles>

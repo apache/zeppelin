@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.storage;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
@@ -103,14 +104,20 @@ public class LocalConfigStorage extends ConfigStorage {
     atomicWriteToFile(credentials, credentialPath);
   }
 
-  private String readFromFile(File file) throws IOException {
-    return IOUtils.toString(new FileInputStream(file));
+  @VisibleForTesting
+  static String readFromFile(File file) throws IOException {
+    try (FileInputStream is = new FileInputStream(file)) {
+      return IOUtils.toString(is);
+    }
   }
 
-  private void atomicWriteToFile(String content, File file) throws IOException {
+  @VisibleForTesting
+  static void atomicWriteToFile(String content, File file) throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
-    File tempFile = Files.createTempFile(destinationFilePath.getParent(), file.getName(), null).toFile();
+    Path destinationDirectory = destinationFilePath.getParent();
+    Files.createDirectories(destinationDirectory);
+    File tempFile = Files.createTempFile(destinationDirectory, file.getName(), null).toFile();
     try (FileOutputStream out = new FileOutputStream(tempFile)) {
       IOUtils.write(content, out);
     } catch (IOException iox) {

@@ -23,6 +23,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ClusterInterpreterLauncherTest extends ClusterMockTest {
+  private static Logger LOGGER = LoggerFactory.getLogger(ClusterInterpreterLauncherTest.class);
 
   @BeforeClass
   public static void startTest() throws IOException, InterruptedException {
@@ -63,12 +66,12 @@ public class ClusterInterpreterLauncherTest extends ClusterMockTest {
     InterpreterLaunchContext context = new InterpreterLaunchContext(properties, option, null,
         "user1", "intpGroupId", "groupId",
         "groupName", "name", 0, "host");
+
     InterpreterClient client = launcher.launch(context);
 
     assertTrue(client instanceof RemoteInterpreterRunningProcess);
     RemoteInterpreterRunningProcess interpreterProcess = (RemoteInterpreterRunningProcess) client;
-    assertEquals("INTP_TSERVER_HOST", interpreterProcess.getHost());
-    assertEquals(0, interpreterProcess.getPort());
+    assertEquals("127.0.0.1", interpreterProcess.getHost());
     assertEquals("name", interpreterProcess.getInterpreterSettingName());
     assertEquals(5000, interpreterProcess.getConnectTimeout());
   }

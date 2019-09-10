@@ -86,7 +86,7 @@ matrix:
     - sudo: required
       jdk: "openjdk8"
       dist: xenial
-      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="clean install -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
@@ -98,7 +98,7 @@ matrix:
     # Test interpreter modules
     - jdk: "openjdk8"
       dist: xenial
-      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" TENSORFLOW="1.0.0" PROFILE="-Pscala-2.10" BUILD_FLAG="clean install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" TENSORFLOW="1.0.0" PROFILE="-Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Run Spark integration test and unit test separately for each spark version
 
