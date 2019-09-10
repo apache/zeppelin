@@ -1603,10 +1603,14 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
     final Note note = getNotebook().getNote(noteId);
-
-    note.clearParagraphOutput(paragraphId);
-    Paragraph paragraph = note.getParagraph(paragraphId);
-    broadcastParagraph(note, paragraph);
+    if (note == null) {
+      // It is possible the note is removed, but the job is still running
+      LOG.warn("Note {} doesn't existed, it maybe deleted.", noteId);
+    } else {
+      note.clearParagraphOutput(paragraphId);
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      broadcastParagraph(note, paragraph);
+    }
   }
 
   /**
@@ -1808,7 +1812,12 @@ public class NotebookServer extends WebSocketServlet
       }
 
       try {
-        getNotebook().saveNote(p.getNote(), p.getAuthenticationInfo());
+        if (getNotebook().getNote(p.getNote().getId()) == null) {
+          // It is possible the note is removed, but the job is still running
+          LOG.warn("Note {} doesn't existed.", p.getNote().getId());
+        } else {
+          getNotebook().saveNote(p.getNote(), p.getAuthenticationInfo());
+        }
       } catch (IOException e) {
         LOG.error(e.toString(), e);
       }
