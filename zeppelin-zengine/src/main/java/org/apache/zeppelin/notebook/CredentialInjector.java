@@ -56,7 +56,8 @@ class CredentialInjector {
       UsernamePassword usernamePassword = creds.getUsernamePassword(key);
       if (usernamePassword != null) {
         String value = usernamePassword.getUsername();
-        replaced = matcher.replaceFirst(value);
+        String quotedValue = Matcher.quoteReplacement(value);
+        replaced = matcher.replaceFirst(quotedValue);
         matcher = userpattern.matcher(replaced);
       }
     }
@@ -67,7 +68,8 @@ class CredentialInjector {
       if (usernamePassword != null) {
         passwords.add(usernamePassword.getPassword());
         String value = usernamePassword.getPassword();
-        replaced = matcher.replaceFirst(value);
+        String quotedValue = Matcher.quoteReplacement(value);
+        replaced = matcher.replaceFirst(quotedValue);
         matcher = passwordpattern.matcher(replaced);
       }
     }
