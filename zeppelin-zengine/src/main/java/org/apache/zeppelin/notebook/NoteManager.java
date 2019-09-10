@@ -53,6 +53,7 @@ public class NoteManager {
   private Folder trash;
 
   private NotebookRepo notebookRepo;
+  // noteId -> notePath
   private Map<String, String> notesInfo;
 
   public NoteManager(NotebookRepo notebookRepo) throws IOException {
