@@ -61,13 +61,10 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
             print("******************* CONTENT ******************")
             print(str(content)[:400])
             outStatus, outType, output = ipython_pb2.SUCCESS, None, None
+            # prepare the reply
             if msg_type == 'stream':
                 outType = ipython_pb2.TEXT
                 output = content['text']
-            elif msg_type == 'error':
-                outStatus = ipython_pb2.ERROR
-                outType = ipython_pb2.TEXT
-                output = '\n'.join(content['traceback'])
             elif msg_type in ('display_data', 'execute_result'):
                 if 'image/jpeg' in content['data']:
                     outType = ipython_pb2.JPEG
@@ -75,7 +72,7 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                 elif 'image/png' in content['data']:
                     outType = ipython_pb2.PNG
                     output = content['data']['image/png']
-                if 'text/plain' in content['data']:
+                elif 'text/plain' in content['data']:
                     outType = ipython_pb2.TEXT
                     output = content['data']['text/plain']
                 elif 'text/html' in content['data']:
@@ -88,11 +85,17 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                 elif 'application/vnd.holoviews_load.v0+json' in content['data']:
                     outType = ipython_pb2.HTML
                     output = '<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n'
-                if outType is not None:
-                    stream_reply_queue.put(
-                        ipython_pb2.ExecuteResponse(status=outStatus,
-                                                    type=outType,
-                                                    output=output))
+            elif msg_type == 'error':
+                outStatus = ipython_pb2.ERROR
+                outType = ipython_pb2.TEXT
+                output = '\n'.join(content['traceback'])
+
+            # send reply if we supported the output type
+            if outType is not None:
+                stream_reply_queue.put(
+                    ipython_pb2.ExecuteResponse(status=outStatus,
+                                                type=outType,
+                                                output=output))
         def execute_worker():
             reply = self._kc.execute_interactive(request.code,
                                           output_hook=_output_hook,
