@@ -122,7 +122,7 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
             if not self.isKernelAlive() or t.is_alive():
                 yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
                                                   type=ipython_pb2.TEXT,
-                                                  output="Ipython kernel has been stopped. It might be because of an out of memory issue")
+                                                  output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
         if payload_reply:
             result = []
             for payload in payload_reply[0]['content']['payload']:
