@@ -60,37 +60,39 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
             content = msg['content']
             print("******************* CONTENT ******************")
             print(str(content)[:400])
-            outstatus, outtype, outtype = ipython_pb2.SUCCESS, None, None
+            outStatus, outType, output = ipython_pb2.SUCCESS, None, None
             if msg_type == 'stream':
-                outtype = ipython_pb2.TEXT
+                outType = ipython_pb2.TEXT
                 output = content['text']
             elif msg_type == 'error':
-                outstatus = ipython_pb2.ERROR
-                outtype = ipython_pb2.TEXT
+                outStatus = ipython_pb2.ERROR
+                outType = ipython_pb2.TEXT
                 output = '\n'.join(content['traceback'])
             elif msg_type in ('display_data', 'execute_result'):
                 if 'image/jpeg' in content['data']:
-                    type = ipython_pb2.JPEG
+                    outType = ipython_pb2.JPEG
                     output = content['data']['image/jpeg']
                 elif 'image/png' in content['data']:
-                    type = ipython_pb2.PNG
+                    outType = ipython_pb2.PNG
                     output = content['data']['image/png']
                 if 'text/plain' in content['data']:
-                    type = ipython_pb2.TEXT
+                    outType = ipython_pb2.TEXT
                     output = content['data']['text/plain']
                 elif 'text/html' in content['data']:
-                    type = ipython_pb2.HTML
+                    outType = ipython_pb2.HTML
                     output = content['data']['text/html']
                 elif 'application/javascript' in content['data']:
-                    type = ipython_pb2.HTML
+                    outType = ipython_pb2.HTML
                     output = '<script> ' + content['data']['application/javascript'] + ' </script>\n'
                     print('add to html output: ' + str(content)[:100])
                 elif 'application/vnd.holoviews_load.v0+json' in content['data']:
-                    type = ipython_pb2.HTML
+                    outType = ipython_pb2.HTML
                     output = '<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n'
-                if outtype:
+                if outType is not None:
                     stream_reply_queue.put(
-                        ipython_pb2.ExecuteResponse(status=outstatus, type=outtype, output=output)
+                        ipython_pb2.ExecuteResponse(status=outStatus,
+                                                    type=outType,
+                                                    output=output))
         def execute_worker():
             reply = self._kc.execute_interactive(request.code,
                                           output_hook=_output_hook,
@@ -100,10 +102,12 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         t = threading.Thread(name="ConsumerThread", target=execute_worker)
         with self._lock:
             t.start()
-            # We want to ensure that the kernel is alive because in case of OOM or other errors
-            # Execution might be stuck there:
-            # https://github.com/jupyter/jupyter_client/blob/master/jupyter_client/blocking/client.py#L32
-            while t.is_alive() and self.isKernelAlive() or not stream_reply_queue.empty():
+            # We want to wait the end of the execution (and queue empty).
+            # In our case when the thread is not alive -> it means that the execution is complete
+            # However we also ensure that the kernel is alive because in case of OOM or other errors
+            # Execution might be stuck there: (might open issue on jupyter client)
+            # https://github.com/jupyter/jupyter_client/blob/master/jupyter_client/blocking/client.py#L323
+            while (t.is_alive() and self.isKernelAlive()) or not stream_reply_queue.empty():
                 # Sleeping time to time to reduce cpu usage.
                 # At worst it will bring a 0.05 delay for bunch of messages.
                 # Overall it will improve performance.
@@ -111,6 +115,11 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                 while not stream_reply_queue.empty():
                     yield stream_reply_queue.get()
 
+            # if kernel is not alive or thread is still alive, it means that we face an issue.
+            if not self.isKernelAlive() or t.is_alive():
+                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
+                                                  type=ipython_pb2.TEXT,
+                                                  output="Ipython kernel has been stopped. It might be because of an out of memory issue")
         if payload_reply:
             result = []
             for payload in payload_reply[0]['content']['payload']:
