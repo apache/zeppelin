@@ -88,7 +88,7 @@ public class StandardInterpreterLauncher extends InterpreterLauncher {
     }
   }
 
-  protected Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
+  public Map<String, String> buildEnvFromProperties(InterpreterLaunchContext context) throws IOException {
     Map<String, String> env = new HashMap<>();
     for (Object key : context.getProperties().keySet()) {
       if (RemoteInterpreterUtils.isEnvString((String) key)) {
