@@ -162,6 +162,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   public void start(String userName) throws IOException {
     docker = DefaultDockerClient.builder().uri(URI.create(DOCKER_HOST)).build();
 
+    removeExistContainer(containerName);
+
     final Map<String, List<PortBinding>> portBindings = new HashMap<>();
 
     // Bind container ports to host ports
@@ -191,13 +193,24 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     List<String> listEnv = getListEnvs();
     LOGGER.info("docker listEnv = {}", listEnv);
 
+    // check if the interpreter process exit script
+    // if interpreter process exit, then container need exit
+    StringBuilder sbStartCmd = new StringBuilder();
+    sbStartCmd.append("sleep 10; ");
+    sbStartCmd.append("process=RemoteInterpreterServer; ");
+    sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
+    sbStartCmd.append("while [ ! -z \"$RUNNING_PIDS\" ]; ");
+    sbStartCmd.append("do sleep 1; ");
+    sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
+    sbStartCmd.append("done");
+
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
-        .cmd("sh", "-c", "while :; do sleep 1; done")
+        .cmd("sh", "-c", sbStartCmd.toString())
         .build();
 
     try {
@@ -340,14 +353,26 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // Remove container
       docker.removeContainer(containerName);
-    } catch (DockerException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    } catch (DockerException | InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
     }
 
     // Close the docker client
     docker.close();
+  }
+
+  private void removeExistContainer(String containerName) {
+    try {
+      docker.killContainer(containerName);
+    } catch (DockerException | InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+    } finally {
+      try {
+        docker.removeContainer(containerName);
+      } catch (DockerException | InterruptedException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+    }
   }
 
   @Override
