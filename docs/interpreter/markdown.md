@@ -25,7 +25,7 @@ limitations under the License.
 
 ## Overview
 [Markdown](http://daringfireball.net/projects/markdown/) is a plain text formatting syntax designed so that it can be converted to HTML.
-Apache Zeppelin uses [pegdown](https://github.com/sirthias/pegdown) and [markdown4j](https://github.com/jdcasey/markdown4j) as markdown parsers.
+Apache Zeppelin uses [flexmark](https://github.com/vsch/flexmark-java), [pegdown](https://github.com/sirthias/pegdown) and [markdown4j](https://github.com/jdcasey/markdown4j) as markdown parsers.
 
 In Zeppelin notebook, you can use ` %md ` in the beginning of a paragraph to invoke the Markdown interpreter and generate static html from Markdown plain text.
 
@@ -53,21 +53,25 @@ For more information, please see [Mathematical Expression](../usage/display_syst
   </tr>
   <tr>
     <td>markdown.parser.type</td>
-    <td>pegdown</td>
-    <td>Markdown Parser Type. <br/> Available values: pegdown, markdown4j.</td>
+    <td>flexmark</td>
+    <td>Markdown Parser Type. <br/> Available values: flexmark, pegdown, markdown4j.</td>
   </tr>
 </table>
 
+### Flexmark parser
+
+CommonMark/Markdown Java parser with source level AST.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-flexmark-parser.png" width="70%" />
+
+`flexmark` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) extensions also.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-flexmark-parser-extensions.png" width="70%" />
 
 ### Pegdown Parser
 
-`pegdown` parser provides github flavored markdown.
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser.png" width="70%" />
-
-`pegdown` parser provides [YUML](http://yuml.me/) and [Websequence](https://www.websequencediagrams.com/) plugins also. 
-
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example-pegdown-parser-plugins.png" width="70%" />
+`pegdown` parser provides github flavored markdown. Although still one of the most popular Markdown parsing libraries for the JVM, pegdown has reached its end of life.
+The project is essentially unmaintained with tickets piling up and crucial bugs not being fixed.`pegdown`'s parsing performance isn't great. But keep this parser for the backward compatibility.
 
 ### Markdown4j Parser
 

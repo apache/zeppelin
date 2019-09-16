@@ -45,7 +45,6 @@ public class FlexmarkParser implements MarkdownParser {
     MutableDataSet options = new MutableDataSet();
     options.set(Parser.EXTENSIONS, Arrays.asList(StrikethroughExtension.create(),
         TablesExtension.create(),
-        GitLabExtension.create(),
         UMLExtension.create(),
         AutolinkExtension.create(),
         WikiLinkExtension.create(),
@@ -57,10 +56,8 @@ public class FlexmarkParser implements MarkdownParser {
 
   @Override
   public String render(String markdownText) {
-    LOGGER.debug("markdownText: {}", markdownText);
     Node document = parser.parse(markdownText);
     String html = renderer.render(document);
-    LOGGER.info("Renderer HTML: {} ", html);
     return wrapWithMarkdownClassDiv(html);
   }
 

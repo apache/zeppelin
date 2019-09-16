@@ -286,6 +286,8 @@ The following components are provided under the BSD 2-Clause license.  See file 
   (BSD 2 Clause) portions of SQLLine (http://sqlline.sourceforge.net/) - http://sqlline.sourceforge.net/#license
    jdbc/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java
 
+  (BSD 2-clause) flexmark-java (https://github.com/vsch/flexmark-java)
+
 ========================================================================
 Jython Software License
 ========================================================================
