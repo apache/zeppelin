@@ -39,7 +39,11 @@ So, copying `notebook` and `conf` directory should be enough.
 
  - From 0.9, we change the notes file name structure ([ZEPPELIN-2619](https://issues.apache.org/jira/browse/ZEPPELIN-2619)) and move permissions info from `notebook-authorization.json` into note file itself [ZEPPELIN-3985](https://issues.apache.org/jira/browse/ZEPPELIN-3985). So when you upgrading zeppelin to 0.9, you need to upgrade note file. Here's steps you need to follow:
    1. Backup your notes file in case the upgrade fails
-   2. Call `bin/upgrade-note.sh -d` to upgrade note, `-d` option means to delete the old note file, missing this option will keep the old file.  
+   2. Call `bin/upgrade-note.sh -d` to upgrade note, `-d` option means to delete the old note file, missing this option will keep the old file.
+ - From 0.9, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change.   
+   
+### Upgrading from Zeppelin 0.8.1 (and before) to 0.8.2 (and later)
+ - From 0.8.2, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change.         
 
 ### Upgrading from Zeppelin 0.7 to 0.8
 
