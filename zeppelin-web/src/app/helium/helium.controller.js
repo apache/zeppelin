@@ -218,7 +218,7 @@ export default function HeliumCtrl($scope, $rootScope, $sce,
               confirm.close();
               console.log('Failed to install an interpreter %o %o', name, artifact);
               BootstrapDialog.show({
-                title: 'Error while starting to install ' + name + ' interpreter',
+                title: 'Error while starting to install ' + _.escape(name) + ' interpreter',
                 message: _.escape(data.message),
               });
             });
