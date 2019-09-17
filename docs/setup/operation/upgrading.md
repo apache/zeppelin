@@ -45,6 +45,8 @@ To set all your "writers" to "runners":
 2. Move directory **docs/assets/themes/zeppelin/note/FixReaders** to new `notebook` directory,
 3. Start the new Zeppelin and run note **System/Migrate from 0.7**.
 
+### Upgrading from Zeppelin 0.8.1 (and before) to 0.8.2 (and later)
+ - From 0.8.2, Zeppelin server bind `127.0.0.1` by default instead of `0.0.0.0`. Configure `zeppelin.server.addr` property or `ZEPPELIN_ADDR` env variable to change.         
 
 ### Upgrading from Zeppelin 0.7 to 0.8
 

@@ -40,6 +40,12 @@ If both are defined, then the **environment variables** will take priority.
     <th class="col-md-4">Description</th>
   </tr>
   <tr>
+    <td><h6 class="properties">ZEPPELIN_ADDR</h6></td>
+    <td><h6 class="properties">zeppelin.server.addr</h6></td>
+    <td>127.0.0.1</td>
+    <td>Zeppelin server binding address</td>
+  </tr>
+  <tr>
     <td><h6 class="properties">ZEPPELIN_PORT</h6></td>
     <td><h6 class="properties">zeppelin.server.port</h6></td>
     <td>8080</td>
