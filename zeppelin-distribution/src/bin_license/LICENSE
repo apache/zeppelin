@@ -67,8 +67,9 @@ The following components are provided under Apache License.
     (Apache 2.0) xml apis (xml-apis:xml-apis:jar:1.4.01 - http://xerces.apache.org/xml-commons/components/external)
     (Apache 2.0) java-xmlbuilder (com.jamesmurty.utils:java-xmlbuilder:jar:1.0 - https://github.com/jmurty/java-xmlbuilder)
     (Apache 2.0) compress-lzf (com.ning:compress-lzf:jar:1.0.3 - https://github.com/ning/compress) Copyright 2009-2010 Ning, Inc.
+    (Apache 2.0) java-driver-core (com.datastax.oss:java-driver-core:jar:3.7.2 - https://github.com/datastax/java-driver)
     (Apache 2.0) Snappy-java (org.xerial.snappy:snappy-java:1.1.2.4 - https://github.com/xerial/snappy-java/)
-    (Apache 2.0) lz4-java (net.jpountz.lz4:lz4:jar:1.3.0 - https://github.com/jpountz/lz4-java)
+    (Apache 2.0) lz4-java (org.lz4:lz4-java:jar:1.4.1 - https://github.com/lz4/lz4-java)
     (Apache 2.0) RoaringBitmap (org.roaringbitmap:RoaringBitmap:jar:0.5.11 - https://github.com/lemire/RoaringBitmap)
     (Apache 2.0) json4s (org.json4s:json4s-ast_2.10:jar:3.2.10 - https://github.com/json4s/json4s)
     (Apache 2.0) HPPC Collections (com.carrotsearch:hppc:0.7.1 - http://labs.carrotsearch.com/hppc.html/hppc)
