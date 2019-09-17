@@ -20,7 +20,6 @@ package org.apache.zeppelin.markdown;
 
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
-import com.vladsch.flexmark.ext.gitlab.GitLabExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.ext.typographic.TypographicExtension;
 import com.vladsch.flexmark.ext.wikilink.WikiLinkExtension;
@@ -38,8 +37,8 @@ import java.util.Arrays;
  */
 public class FlexmarkParser implements MarkdownParser {
   private static final Logger LOGGER = LoggerFactory.getLogger(FlexmarkParser.class);
-  Parser parser;
-  HtmlRenderer renderer;
+  private Parser parser;
+  private HtmlRenderer renderer;
 
   public FlexmarkParser() {
     MutableDataSet options = new MutableDataSet();

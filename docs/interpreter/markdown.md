@@ -58,7 +58,7 @@ For more information, please see [Mathematical Expression](../usage/display_syst
   </tr>
 </table>
 
-### Flexmark parser
+### Flexmark parser (Default Markdown Parser)
 
 CommonMark/Markdown Java parser with source level AST.
 
