@@ -812,6 +812,10 @@ Below are the configuration parameters and their default values.
 
 ## Change Log
 
+**3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+
+* Upgrade Java driver to 3.7.2 ([ZEPPELIN-4331](https://issues.apache.org/jira/browse/ZEPPELIN-4331);
+
 **3.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 
 * Update documentation
