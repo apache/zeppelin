@@ -45,6 +45,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ExecCreation;
@@ -361,14 +362,35 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     docker.close();
   }
 
+  // Because docker can't create a container with the same name, it will cause the creation to fail.
+  // If the zeppelin service is abnormal and the container that was created is not closed properly,
+  // the container will not be created again.
   private void removeExistContainer(String containerName) {
+    boolean isExist = false;
     try {
-      docker.killContainer(containerName);
+      final List<Container> containers
+          = docker.listContainers(DockerClient.ListContainersParam.allContainers());
+      for (Container container : containers) {
+        for (String name : container.names()) {
+          // because container name like '/md-shared', so need add '/'
+          if (StringUtils.equals(name, "/" + containerName)) {
+            isExist = true;
+            break;
+          }
+        }
+      }
+
+      if (isExist == true) {
+        LOGGER.info("kill exist container {}", containerName);
+        docker.killContainer(containerName);
+      }
     } catch (DockerException | InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
     } finally {
       try {
-        docker.removeContainer(containerName);
+        if (isExist == true) {
+          docker.removeContainer(containerName);
+        }
       } catch (DockerException | InterruptedException e) {
         LOGGER.error(e.getMessage(), e);
       }
