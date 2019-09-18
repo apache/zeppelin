@@ -303,7 +303,11 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected def createZeppelinContext(): Unit = {
     val sparkShims = SparkShims.getInstance(sc.version, properties)
-    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
+    var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (webUiUrl == null || webUiUrl.trim().length() == 0) {
+      webUiUrl = sparkUrl;
+    }
+    sparkShims.setupSparkListener(sc.master, webUiUrl, InterpreterContext.get)
 
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,
