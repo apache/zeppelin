@@ -48,6 +48,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class SparkInterpreterTest {
@@ -88,8 +89,6 @@ public class SparkInterpreterTest {
     interpreter = new SparkInterpreter(properties);
     interpreter.setInterpreterGroup(mock(InterpreterGroup.class));
     interpreter.open();
-
-    assertEquals("fake_spark_weburl", interpreter.getSparkUIUrl());
 
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -181,7 +180,9 @@ public class SparkInterpreterTest {
     assertEquals("pid_2", captorEvent.getValue().get("paraId"));
 
     // spark job url is sent
-    verify(mockRemoteEventClient).onParaInfosReceived(any(Map.class));
+    ArgumentCaptor<Map> onParaInfosReceivedArg = ArgumentCaptor.forClass(Map.class);
+    verify(mockRemoteEventClient).onParaInfosReceived(onParaInfosReceivedArg.capture());
+    assertTrue(((String) onParaInfosReceivedArg.getValue().get("jobUrl")).startsWith("fake_spark_weburl"));
 
     // case class
     result = interpreter.interpret("val bankText = sc.textFile(\"bank.csv\")", getInterpreterContext());
