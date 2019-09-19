@@ -74,7 +74,7 @@ RUN echo "$LOG_TAG Install R related packages" && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && \
     gpg -a --export E084DAB9 | apt-key add - && \
     apt-get -y update && \
-    apt-get -y install r-base r-base-dev && \
+    apt-get -y --allow-unauthenticated install r-base r-base-dev && \
     R -e "install.packages('knitr', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('ggplot2', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('googleVis', repos='http://cran.us.r-project.org')" && \
