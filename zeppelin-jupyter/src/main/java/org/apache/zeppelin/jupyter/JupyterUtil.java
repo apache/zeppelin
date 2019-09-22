@@ -16,45 +16,29 @@
  */
 package org.apache.zeppelin.jupyter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
-import org.apache.zeppelin.jupyter.nbformat.Cell;
-import org.apache.zeppelin.jupyter.nbformat.CodeCell;
-import org.apache.zeppelin.jupyter.nbformat.DisplayData;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
+import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.jupyter.nbformat.*;
 import org.apache.zeppelin.jupyter.nbformat.Error;
-import org.apache.zeppelin.jupyter.nbformat.ExecuteResult;
-import org.apache.zeppelin.jupyter.nbformat.HeadingCell;
-import org.apache.zeppelin.jupyter.nbformat.MarkdownCell;
-import org.apache.zeppelin.jupyter.nbformat.Nbformat;
-import org.apache.zeppelin.jupyter.nbformat.Output;
-import org.apache.zeppelin.jupyter.nbformat.RawCell;
-import org.apache.zeppelin.jupyter.nbformat.Stream;
 import org.apache.zeppelin.jupyter.zformat.Note;
 import org.apache.zeppelin.jupyter.zformat.Paragraph;
 import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 import org.apache.zeppelin.markdown.MarkdownParser;
 import org.apache.zeppelin.markdown.PegdownParser;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -165,6 +149,97 @@ public class JupyterUtil {
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
+  }
+
+  public String getJson(String input) {
+    Note note = getNote(new StringReader(input), "%spark", "%md");
+    return new Gson().toJson(note);
+  }
+
+  public String getNbformat(String note) {
+    Note noteFormat = getGson(new GsonBuilder()).fromJson(note, Note.class);
+
+    JsonObject nbformat = new JsonObject();
+    JsonArray cells = new JsonArray();
+
+    RegularExpression MD = new RegularExpression("%md\\s");
+    RegularExpression SQL = new RegularExpression("%sql\\s");
+    RegularExpression UNKNOWN_MAGIC = new RegularExpression("%\\w+\\s");
+    RegularExpression HTML = new RegularExpression("%html\\s");
+    RegularExpression SPARK = new RegularExpression("%spark\\s");
+
+    int index = 0;
+    for (Paragraph paragraph : noteFormat.getParagraphs()) {
+      String code = StringUtils.stripStart(paragraph.getText(), " ");
+      JsonObject codeJson = new JsonObject();
+
+      if (code == null || code.trim().isEmpty())
+        continue;
+
+      if (MD.matches(code)) {
+        codeJson.addProperty("cell_type", "markdown");
+        codeJson.add("metadata", new JsonObject());
+        codeJson.addProperty("source",
+                StringUtils.stripStart(StringUtils.stripStart(code, "%md"),
+                        "\n"));  // remove '%md'
+      } else if (SQL.matches(code) || HTML.matches(code)) {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        codeJson.add("metadata", new JsonObject());
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", "%" + code);  // add % to convert to cell magic
+      } else if (SPARK.matches(code)) {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("autoscroll", "auto");
+        codeJson.add("metadata", metadataJson);
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", code);
+      } else if (UNKNOWN_MAGIC.matches(code)) {
+        // use raw cells for unknown magic
+        codeJson.addProperty("cell_type", "raw");
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("format", "text/plain");
+        codeJson.add("metadata", metadataJson);
+        codeJson.addProperty("source", code);
+      } else {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("autoscroll", "auto");
+        codeJson.add("metadata", metadataJson);
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", code);
+      }
+
+      cells.add(codeJson);
+
+      index++;
+    }
+
+    JsonObject metadataJson = new JsonObject();
+
+    JsonObject kernelspecJson = new JsonObject();
+    kernelspecJson.addProperty("language", "scala");
+    kernelspecJson.addProperty("name", "spark2-scala");
+
+    JsonObject languageInfoJson = new JsonObject();
+    languageInfoJson.addProperty("codemirror_mode", "text/x-scala");
+    languageInfoJson.addProperty("file_extension", ".scala");
+    languageInfoJson.addProperty("mimetype", "text/x-scala");
+    languageInfoJson.addProperty("name", "scala");
+    languageInfoJson.addProperty("pygments_lexer", "scala");
+
+    metadataJson.addProperty("name", noteFormat.getName());
+    metadataJson.add("kernelspec", kernelspecJson);
+    metadataJson.add("language_info", languageInfoJson);
+
+    nbformat.add("metadata", metadataJson);
+    nbformat.addProperty("nbformat", 4);
+    nbformat.addProperty("nbformat_minor", 2);
+    nbformat.add("cells", cells);
+    return nbformat.toString();
   }
 
   public static void main(String[] args) throws ParseException, IOException {

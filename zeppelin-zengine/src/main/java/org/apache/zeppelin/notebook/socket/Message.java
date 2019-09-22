@@ -68,6 +68,8 @@ public class Message implements JsonSerializable {
 
     NOTE_RENAME,
 
+    CONVERT_NOTE_NBFORMAT,     // converting note to nbformat
+
     UPDATE_PERSONALIZED_MODE, // [c-s] update personalized mode (boolean)
                               // @param note id and boolean personalized mode value
 
