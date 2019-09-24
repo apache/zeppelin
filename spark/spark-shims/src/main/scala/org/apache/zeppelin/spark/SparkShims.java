@@ -93,15 +93,13 @@ public abstract class SparkShims {
   public abstract void setupSparkListener(String master, String sparkWebUrl);
 
   protected String getNoteId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(indexOf + 1, secondIndex);
+    String[] tokens = jobgroupId.split("-");
+    return tokens[2];
   }
 
   protected String getParagraphId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
+    String[] tokens = jobgroupId.split("-");
+    return tokens[3];
   }
 
   protected void buildSparkJobUrl(
