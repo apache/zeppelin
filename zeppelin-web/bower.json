@@ -53,6 +53,7 @@
         "src-noconflict/mode-pig.js",
         "src-noconflict/mode-sh.js",
         "src-noconflict/mode-r.js",
+        "src-noconflict/mode-sparql.js",
         "src-noconflict/keybinding-emacs.js",
         "src-noconflict/ext-language_tools.js",
         "src-noconflict/theme-chrome.js"

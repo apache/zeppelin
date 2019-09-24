@@ -1,0 +1,28 @@
+[
+  {
+    "group": "sparql",
+    "name": "sparql",
+    "className": "org.apache.zeppelin.sparql.SparqlInterpreter",
+    "properties": {
+      "sparql.endpoint": {
+        "envName": "SPARQL_SERVICE_ENDPOINT",
+        "propertyName": "sparql.endpoint",
+        "defaultValue": "http://dbpedia.org/sparql",
+        "description": "Complete URL of the endpoint. Default: http://dbpedia.org/sparql",
+        "type": "string"
+      },
+      "sparql.replaceURIs": {
+        "envName": "SPARQL_REPLACE_URI",
+        "propertyName": "sparql.replaceURIs",
+        "defaultValue": true,
+        "description": "Replace the URIs in the result with the prefixes. Default: true",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "sparql",
+      "editOnDblClick": false,
+      "completionKey": "TAB"
+    }
+  }
+]
