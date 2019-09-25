@@ -1,0 +1,126 @@
+#menu-bar {
+  * {
+    box-sizing: content-box;
+  }
+
+  .menu-top-mask {
+    height: 2px;
+    background-color: #fff;
+    z-index:1001;
+  }
+
+  ul.main-menu {
+    list-style-type: none;
+    margin: 0 0 0 3px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 400;
+
+    > li {
+      margin: 0;
+      display: inline-block;
+      list-style-type: none;
+      padding: 0 8px;
+      line-height: 28px;
+      vertical-align: middle;
+      cursor: pointer;
+      // outline: none;
+      // border-style: solid;
+      // border-width: 1px 1px 0 1px;
+      border: 1px solid transparent;
+
+      &.active-menu {
+        background-color: #fff;
+        border-color: #ccc;
+        // -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        // -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 1px solid #BDBDBD;
+        border-bottom-color: transparent;
+
+        &:hover{
+          background-color: #fff;
+        }
+      }
+
+      .separator {
+        border-top: 1px solid #ddd; 
+        margin-top: 5px;
+        margin-bottom: 5px;
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        display: none;
+        border-width:1px;
+        border-style: solid;
+        border-color: #ccc;
+        background-color: #fff;
+        -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    li {
+      &:hover{
+        background-color: whiteSmoke; /*#fef7cb;*/
+      }
+
+      a {
+        color: #000;
+        text-decoration: none;
+        display: block;
+        white-space: nowrap;
+      }
+
+      ul {
+        li {
+          display:list-item;
+          margin: 0;
+          line-height: 26px;
+          min-width: 100px;
+          cursor: pointer;
+          text-indent: 30px;
+          white-space:nowrap;
+
+          &.disabled,
+          &.disabled:hover,
+          &.disabled a {
+            color: #ddd;
+            cursor:default;
+            background-color: #fff;
+          }
+
+          a {
+            &.disabled,
+            &.disabled:hover {
+              color: #ddd;
+              cursor:default;
+              background-color: #fff;
+            }
+            padding-right: 40px;
+
+            span {
+              font-size: 11px;
+              color: #999;
+              float:right;
+              right: 10px;
+              left: auto;
+              position: absolute;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .submenu {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJCAYAAAAGuM1UAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjAwNzc4MEM5REU2ODExRTA4MTFGQjkyRjI0QTE5OUNDIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjAwNzc4MENBREU2ODExRTA4MTFGQjkyRjI0QTE5OUNDIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MDA3NzgwQzdERTY4MTFFMDgxMUZCOTJGMjRBMTk5Q0MiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MDA3NzgwQzhERTY4MTFFMDgxMUZCOTJGMjRBMTk5Q0MiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7t3apSAAAAWUlEQVR42mL8//8/AymAiZGRMQaIeYGYAYQJagBiJSAOBmJeomwA4t9ArADEoUCsRYwGmCckgViZkAYWIGYD4u9AvAWIbxCj4RdU8VVi/MBIcrAykAgAAgwA0LIO5yOjsL4AAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-position: right center;
+    color: #000;
+  }
+}

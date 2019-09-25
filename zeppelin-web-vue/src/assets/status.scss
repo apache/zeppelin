@@ -1,0 +1,83 @@
+// <div>
+//     <div class="ConnectionIndicator ConnectionIndicator--connected">
+//         <div class="Status">
+//             <div class="Status__circle Status__circle--static"></div>
+//             <div class="Status__circle Status__circle--animated Status__circle--pulse"></div>
+//         </div>
+//     </div>
+    
+//     <div class="ConnectionIndicator ConnectionIndicator--trying">
+//         <div class="Status">
+//             <div class="Status__circle Status__circle--static"></div>
+//             <div class="Status__circle Status__circle--animated Status__circle--pulse"></div>
+//         </div>
+//     </div>
+
+//     <div class="ConnectionIndicator ConnectionIndicator--disconnected">
+//         <div class="Status">
+//             <div class="Status__circle Status__circle--static"></div>
+//             <div class="Status__circle Status__circle--animated Status__circle--pulse"></div>
+//         </div>
+//     </div>
+// </div>
+  
+.ConnectionIndicator {
+  display: flex;
+  align-items: center;
+  margin: 3px 10px 3px 6px;
+
+  .status-label {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 20px;
+    vertical-align: middle;
+    margin-left: 6px; 
+  }
+
+  &.ConnectionIndicator--connected {
+    --status-color: 67, 181, 11;
+  }
+  &.ConnectionIndicator--trying {
+    --status-color: 255, 180, 0;
+  }
+  &.ConnectionIndicator--disconnected {
+    --status-color: 255, 0, 100;
+  }
+
+  .Status {
+    position: relative;
+
+    .Status__circle {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background-color: rgb(var(--status-color));
+    }
+
+    .Status__circle--animated {
+      position: absolute;
+      top: 0;
+    }
+
+    .Status__circle--pulse {
+      box-shadow: 0 0 0 12px rgba(var(--status-color), 0.6);
+      animation: statuspulse 2s infinite;
+    }
+  }
+}
+  
+@keyframes statuspulse {
+  0% {
+    transform: scale3d(0.35, 0.35, 0.35);
+    opacity: 1;
+  }
+  70% {
+    transform: scale3d(1, 1, 1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale3d(0.35, 0.35, 0.35);
+    opacity: 0;
+  }  
+}
