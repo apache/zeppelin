@@ -6,8 +6,6 @@ import store from './store'
 
 import Antd from 'ant-design-vue'
 
-// import 'vue-awesome/icons'
-// import Icon from 'vue-awesome/components/Icon'
 import VueSplit from 'vue-split-panel'
 import VueOffline from 'vue-offline'
 
@@ -24,7 +22,6 @@ Vue.use(Antd)
 
 Vue.config.productionTip = false
 
-// Vue.component('v-icon', Icon)
 Vue.use(VueSplit)
 Vue.use(VueOffline, {
   mixin: false

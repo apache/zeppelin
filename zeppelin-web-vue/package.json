@@ -25,7 +25,6 @@
     "tiptap": "^1.24.1",
     "tiptap-extensions": "^1.26.1",
     "vue": "^2.6.10",
-    "vue-awesome": "^3.5.4",
     "vue-clickaway": "^2.2.2",
     "vue-global-events": "^1.1.2",
     "vue-i18n": "^8.14.1",

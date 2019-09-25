@@ -4,9 +4,6 @@ html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  
-  /*overflow-x: hidden;
-  overflow-y: scroll;*/
 }
 
 * {
@@ -60,12 +57,3 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-// :root {
-//   --md-theme-default-accent: #ff5252;
-//   --md-theme-default-primary: #9c27b0;
-//   --md-theme-default-theme: light;
-//   --md-theme-selection-black-accent: #000;
-//   --md-theme-selection-black-primary: #448aff;
-//   --md-theme-selection-black-theme: light;
-// }
