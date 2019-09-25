@@ -231,7 +231,8 @@ export default {
 
       // remove from ui instantly
       this.$store.dispatch('removeParagraph', {
-        id: id
+        id: id,
+        notebookId: this.$props.notebookId
       })
 
       wsFactory.getConn(this.$props.notebookId).send({
