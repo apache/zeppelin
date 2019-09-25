@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin-examples</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.8.2-SNAPSHOT</version>
+    <version>0.8.2</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-example-spell-echo</artifactId>
   <packaging>jar</packaging>
-  <version>0.8.2-SNAPSHOT</version>
+  <version>0.8.2</version>
   <name>Zeppelin: Example Spell - Echo</name>
 
   <dependencies>
