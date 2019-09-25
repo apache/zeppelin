@@ -376,7 +376,7 @@ export default {
         onOk () {
           that.executeNotebookCommand('clear-output')
 
-          that.$message.success(that.$18n.t('message.notebooks.clear_output_success'), 4)
+          that.$message.success(that.$i18n.t('message.notebooks.clear_output_success'), 4)
         },
         onCancel () {}
       })
