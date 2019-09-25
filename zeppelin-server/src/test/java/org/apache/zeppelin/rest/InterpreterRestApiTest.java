@@ -383,6 +383,6 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   private static String getSimulatedMarkdownResult(String markdown) {
-    return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n</div>", markdown);
+    return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n\n</div>", markdown);
   }
 }
