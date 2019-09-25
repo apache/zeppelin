@@ -231,13 +231,16 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
     @Override
     public void onProcessComplete(int exitValue) {
       LOGGER.warn("Process is exited with exit value " + exitValue);
+      if (env.getOrDefault("ZEPPELIN_SPARK_YARN_CLUSTER", "false").equals("false")) {
+        // don't call notify in yarn-cluster mode
+        synchronized (this) {
+          notify();
+        }
+      }
       // For yarn-cluster mode, client process will exit with exit value 0
       // after submitting spark app. So don't move to TERMINATED state when exitValue is 0.
       if (exitValue != 0) {
         transition(State.TERMINATED);
-        synchronized (this) {
-          notify();
-        }
       } else {
         transition(State.COMPLETED);
       }
