@@ -802,9 +802,13 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
         newConfig.graph.values = newConfig.graph.commonSetting.pivot.values;
         delete newConfig.graph.commonSetting.pivot;
       }
+
+      // don't send commitParagraphResult when config is the same.
+      // see https://issues.apache.org/jira/browse/ZEPPELIN-4280.
       if (angular.equals($scope.config, newConfig)) {
         return;
       }
+
       console.debug('committVizConfig', newConfig);
       let newParams = angular.copy(paragraph.settings.params);
       commitParagraphResult(paragraph.title, paragraph.text, newConfig, newParams);
