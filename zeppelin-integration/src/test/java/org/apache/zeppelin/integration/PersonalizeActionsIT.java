@@ -201,10 +201,10 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
         createNewNote();
       }
       String noteId = driver.getCurrentUrl().substring(driver.getCurrentUrl().lastIndexOf("/") + 1);
-      setTextOfParagraph(1, "print(s\"\"\"%table\\n" +
-          "name\\tsize\\n" +
-          "sun\\t100\\n" +
-          "moon\\t10\"\"\")");
+      setTextOfParagraph(1, "%python print(\"%table " +
+          "name\\\\tsize\\\\n" +
+          "sun\\\\t100\\\\n" +
+          "moon\\\\t10\")");
 
       runParagraph(1);
       try {
@@ -215,6 +215,11 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
             "ERROR", CoreMatchers.equalTo("FINISHED"));
       }
 
+      pollingWait(By.xpath("//*[@id='actionbar']" +
+              "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
+      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
+              "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
+
       pollingWait(By.xpath(getParagraphXPath(1) +
           "//button[contains(@uib-tooltip, 'Bar Chart')]"), MAX_BROWSER_TIMEOUT_SEC).click();
       collector.checkThat("The output of graph mode is changed",
@@ -222,11 +227,8 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"),
           CoreMatchers.equalTo("fa fa-bar-chart"));
 
-      pollingWait(By.xpath("//*[@id='actionbar']" +
-          "//button[contains(@uib-tooltip, 'Switch to personal mode')]"), MAX_BROWSER_TIMEOUT_SEC).click();
-      clickAndWait(By.xpath("//div[@class='modal-dialog'][contains(.,'Do you want to personalize your analysis?')" +
-          "]//div[@class='modal-footer']//button[contains(.,'OK')]"));
       authenticationIT.logoutUser("admin");
+      driver.navigate().refresh();
 
       // step 2 : (user1) make sure it is on personalized mode and active graph is 'Bar chart',
       // try to change active graph to 'Table' and then check result
@@ -249,12 +251,28 @@ public class PersonalizeActionsIT extends AbstractZeppelinIT {
 
       pollingWait(By.xpath(getParagraphXPath(1) +
           "//button[contains(@uib-tooltip, 'Table')]"), MAX_BROWSER_TIMEOUT_SEC).click();
-      collector.checkThat("The output of graph mode is not changed",
+      collector.checkThat("Change to table",
           driver.findElement(By.xpath(getParagraphXPath(1) + "//button[contains(@class," +
               "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"),
-          CoreMatchers.equalTo("fa fa-bar-chart"));
+          CoreMatchers.equalTo("fa fa-table"));
       authenticationIT.logoutUser("user1");
+      driver.navigate().refresh();
 
+      // step 3: (admin) Admin view is still table because of it's personalized!
+      authenticationIT.authenticationUser("admin", "password1");
+      locator = By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]");
+      element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+      if (element.isDisplayed()) {
+        pollingWait(By.xpath("//*[@id='notebook-names']//a[contains(@href, '" + noteId + "')]"),
+                MAX_BROWSER_TIMEOUT_SEC).click();
+      }
+
+      collector.checkThat("Make sure the output of graph mode is",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//button[contains(@class," +
+                      "'btn btn-default btn-sm ng-binding ng-scope active')]//i")).getAttribute("class"),
+              CoreMatchers.equalTo("fa fa-bar-chart"));
+
+      authenticationIT.logoutUser("admin");
     } catch (Exception e) {
       handleException("Exception in PersonalizeActionsIT while testGraphAction ", e);
     }
