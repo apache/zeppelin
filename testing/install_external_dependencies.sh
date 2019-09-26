@@ -24,9 +24,9 @@ touch ~/.environ
 if [[ "${SPARKR}" = "true" ]] ; then
   echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list
   gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9
-  gpg -a --export E084DAB9 | apt-key add -
-  apt-get -y update
-  apt-get -y --allow-unauthenticated install r-base r-base-dev
+  sudo gpg -a --export E084DAB9 | sudo apt-key add -
+  sudo apt-get -y update
+  sudo apt-get -y --allow-unauthenticated install r-base r-base-dev
 
   echo "R_LIBS=~/R" > ~/.Renviron
   echo "export R_LIBS=~/R" >> ~/.environ
