@@ -40,8 +40,6 @@ addons:
     - r-packages-trusty
     - mysql-5.7-trusty
     packages:
-    - r-base
-    - r-base-dev
     - mysql-server
     - mysql-client
 
