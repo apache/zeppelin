@@ -50,9 +50,6 @@ export default {
   created () {
 
   },
-  mounted () {
-
-  },
   computed: {
     isLoading () {
       return this.$store.state.NotebookStore.isListLoading
