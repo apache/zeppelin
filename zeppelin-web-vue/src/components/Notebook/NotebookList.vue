@@ -24,7 +24,7 @@
           href="javascript: void(0);"
           v-bind:title="note.path"
           class="text-ellipsis"
-          :class="{'active':  note.id === activeNotebookId}"
+          :class="{'active':  note.id === activeNoteId}"
           v-on:click="openNotebook(note)"
         >
           <a-icon type="file" />
@@ -77,7 +77,7 @@ export default {
     isLoading () {
       return this.$store.state.NotebookStore.isListLoading
     },
-    activeNotebookId () {
+    activeNoteId () {
       return this.$store.state.TabManagerStore.currentTab && this.$store.state.TabManagerStore.currentTab.id
     },
     notebooks () {
@@ -85,15 +85,6 @@ export default {
     }
   },
   methods: {
-    addNode () {
-      if (fileParts.length === 2 && n.isTrash === false) {
-        tree.push({
-          title: this.getFileName(n.path),
-          key: n.id,
-          isLeaf: true
-        })
-      }
-    },
     openNotebook (notebook) {
       this.$root.executeCommand('tabs', 'open', {
         type: 'notebook',
