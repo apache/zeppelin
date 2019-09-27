@@ -178,7 +178,7 @@ export default {
       this.name = ''
       this.defaultInterpreter = null
 
-      this.importType = 'file',
+      this.importType = 'file'
       this.sourceNotebookFile = null
       this.sourceNotebookJSON = null
       this.fileUploaded = false
