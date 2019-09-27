@@ -248,7 +248,7 @@
         <!-- Tools Menu -->
         <li> Tools
           <ul>
-            <li
+            <!-- <li
               v-bind:class="{'disabled': !(isActiveNote)}"
               class="submenu"
             >
@@ -271,7 +271,7 @@
                   </a>
                 </li>
               </ul>
-            </li>
+            </li> -->
             <!-- <li>
               <a
                 href="javascript: void(0);"
@@ -283,6 +283,7 @@
             <li>
               <a
                 @click="executeCommand('show-keyboard-shortcuts')"
+                class="disabled"
                 href="javascript: void(0);"
               >
                 Keyboard Shortcuts

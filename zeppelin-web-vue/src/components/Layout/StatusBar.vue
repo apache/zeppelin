@@ -4,7 +4,7 @@
     </div>
 
     <div class="status-right">
-      <div
+      <!-- <div
         id="toggle-dark-mode"
         class="status-bar-widget"
       >
@@ -18,7 +18,7 @@
             size="small"
           />
         </a-tooltip>
-      </div>
+      </div> -->
 
       <div
         id="connection-status"
@@ -60,13 +60,13 @@ export default {
     }
   },
   methods: {
-    toggleDarkMode () {
-      if (this.darkModeEnabled) {
-        this.$store.dispatch('toggleDarkMode', false)
-      } else {
-        this.$store.dispatch('toggleDarkMode', true)
-      }
-    }
+    // toggleDarkMode () {
+    //   if (this.darkModeEnabled) {
+    //     this.$store.dispatch('toggleDarkMode', false)
+    //   } else {
+    //     this.$store.dispatch('toggleDarkMode', true)
+    //   }
+    // }
   }
 }
 </script>
