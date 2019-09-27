@@ -66,26 +66,6 @@
           </a>
         </li>
     </ul>
-
-    <div id="nav-actions">
-      <div class="divider" />
-      <ul>
-        <li>
-          <a
-            class=""
-            href="javascript:void(0);"
-            @click="togglePreferences()"
-          >
-            <a-tooltip placement="right">
-              <template slot="title">
-                <span>Preferences</span>
-              </template>
-              <a-icon type="setting" />
-            </a-tooltip>
-          </a>
-        </li>
-      </ul>
-    </div>
   </div>
 </template>
 
@@ -159,26 +139,6 @@ export default {
           }
         }
 
-      }
-    }
-  }
-
-  #nav-actions {
-    position: absolute;
-    bottom: 0;
-
-    .divider {
-      background-image: linear-gradient(45deg, #ffffff 25%, #888888 25%, #888888 50%, #ffffff 50%, #ffffff 75%, #888888 75%, #888888 100%);
-      background-size: 5.66px 5.66px;
-      height: 6px;
-      display: block;
-      width: 100%;
-    }
-
-    ul li {
-      a {
-        height: 40px;
-        padding: 8px 11px;
       }
     }
   }

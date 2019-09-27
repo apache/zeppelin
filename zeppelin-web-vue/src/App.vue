@@ -7,7 +7,6 @@
     >
       <SplitArea :size="25">
           <LeftSidebar />
-          <Preferences />
       </SplitArea>
       <SplitArea :size="75" id="content-pane" class="scrollbar">
         <router-view />
@@ -36,14 +35,13 @@ import ws from '@/services/ws-helper'
 import Header from '@/components/Layout/Header.vue'
 import LeftSidebar from '@/components/Layout/LeftSideBar.vue'
 import StatusBar from '@/components/Layout/StatusBar.vue'
-import Preferences from '@/components/Tools/Preferences.vue'
 
 import Create from '@/components/Notebook/Create.vue'
 import Import from '@/components/Notebook/Import.vue'
 
 export default {
   name: 'App',
-  components: { GlobalEvents, Header, LeftSidebar, StatusBar, Preferences, Create, Import },
+  components: { GlobalEvents, Header, LeftSidebar, StatusBar, Create, Import },
   created () {
     document.title = 'Zeppelin Notebook'
   },

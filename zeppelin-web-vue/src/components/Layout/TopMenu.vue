@@ -272,14 +272,14 @@
                 </li>
               </ul>
             </li>
-            <li>
+            <!-- <li>
               <a
                 href="javascript: void(0);"
                 @click="showPreferences()"
               >
                 Preferences
               </a>
-            </li>
+            </li> -->
             <li>
               <a
                 @click="executeCommand('show-keyboard-shortcuts')"
