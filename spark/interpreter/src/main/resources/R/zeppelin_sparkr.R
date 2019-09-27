@@ -66,6 +66,14 @@ z.put <- function(name, object) {
 z.get <- function(name) {
   SparkR:::callJMethod(.zeppelinContext, "get", name)
 }
+z.angular <- function(name, noteId=NULL, paragraphId=NULL) {
+  SparkR:::callJMethod(.zeppelinContext, "angular", name, noteId, paragraphId)
+}
+
+z.angularBind <- function(name, value, noteId=NULL, paragraphId=NULL) {
+  SparkR:::callJMethod(.zeppelinContext, "angularBind", name, value, noteId, paragraphId)
+}
+
 z.input <- function(name, value) {
   SparkR:::callJMethod(.zeppelinContext, "input", name, value)
 }
