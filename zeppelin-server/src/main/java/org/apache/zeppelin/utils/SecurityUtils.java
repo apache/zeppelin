@@ -157,6 +157,7 @@ public class SecurityUtils {
             );
             if (auth != null) {
               roles = new HashSet<>(auth.getRoles());
+              break;
             }
           } catch (Throwable t) {
             if (log.isDebugEnabled()) {
@@ -165,7 +166,6 @@ public class SecurityUtils {
               log.debug(msg, t);
             }
           }
-          break;
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
