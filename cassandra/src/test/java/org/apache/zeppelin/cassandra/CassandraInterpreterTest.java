@@ -773,6 +773,7 @@ public class CassandraInterpreterTest {
             .replaceAll(">\\s+<", "><")
             .replaceAll("(?s)data-target=\"#[a-f0-9-]+(?:_asCQL|_indices_asCQL)?\"", "")
             .replaceAll("(?s)id=\"[a-f0-9-]+(?:_asCQL|_indices_asCQL)?\"", "")
+            .replaceAll("AND memtable_flush_period_in_ms = 0", "")
             .trim();
   }
 
