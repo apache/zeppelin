@@ -10,7 +10,7 @@
 
       <div>
         <h5 class="pt-2 mb-1">
-          Zeppelin Studio
+          Zeppelin Notebook
         </h5>
         <TopMenu />
       </div>

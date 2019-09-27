@@ -45,7 +45,7 @@ export default {
   name: 'App',
   components: { GlobalEvents, Header, LeftSidebar, StatusBar, Preferences, Create, Import },
   created () {
-    document.title = 'Zeppelin Studio'
+    document.title = 'Zeppelin Notebook'
   },
   beforeMount () {
     ws.init(this)
