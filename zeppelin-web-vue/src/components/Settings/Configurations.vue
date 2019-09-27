@@ -41,9 +41,6 @@ export default {
       return configurations
     }
   },
-  created () {
-
-  },
   mounted () {
     this.getConfiguration()
   },

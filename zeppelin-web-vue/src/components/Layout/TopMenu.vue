@@ -339,8 +339,6 @@ import jQueryMenu from '@/components/thirdparty/jquery.menu.js'
 
 export default {
   name: 'TopMenu',
-  data: () => ({
-  }),
   computed: {
     activeNote () {
       return this.isActiveNote && this.$store.state.TabManagerStore.currentTab

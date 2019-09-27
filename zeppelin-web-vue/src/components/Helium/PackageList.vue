@@ -47,9 +47,6 @@ export default {
       packages: 'HeliumStore/packages'
     })
   },
-  created () {
-
-  },
   mounted () {
     this.getPackages()
   },

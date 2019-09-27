@@ -17,9 +17,6 @@ export default {
     name: { required: true },
     tabContent: { required: true }
   },
-  data: () => ({
-
-  }),
   computed: {
     computedId () {
       return this.id ? this.id : this.name.toLowerCase().replace(/ /g, '-')

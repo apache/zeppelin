@@ -26,9 +26,6 @@ import nv from 'nvd3'
 
 export default {
   name: 'Results',
-  components: {
-
-  },
   props: ['result', 'index', 'paragraph', 'noteId'],
   data () {
     return {

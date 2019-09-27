@@ -78,14 +78,6 @@ export default {
 @import '@/assets/placeholder.scss';
 
 body {
-  // &.light-theme {
-  //   @import '@/assets/themes/light-theme.scss';
-  // }
-
-  // &.dark-theme {
-  //   @import '@/assets/themes/dark-theme.scss';
-  // }
-
   color: #2c3e50;
 
   a {
@@ -103,7 +95,6 @@ body {
 }
 
 #app {
-  // font-family: 'Avenir', Helvetica, Arial, sans-serif;
   height: 100%;
   width: 100%;
 

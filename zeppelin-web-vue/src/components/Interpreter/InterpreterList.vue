@@ -19,9 +19,6 @@ export default {
       interpreters: 'InterpreterStore/interpreters'
     })
   },
-  created () {
-
-  },
   mounted () {
     this.getInterpreters()
   },

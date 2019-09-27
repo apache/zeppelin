@@ -51,12 +51,6 @@
 <script>
 export default {
   name: 'StatusBar',
-  data: () => ({
-
-  }),
-  components: {
-
-  },
   computed: {
     darkModeEnabled () {
       return this.$store.state.darkMode
@@ -96,8 +90,6 @@ export default {
 }
 
 .status-bar-widget {
-  // padding: 0 8px;
-
   .status-pane-label {
     margin-left: 10px;
   }

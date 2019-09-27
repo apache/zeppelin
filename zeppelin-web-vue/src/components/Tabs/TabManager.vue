@@ -44,9 +44,6 @@ import wsFactory from '@/services/ws-factory'
 
 export default {
   name: 'tabManager',
-  components: {
-
-  },
   data: () => ({
     activeTabIndex: 0,
     lastActiveTabHash: ''
@@ -58,12 +55,6 @@ export default {
     currentActiveTab () {
       return this.$store.state.TabManagerStore.currentTab
     }
-  },
-  componenets: {
-
-  },
-  created () {
-
   },
   methods: {
     setActiveTab (tab) {

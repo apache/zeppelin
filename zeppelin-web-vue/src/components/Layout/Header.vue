@@ -23,10 +23,7 @@ import TopMenu from './TopMenu.vue'
 
 export default {
   name: 'Header',
-  components: { TopMenu },
-  mounted () {
-
-  }
+  components: { TopMenu }
 }
 </script>
 

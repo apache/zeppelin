@@ -124,15 +124,6 @@ export default {
   props: {
     noteId: { required: true }
   },
-  components: {
-
-  },
-  computed: {
-
-  },
-  mounted () {
-
-  },
   methods: {
     executeNoteCommand (command) {
       this.$root.executeCommand('note', command)

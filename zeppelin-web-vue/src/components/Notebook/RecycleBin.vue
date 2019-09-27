@@ -36,20 +36,8 @@
 </template>
 
 <script>
-import ws from '@/services/ws-helper'
-
 export default {
   name: 'RecycleBin',
-  data () {
-    return {
-    }
-  },
-  components: {
-
-  },
-  created () {
-
-  },
   computed: {
     isLoading () {
       return this.$store.state.NotebookStore.isListLoading

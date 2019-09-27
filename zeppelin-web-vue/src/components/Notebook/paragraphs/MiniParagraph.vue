@@ -13,7 +13,7 @@
 import wsFactory from '@/services/ws-factory.js'
 
 export default {
-  name: 'mini-paragraph',
+  name: 'MiniParagraph',
   components: {
 
   },
@@ -22,9 +22,6 @@ export default {
     return {
       showEditor: false
     }
-  },
-  computed: {
-
   },
   methods: {
     showTitleEditor: function () {

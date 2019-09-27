@@ -17,16 +17,8 @@ import wsFactory from '@/services/ws-factory.js'
 import uuidvtimestamp from 'uuid/v1'
 
 export default {
-  name: 'add-paragraph',
-  components: {
-
-  },
+  name: 'AddParagraph',
   props: ['index', 'noteId'],
-  data () {
-    return {
-
-    }
-  },
   methods: {
     addParagraph: function (isMd) {
       let index = this.index

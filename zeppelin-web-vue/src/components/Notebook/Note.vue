@@ -53,11 +53,6 @@ export default {
     NoteControls,
     Paragraph
   },
-  data () {
-    return {
-
-    }
-  },
   computed: {
     activeParagraphId () {
       let activeParagraph = this.$store.getters.getActiveParagraph

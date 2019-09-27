@@ -64,24 +64,6 @@
         >
           <a-input placeholder="Enter Note Name"  v-model="name"/>
         </a-form-item>
-
-        <!-- <a-form-item
-          label="Default Interpreter"
-        >
-          <a-select
-            showSearch
-            style="width: 180px"
-            :defaultValue="interpreters[0]"
-            v-model="defaultInterpreter"
-          >
-            <a-select-option
-              v-for="interpreter in interpreters"
-              v-bind:key="interpreter.id"
-            >
-              {{interpreter.id}}
-            </a-select-option>
-          </a-select>
-        </a-form-item> -->
       </a-form>
     </a-modal>
   </div>
@@ -99,17 +81,11 @@ export default {
       isFileDragHover: false,
 
       name: '',
-      defaultInterpreter: null,
 
       importType: 'file',
       sourceNoteFile: null,
       sourceNoteJSON: null,
       fileUploaded: false
-    }
-  },
-  computed: {
-    interpreters () {
-      return this.$store.state.InterpreterStore.interpreters
     }
   },
   mounted () {
@@ -158,7 +134,6 @@ export default {
       this.sourceNoteJSON.name = this.name
       this.$root.executeCommand('note', 'import-json', this.sourceNoteJSON)
 
-      // let that = this
       setTimeout(() => {
         this.showDialog = false
         this.loading = false
@@ -176,7 +151,6 @@ export default {
     },
     resetForm () {
       this.name = ''
-      this.defaultInterpreter = null
 
       this.importType = 'file'
       this.sourceNoteFile = null

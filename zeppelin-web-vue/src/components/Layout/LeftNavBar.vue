@@ -92,9 +92,6 @@
 <script>
 export default {
   name: 'LeftNavBar',
-  components: {
-
-  },
   computed: {
     showPrefererences () {
       return this.$store.state.showPrefererences
@@ -157,7 +154,6 @@ export default {
         }
 
         &:hover {
-          //background: #D5D5D5;
           svg {
             color: #2f71a9;
           }

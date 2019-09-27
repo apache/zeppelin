@@ -20,12 +20,6 @@
       display: flex;
       color: #999;
 
-      &:hover {
-        a.tab-close {
-          // visibility: visible;
-        }
-      }
-
       &.active {
         border-bottom: solid 1px #fff;
         z-index: 2;
@@ -57,7 +51,6 @@
       }
 
       a.tab-close {
-        // visibility: hidden;
         vertical-align: middle;
         height: 24px;
         width: 24px;

@@ -46,9 +46,6 @@ export default {
       return this.$store.state.isActivityLoading
     }
   },
-  created () {
-
-  },
   mounted () {
     this.getActivities()
   },

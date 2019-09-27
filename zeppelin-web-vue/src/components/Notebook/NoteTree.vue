@@ -40,16 +40,6 @@ import ws from '@/services/ws-helper'
 
 export default {
   name: 'NoteTree',
-  data () {
-    return {
-    }
-  },
-  components: {
-
-  },
-  created () {
-
-  },
   mounted () {
     ws.getConn().send({ op: 'LIST_NOTES' })
   },

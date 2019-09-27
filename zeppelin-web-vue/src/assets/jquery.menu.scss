@@ -24,17 +24,11 @@
       line-height: 28px;
       vertical-align: middle;
       cursor: pointer;
-      // outline: none;
-      // border-style: solid;
-      // border-width: 1px 1px 0 1px;
       border: 1px solid transparent;
 
       &.active-menu {
         background-color: #fff;
         border-color: #ccc;
-        // -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        // -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         border: 1px solid #BDBDBD;
         border-bottom-color: transparent;
 
