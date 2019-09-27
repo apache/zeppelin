@@ -28,7 +28,7 @@
         v-if="this.$store.state.selectedLeftNavTab === 'trash'"
         class="trash-content"
       >
-
+        <RecycleBin />
       </div>
     </div>
   </div>
@@ -39,6 +39,7 @@ import LeftNavBar from './LeftNavBar.vue'
 import NoteTree from '@/components/Notebook/NoteTree.vue'
 import ActivityConsole from '@/components/ActivityConsole.vue'
 import PackageList from '@/components/Helium/PackageList.vue'
+import RecycleBin from '@/components/Notebook/RecycleBin.vue'
 
 export default {
   name: 'LeftSideBar',
@@ -46,7 +47,8 @@ export default {
     LeftNavBar,
     NoteTree,
     ActivityConsole,
-    PackageList
+    PackageList,
+    RecycleBin
   }
 }
 </script>

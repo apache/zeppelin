@@ -39,7 +39,7 @@
 import ws from '@/services/ws-helper'
 
 export default {
-  name: 'NoteTree',
+  name: 'RecycleBin',
   data () {
     return {
     }
@@ -51,7 +51,7 @@ export default {
 
   },
   mounted () {
-    ws.getConn().send({ op: 'LIST_NOTES' })
+
   },
   computed: {
     isLoading () {
@@ -61,7 +61,7 @@ export default {
       return this.$store.state.TabManagerStore.currentTab && this.$store.state.TabManagerStore.currentTab.id
     },
     notes () {
-      return this.$store.state.NotebookStore.notes.filter(n => (n.path ? n.path.split('/')[1] !== this.$root.TRASH_FOLDER_ID : false))
+      return this.$store.state.NotebookStore.notes.filter(n => (n.path ? n.path.split('/')[1] === this.$root.TRASH_FOLDER_ID : false))
     }
   },
   methods: {

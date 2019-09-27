@@ -35,7 +35,9 @@ Vue.use(VueOffline, {
     .then((response) => {
       new Vue({
         data: {
-          ticket: response.body
+          ticket: response.body,
+
+          TRASH_FOLDER_ID: '~Trash'
         },
         computed: {
           networkStatus () {

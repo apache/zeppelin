@@ -109,7 +109,7 @@
           <a-menu-item key="1">
             <a href="javascript: void(0)">Simple</a>
           </a-menu-item>
-          <a-menu-item key="1">
+          <a-menu-item key="2">
             <a href="javascript: void(0)">Report</a>
           </a-menu-item>
         </a-menu>
