@@ -10,7 +10,7 @@
         :name="currentTab.name"
         :tabContent="currentTab"
       >
-        <Notebook v-if="currentTab.type == 'notebook'" :note="currentTab" />
+        <Note v-if="currentTab.type == 'note'" :note="currentTab" />
         <Interpreter v-if="currentTab.type == 'interpreters'" />
         <Configurations v-if="currentTab.type == 'configurations'" />
         <Credentials v-if="currentTab.type == 'credentials'" />
@@ -29,7 +29,7 @@ import TabManager from '@/components/Tabs/TabManager.vue'
 import Tab from '@/components/Tabs/Tab.vue'
 
 import Home from '@/views/Home.vue'
-import Notebook from '@/components/Notebook/Notebook.vue'
+import Note from '@/components/Notebook/Note.vue'
 import Interpreter from '@/components/Interpreter/InterpreterList.vue'
 
 import Configurations from '@/components/Settings/Configurations.vue'
@@ -44,7 +44,7 @@ export default {
     TabManager,
     Tab,
     Home,
-    Notebook,
+    Note,
     Interpreter,
     Configurations,
     Credentials,

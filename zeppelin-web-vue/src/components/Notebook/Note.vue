@@ -14,11 +14,11 @@
 
     <div
       v-else
-      class="notebook">
+      class="note">
       <div
         class="nb-controls-container"
       >
-        <NotebookControls :noteId="note.id" />
+        <NoteControls :noteId="note.id" />
       </div>
 
       <div
@@ -27,7 +27,7 @@
         <Paragraph
           :setActive="setActive"
           :class="{ active: activeParagraphId === paragraph.id }"
-          :notebookId="notebook.id"
+          :noteId="note.id"
           :index="index"
           :key="paragraph.id"
           v-for="(paragraph, index) in paragraphs"
@@ -41,16 +41,16 @@
 <script>
 import wsFactory from '@/services/ws-factory'
 
-import NotebookControls from './Controls.vue'
+import NoteControls from './Controls.vue'
 import Paragraph from './paragraphs/Paragraph.vue'
 
 export default {
-  name: 'Notebook',
+  name: 'Note',
   props: {
     note: { required: true }
   },
   components: {
-    NotebookControls,
+    NoteControls,
     Paragraph
   },
   data () {
@@ -68,12 +68,12 @@ export default {
 
       return activeParagraph.id
     },
-    notebook () {
-      let filteredNotes = this.$store.state.NotebookStore.notebooks.find(n => n.id === this.note.id)
-      return filteredNotes
+    currentNote () {
+      let filteredNote = this.$store.state.NotebookStore.notes.find(n => n.id === this.note.id)
+      return filteredNote
     },
     paragraphs () {
-      return this.notebook && this.notebook.paragraphs
+      return this.currentNote && this.currentNote.paragraphs
     }
   },
   mounted () {
@@ -84,7 +84,7 @@ export default {
       this.$store.dispatch('setActiveParagraph', paragraph)
     },
     fetchNote () {
-      wsFactory.getConn(this.notebook.id).send({
+      wsFactory.getConn(this.note.id).send({
         op: 'GET_NOTE',
         data: {
           id: this.note.id
@@ -96,7 +96,7 @@ export default {
 </script>
 
 <style scoped>
-.notebook {
+.note {
   position: relative;
   height: 100%;
 }

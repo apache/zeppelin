@@ -2,7 +2,7 @@
   <div>
     <a-modal
         v-model="showDialog"
-        v-bind:title="this.actionLabel + ' Notebook'"
+        v-bind:title="this.actionLabel + ' Note'"
         onOk="handleOk"
         :maskClosable="false"
       >
@@ -15,9 +15,9 @@
 
       <a-form layout="vertical">
         <a-form-item
-          label="Notebook Name"
+          label="Note Name"
         >
-          <a-input placeholder="Enter Notebook Name"  v-model="name"/>
+          <a-input placeholder="Enter Note Name"  v-model="name"/>
         </a-form-item>
 
         <a-form-item
@@ -41,7 +41,7 @@
 
         <a-alert message="Use '/' to create folders. Example: /NoteDirA/Note1" type="info" />
 
-        <input type="hidden" v-model="sourceNotebookId" name="sourceNotebookId" value="" />
+        <input type="hidden" v-model="sourceNoteId" name="sourceNoteId" value="" />
 
       </a-form>
     </a-modal>
@@ -52,7 +52,7 @@
 import { EventBus } from '@/services/event-bus'
 
 export default {
-  name: 'CreateNotebook',
+  name: 'CreateNote',
   data () {
     return {
       showDialog: false,
@@ -60,7 +60,7 @@ export default {
 
       name: '',
       defaultInterpreter: null,
-      sourceNotebookId: '',
+      sourceNoteId: '',
 
       action: 'create',
       actionLabel: 'Create'
@@ -72,19 +72,19 @@ export default {
     }
   },
   mounted () {
-    EventBus.$on('showCreateNotebookDialog', () => {
+    EventBus.$on('showCreateNoteDialog', () => {
       this.action = 'create'
       this.actionLabel = 'Create'
 
-      this.sourceNotebookId = ''
+      this.sourceNoteId = ''
       this.showDialog = true
     })
 
-    EventBus.$on('showCloneNotebookDialog', (sourceNotebookId) => {
+    EventBus.$on('showCloneNoteDialog', (sourceNoteId) => {
       this.action = 'clone'
       this.actionLabel = 'Clone'
 
-      this.sourceNotebookId = sourceNotebookId
+      this.sourceNoteId = sourceNoteId
 
       this.showDialog = true
     })
@@ -95,15 +95,15 @@ export default {
 
       switch (this.action) {
         case 'create':
-          this.$root.executeCommand('notebook', this.action, {
+          this.$root.executeCommand('note', this.action, {
             name: this.name,
             defaultInterpreter: this.defaultInterpreter
           })
           break
         case 'clone':
-          this.$root.executeCommand('notebook', this.action, {
-            newNotebookName: this.name,
-            sourceNotebookId: this.sourceNotebookId
+          this.$root.executeCommand('note', this.action, {
+            newNoteName: this.name,
+            sourceNoteId: this.sourceNoteId
           })
           break
       }
@@ -115,9 +115,9 @@ export default {
 
         this.resetForm()
 
-        that.$message.success(that.$i18n.t('message.notebooks.' + this.action + '_success'), 4)
+        that.$message.success(that.$i18n.t('message.note.' + this.action + '_success'), 4)
         // Pending - validation
-        // Pending open created/cloned Notebook
+        // Pending open created/cloned Note
       }, 1000)
     },
     handleCancel (e) {
@@ -126,7 +126,7 @@ export default {
     resetForm () {
       this.name = ''
       this.defaultInterpreter = ''
-      this.sourceNotebookId = ''
+      this.sourceNoteId = ''
     }
   }
 }

@@ -2,8 +2,8 @@ import Vue from 'vue'
 
 export default {
   state: {
-    notebooks: [],
-    notebook: null,
+    notes: [],
+    note: null,
     paragraphs: null,
     isListLoading: true,
     nav: {
@@ -12,12 +12,12 @@ export default {
     activeParagraph: null
   },
   getters: {
-    getNotebook: (state) => (notebookId) => {
-      let filteredNotebook = state.notebooks.find(n => n.id === notebookId)
-      return filteredNotebook
+    getNote: (state) => (noteId) => {
+      let filteredNote = state.notes.find(n => n.id === noteId)
+      return filteredNote
     },
-    getAllNotebooks: (state) => {
-      return state.notebooks
+    getAllNotes: (state) => {
+      return state.notes
     },
     getActiveParagraph: (state) => {
       return state.activeParagraph
@@ -25,18 +25,18 @@ export default {
     getNavBarState: (state) => {
       return state.nav
     },
-    getParagraphById: (state) => (id, notebookId) => {
-      let filteredNotebook = state.notebooks.find(n => n.id === notebookId)
-      return filteredNotebook.paragraphs.find(p => p.id === id)
+    getParagraphById: (state) => (id, noteId) => {
+      let filteredNote = state.notes.find(n => n.id === noteId)
+      return filteredNote.paragraphs.find(p => p.id === id)
     },
-    getAllParagraphs: (state, notebookId) => {
-      let filteredNotebook = state.notebooks.find(n => n.id === notebookId)
-      return filteredNotebook && filteredNotebook.paragraphs
+    getAllParagraphs: (state, noteId) => {
+      let filteredNote = state.notes.find(n => n.id === noteId)
+      return filteredNote && filteredNote.paragraphs
     },
-    isParagraphLoading: (state) => (id, notebookId) => {
-      let filteredNotebook = state.notebooks.find(n => n.id === notebookId)
+    isParagraphLoading: (state) => (id, noteId) => {
+      let filteredNote = state.notes.find(n => n.id === noteId)
 
-      let paragraph = filteredNotebook && filteredNotebook.paragraphs.find(p => p.id === id)
+      let paragraph = filteredNote && filteredNote.paragraphs.find(p => p.id === id)
       let status = paragraph.status.toLowerCase()
 
       if (status === 'pending' || status === 'running') {
@@ -45,9 +45,9 @@ export default {
 
       return false
     },
-    isParagraphCreating: (state) => (id, notebookId) => {
-      let filteredNotebook = state.notebooks.find(n => n.id === notebookId)
-      let paragraph = filteredNotebook && filteredNotebook.paragraphs.find(p => p.id === id)
+    isParagraphCreating: (state) => (id, noteId) => {
+      let filteredNote = state.notes.find(n => n.id === noteId)
+      let paragraph = filteredNote && filteredNote.paragraphs.find(p => p.id === id)
       let status = paragraph && paragraph.status.toLowerCase()
 
       if (status === 'init') {
@@ -66,34 +66,34 @@ export default {
     },
     mutateNotes (state, data) {
       state.isListLoading = false
-      state.notebooks = data.notes
+      state.notes = data.notes
     },
-    mutateNotebook (state, noteObj) {
-      let index = state.notebooks.map(function (n) { return n.id }).indexOf(noteObj.note.id)
-      let newObj = Object.assign(state.notebooks[index], noteObj.note)
-      Vue.set(state.notebooks, index, newObj)
+    mutateNote (state, noteObj) {
+      let index = state.notes.map(function (n) { return n.id }).indexOf(noteObj.note.id)
+      let newObj = Object.assign(state.notes[index], noteObj.note)
+      Vue.set(state.notes, index, newObj)
 
       // set paragraphs state
       // state.activeParagraph = paragraphs[0]
       return state
     },
     addParagraph (state, data) {
-      let filteredNotebook = state.notebooks.find(n => n.id === data.notebookId)
-      let paragraphs = filteredNotebook && filteredNotebook.paragraphs
+      let filteredNote = state.notes.find(n => n.id === data.noteId)
+      let paragraphs = filteredNote && filteredNote.paragraphs
 
       paragraphs.splice(data.index, 0, data.paragraph)
-      filteredNotebook.paragraphs = paragraphs
+      filteredNote.paragraphs = paragraphs
     },
     removeParagraph (state, data) {
-      let filteredNotebook = state.notebooks.find(n => n.id === data.notebookId)
-      let paragraphs = filteredNotebook && filteredNotebook.paragraphs
+      let filteredNote = state.notes.find(n => n.id === data.noteId)
+      let paragraphs = filteredNote && filteredNote.paragraphs
       let index = paragraphs.map(function (p) { return p.id }).indexOf(data.id)
       paragraphs.splice(index, 1)
-      filteredNotebook.paragraphs = paragraphs
+      filteredNote.paragraphs = paragraphs
     },
     mutateParagraphs (state, data) {
-      let filteredNotebook = state.notebooks.find(n => n.id === data.notebookId)
-      let paragraphs = filteredNotebook && filteredNotebook.paragraphs
+      let filteredNote = state.notes.find(n => n.id === data.noteId)
+      let paragraphs = filteredNote && filteredNote.paragraphs
 
       let id = data.paragraph.id
       let index = paragraphs.map(function (p) { return p.id }).indexOf(id)
@@ -102,11 +102,11 @@ export default {
 
       // if paragraph do not exist
       // it means it was not added from this context
-      // some one else has opened the same notebook and
+      // some one else has opened the same note and
       // is adding paragraph
 
       if (!paragraph && data.index) {
-        Vue.set(filteredNotebook.paragraphs, data.index, data.paragraph)
+        Vue.set(filteredNote.paragraphs, data.index, data.paragraph)
         return
       }
 
@@ -116,8 +116,8 @@ export default {
     },
     mutateParagraphsWithNewProps (state, data) {
       let id = data.id
-      let filteredNotebook = state.notebooks.find(n => n.id === data.notebookId)
-      let paragraph = filteredNotebook.paragraphs.find(p => p.id === id)
+      let filteredNote = state.notes.find(n => n.id === data.noteId)
+      let paragraph = filteredNote.paragraphs.find(p => p.id === id)
 
       Vue.set(paragraph, data.prop.name, data.prop.value)
       // Vue.set(state.paragraphs, index, paragraph)
@@ -135,8 +135,8 @@ export default {
     },
     setParagraphOutput (state, data) {
       let paraId = data.paragraphId
-      let filteredNotebook = state.notebooks.find(n => n.id === data.notebookId)
-      let paragraph = filteredNotebook.paragraphs.find(p => p.id === paraId)
+      let filteredNote = state.notes.find(n => n.id === data.noteId)
+      let paragraph = filteredNote.paragraphs.find(p => p.id === paraId)
       // let paraIndex = state.paragraphs.map(function (p) { return p.id }).indexOf(paraId)
 
       if (paragraph.results) {
@@ -166,8 +166,8 @@ export default {
     setNoteMenu (context, data) {
       context.commit('mutateNotes', data)
     },
-    setNotebookContent (context, data) {
-      context.commit('mutateNotebook', data)
+    setNoteContent (context, data) {
+      context.commit('mutateNote', data)
     },
     setParagraph (context, data) {
       context.commit('mutateParagraphs', data)
@@ -211,7 +211,7 @@ export default {
       context.commit('addParagraph', {
         index: data.index,
         paragraph: paragraph,
-        notebookId: data.notebookId
+        noteId: data.noteId
       })
     },
     removeParagraph (context, data) {

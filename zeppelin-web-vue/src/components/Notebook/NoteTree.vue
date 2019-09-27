@@ -1,5 +1,5 @@
 <template>
-  <div class="notebooks">
+  <div class="notes">
     <div
       v-if="isLoading"
     >
@@ -16,16 +16,16 @@
 
     <ul>
       <li
-        v-for="(note, index) in this.notebooks"
+        v-for="(note, index) in this.notes"
         :key="index"
-        class="notebook"
+        class="note"
       >
         <a
           href="javascript: void(0);"
           v-bind:title="note.path"
           class="text-ellipsis"
           :class="{'active':  note.id === activeNoteId}"
-          v-on:click="openNotebook(note)"
+          v-on:click="openNote(note)"
         >
           <a-icon type="file" />
           {{ getFileName(note.path) }}
@@ -42,26 +42,6 @@ export default {
   name: 'StatusBar',
   data () {
     return {
-      notebookTree: [{
-        title: 'Basic Notebook',
-        key: '2BKAJALA32A',
-        children: [{
-          title: 'parent 1-0',
-          key: '0-0-0',
-          isLeaf: true
-        }, {
-          title: 'parent 1-1',
-          key: '0-0-1',
-          children: [
-            { key: '0-0-1-0', slots: { title: 'title0010' } }
-          ]
-        }
-        ]
-      }, {
-        title: 'Basi1c Notebook',
-        key: '2BKAaJALA32A',
-        isLeaf: true
-      }]
     }
   },
   components: {
@@ -80,15 +60,15 @@ export default {
     activeNoteId () {
       return this.$store.state.TabManagerStore.currentTab && this.$store.state.TabManagerStore.currentTab.id
     },
-    notebooks () {
-      return this.$store.state.NotebookStore.notebooks
+    notes () {
+      return this.$store.state.NotebookStore.notes
     }
   },
   methods: {
-    openNotebook (notebook) {
+    openNote (note) {
       this.$root.executeCommand('tabs', 'open', {
-        type: 'notebook',
-        notebook: notebook
+        type: 'note',
+        note: note
       })
     },
     getFileName (path) {
@@ -112,7 +92,7 @@ export default {
   }
 }
 
-.notebooks {
+.notes {
   list-style: none;
   margin: 0;
   padding: 0;

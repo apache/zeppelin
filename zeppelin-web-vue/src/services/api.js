@@ -5,11 +5,6 @@ export default {
   },
 
   getWSPort () {
-    if (location.hostname.includes('qubole')) {
-      if (location.protocol === 'https:') {
-        return 443
-      }
-    }
     return this.getPort()
   },
 

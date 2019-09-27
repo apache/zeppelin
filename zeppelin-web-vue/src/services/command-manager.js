@@ -7,7 +7,7 @@ export default {
 
     this.setupTabCommands(store)
 
-    this.setupNotebookCommands(store)
+    this.setupNoteCommands(store)
     this.setupParagraphCommands(store)
   },
 
@@ -40,22 +40,22 @@ export default {
         case 'notebook-repository':
           this.openSystemTabs(tabType, store)
           break
-        case 'notebook':
-          notebookUtils.open(args.notebook)
+        case 'note':
+          notebookUtils.open(args.note)
           break
       }
     })
   },
 
-  setupNotebookCommands (store) {
-    EventBus.$on('notebook', (command, args) => {
-      let isActiveNotebook = (store.state.TabManagerStore.currentTab &&
-                              store.state.TabManagerStore.currentTab.type === 'notebook')
+  setupNoteCommands (store) {
+    EventBus.$on('note', (command, args) => {
+      let isActiveNote = (store.state.TabManagerStore.currentTab &&
+                              store.state.TabManagerStore.currentTab.type === 'note')
 
-      if (!(isActiveNotebook || ['show-create', 'create', 'show-import', 'import-json'].indexOf(command) !== -1)) {
+      if (!(isActiveNote || ['show-create', 'create', 'show-import', 'import-json'].indexOf(command) !== -1)) {
         return
       }
-      let notebook = store.state.TabManagerStore.currentTab
+      let note = store.state.TabManagerStore.currentTab
 
       switch (command) {
         case 'show-create':
@@ -71,9 +71,10 @@ export default {
           notebookUtils.importJSON(args)
           break
         case 'clear-output':
-          notebookUtils.clearAllOutputs(notebook.id)
+          notebookUtils.clearAllOutputs(note.id)
           break
         case 'run-all':
+          notebookUtils.runAll(note.id)
           break
         case 'run-before':
           break
@@ -84,26 +85,26 @@ export default {
         case 'save':
           break
         case 'export-json':
-          notebookUtils.exportJSON(notebook)
+          notebookUtils.exportJSON(note)
           break
         case 'print':
           break
         case 'delete-temporary':
-          notebookUtils.deleteTemporary(notebook.id)
+          notebookUtils.deleteTemporary(note.id)
           break
-        case 'restore-notebook':
-          notebookUtils.restore(notebook.id)
+        case 'restore-note':
+          notebookUtils.restore(note.id)
           break
         case 'delete-permanently':
           break
         case 'show-clone':
-          notebookUtils.showCloneModal(notebook.id)
+          notebookUtils.showCloneModal(note.id)
           break
         case 'clone':
           notebookUtils.clone(args)
           break
         case 'reload':
-          notebookUtils.reloadNotebook(notebook.id)
+          notebookUtils.reloadNote(note.id)
           break
         case 'show-toc':
           break
@@ -127,10 +128,10 @@ export default {
 
   setupParagraphCommands (store) {
     EventBus.$on('paragraph', (command, args) => {
-      let isActiveNotebook = (store.state.TabManagerStore.currentTab &&
-                              store.state.TabManagerStore.currentTab.type === 'notebook')
+      let isActiveNote = (store.state.TabManagerStore.currentTab &&
+                              store.state.TabManagerStore.currentTab.type === 'note')
 
-      if (!isActiveNotebook) {
+      if (!isActiveNote) {
         return
       }
       // let noteId = store.state.TabManagerStore.currentTab.id

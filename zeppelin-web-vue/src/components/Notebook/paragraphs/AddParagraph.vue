@@ -21,7 +21,7 @@ export default {
   components: {
 
   },
-  props: ['index', 'notebookId'],
+  props: ['index', 'noteId'],
   data () {
     return {
 
@@ -37,11 +37,11 @@ export default {
         index: index + 1,
         paragraphId: paragraphId,
         isMd: isMd,
-        notebookId: this.$props.notebookId
+        noteId: this.$props.noteId
       })
 
       // for api
-      wsFactory.getConn(this.$props.notebookId).send({
+      wsFactory.getConn(this.$props.noteId).send({
         op: 'INSERT_PARAGRAPH',
         data: {
           index: index + 1,

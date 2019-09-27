@@ -9,7 +9,7 @@
         <Editor
           :paragraph="paragraph"
           :isMdEditorVisible="isMdEditorVisible"
-          :notebookId="notebookId"
+          :noteId="noteId"
         />
         <div
           v-if="hasResults"
@@ -21,7 +21,7 @@
             :result="result"
             :index="index"
             :paragraph="paragraph"
-            :notebookId="notebookId"
+            :noteId="noteId"
           />
         </div>
       </div>
@@ -29,7 +29,7 @@
 
     <AddParagraph
       :index="index"
-      :notebookId="notebookId"/>
+      :noteId="noteId"/>
   </div>
 </template>
 
@@ -45,7 +45,7 @@ export default {
     'Results': Results,
     'AddParagraph': AddParagraph
   },
-  props: ['index', 'paragraph', 'notebookId', 'setActive'],
+  props: ['index', 'paragraph', 'noteId', 'setActive'],
   data () {
     return {
       isMdEditorVisible: false
@@ -54,7 +54,7 @@ export default {
   computed: {
     isHTML: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph.result && paragraph.result.type.toLowerCase() === 'html') {
         return true

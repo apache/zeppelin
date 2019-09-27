@@ -18,7 +18,7 @@
       <li
         v-for="(activity, index) in this.activities"
         :key="index"
-        class="notebook"
+        class="note"
       >
         <a
           href="javascript: void(0);"

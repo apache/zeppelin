@@ -72,7 +72,7 @@ export default {
 
     }
   },
-  props: ['paragraph', 'notebookId'],
+  props: ['paragraph', 'noteId'],
   data () {
     return {
       mdValue: this.$props.paragraph.text,
@@ -85,7 +85,7 @@ export default {
   },
   computed: {
     setOptions: function () {
-      const p = this.$store.getters.getParagraphById(this.$props.paragraph.id, this.$props.notebookId)
+      const p = this.$store.getters.getParagraphById(this.$props.paragraph.id, this.$props.noteId)
 
       if (p.config.lineNumbers !== undefined) {
         return {
@@ -105,19 +105,19 @@ export default {
     },
     getParagraphLoading: function () {
       const { id } = this.$props.paragraph
-      const isLoading = this.$store.getters.isParagraphLoading(id, this.$props.notebookId)
+      const isLoading = this.$store.getters.isParagraphLoading(id, this.$props.noteId)
 
       return isLoading
     },
     getParagraphInit: function () {
       const { id } = this.$props.paragraph
-      const isPending = this.$store.getters.isParagraphCreating(id, this.$props.notebookId)
+      const isPending = this.$store.getters.isParagraphCreating(id, this.$props.noteId)
 
       return isPending
     },
     forceEditorShow: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph && paragraph.forceEditorShow) {
         return true
@@ -135,7 +135,7 @@ export default {
       * required
       */
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph &&
       paragraph.results &&
@@ -158,7 +158,7 @@ export default {
     },
     setMDParagraph: function () {
       let { id } = this.$props.paragraph
-      let paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      let paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
       let mdValue = this.mdValue
 
       if (paragraph &&
@@ -174,13 +174,13 @@ export default {
         }
 
         this.$store.dispatch('setParagraph', {
-          notebookId: this.$props.notebookId,
+          noteId: this.$props.noteId,
           paragraph: paragraph
         })
 
         this.$store.dispatch('setParagraphProp', {
           id: id,
-          notebookId: this.$props.notebookId,
+          noteId: this.$props.noteId,
           prop: {
             name: 'forceEditorShow',
             value: false
@@ -215,7 +215,7 @@ export default {
         paragraphText = '%md\n' + this.mdValue
       }
 
-      wsFactory.getConn(this.$props.notebookId).send({
+      wsFactory.getConn(this.$props.noteId).send({
         op: 'RUN_PARAGRAPH',
         data: {
           id: id,
@@ -232,10 +232,10 @@ export default {
       // remove from ui instantly
       this.$store.dispatch('removeParagraph', {
         id: id,
-        notebookId: this.$props.notebookId
+        noteId: this.$props.noteId
       })
 
-      wsFactory.getConn(this.$props.notebookId).send({
+      wsFactory.getConn(this.$props.noteId).send({
         op: 'PARAGRAPH_REMOVE',
         data: {
           id: id

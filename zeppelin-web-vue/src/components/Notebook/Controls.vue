@@ -1,9 +1,9 @@
 <template>
-  <div class="notebook-controls">
+  <div class="note-controls">
     <div class="left-controls">
       <a
         href="javascript: void(0);"
-        @click="executeNotebookCommand('run-all')"
+        @click="executeNoteCommand('run-all')"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -15,7 +15,7 @@
 
       <a
         href="javascript: void(0);"
-        @click="executeNotebookCommand('save')"
+        @click="executeNoteCommand('save')"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -27,11 +27,11 @@
 
       <a
         href="javascript: void(0);"
-        @click="executeNotebookCommand('show-clone')"
+        @click="executeNoteCommand('show-clone')"
       >
         <a-tooltip placement="top">
           <template slot="title">
-            <span>Clone this notebook</span>
+            <span>Clone this note</span>
           </template>
           <a-icon type="copy" />
         </a-tooltip>
@@ -39,7 +39,7 @@
 
       <a
         href="javascript: void(0);"
-        @click="executeNotebookCommand('export-json')"
+        @click="executeNoteCommand('export-json')"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -87,7 +87,7 @@
 
       <a
         href="javascript: void(0);"
-        @click="executeNotebookCommand('reload')"
+        @click="executeNoteCommand('reload')"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -120,7 +120,7 @@
 
 <script>
 export default {
-  name: 'NotebookControls',
+  name: 'NoteControls',
   props: {
     noteId: { required: true }
   },
@@ -134,18 +134,18 @@ export default {
 
   },
   methods: {
-    executeNotebookCommand (command) {
-      this.$root.executeCommand('notebook', command)
+    executeNoteCommand (command) {
+      this.$root.executeCommand('note', command)
     },
     showDeleteConfirm () {
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.notebooks.move_to_rb_confirm'),
-        content: that.$i18n.t('message.notebooks.move_to_rb_content'),
+        title: that.$i18n.t('message.note.move_to_rb_confirm'),
+        content: that.$i18n.t('message.note.move_to_rb_content'),
         onOk () {
-          that.executeNotebookCommand('delete-temporary')
+          that.executeNoteCommand('delete-temporary')
 
-          that.$message.success(that.$i18n.t('message.notebooks.move_to_rb_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.move_to_rb_success'), 4)
         },
         onCancel () {}
       })
@@ -155,7 +155,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.notebook-controls {
+.note-controls {
   height: 30px;
   background: #f7f7f7;
 

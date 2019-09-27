@@ -7,15 +7,15 @@
           <ul>
             <li>
               <a
-                @click="executeNotebookCommand('show-create')"
+                @click="executeNoteCommand('show-create')"
                 href="javascript:void(0)"
               >
-                New Notebook <span>Ctrl+N</span>
+                New Note <span>Ctrl+N</span>
               </a>
             </li>
             <li>
               <a
-                @click="executeNotebookCommand('show-import')"
+                @click="executeNoteCommand('show-import')"
                 href="javascript:void(0)"
               >
                 Import
@@ -26,8 +26,8 @@
 
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('save')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('save')"
                 href="javascript:void(0)"
               >
                 Save <!--<span>Ctrl+S</span> -->
@@ -36,8 +36,8 @@
 
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('manage-permissions')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('manage-permissions')"
                 href="javascript:void(0)"
               >
                 Manage Permissions
@@ -47,8 +47,8 @@
             <li class="separator"></li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('export-json')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('export-json')"
                 href="javascript:void(0)"
               >
                 Explort
@@ -56,8 +56,8 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('delete-temporary')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('delete-temporary')"
                 href="javascript:void(0)"
               >
                 Move To Recycle Bin
@@ -68,8 +68,8 @@
 
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('print')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('print')"
                 href="javascript:void(0)"
               >
                 Print
@@ -83,8 +83,8 @@
           <ul>
             <li>
               <a
-                @click="executeNotebookCommand('toggle-code')"
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
+                @click="executeNoteCommand('toggle-code')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Code
@@ -92,8 +92,8 @@
             </li>
             <li>
               <a
-                @click="executeNotebookCommand('toggle-line-numbers')"
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
+                @click="executeNoteCommand('toggle-line-numbers')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Line Numbers
@@ -101,8 +101,8 @@
             </li>
             <li>
               <a
-                @click="executeNotebookCommand('toggle-output')"
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
+                @click="executeNoteCommand('toggle-output')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Outputs
@@ -111,8 +111,8 @@
             <li class="separator"></li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('find-and-replace')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('find-and-replace')"
                 href="javascript:void(0)"
               >
                 Find And Replace...
@@ -122,7 +122,7 @@
             <li>
               <a
                 @click="showConfirmClearOutput"
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
+                v-bind:class="{'disabled': !(isActiveNote)}"
                 href="javascript:void(0)"
               >
                 Clear All Outputs
@@ -136,8 +136,8 @@
           <ul>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('show-toc')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('show-toc')"
                 href="javascript:void(0)"
               >
                 Table Of Contents
@@ -145,8 +145,8 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('show-version-control')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('show-version-control')"
                 href="javascript:void(0)"
               >
                 Version Control
@@ -154,11 +154,11 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('show-notebook-info')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('show-note-info')"
                 href="javascript:void(0)"
               >
-                Notebook Info
+                Note Info
               </a>
             </li>
           </ul>
@@ -169,8 +169,8 @@
           <ul>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('run-all')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('run-all')"
                 href="javascript:void(0)"
               >
                 Run All
@@ -178,8 +178,8 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('run-before')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('run-before')"
                 href="javascript:void(0)"
               >
                 Run Before
@@ -187,8 +187,8 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('run-focused')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('run-focused')"
                 href="javascript:void(0)"
               >
                 Run The Focused Paragraph
@@ -196,8 +196,8 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNotebook)}"
-                @click="executeNotebookCommand('run-after')"
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('run-after')"
                 href="javascript:void(0)"
               >
                 Run After
@@ -249,14 +249,14 @@
         <li> Tools
           <ul>
             <li
-              v-bind:class="{'disabled': !(isActiveNotebook)}"
+              v-bind:class="{'disabled': !(isActiveNote)}"
               class="submenu"
             >
               Switch Theme
               <ul>
                 <li>
                   <a
-                    @click="executeNotebookCommand('switch-theme-light')"
+                    @click="executeNoteCommand('switch-theme-light')"
                     href="javascript: void(0);"
                   >
                     Light
@@ -264,7 +264,7 @@
                 </li>
                 <li>
                   <a
-                    @click="executeNotebookCommand('switch-theme-dark')"
+                    @click="executeNoteCommand('switch-theme-dark')"
                     href="javascript: void(0);"
                   >
                     Dark
@@ -342,12 +342,12 @@ export default {
   data: () => ({
   }),
   computed: {
-    activeNotebook () {
-      return this.isActiveNotebook && this.$store.state.TabManagerStore.currentTab
+    activeNote () {
+      return this.isActiveNote && this.$store.state.TabManagerStore.currentTab
     },
-    isActiveNotebook () {
+    isActiveNote () {
       return (this.$store.state.TabManagerStore.currentTab &&
-          this.$store.state.TabManagerStore.currentTab.type === 'notebook')
+          this.$store.state.TabManagerStore.currentTab.type === 'note')
     }
   },
   mounted () {
@@ -360,23 +360,26 @@ export default {
     openTab (tabName) {
       this.$root.executeCommand('tabs', 'open', { type: tabName })
     },
-    executeNotebookCommand (command) {
-      if (this.isActiveNotebook || ['show-create', 'show-import'].indexOf(command) !== -1) {
-        this.$root.executeCommand('notebook', command)
+    executeCommand (command) {
+      this.$root.executeCommand(command)
+    },
+    executeNoteCommand (command) {
+      if (this.isActiveNote || ['show-create', 'show-import'].indexOf(command) !== -1) {
+        this.$root.executeCommand('note', command)
       }
     },
     showConfirmClearOutput () {
-      if (!this.isActiveNotebook) {
+      if (!this.isActiveNote) {
         return
       }
 
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.notebooks.clear_output_confirm'),
+        title: that.$i18n.t('message.note.clear_output_confirm'),
         onOk () {
-          that.executeNotebookCommand('clear-output')
+          that.executeNoteCommand('clear-output')
 
-          that.$message.success(that.$i18n.t('message.notebooks.clear_output_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.clear_output_success'), 4)
         },
         onCancel () {}
       })

@@ -2,7 +2,7 @@
   <div>
     <a-modal
         v-model="showDialog"
-        title="Import Notebook"
+        title="Import Note"
         onOk="handleOk"
         :maskClosable="false"
       >
@@ -27,7 +27,7 @@
 
         <div
           v-if="importType === 'file'"
-          id="notebook-import-drag-drop"
+          id="note-import-drag-drop"
           class="ant-upload ant-upload-drag"
           v-bind:class="{'hover': isFileDragHover}"
           style="margin-bottom: 16px; display: block;"
@@ -47,22 +47,22 @@
             <a-icon type="inbox" />
           </p>
           <p class="ant-upload-text" style="font-size: 13px;">
-            <span v-if="sourceNotebookFile">{{ this.sourceNotebookFile.name }}</span>
-            <span v-else>{{ $t("message.notebooks.import_click_or_drag") }}</span>
+            <span v-if="sourceNoteFile">{{ this.sourceNoteFile.name }}</span>
+            <span v-else>{{ $t("message.note.import_click_or_drag") }}</span>
           </p>
         </div>
 
         <a-form-item
           v-if="importType === 'url'"
-          label="Notebook URL"
+          label="Note URL"
         >
-          <a-input placeholder="Notebook URL"  v-model="notebookURL"/>
+          <a-input placeholder="Note URL"  v-model="noteURL"/>
         </a-form-item>
 
         <a-form-item
-          label="Notebook Name"
+          label="Note Name"
         >
-          <a-input placeholder="Enter Notebook Name"  v-model="name"/>
+          <a-input placeholder="Enter Note Name"  v-model="name"/>
         </a-form-item>
 
         <!-- <a-form-item
@@ -91,7 +91,7 @@
 import { EventBus } from '@/services/event-bus'
 
 export default {
-  name: 'ImportNotebook',
+  name: 'ImportNote',
   data () {
     return {
       showDialog: false,
@@ -102,8 +102,8 @@ export default {
       defaultInterpreter: null,
 
       importType: 'file',
-      sourceNotebookFile: null,
-      sourceNotebookJSON: null,
+      sourceNoteFile: null,
+      sourceNoteJSON: null,
       fileUploaded: false
     }
   },
@@ -113,7 +113,7 @@ export default {
     }
   },
   mounted () {
-    EventBus.$on('showImportNotebookDialog', () => {
+    EventBus.$on('showImportNoteDialog', () => {
       this.showDialog = true
     })
   },
@@ -127,36 +127,36 @@ export default {
       let files = e.target.files || e.dataTransfer.files
       let validated = files.length !== 0 && this.beforeUpload(files[0])
       if (validated) {
-        this.sourceNotebookFile = files[0]
+        this.sourceNoteFile = files[0]
 
         let reader = new FileReader()
-        reader.readAsText(this.sourceNotebookFile)
+        reader.readAsText(this.sourceNoteFile)
         reader.onloadend = () => {
-          this.sourceNotebookJSON = JSON.parse(reader.result)
+          this.sourceNoteJSON = JSON.parse(reader.result)
           this.fileUploaded = true
         }
       } else {
-        this.sourceNotebookFile = null
-        this.sourceNotebookJSON = null
+        this.sourceNoteFile = null
+        this.sourceNoteJSON = null
         this.fileUploaded = false
       }
     },
     beforeUpload (file) {
       const isJSON = (file.type === 'application/json')
       if (!isJSON) {
-        this.$message.error(this.$i18n.t('message.notebooks.import_json_type_error'), 4)
+        this.$message.error(this.$i18n.t('message.note.import_json_type_error'), 4)
       }
       const isLt1M = file.size / 1024 / 1024 < 1
       if (!isLt1M) {
-        this.$message.error(this.$i18n.t('message.notebooks.import_json_size_error'), 4)
+        this.$message.error(this.$i18n.t('message.note.import_json_size_error'), 4)
       }
       return isJSON && isLt1M
     },
     handleOk (e) {
       this.loading = true
 
-      this.sourceNotebookJSON.name = this.name
-      this.$root.executeCommand('notebook', 'import-json', this.sourceNotebookJSON)
+      this.sourceNoteJSON.name = this.name
+      this.$root.executeCommand('note', 'import-json', this.sourceNoteJSON)
 
       // let that = this
       setTimeout(() => {
@@ -165,9 +165,9 @@ export default {
 
         this.resetForm()
 
-        this.$message.success(this.$i18n.t('message.notebooks.import_success'), 4)
+        this.$message.success(this.$i18n.t('message.note.import_success'), 4)
         // Pending - validation
-        // Pending open - imported Notebook
+        // Pending open - imported Note
       }, 1000)
     },
     handleCancel (e) {
@@ -179,8 +179,8 @@ export default {
       this.defaultInterpreter = null
 
       this.importType = 'file'
-      this.sourceNotebookFile = null
-      this.sourceNotebookJSON = null
+      this.sourceNoteFile = null
+      this.sourceNoteJSON = null
       this.fileUploaded = false
     },
     changeImportType (e) {

@@ -17,9 +17,9 @@
     <StatusBar />
 
     <GlobalEvents
-      @keyup.ctrl.n="executeCommand('notebook', 'show-create')"
-      @keyup.ctrl.f="executeCommand('notebook', 'find-and-replace')"
-      @keyup.ctrl.r="executeCommand('notebook', 'run-all')"
+      @keyup.ctrl.n="executeCommand('note', 'show-create')"
+      @keyup.ctrl.f="executeCommand('note', 'find-and-replace')"
+      @keyup.ctrl.r="executeCommand('note', 'run-all')"
     />
 
     <Create />
@@ -50,7 +50,7 @@ export default {
   beforeMount () {
     ws.init(this)
 
-    // get interpreters for notebook creation
+    // get interpreters for note creation
     this.$store.dispatch('getInterpreters')
   },
   computed: {

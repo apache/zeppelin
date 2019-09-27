@@ -17,7 +17,7 @@ export default {
   components: {
 
   },
-  props: ['paragraph', 'notebookId'],
+  props: ['paragraph', 'noteId'],
   data () {
     return {
       showEditor: false
@@ -41,12 +41,12 @@ export default {
 
       // save to local store
       this.$store.dispatch('setParagraph', {
-        notebookId: this.$props.notebookId,
+        noteId: this.$props.noteId,
         paragraph: paragraph
       })
 
       // save to api
-      wsFactory.getConn(this.$props.notebookId).send({
+      wsFactory.getConn(this.$props.noteId).send({
         op: 'COMMIT_PARAGRAPH',
         data: {
           id: id,

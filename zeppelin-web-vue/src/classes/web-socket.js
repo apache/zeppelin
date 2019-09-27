@@ -3,12 +3,12 @@ import api from '@/services/api.js'
 export default class WsConnection {
   conn = {}
 
-  constructor (store, ticket, notebookId) {
+  constructor (store, ticket, noteId) {
     this.store = store
     this.ticket = ticket
 
-    if (notebookId) {
-      this.notebookId = notebookId
+    if (noteId) {
+      this.noteId = noteId
     }
 
     this.establishConnection()
@@ -42,7 +42,7 @@ export default class WsConnection {
   establishConnection () {
     this.ws = new WebSocket(api.getWebsocketUrl())
 
-    if (!this.notebookId) {
+    if (!this.noteId) {
       this.store.dispatch('updateWebSocketStatus', 'trying')
     }
 
@@ -64,7 +64,7 @@ export default class WsConnection {
     }
 
     this.ws.onopen = () => {
-      if (!this.notebookId) {
+      if (!this.noteId) {
         this.store.dispatch('updateWebSocketStatus', 'connected')
       }
 
@@ -85,21 +85,21 @@ export default class WsConnection {
       let op = payload.op
       let data = payload.data
 
-      if (this.notebookId) {
-        data.notebookId = this.notebookId
+      if (this.noteId) {
+        data.noteId = this.noteId
       }
 
       switch (op) {
-        // ---------------- Notebook ---------------------------
+        // ---------------- Note ---------------------------
         case 'NEW_NOTE':
-          // window.open(`/notebook/${data.note.id}`, '_blank')
-          // Pending - open the notebook tab data.note
+          // window.open(`/note/${data.note.id}`, '_blank')
+          // Pending - open the note tab data.note
           break
         case 'NOTES_INFO':
           this.store.dispatch('setNoteMenu', data)
           break
         case 'NOTE':
-          this.store.dispatch('setNotebookContent', data)
+          this.store.dispatch('setNoteContent', data)
           break
 
         // ---------------- Paragraph ---------------------------
@@ -138,7 +138,7 @@ export default class WsConnection {
       this.timer && clearInterval(this.timer)
       console.log('Connection closed', e)
 
-      if (!this.notebookId) {
+      if (!this.noteId) {
         this.store.dispatch('updateWebSocketStatus', 'disconnected')
       }
     }

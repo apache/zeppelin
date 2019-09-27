@@ -107,7 +107,7 @@ export default {
     EditorContent,
     EditorMenuBar
   },
-  props: ['content', 'onMdUpdate', 'setMDParagraph', 'forceEditorShow', 'notebookId'],
+  props: ['content', 'onMdUpdate', 'setMDParagraph', 'forceEditorShow', 'noteId'],
   data () {
     return {
       editor: null
@@ -116,10 +116,10 @@ export default {
   methods: {
     // setMDParagraph: function () {
     //   let {id} = this.$props.paragraph
-    //   let paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+    //   let paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
     //   const {id} = this.$props.paragraph
-    //   const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+    //   const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
     //   if (paragraph && paragraph.forceEditorShow) {
     //     return true

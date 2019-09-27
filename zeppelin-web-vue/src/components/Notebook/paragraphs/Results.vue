@@ -29,7 +29,7 @@ export default {
   components: {
 
   },
-  props: ['result', 'index', 'paragraph', 'notebookId'],
+  props: ['result', 'index', 'paragraph', 'noteId'],
   data () {
     return {
       'chart': []
@@ -38,7 +38,7 @@ export default {
   computed: {
     isOutputHidden: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph.result && paragraph.result.type.toLowerCase() === 'html') {
         return false
@@ -60,7 +60,7 @@ export default {
     },
     isGraph: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph.result && paragraph.result.type.toLowerCase() === 'table' && paragraph.config.graph.mode.toLowerCase() !== 'table') {
         return true
@@ -92,7 +92,7 @@ export default {
     },
     isForceEditorShow: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
 
       if (paragraph && paragraph.forceEditorShow) {
         return true
@@ -102,7 +102,7 @@ export default {
     },
     getTextResult: function () {
       const { id } = this.$props.paragraph
-      const paragraph = this.$store.getters.getParagraphById(id, this.$props.notebookId)
+      const paragraph = this.$store.getters.getParagraphById(id, this.$props.noteId)
       let newResult = paragraph.results.msg[0].data
 
       // trim %md
@@ -133,8 +133,6 @@ export default {
       for (let j = 0; j < rows.length; j++) {
         rowData.push(rows[j].split('\t'))
       }
-
-      // console.log(rowData)
 
       return {
         columnNames: colNames,
@@ -837,7 +835,7 @@ export default {
 
       this.$store.dispatch('setParagraphProp', {
         id: id,
-        notebookId: this.$props.notebookId,
+        noteId: this.$props.noteId,
         prop: {
           name: 'forceEditorShow',
           value: true

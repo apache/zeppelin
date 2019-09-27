@@ -70,7 +70,7 @@ export default {
       this.$store.dispatch('setActiveTab', tab)
     },
     closeTab (tab) {
-      if (tab.type === 'notebook') {
+      if (tab.type === 'note') {
         wsFactory.closeConn(tab.id)
       }
 

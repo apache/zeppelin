@@ -3,15 +3,15 @@ import WsConnection from '@/classes/web-socket.js'
 let wsConn = {}
 
 export default {
-  initNotebookConnection (notebookId, store) {
-    wsConn[notebookId] = new WsConnection(store, store.state.ticket, notebookId)
+  initNoteConnection (noteId, store) {
+    wsConn[noteId] = new WsConnection(store, store.state.ticket, noteId)
   },
 
-  getConn (notebookId) {
-    return wsConn[notebookId]
+  getConn (noteId) {
+    return wsConn[noteId]
   },
 
-  closeConn (notebookId) {
-    wsConn[notebookId].ws.close()
+  closeConn (noteId) {
+    wsConn[noteId].ws.close()
   }
 }

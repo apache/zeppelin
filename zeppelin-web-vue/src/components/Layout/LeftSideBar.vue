@@ -7,7 +7,7 @@
         v-if="this.$store.state.selectedLeftNavTab === 'folders'"
         class="folders-content"
       >
-        <NotebookList />
+        <NoteTree />
       </div>
 
       <div
@@ -36,7 +36,7 @@
 
 <script>
 import LeftNavBar from './LeftNavBar.vue'
-import NotebookList from '@/components/Notebook/NotebookList.vue'
+import NoteTree from '@/components/Notebook/NoteTree.vue'
 import ActivityConsole from '@/components/ActivityConsole.vue'
 import PackageList from '@/components/Helium/PackageList.vue'
 
@@ -44,7 +44,7 @@ export default {
   name: 'LeftSideBar',
   components: {
     LeftNavBar,
-    NotebookList,
+    NoteTree,
     ActivityConsole,
     PackageList
   }
