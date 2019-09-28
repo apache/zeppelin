@@ -58,41 +58,41 @@ export default {
 }
 </script>
 
-<style scoped>
-  .more {
-    float: right;
-    position: relative;
-    bottom: 2px;
-    color: #989898;
-    cursor: default;
-  }
+<style lang="scss" scoped>
+.more {
+  float: right;
+  position: relative;
+  bottom: 2px;
+  color: #989898;
+  cursor: default;
+}
 
-  .no-title {
-    font-style: italic;
-    cursor: auto;
-  }
+.no-title {
+  font-style: italic;
+  cursor: auto;
+}
 
-  .title {
-    cursor: auto;
-  }
+.title {
+  cursor: auto;
+}
 
-  .input input {
-    outline: 0;
-    padding: 0 10px;
-  }
+.input input {
+  outline: 0;
+  padding: 0 10px;
+}
 
-  .paragraph-mini-inner {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-    display: inline-block;
-    width: 100%;
-    padding: 5px 5px;
-  }
+.paragraph-mini-inner {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-block;
+  width: 100%;
+  padding: 5px 5px;
+}
 
-  .text-title {
-    padding: 0 12px;
-    display: inline-block;
-    margin-top: 2px;
-  }
+.text-title {
+  padding: 0 12px;
+  display: inline-block;
+  margin-top: 2px;
+}
 </style>

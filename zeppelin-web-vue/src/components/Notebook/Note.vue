@@ -90,7 +90,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .note {
   position: relative;
   height: 100%;

@@ -852,37 +852,38 @@ export default {
 }
 </script>
 
-<style scoped>
-  pre {
-    font-size: 12px;
-    border: none;
-    margin: 0px;
-    padding: 0px;
-    overflow-x: auto;
-    overflow-y: auto;
-    word-break: break-all;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    max-height: 250px;
-  }
+<style lang="scss" scoped>
+pre {
+  font-size: 12px;
+  border: none;
+  margin: 0px;
+  padding: 0px;
+  overflow-x: auto;
+  overflow-y: auto;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 250px;
+}
 
-  #chart1, svg {
-    margin: 0px;
-    padding: 0px;
-    height: 300px;
-    width: 100%;
-  }
+#chart1,
+svg {
+  margin: 0px;
+  padding: 0px;
+  height: 300px;
+  width: 100%;
+}
 
-  .table-results {
-    overflow: auto;
-    max-height: 300px;
-  }
+.table-results {
+  overflow: auto;
+  max-height: 300px;
+}
 
-  .md-paragraph {
-    font-size: 13px;
-  }
+.md-paragraph {
+  font-size: 13px;
+}
 
-  table {
-    font-size: 13px;
-  }
+table {
+  font-size: 13px;
+}
 </style>

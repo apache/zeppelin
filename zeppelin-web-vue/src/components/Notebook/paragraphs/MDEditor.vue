@@ -183,37 +183,39 @@ export default {
 }
 </script>
 
-<style>
-  .md-editor-inner .ProseMirror {
+<style lang="scss" scoped>
+.md-editor-inner {
+  .ProseMirror {
     outline: 0;
     padding: 10px;
   }
 
-  .md-editor-inner .menubar {
+  .menubar {
     padding: 10px;
     background: #f7f7f7;
+
+    button {
+      background: transparent;
+      border: 0;
+      outline: 0;
+
+      &:focus,
+      &:active,
+      &:hover {
+        outline: 0;
+        background: #eaeaea;
+        border-radius: 3px;
+      }
+
+      svg {
+        font-size: 12px;
+        width: 18px;
+      }
+    }
   }
 
-  .md-editor-inner .menubar button {
-    background: transparent;
-    border: 0;
-    outline: 0;
-  }
-
-  .md-editor-inner .menubar button:focus,
-  .md-editor-inner .menubar button:active,
-  .md-editor-inner .menubar button:hover {
-    outline: 0;
-    background: #eaeaea;
-    border-radius: 3px;
-  }
-
-  .md-editor-inner .menubar button svg {
-    font-size: 12px;
-    width: 18px;
-  }
-
-  .md-editor-inner ul li p {
+  ul li p {
     margin: 0;
   }
+}
 </style>

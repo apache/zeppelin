@@ -68,10 +68,12 @@ export default {
 <style lang="scss">
 @import '@/assets/reset.scss';
 
+@import '@/assets/loaders/code.scss';
+@import '@/assets/loaders/ring.scss';
+
 @import '@/assets/jquery.menu.scss';
 @import '@/assets/scrollbar.scss';
 @import '@/assets/tabs.scss';
-@import '@/assets/loaders/code.scss';
 @import '@/assets/status.scss';
 @import '@/assets/placeholder.scss';
 

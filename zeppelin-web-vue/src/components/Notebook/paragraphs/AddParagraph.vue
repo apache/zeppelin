@@ -48,51 +48,53 @@ export default {
 }
 </script>
 
-<style scoped>
-  .add-paragraph {
-    position: relative;
-    z-index: 5;
-    margin-top: -35px;
-    top: 7px;
-    text-align: center;
-  }
+<style lang="scss" scoped>
+.add-paragraph {
+  position: relative;
+  z-index: 5;
+  margin-top: -35px;
+  top: 7px;
+  text-align: center;
 
-  .add-paragraph:hover .in,
-  .add-paragraph:hover .options-x {
-    visibility: visible;
+  &:hover {
+    .in,
+    .options-x {
+      visibility: visible;
+    }
   }
+}
 
-  .add-icon {
-    color: #007bff;
-    position: relative;
-    bottom: 1px;
-    width: 14px;
-  }
+.add-icon {
+  color: #007bff;
+  position: relative;
+  bottom: 1px;
+  width: 14px;
+}
 
-  .in {
-    border: 1px solid #dfdfdf;
-    visibility: hidden;
-    margin: auto;
-    width: 300px;
-    position: relative;
-    top: 14px;
-    z-index: -1;
-  }
+.in {
+  border: 1px solid #dfdfdf;
+  visibility: hidden;
+  margin: auto;
+  width: 300px;
+  position: relative;
+  top: 14px;
+  z-index: -1;
+}
 
-  .options-x {
-    visibility: hidden;
-  }
+.options-x {
+  visibility: hidden;
 
-  .options-x .add-options {
+  .add-options {
     padding: 4px 10px;
     border: 1px solid #e2e2e2;
     background: #FFF;
     cursor: pointer;
     font-size: 13px;
     border-radius: 3px;
-  }
 
-  .options-x .add-options:hover {
-    border-color: #1e8aff;
+    &:hover {
+      border-color: #1e8aff;
+    }
   }
+}
 </style>

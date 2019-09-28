@@ -145,7 +145,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .note-controls {
   height: 30px;
   background: #f7f7f7;

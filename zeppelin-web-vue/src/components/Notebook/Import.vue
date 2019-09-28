@@ -1,4 +1,4 @@
-<template>
+  <template>
   <div>
     <a-modal
         v-model="showDialog"
@@ -167,7 +167,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .hover {
   border-color: #505050 !important;
 }

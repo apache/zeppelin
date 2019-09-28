@@ -92,18 +92,18 @@ export default {
 }
 </script>
 
-<style scoped>
-  .paragraph-main {
-    padding-top: 70px;
-    margin-top: -70px;
+<style lang="scss" scoped>
+.paragraph-main {
+  padding-top: 70px;
+  margin-top: -70px;
+
+  &.active .paragraph {
+    border-left-color: #3290ff;
   }
 
   .paragraph {
     padding: 0 10px;
     border-left: 5px solid transparent;
   }
-
-  .paragraph-main.active .paragraph {
-    border-left-color: #3290ff;
-  }
+}
 </style>
