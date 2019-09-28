@@ -1,23 +1,18 @@
 export default {
   getWebsocketUrl () {
     let wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return wsProtocol + '//' + location.hostname + ':' + this.getWSPort() + '/ws'
-  },
-
-  getWSPort () {
-    return this.getPort()
+    return wsProtocol + '//' + location.hostname + ':' + this.getPort() + '/ws'
   },
 
   getPort () {
-    let port = Number(location.port - 1)
+    let port = Number(process.env.VUE_APP_SERVER_PORT)
     if (!port) {
       port = 80
+
       if (location.protocol === 'https:') {
-        port = 443
+        port = process.env.VUE_APP_SERVER_SSL_PORT
       }
     }
-
-    // add a custom websocket port here
 
     return port
   },
