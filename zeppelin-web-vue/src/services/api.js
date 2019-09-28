@@ -16,9 +16,9 @@ export default {
         port = 443
       }
     }
-    if (port === 3333 || port === 9000) {
-      port = 8080
-    }
+
+    // add a custom websocket port here
+
     return port
   },
 
