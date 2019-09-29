@@ -1,0 +1,50 @@
+/*
+<div class="code-overlay-body">
+  <div class="code-loader">
+    <span>{</span><span>}</span>
+  </div>
+</div>
+*/
+
+$background-color: rgba(234, 234, 234, 0.4);
+$loader-color: #2f71a9;
+$loader-size: 10vh;
+
+.code-overlay-body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $background-color;
+  opacity: 1;
+}
+
+.code-loader {
+  color: $loader-color;
+  
+  font-family: Consolas, Menlo, Monaco, monospace;
+  font-weight: bold;
+  font-size: $loader-size;
+  
+  opacity: 0.8;
+
+  span {
+    display: inline-block;
+    animation: codepulse 0.4s alternate infinite ease-in-out;
+
+    &:nth-child(odd) {
+      animation-delay: 0.4s;
+    }
+  }
+}
+
+@keyframes codepulse {
+  to {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}

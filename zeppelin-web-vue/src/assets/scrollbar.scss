@@ -1,0 +1,20 @@
+.scrollbar {
+  &::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+  }
+
+  &::-webkit-scrollbar-button {
+    height: 0;
+    width: 0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-clip: border-box;
+    background-color: var(--colab-scrollbar-color);
+    border-width: 1.1px 1.1px 1.1px 6px;
+    box-shadow: inset 1px 1px 0 rgba(0,0,0,0.1), inset 0 -1px 0 rgba(0,0,0,0.1), inset -1px 0 0 rgba(0,0,0,0.1);
+    min-height: 28px;
+    padding: 0;
+  }
+}
