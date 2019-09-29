@@ -39,16 +39,7 @@ Vue.use(VueOffline, {
 
           TRASH_FOLDER_ID: '~Trash'
         },
-        computed: {
-          networkStatus () {
-            return this.isOnline ? 'My network is fine' : 'I am offline'
-          }
-        },
         mounted () {
-          this.$on('offline', () => {
-            alert('You are offline! The website will not work')
-          })
-
           commandManager.setupCommands(this.$store)
         },
         methods: {
