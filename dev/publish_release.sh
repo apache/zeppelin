@@ -125,14 +125,14 @@ function publish_to_maven() {
 
   echo "Created Nexus staging repository: ${staged_repo_id}"
 
-  rm -rf $HOME/.m2/repository/org/apache/zeppelin
+  #rm -rf $HOME/.m2/repository/org/apache/zeppelin
 
   # build with scala-2.10
   echo "mvn clean install -DskipTests \
     -Pscala-2.10 -Pbeam \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Pscala-2.10 -Pbeam \
-    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
+  #mvn clean install -DskipTests -Pscala-2.10 -Pbeam \
+  #  ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.10 failed."
     exit 1
@@ -144,8 +144,8 @@ function publish_to_maven() {
   echo "mvn clean install -DskipTests \
     -Pscala-2.11 \
     ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}"
-  mvn clean install -DskipTests -Pscala-2.11 \
-    ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
+  #mvn clean install -DskipTests -Pscala-2.11 \
+  #  ${PUBLISH_PROFILES} ${PROJECT_OPTIONS}
   if [[ $? -ne 0 ]]; then
     echo "Build with scala 2.11 failed."
     exit 1
@@ -158,6 +158,7 @@ function publish_to_maven() {
   for file in $(find . -type f); do
     echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --output "${file}.asc" \
       --detach-sig --armor "${file}"
+    md5 -q "${file}" > "${file}.md5"
     ${SHASUM} -a 1 "${file}" | cut -f1 -d' ' > "${file}.sha1"
   done
 
