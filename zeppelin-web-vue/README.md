@@ -1,4 +1,4 @@
-# zeppelin-notebooks
+# zeppelin-notebook
 Zeppelin Notebooks IDE using Vue.js
 
 ## Project setup
