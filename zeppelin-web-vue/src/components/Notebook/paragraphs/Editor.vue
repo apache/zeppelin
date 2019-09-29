@@ -109,7 +109,7 @@ export default {
       }
     },
     compiledMarkdown: function () {
-      let withoutMdMark = this.mdValue? this.mdValue.replace('%md\n', '') : ''
+      let withoutMdMark = this.mdValue ? this.mdValue.replace('%md\n', '') : ''
       return marked(withoutMdMark, {
         headerPrefix: 'toc_'
       })
