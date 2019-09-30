@@ -26,11 +26,9 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.OldNoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.zeppelinhub.security.Authentication;
 import org.apache.zeppelin.plugin.PluginManager;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.Util;
-import org.glassfish.hk2.api.Immediate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +38,6 @@ import java.util.*;
 /**
  * Notebook repository sync with remote storage
  */
-@Immediate
 public class NotebookRepoSync implements NotebookRepoWithVersionControl {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;

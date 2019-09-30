@@ -106,76 +106,79 @@ public class ZeppelinServer extends ResourceConfig {
   @Inject
   public ZeppelinServer() {
     InterpreterOutput.limit = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_OUTPUT_LIMIT);
+
     packages("org.apache.zeppelin.rest");
   }
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws InterruptedException {
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
     jettyWebServer = setupJettyServer(conf);
 
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-                jettyWebServer.setHandler(contexts);
-                // Web UI
-                final WebAppContext webApp = setupWebAppContext(contexts, conf);
+    jettyWebServer.setHandler(contexts);
+
+    // Web UI
+    final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
     ServiceLocatorUtilities.addClasses(sharedServiceLocator,
-            NotebookRepoSync.class,
-            ImmediateErrorHandlerImpl.class);
+      NotebookRepoSync.class,
+      ImmediateErrorHandlerImpl.class);
     ImmediateErrorHandlerImpl handler = sharedServiceLocator.getService(ImmediateErrorHandlerImpl.class);
 
     ServiceLocatorUtilities.bind(
-            sharedServiceLocator,
-            new AbstractBinder() {
-              @Override
-              protected void configure() {
-                Credentials credentials =
-                        new Credentials(
-                                conf.credentialsPersist(),
-                                conf.getCredentialsPath(),
-                                conf.getCredentialsEncryptKey());
-                bindAsContract(InterpreterFactory.class).in(Singleton.class);
-                bind(conf).to(ZeppelinConfiguration.class);
-                bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
-                bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
-                bindAsContract(Helium.class).in(Singleton.class);
-                bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
-                bindAsContract(InterpreterService.class).in(Singleton.class);
-                bind(credentials).to(Credentials.class);
-                bindAsContract(GsonProvider.class).in(Singleton.class);
-                bindAsContract(WebApplicationExceptionMapper.class).in(Singleton.class);
-                bindAsContract(AdminService.class).in(Singleton.class);
-                bindAsContract(AuthorizationService.class).to(Singleton.class);
-                // TODO(jl): Will make it more beautiful
-                if (!StringUtils.isBlank(conf.getShiroPath())) {
-                  bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
-                } else {
-                  // TODO(jl): Will be added more type
-                  bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
-                }
-                bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
-                bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
-                bindAsContract(ConfigurationService.class).in(Singleton.class);
-                bindAsContract(NotebookService.class).in(Singleton.class);
-                bindAsContract(JobManagerService.class).in(Singleton.class);
-                bindAsContract(Notebook.class).in(Singleton.class);
-                bindAsContract(NotebookServer.class)
-                        .to(AngularObjectRegistryListener.class)
-                        .to(RemoteInterpreterProcessListener.class)
-                        .to(ApplicationEventListener.class)
-                        .to(NoteEventListener.class)
-                        .to(WebSocketServlet.class)
-                        .in(Singleton.class);
-                if (conf.isZeppelinNotebookCronEnable()) {
-                  bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
-                } else {
-                  bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
-                }
-              }
-            });
+        sharedServiceLocator,
+        new AbstractBinder() {
+          @Override
+          protected void configure() {
+            Credentials credentials =
+                new Credentials(
+                    conf.credentialsPersist(),
+                    conf.getCredentialsPath(),
+                    conf.getCredentialsEncryptKey());
+
+            bindAsContract(InterpreterFactory.class).in(Singleton.class);
+            bindAsContract(NotebookRepoSync.class).to(NotebookRepo.class).in(Immediate.class);
+            bind(LuceneSearch.class).to(SearchService.class).in(Singleton.class);
+            bindAsContract(Helium.class).in(Singleton.class);
+            bind(conf).to(ZeppelinConfiguration.class);
+            bindAsContract(InterpreterSettingManager.class).in(Singleton.class);
+            bindAsContract(InterpreterService.class).in(Singleton.class);
+            bind(credentials).to(Credentials.class);
+            bindAsContract(GsonProvider.class).in(Singleton.class);
+            bindAsContract(WebApplicationExceptionMapper.class).in(Singleton.class);
+            bindAsContract(AdminService.class).in(Singleton.class);
+            bindAsContract(AuthorizationService.class).to(Singleton.class);
+            // TODO(jl): Will make it more beautiful
+            if (!StringUtils.isBlank(conf.getShiroPath())) {
+              bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Immediate.class);
+            } else {
+              // TODO(jl): Will be added more type
+              bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
+            }
+            bindAsContract(HeliumBundleFactory.class).in(Singleton.class);
+            bindAsContract(HeliumApplicationFactory.class).in(Singleton.class);
+            bindAsContract(ConfigurationService.class).in(Singleton.class);
+            bindAsContract(NotebookService.class).in(Singleton.class);
+            bindAsContract(JobManagerService.class).in(Singleton.class);
+            bindAsContract(Notebook.class).in(Singleton.class);
+            bindAsContract(NotebookServer.class)
+                .to(AngularObjectRegistryListener.class)
+                .to(RemoteInterpreterProcessListener.class)
+                .to(ApplicationEventListener.class)
+                .to(NoteEventListener.class)
+                .to(WebSocketServlet.class)
+                .in(Singleton.class);
+            if (conf.isZeppelinNotebookCronEnable()) {
+              bind(QuartzSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            } else {
+              bind(NoSchedulerService.class).to(SchedulerService.class).in(Singleton.class);
+            }
+          }
+        });
 
     webApp.addEventListener(
         new ServletContextListener() {
@@ -187,8 +190,7 @@ public class ZeppelinServer extends ResourceConfig {
           }
 
           @Override
-          public void contextDestroyed(ServletContextEvent servletContextEvent) {
-          }
+          public void contextDestroyed(ServletContextEvent servletContextEvent) {}
         });
 
     // Create `ZeppelinServer` using reflection and setup REST Api
@@ -249,8 +251,8 @@ public class ZeppelinServer extends ResourceConfig {
     try {
       jettyWebServer.start(); // Instantiates ZeppelinServer
       List<ErrorData> errorData = handler.waitForAtLeastOneConstructionError(5 * 1000);
-      if(errorData.size() > 1 && errorData.get(1).getThrowable() != null) {
-        throw new Exception(errorData.get(1).getThrowable());
+      if(errorData.size() > 0 && errorData.get(0).getThrowable() != null) {
+        throw new Exception(errorData.get(0).getThrowable());
       }
       if (conf.getJettyName() != null) {
         org.eclipse.jetty.http.HttpGenerator.setJettyVersion(conf.getJettyName());

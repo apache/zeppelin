@@ -50,7 +50,6 @@
     <eclipse.jgit.version>4.5.4.201711221230-r</eclipse.jgit.version>
     <jettison.version>1.4.0</jettison.version>
     <kerberos-client.version>2.0.0-M15</kerberos-client.version>
-    <hk2.utils.version>2.5.0</hk2.utils.version>
     <!--test library versions-->
     <google.truth.version>0.27</google.truth.version>
     <google.testing.nio.version>0.32.0-alpha</google.testing.nio.version>
@@ -256,11 +255,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.5</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.hk2</groupId>
-      <artifactId>hk2-api</artifactId>
-      <version>${hk2.utils.version}</version>
     </dependency>
 
   </dependencies>
