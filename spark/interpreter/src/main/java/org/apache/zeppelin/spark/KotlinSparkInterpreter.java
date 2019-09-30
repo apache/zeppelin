@@ -50,11 +50,11 @@ public class KotlinSparkInterpreter extends Interpreter {
   private static Logger logger = LoggerFactory.getLogger(KotlinSparkInterpreter.class);
   private static final SparkVersion KOTLIN_SPARK_SUPPORTED_VERSION = SparkVersion.SPARK_2_4_0;
 
+  private InterpreterResult unsupportedMessage;
   private KotlinInterpreter interpreter;
   private SparkInterpreter sparkInterpreter;
   private BaseZeppelinContext z;
   private JavaSparkContext jsc;
-  private SparkVersion sparkVersion;
 
   public KotlinSparkInterpreter(Properties properties) {
     super(properties);
@@ -68,8 +68,13 @@ public class KotlinSparkInterpreter extends Interpreter {
         getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     jsc = sparkInterpreter.getJavaSparkContext();
 
-    sparkVersion = SparkVersion.fromVersionString(jsc.version());
-    assertVersion();
+    SparkVersion sparkVersion = SparkVersion.fromVersionString(jsc.version());
+    if (sparkVersion.olderThan(KOTLIN_SPARK_SUPPORTED_VERSION)) {
+      unsupportedMessage = new InterpreterResult(
+              InterpreterResult.Code.ERROR,
+              "Spark version is " + sparkVersion + ", only " +
+              KOTLIN_SPARK_SUPPORTED_VERSION + " and newer are supported");
+    }
 
     z = sparkInterpreter.getZeppelinContext();
 
@@ -87,7 +92,7 @@ public class KotlinSparkInterpreter extends Interpreter {
       outputDir =  conf.getOption("spark.repl.class.outputDir").getOrElse(null);
     }
 
-    interpreter.properties()
+    interpreter.getKotlinReplProperties()
         .receiver(ctx)
         .classPath(classpath)
         .outputDir(outputDir)
@@ -105,7 +110,10 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
-    assertVersion();
+
+    if (isUnsupported()) {
+      return unsupportedMessage;
+    }
 
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
@@ -128,8 +136,9 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    assertVersion();
-
+    if (isUnsupported()) {
+      return;
+    }
     jsc.cancelJobGroup(buildJobGroupId(context));
     interpreter.cancel(context);
   }
@@ -141,7 +150,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
-    if (unsupportedVersion()) {
+    if (isUnsupported()) {
       return 0;
     }
     return sparkInterpreter.getProgress(context);
@@ -150,22 +159,14 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
-    if (unsupportedVersion()) {
+    if (isUnsupported()) {
       return Collections.emptyList();
     }
     return interpreter.completion(buf, cursor, interpreterContext);
   }
 
-  public boolean unsupportedVersion() {
-    return sparkVersion.olderThan(KOTLIN_SPARK_SUPPORTED_VERSION);
-  }
-
-  private void assertVersion() throws UnsupportedClassVersionError {
-    if (unsupportedVersion()) {
-      throw new UnsupportedClassVersionError(
-          "Spark version is " + sparkVersion + ", only " +
-              KOTLIN_SPARK_SUPPORTED_VERSION + " and newer are supported");
-    }
+  private boolean isUnsupported() {
+    return unsupportedMessage == null;
   }
 
   private List<String> sparkClasspath() {

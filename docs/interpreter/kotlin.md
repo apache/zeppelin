@@ -46,9 +46,6 @@ It is designed to interoperate fully with Java, and the JVM version of its stand
   </tr>
 </table>
 
-## Using the Kotlin Interpreter
-In a paragraph, use %kotlin to select the Kotlin interpreter and then write your script.
-
 ## Example
 
 ```kotlin
@@ -66,7 +63,6 @@ You can also print variables or functions by calling `kc.showVars()` or `kc.show
 
 
 ```kotlin
-%kotlin 
 fun square(n: Int): Int = n * n
 
 val greeter = { s: String -> println("Hello $s!") }

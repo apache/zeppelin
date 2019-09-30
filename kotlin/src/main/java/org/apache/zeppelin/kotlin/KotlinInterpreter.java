@@ -71,7 +71,7 @@ public class KotlinInterpreter extends Interpreter {
         .shortenTypes(shortenTypes);
   }
 
-  public KotlinReplProperties properties() {
+  public KotlinReplProperties getKotlinReplProperties() {
     return replProperties;
   }
 
@@ -163,11 +163,10 @@ public class KotlinInterpreter extends Interpreter {
     PrintStream newOut = (out != null) ? new PrintStream(out) : null;
     try {
       System.setOut(newOut);
-      InterpreterResult res = interpreter.eval(code);
+      return interpreter.eval(code);
     } finally {
       System.setOut(oldOut);
     }
-    return res;
   }
 
   private List<String> getImportClasspath(String localRepo) {

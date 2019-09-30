@@ -220,7 +220,7 @@ public class KotlinInterpreterTest {
   public void testOutputClasses() throws Exception {
     prepareInterpreter();
     Path tempPath = Files.createTempDirectory("tempKotlinClasses");
-    interpreter.properties().outputDir(tempPath.toAbsolutePath().toString());
+    interpreter.getKotlinReplProperties().outputDir(tempPath.toAbsolutePath().toString());
     interpreter.open();
     interpreter.interpret("val x = 1\nx", context);
     File[] dir = tempPath.toFile().listFiles();
@@ -282,7 +282,7 @@ public class KotlinInterpreterTest {
   @Test
   public void fullTypeNamesTest() throws Exception {
     prepareInterpreter();
-    interpreter.properties().shortenTypes(false);
+    interpreter.getKotlinReplProperties().shortenTypes(false);
     interpreter.open();
 
     interpreter.interpret("val s = \"abc\"", context);
