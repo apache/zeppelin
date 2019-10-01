@@ -64,7 +64,7 @@ matrix:
     - sudo: required
       jdk: "openjdk8"
       dist: xenial
-      env: BUILD_FLAG="clean package -DskipTests" TEST_FLAG="test -DskipTests"
+      env: BUILD_FLAG="clean package -T C2 -DskipTests" TEST_FLAG="test -DskipTests"
 
     # Run e2e tests (in zeppelin-web)
     # chrome dropped the support for precise (ubuntu 12.04), so need to use trusty
@@ -87,13 +87,6 @@ matrix:
       jdk: "openjdk8"
       dist: xenial
       env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
-
-    # Test flink module
-    - sudo: required
-      jdk: "openjdk8"
-      dist: xenial
-      env: PYTHON="3" SPARKR="true" PROFILE="-Pscala-2.11" BUILD_FLAG="clean install -Pbuild-distr -DskipRat -am" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl flink" TEST_PROJECTS="-DfailIfNoTests=false"
-
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
@@ -183,7 +176,7 @@ before_install:
 install:
   - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
-  - if [ x"$BUILD_PLUGINS" == x"true" ]; then echo "mvn clean package -pl zeppelin-plugins -amd -B"; mvn clean package -pl zeppelin-plugins -amd -B; fi
+  - if [ x"$BUILD_PLUGINS" == x"true" ]; then echo "mvn clean package -T 2C -pl zeppelin-plugins -amd -B"; mvn clean package -T 2C -pl zeppelin-plugins -amd -B; fi
 
 before_script:
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi
