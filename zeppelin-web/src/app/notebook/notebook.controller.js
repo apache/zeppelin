@@ -237,7 +237,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   $scope.isTrash = function(note) {
-    return note ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
+    return note && note.path ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
   };
 
   // Export notebook
