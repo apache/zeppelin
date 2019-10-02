@@ -521,7 +521,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getCredentialsPath() {
-    return getRelativeDir(String.format("%s/credentials.json", getConfDir()));
+    return getConfigFSDir() + "/credentials.json";
   }
 
   public String getShiroPath() {
