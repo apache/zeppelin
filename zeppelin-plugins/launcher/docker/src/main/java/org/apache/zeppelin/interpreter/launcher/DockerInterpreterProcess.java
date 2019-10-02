@@ -404,6 +404,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       LOGGER.warn("{} file not found, Did not upload the krb5.conf to the container!", krb5conf);
     }
 
+    // TODO: Interpreter specific settings, we should consider general property or some other more elegant solution
     // 3) Get the keytab file in each interpreter properties
     // Upload Keytab file to container, Keep the same directory as local host
     // 3.1) shell interpreter properties keytab file
