@@ -29,7 +29,7 @@ geode           org.apache.zeppelin:zeppelin-geode:0.9.0                Apache G
 groovy          org.apache.zeppelin:zeppelin-groovy:0.9.0               Groovy interpreter
 hazelcastjet    org.apache.zeppelin:zeppelin-hazelcastjet:0.9.0         Hazelcast Jet interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.9.0                Hbase interpreter
-ignite          org.apache.zeppelin:zeppelin-ignite_2.10:0.9.0          Ignite interpreter built with Scala 2.10
+ignite          org.apache.zeppelin:zeppelin-ignite:0.9.0               Ignite interpreter
 java            org.apache.zeppelin:zeppelin-java:0.9.0                 Java interpreter
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.9.0                 Jdbc interpreter
 kylin           org.apache.zeppelin:zeppelin-kylin:0.9.0                Kylin interpreter
