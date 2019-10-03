@@ -58,12 +58,12 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
   <tr>
     <td>ignite.addresses</td>
     <td>127.0.0.1:47500..47509</td>
-    <td>Coma separated list of Ignite cluster hosts. See [Ignite Cluster Configuration](https://apacheignite.readme.io/docs/cluster-config) section for more details.</td>
+    <td>Coma separated list of Ignite cluster hosts. See <a href="https://apacheignite.readme.io/docs/cluster-config">Ignite Cluster Configuration</a> section for more details.</td>
   </tr>
   <tr>
     <td>ignite.clientMode</td>
     <td>true</td>
-    <td>You can connect to the Ignite cluster as client or server node. See [Ignite Clients vs. Servers](https://apacheignite.readme.io/docs/clients-vs-servers) section for details. Use true or false values in order to connect in client or server mode respectively.</td>
+    <td>You can connect to the Ignite cluster as client or server node. See <a href="https://apacheignite.readme.io/docs/clients-vs-servers">Ignite Clients vs. Servers</a> section for details. Use true or false values in order to connect in client or server mode respectively.</td>
   </tr>
   <tr>
     <td>ignite.config.url</td>
@@ -78,7 +78,7 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
   <tr>
     <td>ignite.peerClassLoadingEnabled</td>
     <td>true</td>
-    <td>Enables peer-class-loading. See [Zero Deployment](https://apacheignite.readme.io/docs/zero-deployment) section for details. Use true or false values in order to enable or disable P2P class loading respectively.</td>
+    <td>Enables peer-class-loading. See <a href="https://apacheignite.readme.io/docs/zero-deployment">Zero Deployment</a> section for details. Use true or false values in order to enable or disable P2P class loading respectively.</td>
   </tr>
 </table>
 
@@ -125,4 +125,4 @@ collectionAsScalaIterable(res).foreach(println _)
 
 ![Using Scala Code]({{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/ignite-scala-example.png)
 
-Apache Ignite also provides a guide docs for Zeppelin ["Ignite with Apache Zeppelin"](https://apacheignite.readme.io/docs/data-analysis-with-apache-zeppelin)
+Apache Ignite also provides a guide docs for Zeppelin ["Ignite with Apache Zeppelin"](https://apacheignite-sql.readme.io/docs/apache-zeppelin)
