@@ -17,7 +17,7 @@ FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
-ENV Z_VERSION="0.8.1"
+ENV Z_VERSION="0.8.2"
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
@@ -71,8 +71,8 @@ RUN echo "$LOG_TAG Install python related packages" && \
     conda update -q conda && \
     conda info -a && \
     conda config --add channels conda-forge && \
-    conda install -q numpy=1.12.1 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10 && \
-    pip install -q ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
+    conda install -q numpy=1.13.3 pandas=0.21.1 matplotlib=2.1.1 pandasql=0.7.3 ipython=5.4.1 jupyter_client=5.1.0 ipykernel=4.7.0 bokeh=0.12.10 && \
+    pip install -q scipy==0.18.0 ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
