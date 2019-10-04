@@ -643,7 +643,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "./"),
-    ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
+    ZEPPELIN_ADDR("zeppelin.server.addr", "127.0.0.1"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),

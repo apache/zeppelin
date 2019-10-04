@@ -117,7 +117,7 @@ public class SparkShimsTest {
           .when(mockRemoteEventClientWrapper)
           .onParaInfosReceived(anyString(), anyString(), argumentCaptor.capture());
 
-      when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("job-note-paragraph");
+      when(mockProperties.getProperty("spark.jobGroup.id")).thenReturn("zeppelin-user1-note-paragraph");
 
       try {
         sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties());

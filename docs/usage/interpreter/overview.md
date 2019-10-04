@@ -152,3 +152,19 @@ In such cases, interpreter process recovery is necessary. Starting from 0.8.0, u
 `org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage` or other implementations if available in future, by default it is `org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage`
  which means recovery is not enabled. Enable recover means shutting down Zeppelin would not terminating interpreter process,
 and when Zeppelin is restarted, it would try to reconnect to the existing running interpreter processes. If you want to kill all the interpreter processes after terminating Zeppelin even when recovery is enabled, you can run `bin/stop-interpreter.sh` 
+
+## Credential Injection
+
+Credentials from the credential manager can be injected into Notebooks. Credential injection works by replacing the following patterns in Notebooks with matching credentials for the Credential Manager: `{user.CREDENTIAL_ENTITY}` and `{password.CREDENTIAL_ENTITY}`. However, credential injection must be enabled per Interpreter, by adding a boolean `injectCredentials` setting in the Interpreters configuration. Injected passwords are removed from Notebook output to prevent accidentally leaking passwords.
+
+**Credential Injection Setting**
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_injection_setting.png" width="500px">
+
+**Credential Entry Example**
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_entry.png" width="500px">
+
+**Credential Injection Example**
+```
+val password = "{password.SOME_CREDENTIAL_ENTITY}"
+val username = "{user.SOME_CREDENTIAL_ENTITY}"
+```

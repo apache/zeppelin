@@ -85,9 +85,10 @@ public class DependencyResolverTest {
     FileUtils.cleanDirectory(testCopyPath);
 
     // load from added repository
-    resolver.addRepo("sonatype", "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
-    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
-    assertEquals(testCopyPath.list().length, 8);
+    resolver.addRepo("sonatype",
+        "https://oss.sonatype.org/content/repositories/ksoap2-android-releases/", false);
+    resolver.load("com.google.code.ksoap2-android:ksoap2-jsoup:3.6.3", testCopyPath);
+    assertEquals(testCopyPath.list().length, 10);
 
     // load invalid artifact
     resolver.delRepo("sonatype");
