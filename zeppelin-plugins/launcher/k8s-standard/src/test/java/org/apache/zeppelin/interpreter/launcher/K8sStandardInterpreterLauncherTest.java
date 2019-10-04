@@ -53,7 +53,7 @@ public class K8sStandardInterpreterLauncherTest {
     Properties properties = new Properties();
     properties.setProperty("ENV_1", "VALUE_1");
     properties.setProperty("property_1", "value_1");
-    properties.setProperty("CALLBACK_HOST", "zeppelin-server.default.svc.cluster.local");
+    properties.setProperty("CALLBACK_HOST", "zeppelin-server.default.svc");
     properties.setProperty("CALLBACK_PORT", "12320");
     InterpreterOption option = new InterpreterOption();
     option.setUserImpersonate(true);

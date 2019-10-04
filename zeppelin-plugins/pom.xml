@@ -42,6 +42,7 @@
         <module>notebookrepo/gcs</module>
         <module>notebookrepo/zeppelin-hub</module>
         <module>notebookrepo/filesystem</module>
+        <module>notebookrepo/mongo</module>
 
         <module>launcher/k8s-standard</module>
         <module>launcher/cluster</module>

@@ -23,6 +23,7 @@ import java.net.URLClassLoader
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
@@ -303,7 +304,11 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected def createZeppelinContext(): Unit = {
     val sparkShims = SparkShims.getInstance(sc.version, properties)
-    sparkShims.setupSparkListener(sc.master, sparkUrl, InterpreterContext.get)
+    var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (StringUtils.isBlank(webUiUrl)) {
+      webUiUrl = sparkUrl;
+    }
+    sparkShims.setupSparkListener(sc.master, webUiUrl, InterpreterContext.get)
 
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,

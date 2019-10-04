@@ -27,8 +27,8 @@
 
 <property>
   <name>zeppelin.server.addr</name>
-  <value>0.0.0.0</value>
-  <description>Server address</description>
+  <value>127.0.0.1</value>
+  <description>Server binding address</description>
 </property>
 
 <property>
@@ -286,7 +286,7 @@
 <property>
   <name>zeppelin.notebook.mongo.autoimport</name>
   <value>false</value>
-  <description>import local notes into MongoDB automatically on startup</description>
+  <description>import local notes into MongoDB automatically on startup, reset to false after import to avoid repeated import</description>
 </property>
 -->
 

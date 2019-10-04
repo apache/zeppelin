@@ -27,7 +27,7 @@ limitations under the License.
 
 Helium is a plugin system that can extend Zeppelin a lot. 
 For example, you can write [custom display system](./writing_spell.html) or 
-install already published one in [Heliun Online Registry](http://zeppelin.apache.org/helium_packages.html). 
+install already published one in [Helium Online Registry](http://zeppelin.apache.org/helium_packages.html). 
 
 Currently, Helium supports 4 types of package.
 

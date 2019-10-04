@@ -174,6 +174,12 @@ public class ZeppelinServerMock {
       ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
       PluginManager.reset();
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_HOME.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_WAR.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONF_DIR.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_CONFIG_FS_DIR.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT.getVarName());
+      System.clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName());
 
       long s = System.currentTimeMillis();
       boolean started = true;
