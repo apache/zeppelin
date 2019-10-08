@@ -310,7 +310,7 @@ export default class TableVisualization extends Visualization {
       const columnNames = columns.map((c) => c.name);
       let gridData = row.map((r) => {
         return columnNames.reduce((acc, colName, index) => {
-          acc[colName] = r[index];
+          acc[colName + index] = r[index];
           return acc;
         }, {});
       });
