@@ -160,11 +160,9 @@ public class SecurityUtils {
               break;
             }
           } catch (Throwable t) {
-            if (log.isDebugEnabled()) {
-              String msg = "Realm [" + realm +
-                           "] threw an exception during a multi-realm authorization attempt:";
-              log.debug(msg, t);
-            }
+            String msg = "Realm [" + realm +
+                         "] threw an exception during a multi-realm authorization attempt:";
+            log.warn(msg, t);
           }
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
