@@ -157,11 +157,13 @@ public class SecurityUtils {
             );
             if (auth != null) {
               roles = new HashSet<>(auth.getRoles());
+              break;
             }
-          } catch (NamingException e) {
-            log.error("Can't fetch roles", e);
+          } catch (Throwable t) {
+            String msg = "Realm [" + realm +
+                         "] threw an exception during a multi-realm authorization attempt:";
+            log.warn(msg, t);
           }
-          break;
         } else if (name.equals("org.apache.zeppelin.realm.ActiveDirectoryGroupRealm")) {
           allRoles = ((ActiveDirectoryGroupRealm) realm).getListRoles();
           break;
