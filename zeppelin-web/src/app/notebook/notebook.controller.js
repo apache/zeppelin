@@ -237,7 +237,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   $scope.isTrash = function(note) {
-    return note ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
+    return note && note.path ? note.path.split('/')[1] === TRASH_FOLDER_ID : false;
   };
 
   // Export notebook
@@ -809,7 +809,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
         minimumInputLength: 3,
       };
 
-      $scope.setIamOwner();
+      $scope.setMyPermissions();
       angular.element('#selectOwners').select2(selectJson);
       angular.element('#selectReaders').select2(selectJson);
       angular.element('#selectRunners').select2(selectJson);
@@ -1190,14 +1190,36 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     }
   };
 
-  $scope.setIamOwner = function() {
-    if ($scope.permissions.owners.length > 0 &&
-      _.indexOf($scope.permissions.owners, $rootScope.ticket.principal) < 0) {
-      $scope.isOwner = false;
-      return false;
+  const arrayIntersection = function(arrayFirst, arraySecond) {
+    return arrayFirst.filter(function(x) {
+      if(arraySecond.indexOf(x) !== -1) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+  };
+
+  $scope.setMyPermissions = function() {
+    let myPermissions;
+    try {
+      myPermissions = JSON.parse($rootScope.ticket.roles);
+    } catch(err) {
+      myPermissions = [];
     }
-    $scope.isOwner = true;
-    return true;
+    myPermissions.push($rootScope.ticket.principal);
+
+    $scope.isOwner = !($scope.permissions.owners.length > 0 &&
+       arrayIntersection(myPermissions, $scope.permissions.owners).length === 0);
+
+    $scope.isWriter = !($scope.permissions.writers.length > 0 &&
+       arrayIntersection(myPermissions, $scope.permissions.writers).length === 0);
+
+    if (!$scope.isOwner && !$scope.isWriter) {
+      $scope.viewOnly = true;
+      $scope.note.config.looknfeel = 'report';
+      initializeLookAndFeel();
+    }
   };
 
   $scope.toggleNotePersonalizedMode = function() {

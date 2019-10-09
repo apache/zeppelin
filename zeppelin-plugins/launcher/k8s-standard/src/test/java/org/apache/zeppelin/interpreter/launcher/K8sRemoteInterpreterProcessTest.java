@@ -60,7 +60,7 @@ public class K8sRemoteInterpreterProcessTest {
     int port = intp.getPort();
 
     // then
-    assertEquals(String.format("%s.%s.svc.cluster.local", intp.getPodName(), kubectl.getNamespace()), intp.getHost());
+    assertEquals(String.format("%s.%s.svc", intp.getPodName(), kubectl.getNamespace()), intp.getHost());
     assertEquals(12321, intp.getPort());
   }
 
