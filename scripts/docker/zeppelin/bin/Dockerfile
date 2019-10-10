@@ -18,10 +18,12 @@ MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="0.9.0-SNAPSHOT"
+
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+    LC_ALL=en_US.UTF-8 \
+    ZEPPELIN_ADDR="0.0.0.0"
 
 RUN echo "$LOG_TAG update and install basic packages" && \
     apt-get -y update && \
