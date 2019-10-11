@@ -208,6 +208,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
+        .hostname(this.zeppelinServiceHost)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
@@ -453,6 +454,7 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       LOGGER.warn("{} file not found, Did not upload the krb5.conf to the container!", krb5conf);
     }
 
+    // TODO: Interpreter specific settings, we should consider general property or some other more elegant solution
     // 3) Get the keytab file in each interpreter properties
     // Upload Keytab file to container, Keep the same directory as local host
     // 3.1) shell interpreter properties keytab file
@@ -466,14 +468,18 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       intpKeytab = properties.getProperty("submarine.hadoop.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.4) jdbc interpreter properties keytab file
+      // 3.4) livy interpreter properties keytab file
+      intpKeytab = properties.getProperty("zeppelin.livy.keytab", "");
+    }
+    if (StringUtils.isBlank(intpKeytab)) {
+      // 3.5) jdbc interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.jdbc.keytab.location", "");
     }
     if (!StringUtils.isBlank(intpKeytab) && !copyFiles.containsKey(intpKeytab)) {
       LOGGER.info("intpKeytab : {}", intpKeytab);
       copyFiles.put(intpKeytab, intpKeytab);
     }
-    // 3.5) zeppelin server keytab file
+    // 3.6) zeppelin server keytab file
     String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)
         && !copyFiles.containsKey(zeppelinServerKeytab)) {

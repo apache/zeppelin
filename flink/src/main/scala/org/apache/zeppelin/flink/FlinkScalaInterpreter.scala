@@ -222,10 +222,12 @@ class FlinkScalaInterpreter(val properties: Properties) {
     setAsContext()
     if (getPlanner == "flink") {
       // flink planner
+      LOGGER.info("Use flink planner")
       this.btenv = flinkILoop.scalaBTEnv
       this.stenv = flinkILoop.scalaSTEnv
     } else {
       // blink planner
+      LOGGER.info("Use blink planner")
       this.btEnvSetting = EnvironmentSettings.newInstance().inBatchMode().useBlinkPlanner().build()
       this.btenv = TableEnvironment.create(this.btEnvSetting)
       flinkILoop.intp.bind("btenv", this.btenv)

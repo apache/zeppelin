@@ -690,6 +690,8 @@ public class InterpreterSetting {
     } else {
       if (group.equals("spark")) {
         return "SparkInterpreterLauncher";
+      } else if (group.equals("flink")) {
+        return "FlinkInterpreterLauncher";
       } else {
         return "StandardInterpreterLauncher";
       }
