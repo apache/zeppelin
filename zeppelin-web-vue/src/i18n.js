@@ -24,6 +24,7 @@ export const i18n = new VueI18n({
           move_to_rb_confirm: 'Do you want to delete this Note?',
           move_to_rb_content: 'This will move the note to Recycle Bin and you can still recover it.',
           move_to_rb_success: 'Note moved to recycle bin successfully.',
+          rename_success: 'Note renamed successfully',
           empty_recycle_bin: 'Empty Recycle Bin'
         }
       }

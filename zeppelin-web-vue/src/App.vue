@@ -21,8 +21,9 @@
       @keyup.ctrl.r="executeCommand('note', 'run-all')"
     />
 
-    <Create />
-    <Import />
+    <CreateNote />
+    <ImportNote />
+    <RenameNote />
   </div>
 </template>
 
@@ -36,12 +37,13 @@ import Header from '@/components/Layout/Header.vue'
 import LeftSidebar from '@/components/Layout/LeftSideBar.vue'
 // import StatusBar from '@/components/Layout/StatusBar.vue'
 
-import Create from '@/components/Notebook/Create.vue'
-import Import from '@/components/Notebook/Import.vue'
+import CreateNote from '@/components/Notebook/Create.vue'
+import ImportNote from '@/components/Notebook/Import.vue'
+import RenameNote from '@/components/Notebook/Rename.vue'
 
 export default {
   name: 'App',
-  components: { GlobalEvents, Header, LeftSidebar, Create, Import },
+  components: { GlobalEvents, Header, LeftSidebar, CreateNote, ImportNote, RenameNote },
   created () {
     document.title = 'Zeppelin Notebook'
   },

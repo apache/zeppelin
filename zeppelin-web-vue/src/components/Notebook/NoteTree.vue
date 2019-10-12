@@ -32,7 +32,7 @@
           v-bind:title="note.path"
           class="text-ellipsis"
           :class="{'active':  note.id === activeNoteId}"
-          v-on:click="openNote(note)"
+          @click="openNote(note)"
         >
           <a-icon type="file" />
           <span>{{ getFileName(note.path) }}</span>
@@ -48,7 +48,7 @@
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
-                  v-on:click="openNote(note)"
+                  @click="openNote(note)"
                 >
                   Open Notebook
                 </a>
@@ -56,6 +56,7 @@
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
+                  @click="showRenameDialog(note)"
                 >
                   Rename
                 </a>
@@ -115,6 +116,12 @@ export default {
     },
     onSearch (value) {
       // a
+    },
+    showRenameDialog (note) {
+      this.$root.executeCommand('showRenameNoteDialog', {
+        id: note.id,
+        path: note.path
+      })
     }
   }
 }

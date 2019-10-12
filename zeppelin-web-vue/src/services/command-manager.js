@@ -52,7 +52,7 @@ export default {
       let isActiveNote = (store.state.TabManagerStore.currentTab &&
                               store.state.TabManagerStore.currentTab.type === 'note')
 
-      if (!(isActiveNote || ['show-create', 'create', 'show-import', 'import-json'].indexOf(command) !== -1)) {
+      if (!(isActiveNote || ['show-create', 'create', 'rename', 'show-import', 'import-json'].indexOf(command) !== -1)) {
         return
       }
       let note = store.state.TabManagerStore.currentTab
@@ -69,6 +69,9 @@ export default {
           break
         case 'import-json':
           notebookUtils.importJSON(args)
+          break
+        case 'rename':
+          notebookUtils.rename(args)
           break
         case 'clear-output':
           notebookUtils.clearAllOutputs(note.id)

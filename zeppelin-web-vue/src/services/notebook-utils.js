@@ -44,6 +44,20 @@ export default {
     // Pending - open the note after create
   },
 
+  rename (params) {
+    console.log(params)
+    wsHelper.getConn().send({
+      op: 'NOTE_RENAME',
+      data: {
+        id: params.sourceNoteId,
+        name: params.newNoteName
+      }
+    })
+
+    // Reload the left sidebar
+    this.reloadList()
+  },
+
   open (note) {
     wsFactory.initNoteConnection(note.id, this.store)
 
