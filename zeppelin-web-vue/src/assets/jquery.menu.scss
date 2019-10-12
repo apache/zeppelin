@@ -1,18 +1,19 @@
 #menu-bar {
   * {
-    box-sizing: content-box;
+    box-sizing: border-box;
   }
 
   .menu-top-mask {
     height: 2px;
-    background-color: #fff;
+    // background-color: #fff;
     z-index:1001;
   }
 
   ul.main-menu {
     list-style-type: none;
-    margin: 0 0 0 3px;
     padding: 0;
+    margin: 0;
+    padding-top: 6px;
     font-size: 14px;
     font-weight: 400;
 
@@ -20,21 +21,14 @@
       margin: 0;
       display: inline-block;
       list-style-type: none;
-      padding: 0 8px;
-      line-height: 28px;
-      vertical-align: middle;
+      padding: 4px 8px;
+      height: 34px;
       cursor: pointer;
       border: 1px solid transparent;
 
       &.active-menu {
-        background-color: #fff;
-        border-color: #ccc;
-        border: 1px solid #BDBDBD;
-        border-bottom-color: transparent;
-
-        &:hover{
-          background-color: #fff;
-        }
+        background-color: rgba(211, 211, 211, 0.2);
+        border-radius: 2px 2px 0px 0px;
       }
 
       .separator {
@@ -48,9 +42,6 @@
         padding: 0;
         margin: 0;
         display: none;
-        border-width:1px;
-        border-style: solid;
-        border-color: #ccc;
         background-color: #fff;
         -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         -moz-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -60,7 +51,8 @@
 
     li {
       &:hover{
-        background-color: whiteSmoke; /*#fef7cb;*/
+        background-color: rgba(211, 211, 211, 0.2);
+        border-radius: 2px 2px 0px 0px;
       }
 
       a {
@@ -95,7 +87,7 @@
               cursor:default;
               background-color: #fff;
             }
-            padding-right: 40px;
+            padding: 4px 40px 4px 0;
 
             span {
               font-size: 11px;

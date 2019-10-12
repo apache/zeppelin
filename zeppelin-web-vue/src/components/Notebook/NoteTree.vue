@@ -14,6 +14,13 @@
       </div>
     </div>
 
+    <a-input-search
+      v-if="!isLoading"
+      placeholder="search notebooks"
+      class="search-notebook-box"
+      @search="onSearch"
+    />
+
     <ul>
       <li
         v-for="(note, index) in this.notes"
@@ -28,7 +35,41 @@
           v-on:click="openNote(note)"
         >
           <a-icon type="file" />
-          {{ getFileName(note.path) }}
+          <span>{{ getFileName(note.path) }}</span>
+
+          <a-dropdown
+            class="note-menu"
+            placement="bottomRight"
+          >
+            <a class="ant-dropdown-link" href="#">
+              <a-icon type="ellipsis" />
+            </a>
+            <a-menu slot="overlay">
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                  v-on:click="openNote(note)"
+                >
+                  Open Notebook
+                </a>
+              </a-menu-item>
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                >
+                  Rename
+                </a>
+              </a-menu-item>
+              <a-menu-divider />
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                >
+                  Move to Recycle Bin
+                </a>
+              </a-menu-item>
+            </a-menu>
+          </a-dropdown>
         </a>
       </li>
     </ul>
@@ -40,6 +81,11 @@ import ws from '@/services/ws-helper'
 
 export default {
   name: 'NoteTree',
+  data () {
+    return {
+
+    }
+  },
   mounted () {
     ws.getConn().send({ op: 'LIST_NOTES' })
   },
@@ -63,6 +109,12 @@ export default {
     },
     getFileName (path) {
       return path.substr(path.lastIndexOf('/') + 1)
+    },
+    onSelect (keys) {
+      console.log('Trigger Select', keys)
+    },
+    onSearch (value) {
+      // a
     }
   }
 }
@@ -82,6 +134,11 @@ export default {
   }
 }
 
+.search-notebook-box {
+  padding: 8px 6px;
+  width: calc(100%);
+}
+
 .notes {
   list-style: none;
   margin: 0;
@@ -92,12 +149,23 @@ export default {
     margin: 0;
     padding: 0;
 
-    li {
+    li.note {
+      position: relative;
+
       a {
         font-size: 14px;
         padding: 5px 10px;
-        display: block;
+        display: flex;
         border-left: 4px solid transparent;
+
+        i {
+          line-height: 20px;
+        }
+
+        &> span {
+          position: relative;
+          padding-left: 5px;
+        }
 
         &.active {
           background: #f1eeee;
@@ -106,7 +174,17 @@ export default {
 
         &:hover {
           background: #F1F1F1;
+        }
+      }
 
+      a.note-menu {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        padding: 0;
+
+        i {
+          transform: rotate(90deg);
         }
       }
     }

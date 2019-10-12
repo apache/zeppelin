@@ -28,10 +28,45 @@
           v-on:click="openNote(note)"
         >
           <a-icon type="file" />
-          {{ getFileName(note.path) }}
+          <span>{{ getFileName(note.path) }}</span>
+
+          <a-dropdown
+            class="note-menu"
+            placement="bottomRight"
+          >
+            <a class="ant-dropdown-link" href="#">
+              <a-icon type="ellipsis" />
+            </a>
+            <a-menu slot="overlay">
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                  v-on:click="openNote(note)"
+                >
+                  Open Notebook
+                </a>
+              </a-menu-item>
+              <a-menu-divider />
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                  v-on:click="showConfirmDelete(note)"
+                >
+                  Delete Permanently
+                </a>
+              </a-menu-item>
+            </a-menu>
+          </a-dropdown>
         </a>
       </li>
     </ul>
+
+    <div
+      v-if="this.notes.length === 0"
+      class="pt-2 pl-2"
+    >
+      {{ $t("message.note.empty_recycle_bin") }}
+    </div>
   </div>
 </template>
 
@@ -55,6 +90,9 @@ export default {
         type: 'note',
         note: note
       })
+    },
+    showConfirmDelete (note) {
+
     },
     getFileName (path) {
       return path.substr(path.lastIndexOf('/') + 1)
@@ -87,12 +125,23 @@ export default {
     margin: 0;
     padding: 0;
 
-    li {
+    li.note {
+      position: relative;
+
       a {
         font-size: 14px;
         padding: 5px 10px;
-        display: block;
+        display: flex;
         border-left: 4px solid transparent;
+
+        i {
+          line-height: 20px;
+        }
+
+        &> span {
+          position: relative;
+          padding-left: 5px;
+        }
 
         &.active {
           background: #f1eeee;
@@ -101,7 +150,17 @@ export default {
 
         &:hover {
           background: #F1F1F1;
+        }
+      }
 
+      a.note-menu {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        padding: 0;
+
+        i {
+          transform: rotate(90deg);
         }
       }
     }

@@ -3,47 +3,67 @@
     <div style="display: flex">
       <router-link
         to="/"
-        class="logo pt-3 pl-2"
+        class="logo pt-2 pl-2"
       >
-        <img alt="Zeppelin logo" src="@/assets/zepLogo.png">
+        <img alt="Zeppelin logo" src="@/assets/zepLogoW.png">
       </router-link>
 
-      <div>
-        <h5 class="pt-2 mb-1">
-          Zeppelin Notebook
-        </h5>
-        <TopMenu />
-      </div>
+      <h5>
+        Zeppelin Notebook
+      </h5>
+
+      <TopMenu />
+
+      <Connectivity class="connectivity"/>
     </div>
   </div>
 </template>
 
 <script>
 import TopMenu from './TopMenu.vue'
+import Connectivity from './Connectivity.vue'
 
 export default {
   name: 'Header',
-  components: { TopMenu }
+  components: { TopMenu, Connectivity }
 }
 </script>
 
 <style lang="scss" scoped>
 #header {
-  height: 67px;
+  height: 40px;
   margin: 0;
   padding: 0;
+  background: #2C2C2C;
+  color: #FFFFFF;
+
+  h5 {
+    color: #FFFFFF;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    border-right: 0.5px solid rgba(211, 211, 211, 0.2);
+    vertical-align: middle;
+    line-height: 20px;
+    padding-left: 12px;
+    padding-right: 20px;
+    margin-right: 20px;
+    margin-top: 10px;
+  }
 
   .logo {
     display: block;
-    width: 60px;
+    width: 50px;
 
     img {
-      width: 40px;
+      height: 20px;
     }
   }
 
-  h5 {
-    padding-left: 12px;
+  .connectivity {
+    position: absolute;
+    right: 0;
+    top: 7px;
   }
 }
 </style>

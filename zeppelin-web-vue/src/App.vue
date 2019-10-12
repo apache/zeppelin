@@ -13,7 +13,7 @@
       </SplitArea>
     </Split>
 
-    <StatusBar />
+    <!-- <StatusBar /> -->
 
     <GlobalEvents
       @keyup.ctrl.n="executeCommand('note', 'show-create')"
@@ -34,14 +34,14 @@ import ws from '@/services/ws-helper'
 
 import Header from '@/components/Layout/Header.vue'
 import LeftSidebar from '@/components/Layout/LeftSideBar.vue'
-import StatusBar from '@/components/Layout/StatusBar.vue'
+// import StatusBar from '@/components/Layout/StatusBar.vue'
 
 import Create from '@/components/Notebook/Create.vue'
 import Import from '@/components/Notebook/Import.vue'
 
 export default {
   name: 'App',
-  components: { GlobalEvents, Header, LeftSidebar, StatusBar, Create, Import },
+  components: { GlobalEvents, Header, LeftSidebar, Create, Import },
   created () {
     document.title = 'Zeppelin Notebook'
   },
@@ -80,6 +80,9 @@ export default {
 body {
   color: #2c3e50;
 
+  font-size: 14px;
+  line-height: 1.5;
+
   a {
     text-decoration: none;
     color: #333;
@@ -99,7 +102,7 @@ body {
   width: 100%;
 
   > .split {
-    height: calc(100% - 67px - 24px);
+    height: calc(100% - 40px);
     border-top: 1px solid #F1F1F1;
   }
 

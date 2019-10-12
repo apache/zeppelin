@@ -153,7 +153,7 @@ export default {
   a {
     display: inline-block;
     height: 100%;
-    padding: 2px 6px;
+    padding: 2px 7px;
 
     span {
       vertical-align: middle;
