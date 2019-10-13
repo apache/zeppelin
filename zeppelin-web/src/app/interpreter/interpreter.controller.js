@@ -486,20 +486,21 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.addNewInterpreterSetting = function() {
     // user input validation on interpreter creation
     if (!$scope.newInterpreterSetting.name ||
-      !$scope.newInterpreterSetting.name.trim() || !$scope.newInterpreterSetting.group) {
+        !$scope.newInterpreterSetting.name.trim() ||
+        !$scope.newInterpreterSetting.name.match(/^[-_a-zA-Z0-9]+$/g)) {
       BootstrapDialog.alert({
         closable: true,
         title: 'Add interpreter',
-        message: 'Please fill in interpreter name and choose a group',
+        message: 'Interpreter name shouldn\'t be empty, and can consist only of: -_a-zA-Z0-9',
       });
       return;
     }
 
-    if ($scope.newInterpreterSetting.name.indexOf('.') >= 0) {
+    if (!$scope.newInterpreterSetting.group) {
       BootstrapDialog.alert({
         closable: true,
         title: 'Add interpreter',
-        message: '\'.\' is invalid for interpreter name',
+        message: 'Please choose an interpreter group',
       });
       return;
     }
