@@ -133,12 +133,10 @@ export default {
     })
 
     // Remove the tab
-    if (this.store.state.TabManagerStore.currentTab) {
+    let currentTab = this.store.state.TabManagerStore.currentTab
+    if (currentTab && currentTab.id === noteId) {
       this.store.dispatch('removeTab', this.store.state.TabManagerStore.currentTab)
     }
-
-    // Reload the note list
-    this.reloadList()
   },
 
   deletePermanently (noteId) {
@@ -148,9 +146,6 @@ export default {
         id: noteId
       }
     })
-
-    // Reload the note list
-    this.reloadList()
   },
 
   restore (noteId) {
@@ -160,8 +155,5 @@ export default {
         id: noteId
       }
     })
-
-    // Reload the note list
-    this.reloadList()
   }
 }
