@@ -54,8 +54,7 @@ export default {
       }
     })
 
-    // Reload the left sidebar
-    this.reloadList()
+    // Reload the left sidebar will happen automatically as it will return the full list as the response
   },
 
   open (note) {

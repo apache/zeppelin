@@ -13,11 +13,11 @@ export default {
   },
   mutations: {
     addTab (state, data) {
-      let isExist = state.tabs.filter(t => (t.path && t.path === data.path) || (!t.path && t.type === data.type))
-      state.currentTab = data
-      if (isExist.length === 0) {
+      let filteredTab = state.tabs.filter(t => (t.path && t.path === data.path) || (!t.path && t.type === data.type))
+      if (filteredTab.length === 0) {
         state.tabs.push(data)
       }
+      state.currentTab = state.tabs[state.tabs.length - 1]
       return state
     },
     removeTab (state, data) {

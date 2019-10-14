@@ -96,7 +96,7 @@ export default class WsConnection {
           // Pending - open the note tab data.note
           break
         case 'NOTES_INFO':
-          this.store.dispatch('setNoteMenu', data)
+          this.store.dispatch('setNoteList', data)
           break
         case 'NOTE':
           this.store.dispatch('setNoteContent', data)

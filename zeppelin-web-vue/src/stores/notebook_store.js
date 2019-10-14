@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import arrayUtils from '@/mixins/array_utils.js'
 
 export default {
   state: {
@@ -66,7 +67,7 @@ export default {
     },
     mutateNotes (state, data) {
       state.isListLoading = false
-      state.notes = data.notes
+      state.notes = arrayUtils.mergeArray(state.notes, data.notes, 'id')
     },
     mutateNote (state, noteObj) {
       let index = state.notes.map(function (n) { return n.id }).indexOf(noteObj.note.id)
@@ -163,7 +164,7 @@ export default {
     setNavBar (context, data) {
       context.commit('mutateNavBar', data)
     },
-    setNoteMenu (context, data) {
+    setNoteList (context, data) {
       context.commit('mutateNotes', data)
     },
     setNoteContent (context, data) {
