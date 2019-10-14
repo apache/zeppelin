@@ -161,6 +161,16 @@
                 Note Info
               </a>
             </li>
+            <li class="separator"></li>
+            <li>
+              <a
+                v-bind:class="{'disabled': !(isActiveNote)}"
+                @click="executeNoteCommand('reload')"
+                href="javascript:void(0)"
+              >
+                Reload
+              </a>
+            </li>
           </ul>
         </li>
 

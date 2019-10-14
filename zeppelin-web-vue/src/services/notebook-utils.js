@@ -133,7 +133,9 @@ export default {
     })
 
     // Remove the tab
-    this.store.dispatch('removeTab', this.store.state.TabManagerStore.currentTab)
+    if (this.store.state.TabManagerStore.currentTab) {
+      this.store.dispatch('removeTab', this.store.state.TabManagerStore.currentTab)
+    }
 
     // Reload the note list
     this.reloadList()

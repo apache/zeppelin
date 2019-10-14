@@ -25,7 +25,7 @@
           v-bind:title="note.path"
           class="text-ellipsis"
           :class="{'active':  note.id === activeNoteId}"
-          v-on:click="openNote(note)"
+          @click="openNote(note)"
         >
           <a-icon type="file" />
           <span>{{ getFileName(note.path) }}</span>
@@ -41,7 +41,7 @@
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
-                  v-on:click="openNote(note)"
+                  @click="openNote(note)"
                 >
                   Open Notebook
                 </a>
@@ -50,7 +50,15 @@
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
-                  v-on:click="showConfirmDelete(note)"
+                  @click="executeNoteCommand('restore-note', note.id)"
+                >
+                  Restore
+                </a>
+              </a-menu-item>
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                  @click="showDeletePermConfirm(note.id)"
                 >
                   Delete Permanently
                 </a>
@@ -85,14 +93,27 @@ export default {
     }
   },
   methods: {
+    executeNoteCommand (command, args) {
+      this.$root.executeCommand('note', command, args)
+    },
     openNote (note) {
       this.$root.executeCommand('tabs', 'open', {
         type: 'note',
         note: note
       })
     },
-    showConfirmDelete (note) {
+    showDeletePermConfirm (noteId) {
+      let that = this
+      this.$confirm({
+        title: that.$i18n.t('message.note.delete_confirm'),
+        content: that.$i18n.t('message.note.delete_content'),
+        onOk () {
+          that.executeNoteCommand('delete-permanently', noteId)
 
+          that.$message.success(that.$i18n.t('message.note.delete_success'), 4)
+        },
+        onCancel () {}
+      })
     },
     getFileName (path) {
       return path.substr(path.lastIndexOf('/') + 1)
