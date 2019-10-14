@@ -96,13 +96,13 @@ export default {
         case 'print':
           break
         case 'delete-temporary':
-          notebookUtils.deleteTemporary(note && note.id || args)
+          notebookUtils.deleteTemporary(args || (note && note.id))
           break
         case 'restore-note':
-          notebookUtils.restore(note && note.id || args)
+          notebookUtils.restore(args || (note && note.id))
           break
         case 'delete-permanently':
-        notebookUtils.deletePermanently(note && note.id || args)
+        notebookUtils.deletePermanently(args || (note && note.id))
           break
         case 'show-clone':
           notebookUtils.showCloneModal(note.id)
