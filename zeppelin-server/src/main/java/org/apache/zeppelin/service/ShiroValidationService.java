@@ -45,7 +45,7 @@ public class ShiroValidationService {
         Collection<Realm> realms =
             ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
                 .getRealms();
-        if (realms.size() > 1) {
+        if (realms != null && realms.size() > 1) {
           Boolean isIniRealmEnabled = false;
           for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
