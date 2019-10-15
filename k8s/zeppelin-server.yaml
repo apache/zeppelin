@@ -61,7 +61,7 @@ data:
         server_name "~(?<svc_port>[0-9]+)-(?<svc_name>[^.]*)\.(.*)";
         location / {
           resolver 127.0.0.1:53 ipv6=off;
-          proxy_pass http://$svc_name.NAMESPACE.svc.cluster.local:$svc_port;
+          proxy_pass http://$svc_name.NAMESPACE.svc:$svc_port;
           proxy_set_header Host $host;
           proxy_http_version 1.1;
           proxy_set_header Upgrade $http_upgrade;
