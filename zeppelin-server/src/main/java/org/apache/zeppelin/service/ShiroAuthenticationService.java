@@ -38,7 +38,6 @@ import javax.naming.ldap.LdapContext;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
@@ -66,32 +65,9 @@ public class ShiroAuthenticationService implements AuthenticationService {
   private final ZeppelinConfiguration conf;
 
   @Inject
-  public ShiroAuthenticationService(ZeppelinConfiguration conf) throws Exception {
+  public ShiroAuthenticationService(ZeppelinConfiguration conf) {
     LOGGER.info("ShiroAuthenticationService is initialized");
     this.conf = conf;
-    if (conf.getShiroPath().length() > 0) {
-      try {
-        Collection<Realm> realms =
-            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-                .getRealms();
-        if (realms.size() > 1) {
-          Boolean isIniRealmEnabled = false;
-          for (Realm realm : realms) {
-            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-              isIniRealmEnabled = true;
-              break;
-            }
-          }
-          if (isIniRealmEnabled) {
-            throw new Exception(
-                "IniRealm/password based auth mechanisms should be exclusive. "
-                    + "Consider removing [users] block from shiro.ini");
-          }
-        }
-      } catch (UnavailableSecurityManagerException e) {
-        LOGGER.error("Failed to initialise shiro configuration", e);
-      }
-    }
   }
 
   /**

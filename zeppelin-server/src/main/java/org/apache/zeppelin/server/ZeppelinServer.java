@@ -155,6 +155,7 @@ public class ZeppelinServer extends ResourceConfig {
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
               bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
+              bindAsContract(ShiroValidationService.class).in(Immediate.class);
             } else {
               // TODO(jl): Will be added more type
               bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
