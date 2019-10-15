@@ -51,6 +51,7 @@ public class SparqlInterpreter extends Interpreter {
 
   public static final String SPARQL_SERVICE_ENDPOINT = "sparql.endpoint";
   public static final String SPARQL_REPLACE_URIS = "sparql.replaceURIs";
+  public static final String SPARQL_REMOVE_DATATYPES = "sparql.removeDatatypes";
 
   public SparqlInterpreter(Properties properties) {
     super(properties);
@@ -69,6 +70,7 @@ public class SparqlInterpreter extends Interpreter {
   public InterpreterResult interpret(String queryString, InterpreterContext context) {
     final String serviceEndpoint = getProperty(SPARQL_SERVICE_ENDPOINT);
     final String replaceURIs = getProperty(SPARQL_REPLACE_URIS);
+    final String removeDatatypes = getProperty(SPARQL_REMOVE_DATATYPES);
 
     LOGGER.info("SPARQL: Run Query '" + queryString + "' against " + serviceEndpoint);
 
@@ -88,8 +90,8 @@ public class SparqlInterpreter extends Interpreter {
         "Error: " + e.getMessage());
     }
 
-    try (QueryExecution qe = QueryExecutionFactory.sparqlService(serviceEndpoint,
-      query)) {
+    try (QueryExecution qe =
+      QueryExecutionFactory.sparqlService(serviceEndpoint, query)) {
       // execute query and get Results
       ResultSet results = qe.execSelect();
 
@@ -103,26 +105,31 @@ public class SparqlInterpreter extends Interpreter {
         tsv = replaceURIs(tsv, prefixMapping);
       }
 
+      if (removeDatatypes != null && removeDatatypes.equals("true")) {
+        LOGGER.info("SPARQL: Removing datatypes");
+        tsv = removeDatatypes(tsv);
+      }
+
       return new InterpreterResult(
-        InterpreterResult.Code.SUCCESS,
-        InterpreterResult.Type.TABLE,
-        tsv);
+              InterpreterResult.Code.SUCCESS,
+              InterpreterResult.Type.TABLE,
+              tsv);
     } catch (QueryExceptionHTTP e) {
       LOGGER.error(e.toString());
       int responseCode = e.getResponseCode();
-  
+
       if (responseCode == HttpStatus.SC_UNAUTHORIZED) {
         return new InterpreterResult(
           InterpreterResult.Code.ERROR,
-          "Unauthorized, please check username and password in the configuration.");
+            "Unauthorized.");
       } else if (responseCode == HttpStatus.SC_NOT_FOUND) {
         return new InterpreterResult(
           InterpreterResult.Code.ERROR,
-          "Endpoint not found, please check endpoint in the configuration.");
+            "Endpoint not found, please check endpoint in the configuration.");
       } else {
         return new InterpreterResult(
           InterpreterResult.Code.ERROR,
-          "Error: " + e.getMessage());
+            "Error: " + e.getMessage());
       }
     }
   }
@@ -143,9 +150,14 @@ public class SparqlInterpreter extends Interpreter {
 
   private String replaceURIs(String tsv, PrefixMapping prefixMapping) {
     Map<String, String> pmap = prefixMapping.getNsPrefixMap();
-    for (Map.Entry<String, String> entry : pmap.entrySet()) { 
-      tsv = tsv.replaceAll("" + entry.getValue() + "", entry.getKey() + ":");
+    for (Map.Entry<String, String> entry : pmap.entrySet()) {
+      tsv = tsv.replaceAll(entry.getValue(), entry.getKey() + ":");
     }
     return tsv;
+  }
+
+  private String removeDatatypes(String tsv) {
+    // capture group: "($1)"^^<.+?>
+    return tsv.replaceAll("\"(.+?)\"\\^\\^\\<.+?\\>", "$1");
   }
 }

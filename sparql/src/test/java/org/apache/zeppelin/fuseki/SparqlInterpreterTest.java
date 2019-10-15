@@ -39,7 +39,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 
 public class SparqlInterpreterTest {
-  private static SparqlInterpreter interpreter;
   private static int port;
 
   private static FusekiServer server;
@@ -66,12 +65,6 @@ public class SparqlInterpreterTest {
     assertTrue(registry.isRegistered(DATASET));
     assertEquals(1, registry.size());
     server.start();
-
-    final Properties properties = new Properties();
-    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
-    properties.put(SparqlInterpreter.SPARQL_REPLACE_URIS, "true");
-    interpreter = new SparqlInterpreter(properties);
-    interpreter.open();
   }
 
   @AfterClass
@@ -79,23 +72,25 @@ public class SparqlInterpreterTest {
     if (server != null) {
       server.stop();
     }
-    if (interpreter != null) {
-      interpreter.close();
-    }
   }
 
   @Test
   public void testWrongQuery() {
+    final Properties properties = new Properties();
+    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
+    SparqlInterpreter interpreter = new SparqlInterpreter(properties);
+
     final InterpreterResult result = interpreter.interpret("SELECT * WHER {", null);
     assertEquals(Code.ERROR, result.code());
   }
 
   @Test
-  public void testSuccessfulDontReplaceURIQuery() {
+  public void testSuccessfulRawQuery() {
     final Properties properties = new Properties();
     properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
     properties.put(SparqlInterpreter.SPARQL_REPLACE_URIS, "false");
-    interpreter = new SparqlInterpreter(properties);
+    properties.put(SparqlInterpreter.SPARQL_REMOVE_DATATYPES, "false");
+    SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
 
     final InterpreterResult result = interpreter.interpret(
@@ -113,7 +108,9 @@ public class SparqlInterpreterTest {
         "<http://example.org/#spiderman>\t<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" +
         "\t<http://xmlns.com/foaf/0.1/Person>\n<http://example.org/#spiderman>\t" +
         "<http://www.perceive.net/schemas/relationship/enemyOf>\t" +
-        "<http://example.org/#green-goblin>\n<http://example.org/#green-goblin>\t" +
+        "<http://example.org/#green-goblin>\n<http://example.org/#spiderman>\t" +
+        "<http://example.org/stats#born>\t\"1962-10-15T14:00.00\"^^" +
+        "<http://www.w3.org/2001/XMLSchema#dateTime>\n<http://example.org/#green-goblin>\t" +
         "<http://xmlns.com/foaf/0.1/name>\t\"Green Goblin\"\n" +
         "<http://example.org/#green-goblin>\t" +
         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" +
@@ -123,7 +120,14 @@ public class SparqlInterpreterTest {
   }
 
   @Test
-  public void testSuccessfulReplaceURIsQuery() {
+  public void testSuccessfulReplaceRemoveQuery() {
+    final Properties properties = new Properties();
+    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
+    properties.put(SparqlInterpreter.SPARQL_REPLACE_URIS, "true");
+    properties.put(SparqlInterpreter.SPARQL_REMOVE_DATATYPES, "true");
+    SparqlInterpreter interpreter = new SparqlInterpreter(properties);
+    interpreter.open();
+
     final InterpreterResult result = interpreter.interpret(
         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>" +
@@ -139,8 +143,9 @@ public class SparqlInterpreterTest {
         "<http://example.org/#spiderman>\t<rdf:type>" +
         "\t<foaf:Person>\n<http://example.org/#spiderman>\t" +
         "<rel:enemyOf>\t" +
-        "<http://example.org/#green-goblin>\n<http://example.org/#green-goblin>\t" +
-        "<foaf:name>\t\"Green Goblin\"\n" +
+        "<http://example.org/#green-goblin>\n<http://example.org/#spiderman>\t" +
+        "<http://example.org/stats#born>\t1962-10-15T14:00.00\n" +
+        "<http://example.org/#green-goblin>\t<foaf:name>\t\"Green Goblin\"\n" +
         "<http://example.org/#green-goblin>\t" +
         "<rdf:type>" +
         "\t<foaf:Person>\n<http://example.org/#green-goblin>\t" +

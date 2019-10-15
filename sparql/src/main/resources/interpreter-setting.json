@@ -17,6 +17,13 @@
         "defaultValue": true,
         "description": "Replace the URIs in the result with the prefixes. Default: true",
         "type": "checkbox"
+      },
+      "sparql.removeDatatypes": {
+        "envName": "SPARQL_REMOVE_DATATYPES",
+        "propertyName": "sparql.removeDatatypes",
+        "defaultValue": true,
+        "description": "Remove the datatypes from Literals so Zeppelin can use the values. Default: true",
+        "type": "checkbox"
       }
     },
     "editor": {
