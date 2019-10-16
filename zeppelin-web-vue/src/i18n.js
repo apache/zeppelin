@@ -21,14 +21,14 @@ export const i18n = new VueI18n({
           clone_success: 'Note cloned successfully.',
           clear_output_confirm: 'Do you want to clear the ouput for all the paragraphs?',
           clear_output_success: 'Output cleared successfully for all the paragraphs.',
-          move_to_rb_confirm: 'Do you want to delete this Note?',
-          move_to_rb_content: 'This will move the note to Recycle Bin and you can still recover it.',
-          move_to_rb_success: 'Note moved to recycle bin successfully.',
+          move_to_trash_confirm: 'Do you want to delete this Note?',
+          move_to_trash_content: 'This will move the note to Trash and you can still recover it.',
+          move_to_trash_success: 'Note moved to Trash successfully.',
           delete_confirm: 'Do you want to delete the notebook permanently?',
           delete_content: 'This will remove it permanently and can not be recovered.',
           delete_success: 'Note deleted successfully.',
           rename_success: 'Note renamed successfully',
-          empty_recycle_bin: 'Empty Recycle Bin'
+          empty_trash: 'Empty Trash'
         }
       }
     },

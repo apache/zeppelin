@@ -73,7 +73,7 @@
       v-if="this.notes.length === 0"
       class="pt-2 pl-2"
     >
-      {{ $t("message.note.empty_recycle_bin") }}
+      {{ $t("message.note.empty_trash") }}
     </div>
   </div>
 </template>

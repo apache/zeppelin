@@ -60,7 +60,7 @@
                 @click="executeNoteCommand('delete-temporary')"
                 href="javascript:void(0)"
               >
-                Move To Recycle Bin
+                Move To Trash
               </a>
             </li>
 

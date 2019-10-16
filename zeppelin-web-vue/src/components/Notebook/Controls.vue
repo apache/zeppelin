@@ -60,7 +60,7 @@
       >
         <a-tooltip placement="top">
           <template slot="title">
-            <span>Move to Recycle Bin</span>
+            <span>Move to Trash</span>
           </template>
           <a-icon type="delete" />
         </a-tooltip>
@@ -162,12 +162,12 @@ export default {
     showDeleteConfirm () {
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.note.move_to_rb_confirm'),
-        content: that.$i18n.t('message.note.move_to_rb_content'),
+        title: that.$i18n.t('message.note.move_to_trash_confirm'),
+        content: that.$i18n.t('message.note.move_to_trash_content'),
         onOk () {
           that.executeNoteCommand('delete-temporary')
 
-          that.$message.success(that.$i18n.t('message.note.move_to_rb_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
         },
         onCancel () {}
       })

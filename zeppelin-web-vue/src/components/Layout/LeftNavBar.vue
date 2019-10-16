@@ -59,7 +59,7 @@
           >
             <a-tooltip placement="right">
               <template slot="title">
-                <span>Recycle Bin</span>
+                <span>Trash</span>
               </template>
               <a-icon type="delete" />
             </a-tooltip>

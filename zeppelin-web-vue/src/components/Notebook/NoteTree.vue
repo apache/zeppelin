@@ -67,7 +67,7 @@
                   href="javascript: void(0);"
                   @click="showDeleteConfirm(note.id)"
                 >
-                  Move to Recycle Bin
+                  Move to Trash
                 </a>
               </a-menu-item>
             </a-menu>
@@ -121,12 +121,12 @@ export default {
     showDeleteConfirm (noteId) {
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.note.move_to_rb_confirm'),
-        content: that.$i18n.t('message.note.move_to_rb_content'),
+        title: that.$i18n.t('message.note.move_to_trash_confirm'),
+        content: that.$i18n.t('message.note.move_to_trash_content'),
         onOk () {
           that.$root.executeCommand('note', 'delete-temporary', noteId)
 
-          that.$message.success(that.$i18n.t('message.note.move_to_rb_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
         },
         onCancel () {}
       })
