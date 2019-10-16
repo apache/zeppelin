@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ShiroValidationService to validate shiro config
@@ -34,18 +35,24 @@ public class ShiroValidationService {
 
   private final Logger LOGGER = LoggerFactory.getLogger(ShiroValidationService.class);
 
-  private final ZeppelinConfiguration conf;
+  private int i = 0;
 
   @Inject
   public ShiroValidationService(ZeppelinConfiguration conf) throws Exception {
     LOGGER.info("ShiroValidationService is initialized");
-    this.conf = conf;
+    init(conf);
+  }
+
+  private void init(ZeppelinConfiguration conf) throws Exception {
     if (conf.getShiroPath().length() > 0) {
       try {
         Collection<Realm> realms =
-            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-                .getRealms();
-        if (realms != null && realms.size() > 1) {
+          ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
+            .getRealms();
+        if (realms == null) {
+          throw new Exception("Failed to initialise shiro configuration.");
+        }
+        if (realms.size() > 1) {
           Boolean isIniRealmEnabled = false;
           for (Realm realm : realms) {
             if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
@@ -55,12 +62,18 @@ public class ShiroValidationService {
           }
           if (isIniRealmEnabled) {
             throw new Exception(
-                "IniRealm/password based auth mechanisms should be exclusive. "
-                    + "Consider removing [users] block from shiro.ini");
+              "IniRealm/password based auth mechanisms should be exclusive. "
+                + "Consider removing [users] block from shiro.ini");
           }
         }
       } catch (UnavailableSecurityManagerException e) {
-        LOGGER.error("Failed to initialise shiro configuration", e);
+        i = i + 1;
+        if (i >= 10) {
+          throw new Exception("Failed to initialise shiro configuration", e);
+        } else {
+          TimeUnit.MILLISECONDS.sleep(500);
+          init(conf);
+        }
       }
     }
   }
