@@ -80,7 +80,7 @@
 
 <script>
 export default {
-  name: 'RecycleBin',
+  name: 'Trash',
   computed: {
     isLoading () {
       return this.$store.state.NotebookStore.isListLoading
