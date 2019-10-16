@@ -14,13 +14,6 @@
       </div>
     </div>
 
-    <a-input-search
-      v-if="!isLoading"
-      placeholder="search notebooks"
-      class="search-notebook-box"
-      @search="onSearch"
-    />
-
     <ul>
       <li
         v-for="(note, index) in this.notes"
@@ -53,21 +46,21 @@
                   Open Notebook
                 </a>
               </a-menu-item>
-              <a-menu-item>
-                <a
-                  href="javascript: void(0);"
-                  @click="showRenameDialog(note)"
-                >
-                  Rename
-                </a>
-              </a-menu-item>
               <a-menu-divider />
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
-                  @click="showMoveToTrashConfirm(note.id)"
+                  @click="executeNoteCommand('restore-note', note.id)"
                 >
-                  Move to Trash
+                  Restore
+                </a>
+              </a-menu-item>
+              <a-menu-item>
+                <a
+                  href="javascript: void(0);"
+                  @click="showDeletePermConfirm(note.id)"
+                >
+                  Delete Permanently
                 </a>
               </a-menu-item>
             </a-menu>
@@ -75,22 +68,19 @@
         </a>
       </li>
     </ul>
+
+    <div
+      v-if="this.notes.length === 0"
+      class="pt-2 pl-2"
+    >
+      {{ $t("message.note.empty_trash") }}
+    </div>
   </div>
 </template>
 
 <script>
-import ws from '@/services/ws-helper'
-
 export default {
-  name: 'NoteTree',
-  data () {
-    return {
-
-    }
-  },
-  mounted () {
-    ws.getConn().send({ op: 'LIST_NOTES' })
-  },
+  name: 'Trash',
   computed: {
     isLoading () {
       return this.$store.state.NotebookStore.isListLoading
@@ -99,43 +89,34 @@ export default {
       return this.$store.state.TabManagerStore.currentTab && this.$store.state.TabManagerStore.currentTab.id
     },
     notes () {
-      return this.$store.state.NotebookStore.notes.filter(n => (n.path ? n.path.split('/')[1] !== this.$root.TRASH_FOLDER_ID : false))
+      return this.$store.state.NotebookStore.notes.filter(n => (n.path ? n.path.split('/')[1] === this.$root.TRASH_FOLDER_ID : false))
     }
   },
   methods: {
+    executeNoteCommand (command, args) {
+      this.$root.executeCommand('note', command, args)
+    },
     openNote (note) {
       this.$root.executeCommand('tabs', 'open', {
         type: 'note',
         note: note
       })
     },
-    getFileName (path) {
-      return path.substr(path.lastIndexOf('/') + 1)
-    },
-    onSelect (keys) {
-      console.log('Trigger Select', keys)
-    },
-    onSearch (value) {
-      // a
-    },
-    showMoveToTrashConfirm (noteId) {
+    showDeletePermConfirm (noteId) {
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.note.move_to_trash_confirm'),
-        content: that.$i18n.t('message.note.move_to_trash_content'),
+        title: that.$i18n.t('message.note.delete_confirm'),
+        content: that.$i18n.t('message.note.delete_content'),
         onOk () {
-          that.$root.executeCommand('note', 'move-to-trash', noteId)
+          that.executeNoteCommand('delete-permanently', noteId)
 
-          that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.delete_success'), 4)
         },
         onCancel () {}
       })
     },
-    showRenameDialog (note) {
-      this.$root.executeCommand('showRenameNoteDialog', {
-        id: note.id,
-        path: note.path
-      })
+    getFileName (path) {
+      return path.substr(path.lastIndexOf('/') + 1)
     }
   }
 }
@@ -153,11 +134,6 @@ export default {
     width: 4px;
     height: 24px;
   }
-}
-
-.search-notebook-box {
-  padding: 8px 6px;
-  width: calc(100%);
 }
 
 .notes {

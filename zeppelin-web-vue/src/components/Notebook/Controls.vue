@@ -4,6 +4,7 @@
       <a
         href="javascript: void(0);"
         @click="executeNoteCommand('run-all')"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -16,6 +17,7 @@
       <a
         href="javascript: void(0);"
         @click="executeNoteCommand('save')"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -28,6 +30,7 @@
       <a
         href="javascript: void(0);"
         @click="executeNoteCommand('show-clone')"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -40,6 +43,7 @@
       <a
         href="javascript: void(0);"
         @click="executeNoteCommand('export-json')"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -51,11 +55,38 @@
 
       <a
         href="javascript: void(0);"
-        @click="showDeleteConfirm"
+        @click="showMoveToTrashConfirm"
+        v-if="!isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
-            <span>Delete</span>
+            <span>Move to Trash</span>
+          </template>
+          <a-icon type="delete" />
+        </a-tooltip>
+      </a>
+
+      <a
+        href="javascript: void(0);"
+        @click="executeNoteCommand('restore-note')"
+        v-if="isDeleted"
+      >
+        <a-tooltip placement="top">
+          <template slot="title">
+            <span>Restore</span>
+          </template>
+          <a-icon type="reload" />
+        </a-tooltip>
+      </a>
+
+      <a
+        href="javascript: void(0);"
+        @click="showDeletePermConfirm"
+        v-if="isDeleted"
+      >
+        <a-tooltip placement="top">
+          <template slot="title">
+            <span>Delete Permanently</span>
           </template>
           <a-icon type="delete" />
         </a-tooltip>
@@ -65,6 +96,7 @@
     <div class="right-controls">
       <a
         href="javascript: void(0);"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -76,6 +108,7 @@
 
       <a
         href="javascript: void(0);"
+        :disabled="isDeleted"
       >
         <a-tooltip placement="top">
           <template slot="title">
@@ -85,19 +118,11 @@
         </a-tooltip>
       </a>
 
-      <a
-        href="javascript: void(0);"
-        @click="executeNoteCommand('reload')"
+      <a-dropdown
+        :disabled="isDeleted"
+        :class="{disabled: isDeleted}"
+        :trigger="['click']"
       >
-        <a-tooltip placement="top">
-          <template slot="title">
-            <span>Reload</span>
-          </template>
-          <a-icon type="reload" />
-        </a-tooltip>
-      </a>
-
-      <a-dropdown :trigger="['click']">
         <a class="ant-dropdown-link" href="#">
           <span> Default </span>
           <a-icon type="down" />
@@ -124,19 +149,38 @@ export default {
   props: {
     noteId: { required: true }
   },
+  computed: {
+    isDeleted () {
+      let notePath = this.$store.getters.getNote(this.$props.noteId).path
+      return notePath ? notePath.split('/')[1] === this.$root.TRASH_FOLDER_ID : false
+    }
+  },
   methods: {
-    executeNoteCommand (command) {
-      this.$root.executeCommand('note', command)
+    executeNoteCommand (command, args) {
+      this.$root.executeCommand('note', command, args)
     },
-    showDeleteConfirm () {
+    showMoveToTrashConfirm () {
       let that = this
       this.$confirm({
-        title: that.$i18n.t('message.note.move_to_rb_confirm'),
-        content: that.$i18n.t('message.note.move_to_rb_content'),
+        title: that.$i18n.t('message.note.move_to_trash_confirm'),
+        content: that.$i18n.t('message.note.move_to_trash_content'),
         onOk () {
-          that.executeNoteCommand('delete-temporary')
+          that.executeNoteCommand('move-to-trash')
 
-          that.$message.success(that.$i18n.t('message.note.move_to_rb_success'), 4)
+          that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
+        },
+        onCancel () {}
+      })
+    },
+    showDeletePermConfirm () {
+      let that = this
+      this.$confirm({
+        title: that.$i18n.t('message.note.delete_confirm'),
+        content: that.$i18n.t('message.note.delete_content'),
+        onOk () {
+          that.executeNoteCommand('delete-permanently')
+
+          that.$message.success(that.$i18n.t('message.note.delete_success'), 4)
         },
         onCancel () {}
       })
@@ -153,10 +197,16 @@ export default {
   a {
     display: inline-block;
     height: 100%;
-    padding: 2px 6px;
+    padding: 2px 7px;
 
     span {
       vertical-align: middle;
+    }
+
+    &.disabled {
+      cursor: default;
+      color: inherit;
+      opacity: 0.5;
     }
   }
 

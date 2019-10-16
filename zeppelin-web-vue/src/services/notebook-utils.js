@@ -44,6 +44,19 @@ export default {
     // Pending - open the note after create
   },
 
+  rename (params) {
+    console.log(params)
+    wsHelper.getConn().send({
+      op: 'NOTE_RENAME',
+      data: {
+        id: params.sourceNoteId,
+        name: params.newNoteName
+      }
+    })
+
+    // Reload the left sidebar will happen automatically as it will return the full list as the response
+  },
+
   open (note) {
     wsFactory.initNoteConnection(note.id, this.store)
 
@@ -111,7 +124,7 @@ export default {
     })
   },
 
-  deleteTemporary (noteId) {
+  moveToTrash (noteId) {
     wsHelper.getConn().send({
       op: 'MOVE_NOTE_TO_TRASH',
       data: {
@@ -120,10 +133,10 @@ export default {
     })
 
     // Remove the tab
-    this.store.dispatch('removeTab', this.store.state.TabManagerStore.currentTab)
-
-    // Reload the note list
-    this.reloadList()
+    let currentTab = this.store.state.TabManagerStore.currentTab
+    if (currentTab && currentTab.id === noteId) {
+      this.store.dispatch('removeTab', this.store.state.TabManagerStore.currentTab)
+    }
   },
 
   deletePermanently (noteId) {
@@ -133,9 +146,6 @@ export default {
         id: noteId
       }
     })
-
-    // Reload the note list
-    this.reloadList()
   },
 
   restore (noteId) {
@@ -145,8 +155,5 @@ export default {
         id: noteId
       }
     })
-
-    // Reload the note list
-    this.reloadList()
   }
 }
