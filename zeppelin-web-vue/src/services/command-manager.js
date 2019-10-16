@@ -53,7 +53,7 @@ export default {
                               store.state.TabManagerStore.currentTab.type === 'note')
 
       if (!(isActiveNote || ['show-create', 'create', 'rename', 'show-import', 'import-json',
-                              'delete-temporary', 'restore-note', 'delete-permanently'].indexOf(command) !== -1)
+                              'move-to-trash', 'restore-note', 'delete-permanently'].indexOf(command) !== -1)
         )
       {
         return
@@ -95,8 +95,8 @@ export default {
           break
         case 'print':
           break
-        case 'delete-temporary':
-          notebookUtils.deleteTemporary(args || (note && note.id))
+        case 'move-to-trash':
+          notebookUtils.moveToTrash(args || (note && note.id))
           break
         case 'restore-note':
           notebookUtils.restore(args || (note && note.id))

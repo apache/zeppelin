@@ -55,7 +55,7 @@
 
       <a
         href="javascript: void(0);"
-        @click="showDeleteConfirm"
+        @click="showMoveToTrashConfirm"
         v-if="!isDeleted"
       >
         <a-tooltip placement="top">
@@ -159,13 +159,13 @@ export default {
     executeNoteCommand (command, args) {
       this.$root.executeCommand('note', command, args)
     },
-    showDeleteConfirm () {
+    showMoveToTrashConfirm () {
       let that = this
       this.$confirm({
         title: that.$i18n.t('message.note.move_to_trash_confirm'),
         content: that.$i18n.t('message.note.move_to_trash_content'),
         onOk () {
-          that.executeNoteCommand('delete-temporary')
+          that.executeNoteCommand('move-to-trash')
 
           that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
         },

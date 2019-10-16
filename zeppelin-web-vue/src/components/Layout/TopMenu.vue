@@ -26,7 +26,7 @@
 
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('save')"
                 href="javascript:void(0)"
               >
@@ -36,7 +36,7 @@
 
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('manage-permissions')"
                 href="javascript:void(0)"
               >
@@ -47,7 +47,7 @@
             <li class="separator"></li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('export-json')"
                 href="javascript:void(0)"
               >
@@ -56,11 +56,30 @@
             </li>
             <li>
               <a
+                v-if="!isDeleted"
                 v-bind:class="{'disabled': !(isActiveNote)}"
-                @click="executeNoteCommand('delete-temporary')"
+                @click="showMoveToTrashConfirm"
                 href="javascript:void(0)"
               >
                 Move To Trash
+              </a>
+            </li>
+            <li>
+              <a
+                v-if="isDeleted"
+                @click="executeNoteCommand('restore-note')"
+                href="javascript:void(0)"
+              >
+                Restore
+              </a>
+            </li>
+            <li>
+              <a
+                v-if="isDeleted"
+                @click="showDeletePermConfirm"
+                href="javascript:void(0)"
+              >
+                Delete Permanently
               </a>
             </li>
 
@@ -84,7 +103,7 @@
             <li>
               <a
                 @click="executeNoteCommand('toggle-code')"
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Code
@@ -93,7 +112,7 @@
             <li>
               <a
                 @click="executeNoteCommand('toggle-line-numbers')"
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Line Numbers
@@ -102,7 +121,7 @@
             <li>
               <a
                 @click="executeNoteCommand('toggle-output')"
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 href="javascript:void(0)"
               >
                 Show/Hide Outputs
@@ -111,7 +130,7 @@
             <li class="separator"></li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('find-and-replace')"
                 href="javascript:void(0)"
               >
@@ -122,7 +141,7 @@
             <li>
               <a
                 @click="showConfirmClearOutput"
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 href="javascript:void(0)"
               >
                 Clear All Outputs
@@ -179,7 +198,7 @@
           <ul>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('run-all')"
                 href="javascript:void(0)"
               >
@@ -188,7 +207,7 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('run-before')"
                 href="javascript:void(0)"
               >
@@ -197,7 +216,7 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('run-focused')"
                 href="javascript:void(0)"
               >
@@ -206,7 +225,7 @@
             </li>
             <li>
               <a
-                v-bind:class="{'disabled': !(isActiveNote)}"
+                v-bind:class="{'disabled': !(isActiveNote && !isDeleted)}"
                 @click="executeNoteCommand('run-after')"
                 href="javascript:void(0)"
               >
@@ -357,6 +376,11 @@ export default {
     isActiveNote () {
       return (this.$store.state.TabManagerStore.currentTab &&
           this.$store.state.TabManagerStore.currentTab.type === 'note')
+    },
+    isDeleted () {
+      if (!this.isActiveNote) return false
+
+      return this.activeNote.path ? this.activeNote.path.split('/')[1] === this.$root.TRASH_FOLDER_ID : false
     }
   },
   mounted () {
@@ -389,6 +413,32 @@ export default {
           that.executeNoteCommand('clear-output')
 
           that.$message.success(that.$i18n.t('message.note.clear_output_success'), 4)
+        },
+        onCancel () {}
+      })
+    },
+    showMoveToTrashConfirm () {
+      let that = this
+      this.$confirm({
+        title: that.$i18n.t('message.note.move_to_trash_confirm'),
+        content: that.$i18n.t('message.note.move_to_trash_content'),
+        onOk () {
+          that.executeNoteCommand('move-to-trash')
+
+          that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
+        },
+        onCancel () {}
+      })
+    },
+    showDeletePermConfirm () {
+      let that = this
+      this.$confirm({
+        title: that.$i18n.t('message.note.delete_confirm'),
+        content: that.$i18n.t('message.note.delete_content'),
+        onOk () {
+          that.executeNoteCommand('delete-permanently')
+
+          that.$message.success(that.$i18n.t('message.note.delete_success'), 4)
         },
         onCancel () {}
       })

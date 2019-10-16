@@ -124,7 +124,7 @@ export default {
     })
   },
 
-  deleteTemporary (noteId) {
+  moveToTrash (noteId) {
     wsHelper.getConn().send({
       op: 'MOVE_NOTE_TO_TRASH',
       data: {

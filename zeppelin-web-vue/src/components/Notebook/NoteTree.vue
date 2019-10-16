@@ -65,7 +65,7 @@
               <a-menu-item>
                 <a
                   href="javascript: void(0);"
-                  @click="showDeleteConfirm(note.id)"
+                  @click="showMoveToTrashConfirm(note.id)"
                 >
                   Move to Trash
                 </a>
@@ -118,13 +118,13 @@ export default {
     onSearch (value) {
       // a
     },
-    showDeleteConfirm (noteId) {
+    showMoveToTrashConfirm (noteId) {
       let that = this
       this.$confirm({
         title: that.$i18n.t('message.note.move_to_trash_confirm'),
         content: that.$i18n.t('message.note.move_to_trash_content'),
         onOk () {
-          that.$root.executeCommand('note', 'delete-temporary', noteId)
+          that.$root.executeCommand('note', 'move-to-trash', noteId)
 
           that.$message.success(that.$i18n.t('message.note.move_to_trash_success'), 4)
         },
