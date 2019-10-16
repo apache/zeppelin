@@ -454,7 +454,7 @@ public class Helium {
         }
       }
     }
-    new LinkedList<>().addAll(orderedBundlePackages);
+    output.addAll(orderedBundlePackages);
     return output;
   }
 
