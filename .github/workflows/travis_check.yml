@@ -26,9 +26,6 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: Install jq
-        run: |
-          sudo apt-get install jq
       - name: Install python dependencies
         run: |
           pip install requests
