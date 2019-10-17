@@ -62,7 +62,6 @@ public class KotlinInterpreter extends Interpreter {
     String imports = properties.getProperty("zeppelin.interpreter.localRepo", "");
 
     completer = new KotlinCompleter();
-
     replProperties
         .receiver(new KotlinReceiver())
         .maxResult(maxResult)

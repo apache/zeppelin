@@ -71,9 +71,9 @@ public class KotlinSparkInterpreter extends Interpreter {
     SparkVersion sparkVersion = SparkVersion.fromVersionString(jsc.version());
     if (sparkVersion.olderThan(KOTLIN_SPARK_SUPPORTED_VERSION)) {
       unsupportedMessage = new InterpreterResult(
-              InterpreterResult.Code.ERROR,
-              "Spark version is " + sparkVersion + ", only " +
-              KOTLIN_SPARK_SUPPORTED_VERSION + " and newer are supported");
+          InterpreterResult.Code.ERROR,
+          "Spark version is " + sparkVersion + ", only " +
+          KOTLIN_SPARK_SUPPORTED_VERSION + " and newer are supported");
     }
 
     z = sparkInterpreter.getZeppelinContext();
@@ -166,7 +166,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   }
 
   private boolean isUnsupported() {
-    return unsupportedMessage == null;
+    return unsupportedMessage != null;
   }
 
   private List<String> sparkClasspath() {
