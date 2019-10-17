@@ -18,7 +18,7 @@
 #
 
 name: Zeppelin CI
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   # check individual contributors travis-ci status
