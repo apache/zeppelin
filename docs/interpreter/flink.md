@@ -148,7 +148,7 @@ You can also set other flink properties which are not listed in the table. For a
   <tr>
     <td>zeppelin.flink.planner</td>
     <td>blink</td>
-    <td>planner of flink table api, blink or flink</td>
+    <td>planner of flink table api, <em>blink</em> or <em>flink</em></td>
   </tr>
   <tr>
     <td>zeppelin.pyflink.python</td>
@@ -173,9 +173,9 @@ Zeppelin will create 4 variables to represent flink's entrypoint:
 
 ## Flink Planner
 
-Starting from Flink 1.9, there're 2 planners supported by Flink's table api: flink & blink.
+Starting from Flink 1.9, there're 2 planners supported by Flink's table api: `flink` & `blink`.
 * If you want to use DataSet api, then please use flink planner (specify `zeppelin.flink.planner` to `flink`).
-* In other cases, we would always recommend you to use blink planner which is also the default value of `zeppelin.flink.planner`.
+* In other cases, we would always recommend you to use `blink` planner which is also the default value of `zeppelin.flink.planner`.
 
 ## How to use Hive
 
