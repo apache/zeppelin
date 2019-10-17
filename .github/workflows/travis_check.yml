@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
+      - name: Install python dependencies
+        run: |
+          pip install requests
       - name: check
         run: |
           git log -n 1
