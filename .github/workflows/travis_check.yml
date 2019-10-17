@@ -31,6 +31,8 @@ jobs:
           pip install requests
       - name: check
         run: |
+          cat $GITHUB_EVENT_PATH
+          echo "----"
           git log -n 1
           STATUS=$(curl -s $BUILD_URL | grep -e "GitHub pull request.*from.*" | sed 's/.*GitHub pull request <a href=\"\(https[^"]*\).*from[^"]*.\(https[^"]*\).*/\1 \2/g')
           AUTHOR=$(echo $STATUS | sed 's/.*[/]\(.*\)$/\1/g')
