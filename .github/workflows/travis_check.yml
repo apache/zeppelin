@@ -26,28 +26,21 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
+      - name: Install jq
+        run: |
+          sudo apt-get install jq
       - name: Install python dependencies
         run: |
           pip install requests
       - name: check
         run: |
-          cat $GITHUB_EVENT_PATH
-          echo "----"
-          git log -n 1
-          STATUS=$(curl -s $BUILD_URL | grep -e "GitHub pull request.*from.*" | sed 's/.*GitHub pull request <a href=\"\(https[^"]*\).*from[^"]*.\(https[^"]*\).*/\1 \2/g')
-          AUTHOR=$(echo $STATUS | sed 's/.*[/]\(.*\)$/\1/g')
-          PR=$(echo $STATUS | awk '{print $1}' | sed 's/.*[/]\(.*\)$/\1/g')
+          COMMIT=$(cat $GITHUB_EVENT_PATH | jq .head_commit.id | tr -d '"')
+          AUTHOR=$(cat $GITHUB_EVENT_PATH | jq .repository.owner.name | tr -d '"')
 
-          # get commit hash from PR
-          COMMIT=$(curl -s https://api.github.com/repos/apache/zeppelin/pulls/$PR | grep -e "\"label\":" -e "\"ref\":" -e "\"sha\":" | tr '\n' ' ' | sed 's/\(.*sha[^,]*,\)\(.*ref.*\)/\1 = \2/g' | tr = '\n' | grep -v "apache:" | sed 's/.*sha.[^"]*["]\([^"]*\).*/\1/g')
           sleep 30 # sleep few moment to wait travis starts the build
+
           RET_CODE=0
           python ./travis_check.py ${AUTHOR} ${COMMIT} || RET_CODE=$?
-          if [ $RET_CODE -eq 2 ]; then # try with repository name when travis-ci is not available in the account
-            RET_CODE=0
-            AUTHOR=$(curl -s https://api.github.com/repos/apache/zeppelin/pulls/$PR | grep '"full_name":' | grep -v "apache/zeppelin" | sed 's/.*[:][^"]*["]\([^/]*\).*/\1/g')
-            python ./travis_check.py ${AUTHOR} ${COMMIT} || RET_CODE=$?
-          fi
 
           if [ $RET_CODE -eq 2 ]; then # fail with can't find build information in the travis
             set +x
