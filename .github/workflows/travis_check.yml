@@ -1,0 +1,61 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+name: Zeppelin CI
+on: [pull_request]
+
+jobs:
+  # check individual contributors travis-ci status
+  check-travis:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: check
+        run: |
+          git log -n 1
+          STATUS=$(curl -s $BUILD_URL | grep -e "GitHub pull request.*from.*" | sed 's/.*GitHub pull request <a href=\"\(https[^"]*\).*from[^"]*.\(https[^"]*\).*/\1 \2/g')
+          AUTHOR=$(echo $STATUS | sed 's/.*[/]\(.*\)$/\1/g')
+          PR=$(echo $STATUS | awk '{print $1}' | sed 's/.*[/]\(.*\)$/\1/g')
+
+          # get commit hash from PR
+          COMMIT=$(curl -s https://api.github.com/repos/apache/zeppelin/pulls/$PR | grep -e "\"label\":" -e "\"ref\":" -e "\"sha\":" | tr '\n' ' ' | sed 's/\(.*sha[^,]*,\)\(.*ref.*\)/\1 = \2/g' | tr = '\n' | grep -v "apache:" | sed 's/.*sha.[^"]*["]\([^"]*\).*/\1/g')
+          sleep 30 # sleep few moment to wait travis starts the build
+          RET_CODE=0
+          python ./travis_check.py ${AUTHOR} ${COMMIT} || RET_CODE=$?
+          if [ $RET_CODE -eq 2 ]; then # try with repository name when travis-ci is not available in the account
+            RET_CODE=0
+            AUTHOR=$(curl -s https://api.github.com/repos/apache/zeppelin/pulls/$PR | grep '"full_name":' | grep -v "apache/zeppelin" | sed 's/.*[:][^"]*["]\([^/]*\).*/\1/g')
+            python ./travis_check.py ${AUTHOR} ${COMMIT} || RET_CODE=$?
+          fi
+
+          if [ $RET_CODE -eq 2 ]; then # fail with can't find build information in the travis
+            set +x
+            echo "-----------------------------------------------------"
+            echo "Looks like travis-ci is not configured for your fork."
+            echo "Please setup by swich on 'zeppelin' repository at https://travis-ci.org/profile and travis-ci."
+            echo "And then make sure 'Build branch updates' option is enabled in the settings https://travis-ci.org/${AUTHOR}/zeppelin/settings."
+            echo ""
+            echo "To trigger CI after setup, you will need ammend your last commit with"
+            echo "git commit --amend"
+            echo "git push your-remote HEAD --force"
+            echo ""
+            echo "See http://zeppelin.apache.org/contribution/contributions.html#continuous-integration."
+          fi
+
+          exit $RET_CODE
