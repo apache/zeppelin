@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,9 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ShiroValidationService {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(ShiroValidationService.class);
-
-  private int i = 0;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ShiroValidationService.class);
 
   @Inject
   public ShiroValidationService(ZeppelinConfiguration conf) throws Exception {
@@ -43,38 +41,43 @@ public class ShiroValidationService {
     init(conf);
   }
 
-  private void init(ZeppelinConfiguration conf) throws Exception {
-    if (conf.getShiroPath().length() > 0) {
-      try {
-        Collection<Realm> realms =
-          ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-            .getRealms();
-        if (realms == null) {
-          throw new Exception("Failed to initialise shiro configuration.");
-        }
-        if (realms.size() > 1) {
-          Boolean isIniRealmEnabled = false;
-          for (Realm realm : realms) {
-            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-              isIniRealmEnabled = true;
-              break;
+  public void init(ZeppelinConfiguration conf) throws Exception {
+    String name = Thread.currentThread().getName();
+    boolean isIniRealmFound = false;
+    int k = 1;
+    for (; k <= 10 && isIniRealmFound == false; k++) {
+      if (conf.getShiroPath().length() > 0) {
+        try {
+          Collection<Realm> realms =
+            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
+              .getRealms();
+          if (realms == null) {
+            throw new Exception("Failed to getRealms.");
+          }
+          if (realms.size() > 1) {
+            Boolean isIniRealmEnabled = false;
+            for (Realm realm : realms) {
+              if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+                isIniRealmEnabled = true;
+                break;
+              }
+            }
+            if (isIniRealmEnabled) {
+              throw new Exception(
+                "IniRealm/password based auth mechanisms should be exclusive. "
+                  + "Consider removing [users] block from shiro.ini");
             }
           }
-          if (isIniRealmEnabled) {
-            throw new Exception(
-              "IniRealm/password based auth mechanisms should be exclusive. "
-                + "Consider removing [users] block from shiro.ini");
+          if (realms.size() == 1) {
+            isIniRealmFound = true;
           }
-        }
-      } catch (UnavailableSecurityManagerException e) {
-        i = i + 1;
-        if (i >= 10) {
-          throw new Exception("Failed to initialise shiro configuration", e);
-        } else {
+        } catch (UnavailableSecurityManagerException e) {
           TimeUnit.MILLISECONDS.sleep(500);
-          init(conf);
         }
       }
+    }
+    if (isIniRealmFound == false && k > 10) {
+      throw new UnavailableSecurityManagerException("Failed to initialise shiro configuration.");
     }
   }
 }
