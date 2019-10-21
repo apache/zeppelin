@@ -13,10 +13,11 @@
           :aria-selected="tab.isActive"
           v-bind:title="tab.name"
           v-on:click="setActiveTab(tab, $event)"
-          href="javascript: void(0);"
+          :href="tab.hash"
           class="tab-title"
           role="tab"
-        > {{ tab.isActive }}
+        >
+          {{ tab.isActive }}
           <!-- Pending Tab Icon -->
           <span>{{ tab.name }}</span>
         </a>

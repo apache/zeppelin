@@ -47,7 +47,7 @@ export default {
   created () {
     document.title = 'Zeppelin Notebook'
   },
-  beforeMount () {
+  beforeCreate () {
     ws.init(this)
 
     // get interpreters for note creation

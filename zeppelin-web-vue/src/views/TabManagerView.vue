@@ -7,6 +7,7 @@
       <Tab
         v-for="currentTab in this.tabList"
         :key="currentTab.id"
+        :id="currentTab.id"
         :name="currentTab.name"
         :tabContent="currentTab"
       >
@@ -36,8 +37,6 @@ import Configurations from '@/components/Settings/Configurations.vue'
 import Credentials from '@/components/Settings/Credentials.vue'
 import NotebookRepository from '@/components/Settings/NotebookRepository.vue'
 
-import { mapState } from 'vuex'
-
 export default {
   name: 'tabManager',
   components: {
@@ -50,9 +49,32 @@ export default {
     Credentials,
     NotebookRepository
   },
-  computed: mapState({
-    tabList: state => state.TabManagerStore.tabs
-  })
+  computed: {
+    tabList () {
+      return this.$store.state.TabManagerStore.tabs
+    }
+  },
+  mounted () {
+    setTimeout(this.openURLTab, 2000)
+  },
+  methods: {
+    openURLTab () {
+      let tabId = this.$route.params && this.$route.params.tabId
+
+      if (tabId) {
+        let note = this.$store.getters.getNote(tabId)
+
+        this.$root.executeCommand('tabs', 'open', {
+          type: 'note',
+          note: {
+            id: tabId,
+            name: note.name,
+            path: note.path
+          }
+        })
+      }
+    }
+  }
 }
 </script>
 

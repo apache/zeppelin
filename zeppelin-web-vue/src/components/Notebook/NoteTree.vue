@@ -108,6 +108,7 @@ export default {
         type: 'note',
         note: note
       })
+      this.$router.push({ name: 'TabManagerNoteView', params: { tabId: note.id } })
     },
     getFileName (path) {
       return path.substr(path.lastIndexOf('/') + 1)

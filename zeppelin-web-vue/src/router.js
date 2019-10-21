@@ -11,6 +11,10 @@ export default new VueRouter({
       path: '/',
       name: 'TabManagerView',
       component: TabManagerView
+    }, {
+      path: '/:tabId',
+      name: 'TabManagerNoteView',
+      component: TabManagerView
     }
   ]
 })

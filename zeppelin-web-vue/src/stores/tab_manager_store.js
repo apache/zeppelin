@@ -14,7 +14,12 @@ export default {
   mutations: {
     addTab (state, data) {
       let filteredTab = state.tabs.filter(t => (t.path && t.path === data.path) || (!t.path && t.type === data.type))
+
+      // Append to the list if it's a new item
       if (filteredTab.length === 0) {
+        data.computedId = data.id ? data.id : data.name.toLowerCase().replace(/ /g, '-')
+        data.hash = `#${data.computedId}`
+
         state.tabs.push(data)
       }
       state.currentTab = state.tabs[state.tabs.length - 1]
