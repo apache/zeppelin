@@ -45,6 +45,7 @@ limitations under the License.
 </table>
 
 N.b. The interpreter supports all the KSQL properties, i.e. `ksql.streams.auto.offset.reset`.
+The full list of KSQL parameters is [here](https://docs.confluent.io/current/ksql/docs/installation/server-config/config-reference.html).
 
 ## Using the KSQL Interpreter
 In a paragraph, use `%ksql` and start your SQL query in order to start to interact with KSQL.

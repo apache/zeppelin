@@ -65,7 +65,9 @@ public class BasicKSQLHttpClient implements Closeable {
   @Override
   public void close() throws IOException {
     connected = false;
-    connection.disconnect();
+    if (connection != null) {
+      connection.disconnect();
+    }
   }
 
   private void writeOutput(String data) throws IOException {
