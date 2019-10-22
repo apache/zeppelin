@@ -1,0 +1,12 @@
+@import '../../../node_modules/ng-zorro-antd/src/style/color/colors';
+
+.themeMixin(@rules) {
+  :host-context(.light) {
+    @import 'theme-light';
+    @rules();
+  }
+  :host-context(.dark) {
+    @import 'theme-dark';
+    @rules();
+  }
+}

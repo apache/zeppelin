@@ -1,0 +1,108 @@
+@import '../../node_modules/ng-zorro-antd/src/style/color/colors';
+
+.tips {
+  &.warning {
+    color: @volcano-6;
+  }
+
+  &.error {
+    color: @red-6;
+  }
+}
+
+.modal-footer {
+  padding: 10px 24px;
+  margin: 24px -24px -24px -24px;
+}
+
+.transparent-button {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.padding-sm {
+  padding: 12px !important;
+}
+
+.font-sm {
+  font-size: 12px;
+}
+
+.opacity-05 {
+  opacity: 0.5;
+}
+
+.drag-tag {
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.65);
+  font-variant: tabular-nums;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  display: inline-block;
+  height: auto;
+  margin: 0 8px 8px 0;
+  padding: 0 7px;
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 0px;
+  cursor: pointer;
+  opacity: 1;
+
+  &.cdk-drag-preview {
+    box-shadow: 0 0 6px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  &.cdk-drag-placeholder {
+    border-style: dashed;
+  }
+}
+
+.interpreter-box {
+  margin-bottom: 12px;
+  line-height: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .refresh {
+    font-size: 18px;
+    line-height: 0;
+    margin-right: 12px;
+  }
+
+  &.cdk-drag-placeholder {
+    opacity: 0;
+  }
+
+  .interpreter-name {
+    display: inline-block;
+
+    .main-name {
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .child-name {
+      font-size: 12px;
+      opacity: 0.7;
+      display: inline-block;
+    }
+  }
+}
+
+//.view-lines {
+//  .view-line {
+//    &:first-child {
+//      filter: grayscale(1);
+//    }
+//  }
+//}

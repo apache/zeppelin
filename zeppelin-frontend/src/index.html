@@ -1,13 +1,38 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="light">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="./assets/images/zeppelin.png" type="image/x-icon">
   <title>Zeppelin</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
-  <app-root></app-root>
+<zeppelin-root>
+  <section class="spin">
+    <div>
+      <div class="logo"></div>
+      <div class="spin-text">
+        <h1 class="brand-title" style="display: none">Zeppelin</h1>
+        <span class="status" style="display: none">Booting ...</span>
+      </div>
+    </div>
+  </section>
+</zeppelin-root>
+
+  <script type="text/x-mathjax-config">
+      var config = {
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true
+        },
+        "HTML-CSS": { availableFonts: ["TeX"] },
+        messageStyle: "none"
+      }
+      MathJax.Hub.Config(config);
+    </script>
 </body>
 </html>
