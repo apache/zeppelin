@@ -1,0 +1,32 @@
+<form nz-form nzLayout="vertical">
+  <nz-form-item>
+    <nz-form-label>
+      <ng-container *ngIf="cloneNote;else importTpl">Clone Note</ng-container>
+      <ng-template #importTpl>Import As</ng-template>
+    </nz-form-label>
+    <nz-form-control>
+      <input nz-input [(ngModel)]="noteName" autofocus placeholder="Insert Note Name" name="noteName"/>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item *ngIf="!cloneNote">
+    <nz-form-label>Default Interpreter</nz-form-label>
+    <nz-form-control>
+      <nz-select [(ngModel)]="defaultInterpreter" name="defaultInterpreter" nzPlaceHolder="Insert Default Interpreter" nzShowSearch>
+        <nz-option *ngFor="let i of listOfInterpreter" [nzValue]="i.name" [nzLabel]="i.name"></nz-option>
+      </nz-select>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-control>
+      <nz-alert nzType="info" nzMessage="Use '/' to create folders. Example: /NoteDirA/Note1"></nz-alert>
+    </nz-form-control>
+  </nz-form-item>
+
+  <div class="modal-footer ant-modal-footer">
+    <button nz-button nzType="primary" (click)="createNote()">
+      <ng-container *ngIf="cloneNote;else importTpl">Clone</ng-container>
+      <ng-template #importTpl>Create</ng-template>
+    </button>
+  </div>
+</form>
+

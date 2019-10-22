@@ -1,0 +1,21 @@
+@import "theme-mixin";
+
+.themeMixin({
+  .permissions-form {
+    background: @layout-body-background;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  nz-form-item {
+    margin-bottom: 12px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  .submit-permissions {
+    button {
+      margin-right: 12px;
+    }
+  }
+});

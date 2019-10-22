@@ -1,0 +1,20 @@
+<form nz-form nzLayout="vertical">
+  <nz-form-item>
+    <nz-form-label>Please enter a new name</nz-form-label>
+    <nz-form-control>
+      <input nz-input [(ngModel)]="newFolderPath" (ngModelChange)="checkMerged()" placeholder="Insert New Name" name="newFolderPath" required/>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item *ngIf="willMerged">
+    <nz-form-control>
+      <nz-alert nzType="warning" [nzDescription]="desTpl" nzMessage="WARNING! The folder will be MERGED"></nz-alert>
+    </nz-form-control>
+  </nz-form-item>
+  <div class="modal-footer ant-modal-footer">
+    <button nz-button nzType="primary" (click)="rename()">Rename</button>
+  </div>
+</form>
+
+<ng-template #desTpl>
+  The folder will be merged into <strong>{{newFolderPath}}</strong>. Are you sure?
+</ng-template>

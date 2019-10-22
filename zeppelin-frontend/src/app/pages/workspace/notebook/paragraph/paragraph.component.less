@@ -1,0 +1,60 @@
+@import "theme-mixin";
+
+:host {
+  display: block;
+  padding: 0 4px;
+}
+
+.themeMixin({
+  .paragraph {
+    background: @component-background;
+    border: 1px solid @border-color-split;
+    box-shadow: @card-shadow;
+    padding: 32px 12px 12px 12px;
+    position: relative;
+
+    zeppelin-notebook-paragraph-code-editor + zeppelin-notebook-paragraph-dynamic-forms {
+      margin-top: 24px;
+    }
+
+    zeppelin-notebook-paragraph-progress + zeppelin-notebook-paragraph-dynamic-forms {
+      margin-top: 24px;
+    }
+
+    &.simple {
+      box-shadow: none;
+      border-color: transparent;
+
+      zeppelin-notebook-paragraph-control, zeppelin-notebook-paragraph-footer {
+        visibility: hidden;
+      }
+
+      &:hover {
+        border: 1px solid @border-color-split;
+        box-shadow: @card-shadow;
+
+        zeppelin-notebook-paragraph-control, zeppelin-notebook-paragraph-footer {
+          visibility: visible;
+        }
+      }
+    }
+
+    &.report {
+      &:hover {
+        box-shadow: none;
+        border-color: transparent;
+
+        zeppelin-notebook-paragraph-control, zeppelin-notebook-paragraph-footer {
+          visibility: hidden;
+        }
+      }
+    }
+
+    zeppelin-notebook-paragraph-control {
+      position: absolute;
+      right: 12px;
+      top: 8px;
+      z-index: 10;
+    }
+  }
+});

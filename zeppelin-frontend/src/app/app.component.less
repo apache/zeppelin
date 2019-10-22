@@ -1,0 +1,14 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  .content {
+    background: @layout-body-background;
+    min-height: 100vh;
+    display: block;
+    position: relative;
+
+    &.blur {
+      filter: blur(6px);
+    }
+  }
+});

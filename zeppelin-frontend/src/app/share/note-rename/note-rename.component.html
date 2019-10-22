@@ -1,0 +1,11 @@
+<form nz-form nzLayout="vertical">
+  <nz-form-item>
+    <nz-form-label>Please enter a new name</nz-form-label>
+    <nz-form-control>
+      <input nz-input [(ngModel)]="newName" placeholder="Insert New Name" name="newName" required/>
+    </nz-form-control>
+  </nz-form-item>
+  <div class="modal-footer ant-modal-footer">
+    <button nz-button nzType="primary" (click)="rename()">Rename</button>
+  </div>
+</form>

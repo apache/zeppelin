@@ -1,0 +1,42 @@
+<div class="notebook-container" *ngIf="note" [class.simple]="note.config.looknfeel !== 'default'">
+  <zeppelin-notebook-action-bar [note]="note"
+                                [looknfeel]="note.config.looknfeel"
+                                [revisionView]="revisionView"
+                                [isOwner]="isOwner"
+                                [(activatedExtension)]="activatedExtension"
+                                [collaborativeMode]="collaborativeMode"
+                                [collaborativeModeUsers]="collaborativeModeUsers"
+                                [noteRevisions]="noteRevisions"
+                                [currentRevision]="currentRevision"
+                                (tableHideChange)="setAllParagraphTableHide($event)"
+                                (editorHideChange)="setAllParagraphEditorHide($event)"></zeppelin-notebook-action-bar>
+  <div class="extension-area" [ngSwitch]="activatedExtension" *ngIf="activatedExtension!=='hide'">
+    <zeppelin-notebook-interpreter-binding *ngSwitchCase="'interpreter'"
+                                           [noteId]="note.id"
+                                           [(activatedExtension)]="activatedExtension"
+                                           [interpreterBindings]="interpreterBindings"></zeppelin-notebook-interpreter-binding>
+    <zeppelin-notebook-permissions *ngSwitchCase="'permissions'"
+                                   [noteId]="note.id"
+                                   [(activatedExtension)]="activatedExtension"
+                                   [permissions]="permissions"></zeppelin-notebook-permissions>
+    <zeppelin-notebook-revisions-comparator *ngSwitchCase="'revisions'"></zeppelin-notebook-revisions-comparator>
+  </div>
+  <div class="paragraph-area">
+    <div class="paragraph-inner" nz-row>
+      <zeppelin-notebook-paragraph nz-col
+                                   *ngFor="let p of note.paragraphs;let first = first; let last = last;"
+                                   [nzSpan]="p.config.colWidth * 2"
+                                   [paragraph]="p"
+                                   [note]="note"
+                                   [looknfeel]="note.config.looknfeel"
+                                   [interpreterBindings]="interpreterBindings"
+                                   [collaborativeMode]="collaborativeMode"
+                                   [viewOnly]="viewOnly"
+                                   [revisionView]="revisionView"
+                                   [first]="first"
+                                   [last]="last"
+                                   (triggerSaveParagraph)="saveParagraph($event)"
+                                   (saveNoteTimer)="startSaveTimer()"></zeppelin-notebook-paragraph>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,61 @@
+@import "theme-mixin";
+
+:host {
+  display: flex;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.setting-menu {
+  width: 270px;
+
+  li {
+    font-size: 12px;
+
+    i {
+      margin-right: 6px;
+    }
+  }
+}
+
+.short-cut {
+  opacity: 0.7;
+}
+
+.paragraph-id {
+  text-align: center;
+}
+
+.themeMixin({
+  .job-link {
+    margin-right: 12px;
+
+    a {
+      color: @link-color;
+    }
+  }
+  .status {
+    color: @text-color-secondary;
+    margin-right: 12px;
+  }
+  .progress {
+    color: @text-color-secondary;
+    margin-right: 12px;
+  }
+
+  a {
+    margin-left: 8px;
+    color: @text-color-secondary;
+
+    .run-para {
+      color: @primary-color;
+    }
+
+    .cancel-para {
+      color: @warning-color;
+    }
+  }
+});

@@ -1,0 +1,87 @@
+<div class="paragraph-container" *ngIf="paragraph" (dblclick)="doubleClickParagraph()">
+  <zeppelin-notebook-add-paragraph *ngIf="!revisionView && looknfeel !== 'report'"
+                                   [disabled]="isEntireNoteRunning"
+                                   (addParagraph)="insertParagraph('above')"></zeppelin-notebook-add-paragraph>
+  <div class="paragraph" [class.simple]="looknfeel !== 'default'" [class.report]="looknfeel === 'report'">
+    <zeppelin-elastic-input *ngIf="paragraph.config.title"
+                            [value]="paragraph.title"
+                            [min]="true"
+                            (valueUpdate)="setTitle($event)"></zeppelin-elastic-input>
+    <zeppelin-notebook-paragraph-control #paragraphControl="paragraphControl"
+                                         [status]="paragraph.status"
+                                         [progress]="progress"
+                                         [first]="first"
+                                         [last]="last"
+                                         [runtimeInfos]="paragraph.runtimeInfos"
+                                         [paragraphLength]="note.paragraphs.length"
+                                         [revisionView]="revisionView"
+                                         [colWidthOption]="colWidthOption"
+                                         [pid]="paragraph.id"
+                                         [isEntireNoteRunning]="isEntireNoteRunning"
+                                         [(enabled)]="paragraph.config.enabled"
+                                         [(tableHide)]="paragraph.config.tableHide"
+                                         [(colWidth)]="paragraph.config.colWidth"
+                                         [(title)]="paragraph.config.title"
+                                         [(fontSize)]="paragraph.config.fontSize"
+                                         [(lineNumbers)]="paragraph.config.lineNumbers"
+                                         [(editorHide)]="paragraph.config.editorHide"
+                                         [(runOnSelectionChange)]="paragraph.config.runOnSelectionChange"
+                                         (tableHideChange)="commitParagraph()"
+                                         (colWidthChange)="changeColWidth(true)"
+                                         (fontSizeChange)="commitParagraph()"
+                                         (editorHideChange)="commitParagraph()"
+                                         (enabledChange)="commitParagraph()"
+                                         (titleChange)="commitParagraph()"
+                                         (runOnSelectionChangeChange)="commitParagraph()"
+                                         (runParagraph)="runParagraph()"
+                                         (moveUp)="moveUpParagraph()"
+                                         (moveDown)="moveDownParagraph()"
+                                         (insertNew)="insertParagraph('below')"
+                                         (runAllAbove)="runAllAbove()"
+                                         (runAllBelowAndCurrent)="runAllBelowAndCurrent()"
+                                         (cloneParagraph)="cloneParagraph()"
+                                         (cancelParagraph)="cancelParagraph()"></zeppelin-notebook-paragraph-control>
+    <zeppelin-notebook-paragraph-code-editor *ngIf="!paragraph.config.editorHide && !viewOnly"
+                                             [text]="paragraph.text"
+                                             [paragraphControl]="paragraphControl"
+                                             [dirty]="dirtyText !== originalText && dirtyText !== undefined"
+                                             [collaborativeMode]="collaborativeMode"
+                                             [focus]="paragraph.focus"
+                                             [pid]="paragraph.id"
+                                             [fontSize]="paragraph.config.fontSize"
+                                             [interpreterBindings]="interpreterBindings"
+                                             [lineNumbers]="paragraph.config.lineNumbers"
+                                             [readOnly]="isEntireNoteRunning || isParagraphRunning || revisionView"
+                                             [language]="paragraph.config.editorSetting?.language"
+                                             (editorBlur)="saveParagraph()"
+                                             (textChanged)="textChanged($event)"></zeppelin-notebook-paragraph-code-editor>
+    <zeppelin-notebook-paragraph-progress *ngIf="paragraph.status === 'RUNNING'"
+                                          [progress]="progress"></zeppelin-notebook-paragraph-progress>
+    <ng-container *ngIf="!paragraph.config.tableHide">
+      <zeppelin-notebook-paragraph-dynamic-forms
+        [disable]="paragraph.status == 'RUNNING' || paragraph.status == 'PENDING'"
+        [paramDefs]="paragraph.settings.params"
+        [formDefs]="paragraph.settings.forms"
+        [runOnChange]="paragraph.config.runOnSelectionChange"
+        (formChange)="runParagraph()">
+      </zeppelin-notebook-paragraph-dynamic-forms>
+      <zeppelin-notebook-paragraph-result *ngFor="let result of results; index as i; trackBy: trackByIndexFn"
+                                          [id]="paragraph.id"
+                                          [currentCol]="paragraph.config.colWidth"
+                                          [config]="configs[i]"
+                                          (sizeChange)="onSizeChange($event)"
+                                          (configChange)="onConfigChange($event, i)"
+                                          [result]="result">
+      </zeppelin-notebook-paragraph-result>
+    </ng-container>
+    <zeppelin-notebook-paragraph-footer [showExecutionTime]="!paragraph.config.tableHide && !viewOnly"
+                                        [showElapsedTime]="paragraph.status === 'RUNNING'"
+                                        [user]="paragraph.user"
+                                        [dateUpdated]="paragraph.dateUpdated"
+                                        [dateStarted]="paragraph.dateStarted"
+                                        [dateFinished]="paragraph.dateFinished"></zeppelin-notebook-paragraph-footer>
+  </div>
+  <zeppelin-notebook-add-paragraph *ngIf="!viewOnly && !revisionView && last && looknfeel !== 'report'"
+                                   [disabled]="isEntireNoteRunning"
+                                   (addParagraph)="insertParagraph('below')"></zeppelin-notebook-add-paragraph>
+</div>

@@ -1,0 +1,38 @@
+@import "theme-mixin";
+
+.themeMixin({
+  .add-paragraph {
+    height: 32px;
+    text-align: center;
+    margin: -12px 0;
+    color: @primary-color;
+    font-weight: 500;
+    position: relative;;
+
+    .inner {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: none;
+      line-height: 30px;
+      background: @blue-1;
+      border: 1px solid @border-color-split;
+      box-shadow: @btn-shadow;
+      padding: 0 12px;
+
+      &.disabled {
+        cursor: default;
+        color: @disabled-color;
+      }
+    }
+
+    &:hover {
+      .inner {
+        display: block;
+      }
+    }
+  }
+});

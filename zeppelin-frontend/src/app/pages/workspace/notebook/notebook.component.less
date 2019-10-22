@@ -1,0 +1,24 @@
+@import "theme-mixin";
+
+
+.themeMixin({
+  .notebook-container {
+    background: @layout-body-background;
+    display: block;
+    position: relative;
+    padding-top: 50px;
+    min-height: calc(~"100vh - 50px");
+
+    &.simple {
+      background: @component-background;
+    }
+  }
+  .extension-area {
+    padding: 24px;
+    background: @component-background;
+    box-shadow: -2px 4px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  .paragraph-area {
+    margin: 6px 0 0 0;
+  }
+});

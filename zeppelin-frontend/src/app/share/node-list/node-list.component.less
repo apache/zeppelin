@@ -1,0 +1,70 @@
+@import 'theme-mixin';
+
+:host {
+  display: block;
+}
+
+.themeMixin({
+  .content {
+    width: 100%;
+    position: relative;
+
+    &.header-mode {
+      .operation {
+        display: none;
+      }
+    }
+  }
+  .rename {
+    width: 200px;
+  }
+  nz-tree {
+    display: block;
+  }
+  nz-input-group {
+    width: 100%;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  .node {
+    line-height: 24px;
+    display: inline-block;
+    width: calc(~"100% - 24px");
+
+    &.not-matched {
+      opacity: 0.5;
+      filter: grayscale(1);
+    }
+
+    i {
+      margin-right: 6px;
+    }
+
+    .operation {
+      margin-left: 12px;
+
+      i {
+        font-size: 12px;
+        display: none;
+
+        &:hover {
+          color: @link-active-color;
+        }
+      }
+    }
+
+    &.active {
+      .name {
+        color: @link-active-color;
+      }
+    }
+
+    &:hover, &.active {
+      .operation {
+        i {
+          display: inline-block;
+        }
+      }
+    }
+  }
+});
