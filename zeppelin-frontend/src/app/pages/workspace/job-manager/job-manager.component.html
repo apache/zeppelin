@@ -1,0 +1,62 @@
+<zeppelin-page-header
+  title="Job"
+  description="You can monitor the status of notebook and navigate to note or paragraph."
+  [divider]="true">
+  <form class="header-form" nz-form [nzLayout]="'inline'" [formGroup]="form">
+    <nz-form-item>
+      <nz-form-control>
+        <nz-input-group [nzPrefix]="prefixSearch">
+          <input formControlName="noteName" nz-input placeholder="Search jobs..."/>
+        </nz-input-group>
+        <ng-template #prefixSearch>
+          <i nz-icon nzType="search" nzTheme="outline"></i>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>Interpreter</nz-form-label>
+      <nz-form-control>
+        <nz-select class="interpreter-select" formControlName="interpreter">
+          <nz-option nzValue="*" nzLabel="All"></nz-option>
+          <nz-option *ngFor="let item of interpreters" [nzValue]="item" [nzLabel]="item"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>Sort</nz-form-label>
+      <nz-form-control>
+        <nz-select class="sort-select" formControlName="sortBy">
+          <nz-option *ngFor="let item of sortKeys" [nzValue]="item" [nzLabel]="item"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>Total</nz-form-label>
+      <nz-form-control>
+        <nz-form-text>{{ filteredJobs.length }}</nz-form-text>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item class="status-legend">
+      <nz-form-control>
+        <zeppelin-job-manager-job-status *ngFor="let item of jobStatusKeys" [status]="item" [showText]="true">
+        </zeppelin-job-manager-job-status>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</zeppelin-page-header>
+<div class="content">
+  <nz-card *ngIf="loading; else jobs">
+    <nz-skeleton [nzTitle]="false" [nzLoading]="true" [nzActive]="true">
+    </nz-skeleton>
+  </nz-card>
+
+  <ng-template #jobs>
+    <zeppelin-job-manager-job
+      *ngFor="let item of filteredJobs"
+      [note]="item"
+      (start)="onStart($event)"
+      (stop)="onStop($event)">
+    </zeppelin-job-manager-job>
+    <nz-empty *ngIf="filteredJobs.length === 0" nzNotFoundContent="No Job found"></nz-empty>
+  </ng-template>
+</div>

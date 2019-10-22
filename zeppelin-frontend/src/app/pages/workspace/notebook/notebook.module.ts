@@ -22,6 +22,7 @@ import {
   NzSwitchModule,
   NzToolTipModule
 } from 'ng-zorro-antd';
+import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
 import { NzResizableModule } from 'ng-zorro-antd/resizable';
 
 import { ShareModule } from '@zeppelin/share';
@@ -30,9 +31,11 @@ import { VisualizationModule } from 'src/app/visualizations/visualization.module
 import { NotebookAddParagraphComponent } from './add-paragraph/add-paragraph.component';
 import { NotebookInterpreterBindingComponent } from './interpreter-binding/interpreter-binding.component';
 import { NotebookParagraphControlComponent } from './paragraph/control/control.component';
+import { NotebookParagraphDynamicFormsComponent } from './paragraph/dynamic-forms/dynamic-forms.component';
 import { NotebookParagraphFooterComponent } from './paragraph/footer/footer.component';
 import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 import { NotebookParagraphProgressComponent } from './paragraph/progress/progress.component';
+import { NotebookParagraphResultComponent } from './paragraph/result/result.component';
 import { NotebookPermissionsComponent } from './permissions/permissions.component';
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
@@ -50,9 +53,11 @@ import { NotebookShareModule } from './share/share.module';
     NotebookRevisionsComparatorComponent,
     NotebookParagraphComponent,
     NotebookAddParagraphComponent,
+    NotebookParagraphResultComponent,
     NotebookParagraphProgressComponent,
     NotebookParagraphFooterComponent,
     NotebookParagraphControlComponent,
+    NotebookParagraphDynamicFormsComponent
   ],
   imports: [
     CommonModule,
@@ -80,7 +85,8 @@ import { NotebookShareModule } from './share/share.module';
     NzGridModule,
     NzRadioModule,
     DragDropModule,
-    NzResizableModule
+    NzResizableModule,
+    NzCodeEditorModule
   ]
 })
 export class NotebookModule {}

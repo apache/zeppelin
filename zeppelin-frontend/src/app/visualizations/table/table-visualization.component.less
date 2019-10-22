@@ -1,0 +1,32 @@
+@import "theme-mixin";
+
+.th-dropdown {
+  .search-bar.ant-menu-item-group {
+    padding: 5px 12px;
+    ::ng-deep .ant-menu-item-group-title{
+      display: none;
+    }
+  }
+}
+
+.export-dropdown {
+  margin-bottom: 16px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.themeMixin({
+  display: block;
+  position: relative;
+  ::ng-deep .filter-icon svg {
+    transition: transform 300ms;
+  }
+
+  .aggregation-wrap {
+    text-align: right;
+    .aggregation-item {
+      margin-left: 10px;
+    }
+  }
+});

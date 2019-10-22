@@ -9,7 +9,6 @@ import {
   OnInit,
   Output,
   QueryList,
-  ViewChild,
   ViewChildren
 } from '@angular/core';
 import { Subject } from 'rxjs';
@@ -45,6 +44,7 @@ import {
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
+import { NotebookParagraphResultComponent } from './result/result.component';
 
 @Component({
   selector: 'zeppelin-notebook-paragraph',
@@ -53,6 +53,9 @@ import { NzResizeEvent } from 'ng-zorro-antd/resizable';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphComponent extends MessageListenersManager implements OnInit, OnChanges, OnDestroy {
+  @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents: QueryList<
+    NotebookParagraphResultComponent
+  >;
   @Input() paragraph: ParagraphItem;
   @Input() note: Note['note'];
   @Input() looknfeel: string;
@@ -546,6 +549,12 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   changeColWidth(needCommit: boolean, updateResult = true) {
     if (needCommit) {
       this.commitParagraph();
+    }
+
+    if (updateResult) {
+      this.notebookParagraphResultComponents.forEach(comp => {
+        comp.setGraphConfig();
+      });
     }
   }
 

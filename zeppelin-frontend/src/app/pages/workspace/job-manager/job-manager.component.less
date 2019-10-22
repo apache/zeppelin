@@ -1,0 +1,38 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  .header-form  {
+    .interpreter-select {
+      min-width: 100px;
+    }
+    .sort-select {
+      min-width: 155px;
+    }
+  }
+
+  .content {
+    padding: @card-padding-base / 2;
+
+    ::ng-deep .ant-skeleton-paragraph {
+      margin-bottom: 0;
+    }
+
+    nz-empty {
+      margin-top: 76px;
+    }
+  }
+
+  @media (max-width: 1230px) {
+    .status-legend {
+      display: none;
+    }
+  }
+  .status-legend {
+    float: right;
+    margin-right: 0;
+    zeppelin-job-manager-job-status {
+      margin-left: 10px;
+      display: inline-block;
+    }
+  }
+});

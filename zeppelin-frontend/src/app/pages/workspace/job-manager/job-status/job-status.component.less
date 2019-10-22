@@ -1,0 +1,11 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  display: inline-block;
+  nz-badge.ready {
+    ::ng-deep .ant-badge-status-success {
+      background: fade(@success-color, 20%);
+      border: 1px solid @success-color;
+    }
+  }
+});

@@ -1,0 +1,22 @@
+<div [hidden]="!config?.optionOpen" class="vis-tools">
+  <zeppelin-visualization-pivot-setting
+    [visualization]="visualization">
+  </zeppelin-visualization-pivot-setting>
+  <zeppelin-visualization-x-axis-setting
+    [visualization]="visualization"
+    mode="multiBarChart">
+  </zeppelin-visualization-x-axis-setting>
+  <div nz-form nzLayout="inline" class="bar-chart-setting">
+    <nz-form-item>
+      <nz-form-label>View</nz-form-label>
+      <nz-form-control>
+        <nz-radio-group [(ngModel)]="stacked" (ngModelChange)="viewChange()" [nzButtonStyle]="'solid'">
+          <label nz-radio-button [nzValue]="false">Grouped</label>
+          <label nz-radio-button [nzValue]="true">Stacked</label>
+        </nz-radio-group>
+      </nz-form-control>
+    </nz-form-item>
+  </div>
+</div>
+<div #container>
+</div>

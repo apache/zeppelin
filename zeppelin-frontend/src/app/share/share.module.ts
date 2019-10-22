@@ -30,6 +30,7 @@ import {
 import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
 import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
 import { HeaderComponent } from '@zeppelin/share/header/header.component';
+import { MathJaxDirective } from '@zeppelin/share/math-jax/math-jax.directive';
 import { NodeListComponent } from '@zeppelin/share/node-list/node-list.component';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';
 import { NoteImportComponent } from '@zeppelin/share/note-import/note-import.component';
@@ -38,6 +39,7 @@ import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.com
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
 import { SpinComponent } from '@zeppelin/share/spin/spin.component';
+import { ResizeHandleComponent } from './resize-handle';
 
 const MODAL_LIST = [
   AboutZeppelinComponent,
@@ -46,13 +48,13 @@ const MODAL_LIST = [
   NoteRenameComponent,
   FolderRenameComponent
 ];
-const EXPORT_LIST = [HeaderComponent, NodeListComponent, PageHeaderComponent, SpinComponent];
+const EXPORT_LIST = [HeaderComponent, NodeListComponent, PageHeaderComponent, SpinComponent, ResizeHandleComponent];
 const PIPES = [HumanizeBytesPipe];
 
 @NgModule({
-  declarations: [MODAL_LIST, EXPORT_LIST, PIPES, RunScriptsDirective],
+  declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective],
   entryComponents: [MODAL_LIST],
-  exports: [EXPORT_LIST, PIPES, RunScriptsDirective],
+  exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective],
   imports: [
     FormsModule,
     CommonModule,

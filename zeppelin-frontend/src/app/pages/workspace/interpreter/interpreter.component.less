@@ -1,0 +1,39 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  .search-input {
+    width: 256px;
+  }
+
+  @media (max-width:959px){
+    .search-input {
+      width: 100%;
+    }
+  }
+
+  nz-tag.repo-item {
+    border-color: transparent;
+    background: @primary-6;
+    color: @text-color-inverse;
+    ::ng-deep i.anticon-close {
+      color: @text-color-inverse;
+      &:hover {
+        color: @icon-color-hover;
+      }
+    }
+  }
+
+  .editable-tag {
+    background: @white;
+    border-style: dashed;
+  }
+
+  .content {
+    padding: @card-padding-base / 2;
+
+    .create-interpreter {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  }
+});

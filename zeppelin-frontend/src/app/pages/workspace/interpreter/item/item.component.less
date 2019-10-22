@@ -1,0 +1,93 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  display: block;
+  margin-bottom: @card-padding-base;
+  position: relative;
+
+  ::ng-deep .interpreter-item {
+    &.edit {
+      background: @orange-1;
+    }
+    .ant-card-body {
+      margin-top: -@card-padding-base;
+    }
+  }
+
+  .error-alter {
+    margin-top: @card-padding-base;
+  }
+
+  .interpreter-status {
+    margin-left: 5px;
+  }
+
+  .card-title {
+    display: inline-block;
+    h3 {
+      color: @primary-color;
+      margin-bottom: 0;
+      font-size: 1.4em;
+      .interpreter-group-item {
+        font-size: 60%;
+        font-weight: 400;
+        color: @text-color-secondary;
+      }
+    }
+  }
+
+  h3.form-title {
+    margin: @card-padding-base 0;
+  }
+
+  nz-form-item {
+    margin-bottom: 5px;
+  }
+
+  form td textarea.ant-input {
+    margin-bottom: 0;
+    resize: none;
+  }
+
+  .interpreter-form, .option-form {
+    input, nz-select {
+      width: 256px;
+    }
+    @media (max-width:959px){
+      input, nz-select {
+        width: 100%;
+      }
+    }
+  }
+
+  .edit-properties-value {
+    display: flex;
+    align-items: center;
+
+    .value-input {
+      flex: 1;
+    }
+
+    .type-selector {
+      width: 150px;
+      margin-left: 5px;
+    }
+  }
+
+  .extra-wrap {
+    button + button {
+      margin-bottom: 0;
+      margin-left: 8px;
+    }
+  }
+
+  .item-footer {
+    padding: 24px 0px 12px 0px;
+    text-align: right;
+    button + button {
+      margin-bottom: 0;
+      margin-left: 8px;
+    }
+  }
+
+});

@@ -1,0 +1,58 @@
+@import 'theme-mixin';
+
+.themeMixin({
+  display: block;
+  margin-bottom: 10px;
+  position: relative;
+
+  ::ng-deep .job-item .ant-card-body {
+    padding: @card-padding-base / 2;
+  }
+
+  .job-title {
+    margin-bottom: 10px;
+  }
+
+  .note-icon {
+    margin-right: 5px;
+  }
+
+  .right-tools {
+    display: inline-block;
+    float: right;
+    color: @text-color-secondary;
+    & > * {
+      margin-left: 5px;
+    }
+    .job-control-btn {
+      cursor: pointer;
+      color: @processing-color;
+      &.running {
+        color: @error-color;
+      }
+    }
+  }
+
+  .interpreter {
+    color: @text-color;
+    &.unset {
+      color: @text-color-secondary;
+    }
+  }
+
+  zeppelin-job-manager-job-status {
+    ::ng-deep .ant-badge-status-text {
+      margin-left: 0;
+    }
+    margin: 0 4px;
+  }
+
+  .footer-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin-bottom: -5px;
+    padding: 0 1px;
+  }
+});

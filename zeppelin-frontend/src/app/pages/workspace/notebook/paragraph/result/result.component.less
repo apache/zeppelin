@@ -1,0 +1,59 @@
+@import "theme-mixin";
+
+.themeMixin({
+  display: block;
+
+  .nz-resizable-preview {
+    left: -12px;
+    padding-right: 10px;
+    border: none;
+    &::before {
+      content: ' ';
+      display: block;
+      border: 1px dashed #d1d1d1;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  ::ng-deep {
+    .inner-html, .text-plain {
+
+      overflow: auto;
+
+      ol, ul, dl {
+        padding-left: 20px;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        width: auto;
+      }
+    }
+  }
+
+  .text-plain {
+    font-size: 12px;
+    color: @text-color;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  }
+  .setting-bar {
+    display: flex;
+    margin: 10px 0;
+
+    .export-dropdown {
+      margin: 0 20px;
+    }
+
+    .setting-trigger {
+      line-height: 32px;
+
+      i {
+        font-size: 12px;
+      }
+    }
+
+  }
+
+});

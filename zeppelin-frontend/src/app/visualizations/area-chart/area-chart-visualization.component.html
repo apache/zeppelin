@@ -1,0 +1,23 @@
+<div [hidden]="!config?.optionOpen" class="vis-tools">
+  <zeppelin-visualization-pivot-setting
+    [visualization]="visualization">
+  </zeppelin-visualization-pivot-setting>
+  <zeppelin-visualization-x-axis-setting
+    [visualization]="visualization"
+    mode="stackedAreaChart">
+  </zeppelin-visualization-x-axis-setting>
+</div>
+<div nz-form nzLayout="inline" class="area-chart-setting">
+  <nz-form-item>
+    <nz-form-label>View</nz-form-label>
+    <nz-form-control>
+      <nz-radio-group [(ngModel)]="style" (ngModelChange)="viewChange()" [nzButtonStyle]="'solid'">
+        <label nz-radio-button nzValue="stack">Stacked</label>
+        <label nz-radio-button nzValue="stream">Stream</label>
+        <label nz-radio-button nzValue="expand">Expanded</label>
+      </nz-radio-group>
+    </nz-form-control>
+  </nz-form-item>
+</div>
+<div #container>
+</div>

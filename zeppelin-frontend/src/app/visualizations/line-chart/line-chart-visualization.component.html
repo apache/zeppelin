@@ -1,0 +1,32 @@
+<div [hidden]="!config?.optionOpen" class="vis-tools">
+  <zeppelin-visualization-pivot-setting
+    [visualization]="visualization">
+  </zeppelin-visualization-pivot-setting>
+  <div class="line-setting">
+    <label nz-checkbox [(ngModel)]="forceY" (ngModelChange)="settingChange()">Force Y to 0 </label>
+    <br />
+    <label nz-checkbox [(ngModel)]="lineWithFocus" (ngModelChange)="settingChange()">
+      Zoom
+      <small *ngIf="lineWithFocus" class="zoom-tips">Drag mouse to select the range, double-click to reset.</small>
+    </label>
+    <br />
+    <label nz-checkbox [(ngModel)]="isDateFormat" (ngModelChange)="settingChange()">
+      Date Format
+      <input class="format-input"
+             *ngIf="isDateFormat"
+             (click)="$event.stopPropagation()"
+             (blur)="settingChange()"
+             (keydown.enter)="settingChange()"
+             nz-input
+             nzSize="small"
+             placeholder="YYYY-MM-DD HH:mm"
+             [(ngModel)]="dateFormat" />
+    </label>
+  </div>
+  <zeppelin-visualization-x-axis-setting
+    [visualization]="visualization"
+    mode="lineChart">
+  </zeppelin-visualization-x-axis-setting>
+</div>
+<div #container>
+</div>
