@@ -21,14 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.http.HttpStatus;
 
-import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.ARQException;
 import org.apache.jena.sparql.engine.http.QueryExceptionHTTP;
 
 import org.slf4j.Logger;
@@ -57,6 +56,8 @@ public class SparqlInterpreter extends Interpreter {
   private boolean replaceURIs;
   private boolean removeDatatypes;
 
+  private QueryExecution queryExecution;
+
   public SparqlInterpreter(Properties properties) {
     super(properties);
   }
@@ -70,36 +71,31 @@ public class SparqlInterpreter extends Interpreter {
         && getProperty(SPARQL_REPLACE_URIS).equals("true");
     removeDatatypes = getProperty(SPARQL_REMOVE_DATATYPES) != null
         && getProperty(SPARQL_REMOVE_DATATYPES).equals("true");
+
+    queryExecution = null;
   }
 
   @Override
   public void close() {
+    if (queryExecution != null) {
+      queryExecution.close();
+    }
   }
 
   @Override
-  public InterpreterResult interpret(String queryString, InterpreterContext context) {
-    LOGGER.info("SPARQL: Run Query '" + queryString + "' against " + serviceEndpoint);
+  public InterpreterResult interpret(String query, InterpreterContext context) {
+    LOGGER.info("SPARQL: Run Query '" + query + "' against " + serviceEndpoint);
 
-    if (StringUtils.isEmpty(queryString) || StringUtils.isEmpty(queryString.trim())) {
+    if (StringUtils.isEmpty(query) || StringUtils.isEmpty(query.trim())) {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
 
-    Query query = null;
-    PrefixMapping prefixMapping = null;
     try {
-      query = QueryFactory.create(queryString);
-      prefixMapping = query.getPrologue().getPrefixMapping();
-    } catch (QueryParseException e) {
-      LOGGER.error(e.toString());
-      return new InterpreterResult(
-        InterpreterResult.Code.ERROR,
-        "Error: " + e.getMessage());
-    }
+      queryExecution = QueryExecutionFactory.sparqlService(serviceEndpoint, query);
+      PrefixMapping prefixMapping = queryExecution.getQuery().getPrefixMapping();
 
-    try (QueryExecution qe =
-      QueryExecutionFactory.sparqlService(serviceEndpoint, query)) {
       // execute query and get Results
-      ResultSet results = qe.execSelect();
+      ResultSet results = queryExecution.execSelect();
 
       // transform ResultSet to TSV-String
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -120,6 +116,11 @@ public class SparqlInterpreter extends Interpreter {
               InterpreterResult.Code.SUCCESS,
               InterpreterResult.Type.TABLE,
               tsv);
+    } catch (QueryParseException e) {
+      LOGGER.error(e.toString());
+      return new InterpreterResult(
+        InterpreterResult.Code.ERROR,
+        "Error: " + e.getMessage());
     } catch (QueryExceptionHTTP e) {
       LOGGER.error(e.toString());
       int responseCode = e.getResponseCode();
@@ -137,11 +138,18 @@ public class SparqlInterpreter extends Interpreter {
           InterpreterResult.Code.ERROR,
             "Error: " + e.getMessage());
       }
+    } catch (ARQException e) {
+      return new InterpreterResult(
+        InterpreterResult.Code.INCOMPLETE,
+          "Query cancelled.");
     }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (queryExecution != null) {
+      queryExecution.abort();
+    }
   }
 
   @Override

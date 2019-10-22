@@ -79,6 +79,7 @@ public class SparqlInterpreterTest {
     final Properties properties = new Properties();
     properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
+    interpreter.open();
 
     final InterpreterResult result = interpreter.interpret("SELECT * WHER {", null);
     assertEquals(Code.ERROR, result.code());
