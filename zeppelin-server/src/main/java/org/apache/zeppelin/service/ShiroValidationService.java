@@ -16,7 +16,6 @@
  */
 package org.apache.zeppelin.service;
 
-import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.util.ThreadContext;
@@ -42,51 +41,51 @@ public class ShiroValidationService {
   }
 
   public void init(ZeppelinConfiguration conf) throws Exception {
-    LOGGER.info("ShiroValidationService init initializing...");
     if (conf.getShiroPath().length() > 0) {
-      try {
-        synchronized (this) {
-          long waitTime = 500;
-          Integer nosOfTry = 0;
-          while (ThreadContext.getSecurityManager() == null) {
-            try {
-              DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
-                .getSecurityManager();
-              if (securityManager != null && securityManager.getSessionManager() != null) {
-                break;
-              }
-            } catch (Exception e) {
-              nosOfTry++;
-              if (nosOfTry > 10) {
-                throw new Exception(String
-                  .format("Could not initialize shiro.ini, failed after %s tries", nosOfTry));
-              }
-              wait(waitTime);
-            }
-          }
-        }
-        Collection<Realm> realms =
-          ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-            .getRealms();
-        if (realms.size() > 1) {
-          Boolean isIniRealmEnabled = false;
-          for (Realm realm : realms) {
-            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-              isIniRealmEnabled = true;
-              break;
-            }
-          }
-          if (isIniRealmEnabled) {
-            throw new Exception(
-              "IniRealm/password based auth mechanisms should be exclusive. "
-                + "Consider removing [users] block from shiro.ini");
-          }
-        }
-      } catch (UnavailableSecurityManagerException e) {
-        LOGGER.error("Failed to initialise shiro configuration", e);
-        throw e;
-      }
+      loadSecurityManager();
+      validateRealms();
     }
     LOGGER.info("ShiroValidationService is initialized.");
+  }
+
+  private synchronized void loadSecurityManager() throws Exception {
+    long waitTime = 500;
+    Integer nosOfTry = 0;
+    while (ThreadContext.getSecurityManager() == null) {
+      try {
+        DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
+          .getSecurityManager();
+        if (securityManager != null && securityManager.getSessionManager() != null) {
+          break;
+        }
+      } catch (Exception e) {
+        nosOfTry++;
+        if (nosOfTry > 10) {
+          throw new Exception(String
+            .format("Could not initialize shiro.ini, failed after %s tries", nosOfTry));
+        }
+        wait(waitTime);
+      }
+    }
+  }
+
+  private void validateRealms() throws Exception {
+    Collection<Realm> realms =
+      ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
+        .getRealms();
+    if (realms.size() > 1) {
+      Boolean isIniRealmEnabled = false;
+      for (Realm realm : realms) {
+        if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+          isIniRealmEnabled = true;
+          break;
+        }
+      }
+      if (isIniRealmEnabled) {
+        throw new Exception(
+          "IniRealm/password based auth mechanisms should be exclusive. "
+            + "Consider removing [users] block from shiro.ini");
+      }
+    }
   }
 }
