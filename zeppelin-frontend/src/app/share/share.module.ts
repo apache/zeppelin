@@ -28,6 +28,7 @@ import {
 } from 'ng-zorro-antd';
 
 import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
+import { CodeEditorModule } from '@zeppelin/share/code-editor';
 import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
 import { HeaderComponent } from '@zeppelin/share/header/header.component';
 import { MathJaxDirective } from '@zeppelin/share/math-jax/math-jax.directive';
@@ -54,7 +55,7 @@ const PIPES = [HumanizeBytesPipe];
 @NgModule({
   declarations: [MODAL_LIST, EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective],
   entryComponents: [MODAL_LIST],
-  exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective],
+  exports: [EXPORT_LIST, PIPES, MathJaxDirective, RunScriptsDirective, CodeEditorModule],
   imports: [
     FormsModule,
     CommonModule,
@@ -80,7 +81,8 @@ const PIPES = [HumanizeBytesPipe];
     NzUploadModule,
     NzSelectModule,
     NzAlertModule,
-    NzProgressModule
+    NzProgressModule,
+    CodeEditorModule
   ]
 })
 export class ShareModule {}

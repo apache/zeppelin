@@ -41,6 +41,20 @@
                                          (runAllBelowAndCurrent)="runAllBelowAndCurrent()"
                                          (cloneParagraph)="cloneParagraph()"
                                          (cancelParagraph)="cancelParagraph()"></zeppelin-notebook-paragraph-control>
+    <zeppelin-notebook-paragraph-code-editor *ngIf="!paragraph.config.editorHide && !viewOnly"
+                                             [text]="paragraph.text"
+                                             [paragraphControl]="paragraphControl"
+                                             [dirty]="dirtyText !== originalText && dirtyText !== undefined"
+                                             [collaborativeMode]="collaborativeMode"
+                                             [focus]="paragraph.focus"
+                                             [pid]="paragraph.id"
+                                             [fontSize]="paragraph.config.fontSize"
+                                             [interpreterBindings]="interpreterBindings"
+                                             [lineNumbers]="paragraph.config.lineNumbers"
+                                             [readOnly]="isEntireNoteRunning || isParagraphRunning || revisionView"
+                                             [language]="paragraph.config.editorSetting?.language"
+                                             (editorBlur)="saveParagraph()"
+                                             (textChanged)="textChanged($event)"></zeppelin-notebook-paragraph-code-editor>
     <zeppelin-notebook-paragraph-progress *ngIf="paragraph.status === 'RUNNING'"
                                           [progress]="progress"></zeppelin-notebook-paragraph-progress>
     <ng-container *ngIf="!paragraph.config.tableHide">

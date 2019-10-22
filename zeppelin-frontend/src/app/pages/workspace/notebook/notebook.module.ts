@@ -30,6 +30,7 @@ import { ShareModule } from '@zeppelin/share';
 import { VisualizationModule } from 'src/app/visualizations/visualization.module';
 import { NotebookAddParagraphComponent } from './add-paragraph/add-paragraph.component';
 import { NotebookInterpreterBindingComponent } from './interpreter-binding/interpreter-binding.component';
+import { NotebookParagraphCodeEditorComponent } from './paragraph/code-editor/code-editor.component';
 import { NotebookParagraphControlComponent } from './paragraph/control/control.component';
 import { NotebookParagraphDynamicFormsComponent } from './paragraph/dynamic-forms/dynamic-forms.component';
 import { NotebookParagraphFooterComponent } from './paragraph/footer/footer.component';
@@ -53,6 +54,7 @@ import { NotebookShareModule } from './share/share.module';
     NotebookRevisionsComparatorComponent,
     NotebookParagraphComponent,
     NotebookAddParagraphComponent,
+    NotebookParagraphCodeEditorComponent,
     NotebookParagraphResultComponent,
     NotebookParagraphProgressComponent,
     NotebookParagraphFooterComponent,

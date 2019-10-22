@@ -9,6 +9,7 @@ import {
   OnInit,
   Output,
   QueryList,
+  ViewChild,
   ViewChildren
 } from '@angular/core';
 import { Subject } from 'rxjs';
@@ -44,6 +45,7 @@ import {
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
+import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
 
 @Component({
@@ -53,6 +55,8 @@ import { NotebookParagraphResultComponent } from './result/result.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphComponent extends MessageListenersManager implements OnInit, OnChanges, OnDestroy {
+  @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
+  notebookParagraphCodeEditorComponent: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents: QueryList<
     NotebookParagraphResultComponent
   >;
@@ -549,6 +553,9 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   changeColWidth(needCommit: boolean, updateResult = true) {
     if (needCommit) {
       this.commitParagraph();
+    }
+    if (this.notebookParagraphCodeEditorComponent) {
+      this.notebookParagraphCodeEditorComponent.layout();
     }
 
     if (updateResult) {
