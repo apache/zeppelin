@@ -19,6 +19,7 @@ package org.apache.zeppelin.service;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ShiroValidationService to validate shiro config
@@ -37,47 +37,56 @@ public class ShiroValidationService {
 
   @Inject
   public ShiroValidationService(ZeppelinConfiguration conf) throws Exception {
-    LOGGER.info("ShiroValidationService is initialized");
+    LOGGER.info("ShiroValidationService is initializing");
     init(conf);
   }
 
   public void init(ZeppelinConfiguration conf) throws Exception {
-    String name = Thread.currentThread().getName();
-    boolean isIniRealmFound = false;
-    int k = 1;
-    for (; k <= 10 && isIniRealmFound == false; k++) {
-      if (conf.getShiroPath().length() > 0) {
-        try {
-          Collection<Realm> realms =
-            ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-              .getRealms();
-          if (realms == null) {
-            throw new Exception("Failed to getRealms.");
-          }
-          if (realms.size() > 1) {
-            Boolean isIniRealmEnabled = false;
-            for (Realm realm : realms) {
-              if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-                isIniRealmEnabled = true;
+    LOGGER.info("ShiroValidationService init initializing...");
+    if (conf.getShiroPath().length() > 0) {
+      try {
+        synchronized (this) {
+          long waitTime = 500;
+          Integer nosOfTry = 0;
+          while (ThreadContext.getSecurityManager() == null) {
+            try {
+              DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
+                .getSecurityManager();
+              if (securityManager != null && securityManager.getSessionManager() != null) {
                 break;
               }
-            }
-            if (isIniRealmEnabled) {
-              throw new Exception(
-                "IniRealm/password based auth mechanisms should be exclusive. "
-                  + "Consider removing [users] block from shiro.ini");
+            } catch (Exception e) {
+              nosOfTry++;
+              if (nosOfTry > 10) {
+                throw new Exception(String
+                  .format("Could not initialize shiro.ini, failed after %s tries", nosOfTry));
+              }
+              wait(waitTime);
             }
           }
-          if (realms.size() == 1) {
-            isIniRealmFound = true;
-          }
-        } catch (UnavailableSecurityManagerException e) {
-          TimeUnit.MILLISECONDS.sleep(500);
         }
+        Collection<Realm> realms =
+          ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
+            .getRealms();
+        if (realms.size() > 1) {
+          Boolean isIniRealmEnabled = false;
+          for (Realm realm : realms) {
+            if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
+              isIniRealmEnabled = true;
+              break;
+            }
+          }
+          if (isIniRealmEnabled) {
+            throw new Exception(
+              "IniRealm/password based auth mechanisms should be exclusive. "
+                + "Consider removing [users] block from shiro.ini");
+          }
+        }
+      } catch (UnavailableSecurityManagerException e) {
+        LOGGER.error("Failed to initialise shiro configuration", e);
+        throw e;
       }
     }
-    if (isIniRealmFound == false && k > 10) {
-      throw new UnavailableSecurityManagerException("Failed to initialise shiro configuration.");
-    }
+    LOGGER.info("ShiroValidationService is initialized.");
   }
 }
