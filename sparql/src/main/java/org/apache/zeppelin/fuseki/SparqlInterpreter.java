@@ -53,6 +53,10 @@ public class SparqlInterpreter extends Interpreter {
   public static final String SPARQL_REPLACE_URIS = "sparql.replaceURIs";
   public static final String SPARQL_REMOVE_DATATYPES = "sparql.removeDatatypes";
 
+  private String serviceEndpoint;
+  private boolean replaceURIs;
+  private boolean removeDatatypes;
+
   public SparqlInterpreter(Properties properties) {
     super(properties);
   }
@@ -60,6 +64,12 @@ public class SparqlInterpreter extends Interpreter {
   @Override
   public void open() {
     LOGGER.info("Properties: {}", getProperties());
+
+    serviceEndpoint = getProperty(SPARQL_SERVICE_ENDPOINT);
+    replaceURIs = getProperty(SPARQL_REPLACE_URIS) != null
+        && getProperty(SPARQL_REPLACE_URIS).equals("true");
+    removeDatatypes = getProperty(SPARQL_REMOVE_DATATYPES) != null
+        && getProperty(SPARQL_REMOVE_DATATYPES).equals("true");
   }
 
   @Override
@@ -68,10 +78,6 @@ public class SparqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String queryString, InterpreterContext context) {
-    final String serviceEndpoint = getProperty(SPARQL_SERVICE_ENDPOINT);
-    final String replaceURIs = getProperty(SPARQL_REPLACE_URIS);
-    final String removeDatatypes = getProperty(SPARQL_REMOVE_DATATYPES);
-
     LOGGER.info("SPARQL: Run Query '" + queryString + "' against " + serviceEndpoint);
 
     if (StringUtils.isEmpty(queryString) || StringUtils.isEmpty(queryString.trim())) {
@@ -100,12 +106,12 @@ public class SparqlInterpreter extends Interpreter {
       ResultSetFormatter.outputAsTSV(outputStream, results);
       String tsv = new String(outputStream.toByteArray());
 
-      if (replaceURIs != null && replaceURIs.equals("true")) {
+      if (replaceURIs) {
         LOGGER.info("SPARQL: Replacing URIs");
         tsv = replaceURIs(tsv, prefixMapping);
       }
 
-      if (removeDatatypes != null && removeDatatypes.equals("true")) {
+      if (removeDatatypes) {
         LOGGER.info("SPARQL: Removing datatypes");
         tsv = removeDatatypes(tsv);
       }
