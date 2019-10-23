@@ -30,6 +30,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
   sortKeys = Object.keys(JobDateSortKeys).map(k => JobDateSortKeys[k]);
   interpreters: string[] = [];
   filteredJobs: JobsItem[] = [];
+  filterString: string = '';
   jobs: JobsItem[] = [];
   loading = true;
 
@@ -61,6 +62,7 @@ export class JobManagerComponent extends MessageListenersManager implements OnIn
 
   filterJobs() {
     const filterData = this.form.getRawValue() as FilterForm;
+    this.filterString = filterData.noteName;
     const isSortByAsc = filterData.sortBy === JobDateSortKeys.OLDEST_UPDATED;
     this.filteredJobs = this.jobs
       .filter(job => {

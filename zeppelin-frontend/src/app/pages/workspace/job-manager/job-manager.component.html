@@ -54,6 +54,7 @@
     <zeppelin-job-manager-job
       *ngFor="let item of filteredJobs"
       [note]="item"
+      [highlight]="filterString"
       (start)="onStart($event)"
       (stop)="onStop($event)">
     </zeppelin-job-manager-job>

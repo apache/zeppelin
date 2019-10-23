@@ -5,7 +5,7 @@
       [nzType]="icon"
       nzTheme="outline">
     </i>
-    <a [routerLink]="['notebook', note.noteId]">{{note.noteName}}</a> -
+    <a [routerLink]="['notebook', note.noteId]" [innerHTML]="note.noteName | nzHighlight: highlight: 'gi': 'mark-highlight'"></a> -
     <span class="interpreter"
           [class.unset]="!note.interpreter">
       {{note.interpreter || 'interpreter is not set'}}
