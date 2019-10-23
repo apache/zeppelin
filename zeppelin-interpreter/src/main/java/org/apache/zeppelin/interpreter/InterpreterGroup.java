@@ -167,6 +167,7 @@ public class InterpreterGroup {
       for (Interpreter interpreter : session) {
         try {
           interpreter.close();
+          interpreter.getScheduler().stop();
         } catch (InterpreterException e) {
           LOGGER.warn("Fail to close interpreter: " + interpreter.getClassName(), e);
         }

@@ -64,7 +64,11 @@ public class SchedulerFactory {
   }
 
   public void destroy() {
-    ExecutorFactory.singleton().shutdown("SchedulerFactory");
+    LOGGER.info("Destroy all executors");
+    ExecutorFactory.singleton().shutdown(SCHEDULER_EXECUTOR_NAME);
+    this.executor.shutdownNow();
+    this.executor = null;
+    singleton = null;
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {
