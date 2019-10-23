@@ -14,7 +14,7 @@
     <button nz-button (click)="exportFile('csv')">
       <i nz-icon nzType="download" nz-tooltip="Download Data as CSV"></i>
     </button>
-    <button nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight">
+    <button class="export-dropdown-icon-btn" nz-button nz-dropdown [nzDropdownMenu]="exportMenu" nzPlacement="bottomRight">
       <i nz-icon nzType="down"></i>
     </button>
   </nz-button-group>

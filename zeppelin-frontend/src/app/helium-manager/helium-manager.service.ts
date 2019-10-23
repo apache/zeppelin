@@ -35,7 +35,8 @@ export class HeliumManagerService implements OnDestroy {
   }
 
   getEnabledPackages() {
-    return of(['helium-vis-example']);
+    // return of(['helium-vis-example']);
+    return of([]);
   }
 
   packagesLoadChange() {
