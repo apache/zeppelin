@@ -289,6 +289,15 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
     }
 
+    for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
+      InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
+      initInterpreterSetting(interpreterSetting);
+      // add newly detected interpreter if it doesn't exist in interpreter.json
+      if (!interpreterSettings.containsKey(interpreterSetting.getId())) {
+        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+      }
+    }
+
     if (infoSaving.interpreterRepositories != null) {
       for (RemoteRepository repo : infoSaving.interpreterRepositories) {
         if (!dependencyResolver.getRepos().contains(repo)) {
