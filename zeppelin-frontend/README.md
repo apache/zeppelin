@@ -73,14 +73,14 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ### Notebook Features
 
-| Feature | Note | Status |
+| Feature | Description | Status |
 | ------  | ---- | ---- |
 | Files System  | Create/ Rename/ Import etc.  | Y |
 | Toolbar Actions  | The top toolbar actions   | Y |
 
 ### Paragraph Features
 
-| Feature | Note | Status |
+| Feature | Description | Status |
 | ------  | ---- | ---- |
 | Grid layout and resizable | | Y |
 | Code Editor | | Y |
@@ -111,7 +111,7 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ### Helium Visualization
 
-| Type | Note | Status |
+| Type | Description | Status |
 | ------  | ---- | ---- |
 | Prototype | To verify the implementable prototype | Y |
 | Publish Dependencies | Just like [zeppelin-vis](https://github.com/apache/zeppelin/tree/master/zeppelin-web/src/app/visualization)  | WIP |
@@ -130,9 +130,9 @@ Zeppelin-Frontend-Next is using Angular as the main Framework, before developing
 
 In addition:
 
-- We use [G2](https://github.com/antvis/g2) visualization
-- We use [Lodash](https://lodash.com/) to process complex data
-- We use [Monaco Editor](https://github.com/microsoft/monaco-editor) to make code editor
+- We use [G2](https://github.com/antvis/g2) [(MIT)](https://github.com/antvis/g2/blob/master/LICENSE) visualization
+- We use [Lodash](https://lodash.com/) [(MIT)](https://github.com/lodash/lodash/blob/master/LICENSE) to process complex data
+- We use [Monaco Editor](https://github.com/microsoft/monaco-editor) [(MIT)](https://github.com/microsoft/monaco-editor/blob/master/LICENSE.md) to make code editor
 
 ### Coding style
 
