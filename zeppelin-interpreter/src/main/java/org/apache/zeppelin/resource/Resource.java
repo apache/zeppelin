@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
  * Information and reference to the resource
  */
 public class Resource implements JsonSerializable, Serializable {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Resource.class);
   private static final Gson gson = new Gson();
 
   private final transient Object r;
@@ -269,37 +270,41 @@ public class Resource implements JsonSerializable, Serializable {
    */
   public Object invokeMethod(
           String methodName, Type[] types, Object[] params, String returnResourceName) throws ClassNotFoundException {
-    Type[] methodTypes = null;
-    Object [] methodParams = null;
+    Object[] convertedParams = null;
+    Class[] classes = null;
+
     if (types != null) {
-      methodTypes = types;
-      methodParams = params;
+      convertedParams = convertParams(types, params);
+      classes = classFromType(types);
     } else {
       // inference method param types
       boolean found = false;
       Method[] methods = r.getClass().getDeclaredMethods();
+
       for (Method m : methods) {
+        // try to find method by name
         if (!m.getName().equals(methodName)) {
           continue;
         }
-        Type[] paramTypes = m.getGenericParameterTypes();
-        Object[] paramValues = new Object[paramTypes.length];
 
-        int pidx = 0;
-        for (int i = 0; i < paramTypes.length; i++) {
-          if (pidx == params.length) {  // not enough param for this method signature
+        Type[] paramTypes = m.getGenericParameterTypes();
+        if (paramTypes.length != params.length) {
+          // parameter count doesn't match
+          continue;
+        } else {
+          try {
+            // try to convert parameters
+            convertedParams = convertParams(paramTypes, params);
+          } catch (Exception e) {
+            LOGGER.info(
+                String.format("The parameter types of method \'%s\' don't match with the arguments", m.getName()));
             continue;
-          } else {
-            paramValues[i] = params[pidx++];
           }
         }
 
-        if (pidx == params.length) {  // param number does not match
-          found = true;
-          methodParams = paramValues;
-          methodTypes = paramTypes;
-          break;
-        }
+        classes = classFromType(paramTypes);
+        found = true;
+        break;
       }
 
       if (!found) {
@@ -307,12 +312,10 @@ public class Resource implements JsonSerializable, Serializable {
       }
     }
 
-    Class[] classes = classFromType(methodTypes);
-
     if (returnResourceName == null) {
-      return invokeMethod(methodName, classes, convertParams(methodTypes, methodParams));
+      return invokeMethod(methodName, classes, convertedParams);
     } else {
-      return invokeMethod(methodName, classes, convertParams(methodTypes, methodParams), returnResourceName);
+      return invokeMethod(methodName, classes, convertedParams, returnResourceName);
     }
   }
 
