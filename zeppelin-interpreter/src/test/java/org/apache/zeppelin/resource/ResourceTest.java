@@ -47,13 +47,24 @@ public class ResourceTest {
   public void testInvokeMethod_shouldAbleToInvokeMethodWithTypeInference() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
     assertEquals("ect", r.invokeMethod("substring", new Object[]{3}));
+    assertEquals("obj", r.invokeMethod("substring", new Object[]{0,3}));
     assertEquals(true, r.invokeMethod("startsWith", new Object[]{"obj"}));
 
+    assertEquals(2, r.invokeMethod("indexOf", new Object[]{'j'}));
+    assertEquals(4, r.invokeMethod("indexOf", new Object[]{"ct",3}));
+
     assertEquals("ect", r.invokeMethod("substring", new ArrayList<>(Arrays.asList(3))));
+    assertEquals("ec", r.invokeMethod("substring", new ArrayList<>(Arrays.asList(3,5))));
     assertEquals(true, r.invokeMethod("startsWith", new ArrayList<>(Arrays.asList("obj"))));
   }
 
-  @Test
+  @Test(expected = ClassNotFoundException.class)
+  public void testInvokeMethod_shouldNotAbleToInvokeMethodWithTypeInference() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
+    r.invokeMethod("indexOf", new Object[]{"ct",3,4});
+  }
+
+    @Test
   public void testInvokeMethod_shouldAbleToInvokeMethodWithParamClassName() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Resource r = new Resource(null, new ResourceId("pool1", "name1"), "object");
     assertEquals("ect", r.invokeMethod("substring", new String[]{"int"}, new Object[]{3}));
