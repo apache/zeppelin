@@ -28,7 +28,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { combineLatest, fromEvent, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map, takeUntil } from 'rxjs/operators';
 
-import { inNextTick, warn, InputBoolean } from 'ng-zorro-antd/core';
+import { warn, InputBoolean } from 'ng-zorro-antd/core';
 
 import { CodeEditorService } from './code-editor.service';
 import { DiffEditorOptions, EditorOptions, JoinedEditorOptions, NzEditorMode } from './nz-code-editor.definitions';
