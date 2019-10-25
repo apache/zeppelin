@@ -60,6 +60,11 @@
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./WEB-INF",
+                "output": "/WEB-INF/"
               }
             ],
             "styles": [
@@ -100,14 +105,7 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": false,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5.2mb"
-                }
-              ]
+              "buildOptimizer": false
             }
           }
         },
