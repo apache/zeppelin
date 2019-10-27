@@ -103,6 +103,34 @@ public class InterpreterLogicTest {
   }
 
   @Test
+  public void should_parse_input_string_block_with_comment_dash() throws Exception {
+    //Given
+    String input = "SELECT * FROM users LIMIT 10; -- this is a comment";
+
+    //When
+    final List<AnyBlock> anyBlocks = this.<AnyBlock>toJavaList(helper.parseInput(input));
+
+    //Then
+    assertThat(anyBlocks).hasSize(2);
+    assertThat(anyBlocks.get(0)).isInstanceOf(SimpleStm.class);
+    assertThat(anyBlocks.get(1)).isInstanceOf(TextBlockHierarchy.Comment.class);
+  }
+
+  @Test
+  public void should_parse_input_string_block_with_comment_slash() throws Exception {
+    //Given
+    String input = "SELECT * FROM users LIMIT 10; // this is a comment";
+
+    //When
+    final List<AnyBlock> anyBlocks = this.<AnyBlock>toJavaList(helper.parseInput(input));
+
+    //Then
+    assertThat(anyBlocks).hasSize(2);
+    assertThat(anyBlocks.get(0)).isInstanceOf(SimpleStm.class);
+    assertThat(anyBlocks.get(1)).isInstanceOf(TextBlockHierarchy.Comment.class);
+  }
+
+  @Test
   public void should_exception_while_parsing_input() throws Exception {
     //Given
     String input = "SELECT * FROM users LIMIT 10";

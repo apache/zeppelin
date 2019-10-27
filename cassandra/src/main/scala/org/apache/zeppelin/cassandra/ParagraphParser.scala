@@ -136,8 +136,9 @@ class ParagraphParser extends RegexParsers{
   import ParagraphParser._
 
   def singleLineCommentHash: Parser[Comment] = """\s*#.*""".r ^^ {case text => Comment(text.trim.replaceAll("#",""))}
-  def singleLineCommentDoubleSlashes: Parser[Comment] = """\s*//.*""".r ^^ {case text => Comment(text.trim.replaceAll("//",""))}
-  def singleLineComment: Parser[Comment] = singleLineCommentHash | singleLineCommentDoubleSlashes
+  def singleLineCommentDoubleSlashes: Parser[Comment] = """\s*//.*""".r ^^ {case text => Comment(text.trim.replaceFirst("//\\s*",""))}
+  def singleLineCommentDoubleDash: Parser[Comment] = """\s*--.*""".r ^^ {case text => Comment(text.trim.replaceFirst("//\\s*",""))}
+  def singleLineComment: Parser[Comment] = singleLineCommentHash | singleLineCommentDoubleSlashes | singleLineCommentDoubleDash
 
   def multiLineComment: Parser[Comment] = """(?s)/\*(.*)\*/""".r ^^ {case text => Comment(text.trim.replaceAll("""/\*""","").replaceAll("""\*/""",""))}
 
