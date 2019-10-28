@@ -70,6 +70,21 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
   public void setUp() throws InterpreterException {
     Properties properties = initIntpProperties();
     startInterpreter(properties);
+
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("import sys\nsys.version_info.major", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    try {
+      List<InterpreterResultMessage> messages = context.out.toInterpreterResultMessage();
+      if (messages.get(0).getData().equals("2")) {
+        isPython2 = true;
+      } else {
+        isPython2 = false;
+      }
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
+
   }
 
   @Override
@@ -140,7 +155,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     // ipython help
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret("range?", context);
-    Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> interpreterResultMessages =
         context.out.toInterpreterResultMessage();
@@ -149,7 +163,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     // timeit
     context = getInterpreterContext();
     result = interpreter.interpret("%timeit range(100)", context);
-    Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("loops"));
@@ -172,7 +185,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
       }
     }.start();
     result = interpreter.interpret("import time\ntime.sleep(10)", context2);
-    Thread.sleep(100);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     interpreterResultMessages = context2.out.toInterpreterResultMessage();
     assertTrue(interpreterResultMessages.get(0).getData().contains("KeyboardInterrupt"));
@@ -184,7 +196,6 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret("%matplotlib inline\n" +
         "import matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)", context);
-    Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     List<InterpreterResultMessage> interpreterResultMessages =
         context.out.toInterpreterResultMessage();
@@ -211,14 +222,24 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         "from bokeh.plotting import figure\n" +
         "import bkzep\n" +
         "output_notebook(notebook_type='zeppelin')", context);
-    Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(2, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("Loading BokehJS"));
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    assertTrue(interpreterResultMessages.get(1).getData().contains("BokehJS is being loaded"));
+
+    if (interpreterResultMessages.size() == 3) {
+      // the first InterpreterResultMessage is empty text for python3 or spark 1.6
+      assertEquals(3, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      assertTrue(interpreterResultMessages.get(1).getData().contains("Loading BokehJS"));
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
+      assertTrue(interpreterResultMessages.get(2).getData().contains("BokehJS is being loaded"));
+    } else {
+      // the size of interpreterResultMessage is 3 in other cases
+      assertEquals(2, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+      assertTrue(interpreterResultMessages.get(0).getData().contains("Loading BokehJS"));
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      assertTrue(interpreterResultMessages.get(1).getData().contains("BokehJS is being loaded"));
+    }
 
     // bokeh plotting
     context = getInterpreterContext();
@@ -228,33 +249,61 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
         "p = figure(title=\"simple line example\", x_axis_label='x', y_axis_label='y')\n" +
         "p.line(x, y, legend=\"Temp.\", line_width=2)\n" +
         "show(p)", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toInterpreterResultMessage().toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
-    assertEquals(2, interpreterResultMessages.size());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
-    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
-    // docs_json is the source data of plotting which bokeh would use to render the plotting.
-    assertTrue(interpreterResultMessages.get(1).getData().contains("docs_json"));
-
-    // ggplot
-    context = getInterpreterContext();
-    result = interpreter.interpret("from ggplot import *\n" +
-        "ggplot(diamonds, aes(x='price', fill='cut')) +\\\n" +
-        "    geom_density(alpha=0.25) +\\\n" +
-        "    facet_wrap(\"clarity\")", context);
-    Thread.sleep(100);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    interpreterResultMessages = context.out.toInterpreterResultMessage();
-    // the order of IMAGE and TEXT is not determined
-    // check there must be one IMAGE output
-    hasImageOutput = false;
-    for (InterpreterResultMessage msg : interpreterResultMessages) {
-      if (msg.getType() == InterpreterResult.Type.IMG) {
-        hasImageOutput = true;
-      }
+    if (interpreterResultMessages.size() == 3) {
+      // the first InterpreterResultMessage is empty text for python3 or spark 1.6
+      assertEquals(3, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
+      // docs_json is the source data of plotting which bokeh would use to render the plotting.
+      assertTrue(interpreterResultMessages.get(2).getData().contains("docs_json"));
+    } else {
+      // the size of interpreterResultMessage is 3 in other cases
+      assertEquals(2, interpreterResultMessages.size());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(0).getType());
+      assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+      // docs_json is the source data of plotting which bokeh would use to render the plotting.
+      assertTrue(interpreterResultMessages.get(1).getData().contains("docs_json"));
     }
-    assertTrue("No Image Output", hasImageOutput);
+
+    // TODO(zjffdu) ggplot is broken https://github.com/yhat/ggpy/issues/662
+    // ggplot
+    //    context = getInterpreterContext();
+    //    result = interpreter.interpret("from ggplot import *\n" +
+    //        "ggplot(diamonds, aes(x='price', fill='cut')) +\\\n" +
+    //        "    geom_density(alpha=0.25) +\\\n" +
+    //        "    facet_wrap(\"clarity\")", context);
+    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    //    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    //    // the order of IMAGE and TEXT is not determined
+    //    // check there must be one IMAGE output
+    //    hasImageOutput = false;
+    //    for (InterpreterResultMessage msg : interpreterResultMessages) {
+    //      if (msg.getType() == InterpreterResult.Type.IMG) {
+    //        hasImageOutput = true;
+    //      }
+    //    }
+    //    assertTrue("No Image Output", hasImageOutput);
+
+    // hvplot
+    context = getInterpreterContext();
+    result = interpreter.interpret(
+        "import pandas as pd, numpy as np\n" +
+        "idx = pd.date_range('1/1/2000', periods=1000)\n" +
+        "df = pd.DataFrame(np.random.randn(1000, 4), index=idx, columns=list('ABCD')).cumsum()\n" +
+        "import hvplot.pandas\n" +
+        "df.hvplot()", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(5, interpreterResultMessages.size());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(1).getType());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(2).getType());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(3).getType());
+    assertEquals(InterpreterResult.Type.HTML, interpreterResultMessages.get(4).getType());
+    // docs_json is the source data of plotting which bokeh would use to render the plotting.
+    assertTrue(interpreterResultMessages.get(4).getData().contains("docs_json"));
   }
 
 
@@ -324,7 +373,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
 
     // We ensure that running and auto completion are not hanging.
     InterpreterResult res = interpretFuture.get(20000, TimeUnit.MILLISECONDS);
-    List<InterpreterCompletion> autoRes = completionFuture.get(1000, TimeUnit.MILLISECONDS);
+    List<InterpreterCompletion> autoRes = completionFuture.get(3000, TimeUnit.MILLISECONDS);
     assertTrue(res.code().name().equals("SUCCESS"));
     assertTrue(autoRes.size() > 0);
   }
@@ -334,7 +383,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     tearDown();
 
     Properties properties = initIntpProperties();
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "3000");
+    properties.setProperty("zeppelin.ipython.grpc.message_size", "4000");
 
     startInterpreter(properties);
 
@@ -344,12 +393,12 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     InterpreterContext context = getInterpreterContext();
-    result = interpreter.interpret("print('1'*3000)", context);
+    result = interpreter.interpret("print('1'*4000)", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     List<InterpreterResultMessage> interpreterResultMessages =
         context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
-    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum size 3000"));
+    assertTrue(interpreterResultMessages.get(0).getData().contains("exceeds maximum size 4000"));
 
     // next call continue work
     result = interpreter.interpret("print(1)", context);
