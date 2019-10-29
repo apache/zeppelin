@@ -388,16 +388,17 @@ public class ParagraphTest extends AbstractInterpreterTest {
     spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
     
     // Credentials should only be injected when it is enabled for an interpreter or when specified in a local property
-    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "false");
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
    
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
     mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
 
     // Check if local property override works
-    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "false");
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
     spyParagraph.getLocalProperties().put(Constants.INJECT_CREDENTIALS, "true");
     spyParagraph.jobRun();
     verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
