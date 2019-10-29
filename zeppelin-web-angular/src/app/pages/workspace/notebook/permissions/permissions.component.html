@@ -1,0 +1,88 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="permissions">
+  <div>
+    <h2>Note Permissions (Only note owners can change)</h2>
+  </div>
+  <nz-divider></nz-divider>
+  <div>
+    <p>
+      Enter comma separated users and groups in the fields. <br />
+      Empty field (*) implies anyone can do the operation.
+    </p>
+  </div>
+  <div>
+    <form nz-form class="permissions-form">
+      <nz-form-item [nzGutter]="12">
+        <nz-form-label [nzSpan]="3">Owners</nz-form-label>
+        <nz-form-control [nzSpan]="4">
+          <nz-select nzSize="small" [(ngModel)]="permissions.owners" nzServerSearch (nzOnSearch)="searchUser($event)" nzMode="multiple" name="owners">
+            <nz-option *ngFor="let item of permissions.owners" [nzLabel]="item" [nzValue]="item"></nz-option>
+            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
+              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
+            </nz-option-group>
+          </nz-select>
+        </nz-form-control>
+        <nz-form-control [nzSpan]="17">
+          <nz-form-text>Owners can change permissions,read, run and write the note.</nz-form-text>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item [nzGutter]="12">
+        <nz-form-label [nzSpan]="3">Writers</nz-form-label>
+        <nz-form-control [nzSpan]="4">
+          <nz-select nzSize="small" [(ngModel)]="permissions.writers" nzServerSearch (nzOnSearch)="searchUser($event)" nzMode="multiple" name="writers">
+            <nz-option *ngFor="let item of permissions.writers" [nzLabel]="item" [nzValue]="item"></nz-option>
+            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
+              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
+            </nz-option-group>
+          </nz-select>
+        </nz-form-control>
+        <nz-form-control [nzSpan]="17">
+          <nz-form-text>Writers can read, run and write the note.</nz-form-text>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item [nzGutter]="12">
+        <nz-form-label [nzSpan]="3">Runners</nz-form-label>
+        <nz-form-control [nzSpan]="4">
+          <nz-select nzSize="small" [(ngModel)]="permissions.runners" nzServerSearch (nzOnSearch)="searchUser($event)" nzMode="multiple" name="runners">
+            <nz-option *ngFor="let item of permissions.runners" [nzLabel]="item" [nzValue]="item"></nz-option>
+            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
+              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
+            </nz-option-group>
+          </nz-select>
+        </nz-form-control>
+        <nz-form-control [nzSpan]="17">
+          <nz-form-text>Runners can read and run the note.</nz-form-text>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item [nzGutter]="12">
+        <nz-form-label [nzSpan]="3">Readers</nz-form-label>
+        <nz-form-control [nzSpan]="4">
+          <nz-select nzSize="small" [(ngModel)]="permissions.readers" nzServerSearch (nzOnSearch)="searchUser($event)" nzMode="multiple" name="readers">
+            <nz-option *ngFor="let item of permissions.readers" [nzLabel]="item" [nzValue]="item"></nz-option>
+            <nz-option-group [nzLabel]="item.text" *ngFor="let item of listOfUserAndRole">
+              <nz-option *ngFor="let o of item.children" [nzLabel]="o" [nzValue]="o"></nz-option>
+            </nz-option-group>
+          </nz-select>
+        </nz-form-control>
+        <nz-form-control [nzSpan]="17">
+          <nz-form-text>Readers can only read the note.</nz-form-text>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+    <div class="submit-permissions">
+      <button nz-button nzType="primary" (click)="savePermissions()">Save</button>
+      <button nz-button nzType="default" (click)="closePermissions()">Cancel</button>
+    </div>
+  </div>
+</div>

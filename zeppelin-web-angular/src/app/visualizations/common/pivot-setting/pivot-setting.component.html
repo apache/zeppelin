@@ -1,0 +1,85 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<nz-card id="fields-drop-group" nzTitle="Available Fields" cdkDropListGroup>
+  <div cdkDropList
+       id="columns-list"
+       [cdkDropListData]="columns"
+       [cdkDropListEnterPredicate]="noReturnPredicate"
+       (cdkDropListDropped)="drop($event)">
+    <span class="drag-tag field-item"
+          *ngFor="let item of columns"
+          cdkDrag
+          cdkDragBoundary="#fields-drop-group">{{item.name}}</span>
+  </div>
+  <div class="field-setting-wrap" nz-row [nzGutter]="8">
+    <div nz-col [nzSpan]="8">
+      <nz-card nzTitle="Keys"
+               nzSize="small">
+        <div class="drag-wrap"
+             cdkDropList
+             [cdkDropListData]="config.keys"
+             (cdkDropListDropped)="drop($event)">
+          <span class="drag-tag field-item"
+                *ngFor="let item of config.keys; index as i"
+                cdkDrag
+                cdkDragBoundary="#fields-drop-group">
+            {{item.name}}
+            <i nz-icon nzType="close" (click)="removeFieldAt(config.keys, i)"></i>
+          </span>
+        </div>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-card nzTitle="Groups"
+               nzSize="small">
+        <div class="drag-wrap"
+             cdkDropList
+             [cdkDropListData]="config.groups"
+             (cdkDropListDropped)="drop($event)">
+          <span class="drag-tag field-item"
+                *ngFor="let item of config.groups; index as i"
+                cdkDrag
+                cdkDragBoundary="#fields-drop-group">
+            {{item.name}}
+            <i nz-icon nzType="close" (click)="removeFieldAt(config.groups, i)"></i>
+          </span>
+        </div>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-card nzTitle="Values"
+               nzSize="small">
+        <div class="drag-wrap"
+             cdkDropList
+             id="value-list"
+             [cdkDropListData]="config.values"
+             (cdkDropListDropped)="drop($event)">
+          <span class="drag-tag field-item"
+                *ngFor="let item of config.values; index as i"
+                cdkDrag
+                cdkDragBoundary="#fields-drop-group">
+            {{item.name}} <strong nz-dropdown [nzDropdownMenu]="menu">{{item.aggr | uppercase}}</strong>&nbsp;
+            <i nz-icon nzType="close" (click)="removeFieldAt(config.values, i)"></i>
+            <nz-dropdown-menu #menu="nzDropdownMenu">
+              <ul nz-menu>
+                <li nz-menu-item *ngFor="let aggregate of aggregates" (click)="changeAggregate(aggregate, i)">
+                  {{aggregate}}
+                </li>
+              </ul>
+            </nz-dropdown-menu>
+          </span>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+</nz-card>
