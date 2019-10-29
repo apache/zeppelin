@@ -84,7 +84,7 @@ matrix:
       sudo: false
       dist: xenial
       jdk: "openjdk8"
-      env: CI="true" BUILD_FLAG="install -DskipTests -DskipRat" TEST_FLAG="verify -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web-angular"
+      env: CI="true" BUILD_FLAG="clean -DskipTests -DskipRat" TEST_FLAG="package -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web-angular"
       addons:
         apt:
           packages:
