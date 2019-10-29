@@ -114,7 +114,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     });
     this.note.paragraphs = [...this.note.paragraphs];
     this.cdr.markForCheck();
-    // TODO focus on paragraph
+    // TODO(hsuanxyz) focus on paragraph
   }
 
   @MessageListener(OP.SAVE_NOTE_FORMS)
@@ -300,7 +300,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       this.revisionView = !!revisionId;
       this.cdr.markForCheck();
       this.messageService.listRevisionHistory(noteId);
-      // TODO scroll to current paragraph
+      // TODO(hsuanxyz) scroll to current paragraph
     });
     this.revisionView = !!this.activatedRoute.snapshot.params.revisionId;
   }

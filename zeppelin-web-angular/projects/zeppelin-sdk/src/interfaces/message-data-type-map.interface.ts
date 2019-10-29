@@ -138,7 +138,7 @@ export interface MessageSendDataTypeMap {
   [OP.ANGULAR_OBJECT_CLIENT_BIND]: AngularObjectClientBind;
   [OP.ANGULAR_OBJECT_CLIENT_UNBIND]: AngularObjectClientUnbind;
   [OP.CANCEL_PARAGRAPH]: CancelParagraph;
-  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: {}; // TODO
+  [OP.PARAGRAPH_EXECUTED_BY_SPELL]: {}; // TODO(hsuanxyz)
   [OP.RUN_PARAGRAPH]: RunParagraph;
   [OP.RUN_ALL_PARAGRAPHS]: RunAllParagraphs;
   [OP.PARAGRAPH_REMOVE]: ParagraphRemove;
@@ -147,7 +147,7 @@ export interface MessageSendDataTypeMap {
   [OP.COMPLETION]: Completion;
   [OP.COMMIT_PARAGRAPH]: CommitParagraph;
   [OP.PATCH_PARAGRAPH]: PatchParagraphReceived;
-  [OP.IMPORT_NOTE]: {}; // TODO
+  [OP.IMPORT_NOTE]: {}; // TODO(hsuanxyz)
   [OP.CHECKPOINT_NOTE]: CheckpointNote;
   [OP.SET_NOTE_REVISION]: SetNoteRevision;
   [OP.LIST_REVISION_HISTORY]: ListRevisionHistory;

@@ -208,7 +208,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        // TODO
+        // TODO(hsuanxyz)
       }
       this.cdr.markForCheck();
     }
@@ -268,14 +268,14 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
         this.messageService.runAllParagraphs(this.note.id, paragraphs);
       }
     });
-    // TODO: save cursor
+    // TODO(hsuanxyz): save cursor
   }
 
   doubleClickParagraph() {
     if (this.paragraph.config.editorSetting.editOnDblClick && this.revisionView !== true) {
       this.paragraph.config.editorHide = false;
       this.paragraph.config.tableHide = true;
-      // TODO: focus editor
+      // TODO(hsuanxyz): focus editor
     }
   }
 
@@ -299,7 +299,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
         this.messageService.runAllParagraphs(this.note.id, paragraphs);
       }
     });
-    // TODO: save cursor
+    // TODO(hsuanxyz): save cursor
   }
 
   cloneParagraph(position: string = 'below') {
@@ -362,7 +362,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   }
 
   runParagraphUsingSpell(paragraphText: string, magic: string, propagated: boolean) {
-    // TODO
+    // TODO(hsuanxyz)
   }
 
   runParagraphUsingBackendInterpreter(paragraphText: string) {
@@ -543,7 +543,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     }
     // save dirtyText of moving paragraphs.
     const prevParagraph = this.note.paragraphs[newIndex];
-    // TODO: save pre paragraph?
+    // TODO(hsuanxyz): save pre paragraph?
     this.saveParagraph();
     this.triggerSaveParagraph.emit(prevParagraph.id);
     this.messageService.moveParagraph(this.paragraph.id, newIndex);
@@ -556,7 +556,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     }
     // save dirtyText of moving paragraphs.
     const nextParagraph = this.note.paragraphs[newIndex];
-    // TODO: save pre paragraph?
+    // TODO(hsuanxyz): save pre paragraph?
     this.saveParagraph();
     this.triggerSaveParagraph.emit(nextParagraph.id);
     this.messageService.moveParagraph(this.paragraph.id, newIndex);

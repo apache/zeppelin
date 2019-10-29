@@ -54,7 +54,7 @@ export class CodeEditorService {
     this.option = this.config.defaultEditorOption || {};
   }
 
-  // TODO: use config service later.
+  // TODO(hsuanxyz): use config service later.
   updateDefaultOption(option: JoinedEditorOptions): void {
     this.option = { ...this.option, ...option };
     this.option$.next(this.option);

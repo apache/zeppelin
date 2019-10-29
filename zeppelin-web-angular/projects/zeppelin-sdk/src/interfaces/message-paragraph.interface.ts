@@ -46,7 +46,7 @@ export interface ParagraphEditorSetting {
   forms?: DynamicForms;
 }
 
-// TODO
+// TODO(hsuanxyz)
 export interface ParagraphParams {
   // tslint:disable-next-line no-any
   [key: string]: any;
@@ -134,16 +134,15 @@ export interface ParagraphItem {
   dateStarted?: string;
   dateFinished?: string;
   errorMessage?: string;
-  // tslint:disable-next-line no-any TODO
   runtimeInfos?: RuntimeInfos;
   status: string;
   title?: string;
   focus?: boolean;
-  // tslint:disable-next-line no-any TODO
+  // tslint:disable-next-line no-any TODO(hsuanxyz)
   aborted: any;
-  // tslint:disable-next-line no-any TODO
+  // tslint:disable-next-line no-any TODO(hsuanxyz)
   lineNumbers: any;
-  // tslint:disable-next-line no-any TODO
+  // tslint:disable-next-line no-any TODO(hsuanxyz)
   fontSize: any;
 }
 

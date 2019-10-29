@@ -40,7 +40,7 @@ import { NotebookParagraphControlComponent } from '../control/control.component'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestroy, AfterViewInit {
-  // TODO:
+  // TODO(hsuanxyz):
   //  1. cursor position
   @Input() readOnly = false;
   @Input() language = 'text';
@@ -164,7 +164,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     if (match) {
       return match[1].trim();
       // get default interpreter name if paragraph text doesn't start with '%'
-      // TODO(mina): dig into the cause what makes interpreterBindings to have no element
+      // TODO(hsuanxyz): dig into the cause what makes interpreterBindings to have no element
     } else if (this.interpreterBindings && this.interpreterBindings.length !== 0) {
       return this.interpreterBindings[0].name;
     }
@@ -175,7 +175,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     if (this.editor && !changed) {
       const model = this.editor.getModel();
       if (this.language) {
-        // TODO: config convertMap
+        // TODO(hsuanxyz): config convertMap
         const convertMap = {
           sh: 'shell'
         };

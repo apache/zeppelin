@@ -41,7 +41,7 @@ export class NoteStatusService {
   }
 
   isTrash(note: Note['note']) {
-    // TODO https://github.com/apache/zeppelin/pull/3365/files
+    // TODO(hsuanxyz) https://github.com/apache/zeppelin/pull/3365/files
     return note.name.split('/')[1] === this.TRASH_FOLDER_ID;
   }
 

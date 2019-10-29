@@ -35,7 +35,7 @@ export const RUNTIME_COMPILER_PROVIDERS: StaticProvider[] = [
   { provide: Compiler, useFactory: createCompiler, deps: [CompilerFactory] }
 ];
 
-// TODO
+// TODO(hsuanxyz)
 // buildOptimizer false
 // import 'core-js/es7/reflect';
 // https://github.com/angular/angular/issues/27584#issuecomment-446462051

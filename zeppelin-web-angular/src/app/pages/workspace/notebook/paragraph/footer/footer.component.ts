@@ -61,7 +61,7 @@ export class NotebookParagraphFooterComponent implements OnChanges {
   }
 
   getElapsedTime() {
-    // TODO dateStarted undefined after start
+    // TODO(hsuanxyz) dateStarted undefined after start
     return `Started ${distanceInWordsToNow(this.dateStarted || new Date())} ago.`;
   }
 

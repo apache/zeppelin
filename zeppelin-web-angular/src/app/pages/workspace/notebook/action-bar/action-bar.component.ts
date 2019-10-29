@@ -164,7 +164,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   setConfig() {
-    // TODO
+    // TODO(hsuanxyz)
   }
 
   cloneNote() {
@@ -205,7 +205,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   searchCode() {
-    // TODO
+    // TODO(hsuanxyz)
   }
 
   deleteNote() {
@@ -229,7 +229,7 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
   }
 
   showShortCut() {
-    // TODO
+    // TODO(hsuanxyz)
   }
 
   togglePermissions() {

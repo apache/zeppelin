@@ -230,7 +230,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   }
 
   goToSingleParagraph() {
-    // TODO asIframe
+    // TODO(hsuanxyz) asIframe
     const { noteId } = this.activatedRoute.snapshot.params;
     const redirectToUrl = `${location.protocol}//${location.host}${location.pathname}#/notebook/${noteId}/paragraph/${this.pid}`;
     window.open(redirectToUrl);
@@ -272,7 +272,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
           nzOnOk: () => {
             this.messageService.paragraphRemove(this.pid);
             this.cdr.markForCheck();
-            // TODO moveFocusToNextParagraph
+            // TODO(hsuanxyz) moveFocusToNextParagraph
           }
         });
       }
