@@ -30,6 +30,8 @@ public class Constants {
   public static final String ZEPPELIN_INTERPRETER_PORT = "zeppelin.interpreter.port";
 
   public static final String ZEPPELIN_INTERPRETER_HOST = "zeppelin.interpreter.host";
+  
+  public static final String INJECT_CREDENTIALS = "injectCredentials";
 
   public static final String EXISTING_PROCESS = "existing_process";
 
