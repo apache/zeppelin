@@ -1,0 +1,123 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<button class="export-dropdown"
+        nz-button
+        nz-dropdown
+        nzSize="small"
+        [nzDropdownMenu]="menu">
+  <span>Export</span>
+  <i nz-icon nzType="down"></i>
+</button>
+<nz-dropdown-menu #menu="nzDropdownMenu">
+  <ul nz-menu>
+    <li nz-menu-item>
+      <a (click)="exportFile('csv')">Export all data as csv</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="exportFile('xlsx')">Export all data as excel</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="exportFile('csv', false)">Export visible data as csv</a>
+    </li>
+    <li nz-menu-item>
+      <a (click)="exportFile('xlsx', false)">Export visible data as excel</a>
+    </li>
+  </ul>
+</nz-dropdown-menu>
+<nz-table #table
+          nzSize="small"
+          nzShowSizeChanger
+          [nzData]="rows"
+          [nzFooter]="aggregatesFooter">
+  <thead>
+  <tr>
+    <th *ngFor="let col of columns"
+        nzWidth="800px"
+        nzShowSort
+        nzCustomFilter
+        [nzSortKey]="col"
+        (nzSortChange)="onSortChange($event, col)">
+      {{col}}
+      <i
+        #dropdown="nzDropdown"
+        nz-icon
+        nzType="down"
+        nzTrigger="click"
+        nzPlacement="bottomRight"
+        [nzClickHide]="false"
+        [nzDropdownMenu]="filterMenu"
+        nzTableFilter
+        [nzRotate]="dropdown.nzVisible ? 180 : 0"
+        class="ant-table-filter-icon filter-icon"
+        [class.ant-table-filter-open]="dropdown.nzVisible"
+        nz-dropdown
+      ></i>
+      <nz-dropdown-menu #filterMenu="nzDropdownMenu">
+        <ul nz-menu class="th-dropdown">
+          <li nz-menu-group class="search-bar">
+            <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+              <input type="text" nz-input placeholder="Search..."
+                     (blur)="onSearch()"
+                     (keydown.enter)="onSearch()"
+                     [(ngModel)]="colOptions.get(col).term"/>
+            </nz-input-group>
+            <ng-template #suffixIconButton>
+              <button nz-button nzSearch nzType="primary" (click)="onSearch()">
+                <i nz-icon nzType="search" nzTheme="outline"></i>
+              </button>
+            </ng-template>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-group>
+            <span title>Type</span>
+            <ul>
+              <li *ngFor="let type of types"
+                  nz-menu-item
+                  [nzSelected]="colOptions.get(col).type === type"
+                  (click)="onChangeType(type, col)">
+                {{type | titlecase}}
+              </li>
+            </ul>
+          </li>
+          <li nz-menu-divider></li>
+          <li nz-menu-group>
+            <span title>Aggregation</span>
+            <ul>
+              <li *ngFor="let aggregation of aggregations"
+                  nz-menu-item
+                  [nzSelected]="colOptions.get(col).aggregation === aggregation"
+                  (click)="onChangeAggregation(aggregation, col)">
+                {{aggregation | titlecase}}
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let data of table.data">
+    <td *ngFor="let col of columns">{{data[col]}}</td>
+  </tr>
+  </tbody>
+</nz-table>
+<ng-template #aggregatesFooter>
+  <div class="aggregation-wrap">
+    <span *ngFor="let col of columns">
+    <span class="aggregation-item" *ngIf="colOptions.get(col).aggregation as aggregation">
+      {{aggregation}}(<strong>{{col}}</strong>): <span>{{colOptions.get(col).aggregationValue}} </span>
+    </span>
+    </span>
+  </div>
+</ng-template>
