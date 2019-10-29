@@ -90,6 +90,7 @@
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
+    <module>zeppelin-web-angular</module>
   </modules>
 
   <properties>
@@ -103,8 +104,8 @@
     <scalacheck.version>1.12.5</scalacheck.version>
 
     <!-- frontend maven plugin related versions-->
-    <node.version>v8.9.3</node.version>
-    <npm.version>5.5.1</npm.version>
+    <node.version>v12.3.1</node.version>
+    <npm.version>6.9.0</npm.version>
     <plugin.frontend.version>1.6</plugin.frontend.version>
 
     <!-- common library versions -->
@@ -1012,6 +1013,16 @@
               <exclude>**/src/**/**.test.js</exclude>
               <exclude>**/e2e/**/**.spec.js</exclude>
               <exclude>package-lock.json</exclude>
+
+              <!-- bundled from zeppelin-web-angular -->
+              <exclude>**/*.json</exclude>
+              <exclude>**/browserslist</exclude>
+              <exclude>**/.prettierrc</exclude>
+              <exclude>**/.prettierignore</exclude>
+              <exclude>**/.editorconfig</exclude>
+              <exclude>**/src/**/*.svg</exclude>
+              <exclude>**/.gitkeep</exclude>
+
 
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>

@@ -1,0 +1,41 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="content">
+  <div class="welcome">
+    <h1>
+      Welcome to Zeppelin!
+    </h1>
+    Zeppelin is web-based notebook that enables interactive data analytics.<br/>
+    You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/>
+  </div>
+  <div nz-row class="more-info" [nzGutter]="48">
+    <div nz-col [nzSm]="24" [nzLg]="8">
+      <h3>Notebook <a class="refresh-note" nz-tooltip nzTitle="Reload notes from storage" (click)="reloadNoteList()"><i nz-icon nzType="sync" nzTheme="outline" [nzSpin]="loading"></i></a></h3>
+      <zeppelin-node-list></zeppelin-node-list>
+    </div>
+    <div nz-col [nzSm]="24" [nzLg]="12">
+      <h3>Help</h3>
+      Get started with <a style="text-decoration: none;" target="_blank"
+                          href="http://zeppelin.apache.org/docs/{{ticketService.version}}/index.html">Zeppelin
+      documentation</a><br/>
+
+      <h3>Community</h3>
+      Please feel free to help us to improve Zeppelin, <br/>
+      Any contribution are welcome!<br/><br/>
+      <a href="http://zeppelin.apache.org/community.html" target="_blank"><i nz-icon nzType="mail"></i> Mailing list</a><br/>
+      <a href="https://issues.apache.org/jira/browse/ZEPPELIN" target="_blank"><i nz-icon nzType="exception"></i> Issues
+        tracking</a><br/>
+      <a href="https://github.com/apache/zeppelin" target="_blank"><i nz-icon nzType="github"></i> Github</a>
+    </div>
+  </div>
+</div>
