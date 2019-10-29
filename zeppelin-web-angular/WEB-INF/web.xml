@@ -15,7 +15,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	version="3.0">
 
- <display-name>zeppelin-frontend</display-name>
+ <display-name>zeppelin-web-angular</display-name>
 	<servlet>
 		<servlet-name>default</servlet-name>
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>

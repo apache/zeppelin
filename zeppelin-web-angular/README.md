@@ -10,7 +10,7 @@
   ~ limitations under the License.
   -->
   
-# Zeppelin Front-end
+# Zeppelin WEB
 
 Zeppelin notebooks front-end built with Angular.
 
@@ -126,7 +126,7 @@ Follow the [Setup](#Setup) steps to starting the frontend service. The app will 
 
 ### Technologies
 
-Zeppelin-Frontend-Next is using Angular as the main Framework, before developing we hope highly recommended to have a good knowledge of [Angular](https://angular.io/) and [RxJs](https://github.com/ReactiveX/rxjs).
+Zeppelin-WEB-Angular is using Angular as the main Framework, before developing we hope highly recommended to have a good knowledge of [Angular](https://angular.io/) and [RxJs](https://github.com/ReactiveX/rxjs).
 
 In addition:
 
@@ -149,7 +149,7 @@ We follow mainly the [Workspace and project file structure](https://angular.io/g
 
 #### Src Folder Structure
 
-`src` folder contains the source code for Zeppelin-Frontend-Next.
+`src` folder contains the source code for Zeppelin-WEB-Angular.
 
 ```
 ├── app

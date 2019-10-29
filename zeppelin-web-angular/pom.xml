@@ -23,7 +23,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-frontend</artifactId>
+  <artifactId>zeppelin-web-angular</artifactId>
   <packaging>war</packaging>
   <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
