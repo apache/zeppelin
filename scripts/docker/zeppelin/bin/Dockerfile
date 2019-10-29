@@ -16,9 +16,6 @@
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
-ARG ZEPPELIN_USER_ID=2100
-ARG ZEPPELIN_GROUP_ID=2100
-
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="0.9.0-SNAPSHOT"
 
@@ -27,9 +24,6 @@ ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
     ZEPPELIN_ADDR="0.0.0.0"
-
-RUN groupadd --gid $ZEPPELIN_GROUP_ID zeppelin \
-    && useradd -ms /bin/bash -d ${Z_HOME} zeppelin --uid $ZEPPELIN_USER_ID --gid $ZEPPELIN_GROUP_ID
 
 RUN echo "$LOG_TAG update and install basic packages" && \
     apt-get -y update && \
@@ -105,15 +99,23 @@ RUN echo "$LOG_TAG Cleanup" && \
     apt-get clean
 
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    wget --quiet -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    mkdir -p ${Z_HOME} && \
     mv /zeppelin-${Z_VERSION}-bin-all/* ${Z_HOME}/ && \
-    chown -R zeppelin:zeppelin ${Z_HOME}/  
+    chown -R root:root ${Z_HOME} && \
+    mkdir -p ${Z_HOME}/logs ${Z_HOME}/run ${Z_HOME}/webapps && \
+    # Allow process to edit /etc/passwd, to create a user entry for zeppelin
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    # Give access to some specific folders
+    chmod -R 775 "${Z_HOME}/logs" "${Z_HOME}/run" "${Z_HOME}/notebook" "${Z_HOME}/conf" && \
+    # Allow process to create new folders (e.g. webapps)
+    chmod 775 ${Z_HOME}
 
 COPY log4j.properties ${Z_HOME}/conf/
 
-USER zeppelin
+USER 1000
 
 EXPOSE 8080
 

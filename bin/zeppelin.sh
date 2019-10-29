@@ -16,8 +16,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Run Zeppelin 
+# Run Zeppelin
 #
+
+# Check whether there is a passwd entry for the container UID
+myuid=$(id -u)
+mygid=$(id -g)
+# turn off -e for getent because it will return error code in anonymous uid case
+set +e
+uidentry=$(getent passwd $myuid)
+set -e
+
+# If there is no passwd entry for the container UID, attempt to create one
+if [ -z "$uidentry" ] ; then
+    if [ -w /etc/passwd ] ; then
+        echo "zeppelin:x:$myuid:$mygid:anonymous uid:$Z_HOME:/bin/false" >> /etc/passwd
+    else
+        echo "Container ENTRYPOINT failed to add passwd entry for anonymous UID"
+    fi
+fi
 
 USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>]"
 
@@ -46,7 +63,7 @@ fi
 HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
-  
+
 ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
