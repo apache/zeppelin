@@ -1014,6 +1014,16 @@
               <exclude>**/e2e/**/**.spec.js</exclude>
               <exclude>package-lock.json</exclude>
 
+              <!-- bundled from zeppelin-web-angular -->
+              <exclude>**/*.json</exclude>
+              <exclude>**/browserslist</exclude>
+              <exclude>**/.prettierrc</exclude>
+              <exclude>**/.prettierignore</exclude>
+              <exclude>**/.editorconfig</exclude>
+              <exclude>**/src/**/*.svg</exclude>
+              <exclude>**/.gitkeep</exclude>
+
+
               <!-- from SQLLine 1.0.2, see ZEPPELIN-2135 -->
               <exclude>**/src/main/java/org/apache/zeppelin/jdbc/SqlCompleter.java</exclude>
 
