@@ -138,7 +138,10 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         InterpreterResult.Code.INCOMPLETE
     }
 
-    new InterpreterResult(lastStatus)
+    lastStatus match {
+      case InterpreterResult.Code.INCOMPLETE => new InterpreterResult( lastStatus, "Incomplete expression" )
+      case _ => new InterpreterResult(lastStatus)
+    }
   }
 
   protected def interpret(code: String): InterpreterResult =
