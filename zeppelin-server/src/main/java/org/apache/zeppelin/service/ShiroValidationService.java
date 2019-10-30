@@ -16,16 +16,12 @@
  */
 package org.apache.zeppelin.service;
 
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.realm.text.IniRealm;
-import org.apache.shiro.util.ThreadContext;
-import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.config.Ini;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Collection;
 
 /**
  * ShiroValidationService to validate shiro config
@@ -42,50 +38,26 @@ public class ShiroValidationService {
 
   public void init(ZeppelinConfiguration conf) throws Exception {
     if (conf.getShiroPath().length() > 0) {
-      loadSecurityManager();
-      validateRealms();
+      Ini ini = new Ini();
+      ini.loadFromPath(conf.getShiroPath());
+      validateIniProp(ini);
     }
     LOGGER.info("ShiroValidationService is initialized.");
   }
 
-  private synchronized void loadSecurityManager() throws Exception {
-    long waitTime = 500;
-    Integer nosOfTry = 0;
-    while (ThreadContext.getSecurityManager() == null) {
-      try {
-        DefaultWebSecurityManager securityManager = (DefaultWebSecurityManager) org.apache.shiro.SecurityUtils
-          .getSecurityManager();
-        if (securityManager != null && securityManager.getSessionManager() != null) {
-          break;
-        }
-      } catch (Exception e) {
-        nosOfTry++;
-        if (nosOfTry > 10) {
-          throw new Exception(String
-            .format("Could not initialize shiro.ini, failed after %s tries", nosOfTry));
-        }
-        wait(waitTime);
-      }
-    }
-  }
+  private void validateIniProp(Ini ini) throws Exception {
+    Ini.Section usersSection = ini.get("users");
+    String activeDirectoryRealm = ini.getSectionProperty("main","activeDirectoryRealm");
+    String ldapRealm = ini.getSectionProperty("main","ldapRealm");
+    String pamRealm = ini.getSectionProperty("main","pamRealm");
+    String zeppelinHubRealm = ini.getSectionProperty("main","zeppelinHubRealm");
+    String knoxJwtRealm = ini.getSectionProperty("main","knoxJwtRealm");
 
-  private void validateRealms() throws Exception {
-    Collection<Realm> realms =
-      ((DefaultWebSecurityManager) org.apache.shiro.SecurityUtils.getSecurityManager())
-        .getRealms();
-    if (realms.size() > 1) {
-      Boolean isIniRealmEnabled = false;
-      for (Realm realm : realms) {
-        if (realm instanceof IniRealm && ((IniRealm) realm).getIni().get("users") != null) {
-          isIniRealmEnabled = true;
-          break;
-        }
-      }
-      if (isIniRealmEnabled) {
-        throw new Exception(
-          "IniRealm/password based auth mechanisms should be exclusive. "
-            + "Consider removing [users] block from shiro.ini");
-      }
+    if (usersSection != null && (activeDirectoryRealm != null || ldapRealm != null
+      || pamRealm != null || zeppelinHubRealm != null || knoxJwtRealm != null)) {
+      throw new Exception(
+        "IniRealm/password based auth mechanisms should be exclusive. "
+          + "Consider removing [users] block from shiro.ini");
     }
   }
 }
