@@ -30,6 +30,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.config.Ini;
 import org.apache.shiro.web.env.EnvironmentLoaderListener;
 import org.apache.shiro.web.servlet.ShiroFilter;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
@@ -110,9 +111,11 @@ public class ZeppelinServer extends ResourceConfig {
     packages("org.apache.zeppelin.rest");
   }
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws Exception {
     final ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
+
+    validateShiroIni();
 
     jettyWebServer = setupJettyServer(conf);
 
@@ -155,7 +158,6 @@ public class ZeppelinServer extends ResourceConfig {
             // TODO(jl): Will make it more beautiful
             if (!StringUtils.isBlank(conf.getShiroPath())) {
               bind(ShiroAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
-              bindAsContract(ShiroValidationService.class).in(Immediate.class);
             } else {
               // TODO(jl): Will be added more type
               bind(NoAuthenticationService.class).to(AuthenticationService.class).in(Singleton.class);
@@ -296,6 +298,27 @@ public class ZeppelinServer extends ResourceConfig {
     jettyWebServer.join();
     if (!conf.isRecoveryEnabled()) {
       sharedServiceLocator.getService(InterpreterSettingManager.class).close();
+    }
+  }
+
+  private static void validateShiroIni() throws Exception {
+    if (conf.getShiroPath().length() > 0) {
+      Ini ini = new Ini();
+      ini.loadFromPath(conf.getShiroPath());
+
+      Ini.Section usersSection = ini.get("users");
+      String activeDirectoryRealm = ini.getSectionProperty("main", "activeDirectoryRealm");
+      String ldapRealm = ini.getSectionProperty("main", "ldapRealm");
+      String pamRealm = ini.getSectionProperty("main", "pamRealm");
+      String zeppelinHubRealm = ini.getSectionProperty("main", "zeppelinHubRealm");
+      String knoxJwtRealm = ini.getSectionProperty("main", "knoxJwtRealm");
+
+      if (usersSection != null && (activeDirectoryRealm != null || ldapRealm != null
+        || pamRealm != null || zeppelinHubRealm != null || knoxJwtRealm != null)) {
+        throw new Exception(
+          "IniRealm/password based auth mechanisms should be exclusive. "
+            + "Consider removing [users] block from shiro.ini");
+      }
     }
   }
 
