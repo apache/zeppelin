@@ -1029,11 +1029,19 @@ public class Note implements JsonSerializable {
   }
 
   public static Note fromJson(String json) {
-    Note note = gson.fromJson(json, Note.class);
-    convertOldInput(note);
-    note.info.remove("isRunning");
-    note.postProcessParagraphs();
-    return note;
+    try
+    {
+      Note note = gson.fromJson(json, Note.class);
+      convertOldInput(note);
+      note.info.remove("isRunning");
+      note.postProcessParagraphs();
+
+      return note;
+    } catch (Exception e) {
+      logger.error("Unable to parse notebook: " + e.toString());
+
+      return null;
+    }
   }
 
   public void postProcessParagraphs() {
