@@ -890,6 +890,36 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
     saveAsService.saveAs(dsv, exportedFileName, extension);
   };
 
+  $scope.copyToClipboard = function(delimiter) {
+    let copy = '';
+    for (let r in tableData.rows) {
+      if (tableData.rows.hasOwnProperty(r)) {
+        let row = tableData.rows[r];
+        let dsvRow = '';
+        for (let index in row) {
+          if (row.hasOwnProperty(index)) {
+            let stringValue = (row[index]).toString();
+            if (stringValue.indexOf(delimiter) > -1) {
+              dsvRow += '"' + stringValue + '"' + delimiter;
+            } else {
+              dsvRow += row[index] + delimiter;
+            }
+          }
+        }
+        copy += dsvRow.substring(0, dsvRow.length - 1) + '\n';
+      }
+    }
+
+    let el = document.createElement('textarea');
+    el.value = copy;
+    el.setAttribute('readonly', '');
+    el.style = {position: 'absolute', left: '-9999px'};
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  };
+
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,' + base64Data;
   };

@@ -78,8 +78,8 @@ limitations under the License.
      style="margin-bottom: 10px;">
   <button type="button" class="btn btn-default btn-sm"
           style="margin-left:10px"
-          ng-click="exportToDSV(',')"
-          uib-tooltip="Download Data as CSV" tooltip-placement="bottom">
+          ng-click="copyToClipboard('\t')"
+          uib-tooltip="Copy All" tooltip-placement="bottom">
     <i class="fa fa-download"></i>
   </button>
   <button type="button" class="btn btn-default btn-sm dropdown-toggle caretBtn"
@@ -88,8 +88,10 @@ limitations under the License.
     <span class="sr-only">Toggle Dropdown</span>
   </button>
   <ul class="dropdown-menu" role="menu" style="min-width: 70px;">
-    <li ng-click="exportToDSV(',')"><a>CSV</a></li>
-    <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
+    <li ng-click="copyToClipboard('\t')"><a>Copy as TSV</a></li>
+    <li ng-click="copyToClipboard(',')"><a>Copy as CSV</a></li>
+    <li ng-click="exportToDSV('\t')"><a>Download as TCV</a></li>
+    <li ng-click="exportToDSV(',')"><a>Download as CSV</a></li>
   </ul>
 </div>
 
