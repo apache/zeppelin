@@ -45,7 +45,7 @@ public class SessionConfInterpreterTest {
         properties, "session_1", "group_1", mockInterpreterSetting);
 
     RemoteInterpreter remoteInterpreter =
-        new RemoteInterpreter(properties, "session_1", "clasName", "user1", null);
+        new RemoteInterpreter(properties, "session_1", "clasName", "user1", null, "notebook_1");
     List<Interpreter> interpreters = new ArrayList<>();
     interpreters.add(confInterpreter);
     interpreters.add(remoteInterpreter);

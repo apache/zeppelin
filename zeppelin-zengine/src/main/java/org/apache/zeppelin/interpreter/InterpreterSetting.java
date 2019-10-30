@@ -725,13 +725,14 @@ public class InterpreterSetting {
   ///////////////////////////////////////////////////////////////////////////////////////
   // This is the only place to create interpreters. For now we always create multiple interpreter
   // together (one session). We don't support to create single interpreter yet.
-  List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId) {
+  List<Interpreter> createInterpreters(String user, String interpreterGroupId, String sessionId, String noteId) {
     List<Interpreter> interpreters = new ArrayList<>();
     List<InterpreterInfo> interpreterInfos = getInterpreterInfos();
     Properties intpProperties = getJavaProperties();
+    intpProperties.put( "spark.app.name", "Zeppelin Notebook " + noteId + " for user " + user );
     for (InterpreterInfo info : interpreterInfos) {
       Interpreter interpreter = new RemoteInterpreter(intpProperties, sessionId,
-          info.getClassName(), user, lifecycleManager);
+          info.getClassName(), user, lifecycleManager, noteId);
       if (info.isDefaultInterpreter()) {
         interpreters.add(0, interpreter);
       } else {
@@ -773,7 +774,7 @@ public class InterpreterSetting {
     Preconditions.checkNotNull(interpreterGroup, "No InterpreterGroup existed for user {}, " +
         "noteId {}", user, noteId);
     String sessionId = getInterpreterSessionId(user, noteId);
-    return interpreterGroup.getOrCreateSession(user, sessionId);
+    return interpreterGroup.getOrCreateSession(user, sessionId, noteId);
   }
 
   public Interpreter getDefaultInterpreter(String user, String noteId) {

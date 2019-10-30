@@ -63,18 +63,18 @@ public class ManagedInterpreterGroupTest {
     assertEquals(0, interpreterGroup.getSessionNum());
 
     // create session_1
-    List<Interpreter> interpreters = interpreterGroup.getOrCreateSession("user1", "session_1");
+    List<Interpreter> interpreters = interpreterGroup.getOrCreateSession("user1", "session_1", "notebook_1");
     assertEquals(3, interpreters.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters.get(1).getClassName());
     assertEquals(1, interpreterGroup.getSessionNum());
 
     // get the same interpreters when interpreterGroup.getOrCreateSession is invoked again
-    assertEquals(interpreters, interpreterGroup.getOrCreateSession("user1", "session_1"));
+    assertEquals(interpreters, interpreterGroup.getOrCreateSession("user1", "session_1", "notebook_1"));
     assertEquals(1, interpreterGroup.getSessionNum());
 
     // create session_2
-    List<Interpreter> interpreters2 = interpreterGroup.getOrCreateSession("user1", "session_2");
+    List<Interpreter> interpreters2 = interpreterGroup.getOrCreateSession("user1", "session_2", "notebook_1");
     assertEquals(3, interpreters2.size());
     assertEquals(EchoInterpreter.class.getName(), interpreters2.get(0).getClassName());
     assertEquals(DoubleEchoInterpreter.class.getName(), interpreters2.get(1).getClassName());

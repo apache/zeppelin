@@ -158,11 +158,11 @@ public class ManagedInterpreterGroup extends InterpreterGroup {
     SchedulerFactory.singleton().removeScheduler(scheduler.getName());
   }
 
-  public synchronized List<Interpreter> getOrCreateSession(String user, String sessionId) {
+  public synchronized List<Interpreter> getOrCreateSession(String user, String sessionId, String noteId) {
     if (sessions.containsKey(sessionId)) {
       return sessions.get(sessionId);
     } else {
-      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, id, sessionId);
+      List<Interpreter> interpreters = interpreterSetting.createInterpreters(user, id, sessionId, noteId);
       for (Interpreter interpreter : interpreters) {
         interpreter.setInterpreterGroup(this);
       }

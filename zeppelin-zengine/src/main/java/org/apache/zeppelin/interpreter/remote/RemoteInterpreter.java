@@ -62,6 +62,7 @@ public class RemoteInterpreter extends Interpreter {
   private String className;
   private String sessionId;
   private FormType formType;
+  private String noteId;
 
   private RemoteInterpreterProcess interpreterProcess;
   private volatile boolean isOpened = false;
@@ -76,12 +77,14 @@ public class RemoteInterpreter extends Interpreter {
                            String sessionId,
                            String className,
                            String userName,
-                           LifecycleManager lifecycleManager) {
+                           LifecycleManager lifecycleManager,
+                           String noteId) {
     super(properties);
     this.sessionId = sessionId;
     this.className = className;
     this.setUserName(userName);
     this.lifecycleManager = lifecycleManager;
+    this.noteId = noteId;
   }
 
   public boolean isOpened() {
@@ -125,7 +128,7 @@ public class RemoteInterpreter extends Interpreter {
         // depends on other interpreter. e.g. PySparkInterpreter depends on SparkInterpreter.
         // also see method Interpreter.getInterpreterInTheSameSessionByClassName
         for (Interpreter interpreter : getInterpreterGroup()
-                                        .getOrCreateSession(this.getUserName(), sessionId)) {
+                                        .getOrCreateSession(this.getUserName(), sessionId, noteId)) {
           try {
             if (!(interpreter instanceof ConfInterpreter)) {
               ((RemoteInterpreter) interpreter).internal_create();
