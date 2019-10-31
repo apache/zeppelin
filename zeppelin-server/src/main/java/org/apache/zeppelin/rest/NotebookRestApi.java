@@ -704,6 +704,28 @@ public class NotebookRestApi extends AbstractRestApi {
   }
 
   /**
+   * Shut down notebook interpreter REST API.
+   *
+   * @param noteId ID of Note
+   * @return JSON with status.OK
+   * @throws IOException
+   * @throws IllegalArgumentException
+   */
+  @GET
+  @Path("close/{noteId}")
+  @ZeppelinApi
+  public Response closeNote(@PathParam("noteId") String noteId)
+          throws IOException, IllegalArgumentException {
+    LOG.info("stop note jobs {} ", noteId);
+    Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
+    checkIfUserCanRun(noteId, "Insufficient privileges you cannot close this notebook");
+
+    notebook.getInterpreterSettingManager().closeNote(authenticationService.getPrincipal(), noteId);
+    return new JsonResponse<>(Status.OK).build();
+  }
+
+  /**
    * Get note job status REST API.
    *
    * @param noteId ID of Note
