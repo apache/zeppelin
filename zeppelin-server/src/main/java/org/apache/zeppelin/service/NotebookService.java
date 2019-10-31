@@ -131,6 +131,23 @@ public class NotebookService {
     return note;
   }
 
+  public boolean closeNote(String noteId,
+                           ServiceContext context,
+                           ServiceCallback<Note> callback) throws IOException{
+    Note note = null;
+    if ( noteId != null ) {
+      note = notebook.getNote(noteId);
+    }
+
+    if (note == null) {
+      callback.onFailure(new NoteNotFoundException(noteId), context);
+      return false;
+    }
+
+    notebook.getInterpreterSettingManager().closeNote(context.getAutheInfo().getUser(), noteId);
+    callback.onSuccess(note, context);
+    return true;
+  }
 
   public Note createNote(String notePath,
                          String defaultInterpreterGroup,

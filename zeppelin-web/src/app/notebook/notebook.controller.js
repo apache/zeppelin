@@ -393,6 +393,10 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     });
   };
 
+  $scope.closeNote = function(noteId) {
+    websocketMsgSrv.closeNote(noteId);
+  };
+
   $scope.saveNote = function() {
     if ($scope.note && $scope.note.paragraphs) {
       _.forEach($scope.note.paragraphs, function(par) {

@@ -437,6 +437,9 @@ public class NotebookServer extends WebSocketServlet
         case PATCH_PARAGRAPH:
           patchParagraph(conn, messagereceived);
           break;
+        case CLOSE_NOTE:
+          closeNote(conn, messagereceived);
+          break;
         default:
           break;
       }
@@ -711,6 +714,24 @@ public class NotebookServer extends WebSocketServlet
             connectionManager.unicast(new Message(OP.NOTES_INFO).put("notes", notesInfo), conn);
           }
         });
+  }
+
+  private void closeNote(NotebookSocket conn,
+                         Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("id");
+    if (noteId == null) {
+      return;
+    }
+
+    getNotebookService().closeNote(noteId, getServiceContext(fromMessage),
+            new WebSocketServiceCallback<Note>(conn) {
+              @Override
+              public void onSuccess(Note note, ServiceContext context) throws IOException {
+                super.onSuccess(note, context);
+                broadcastNote(note);
+                broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
+              }
+            });
   }
 
   public void broadcastReloadedNoteList(NotebookSocket conn, ServiceContext context)

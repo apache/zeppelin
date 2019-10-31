@@ -85,6 +85,10 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config: noteConfig}});
     },
 
+    closeNote: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'CLOSE_NOTE', data: {id: noteId}});
+    },
+
     updatePersonalizedMode: function(noteId, modeValue) {
       websocketEvents.sendNewEvent({op: 'UPDATE_PERSONALIZED_MODE', data: {id: noteId, personalized: modeValue}});
     },
