@@ -150,6 +150,10 @@ function HomeCtrl($scope, noteListFactory, websocketMsgSrv, $rootScope, arrayOrd
     return arrayOrderingSrv.getNoteName(note);
   };
 
+  $scope.getNotePath = function(note) {
+    return arrayOrderingSrv.getNotePath(note);
+  };
+
   $scope.noteComparator = function(note1, note2) {
     return arrayOrderingSrv.noteComparator(note1, note2);
   };
