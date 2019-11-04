@@ -165,7 +165,7 @@ public class InterpreterLogicTest {
     //Given
     AngularObjectRegistry angularObjectRegistry = new AngularObjectRegistry("cassandra", null);
     when(intrContext.getAngularObjectRegistry()).thenReturn(angularObjectRegistry);
-    when(intrContext.getGui().select(eq("name"), eq("'Paul'"), optionsCaptor.capture()))
+    when(intrContext.getGui().select(eq("name"), optionsCaptor.capture(), eq("'Paul'")))
             .thenReturn("'Jack'");
 
     //When

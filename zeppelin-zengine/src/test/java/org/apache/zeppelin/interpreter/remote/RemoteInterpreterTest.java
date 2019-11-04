@@ -393,8 +393,8 @@ public class RemoteInterpreterTest extends AbstractInterpreterTest {
     List<Object> defaultValues = new ArrayList();
     defaultValues.add("default1");
     defaultValues.add("default2");
-    gui.checkbox("checkbox_id", defaultValues, paramOptions);
-    gui.select("select_id", "default", paramOptions);
+    gui.checkbox("checkbox_id", paramOptions, defaultValues);
+    gui.select("select_id", paramOptions, "default");
     gui.textbox("textbox_id");
     Map<String, Input> expected = new LinkedHashMap<>(gui.getForms());
     Interpreter interpreter = interpreterSetting.getDefaultInterpreter("user1", "note1");

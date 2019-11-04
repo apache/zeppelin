@@ -333,7 +333,7 @@ class InterpreterLogic(val session: Session)  {
             case None => {
               val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
               val paramOptions= listChoices.map(choice => new ParamOption(choice, choice))
-              val selected = context.getGui.select(variable, listChoices.head, paramOptions.toArray)
+              val selected = context.getGui.select(variable, paramOptions.toArray, listChoices.head)
               statement.replaceAll(escapedExp,selected.toString)
             }
           }

@@ -52,9 +52,6 @@ class PyZeppelinContext(object):
     def __contains__(self, item):
         return self.z.containsKey(item)
 
-    def add(self, key, value):
-        self.__setitem__(key, value)
-
     def put(self, key, value):
         self.__setitem__(key, value)
 
@@ -72,8 +69,14 @@ class PyZeppelinContext(object):
     def angular(self, key, noteId = None, paragraphId = None):
         return self.z.angular(key, noteId, paragraphId)
 
-    def angularBind(self, key, value, noteId = None, paragraphId = None):
-        return self.z.angularBind(key, value, noteId, paragraphId)
+    def remove(self, key):
+        self.z.remove(key)
+
+    def contains(self, key):
+        return self.contains(key)
+
+    def add(self, key, value):
+        self.__setitem__(key, value)
 
     def getInterpreterContext(self):
         return self.z.getInterpreterContext()
@@ -84,23 +87,56 @@ class PyZeppelinContext(object):
     def textbox(self, name, defaultValue=""):
         return self.z.textbox(name, defaultValue)
 
-    def password(self, name):
-        return self.z.password(name)
-
     def noteTextbox(self, name, defaultValue=""):
         return self.z.noteTextbox(name, defaultValue)
 
+    def password(self, name):
+        return self.z.password(name)
+
+    def notePassword(self, name):
+        return self.z.notePassword(name)
+
     def select(self, name, options, defaultValue=""):
-        return self.z.select(name, defaultValue, self.getParamOptions(options))
+        return self.z.select(name, self.getParamOptions(options), defaultValue)
 
     def noteSelect(self, name, options, defaultValue=""):
-        return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
+        return self.z.noteSelect(name, self.getParamOptions(options), defaultValue)
 
     def checkbox(self, name, options, defaultChecked=[]):
-        return self.z.checkbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+        return self.z.checkbox(name, self.getParamOptions(options), self.getDefaultChecked(defaultChecked))
 
     def noteCheckbox(self, name, options, defaultChecked=[]):
-        return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+        return self.z.noteCheckbox(name, self.getParamOptions(options), self.getDefaultChecked(defaultChecked))
+
+    def run(self, paragraphId):
+        return self.z.run(paragraphId)
+
+    def run(self, noteId, paragraphId):
+        return self .z.run(noteId, paragraphId)
+
+    def runNote(self, noteId):
+        return self.z.runNote(noteId)
+
+    def runAll(self):
+        return self.z.runAll()
+
+    def angular(self, key, noteId = None, paragraphId = None):
+        if noteId == None:
+            return self.z.angular(key, self.z.getInterpreterContext().getNoteId(), paragraphId)
+        else:
+            return self.z.angular(key, noteId, paragraphId)
+
+    def angularBind(self, name, value, noteId = None, paragraphId = None):
+        if noteId == None:
+            return self.z.angularBind(name, value, noteId, paragraphId)
+        else:
+            return self.z.angularBind(name, value, self.z.getInterpreterContext().getNoteId(), paragraphId)
+
+    def angularUnbind(self, name, noteId = None):
+        if noteId == None:
+            self.z.angularUnbind(name, self.z.getInterpreterContext().getNoteId())
+        else:
+            self.z.angularUnbind(name, noteId)
 
     def registerHook(self, event, cmd, replName=None):
         if replName is None:

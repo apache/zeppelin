@@ -82,8 +82,8 @@ public class GUI implements Serializable {
     if (value == null) {
       value = defaultValue;
     }
-
     forms.put(id, new TextBox(id, defaultValue));
+    params.put(id, value);
     return value;
   }
 
@@ -96,7 +96,7 @@ public class GUI implements Serializable {
     return params.get(id);
   }
 
-  public Object select(String id, Object defaultValue, ParamOption[] options) {
+  public Object select(String id, ParamOption[] options, Object defaultValue) {
     if (defaultValue == null && options != null && options.length > 0) {
       defaultValue = options[0].getValue();
     }
@@ -104,13 +104,14 @@ public class GUI implements Serializable {
     Object value = params.get(id);
     if (value == null) {
       value = defaultValue;
-      params.put(id, value);
     }
+    params.put(id, value);
     return value;
   }
 
-  public List<Object> checkbox(String id, Collection<Object> defaultChecked,
-                               ParamOption[] options) {
+  public List<Object> checkbox(String id,
+                               ParamOption[] options,
+                               Collection<Object> defaultChecked) {
     Collection<Object> checked = (Collection<Object>) params.get(id);
     if (checked == null) {
       checked = defaultChecked;
@@ -122,6 +123,7 @@ public class GUI implements Serializable {
         filtered.add(o);
       }
     }
+    params.put(id, filtered);
     return filtered;
   }
 

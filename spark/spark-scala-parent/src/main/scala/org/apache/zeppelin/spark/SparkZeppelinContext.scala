@@ -26,7 +26,8 @@ import org.apache.zeppelin.display.AngularObjectWatcher
 import org.apache.zeppelin.display.ui.OptionInput.ParamOption
 import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterHookRegistry}
 
-import scala.collection.{JavaConversions, Seq}
+import scala.collection.Seq
+import scala.collection.JavaConverters._
 
 
 /**
@@ -47,85 +48,173 @@ class SparkZeppelinContext(val sc: SparkContext,
 
   private val supportedClasses = scala.collection.mutable.ArrayBuffer[Class[_]]()
 
-  try
+  try {
     supportedClasses += Class.forName("org.apache.spark.sql.Dataset")
-  catch {
+  } catch {
     case e: ClassNotFoundException =>
   }
 
-  try
+  try {
     supportedClasses += Class.forName("org.apache.spark.sql.DataFrame")
-  catch {
+  } catch {
     case e: ClassNotFoundException =>
 
   }
   if (supportedClasses.isEmpty) throw new RuntimeException("Can not load Dataset/DataFrame class")
 
-  override def getSupportedClasses: util.List[Class[_]] =
-    JavaConversions.mutableSeqAsJavaList(supportedClasses)
+  override def getSupportedClasses: util.List[Class[_]] = supportedClasses.asJava
 
-  override def getInterpreterClassMap: util.Map[String, String] =
-    JavaConversions.mapAsJavaMap(interpreterClassMap)
+  override def getInterpreterClassMap: util.Map[String, String] = interpreterClassMap.asJava
 
   override def showData(obj: Any, maxResult: Int): String = sparkShims.showDataFrame(obj, maxResult)
 
+  /**
+   * create paragraph level of dynamic form of Select with no item selected.
+   *
+   * @param name
+   * @param options
+   * @return text value of selected item
+   */
   @ZeppelinApi
-  def select(name: String, options: Seq[(Any, String)]): Any = select(name, null, options)
+  def select(name: String, options: Seq[(Any, String)]): Any = select(name, options, null: Any)
 
+  /**
+   * create paragraph level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param defaultValue
+   * @param options
+   * @return text value of selected item
+   */
+  @Deprecated
   @ZeppelinApi
   def select(name: String, defaultValue: Any, options: Seq[(Any, String)]): Any =
-    select(name, defaultValue, options.map(e => new ParamOption(e._1, e._2)).toArray)
+    select(name, options.map(e => new ParamOption(e._1, e._2)).toArray, defaultValue)
 
+  /**
+   * create paragraph level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param options
+   * @param defaultValue
+   * @return text value of selected item
+   */
   @ZeppelinApi
-  def checkbox(name: String, options: Seq[(AnyRef, String)]): Seq[Any] = {
-    val javaResult = checkbox(name, JavaConversions.seqAsJavaList(options.map(e => e._1)),
-      options.map(e => new ParamOption(e._1, e._2)).toArray)
-    JavaConversions.asScalaBuffer(javaResult)
+  def select(name: String, options: Seq[(Any, String)], defaultValue: Any): Any =
+    select(name, options.map(e => new ParamOption(e._1, e._2)).toArray, defaultValue)
+
+
+  /**
+   * create note level of dynamic form of Select with no item selected.
+   *
+   * @param name
+   * @param options
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  def noteSelect(name: String, options: Seq[(Any, String)]): Any =
+    noteSelect(name, null, options.map(e => new ParamOption(e._1, e._2)).toArray)
+
+  /**
+   * create note level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param options
+   * @param defaultValue
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  def noteSelect(name: String, options: Seq[(Any, String)], defaultValue: Any): Any =
+    noteSelect(name, options.map(e => new ParamOption(e._1, e._2)).toArray, defaultValue)
+
+  /**
+   * create note level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param defaultValue
+   * @param options
+   * @return text value of selected item
+   */
+  @Deprecated
+  @ZeppelinApi
+  def noteSelect(name: String,  defaultValue: Any, options: Seq[(Any, String)]): Any =
+    noteSelect(name, options.map(e => new ParamOption(e._1, e._2)).toArray, defaultValue)
+
+  /**
+   * create paragraph level of dynamic form of checkbox with no item checked.
+   *
+   * @param name
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  def checkbox(name: String, options: Seq[(Any, String)]): Seq[Any] = {
+    val javaResult = checkbox(name, options.map(e => new ParamOption(e._1, e._2)).toArray)
+    javaResult.asScala
+  }
+
+  /**
+   * create paragraph level of dynamic form of checkbox with default checked items.
+   *
+   * @param name
+   * @param options
+   * @param defaultChecked
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  def checkbox(name: String, options: Seq[(Any, String)], defaultChecked: Seq[Any]): Seq[Any] = {
+    val defaultCheckedList = defaultChecked.asJava
+    val optionsArray = options.map(e => new ParamOption(e._1, e._2)).toArray
+    val javaResult = checkbox(name, optionsArray, defaultCheckedList)
+    javaResult.asScala
+  }
+
+  /**
+   * create note level of dynamic form of checkbox with no item checked.
+   *
+   * @param name
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  def noteCheckbox(name: String, options: Seq[(Any, String)]): Seq[Any] = {
+    val javaResult = noteCheckbox(name, options.map(e => new ParamOption(e._1, e._2)).toArray)
+    javaResult.asScala
+  }
+
+  /**
+   * create note level of dynamic form of checkbox with default checked items.
+   *
+   * @param name
+   * @param options
+   * @param defaultChecked
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  def noteCheckbox(name: String, options: Seq[(Any, String)], defaultChecked: Seq[Any]): Seq[Any] = {
+    val javaResult = noteCheckbox(name,
+      options.map(e => new ParamOption(e._1, e._2)).toArray, defaultChecked.asJava)
+    javaResult.asScala
   }
 
   @ZeppelinApi
-  def checkbox(name: String, defaultChecked: Seq[AnyRef], options: Seq[(Any, String)]): Seq[Any] = {
-    val defaultCheckedList = JavaConversions.seqAsJavaList(defaultChecked)
-    val javaResult = checkbox(name, defaultCheckedList, options.map(e => new ParamOption(e._1, e._2)).toArray)
-    JavaConversions.asScalaBuffer(javaResult)
-  }
-
-  @ZeppelinApi
-  def noteSelect(name: String, options: Seq[(Any, String)]): Any = noteSelect(name, "", options)
-
-  @ZeppelinApi
-  def noteSelect(name: String, defaultValue: Any, options: Seq[(Any, String)]): AnyRef =
-    noteSelect(name, defaultValue, options.map(e => new ParamOption(e._1, e._2)).toArray)
-
-  @ZeppelinApi
-  def noteCheckbox(name: String, options: Seq[(AnyRef, String)]): Seq[AnyRef] = {
-    val javaResulst =noteCheckbox(name, JavaConversions.seqAsJavaList(options.map(e => e._1)),
-      options.map(e => new ParamOption(e._1, e._2)).toArray)
-    JavaConversions.asScalaBuffer(javaResulst)
-  }
-
-  @ZeppelinApi
-  def noteCheckbox(name: String, defaultChecked: Seq[AnyRef], options: Seq[(AnyRef, String)]): Seq[AnyRef] = {
-    val defaultCheckedList = JavaConversions.seqAsJavaList(defaultChecked)
-    val javaResult = noteCheckbox(name, defaultCheckedList, options.map(e => new ParamOption(e._1, e._2)).toArray)
-    JavaConversions.asScalaBuffer(javaResult)
-  }
-
-  @ZeppelinApi def angularWatch(name: String, func: (AnyRef, AnyRef) => Unit): Unit = {
+  def angularWatch(name: String, func: (AnyRef, AnyRef) => Unit): Unit = {
     angularWatch(name, interpreterContext.getNoteId, func)
   }
 
-  @deprecated def angularWatchGlobal(name: String, func: (AnyRef, AnyRef) => Unit): Unit = {
+  @deprecated
+  def angularWatchGlobal(name: String, func: (AnyRef, AnyRef) => Unit): Unit = {
     angularWatch(name, null, func)
   }
 
-  @ZeppelinApi def angularWatch(name: String,
-                                func: (AnyRef, AnyRef, InterpreterContext) => Unit): Unit = {
+  @ZeppelinApi
+  def angularWatch(name: String, func: (AnyRef, AnyRef, InterpreterContext) => Unit): Unit = {
     angularWatch(name, interpreterContext.getNoteId, func)
   }
 
-  @deprecated def angularWatchGlobal(name: String,
-                                     func: (AnyRef, AnyRef, InterpreterContext) => Unit): Unit = {
+  @deprecated
+  def angularWatchGlobal(name: String,
+                         func: (AnyRef, AnyRef, InterpreterContext) => Unit): Unit = {
     angularWatch(name, null, func)
   }
 
