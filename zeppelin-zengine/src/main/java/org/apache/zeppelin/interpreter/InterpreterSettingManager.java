@@ -245,26 +245,13 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
 
       InterpreterSetting interpreterSettingTemplate =
           interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
-      // InterpreterSettingTemplate is from interpreter-setting.json which represent the latest
+      // InterpreterSettingTemplate is from interpreter-setting.json which represent the initialized
       // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
       // the user saved interpreter setting
       if (interpreterSettingTemplate != null) {
-        savedInterpreterSetting.setInterpreterDir(interpreterSettingTemplate.getInterpreterDir());
-        // merge properties from interpreter-setting.json and interpreter.json
-        Map<String, InterpreterProperty> mergedProperties =
-            new HashMap<>(InterpreterSetting.convertInterpreterProperties(
-                interpreterSettingTemplate.getProperties()));
-        Map<String, InterpreterProperty> savedProperties = InterpreterSetting
-            .convertInterpreterProperties(savedInterpreterSetting.getProperties());
-        for (Map.Entry<String, InterpreterProperty> entry : savedProperties.entrySet()) {
-          // only merge properties whose value is not empty
-          if (entry.getValue().getValue() != null && !
-              StringUtils.isBlank(entry.getValue().toString())) {
-            mergedProperties.put(entry.getKey(), entry.getValue());
-          }
-        }
-        savedInterpreterSetting.setProperties(mergedProperties);
-        // merge InterpreterInfo
+        // merge InterpreterDir, InterpreterInfo & InterpreterRunner
+        savedInterpreterSetting.setInterpreterDir(
+            interpreterSettingTemplate.getInterpreterDir());
         savedInterpreterSetting.setInterpreterInfos(
             interpreterSettingTemplate.getInterpreterInfos());
         savedInterpreterSetting.setInterpreterRunner(

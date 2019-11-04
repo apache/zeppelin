@@ -933,8 +933,12 @@ public class InterpreterSetting {
               InterpreterPropertyType.STRING.getValue());
           newProperties.put(entry.getKey().toString(), newProperty);
         } else {
-          // already converted
-          return (Map<String, InterpreterProperty>) properties;
+          StringMap stringMap = (StringMap) entry.getValue();
+          InterpreterProperty newProperty = new InterpreterProperty(
+                  entry.getKey().toString(),
+                  stringMap.get("value"),
+                  stringMap.containsKey("type") ? stringMap.get("type").toString() : "string");
+          newProperties.put(newProperty.getName(), newProperty);
         }
       }
       return newProperties;
