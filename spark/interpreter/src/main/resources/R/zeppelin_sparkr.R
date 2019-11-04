@@ -63,6 +63,7 @@ assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.Zeppe
 z.put <- function(name, object) {
   SparkR:::callJMethod(.zeppelinContext, "put", name, object)
 }
+
 z.get <- function(name) {
   SparkR:::callJMethod(.zeppelinContext, "get", name)
 }
@@ -80,8 +81,44 @@ z.angularBind <- function(name, value, noteId=NULL, paragraphId=NULL) {
   SparkR:::callJMethod(.zeppelinContext, "angularBind", name, value, noteId, paragraphId)
 }
 
-z.input <- function(name, value) {
-  SparkR:::callJMethod(.zeppelinContext, "input", name, value)
+z.textbox <- function(name, value) {
+  SparkR:::callJMethod(.zeppelinContext, "textbox", name, value)
+}
+
+z.noteTextbox <- function(name, value) {
+  SparkR:::callJMethod(.zeppelinContext, "noteTextbox", name, value)
+}
+
+z.password <- function(name) {
+  SparkR:::callJMethod(.zeppelinContext, "password", name)
+}
+
+z.notePassword <- function(name) {
+  SparkR:::callJMethod(.zeppelinContext, "notePassword", name)
+}
+
+z.run <- function(paragraphId) {
+  SparkR:::callJMethod(.zeppelinContext, "run", paragraphId)
+}
+
+z.runNote <- function(noteId) {
+  SparkR:::callJMethod(.zeppelinContext, "runNote", noteId)
+}
+
+z.runAll <- function() {
+  SparkR:::callJMethod(.zeppelinContext, "runAll")
+}
+
+z.angular <- function(name) {
+  SparkR:::callJMethod(.zeppelinContext, "angular", name)
+}
+
+z.angularBind <- function(name, value) {
+  SparkR:::callJMethod(.zeppelinContext, "angularBind", name, value)
+}
+
+z.angularUnbind <- function(name, value) {
+  SparkR:::callJMethod(.zeppelinContext, "angularUnbind", name)
 }
 
 # notify script is initialized
