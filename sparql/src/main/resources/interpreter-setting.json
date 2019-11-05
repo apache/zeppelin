@@ -4,6 +4,13 @@
     "name": "sparql",
     "className": "org.apache.zeppelin.sparql.SparqlInterpreter",
     "properties": {
+      "sparql.engine": {
+        "envName": "SPARQL_ENGINE",
+        "propertyName": "sparql.engine",
+        "defaultValue": "jena",
+        "description": "The sparql engine to use for the queries. Default: jena",
+        "type": "string"
+      },
       "sparql.endpoint": {
         "envName": "SPARQL_SERVICE_ENDPOINT",
         "propertyName": "sparql.endpoint",

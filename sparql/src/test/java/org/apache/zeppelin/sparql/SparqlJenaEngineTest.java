@@ -29,6 +29,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -38,13 +39,16 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 
-public class SparqlInterpreterTest {
+public class SparqlJenaEngineTest {
   private static int port;
 
   private static FusekiServer server;
 
+  private static final String ENGINE = "jena";
   private static final String DATASET = "/dataset";
   private static final String HOST = "http://localhost";
+
+  private static Properties properties;
 
   private static final String DATA_FILE = "data.ttl";
 
@@ -74,10 +78,15 @@ public class SparqlInterpreterTest {
     }
   }
 
+  @Before
+  public void setUpProperties() {
+    properties = new Properties();
+    properties.put(SparqlInterpreter.SPARQL_ENGINE_TYPE, ENGINE);
+    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
+  }
+
   @Test
   public void testWrongQuery() {
-    final Properties properties = new Properties();
-    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
 
@@ -87,8 +96,6 @@ public class SparqlInterpreterTest {
 
   @Test
   public void testSuccessfulRawQuery() {
-    final Properties properties = new Properties();
-    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
     properties.put(SparqlInterpreter.SPARQL_REPLACE_URIS, "false");
     properties.put(SparqlInterpreter.SPARQL_REMOVE_DATATYPES, "false");
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
@@ -122,8 +129,6 @@ public class SparqlInterpreterTest {
 
   @Test
   public void testSuccessfulReplaceRemoveQuery() {
-    final Properties properties = new Properties();
-    properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, HOST + ":" + port + DATASET);
     properties.put(SparqlInterpreter.SPARQL_REPLACE_URIS, "true");
     properties.put(SparqlInterpreter.SPARQL_REMOVE_DATATYPES, "true");
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
@@ -157,7 +162,6 @@ public class SparqlInterpreterTest {
 
   @Test
   public void testRemoteEndpoint() {
-    final Properties properties = new Properties();
     properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, "http://dbpedia.org/sparql");
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
@@ -172,7 +176,6 @@ public class SparqlInterpreterTest {
 
   @Test
   public void testEndpointMalformed() {
-    final Properties properties = new Properties();
     properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, "tsohlacol");
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
@@ -184,7 +187,6 @@ public class SparqlInterpreterTest {
 
   @Test
   public void testEndpointNotFound() {
-    final Properties properties = new Properties();
     properties.put(SparqlInterpreter.SPARQL_SERVICE_ENDPOINT, "http://tsohlacol/");
     SparqlInterpreter interpreter = new SparqlInterpreter(properties);
     interpreter.open();
