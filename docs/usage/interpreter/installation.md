@@ -244,6 +244,11 @@ You can also find the below community managed interpreter list in `conf/interpre
     <td>Shell command</td>
   </tr>
   <tr>
+    <td>sparql</td>
+    <td>org.apache.zeppelin:zeppelin-sparql:0.9.0</td>
+    <td>Sparql interpreter</td>
+  </tr>
+  <tr>
     <td>submarine</td>
     <td>org.apache.zeppelin:zeppelin-submarine:0.9.0</td>
     <td>Submarine interpreter</td>
