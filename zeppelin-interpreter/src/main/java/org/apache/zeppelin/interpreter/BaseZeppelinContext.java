@@ -407,19 +407,12 @@ public abstract class BaseZeppelinContext {
     runNote(context.getNoteId());
   }
 
-  private AngularObject getAngularObject(String name, InterpreterContext interpreterContext) {
+  private AngularObject getAngularObject(String name,
+                                         String noteId,
+                                         String paragraphId,
+                                         InterpreterContext interpreterContext) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    String noteId = interpreterContext.getNoteId();
-    // try get local object
-    AngularObject paragraphAo = registry.get(name, noteId, interpreterContext.getParagraphId());
-    AngularObject noteAo = registry.get(name, noteId, null);
-
-    AngularObject ao = paragraphAo != null ? paragraphAo : noteAo;
-
-    if (ao == null) {
-      // then global object
-      ao = registry.get(name, null, null);
-    }
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     return ao;
   }
 
@@ -432,7 +425,27 @@ public abstract class BaseZeppelinContext {
    */
   @ZeppelinApi
   public Object angular(String name) {
-    AngularObject ao = getAngularObject(name, interpreterContext);
+    AngularObject ao = getAngularObject(name, interpreterContext.getNoteId(),
+            interpreterContext.getParagraphId(), interpreterContext);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  public Object angular(String name, String noteId) {
+    AngularObject ao = getAngularObject(name, noteId,
+            interpreterContext.getParagraphId(), interpreterContext);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  public Object angular(String name, String noteId, String paragraphId) {
+    AngularObject ao = getAngularObject(name, noteId, paragraphId, interpreterContext);
     if (ao == null) {
       return null;
     } else {
@@ -601,6 +614,7 @@ public abstract class BaseZeppelinContext {
    *
    * @param name name of the variable
    * @param o    value
+   * @param noteId
    */
   public void angularBind(String name, Object o, String noteId) throws TException {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
@@ -609,6 +623,25 @@ public abstract class BaseZeppelinContext {
       registry.add(name, o, noteId, null);
     } else {
       registry.get(name, noteId, null).set(o);
+    }
+  }
+
+  /**
+   * Create angular variable in notebook scope and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   *
+   * @param name name of the variable
+   * @param o    value
+   * @param noteId
+   * @param paragraphId
+   */
+  public void angularBind(String name, Object o, String noteId, String paragraphId) throws TException {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+    if (registry.get(name, noteId, paragraphId) == null) {
+      registry.add(name, o, noteId, paragraphId);
+    } else {
+      registry.get(name, noteId, paragraphId).set(o);
     }
   }
 

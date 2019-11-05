@@ -321,8 +321,8 @@ public class LdapRealm extends JndiLdapRealm {
       systemLdapCtx = ldapContextFactory.getSystemLdapContext();
       return rolesFor(principals, username, systemLdapCtx,
         ldapContextFactory, SecurityUtils.getSubject().getSession());
-    } catch (AuthenticationException ae) {
-      ae.printStackTrace();
+    } catch (Throwable t) {
+      log.warn("Failed to get roles in current context for " + username, t);
       return Collections.emptySet();
     } finally {
       LdapUtils.closeContext(systemLdapCtx);

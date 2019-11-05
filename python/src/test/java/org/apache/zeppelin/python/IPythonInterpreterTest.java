@@ -130,7 +130,8 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     result = interpreter.interpret(codeKillKernel, context);
     assertEquals(Code.ERROR, result.code());
     output = context.out.toInterpreterResultMessage().get(0);
-    assertTrue(output.getData().equals("Ipython kernel has been stopped. Please check logs. "
+    assertTrue(output.getData(),
+            output.getData().equals("Ipython kernel has been stopped. Please check logs. "
         + "It might be because of an out of memory issue."));
   }
 

@@ -76,7 +76,7 @@ public abstract class AbstractScheduler implements Scheduler {
 
   @Override
   public void run() {
-    while (!terminate) {
+    while (!terminate && !Thread.currentThread().isInterrupted()) {
       Job runningJob = null;
       try {
         runningJob = queue.take();

@@ -74,6 +74,7 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,7 +256,9 @@ public class RemoteInterpreterServer extends Thread
         }
       }
     }
-
+    if (!isTest) {
+      SchedulerFactory.singleton().destroy();
+    }
     server.stop();
 
     // server.stop() does not always finish server.serve() loop
