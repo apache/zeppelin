@@ -130,6 +130,13 @@
     </dependency>
   </dependencies>
 
+  <repositories>
+    <repository>
+      <id>jerbrain</id>
+      <url>https://dl.bintray.com/jetbrains/pty4j/</url>
+    </repository>
+  </repositories>
+
   <build>
     <testResources>
       <testResource>
