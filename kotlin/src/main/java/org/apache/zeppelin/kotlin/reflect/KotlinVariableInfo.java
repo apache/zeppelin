@@ -46,10 +46,11 @@ public class KotlinVariableInfo {
   }
 
   public String toString(boolean shortenTypes) {
+    String type = getType();
     if (shortenTypes) {
-      return getName() + ": " + shorten(getType()) + " = " + getValue();
+      type = shorten(type);
     }
-    return toString();
+    return getName() + ": " + type + " = " + getValue();
   }
 
   @Override
