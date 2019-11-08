@@ -52,11 +52,10 @@ public class ClassWriter {
 
     for (CompiledClassData compiledClass: classes.getClasses()) {
       String filePath = compiledClass.getPath();
-      if (filePath.contains("/")) {
-        continue;
+      if (!filePath.contains(File.separator)) {
+        String classWritePath = outputDir + File.separator + filePath;
+        writeClass(compiledClass.getBytes(), classWritePath);
       }
-      String classWritePath = outputDir + File.separator + filePath;
-      writeClass(compiledClass.getBytes(), classWritePath);
     }
 
     writeModuleInMemory(classes);

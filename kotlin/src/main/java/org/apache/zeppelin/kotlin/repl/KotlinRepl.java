@@ -235,7 +235,7 @@ public class KotlinRepl {
   /**
    * Kotlin REPL has built-in context for getting user-declared functions and variables
    * and setting invokeWrapper for additional side effects in evaluation.
-   * It can accessed inside REPL by name `kc`, e.g. kc.showVars()
+   * It can be accessed inside REPL by name `kc`, e.g. kc.showVars()
    */
   public class KotlinContext {
     private Map<String, KotlinVariableInfo> vars = new HashMap<>();

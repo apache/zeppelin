@@ -169,9 +169,9 @@ public class KotlinSparkInterpreter extends Interpreter {
     return unsupportedMessage != null;
   }
 
-  private List<String> sparkClasspath() {
+  private static List<String> sparkClasspath() {
     String sparkJars = System.getProperty("spark.jars");
-    Pattern isKotlinJar = Pattern.compile("/kotlin-(runtime|stdlib|compiler|reflect)(-.*)?\\.jar");
+    Pattern isKotlinJar = Pattern.compile("/kotlin-[a-z]*(-.*)?\\.jar");
 
     Stream<File> addedJars = Arrays.stream(Utils.resolveURIs(sparkJars).split(","))
         .filter(s -> !s.trim().equals(""))

@@ -180,7 +180,7 @@ public class KotlinInterpreter extends Interpreter {
       return classpath;
     }
     for (File file : files) {
-      if (!file.isDirectory()) {
+      if (file.isDirectory) {
         classpath.add(file.getAbsolutePath());
       }
     }

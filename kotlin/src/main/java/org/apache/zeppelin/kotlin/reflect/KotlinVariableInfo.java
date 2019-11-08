@@ -54,6 +54,6 @@ public class KotlinVariableInfo {
 
   @Override
   public String toString() {
-    return getName() + ": " + getType() + " = " + getValue();
+    return toString(false);
   }
 }

@@ -51,7 +51,7 @@ public class KotlinFunctionInfo implements Comparable<KotlinFunctionInfo> {
 
   @Override
   public int compareTo(@NotNull KotlinFunctionInfo f) {
-    return this.toString().hashCode() - f.toString().hashCode();
+    return this.toString().compareTo(f.toString());
   }
 
   @Override

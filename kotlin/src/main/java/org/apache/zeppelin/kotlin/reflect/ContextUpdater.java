@@ -41,8 +41,8 @@ import kotlin.reflect.jvm.ReflectJvmMapping;
  * to use in completion and KotlinContext.
  */
 public class ContextUpdater {
-  private final Logger logger = LoggerFactory.getLogger(ContextUpdater.class);
-  private final Set<Method> objectMethods =
+  private static final Logger logger = LoggerFactory.getLogger(ContextUpdater.class);
+  private static final Set<Method> objectMethods =
       new HashSet<>(Arrays.asList(Object.class.getMethods()));
   
   private AggregatedReplStageState<?, ?> state;
