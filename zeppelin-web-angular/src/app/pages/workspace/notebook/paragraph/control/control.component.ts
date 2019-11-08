@@ -71,6 +71,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Output() readonly runAllAbove = new EventEmitter<void>();
   @Output() readonly runAllBelowAndCurrent = new EventEmitter<void>();
   @Output() readonly cloneParagraph = new EventEmitter<void>();
+  @Output() readonly removeParagraph = new EventEmitter<void>();
   fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   dropdownVisible = false;
   isMac = navigator.appVersion.indexOf('Mac') !== -1;
@@ -190,7 +191,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         show: this.paragraphLength > 1,
         disabled: this.isEntireNoteRunning,
         icon: 'delete',
-        trigger: () => this.removeParagraph(),
+        trigger: () => this.onRemoveParagraph(),
         shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+D`,
         keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_D] : []
       }
@@ -258,25 +259,8 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     }
   }
 
-  removeParagraph() {
-    if (!this.isEntireNoteRunning) {
-      if (this.paragraphLength === 1) {
-        this.nzModalService.warning({
-          nzTitle: `Warning`,
-          nzContent: `All the paragraphs can't be deleted`
-        });
-      } else {
-        this.nzModalService.confirm({
-          nzTitle: 'Delete Paragraph',
-          nzContent: 'Do you want to delete this paragraph?',
-          nzOnOk: () => {
-            this.messageService.paragraphRemove(this.pid);
-            this.cdr.markForCheck();
-            // TODO(hsuanxyz) moveFocusToNextParagraph
-          }
-        });
-      }
-    }
+  onRemoveParagraph() {
+    this.removeParagraph.emit();
   }
 
   trigger(event: EventEmitter<void>) {

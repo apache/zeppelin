@@ -13,7 +13,7 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -21,15 +21,16 @@ import {
   OnInit,
   Output,
   QueryList,
+  SimpleChanges,
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {merge, Observable, Subject} from 'rxjs';
+import {map, takeUntil} from 'rxjs/operators';
 
 import DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
-import { NzModalService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import {
@@ -52,7 +53,10 @@ import {
   NgZService,
   NoteStatusService,
   NoteVarShareService,
-  ParagraphStatus
+  ParagraphActions,
+  ParagraphStatus,
+  ShortcutsMap,
+  ShortcutService
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
@@ -60,10 +64,16 @@ import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
 
+type Mode = 'edit' | 'command';
+
 @Component({
   selector: 'zeppelin-notebook-paragraph',
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.less'],
+  host: {
+    'tabindex': '-1',
+    '(focusin)': 'onFocus()'
+  },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotebookParagraphComponent extends MessageListenersManager implements OnInit, OnChanges, OnDestroy {
@@ -76,6 +86,8 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   @Input() note: Note['note'];
   @Input() looknfeel: string;
   @Input() revisionView: boolean;
+  @Input() select: boolean = false;
+  @Input() index: number = -1;
   @Input() viewOnly: boolean;
   @Input() last: boolean;
   @Input() collaborativeMode = false;
@@ -83,8 +95,12 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   @Input() interpreterBindings: InterpreterBindingItem[] = [];
   @Output() readonly saveNoteTimer = new EventEmitter();
   @Output() readonly triggerSaveParagraph = new EventEmitter<string>();
+  @Output() readonly selected = new EventEmitter<string>();
+  @Output() readonly selectAtIndex = new EventEmitter<number>();
 
   private destroy$ = new Subject();
+  private mode: Mode = 'command';
+  waitConfirmFromEdit = false;
   dirtyText: string;
   originalText: string;
   isEntireNoteRunning = false;
@@ -185,6 +201,19 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     }
   }
 
+  switchMode(mode: Mode): void {
+    if (mode === this.mode) {
+      return;
+    }
+    this.mode = mode;
+    if (mode === 'edit') {
+      this.focusEditor();
+    } else {
+      this.blurEditor();
+      (this.host.nativeElement as HTMLElement).focus();
+    }
+  }
+
   updateParagraph(oldPara: ParagraphItem, newPara: ParagraphItem, updateCallback: () => void) {
     // 1. can't update on revision view
     if (!this.revisionView) {
@@ -237,6 +266,34 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     this.saveNoteTimer.emit();
   }
 
+  onFocus() {
+    this.selected.emit(this.paragraph.id);
+  }
+
+  focusEditor() {
+    this.paragraph.focus = true;
+    this.saveParagraph();
+    this.cdr.markForCheck();
+  }
+
+  blurEditor() {
+    this.paragraph.focus = false;
+    (this.host.nativeElement as HTMLElement).focus();
+    this.saveParagraph();
+    this.cdr.markForCheck();
+  }
+
+  onEditorFocus() {
+    this.switchMode('edit');
+  }
+
+  onEditorBlur() {
+    // Ignore events triggered by open the confirm box in edit mode
+    if (!this.waitConfirmFromEdit) {
+      this.switchMode('command');
+    }
+  }
+
   saveParagraph() {
     const dirtyText = this.paragraph.text;
     if (dirtyText === undefined || dirtyText === this.originalText) {
@@ -246,6 +303,27 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     this.originalText = dirtyText;
     this.dirtyText = undefined;
     this.cdr.markForCheck();
+  }
+
+  removeParagraph() {
+    if (!this.isEntireNoteRunning) {
+      if (this.note.paragraphs.length === 1) {
+        this.nzModalService.warning({
+          nzTitle: `Warning`,
+          nzContent: `All the paragraphs can't be deleted`
+        });
+      } else {
+        this.nzModalService.confirm({
+          nzTitle: 'Delete Paragraph',
+          nzContent: 'Do you want to delete this paragraph?',
+          nzOnOk: () => {
+            this.messageService.paragraphRemove(this.paragraph.id);
+            this.cdr.markForCheck();
+            // TODO(hsuanxyz) moveFocusToNextParagraph
+          }
+        });
+      }
+    }
   }
 
   runAllAbove() {
@@ -298,7 +376,11 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       nzOnOk: () => {
         this.messageService.runAllParagraphs(this.note.id, paragraphs);
       }
-    });
+    }).afterClose
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.waitConfirmFromEdit = false;
+      });
     // TODO(hsuanxyz): save cursor
   }
 
@@ -486,7 +568,6 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   setTitle(title: string) {
     this.paragraph.title = title;
     this.commitParagraph();
-    this.cdr.markForCheck();
   }
 
   commitParagraph() {
@@ -498,6 +579,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       settings: { params }
     } = this.paragraph;
     this.messageService.commitParagraph(id, title, text, config, params, this.note.id);
+    this.cdr.markForCheck();
   }
 
   initializeDefault(config: ParagraphConfig) {
@@ -586,7 +668,6 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
   onConfigChange(configResult: ParagraphConfigResult, index: number) {
     this.paragraph.config.results[index] = configResult;
     this.commitParagraph();
-    this.cdr.markForCheck();
   }
 
   setEditorHide(editorHide: boolean) {
@@ -610,12 +691,128 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     private nzModalService: NzModalService,
     private noteVarShareService: NoteVarShareService,
     private cdr: ChangeDetectorRef,
-    private ngZService: NgZService
+    private ngZService: NgZService,
+    private shortcutService: ShortcutService,
+    private host: ElementRef
   ) {
     super(messageService);
   }
 
   ngOnInit() {
+    const shortcutService = this.shortcutService.forkByElement(this.host.nativeElement);
+    const observables: Array<Observable<{
+      action: ParagraphActions,
+      event: KeyboardEvent
+    }>> = [];
+    Object.entries(ShortcutsMap).forEach(([action, keys]) => {
+      const keysArr: string[] = Array.isArray(keys) ? keys : [keys];
+      keysArr.forEach(key => {
+        observables.push(
+          shortcutService.bindShortcut({
+            keybindings: key
+          }).pipe(
+            takeUntil(this.destroy$),
+            map(({event}) => {
+            return {
+              event,
+              action: action as ParagraphActions
+            }
+          }))
+        );
+      });
+    });
+
+    merge<{
+      action: ParagraphActions,
+      event: KeyboardEvent
+    }>(...observables)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({action, event}) => {
+      if (this.mode === 'command') {
+        switch (action) {
+          case ParagraphActions.InsertAbove:
+            this.insertParagraph('above');
+            break;
+          case ParagraphActions.InsertBelow:
+            this.insertParagraph('below');
+            break;
+          case ParagraphActions.SwitchEditorShow:
+            this.setEditorHide(!this.paragraph.config.editorHide);
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchOutputShow:
+            this.setTableHide(!this.paragraph.config.tableHide);
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchTitleShow:
+            this.paragraph.config.title = !this.paragraph.config.title;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.SwitchLineNumber:
+            this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.MoveToUp:
+            this.moveUpParagraph();
+            break;
+          case ParagraphActions.MoveToDown:
+            this.moveDownParagraph();
+            break;
+          case ParagraphActions.SwitchEnable:
+            this.paragraph.config.enabled = !this.paragraph.config.enabled;
+            this.commitParagraph();
+            break;
+          case ParagraphActions.ReduceWidth:
+            this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
+            this.cdr.markForCheck();
+            this.changeColWidth(true);
+            break;
+          case ParagraphActions.IncreaseWidth:
+            this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
+            this.cdr.markForCheck();
+            this.changeColWidth(true);
+            break;
+          case ParagraphActions.Delete:
+            this.removeParagraph();
+            break;
+          case ParagraphActions.SelectAbove:
+            event.preventDefault();
+            this.selectAtIndex.emit(this.index - 1);
+            break;
+          case ParagraphActions.SelectBelow:
+            event.preventDefault();
+            this.selectAtIndex.emit(this.index + 1);
+            break;
+          default:
+            break;
+        }
+      }
+      switch (action) {
+        case ParagraphActions.EditMode:
+          if (this.mode === 'command') {
+            event.preventDefault();
+          }
+          if (!this.paragraph.config.editorHide) {
+            this.switchMode('edit');
+          }
+          break;
+        case ParagraphActions.Run:
+          event.preventDefault();
+          this.runParagraph();
+          break;
+        case ParagraphActions.RunBelow:
+          this.waitConfirmFromEdit = true;
+          this.runAllBelowAndCurrent();
+          break;
+        case ParagraphActions.Cancel:
+          event.preventDefault();
+          this.cancelParagraph();
+          break;
+        default:
+          break;
+      }
+    });
+
     this.setResults();
     this.originalText = this.paragraph.text;
     this.isEntireNoteRunning = this.noteStatusService.isEntireNoteRunning(this.note);
@@ -644,7 +841,17 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       });
   }
 
-  ngOnChanges(): void {}
+  ngOnChanges(changes: SimpleChanges): void {
+    const { index, select } = changes;
+    if (index && index.currentValue !== index.previousValue && this.select
+    || select && select.currentValue === true && select.previousValue !== true) {
+      if (this.host.nativeElement) {
+        setTimeout(() => {
+          (this.host.nativeElement as HTMLElement).focus();
+        })
+      }
+    }
+  }
 
   ngOnDestroy(): void {
     super.ngOnDestroy();
