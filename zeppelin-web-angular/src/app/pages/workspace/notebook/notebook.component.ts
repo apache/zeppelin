@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
-import { Subject } from 'rxjs';
+import { Subject} from 'rxjs';
 import { distinctUntilKeyChanged, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
@@ -48,6 +48,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   private destroy$ = new Subject();
   note: Note['note'];
   permissions: Permissions;
+  selectId: string | null = null;
   isOwner = true;
   noteRevisions: RevisionListItem[] = [];
   currentRevision: string;
@@ -216,6 +217,17 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     }, 10000);
   }
 
+  onParagraphSelect(id: string) {
+    this.selectId = id;
+  }
+
+  onSelectAtIndex(index: number) {
+    const scopeIndex = Math.min(this.note.paragraphs.length, Math.max(0, index));
+    if (this.note.paragraphs[scopeIndex]) {
+      this.selectId = this.note.paragraphs[scopeIndex].id;
+    }
+  }
+
   saveNote() {
     if (this.note && this.note.paragraphs && this.listOfNotebookParagraphComponent) {
       this.listOfNotebookParagraphComponent.toArray().forEach(p => {
@@ -276,7 +288,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     private noteVarShareService: NoteVarShareService,
     private ticketService: TicketService,
     private securityService: SecurityService,
-    private router: Router
+    private router: Router,
   ) {
     super(messageService);
   }

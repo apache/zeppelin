@@ -36,8 +36,10 @@
   <div class="paragraph-area">
     <div class="paragraph-inner" nz-row>
       <zeppelin-notebook-paragraph nz-col
-                                   *ngFor="let p of note.paragraphs;let first = first; let last = last;"
+                                   *ngFor="let p of note.paragraphs;let first = first; let last = last; index as i"
                                    [nzSpan]="p.config.colWidth * 2"
+                                   [select]="p.id === selectId"
+                                   [index]="i"
                                    [paragraph]="p"
                                    [note]="note"
                                    [looknfeel]="note.config.looknfeel"
@@ -47,6 +49,8 @@
                                    [revisionView]="revisionView"
                                    [first]="first"
                                    [last]="last"
+                                   (selectAtIndex)="onSelectAtIndex($event)"
+                                   (selected)="onParagraphSelect($event)"
                                    (triggerSaveParagraph)="saveParagraph($event)"
                                    (saveNoteTimer)="startSaveTimer()"></zeppelin-notebook-paragraph>
     </div>

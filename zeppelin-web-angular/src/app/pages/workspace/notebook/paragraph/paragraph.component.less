@@ -18,12 +18,17 @@
 }
 
 .themeMixin({
+
   .paragraph {
     background: @component-background;
     border: 1px solid @border-color-split;
     box-shadow: @card-shadow;
     padding: 32px 12px 12px 12px;
     position: relative;
+
+    &.focused {
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.46);
+    }
 
     zeppelin-notebook-paragraph-code-editor + zeppelin-notebook-paragraph-dynamic-forms {
       margin-top: 24px;
