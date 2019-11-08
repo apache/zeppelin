@@ -254,6 +254,9 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   setGraphConfig() {
+    if (!this.config || !this.config.graph) {
+      return;
+    }
     const visualizationItem = this.visualizations.find(v => v.id === this.config.graph.mode);
     if (!visualizationItem || !visualizationItem.instance) {
       return;

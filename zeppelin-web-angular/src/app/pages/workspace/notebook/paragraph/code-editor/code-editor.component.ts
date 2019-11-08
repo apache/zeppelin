@@ -55,6 +55,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
   @Input() pid: string;
   @Output() readonly textChanged = new EventEmitter<string>();
   @Output() readonly editorBlur = new EventEmitter<void>();
+  @Output() readonly editorFocus = new EventEmitter<void>();
   private editor: IStandaloneCodeEditor;
   private monacoDisposables: IDisposable[] = [];
   height = 0;
@@ -76,6 +77,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     this.monacoDisposables.push(
       editor.onDidFocusEditorText(() => {
         this.ngZone.runOutsideAngular(() => {
+          this.editorFocus.emit();
           editor.updateOptions({ renderLineHighlight: 'all' });
         });
       }),
@@ -85,6 +87,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
           editor.updateOptions({ renderLineHighlight: 'none' });
         });
       }),
+
       editor.onDidChangeModelContent(() => {
         this.ngZone.run(() => {
           this.text = editor.getModel().getValue();
@@ -122,6 +125,16 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         });
       });
     }
+
+    this.editor.addCommand(
+      monaco.KeyCode.Escape,
+      () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      },
+      '!suggestWidgetVisible'
+    );
 
     this.updateEditorOptions();
     this.setParagraphMode();
