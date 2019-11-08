@@ -14,7 +14,10 @@
   <zeppelin-notebook-add-paragraph *ngIf="!revisionView && looknfeel !== 'report'"
                                    [disabled]="isEntireNoteRunning"
                                    (addParagraph)="insertParagraph('above')"></zeppelin-notebook-add-paragraph>
-  <div class="paragraph" [class.simple]="looknfeel !== 'default'" [class.report]="looknfeel === 'report'">
+  <div class="paragraph"
+       [class.focused]="select"
+       [class.simple]="looknfeel !== 'default'"
+       [class.report]="looknfeel === 'report'">
     <zeppelin-elastic-input *ngIf="paragraph.config.title"
                             [value]="paragraph.title"
                             [min]="true"
@@ -39,6 +42,7 @@
                                          [(editorHide)]="paragraph.config.editorHide"
                                          [(runOnSelectionChange)]="paragraph.config.runOnSelectionChange"
                                          (tableHideChange)="commitParagraph()"
+                                         (removeParagraph)="removeParagraph()"
                                          (colWidthChange)="changeColWidth(true)"
                                          (fontSizeChange)="commitParagraph()"
                                          (editorHideChange)="commitParagraph()"
@@ -65,7 +69,8 @@
                                              [lineNumbers]="paragraph.config.lineNumbers"
                                              [readOnly]="isEntireNoteRunning || isParagraphRunning || revisionView"
                                              [language]="paragraph.config.editorSetting?.language"
-                                             (editorBlur)="saveParagraph()"
+                                             (editorBlur)="onEditorBlur()"
+                                             (editorFocus)="onEditorFocus()"
                                              (textChanged)="textChanged($event)"></zeppelin-notebook-paragraph-code-editor>
     <zeppelin-notebook-paragraph-progress *ngIf="paragraph.status === 'RUNNING'"
                                           [progress]="progress"></zeppelin-notebook-paragraph-progress>
