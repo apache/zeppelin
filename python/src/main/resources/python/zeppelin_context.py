@@ -66,11 +66,11 @@ class PyZeppelinContext(object):
             print("fail to call getAsDataFrame as pandas is not installed")
         return pd.read_csv(StringIO(value), sep="\t")
 
-    def angular(self, key, noteId = None, paragraphId = None):
-        return self.z.angular(key, noteId, paragraphId)
-
     def remove(self, key):
         self.z.remove(key)
+
+    def angular(self, key, noteId = None, paragraphId = None):
+        return self.z.angular(key, noteId, paragraphId)
 
     def contains(self, key):
         return self.contains(key)
@@ -120,11 +120,11 @@ class PyZeppelinContext(object):
     def runAll(self):
         return self.z.runAll()
 
-    def angular(self, key, noteId = None, paragraphId = None):
+    def angular(self, name, noteId = None, paragraphId = None):
         if noteId == None:
-            return self.z.angular(key, self.z.getInterpreterContext().getNoteId(), paragraphId)
+            return self.z.angular(name, self.z.getInterpreterContext().getNoteId(), paragraphId)
         else:
-            return self.z.angular(key, noteId, paragraphId)
+            return self.z.angular(name, noteId, paragraphId)
 
     def angularBind(self, name, value, noteId = None, paragraphId = None):
         if noteId == None:
