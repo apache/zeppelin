@@ -132,7 +132,7 @@ Before 0.8.0, Zeppelin didn't have lifecycle management for interpreters. Users 
 Users can change this threshold via the `zeppelin.interpreter.lifecyclemanager.timeout.threshold` setting. `TimeoutLifecycleManager` is the default lifecycle manager, and users can change it via `zeppelin.interpreter.lifecyclemanager.class`.
 
 
-## Generic ConfInterpreter
+## Inline Generic ConfInterpreter
 
 Zeppelin's interpreter setting is shared by all users and notes, if you want to have different settings, you have to create a new interpreter, e.g. you can create `spark_jar1` for running Spark with dependency jar1 and `spark_jar2` for running Spark with dependency jar2.
 This approach works, but is not particularly convenient. `ConfInterpreter` can provide more fine-grained control on interpreter settings and more flexibility. 
