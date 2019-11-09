@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import ws from '@/services/ws-helper'
+
 import TabManager from '@/components/Tabs/TabManager.vue'
 import Tab from '@/components/Tabs/Tab.vue'
 
@@ -49,29 +51,45 @@ export default {
     Credentials,
     NotebookRepository
   },
+  data () {
+    return {
+
+    }
+  },
   computed: {
     tabList () {
       return this.$store.state.TabManagerStore.tabs
     }
   },
   mounted () {
-    setTimeout(this.openURLTab, 2000)
+    console.log(this.$route.params.tabId)
+
+    this.openURLTab()
   },
   methods: {
+    isListLoaded () {
+      return ws.isListLoaded()
+    },
     openURLTab () {
-      let tabId = this.$route.params && this.$route.params.tabId
+      if (this.isListLoaded()) {
+        let tabId = this.$route.params && this.$route.params.tabId
 
-      if (tabId) {
-        let note = this.$store.getters.getNote(tabId)
+        if (tabId) {
+          let note = this.$store.getters.getNote(tabId)
 
-        this.$root.executeCommand('tabs', 'open', {
-          type: 'note',
-          note: {
-            id: tabId,
-            name: note.name,
-            path: note.path
-          }
-        })
+          this.$root.executeCommand('tabs', 'open', {
+            type: 'note',
+            note: {
+              id: tabId,
+              name: note.name,
+              path: note.path
+            }
+          })
+        }
+      } else {
+        setTimeout(() => {
+          this.openURLTab()
+        }, 1000)
       }
     }
   }

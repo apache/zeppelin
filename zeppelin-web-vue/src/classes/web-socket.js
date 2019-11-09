@@ -2,6 +2,7 @@ import api from '@/services/api.js'
 
 export default class WsConnection {
   conn = {}
+  listLoaded = false
 
   constructor (store, ticket, noteId) {
     this.store = store
@@ -12,6 +13,10 @@ export default class WsConnection {
     }
 
     this.establishConnection()
+  }
+
+  isListLoaded () {
+    return this.listLoaded
   }
 
   send (message, callback) {
@@ -96,6 +101,8 @@ export default class WsConnection {
           // Pending - open the note tab data.note
           break
         case 'NOTES_INFO':
+          this.listLoaded = true
+
           this.store.dispatch('setNoteList', data)
           break
         case 'NOTE':

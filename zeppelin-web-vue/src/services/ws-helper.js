@@ -10,5 +10,9 @@ export default {
 
   getConn () {
     return wsConn
+  },
+
+  isListLoaded () {
+    return this.getConn().isListLoaded()
   }
 }
