@@ -34,7 +34,10 @@
             class="note-menu"
             placement="bottomRight"
           >
-            <a class="ant-dropdown-link" href="#">
+            <a
+              class="ant-dropdown-link"
+              href="javascript: void(0);"
+            >
               <a-icon type="ellipsis" />
             </a>
             <a-menu slot="overlay">
