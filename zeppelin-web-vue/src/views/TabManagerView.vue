@@ -62,9 +62,14 @@ export default {
     }
   },
   mounted () {
-    console.log(this.$route.params.tabId)
-
+    // Open notebook from the url
     this.openURLTab()
+  },
+  beforeRouteUpdate () {
+    if (window.popStateDetected) {
+      window.popStateDetected = false
+      this.openURLTab()
+    }
   },
   methods: {
     isListLoaded () {
@@ -72,6 +77,8 @@ export default {
     },
     openURLTab () {
       if (this.isListLoaded()) {
+        console.log('In openURLTab ' + this.$route.params.tabId)
+
         let tabId = this.$route.params && this.$route.params.tabId
 
         if (tabId) {

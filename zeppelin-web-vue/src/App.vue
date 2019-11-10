@@ -9,7 +9,8 @@
           <LeftSidebar />
       </SplitArea>
       <SplitArea :size="75" id="content-pane" class="scrollbar">
-        <router-view :key="$route.path"/>
+        <router-view/>
+        <!-- <router-view :key="$route.path"/> -->
       </SplitArea>
     </Split>
 

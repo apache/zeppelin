@@ -44,7 +44,6 @@ Vue.use(VueOffline, {
         },
         methods: {
           executeCommand (type, command, arg) {
-            console.log(type, command, arg)
             EventBus.$emit(type, command, arg)
           }
         },
