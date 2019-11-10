@@ -45,7 +45,6 @@ export default {
   },
 
   rename (params) {
-    console.log(params)
     wsHelper.getConn().send({
       op: 'NOTE_RENAME',
       data: {
