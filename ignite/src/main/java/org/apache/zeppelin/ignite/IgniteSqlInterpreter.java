@@ -39,7 +39,7 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
- * Apache Ignite SQL interpreter (http://ignite.incubator.apache.org/).
+ * Apache Ignite SQL interpreter (http://ignite.apache.org/).
  *
  * Use {@code ignite.jdbc.url} property to set up JDBC connection URL.
  * URL has the following pattern:
@@ -60,9 +60,7 @@ public class IgniteSqlInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(IgniteSqlInterpreter.class);
 
   private Connection conn;
-
   private Throwable connEx;
-
   private Statement curStmt;
 
   public IgniteSqlInterpreter(Properties property) {
@@ -74,19 +72,17 @@ public class IgniteSqlInterpreter extends Interpreter {
     try {
       Class.forName(IGNITE_JDBC_DRIVER_NAME);
     } catch (ClassNotFoundException e) {
-      logger.error("Can't open connection", e);
+      logger.error("Can't find Ignite JDBC driver", e);
       connEx = e;
       return;
     }
 
     try {
       logger.info("connect to " + getProperty(IGNITE_JDBC_URL));
-
       conn = DriverManager.getConnection(getProperty(IGNITE_JDBC_URL));
       connEx = null;
-
       logger.info("Successfully created JDBC connection");
-    } catch (SQLException e) {
+    } catch (Exception e) {
       logger.error("Can't open connection: ", e);
       connEx = e;
     }
@@ -113,11 +109,8 @@ public class IgniteSqlInterpreter extends Interpreter {
     }
 
     StringBuilder msg = new StringBuilder("%table ");
-
     try (Statement stmt = conn.createStatement()) {
-
       curStmt = stmt;
-
       try (ResultSet res = stmt.executeQuery(st)) {
         ResultSetMetaData md = res.getMetaData();
 
@@ -125,10 +118,8 @@ public class IgniteSqlInterpreter extends Interpreter {
           if (i > 1) {
             msg.append('\t');
           }
-
           msg.append(md.getColumnName(i));
         }
-
         msg.append('\n');
 
         while (res.next()) {

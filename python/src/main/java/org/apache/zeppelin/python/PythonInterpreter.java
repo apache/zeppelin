@@ -558,7 +558,7 @@ public class PythonInterpreter extends Interpreter {
       InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
           InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
-        throw new IOException("Fail to run bootstrap script: " + resourceName);
+        throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
       }
     } catch (InterpreterException e) {
       throw new IOException(e);

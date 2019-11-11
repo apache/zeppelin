@@ -59,4 +59,12 @@ function ArrayOrderingService(TRASH_FOLDER_ID) {
 
     return noteName1.localeCompare(noteName2);
   };
+
+  this.getNotePath = function(note) {
+    if (note.path === undefined || note.path.trim() === '') {
+      return 'Note ' + note.id;
+    } else {
+      return note.path;
+    }
+  };
 }

@@ -28,7 +28,7 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-scio_2.10</artifactId>
+  <artifactId>zeppelin-scio</artifactId>
   <packaging>jar</packaging>
   <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Scio</name>
@@ -39,6 +39,8 @@
     <!--library versions-->
     <scio.version>0.2.4</scio.version>
     <guava.version>14.0.1</guava.version> <!-- update needed -->
+    <scio.scala.version>${scala.2.10.version}</scio.scala.version>
+    <scio.scala.binary.version>2.10</scio.scala.binary.version>
 
     <!--plugin versions-->
     <plugin.scala.version>2.15.2</plugin.scala.version>
@@ -52,7 +54,7 @@
 
     <dependency>
       <groupId>com.spotify</groupId>
-      <artifactId>scio-repl_${scala.binary.version}</artifactId>
+      <artifactId>scio-repl_${scio.scala.binary.version}</artifactId>
       <version>${scio.version}</version>
     </dependency>
 
@@ -65,25 +67,25 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${scala.2.10.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${scala.2.10.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${scala.2.10.version}</version>
     </dependency>
 
     <!-- test libraries -->
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <artifactId>scalatest_${scio.scala.binary.version}</artifactId>
       <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
@@ -137,6 +139,9 @@
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
         <version>${plugin.scala.version}</version>
+        <configuration>
+          <scalaVersion>${scio.scala.version}</scalaVersion>
+        </configuration>
         <executions>
           <execution>
             <id>compile</id>
@@ -177,15 +182,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
       </plugin>
 
     </plugins>

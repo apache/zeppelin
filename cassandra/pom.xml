@@ -26,19 +26,19 @@
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
-    <artifactId>zeppelin-cassandra_2.10</artifactId>
+    <artifactId>zeppelin-cassandra</artifactId>
     <packaging>jar</packaging>
     <version>0.9.0-SNAPSHOT</version>
     <name>Zeppelin: Apache Cassandra interpreter</name>
     <description>Zeppelin cassandra support</description>
 
     <properties>
-        <cassandra.driver.version>3.0.1</cassandra.driver.version>
-        <snappy.version>1.0.5.4</snappy.version>
-        <lz4.version>1.3.0</lz4.version>
+        <cassandra.driver.version>3.7.2</cassandra.driver.version>
+        <snappy.version>1.1.2.6</snappy.version>
+        <lz4.version>1.4.1</lz4.version>
         <commons-lang.version>3.3.2</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
-        <cassandra.guava.version>16.0.1</cassandra.guava.version>
+        <cassandra.guava.version>19.0</cassandra.guava.version>
 
         <!-- test library versions -->
         <achilles.version>3.2.4-Zeppelin</achilles.version>
@@ -88,8 +88,8 @@
         </dependency>
 
         <dependency>
-            <groupId>net.jpountz.lz4</groupId>
-            <artifactId>lz4</artifactId>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
             <version>${lz4.version}</version>
         </dependency>
 

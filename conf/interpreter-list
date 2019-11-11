@@ -21,21 +21,27 @@ alluxio         org.apache.zeppelin:zeppelin-alluxio:0.9.0              Alluxio 
 angular         org.apache.zeppelin:zeppelin-angular:0.9.0              HTML and AngularJS view rendering
 beam            org.apache.zeppelin:zeppelin-beam:0.9.0                 Beam interpreter
 bigquery        org.apache.zeppelin:zeppelin-bigquery:0.9.0             BigQuery interpreter
-cassandra       org.apache.zeppelin:zeppelin-cassandra_2.11:0.9.0       Cassandra interpreter built with Scala 2.11
+cassandra       org.apache.zeppelin:zeppelin-cassandra:0.9.0            Cassandra interpreter
 elasticsearch   org.apache.zeppelin:zeppelin-elasticsearch:0.9.0        Elasticsearch interpreter
 file            org.apache.zeppelin:zeppelin-file:0.9.0                 HDFS file interpreter
-flink           org.apache.zeppelin:zeppelin-flink_2.11:0.9.0           Flink interpreter built with Scala 2.11
+flink           org.apache.zeppelin:zeppelin-flink:0.9.0                Flink interpreter
+geode           org.apache.zeppelin:zeppelin-geode:0.9.0                Apache Geode interpreter
+groovy          org.apache.zeppelin:zeppelin-groovy:0.9.0               Groovy interpreter
 hazelcastjet    org.apache.zeppelin:zeppelin-hazelcastjet:0.9.0         Hazelcast Jet interpreter
 hbase           org.apache.zeppelin:zeppelin-hbase:0.9.0                Hbase interpreter
-ignite          org.apache.zeppelin:zeppelin-ignite_2.11:0.9.0          Ignite interpreter built with Scala 2.11
+ignite          org.apache.zeppelin:zeppelin-ignite:0.9.0               Ignite interpreter
+java            org.apache.zeppelin:zeppelin-java:0.9.0                 Java interpreter
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.9.0                 Jdbc interpreter
 kotlin          org.apache.zeppelin:zeppelin-kotlin:0.9.0               Kotlin interpreter
 kylin           org.apache.zeppelin:zeppelin-kylin:0.9.0                Kylin interpreter
-java            org.apache.zeppelin:zeppelin-java:0.9.0                 Java interpreter
 lens            org.apache.zeppelin:zeppelin-lens:0.9.0                 Lens interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.9.0                 Livy interpreter
 md              org.apache.zeppelin:zeppelin-markdown:0.9.0             Markdown support
+neo4j           org.apache.zeppelin:zeppelin-neo4j:0.9.0                Neo4j interpreter
 pig             org.apache.zeppelin:zeppelin-pig:0.9.0                  Pig interpreter
 python          org.apache.zeppelin:zeppelin-python:0.9.0               Python interpreter
-scio            org.apache.zeppelin:zeppelin-scio_2.11:0.9.0            Scio interpreter
+sap             org.apache.zeppelin:zeppelin-sap:0.9.0                  SAP Support
+scalding        org.apache.zeppelin:zeppelin-scalding_2.0.10:0.9.0      Scalding interpreter
+scio            org.apache.zeppelin:zeppelin-scio:0.9.0                 Scio interpreter
 shell           org.apache.zeppelin:zeppelin-shell:0.9.0                Shell command
+submarine       org.apache.zeppelin:zeppelin-submarine:0.9.0            Submarine interpreter

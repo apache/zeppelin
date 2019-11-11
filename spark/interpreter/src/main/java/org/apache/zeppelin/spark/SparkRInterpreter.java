@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkRBackend;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -44,7 +46,7 @@ import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 /**
  * R and SparkR interpreter with visualization support.
  */
-public class SparkRInterpreter extends Interpreter {
+public class SparkRInterpreter extends AbstractInterpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
 
   private String renderOptions;
@@ -54,7 +56,6 @@ public class SparkRInterpreter extends Interpreter {
   private AtomicBoolean rbackendDead = new AtomicBoolean(false);
   private SparkContext sc;
   private JavaSparkContext jsc;
-  private String secret;
 
   public SparkRInterpreter(Properties property) {
     super(property);
@@ -120,7 +121,7 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String lines, InterpreterContext interpreterContext)
+  public InterpreterResult internalInterpret(String lines, InterpreterContext interpreterContext)
       throws InterpreterException {
     Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(),
             interpreterContext, properties);
@@ -185,8 +186,13 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public void close() throws InterpreterException {
-    zeppelinR.close();
-    this.sparkInterpreter.close();
+    if (this.zeppelinR != null) {
+      zeppelinR.close();
+    }
+    if (this.sparkInterpreter != null) {
+      this.sparkInterpreter.close();
+      this.sparkInterpreter = null;
+    }
   }
 
   @Override
@@ -214,6 +220,11 @@ public class SparkRInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
             SparkRInterpreter.class.getName() + this.hashCode());
+  }
+
+  @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return sparkInterpreter.getZeppelinContext();
   }
 
   @Override

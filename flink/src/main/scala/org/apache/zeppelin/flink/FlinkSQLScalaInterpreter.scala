@@ -18,15 +18,14 @@
 
 package org.apache.zeppelin.flink
 
-import org.apache.flink.table.api.Table
-import org.apache.flink.table.api.scala.BatchTableEnvironment
+import org.apache.flink.table.api.{Table, TableEnvironment}
 import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
 
 class FlinkSQLScalaInterpreter(scalaInterpreter: FlinkScalaInterpreter,
                                z: FlinkZeppelinContext,
                                maxRow: Int) {
 
-  private var btenv: BatchTableEnvironment = scalaInterpreter.getBatchTableEnviroment()
+  private var btenv: TableEnvironment = scalaInterpreter.getBatchTableEnvironment()
 
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
     try {

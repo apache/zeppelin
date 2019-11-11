@@ -61,6 +61,12 @@ class PyZeppelinContext(object):
     def get(self, key):
         return self.__getitem__(key)
 
+    def angular(self, key, noteId = None, paragraphId = None):
+        return self.z.angular(key, noteId, paragraphId)
+
+    def angularBind(self, key, value, noteId = None, paragraphId = None):
+        return self.z.angularBind(key, value, noteId, paragraphId)
+
     def getInterpreterContext(self):
         return self.z.getInterpreterContext()
 

@@ -202,14 +202,16 @@ The complete list of all CQL statements and versions can be found below:
 
 ## Comments in statements
 
-It is possible to add comments between statements. Single line comments start with the **hash sign** (#) or **double slashes** (//). Multi-line comments are enclosed between /** and **/. Ex:
+It is possible to add comments between statements. Single line comments start with the **hash sign** (`#`), **double slashes** (`//`),  **double dash** (`--`). Multi-line comments are enclosed between `/**` and `**/`. Ex:
 
 ```sql
 
-#Single line comment style 1
+# Single line comment style 1
 INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 
-//Single line comment style 2
+// Single line comment style 2
+
+// Single line comment style 3
 
 /**
  Multi line
@@ -811,6 +813,10 @@ Below are the configuration parameters and their default values.
  </table>
 
 ## Change Log
+
+**3.1** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
+
+* Upgrade Java driver to 3.7.2 ([ZEPPELIN-4331](https://issues.apache.org/jira/browse/ZEPPELIN-4331);
 
 **3.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ :
 

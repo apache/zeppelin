@@ -140,6 +140,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (appendFuture != null) {
       appendFuture.cancel(true);
     }
+    appendService.shutdownNow();
     LOGGER.info("RemoteInterpreterEventServer is stopped");
   }
 

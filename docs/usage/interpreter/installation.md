@@ -57,44 +57,30 @@ Zeppelin support both Scala 2.10 and 2.11 for several interpreters as below:
     <th>Maven Artifact for Scala 2.11</th>
   </tr>
   <tr>
-    <td>cassandra</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra_2.10:0.7.0</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra_2.11:0.7.0</td>
-  </tr>
-  <tr>
-    <td>flink</td>
-    <td>org.apache.zeppelin:zeppelin-flink_2.10:0.7.0</td>
-    <td>org.apache.zeppelin:zeppelin-flink_2.11:0.7.0</td>
-  </tr>
-  <tr>
-    <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite_2.10:0.7.0</td>
-    <td>org.apache.zeppelin:zeppelin-ignite_2.11:0.7.0</td>
-  </tr>
-  <tr>
-    <td>scio</td>
-    <td>org.apache.zeppelin:zeppelin-scio_2.10:0.7.0</td>
-    <td>org.apache.zeppelin:zeppelin-scio_2.11:0.7.0</td>
-  </tr>
-  <tr>
     <td>spark</td>
-    <td>org.apache.zeppelin:zeppelin-spark_2.10:0.7.0</td>
-    <td>org.apache.zeppelin:zeppelin-spark_2.11:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-spark_2.10:0.9.0</td>
+    <td>org.apache.zeppelin:zeppelin-spark_2.11:0.9.0</td>
+  </tr>
+  <tr>
+    <td>scalding</td>
+    <td>org.apache.zeppelin:zeppelin-scalding_2.10:0.9.0</td>
+    <td>org.apache.zeppelin:zeppelin-scalding_2.11:0.9.0</td>
   </tr>
 </table>
 
 If you install one of these interpreters only with `--name` option, installer will download interpreter built with Scala 2.11 by default. If you want to specify Scala version, you will need to add `--artifact` option. Here is the example of installing flink interpreter built with Scala 2.10.
 
 ```bash
-./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-flink_2.10:0.7.0
+./bin/install-interpreter.sh --name flink --artifact org.apache.zeppelin:zeppelin-scalding_2.10:0.9.0
 ```
 
 #### Install Spark interpreter built with Scala 2.10
+
 Spark distribution package has been built with Scala 2.10 until 1.6.2. If you have `SPARK_HOME` set pointing to Spark version earlier than 2.0.0, you need to download Spark interpreter packaged with Scala 2.10. To do so, use follow command:
 
 ```bash
 rm -rf ./interpreter/spark
-./bin/install-interpreter.sh --name spark --artifact org.apache.zeppelin:zeppelin-spark_2.10:0.7.0
+./bin/install-interpreter.sh --name spark --artifact org.apache.zeppelin:zeppelin-spark_2.10:0.9.0
 ```
 
 <br />
@@ -134,57 +120,72 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>alluxio</td>
-    <td>org.apache.zeppelin:zeppelin-alluxio:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-alluxio:0.9.0</td>
     <td>Alluxio interpreter</td>
   </tr>
   <tr>
     <td>angular</td>
-    <td>org.apache.zeppelin:zeppelin-angular:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-angular:0.9.0</td>
     <td>HTML and AngularJS view rendering</td>
   </tr>
   <tr>
     <td>beam</td>
-    <td>org.apache.zeppelin:zeppelin-beam:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-beam:0.9.0</td>
     <td>Beam interpreter</td>
   </tr>
   <tr>
     <td>bigquery</td>
-    <td>org.apache.zeppelin:zeppelin-bigquery:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-bigquery:0.9.0</td>
     <td>BigQuery interpreter</td>
   </tr>
   <tr>
     <td>cassandra</td>
-    <td>org.apache.zeppelin:zeppelin-cassandra\_2.11:0.7.0</td>
-    <td>Cassandra interpreter built with Scala 2.11</td>
+    <td>org.apache.zeppelin:zeppelin-cassandra:0.9.0</td>
+    <td>Cassandra interpreter</td>
   </tr>
   <tr>
     <td>elasticsearch</td>
-    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-elasticsearch:0.9.0</td>
     <td>Elasticsearch interpreter</td>
   </tr>
   <tr>
     <td>file</td>
-    <td>org.apache.zeppelin:zeppelin-file:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-file:0.9.0</td>
     <td>HDFS file interpreter</td>
   </tr>
   <tr>
     <td>flink</td>
-    <td>org.apache.zeppelin:zeppelin-flink\_2.11:0.7.0</td>
-    <td>Flink interpreter built with Scala 2.11</td>
+    <td>org.apache.zeppelin:zeppelin-flink:0.9.0</td>
+    <td>Flink interpreter</td>
   </tr>
   <tr>
     <td>hbase</td>
-    <td>org.apache.zeppelin:zeppelin-hbase:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-hbase:0.9.0</td>
     <td>Hbase interpreter</td>
   </tr>
   <tr>
+    <td>geode</td>
+    <td>org.apache.zeppelin:zeppelin-geode:0.9.0</td>
+    <td>Apache Geode interpreter</td>
+  </tr>
+  <tr>
+    <td>groovy</td>
+    <td>org.apache.zeppelin:zeppelin-groovy:0.9.0</td>
+    <td>Groovy interpreter</td>
+  </tr>
+  <tr>
     <td>ignite</td>
-    <td>org.apache.zeppelin:zeppelin-ignite\_2.11:0.7.0</td>
-    <td>Ignite interpreter built with Scala 2.11</td>
+    <td>org.apache.zeppelin:zeppelin-ignite:0.9.0</td>
+    <td>Ignite interpreter</td>
+  </tr>
+  <tr>
+    <td>java</td>
+    <td>org.apache.zeppelin:zeppelin-java:0.9.0</td>
+    <td>Java interpreter</td>
   </tr>
   <tr>
     <td>jdbc</td>
-    <td>org.apache.zeppelin:zeppelin-jdbc:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-jdbc:0.9.0</td>
     <td>Jdbc interpreter</td>
   </tr>
   <tr>
@@ -194,42 +195,62 @@ You can also find the below community managed interpreter list in `conf/interpre
   </tr>
   <tr>
     <td>kylin</td>
-    <td>org.apache.zeppelin:zeppelin-kylin:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-kylin:0.9.0</td>
     <td>Kylin interpreter</td>
   </tr>
   <tr>
     <td>lens</td>
-    <td>org.apache.zeppelin:zeppelin-lens:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-lens:0.9.0</td>
     <td>Lens interpreter</td>
   </tr>
   <tr>
     <td>livy</td>
-    <td>org.apache.zeppelin:zeppelin-livy:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-livy:0.9.0</td>
     <td>Livy interpreter</td>
   </tr>
   <tr>
     <td>md</td>
-    <td>org.apache.zeppelin:zeppelin-markdown:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-markdown:0.9.0</td>
     <td>Markdown support</td>
   </tr>
   <tr>
+    <td>neo4j</td>
+    <td>org.apache.zeppelin:zeppelin-neo4j:0.9.0</td>
+    <td>Neo4j interpreter</td>
+  </tr>
+  <tr>
     <td>pig</td>
-    <td>org.apache.zeppelin:zeppelin-pig:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-pig:0.9.0</td>
     <td>Pig interpreter</td>
   </tr>
   <tr>
     <td>python</td>
-    <td>org.apache.zeppelin:zeppelin-python:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-python:0.9.0</td>
     <td>Python interpreter</td>
   </tr>
   <tr>
+    <td>sap</td>
+    <td>org.apache.zeppelin:zeppelin-sap:0.9.0</td>
+    <td>SAP support</td>
+  </tr>
+  <tr>
+    <td>scalding</td>
+    <td>org.apache.zeppelin:zeppelin-scalding_2.0.10:0.9.0</td>
+    <td>Scalding interpreter</td>
+  </tr>
+  <tr>
     <td>scio</td>
-    <td>org.apache.zeppelin:zeppelin-scio\_2.11:0.7.0</td>
-    <td>Scio interpreter built with Scala 2.11</td>
+    <td>org.apache.zeppelin:zeppelin-scio:0.9.0</td>
+    <td>Scio interpreter</td>
   </tr>
   <tr>
     <td>shell</td>
-    <td>org.apache.zeppelin:zeppelin-shell:0.7.0</td>
+    <td>org.apache.zeppelin:zeppelin-shell:0.9.0</td>
     <td>Shell command</td>
+  </tr>
+  <tr>
+    <td>submarine</td>
+    <td>org.apache.zeppelin:zeppelin-submarine:0.9.0</td>
+    <td>Submarine interpreter</td>
   </tr>
 </table>

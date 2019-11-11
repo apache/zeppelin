@@ -60,8 +60,6 @@ public class SparkInterpreter extends AbstractInterpreter {
 
   private SparkVersion sparkVersion;
   private boolean enableSupportedVersionCheck;
-  private String sparkUrl;
-
 
   public SparkInterpreter(Properties properties) {
     super(properties);
@@ -109,11 +107,6 @@ public class SparkInterpreter extends AbstractInterpreter {
       }
       sqlContext = this.innerInterpreter.getSqlContext();
       sparkSession = this.innerInterpreter.getSparkSession();
-      sparkUrl = this.innerInterpreter.getSparkUrl();
-      String sparkUrlProp = getProperty("zeppelin.spark.uiWebUrl", "");
-      if (!StringUtils.isBlank(sparkUrlProp)) {
-        sparkUrl = sparkUrlProp;
-      }
 
       SESSION_NUM.incrementAndGet();
     } catch (Exception e) {
@@ -258,10 +251,6 @@ public class SparkInterpreter extends AbstractInterpreter {
       }
     }
     return depFiles;
-  }
-
-  public String getSparkUIUrl() {
-    return sparkUrl;
   }
 
   public boolean isUnsupportedSparkVersion() {

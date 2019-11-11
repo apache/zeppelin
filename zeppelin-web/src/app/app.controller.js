@@ -50,6 +50,12 @@ function MainCtrl($scope, $rootScope, $window, arrayOrderingSrv) {
     }
   };
 
+  $rootScope.notePath = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNotePath(note);
+    }
+  };
+
   BootstrapDialog.defaultOptions.onshown = function() {
     angular.element('#' + this.id).find('.btn:last').focus();
   };

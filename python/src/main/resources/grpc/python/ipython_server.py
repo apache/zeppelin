@@ -38,6 +38,10 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
     def __init__(self, server):
         self._status = ipython_pb2.STARTING
         self._server = server
+        # issue with execute_interactive and auto completion: https://github.com/jupyter/jupyter_client/issues/429
+        # in all case because ipython does not support run and auto completion at the same time: https://github.com/jupyter/notebook/issues/3763
+        # For now we will lock to ensure that there is no concurrent bug that can "hang" the kernel
+        self._lock = threading.Lock()
 
     def start(self):
         print("starting...")
@@ -49,111 +53,76 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         print("execute code:\n")
         print(request.code.encode('utf-8'))
         sys.stdout.flush()
-        stderr_queue = queue.Queue(maxsize = 10)
-        text_queue = queue.Queue(maxsize = 10)
-        png_queue = queue.Queue(maxsize = 5)
-        jpeg_queue = queue.Queue(maxsize = 5)
-        html_queue = queue.Queue(maxsize = 10)
-
+        stream_reply_queue = queue.Queue(maxsize = 30)
+        payload_reply = []
         def _output_hook(msg):
             msg_type = msg['header']['msg_type']
             content = msg['content']
             print("******************* CONTENT ******************")
             print(str(content)[:400])
+            outStatus, outType, output = ipython_pb2.SUCCESS, None, None
+            # prepare the reply
             if msg_type == 'stream':
-                text_queue.put(content['text'])
+                outType = ipython_pb2.TEXT
+                output = content['text']
             elif msg_type in ('display_data', 'execute_result'):
-                if 'text/html' in content['data']:
-                    html_queue.put(content['data']['text/html'])
+                if 'image/jpeg' in content['data']:
+                    outType = ipython_pb2.JPEG
+                    output = content['data']['image/jpeg']
                 elif 'image/png' in content['data']:
-                    png_queue.put(content['data']['image/png'])
-                elif 'image/jpeg' in content['data']:
-                    jpeg_queue.put(content['data']['image/jpeg'])
+                    outType = ipython_pb2.PNG
+                    output = content['data']['image/png']
                 elif 'text/plain' in content['data']:
-                    text_queue.put(content['data']['text/plain'])
+                    outType = ipython_pb2.TEXT
+                    output = content['data']['text/plain']
+                elif 'text/html' in content['data']:
+                    outType = ipython_pb2.HTML
+                    output = content['data']['text/html']
                 elif 'application/javascript' in content['data']:
-                    print('add to html queue: ' + str(content)[:100])
-                    html_queue.put('<script> ' + content['data']['application/javascript'] + ' </script>\n')
+                    outType = ipython_pb2.HTML
+                    output = '<script> ' + content['data']['application/javascript'] + ' </script>\n'
+                    print('add to html output: ' + str(content)[:100])
                 elif 'application/vnd.holoviews_load.v0+json' in content['data']:
-                    html_queue.put('<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n')
-
+                    outType = ipython_pb2.HTML
+                    output = '<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n'
             elif msg_type == 'error':
-                stderr_queue.put('\n'.join(content['traceback']))
+                outStatus = ipython_pb2.ERROR
+                outType = ipython_pb2.TEXT
+                output = '\n'.join(content['traceback'])
 
-        payload_reply = []
+            # send reply if we supported the output type
+            if outType is not None:
+                stream_reply_queue.put(
+                    ipython_pb2.ExecuteResponse(status=outStatus,
+                                                type=outType,
+                                                output=output))
         def execute_worker():
             reply = self._kc.execute_interactive(request.code,
-                                            output_hook=_output_hook,
-                                            timeout=None)
+                                          output_hook=_output_hook,
+                                          timeout=None)
             payload_reply.append(reply)
 
         t = threading.Thread(name="ConsumerThread", target=execute_worker)
-        t.start()
+        with self._lock:
+            t.start()
+            # We want to wait the end of the execution (and queue empty).
+            # In our case when the thread is not alive -> it means that the execution is complete
+            # However we also ensure that the kernel is alive because in case of OOM or other errors
+            # Execution might be stuck there: (might open issue on jupyter client)
+            # https://github.com/jupyter/jupyter_client/blob/master/jupyter_client/blocking/client.py#L323
+            while (t.is_alive() and self.isKernelAlive()) or not stream_reply_queue.empty():
+                # Sleeping time to time to reduce cpu usage.
+                # At worst it will bring a 0.05 delay for bunch of messages.
+                # Overall it will improve performance.
+                time.sleep(0.05)
+                while not stream_reply_queue.empty():
+                    yield stream_reply_queue.get()
 
-        # We want to ensure that the kernel is alive because in case of OOM or other errors
-        # Execution might be stuck there:
-        # https://github.com/jupyter/jupyter_client/blob/master/jupyter_client/blocking/client.py#L32
-        while t.is_alive() and self.isKernelAlive():
-            while not text_queue.empty():
-                output = text_queue.get()
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.TEXT,
-                                                  output=output)
-            while not html_queue.empty():
-                output = html_queue.get()
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.HTML,
-                                                  output=output)
-            while not stderr_queue.empty():
-                output = stderr_queue.get()
+            # if kernel is not alive or thread is still alive, it means that we face an issue.
+            if not self.isKernelAlive() or t.is_alive():
                 yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
                                                   type=ipython_pb2.TEXT,
-                                                  output=output)
-            while not png_queue.empty():
-                output = png_queue.get()
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.PNG,
-                                                  output=output)
-            while not jpeg_queue.empty():
-                output = jpeg_queue.get()
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.JPEG,
-                                                  output=output)
-
-
-        # if kernel is not alive (should be same as thread is still alive), means that we face
-        # an unexpected issue.
-        if not self.isKernelAlive() or t.is_alive():
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
-                                                type=ipython_pb2.TEXT,
-                                                output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
-            return
-
-        while not text_queue.empty():
-            output = text_queue.get()
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                              type=ipython_pb2.TEXT,
-                                              output=output)
-        while not html_queue.empty():
-            output = html_queue.get()
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                              type=ipython_pb2.HTML,
-                                              output=output)
-        while not stderr_queue.empty():
-            output = stderr_queue.get()
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
-                                              type=ipython_pb2.TEXT,
-                                              output=output)
-        while not png_queue.empty():
-            output = png_queue.get()
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                              type=ipython_pb2.PNG,
-                                              output=output)
-        while not jpeg_queue.empty():
-            output = jpeg_queue.get()
-            yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                              type=ipython_pb2.JPEG,
-                                              output=output)
+                                                  output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
         if payload_reply:
             result = []
             for payload in payload_reply[0]['content']['payload']:
@@ -169,7 +138,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
         return ipython_pb2.CancelResponse()
 
     def complete(self, request, context):
-        reply = self._kc.complete(request.code, request.cursor, reply=True, timeout=None)
+        with self._lock:
+            reply = self._kc.complete(request.code, request.cursor, reply=True, timeout=None)
         return ipython_pb2.CompletionResponse(matches=reply['content']['matches'])
 
     def status(self, request, context):

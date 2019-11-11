@@ -103,12 +103,12 @@ public class K8sStandardInterpreterLauncher extends InterpreterLauncher {
 
   /**
    * get Zeppelin server host dns.
-   * return <hostname>.<namespace>.svc.cluster.local
+   * return <hostname>.<namespace>.svc
    * @throws IOException
    */
   private String getZeppelinServiceHost() throws IOException {
     if (isRunningOnKubernetes()) {
-      return String.format("%s.%s.svc.cluster.local",
+      return String.format("%s.%s.svc",
               getHostname(), // service name and pod name should be the same
               getNamespace());
     } else {

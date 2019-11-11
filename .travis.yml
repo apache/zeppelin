@@ -51,7 +51,7 @@ services:
 env:
   global:
     # Interpreters does not required by zeppelin-server integration tests
-    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!ignite,!kotlin,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine'
+    - INTERPRETERS='!beam,!hbase,!pig,!jdbc,!file,!flink,!ignite,!kotlin,!kylin,!lens,!cassandra,!elasticsearch,!bigquery,!alluxio,!scio,!livy,!groovy,!sap,!java,!geode,!neo4j,!hazelcastjet,!submarine'
 
 matrix:
   include:
@@ -64,7 +64,7 @@ matrix:
     - sudo: required
       jdk: "openjdk8"
       dist: xenial
-      env: BUILD_FLAG="clean package -DskipTests" TEST_FLAG="test -DskipTests"
+      env: BUILD_FLAG="clean package -T C2 -DskipTests" TEST_FLAG="test -DskipTests"
 
     # Run e2e tests (in zeppelin-web)
     # chrome dropped the support for precise (ubuntu 12.04), so need to use trusty
@@ -86,7 +86,7 @@ matrix:
     - sudo: required
       jdk: "openjdk8"
       dist: xenial
-      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="clean install -Pbuild-distr -DskipRat" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
+      env: PYTHON="3" SPARKR="true" PROFILE="-Pspark-2.2 -Phelium-dev -Pexamples -Pspark-scala-2.11" BUILD_FLAG="install -Pbuild-distr -DskipRat -DskipTests" TEST_FLAG="verify -Pusing-packaged-distr -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_PROJECTS="-Dtests.to.exclude=**/JdbcIntegrationTest.java,**/SparkIntegrationTest.java,**/ZeppelinSparkClusterTest.java,**/org/apache/zeppelin/spark/*,**/HeliumApplicationFactoryTest.java -DfailIfNoTests=false"
 
     # Test selenium with spark module for spark 2.3
     - jdk: "openjdk8"
@@ -98,7 +98,7 @@ matrix:
     # Test interpreter modules
     - jdk: "openjdk8"
       dist: xenial
-      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" TENSORFLOW="1.0.0" PROFILE="-Pscala-2.10" BUILD_FLAG="clean install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
+      env: PYTHON="3" SPARKR="true" SCALA_VER="2.10" TENSORFLOW="1.0.0" PROFILE="-Pscala-2.10" BUILD_FLAG="install -DskipTests -DskipRat -am" TEST_FLAG="test -DskipRat" MODULES="-pl $(echo .,zeppelin-interpreter,zeppelin-interpreter-api,${INTERPRETERS} | sed 's/!//g')" TEST_PROJECTS=""
 
     # Run Spark integration test and unit test separately for each spark version
 
@@ -176,7 +176,7 @@ before_install:
 install:
   - echo "mvn $BUILD_FLAG $MODULES $PROFILE -B"
   - mvn $BUILD_FLAG $MODULES $PROFILE -B
-  - if [ x"$BUILD_PLUGINS" == x"true" ]; then echo "mvn clean package -pl zeppelin-plugins -amd -B"; mvn clean package -pl zeppelin-plugins -amd -B; fi
+  - if [ x"$BUILD_PLUGINS" == x"true" ]; then echo "mvn clean package -T 2C -pl zeppelin-plugins -amd -B"; mvn clean package -T 2C -pl zeppelin-plugins -amd -B; fi
 
 before_script:
   - if [[ -n $SPARK_VER ]]; then travis_retry ./testing/downloadSpark.sh $SPARK_VER $HADOOP_VER; fi

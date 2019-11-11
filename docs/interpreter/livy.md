@@ -146,6 +146,31 @@ Example: `spark.driver.memory` to `livy.spark.driver.memory`
     <td>password for trustStore file. Used when livy ssl is enabled</td>
   </tr>
   <tr>
+    <td>zeppelin.livy.ssl.trustStoreType</td>
+    <td>JKS</td>
+    <td>type of truststore. Either JKS or PKCS12.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.keyStore</td>
+    <td></td>
+    <td>client keyStore file. Needed if Livy requires two way SSL authentication.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.keyStorePassword</td>
+    <td></td>
+    <td>password for keyStore file.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.keyStoreType</td>
+    <td>JKS</td>
+    <td>type of keystore. Either JKS or PKCS12.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.livy.ssl.keyPassword</td>
+    <td></td>
+    <td>password for key in the keyStore file. Defaults to zeppelin.livy.ssl.keyStorePassword.</td>
+  </tr>       
+  <tr>
     <td>zeppelin.livy.http.headers</td>
     <td>key_1: value_1; key_2: value_2</td>
     <td>custom http headers when calling livy rest api. Each http header is separated by `;`, and each header is one key value pair where key value is separated by `:`</td>

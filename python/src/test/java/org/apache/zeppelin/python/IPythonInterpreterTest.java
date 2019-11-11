@@ -27,12 +27,19 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static junit.framework.TestCase.assertTrue;
@@ -123,7 +130,8 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     result = interpreter.interpret(codeKillKernel, context);
     assertEquals(Code.ERROR, result.code());
     output = context.out.toInterpreterResultMessage().get(0);
-    assertTrue(output.getData().equals("Ipython kernel has been stopped. Please check logs. "
+    assertTrue(output.getData(),
+            output.getData().equals("Ipython kernel has been stopped. Please check logs. "
         + "It might be because of an out of memory issue."));
   }
 
@@ -277,6 +285,49 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
             context.out.toInterpreterResultMessage().get(0).getType());
     assertEquals(InterpreterResult.Type.HTML,
             context.out.toInterpreterResultMessage().get(1).getType());
+  }
+
+  @Test
+  public void testIpython_shouldNotHang_whenCallingAutoCompleteAndInterpretConcurrently()
+      throws InterpreterException,
+      InterruptedException, TimeoutException, ExecutionException {
+    tearDown();
+    Properties properties = initIntpProperties();
+    startInterpreter(properties);
+    final String code = "import time\n"
+        + "print(1)\n"
+        + "time.sleep(10)\n"
+        + "print(2)";
+    final String base = "time.";
+
+    // The goal of this test is to ensure that concurrent interpret and complete
+    // will not make execute hang forever.
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    FutureTask<InterpreterResult> interpretFuture =
+        new FutureTask(new Callable() {
+          @Override
+          public Object call() throws Exception {
+            return interpreter.interpret(code, getInterpreterContext());
+          }
+        });
+    FutureTask<List<InterpreterCompletion>> completionFuture =
+        new FutureTask(new Callable() {
+          @Override
+          public Object call() throws Exception {
+            return interpreter.completion(base, base.length(), getInterpreterContext());
+          }
+        });
+
+    pool.execute(interpretFuture);
+    // we sleep to ensure that the paragraph is running
+    Thread.sleep(3000);
+    pool.execute(completionFuture);
+
+    // We ensure that running and auto completion are not hanging.
+    InterpreterResult res = interpretFuture.get(20000, TimeUnit.MILLISECONDS);
+    List<InterpreterCompletion> autoRes = completionFuture.get(1000, TimeUnit.MILLISECONDS);
+    assertTrue(res.code().name().equals("SUCCESS"));
+    assertTrue(autoRes.size() > 0);
   }
 
   @Test

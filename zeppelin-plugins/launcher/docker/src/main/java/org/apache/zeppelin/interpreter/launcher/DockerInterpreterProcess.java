@@ -45,6 +45,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.ProgressHandler;
 import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ExecCreation;
@@ -162,6 +163,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
   public void start(String userName) throws IOException {
     docker = DefaultDockerClient.builder().uri(URI.create(DOCKER_HOST)).build();
 
+    removeExistContainer(containerName);
+
     final Map<String, List<PortBinding>> portBindings = new HashMap<>();
 
     // Bind container ports to host ports
@@ -191,13 +194,25 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
     List<String> listEnv = getListEnvs();
     LOGGER.info("docker listEnv = {}", listEnv);
 
+    // check if the interpreter process exit script
+    // if interpreter process exit, then container need exit
+    StringBuilder sbStartCmd = new StringBuilder();
+    sbStartCmd.append("sleep 10; ");
+    sbStartCmd.append("process=RemoteInterpreterServer; ");
+    sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
+    sbStartCmd.append("while [ ! -z \"$RUNNING_PIDS\" ]; ");
+    sbStartCmd.append("do sleep 1; ");
+    sbStartCmd.append("RUNNING_PIDS=$(ps x | grep $process | grep -v grep | awk '{print $1}'); ");
+    sbStartCmd.append("done");
+
     // Create container with exposed ports
     final ContainerConfig containerConfig = ContainerConfig.builder()
         .hostConfig(hostConfig)
+        .hostname(this.zeppelinServiceHost)
         .image(containerImage)
         .workingDir("/")
         .env(listEnv)
-        .cmd("sh", "-c", "while :; do sleep 1; done")
+        .cmd("sh", "-c", sbStartCmd.toString())
         .build();
 
     try {
@@ -340,14 +355,47 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
 
       // Remove container
       docker.removeContainer(containerName);
-    } catch (DockerException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    } catch (DockerException | InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
     }
 
     // Close the docker client
     docker.close();
+  }
+
+  // Because docker can't create a container with the same name, it will cause the creation to fail.
+  // If the zeppelin service is abnormal and the container that was created is not closed properly,
+  // the container will not be created again.
+  private void removeExistContainer(String containerName) {
+    boolean isExist = false;
+    try {
+      final List<Container> containers
+          = docker.listContainers(DockerClient.ListContainersParam.allContainers());
+      for (Container container : containers) {
+        for (String name : container.names()) {
+          // because container name like '/md-shared', so need add '/'
+          if (StringUtils.equals(name, "/" + containerName)) {
+            isExist = true;
+            break;
+          }
+        }
+      }
+
+      if (isExist == true) {
+        LOGGER.info("kill exist container {}", containerName);
+        docker.killContainer(containerName);
+      }
+    } catch (DockerException | InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+    } finally {
+      try {
+        if (isExist == true) {
+          docker.removeContainer(containerName);
+        }
+      } catch (DockerException | InterruptedException e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+    }
   }
 
   @Override
@@ -406,6 +454,8 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       LOGGER.warn("{} file not found, Did not upload the krb5.conf to the container!", krb5conf);
     }
 
+    // TODO(Vince): Interpreter specific settings, we should consider general property or some
+    // other more elegant solution
     // 3) Get the keytab file in each interpreter properties
     // Upload Keytab file to container, Keep the same directory as local host
     // 3.1) shell interpreter properties keytab file
@@ -419,14 +469,18 @@ public class DockerInterpreterProcess extends RemoteInterpreterProcess {
       intpKeytab = properties.getProperty("submarine.hadoop.keytab", "");
     }
     if (StringUtils.isBlank(intpKeytab)) {
-      // 3.4) jdbc interpreter properties keytab file
+      // 3.4) livy interpreter properties keytab file
+      intpKeytab = properties.getProperty("zeppelin.livy.keytab", "");
+    }
+    if (StringUtils.isBlank(intpKeytab)) {
+      // 3.5) jdbc interpreter properties keytab file
       intpKeytab = properties.getProperty("zeppelin.jdbc.keytab.location", "");
     }
     if (!StringUtils.isBlank(intpKeytab) && !copyFiles.containsKey(intpKeytab)) {
       LOGGER.info("intpKeytab : {}", intpKeytab);
       copyFiles.put(intpKeytab, intpKeytab);
     }
-    // 3.5) zeppelin server keytab file
+    // 3.6) zeppelin server keytab file
     String zeppelinServerKeytab = zconf.getString(ZEPPELIN_SERVER_KERBEROS_KEYTAB);
     if (!StringUtils.isBlank(zeppelinServerKeytab)
         && !copyFiles.containsKey(zeppelinServerKeytab)) {
