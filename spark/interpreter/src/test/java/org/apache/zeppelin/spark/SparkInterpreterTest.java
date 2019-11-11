@@ -105,6 +105,7 @@ public class SparkInterpreterTest {
     // incomplete
     result = interpreter.interpret("println(a", getInterpreterContext());
     assertEquals(InterpreterResult.Code.INCOMPLETE, result.code());
+    assertEquals("Incomplete expression", result.message());
 
     // syntax error
     result = interpreter.interpret("println(b)", getInterpreterContext());
