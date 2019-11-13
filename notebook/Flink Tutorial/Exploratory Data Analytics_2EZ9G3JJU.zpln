@@ -1,0 +1,962 @@
+{
+  "paragraphs": [
+    {
+      "title": "Overview",
+      "text": "%md\n\nThis tutorial demonstrates how to use Flink do data exploration analytics via its.\n\n* batch sql \n* udf (scala, python \u0026 hive) \n* Zeppelin\u0027s dynamic forms and builtin visualization\n\nWe the bank data registered in another tutorial note. You can also use any existed hive table. \n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-06 22:20:28.615",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrates how to use Flink do data exploration analytics via its.\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ebatch sql\u003c/li\u003e\n\u003cli\u003eudf (scala, python \u0026amp; hive)\u003c/li\u003e\n\u003cli\u003eZeppelin\u0026rsquo;s dynamic forms and builtin visualization\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eWe the bank data registered in another tutorial note. You can also use any existed hive table.\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579053946947_-1754951794",
+      "id": "paragraph_1579053946947_-1754951794",
+      "dateCreated": "2020-01-15 10:05:46.947",
+      "dateStarted": "2020-02-03 11:26:55.753",
+      "dateFinished": "2020-02-03 11:26:55.770",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Common group by",
+      "text": "%flink.bsql\n\nselect age, count(1) as aval\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:58:22.617",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "age": "string",
+                      "aval": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "age",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "aval",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\taval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578043926895_1558885985",
+      "id": "paragraph_1578043926895_1558885985",
+      "dateCreated": "2020-01-03 17:32:06.895",
+      "dateStarted": "2020-02-25 11:58:22.625",
+      "dateFinished": "2020-02-25 11:58:54.476",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Textbox dynamic form",
+      "text": "%flink.bsql\n\nselect age, count(1) as val \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:59:02.987",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "age": "string",
+                      "val": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "age",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "val",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {
+          "maxAge": "50"
+        },
+        "forms": {
+          "maxAge": {
+            "type": "TextBox",
+            "name": "maxAge",
+            "defaultValue": "30",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tval\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n30\t150\n31\t199\n32\t224\n33\t186\n34\t231\n35\t180\n36\t188\n37\t161\n38\t159\n39\t130\n40\t142\n41\t135\n42\t141\n43\t115\n44\t105\n45\t112\n46\t119\n47\t108\n48\t114\n49\t112\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578904010994_-1300955750",
+      "id": "paragraph_1578904010994_-1300955750",
+      "dateCreated": "2020-01-13 16:26:50.994",
+      "dateStarted": "2020-02-25 11:59:02.992",
+      "dateFinished": "2020-02-25 11:59:05.094",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Select dynamic form",
+      "text": "%flink.bsql\n\nselect age, count(1) as val \nfrom bank \nwhere marital\u003d\u0027${marital\u003dsingle,single|divorced|married}\u0027 \ngroup by age \norder by age",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:59:05.987",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "stackedAreaChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "age": "string",
+                      "val": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default",
+                  "style": "stack"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "age",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "val",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {
+          "marital": "married"
+        },
+        "forms": {
+          "marital": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "single"
+              },
+              {
+                "value": "divorced"
+              },
+              {
+                "value": "married"
+              }
+            ],
+            "name": "marital",
+            "defaultValue": "single",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tval\n23\t3\n24\t11\n25\t11\n26\t18\n27\t26\n28\t23\n29\t37\n30\t56\n31\t104\n32\t105\n33\t103\n34\t142\n35\t109\n36\t117\n37\t100\n38\t99\n39\t88\n40\t105\n41\t97\n42\t91\n43\t79\n44\t68\n45\t76\n46\t82\n47\t78\n48\t91\n49\t87\n50\t74\n51\t63\n52\t66\n53\t75\n54\t56\n55\t68\n56\t50\n57\t78\n58\t67\n59\t56\n60\t36\n61\t15\n62\t5\n63\t7\n64\t6\n65\t4\n66\t7\n67\t5\n68\t1\n69\t5\n70\t5\n71\t5\n72\t4\n73\t6\n74\t2\n75\t3\n76\t1\n77\t5\n78\t2\n79\t3\n80\t6\n81\t1\n83\t2\n86\t1\n87\t1\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578904047823_-1212655985",
+      "id": "paragraph_1578904047823_-1212655985",
+      "dateCreated": "2020-01-13 16:27:27.823",
+      "dateStarted": "2020-02-25 11:59:05.992",
+      "dateFinished": "2020-02-25 11:59:07.733",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Scala UDF",
+      "text": "%flink\n\n\nclass ScalaUpper extends ScalarFunction {\n  def eval(str: String) \u003d str.toUpperCase\n}\n\nbtenv.registerFunction(\"scala_upper\", new ScalaUpper())\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:59:10.659",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "defined class ScalaUpper\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905208609_-1175158458",
+      "id": "paragraph_1578905208609_-1175158458",
+      "dateCreated": "2020-01-13 16:46:48.612",
+      "dateStarted": "2020-02-25 11:59:10.673",
+      "dateFinished": "2020-02-25 11:59:11.167",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Python UDF",
+      "text": "%flink.pyflink\n\nclass PythonUpper(ScalarFunction):\n  def eval(self, s):\n    return s.upper()\n\nbt_env.register_function(\"python_upper\", udf(PythonUpper(), DataTypes.STRING(), DataTypes.STRING()))\n\n\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 13:25:28.625",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905223714_1228156151",
+      "id": "paragraph_1578905223714_1228156151",
+      "dateCreated": "2020-01-13 16:47:03.714",
+      "dateStarted": "2020-02-25 13:25:28.632",
+      "dateFinished": "2020-02-25 13:25:55.243",
+      "status": "FINISHED"
+    },
+    {
+      "title": "All available sql in %flink.bsql",
+      "text": "%flink.bsql\n\nhelp",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:59:19.106",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 354.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "The following commands are available:\n\nCREATE TABLE\t\tCreate table under current catalog and database.\nDROP TABLE\t\tDrop table with optional catalog and database. Syntax: \u0027DROP TABLE [IF EXISTS] \u003cname\u003e;\u0027\nCREATE VIEW\t\tCreates a virtual table from a SQL query. Syntax: \u0027CREATE VIEW \u003cname\u003e AS \u003cquery\u003e;\u0027\nDESCRIBE\t\tDescribes the schema of a table with the given name.\nDROP VIEW\t\tDeletes a previously created virtual table. Syntax: \u0027DROP VIEW \u003cname\u003e;\u0027\nEXPLAIN\t\tDescribes the execution plan of a query or table with the given name.\nHELP\t\tPrints the available commands.\nINSERT INTO\t\tInserts the results of a SQL SELECT query into a declared table sink.\nINSERT OVERWRITE\t\tInserts the results of a SQL SELECT query into a declared table sink and overwrite existing data.\nSELECT\t\tExecutes a SQL SELECT query on the Flink cluster.\nSHOW FUNCTIONS\t\tShows all user-defined and built-in functions.\nSHOW TABLES\t\tShows all registered tables.\nUSE CATALOG\t\tSets the current catalog. The current database is set to the catalog\u0027s default one. Experimental! Syntax: \u0027USE CATALOG \u003cname\u003e;\u0027\nUSE\t\tSets the current default database. Experimental! Syntax: \u0027USE \u003cname\u003e;\u0027\n\nHint: Make sure that a statement ends with \u0027;\u0027 for finalizing (multi-line) statements."
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580872625746_1221957461",
+      "id": "paragraph_1580872625746_1221957461",
+      "dateCreated": "2020-02-05 11:17:05.753",
+      "dateStarted": "2020-02-25 11:59:19.111",
+      "dateFinished": "2020-02-25 11:59:19.275",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Use scala udf in sql",
+      "text": "%flink.bsql\n\nselect scala_upper(education), count(1) from bank group by education\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:59:22.259",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "EXPR$0": "string",
+                      "EXPR$1": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "EXPR$0",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "EXPR$1",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "EXPR$0\tEXPR$1\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905241045_-678553675",
+      "id": "paragraph_1578905241045_-678553675",
+      "dateCreated": "2020-01-13 16:47:21.045",
+      "dateStarted": "2020-02-25 11:59:22.265",
+      "dateFinished": "2020-02-25 11:59:24.020",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Use python udf in sql",
+      "text": "%flink.bsql\n\nselect python_upper(education) as edu, count(1) as c from bank group by education\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 13:26:40.167",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "pieChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "edu": "string",
+                      "c": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "stackedAreaChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "pieChart": {}
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "edu",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "c",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "edu\tc\nPRIMARY\t678\nSECONDARY\t2306\nTERTIARY\t1350\nUNKNOWN\t187\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905276271_782994324",
+      "id": "paragraph_1578905276271_782994324",
+      "dateCreated": "2020-01-13 16:47:56.271",
+      "dateStarted": "2020-02-25 13:26:40.177",
+      "dateFinished": "2020-02-25 13:26:59.228",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Show all hive tables",
+      "text": "%hive\n\nshow tables\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 13:27:52.508",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "tab_name0",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "priority": 0.0,
+                          "direction": "asc"
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "tab_name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "tab_name\nbank\nbank_raw\ndepartments\ndest_csv\ndest_orc\nemployee\nitems\nsink_kafka\nsource_csv\nsource_kafka\nweb_log_small\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580889919226_-1710921935",
+      "id": "paragraph_1580889919226_-1710921935",
+      "dateCreated": "2020-02-05 16:05:19.226",
+      "dateStarted": "2020-02-25 13:27:52.513",
+      "dateFinished": "2020-02-25 13:27:55.846",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Describe Hive table via Flink Sql",
+      "text": "%flink.bsql\n\nshow tables",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 13:28:14.314",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "table": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "table\nUnnamedTable$0\nbank\nbank_raw\ndepartments\ndest_csv\ndest_orc\nemployee\nitems\nsink_kafka\nsource_csv\nsource_kafka\nweb_log_small\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580890881367_1309558694",
+      "id": "paragraph_1580890881367_1309558694",
+      "dateCreated": "2020-02-05 16:21:21.368",
+      "dateStarted": "2020-02-25 13:28:13.536",
+      "dateFinished": "2020-02-25 13:28:13.686",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Query Hive table via Flink Sql",
+      "text": "%flink.bsql\n\nselect * from employee\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 13:36:20.020",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "eid": "string",
+                      "name": "string",
+                      "salary": "string",
+                      "destination": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "eid\tname\tsalary\tdestination\n1201\tGopal\t45000\tTechnical manager\n1202\tManisha\t45000\tProof reader\n1203\tMasthanvali\t40000\tTechnical writer\n1204\tKiran\t40000\tHr Admin\n1205\tKranthi\t30000\tOp Admin\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578043607185_590649655",
+      "id": "paragraph_1578043607185_590649655",
+      "dateCreated": "2020-01-03 17:26:47.185",
+      "dateStarted": "2020-02-25 13:36:20.025",
+      "dateFinished": "2020-02-25 13:36:53.391",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%flink.bsql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-05 16:10:30.318",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580890230317_-355710383",
+      "id": "paragraph_1580890230317_-355710383",
+      "dateCreated": "2020-02-05 16:10:30.318",
+      "status": "READY"
+    }
+  ],
+  "name": "Exploratory Data Analytics",
+  "id": "2EZ9G3JJU",
+  "defaultInterpreterGroup": "flink",
+  "version": "0.9.0-SNAPSHOT",
+  "permissions": {
+    "owners": [],
+    "runners": [],
+    "readers": [],
+    "writers": []
+  },
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {},
+  "path": "/Flink Tutorial/Exploratory Data Analytics"
+}

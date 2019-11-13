@@ -18,8 +18,10 @@
 package org.apache.zeppelin.flink;
 
 import org.apache.zeppelin.interpreter.ZeppelinContext;
+import org.apache.flink.table.api.TableEnvironment;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.python.IPythonInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,7 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(IPyFlinkInterpreter.class);
 
   private FlinkInterpreter flinkInterpreter;
+  private InterpreterContext curInterpreterContext;
 
   public IPyFlinkInterpreter(Properties property) {
     super(property);
@@ -67,6 +70,22 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   }
 
   @Override
+  public InterpreterResult internalInterpret(String st,
+                                             InterpreterContext context)
+          throws InterpreterException {
+    // set InterpreterContext in the python thread first, otherwise flink job could not be
+    // associated with paragraph in JobListener
+    this.curInterpreterContext = context;
+    InterpreterResult result =
+            super.internalInterpret("intp.setInterpreterContextInPythonThread()", context);
+    if (result.code() != InterpreterResult.Code.SUCCESS) {
+      throw new InterpreterException("Fail to setInterpreterContextInPythonThread: " +
+              result.toString());
+    }
+    return super.internalInterpret(st, context);
+  }
+
+  @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
     super.cancel(context);
     flinkInterpreter.cancel(context);
@@ -81,6 +100,10 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
     }
   }
 
+  public void setInterpreterContextInPythonThread() {
+    InterpreterContext.set(curInterpreterContext);
+  }
+
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     return flinkInterpreter.getProgress(context);
@@ -93,5 +116,13 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   public org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
       getJavaStreamExecutionEnvironment() {
     return flinkInterpreter.getStreamExecutionEnvironment().getJavaEnv();
+  }
+
+  public TableEnvironment getJavaBatchTableEnvironment(String planner) {
+    return flinkInterpreter.getJavaBatchTableEnvironment(planner);
+  }
+
+  public TableEnvironment getJavaStreamTableEnvironment(String planner) {
+    return flinkInterpreter.getJavaStreamTableEnvironment(planner);
   }
 }

@@ -19,6 +19,7 @@ package org.apache.zeppelin.flink;
 
 
 import com.google.common.io.Files;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -27,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
+import org.apache.zeppelin.python.IPythonInterpreterTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,13 +36,13 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
-public class IPyFlinkInterpreterTest {
+public class IPyFlinkInterpreterTest extends IPythonInterpreterTest {
 
-  private InterpreterGroup intpGroup;
-  private Interpreter interpreter;
   private RemoteInterpreterEventClient mockIntpEventClient =
           mock(RemoteInterpreterEventClient.class);
 
@@ -54,6 +56,7 @@ public class IPyFlinkInterpreterTest {
     return p;
   }
 
+  @Override
   protected void startInterpreter(Properties properties) throws InterpreterException {
     InterpreterContext context = getInterpreterContext();
     context.setIntpEventClient(mockIntpEventClient);
@@ -90,8 +93,12 @@ public class IPyFlinkInterpreterTest {
   }
 
   @Test
-  public void testIPyFlink() throws InterpreterException {
+  public void testBatchIPyFlink() throws InterpreterException {
     testBatchPyFlink(interpreter);
+  }
+
+  @Test
+  public void testStreamIPyFlink() throws InterpreterException {
     testStreamPyFlink(interpreter);
   }
 
@@ -124,6 +131,22 @@ public class IPyFlinkInterpreterTest {
         "bt_env.execute(\"batch_job\")"
             , context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
+  @Override
+  public void testIPythonFailToLaunch() throws InterpreterException {
+    tearDown();
+
+    Properties properties = initIntpProperties();
+    properties.setProperty("zeppelin.pyflink.python", "invalid_python");
+
+    try {
+      startInterpreter(properties);
+      fail("Should not be able to start IPyFlinkInterpreter");
+    } catch (InterpreterException e) {
+      String exceptionMsg = ExceptionUtils.getStackTrace(e);
+      assertTrue(exceptionMsg, exceptionMsg.contains("No such file or directory"));
+    }
   }
 
   public static void testStreamPyFlink(Interpreter interpreter) throws InterpreterException {

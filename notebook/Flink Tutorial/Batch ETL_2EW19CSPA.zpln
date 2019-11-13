@@ -1,0 +1,516 @@
+{
+  "paragraphs": [
+    {
+      "title": "Overview",
+      "text": "%md\n\nThis tutorial demonstrates how to use Flink do batch ETL via its batch sql + udf (scala, python \u0026 hive). Here\u0027s what we do in this tutorial\n\n* Download [bank](https://archive.ics.uci.edu/ml/datasets/bank+marketing) data via shell interpreter to local\n* Process the raw data via flink batch sql \u0026 scala udf which parse and clean the raw data\n* Write the structured and cleaned data to another flink table via sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-03 11:22:34.799",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrates how to use Flink do batch ETL via its batch sql + udf (scala, python \u0026amp; hive). Here\u0026rsquo;s what we do in this tutorial\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDownload \u003ca href\u003d\"https://archive.ics.uci.edu/ml/datasets/bank+marketing\"\u003ebank\u003c/a\u003e data via shell interpreter to local\u003c/li\u003e\n\u003cli\u003eProcess the raw data via flink batch sql \u0026amp; scala udf which parse and clean the raw data\u003c/li\u003e\n\u003cli\u003eWrite the structured and cleaned data to another flink table via sql\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579052523153_721650872",
+      "id": "paragraph_1579052523153_721650872",
+      "dateCreated": "2020-01-15 09:42:03.156",
+      "dateStarted": "2020-02-03 11:22:34.823",
+      "dateFinished": "2020-02-03 11:22:34.841",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%flink.conf\n\nflink.interpreter.close.shutdown_cluster false",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 09:33:04.023",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1582594367896_465966821",
+      "id": "paragraph_1582594367896_465966821",
+      "dateCreated": "2020-02-25 09:32:47.896",
+      "dateStarted": "2020-02-25 09:33:04.028",
+      "dateFinished": "2020-02-25 09:33:04.032",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Download bank data",
+      "text": "%sh\n\ncd /tmp\nwget https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip\ntar -xvf bank.zip\n# upload data to hdfs if you want to run it in yarn mode\n# hadoop fs -put /tmp/bank.csv /tmp/bank.csv\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:13:01.938",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/sh"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "--2020-02-25 11:13:02--  https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip\nResolving archive.ics.uci.edu (archive.ics.uci.edu)... 128.195.10.252\nConnecting to archive.ics.uci.edu (archive.ics.uci.edu)|128.195.10.252|:443... connected.\nHTTP request sent, awaiting response... 200 OK\nLength: 579043 (565K) [application/x-httpd-php]\nSaving to: ‘bank.zip’\n\n     0K .......... .......... .......... .......... ..........  8% 78.4K 7s\n    50K .......... .......... .......... .......... .......... 17%  157K 4s\n   100K .......... .......... .......... .......... .......... 26% 63.1K 5s\n   150K .......... .......... .......... .......... .......... 35% 39.5K 6s\n   200K .......... .......... .......... .......... .......... 44% 14.8K 8s\n   250K .......... .......... .......... .......... .......... 53% 18.4K 8s\n   300K .......... .......... .......... .......... .......... 61% 24.6K 7s\n   350K .......... .......... .......... .......... .......... 70% 18.2K 6s\n   400K .......... .......... .......... .......... .......... 79% 22.5K 4s\n   450K .......... .......... .......... .......... .......... 88% 34.9K 2s\n   500K .......... .......... .......... .......... .......... 97% 25.6K 1s\n   550K .......... .....                                      100% 17.5K\u003d20s\n\n2020-02-25 11:13:23 (27.7 KB/s) - ‘bank.zip’ saved [579043/579043]\n\nx bank-full.csv\nx bank-names.txt\nx bank.csv\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578045094400_1030344935",
+      "id": "paragraph_1578045094400_1030344935",
+      "dateCreated": "2020-01-03 17:51:34.400",
+      "dateStarted": "2020-02-25 11:13:01.944",
+      "dateFinished": "2020-02-25 11:13:23.972",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Raw Data Preview",
+      "text": "%sh\n\nhead -n 10 /tmp/bank.csv",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:13:27.044",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/sh"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\"age\";\"job\";\"marital\";\"education\";\"default\";\"balance\";\"housing\";\"loan\";\"contact\";\"day\";\"month\";\"duration\";\"campaign\";\"pdays\";\"previous\";\"poutcome\";\"y\"\n30;\"unemployed\";\"married\";\"primary\";\"no\";1787;\"no\";\"no\";\"cellular\";19;\"oct\";79;1;-1;0;\"unknown\";\"no\"\n33;\"services\";\"married\";\"secondary\";\"no\";4789;\"yes\";\"yes\";\"cellular\";11;\"may\";220;1;339;4;\"failure\";\"no\"\n35;\"management\";\"single\";\"tertiary\";\"no\";1350;\"yes\";\"no\";\"cellular\";16;\"apr\";185;1;330;1;\"failure\";\"no\"\n30;\"management\";\"married\";\"tertiary\";\"no\";1476;\"yes\";\"yes\";\"unknown\";3;\"jun\";199;4;-1;0;\"unknown\";\"no\"\n59;\"blue-collar\";\"married\";\"secondary\";\"no\";0;\"yes\";\"no\";\"unknown\";5;\"may\";226;1;-1;0;\"unknown\";\"no\"\n35;\"management\";\"single\";\"tertiary\";\"no\";747;\"no\";\"no\";\"cellular\";23;\"feb\";141;2;176;3;\"failure\";\"no\"\n36;\"self-employed\";\"married\";\"tertiary\";\"no\";307;\"yes\";\"no\";\"cellular\";14;\"may\";341;1;330;2;\"other\";\"no\"\n39;\"technician\";\"married\";\"secondary\";\"no\";147;\"yes\";\"no\";\"cellular\";6;\"may\";151;2;-1;0;\"unknown\";\"no\"\n41;\"entrepreneur\";\"married\";\"tertiary\";\"no\";221;\"yes\";\"no\";\"unknown\";14;\"may\";57;2;-1;0;\"unknown\";\"no\"\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579053112778_2010129053",
+      "id": "paragraph_1579053112778_2010129053",
+      "dateCreated": "2020-01-15 09:51:52.779",
+      "dateStarted": "2020-02-25 11:13:27.049",
+      "dateFinished": "2020-02-25 11:13:27.078",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Define source table which represents the raw data",
+      "text": "%flink.bsql\n\nDROP TABLE IF EXISTS bank_raw;\nCREATE TABLE bank_raw (\n   content STRING\n) WITH (\n\u0027format.field-delimiter\u0027\u003d\u0027\\n\u0027,\n\u0027connector.type\u0027\u003d\u0027filesystem\u0027,\n\u0027format.derive-schema\u0027\u003d\u0027true\u0027,\n\u0027connector.path\u0027\u003d\u0027hdfs:///tmp/bank.csv\u0027,\n\u0027format.type\u0027\u003d\u0027csv\u0027\n);",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:51:09.302",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Table has been dropped.\nTable has been created.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578044954921_-1188487356",
+      "id": "paragraph_1578044954921_-1188487356",
+      "dateCreated": "2020-01-03 17:49:14.921",
+      "dateStarted": "2020-02-25 11:51:09.310",
+      "dateFinished": "2020-02-25 11:51:32.241",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Define sink table which represents the cleaned data",
+      "text": "%flink.bsql\n\nDROP TABLE IF EXISTS bank;\nCREATE TABLE bank (\n    age int, \n    job string,\n    marital string,\n    education string,\n    `default` string,\n    balance string,\n    housing string,\n    loan string,\n    contact string, \n    `day` string,\n    `month` string,\n    duration int,\n    campaign int,\n    pdays int,\n    previous int,\n    poutcome string,\n    y string\n) WITH (\n\u0027format.field-delimiter\u0027\u003d\u0027,\u0027,\n\u0027connector.type\u0027\u003d\u0027filesystem\u0027,\n\u0027format.derive-schema\u0027\u003d\u0027true\u0027,\n\u0027connector.path\u0027\u003d\u0027hdfs:///tmp/bank_cleaned\u0027,\n\u0027format.type\u0027\u003d\u0027csv\u0027\n);",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:52:02.630",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Table has been dropped.\nTable has been created.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578045204379_-1427374232",
+      "id": "paragraph_1578045204379_-1427374232",
+      "dateCreated": "2020-01-03 17:53:24.379",
+      "dateStarted": "2020-02-25 11:52:02.636",
+      "dateFinished": "2020-02-25 11:52:03.046",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Define UDTF ParseFunction to parse the raw data",
+      "text": "%flink\n\nimport org.apache.flink.api.java.typeutils.RowTypeInfo\nimport org.apache.flink.api.common.typeinfo.Types\nimport org.apache.flink.api.java.typeutils._\nimport org.apache.flink.api.scala.typeutils._\nimport org.apache.flink.api.scala._\n\nclass Person(val age:Int, val job: String, val marital: String, val education: String, val default: String, val balance: String, val housing: String, val loan: String, val contact: String, val day: String, val month: String, val duration: Int, val campaign: Int, val pdays: Int, val previous: Int, val poutcome: String, val y: String)\n\nclass ParseFunction extends TableFunction[Row] {\n  def eval(line: String) {\n    val tokens \u003d line.split(\";\")\n    // parse the line\n    if (!line.startsWith(\"\\\"age\\\"\")) {\n      collect(Row.of(new Integer(tokens(0).toInt), normalize(tokens(1)), normalize(tokens(2)), normalize(tokens(3)), normalize(tokens(4)), normalize(tokens(5)), normalize(tokens(6)), normalize(tokens(7)), normalize(tokens(8)), normalize(tokens(9)), normalize(tokens(10)), new Integer(tokens(11).toInt),  new Integer(tokens(12).toInt),  \n           new Integer(tokens(13).toInt), new Integer(tokens(14).toInt),  normalize(tokens(15)), normalize(tokens(16))))\n    }\n  }\n  \n  override def getResultType() \u003d {\n    val cls \u003d classOf[Person]\n    Types.ROW(Types.INT, Types.STRING, Types.STRING, Types.STRING,Types.STRING,Types.STRING,Types.STRING,Types.STRING,Types.STRING,Types.STRING,Types.STRING,\n    Types.INT,  Types.INT, Types.INT, Types.INT, Types.STRING, Types.STRING)\n  }\n\n  // remove the quote\n  private def normalize(token: String) \u003d {\n      if (token.startsWith(\"\\\"\")) {\n          token.substring(1, token.length - 1)\n      } else {\n          token\n      }\n  }\n}\n\nbtenv.registerFunction(\"parse\", new ParseFunction())",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:52:05.326",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.apache.flink.api.java.typeutils.RowTypeInfo\nimport org.apache.flink.api.common.typeinfo.Types\nimport org.apache.flink.api.java.typeutils._\nimport org.apache.flink.api.scala.typeutils._\nimport org.apache.flink.api.scala._\ndefined class Person\ndefined class ParseFunction\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578888628353_1621411444",
+      "id": "paragraph_1578888628353_1621411444",
+      "dateCreated": "2020-01-13 12:10:28.359",
+      "dateStarted": "2020-02-25 11:52:05.332",
+      "dateFinished": "2020-02-25 11:52:07.740",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Clean data",
+      "text": "%sh\n\nrm -rf /tmp/bank_cleaned\nhadoop fs -rmr /tmp/bank_cleaned",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:53:29.451",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sh",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "editorMode": "ace/mode/sh"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "rmr: DEPRECATED: Please use \u0027rm -r\u0027 instead.\n20/02/25 11:53:30 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable\n20/02/25 11:53:31 INFO fs.TrashPolicyDefault: Namenode trash configuration: Deletion interval \u003d 0 minutes, Emptier interval \u003d 0 minutes.\nDeleted /tmp/bank_cleaned\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579061020460_-113987164",
+      "id": "paragraph_1579061020460_-113987164",
+      "dateCreated": "2020-01-15 12:03:40.468",
+      "dateStarted": "2020-02-25 11:53:29.458",
+      "dateFinished": "2020-02-25 11:53:31.332",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Parse the data and write it into sink table",
+      "text": "%flink.bsql\n\ninsert into bank select T.* from bank_raw, LATERAL TABLE(parse(content)) as T(age, job,  marital, education, `default`, balance, housing, loan, contact, `day`, `month`, duration, campaign, pdays,  previous,  poutcome, y) ",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:53:33.075",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Insertion successfully.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578669828368_-1923137601",
+      "id": "paragraph_1578669828368_-1923137601",
+      "dateCreated": "2020-01-10 23:23:48.368",
+      "dateStarted": "2020-02-25 11:53:33.080",
+      "dateFinished": "2020-02-25 11:53:43.233",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Preview output data",
+      "text": "%flink.bsql\n\nselect * from bank limit 10\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 11:53:47.207",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "age": "string",
+                      "job": "string",
+                      "marital": "string",
+                      "education": "string",
+                      "default": "string",
+                      "balance": "string",
+                      "housing": "string",
+                      "loan": "string",
+                      "contact": "string",
+                      "day": "string",
+                      "month": "string",
+                      "duration": "string",
+                      "campaign": "string",
+                      "pdays": "string",
+                      "previous": "string",
+                      "poutcome": "string",
+                      "y": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "runOnSelectionChange": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "age\tjob\tmarital\teducation\tdefault\tbalance\thousing\tloan\tcontact\tday\tmonth\tduration\tcampaign\tpdays\tprevious\tpoutcome\ty\n30\tunemployed\tmarried\tprimary\tno\t1787\tno\tno\tcellular\t19\toct\t79\t1\t-1\t0\tunknown\tno\n33\tservices\tmarried\tsecondary\tno\t4789\tyes\tyes\tcellular\t11\tmay\t220\t1\t339\t4\tfailure\tno\n35\tmanagement\tsingle\ttertiary\tno\t1350\tyes\tno\tcellular\t16\tapr\t185\t1\t330\t1\tfailure\tno\n30\tmanagement\tmarried\ttertiary\tno\t1476\tyes\tyes\tunknown\t3\tjun\t199\t4\t-1\t0\tunknown\tno\n59\tblue-collar\tmarried\tsecondary\tno\t0\tyes\tno\tunknown\t5\tmay\t226\t1\t-1\t0\tunknown\tno\n35\tmanagement\tsingle\ttertiary\tno\t747\tno\tno\tcellular\t23\tfeb\t141\t2\t176\t3\tfailure\tno\n36\tself-employed\tmarried\ttertiary\tno\t307\tyes\tno\tcellular\t14\tmay\t341\t1\t330\t2\tother\tno\n39\ttechnician\tmarried\tsecondary\tno\t147\tyes\tno\tcellular\t6\tmay\t151\t2\t-1\t0\tunknown\tno\n41\tentrepreneur\tmarried\ttertiary\tno\t221\tyes\tno\tunknown\t14\tmay\t57\t2\t-1\t0\tunknown\tno\n43\tservices\tmarried\tprimary\tno\t-88\tyes\tyes\tcellular\t17\tapr\t313\t1\t147\t2\tfailure\tno\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578068480238_-1678045273",
+      "id": "paragraph_1578068480238_-1678045273",
+      "dateCreated": "2020-01-04 00:21:20.267",
+      "dateStarted": "2020-02-25 11:53:47.212",
+      "dateFinished": "2020-02-25 11:53:48.904",
+      "status": "FINISHED"
+    },
+    {
+      "text": "%flink.bsql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-02 16:41:35.121",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579061037737_-1577558456",
+      "id": "paragraph_1579061037737_-1577558456",
+      "dateCreated": "2020-01-15 12:03:57.737",
+      "status": "FINISHED"
+    }
+  ],
+  "name": "Batch ETL",
+  "id": "2EW19CSPA",
+  "defaultInterpreterGroup": "flink",
+  "version": "0.9.0-SNAPSHOT",
+  "permissions": {
+    "owners": [],
+    "runners": [],
+    "readers": [],
+    "writers": []
+  },
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {},
+  "path": "/Flink Tutorial/Batch ETL"
+}

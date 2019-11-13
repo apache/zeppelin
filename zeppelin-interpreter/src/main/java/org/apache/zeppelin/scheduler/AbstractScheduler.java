@@ -86,7 +86,7 @@ public abstract class AbstractScheduler implements Scheduler {
       try {
         runningJob = queue.take();
       } catch (InterruptedException e) {
-        LOGGER.warn("{} is interrupted", getClass().getSimpleName(), e);
+        LOGGER.warn("{} is interrupted", getClass().getSimpleName());
         break;
       }
 

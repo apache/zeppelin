@@ -19,19 +19,27 @@ package org.apache.zeppelin.flink;
 
 
 import com.google.common.io.Files;
+import org.apache.commons.io.IOUtils;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.python.PythonInterpreterTest;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 
@@ -39,6 +47,16 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
   private RemoteInterpreterEventClient mockRemoteEventClient =
           mock(RemoteInterpreterEventClient.class);
+
+  private Interpreter flinkInterpreter;
+  private Interpreter streamSqlInterpreter;
+  private Interpreter batchSqlInterpreter;
+
+  // catch the streaming appendOutput in onAppend
+  protected volatile String appendOutput = "";
+  protected volatile InterpreterResult.Type appendOutputType;
+  // catch the flinkInterpreter appendOutput in onUpdate
+  protected InterpreterResultMessageOutput updatedOutput;
 
   @Override
   public void setUp() throws InterpreterException {
@@ -52,27 +70,32 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
 
     // create interpreter group
     intpGroup = new InterpreterGroup();
-    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.put("session_1", new LinkedList<>());
 
     InterpreterContext context = InterpreterContext.builder()
         .setInterpreterOut(new InterpreterOutput(null))
         .setIntpEventClient(mockRemoteEventClient)
         .build();
     InterpreterContext.set(context);
-    LazyOpenInterpreter flinkInterpreter =
-        new LazyOpenInterpreter(new FlinkInterpreter(properties));
-
-    intpGroup.get("note").add(flinkInterpreter);
+    flinkInterpreter = new LazyOpenInterpreter(new FlinkInterpreter(properties));
+    intpGroup.get("session_1").add(flinkInterpreter);
     flinkInterpreter.setInterpreterGroup(intpGroup);
 
     LazyOpenInterpreter iPyFlinkInterpreter =
         new LazyOpenInterpreter(new IPyFlinkInterpreter(properties));
-    intpGroup.get("note").add(iPyFlinkInterpreter);
+    intpGroup.get("session_1").add(iPyFlinkInterpreter);
     iPyFlinkInterpreter.setInterpreterGroup(intpGroup);
 
     interpreter = new LazyOpenInterpreter(new PyFlinkInterpreter(properties));
-    intpGroup.get("note").add(interpreter);
+    intpGroup.get("session_1").add(interpreter);
     interpreter.setInterpreterGroup(intpGroup);
+
+    streamSqlInterpreter = new LazyOpenInterpreter(new FlinkStreamSqlInterpreter(properties));
+    batchSqlInterpreter = new LazyOpenInterpreter(new FlinkBatchSqlInterpreter(properties));
+    intpGroup.get("session_1").add(streamSqlInterpreter);
+    intpGroup.get("session_1").add(batchSqlInterpreter);
+    streamSqlInterpreter.setInterpreterGroup(intpGroup);
+    batchSqlInterpreter.setInterpreterGroup(intpGroup);
 
     interpreter.open();
   }
@@ -90,14 +113,35 @@ public class PyFlinkInterpreterTest extends PythonInterpreterTest {
     IPyFlinkInterpreterTest.testStreamPyFlink(interpreter);
   }
 
-  private static InterpreterContext createInterpreterContext(
-          RemoteInterpreterEventClient mockRemoteEventClient) {
-    return InterpreterContext.builder()
-            .setNoteId("noteId")
-            .setParagraphId("paragraphId")
-            .setIntpEventClient(mockRemoteEventClient)
+  protected InterpreterContext getInterpreterContext() {
+    appendOutput = "";
+    InterpreterContext context = InterpreterContext.builder()
             .setInterpreterOut(new InterpreterOutput(null))
+            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+            .setIntpEventClient(mockRemoteEventClient)
             .build();
-  }
+    context.out = new InterpreterOutput(
+            new InterpreterOutputListener() {
+              @Override
+              public void onUpdateAll(InterpreterOutput out) {
+                System.out.println();
+              }
 
+              @Override
+              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
+                try {
+                  appendOutputType = out.toInterpreterResultMessage().getType();
+                  appendOutput = out.toInterpreterResultMessage().getData();
+                } catch (IOException e) {
+                  e.printStackTrace();
+                }
+              }
+
+              @Override
+              public void onUpdate(int index, InterpreterResultMessageOutput out) {
+                updatedOutput = out;
+              }
+            });
+    return context;
+  }
 }

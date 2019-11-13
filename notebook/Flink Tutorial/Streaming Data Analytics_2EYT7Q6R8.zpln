@@ -1,0 +1,270 @@
+{
+  "paragraphs": [
+    {
+      "title": "Overview",
+      "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming analytics via its streaming sql + udf. Here\u0027s what we do in this tutorial\n\n* Download [bank](https://archive.ics.uci.edu/ml/datasets/bank+marketing) data via shell interpreter to local\n* Process the raw data via flink batch sql \u0026 scala udf which parse and clean the raw data\n* Write the structured and cleaned data to another flink table via sql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-06 22:18:11.711",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrate how to use Flink do streaming analytics via its batch sql + udf. Here\u0026rsquo;s what we do in this tutorial\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDownload \u003ca href\u003d\"https://archive.ics.uci.edu/ml/datasets/bank+marketing\"\u003ebank\u003c/a\u003e data via shell interpreter to local\u003c/li\u003e\n\u003cli\u003eProcess the raw data via flink batch sql \u0026amp; scala udf which parse and clean the raw data\u003c/li\u003e\n\u003cli\u003eWrite the structured and cleaned data to another flink table via sql\u003c/li\u003e\n\u003c/ul\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579054784565_2122156822",
+      "id": "paragraph_1579054784565_2122156822",
+      "dateCreated": "2020-01-15 10:19:44.565",
+      "dateStarted": "2020-02-02 22:09:12.675",
+      "dateFinished": "2020-02-02 22:09:13.893",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Single row mode of Output",
+      "text": "%flink.ssql(type\u003dsingle, parallelism\u003d1, refreshInterval\u003d3000, template\u003d\u003ch1\u003e{1}\u003c/h1\u003e until \u003ch2\u003e{0}\u003c/h2\u003e)\n\nselect max(event_ts), count(1) from sink_kafka\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-07 10:05:50.448",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "template": "\u003ch1\u003e{1}\u003c/h1\u003e until \u003ch2\u003e{0}\u003c/h2\u003e",
+        "refreshInterval": "3000",
+        "parallelism": "1",
+        "type": "single"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578909960516_-1812187661",
+      "id": "paragraph_1578909960516_-1812187661",
+      "dateCreated": "2020-01-13 18:06:00.516",
+      "dateStarted": "2020-02-07 10:05:50.455",
+      "dateFinished": "2020-02-06 01:04:50.120",
+      "status": "ABORT"
+    },
+    {
+      "title": "Update mode of Output",
+      "text": "%flink.ssql(type\u003dupdate, refreshInterval\u003d2000, parallelism\u003d1)\n\nselect status, count(1) as pv from sink_kafka group by status",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-07 10:05:56.561",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "multiBarChart": {
+                  "xLabelStatus": "default",
+                  "rotate": {
+                    "degree": "-45"
+                  }
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "status",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "pv",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "refreshInterval": "2000",
+        "parallelism": "1",
+        "type": "update",
+        "savepointDir": "/tmp/flink_2",
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578910004762_-286113604",
+      "id": "paragraph_1578910004762_-286113604",
+      "dateCreated": "2020-01-13 18:06:44.762",
+      "dateStarted": "2020-02-07 10:05:56.566",
+      "dateFinished": "2020-02-05 23:30:01.468",
+      "status": "ABORT"
+    },
+    {
+      "title": "Append mode of Output",
+      "text": "%flink.ssql(type\u003dappend, parallelism\u003d1, refreshInterval\u003d2000, threshold\u003d60000)\n\nselect TUMBLE_START(event_ts, INTERVAL \u00275\u0027 SECOND) as start_time, status, count(1) from sink_kafka\ngroup by TUMBLE(event_ts, INTERVAL \u00275\u0027 SECOND), status\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-07 10:09:19.993",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "lineChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "lineChart": {
+                  "xLabelStatus": "rotate",
+                  "rotate": {
+                    "degree": "-45"
+                  }
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "start_time",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [
+                {
+                  "name": "status",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "EXPR$2",
+                  "index": 2.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "refreshInterval": "2000",
+        "parallelism": "1",
+        "threshold": "60000",
+        "type": "append",
+        "savepointDir": "/tmp/flink_3"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578910016872_1942851900",
+      "id": "paragraph_1578910016872_1942851900",
+      "dateCreated": "2020-01-13 18:06:56.872",
+      "dateStarted": "2020-02-07 10:06:09.409",
+      "dateFinished": "2020-02-06 22:19:01.427",
+      "status": "ABORT"
+    },
+    {
+      "text": "%flink.ssql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-01-13 21:17:35.739",
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578921455738_-1465781668",
+      "id": "paragraph_1578921455738_-1465781668",
+      "dateCreated": "2020-01-13 21:17:35.739",
+      "status": "READY"
+    }
+  ],
+  "name": "Streaming Data Analytics",
+  "id": "2EYT7Q6R8",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-SNAPSHOT",
+  "permissions": {
+    "owners": [],
+    "runners": [],
+    "readers": [],
+    "writers": []
+  },
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {},
+  "path": "/Flink Tutorial/Streaming Data Analytics"
+}

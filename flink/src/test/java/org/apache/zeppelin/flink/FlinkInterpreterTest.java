@@ -25,9 +25,8 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
@@ -35,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -49,13 +47,6 @@ import static org.mockito.Mockito.mock;
 public class FlinkInterpreterTest {
 
   private FlinkInterpreter interpreter;
-  private InterpreterContext context;
-
-  // catch the streaming output in onAppend
-  private volatile String output = "";
-  // catch the interpreter output in onUpdate
-  private List<InterpreterResultMessageOutput> messageOutput;
-
 
   @Before
   public void setUp() throws InterpreterException {
@@ -68,62 +59,83 @@ public class FlinkInterpreterTest {
     InterpreterGroup intpGroup = new InterpreterGroup();
     interpreter.setInterpreterGroup(intpGroup);
     interpreter.open();
-    context = InterpreterContext.builder()
-            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-            .build();
-    InterpreterContext.set(context);
   }
 
   @After
   public void tearDown() throws InterpreterException {
-    interpreter.close();
+    if (interpreter != null) {
+      interpreter.close();
+    }
   }
 
   @Test
-  public void testBasicScala() throws InterpreterException {
-    InterpreterResult result = interpreter.interpret("val a=\"hello world\"",
-        getInterpreterContext());
+  public void testScalaBasic() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("val a=\"hello world\"", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("a: String = hello world\n", output);
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("a: String = hello world\n", resultMessages.get(0).getData());
 
-    result = interpreter.interpret("print(a)", getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("print(a)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("hello world", output);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("hello world", resultMessages.get(0).getData());
 
     // java stdout
-    result = interpreter.interpret("System.out.print(a)", getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("System.out.print(a)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("hello world", output);
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("hello world", resultMessages.get(0).getData());
+
+    // java stderr
+    context = getInterpreterContext();
+    result = interpreter.interpret("System.err.print(a)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertEquals("hello world", resultMessages.get(0).getData());
 
     // incomplete
     result = interpreter.interpret("println(a", getInterpreterContext());
     assertEquals(InterpreterResult.Code.INCOMPLETE, result.code());
 
     // syntax error
-    result = interpreter.interpret("println(b)", getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("println(b)", context);
     assertEquals(InterpreterResult.Code.ERROR, result.code());
-    assertTrue(output.contains("not found: value b"));
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertTrue(resultMessages.get(0).getData(),
+            resultMessages.get(0).getData().contains("not found: value b"));
 
     // multiple line
-    result = interpreter.interpret("\"123\".\ntoInt", getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("\"123\".\ntoInt", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // single line comment
-    result = interpreter.interpret("/*comment here*/", getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("/*comment here*/", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    context = getInterpreterContext();
     result = interpreter.interpret("/*comment here*/\nprint(\"hello world\")",
-        getInterpreterContext());
+        context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // multiple line comment
-    result = interpreter.interpret("/*line 1 \n line 2*/",
-        getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("/*line 1 \n line 2*/", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // test function
-    result = interpreter.interpret("def add(x:Int, y:Int)\n{ return x+y }",
-        getInterpreterContext());
+    context = getInterpreterContext();
+    result = interpreter.interpret("def add(x:Int, y:Int)\n{ return x+y }", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     result = interpreter.interpret("print(add(1,2))", getInterpreterContext());
@@ -140,14 +152,14 @@ public class FlinkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // case class
-    //    result = interpreter.interpret(
+    //    context = getInterpreterContext();result = interpreter.interpret(
     //            "case class WC(word: String, count: Int)\n" +
     //            "val wordCounts = benv.fromElements(\n" +
     //            "WC(\"hello\", 1),\n" +
     //            "WC(\"world\", 2),\n" +
     //            "WC(\"world\", 8))\n" +
     //            "wordCounts.collect()",
-    //        getInterpreterContext());
+    //        context);
     //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
@@ -195,11 +207,26 @@ public class FlinkInterpreterTest {
   }
 
   @Test
-  public void testCompletion() throws InterpreterException {
-    InterpreterResult result = interpreter.interpret("val a=\"hello world\"",
-        getInterpreterContext());
+  public void testZShow() throws InterpreterException, IOException {
+    // show dataset
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret(
+            "val data = benv.fromElements((1, \"jeff\"), (2, \"andy\"), (3, \"james\"))",
+            context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals("a: String = hello world\n", output);
+    context = getInterpreterContext();
+    result = interpreter.interpret("z.show(data)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(InterpreterResult.Type.TABLE, resultMessages.get(0).getType());
+    assertEquals("_1\t_2\n1\tjeff\n2\tandy\n3\tjames\n", resultMessages.get(0).getData());
+  }
+
+  @Test
+  public void testCompletion() throws InterpreterException {
+    InterpreterContext context = getInterpreterContext();
+    InterpreterResult result = interpreter.interpret("val a=\"hello world\"", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     List<InterpreterCompletion> completions = interpreter.completion("a.", 2,
         getInterpreterContext());
@@ -211,93 +238,59 @@ public class FlinkInterpreterTest {
 
   @Test
   public void testBatchWordCount() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret(
             "val data = benv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")",
-        getInterpreterContext());
+        context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    context = getInterpreterContext();
     result = interpreter.interpret(
             "data.flatMap(line => line.split(\"\\\\s\"))\n" +
             "  .map(w => (w, 1))\n" +
             "  .groupBy(0)\n" +
             "  .sum(1)\n" +
-            "  .print()", getInterpreterContext());
+            "  .print()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
     Arrays.sort(expectedCounts);
 
-    String[] counts = output.split("\n");
+    String[] counts = context.out.toInterpreterResultMessage().get(0).getData().split("\n");
     Arrays.sort(counts);
 
     assertArrayEquals(expectedCounts, counts);
   }
 
   @Test
-  public void testStreamWordCount() throws InterpreterException {
+  public void testStreamWordCount() throws InterpreterException, IOException {
+    InterpreterContext context = getInterpreterContext();
     InterpreterResult result = interpreter.interpret(
             "val data = senv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")",
-            getInterpreterContext());
+            context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    context = getInterpreterContext();
     result = interpreter.interpret(
             "data.flatMap(line => line.split(\"\\\\s\"))\n" +
                     "  .map(w => (w, 1))\n" +
                     "  .keyBy(0)\n" +
                     "  .sum(1)\n" +
                     "  .print()\n" +
-                    "senv.execute()", getInterpreterContext());
+                    "senv.execute()", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
+    String output = context.out.toInterpreterResultMessage().get(0).getData();
     for (String expectedCount : expectedCounts) {
       assertTrue(output, output.contains(expectedCount));
     }
   }
 
-  //@Test
-  public void testStreamUDF() throws InterpreterException {
-    InterpreterResult result = interpreter.interpret(
-            "class MyUpper extends ScalarFunction {\n" +
-                    "  def eval(str: String) = str.toUpperCase\n" +
-                    "}\n" +
-                    "stenv.registerFunction(\"myupper\", new MyUpper())",
-            getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    result = interpreter.interpret(
-            "val data = Seq(\"Hello\", \"Flink\")\n" +
-            "val source = senv.fromCollection(data).toTable(stenv, 'word)\n" +
-            "source.select(\"myupper(word)\").print()",
-            getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-  }
-
   private InterpreterContext getInterpreterContext() {
-    output = "";
-    messageOutput = new ArrayList<>();
-    InterpreterContext context = InterpreterContext.builder()
-        .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
-        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
-        .build();
-    context.out = new InterpreterOutput(
-        new InterpreterOutputListener() {
-          @Override
-          public void onUpdateAll(InterpreterOutput out) {
-
-          }
-
-          @Override
-          public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-            try {
-              output = out.toInterpreterResultMessage().getData();
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          }
-
-          @Override
-          public void onUpdate(int index, InterpreterResultMessageOutput out) {
-            messageOutput.add(out);
-          }
-        });
-    return context;
+    return InterpreterContext.builder()
+            .setInterpreterOut(new InterpreterOutput(null))
+            .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .setInterpreterOut(new InterpreterOutput(null))
+            .build();
   }
 }

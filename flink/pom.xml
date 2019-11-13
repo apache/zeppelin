@@ -37,10 +37,11 @@
   <properties>
     <!--library versions-->
     <interpreter.name>flink</interpreter.name>
-    <flink.version>1.9.0</flink.version>
+    <flink.version>1.10.0</flink.version>
     <hadoop.version>2.6.5</hadoop.version>
     <hive.version>2.3.4</hive.version>
     <hiverunner.version>4.0.0</hiverunner.version>
+    <grpc.version>1.15.0</grpc.version>
 
     <scala.macros.version>2.0.1</scala.macros.version>
     <scala.binary.version>2.11</scala.binary.version>
@@ -63,8 +64,8 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>zeppelin-interpreter</artifactId>
+          <groupId>io.atomix</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.google.guava</groupId>
@@ -80,8 +81,16 @@
       <scope>provided</scope>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.zeppelin</groupId>
-          <artifactId>zeppelin-interpreter</artifactId>
+          <groupId>io.atomix</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.grpc</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -92,6 +101,32 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.atomix</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.grpc</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-terminal</artifactId>
+      <version>3.9.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-reader</artifactId>
+      <version>3.9.0</version>
     </dependency>
 
     <dependency>
@@ -293,13 +328,6 @@
 
     <dependency>
       <groupId>org.apache.flink</groupId>
-      <artifactId>flink-table-planner_2.11</artifactId>
-      <version>${flink.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.flink</groupId>
       <artifactId>flink-table-planner-blink_2.11</artifactId>
       <version>${flink.version}</version>
       <scope>provided</scope>
@@ -309,6 +337,13 @@
           <artifactId>reflections</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-table-planner_2.11</artifactId>
+      <version>${flink.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -328,43 +363,6 @@
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <!--<dependency>-->
-      <!--<groupId>com.klarna</groupId>-->
-      <!--<artifactId>hiverunner</artifactId>-->
-      <!--<version>${hiverunner.version}</version>-->
-      <!--<scope>test</scope>-->
-      <!--<exclusions>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.apache.hive</groupId>-->
-          <!--<artifactId>hive-serde</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.apache.hive</groupId>-->
-          <!--<artifactId>hive-jdbc</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.apache.hive.hcatalog</groupId>-->
-          <!--<artifactId>hive-webhcat-java-client</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.apache.hive</groupId>-->
-          <!--<artifactId>hive-service</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.apache.hive</groupId>-->
-          <!--<artifactId>hive-contrib</artifactId>-->
-        <!--</exclusion>-->
-        <!--&lt;!&ndash;<exclusion>&ndash;&gt;-->
-          <!--&lt;!&ndash;<groupId>com.google.guava</groupId>&ndash;&gt;-->
-          <!--&lt;!&ndash;<artifactId>guava</artifactId>&ndash;&gt;-->
-        <!--&lt;!&ndash;</exclusion>&ndash;&gt;-->
-        <!--<exclusion>-->
-          <!--<groupId>io.netty</groupId>-->
-          <!--<artifactId>netty</artifactId>-->
-        <!--</exclusion>-->
-      <!--</exclusions>-->
-    <!--</dependency>-->
 
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -537,6 +535,19 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.klarna</groupId>
+      <artifactId>hiverunner</artifactId>
+      <version>4.0.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -593,12 +604,13 @@
         </configuration>
       </plugin>
 
+      <!-- include flink by default -->
       <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>
         <artifactId>download-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>download-pyflink-files</id>
+            <id>download-flink-files</id>
             <phase>validate</phase>
             <goals>
               <goal>wget</goal>
@@ -606,8 +618,8 @@
             <configuration>
               <readTimeOut>60000</readTimeOut>
               <retries>5</retries>
-              <unpack>true</unpack>
               <url>${flink.bin.download.url}</url>
+              <unpack>true</unpack>
               <outputDirectory>${project.build.directory}</outputDirectory>
             </configuration>
           </execution>
@@ -618,10 +630,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <skip>false</skip>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
+          <argLine>-Xmx3072m -XX:MaxPermSize=256m </argLine>
+
           <environmentVariables>
-            <PYTHONPATH>${project.build.directory}/flink-${flink.version}/opt/python/py4j-0.10.8.1-src.zip:${project.build.directory}/flink-${flink.version}/opt/python/pyflink.zip</PYTHONPATH>
+            <FLINK_HOME>${project.build.directory}/flink-${flink.version}</FLINK_HOME>
+            <FLINK_CONF_DIR>${project.build.directory}/test-classes</FLINK_CONF_DIR>
           </environmentVariables>
         </configuration>
       </plugin>
@@ -645,10 +661,6 @@
             <classpathContainer>org.scala-ide.sdt.launching.SCALA_CONTAINER</classpathContainer>
             <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
           </classpathContainers>
-          <!-- excludes>
-            <exclude>org.scala-lang:scala-library</exclude>
-            <exclude>org.scala-lang:scala-compiler</exclude>
-          </excludes -->
           <sourceIncludes>
             <sourceInclude>**/*.scala</sourceInclude>
             <sourceInclude>**/*.java</sourceInclude>
@@ -768,7 +780,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
-          <skip>false</skip>
+          <skip>true</skip>
         </configuration>
       </plugin>
 
