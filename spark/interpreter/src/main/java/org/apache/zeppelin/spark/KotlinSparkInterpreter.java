@@ -111,7 +111,7 @@ public class KotlinSparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context)
       throws InterpreterException {
 
-    if (isUnsupported()) {
+    if (isSparkVersionUnsupported()) {
       return unsupportedMessage;
     }
 
@@ -136,7 +136,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    if (isUnsupported()) {
+    if (isSparkVersionUnsupported()) {
       return;
     }
     jsc.cancelJobGroup(buildJobGroupId(context));
@@ -150,7 +150,7 @@ public class KotlinSparkInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
-    if (isUnsupported()) {
+    if (isSparkVersionUnsupported()) {
       return 0;
     }
     return sparkInterpreter.getProgress(context);
@@ -159,13 +159,13 @@ public class KotlinSparkInterpreter extends Interpreter {
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
       InterpreterContext interpreterContext) throws InterpreterException {
-    if (isUnsupported()) {
+    if (isSparkVersionUnsupported()) {
       return Collections.emptyList();
     }
     return interpreter.completion(buf, cursor, interpreterContext);
   }
 
-  private boolean isUnsupported() {
+  boolean isSparkVersionUnsupported() {
     return unsupportedMessage != null;
   }
 

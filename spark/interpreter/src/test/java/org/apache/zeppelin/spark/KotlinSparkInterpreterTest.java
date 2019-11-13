@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -159,6 +160,7 @@ public class KotlinSparkInterpreterTest {
     if (!sparkSupported) {
       exceptionRule.expect(UnsupportedClassVersionError.class);
     }
+    Assume.assumeFalse("Spark version should be >= 2.4.", interpreter.isSparkVersionUnsupported());
   }
 
   @Test
