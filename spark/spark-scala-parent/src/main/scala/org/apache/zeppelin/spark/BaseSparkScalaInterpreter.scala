@@ -321,7 +321,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,
-      properties.getProperty("zeppelin.spark.maxResult").toInt)
+      properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
     bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))
   }
 

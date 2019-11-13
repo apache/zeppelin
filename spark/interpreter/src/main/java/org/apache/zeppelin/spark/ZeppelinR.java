@@ -22,9 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterOutputListener;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
-import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,36 +34,29 @@ import java.util.Map;
 /**
  * R repl interaction
  */
-public class ZeppelinR implements ExecuteResultHandler {
-  private static Logger logger = LoggerFactory.getLogger(ZeppelinR.class);
+public class ZeppelinR {
+  private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
 
   private final SparkRInterpreter sparkRInterpreter;
   private final String rCmdPath;
   private final SparkVersion sparkVersion;
   private final int timeout;
-  private DefaultExecutor executor;
-  private InterpreterOutputStream outputStream;
-  private PipedOutputStream input;
+  private RProcessLogOutputStream processOutputStream;
   private final String scriptPath;
   private final String libPath;
-  static Map<Integer, ZeppelinR> zeppelinR = Collections.synchronizedMap(
-      new HashMap<Integer, ZeppelinR>());
-
-  private InterpreterOutput initialOutput;
+  static Map<Integer, ZeppelinR> zeppelinR = Collections.synchronizedMap(new HashMap());
   private final int port;
-  private boolean rScriptRunning;
-
-  /**
-   * To be notified R repl initialization
-   */
-  boolean rScriptInitialized = false;
-  Integer rScriptInitializeNotifier = new Integer(0);
+  private RProcessLauncher rProcessLauncher;
 
   /**
    * Request to R repl
    */
   Request rRequestObject = null;
   Integer rRequestNotifier = new Integer(0);
+
+  public void setInterpreterOutput(InterpreterOutput out) {
+    processOutputStream.setInterpreterOutput(out);
+  }
 
   /**
    * Request object
@@ -151,25 +142,22 @@ public class ZeppelinR implements ExecuteResultHandler {
       cmd.addArgument(SparkRBackend.socketSecret());
     }
     // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
-    logger.debug("R Command: " + cmd.toString());
-
-    executor = new DefaultExecutor();
-    outputStream = new SparkRInterpreterOutputStream(logger, sparkRInterpreter);
-
-    input = new PipedOutputStream();
-    PipedInputStream in = new PipedInputStream(input);
-
-    PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, in);
-    executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-    executor.setStreamHandler(streamHandler);
+    LOGGER.info("R Command: " + cmd.toString());
+    processOutputStream = new RProcessLogOutputStream(sparkRInterpreter);
     Map env = EnvironmentUtils.getProcEnvironment();
+    rProcessLauncher = new RProcessLauncher(cmd, env, processOutputStream);
+    rProcessLauncher.launch();
+    rProcessLauncher.waitForReady(30 * 1000);
 
-
-    initialOutput = new InterpreterOutput(null);
-    outputStream.setInterpreterOutput(initialOutput);
-    executor.execute(cmd, env, this);
-    rScriptRunning = true;
-
+    if (!rProcessLauncher.isRunning()) {
+      if (rProcessLauncher.isLaunchTimeout()) {
+        throw new IOException("Launch r process is time out.\n" +
+                rProcessLauncher.getErrorMessage());
+      } else {
+        throw new IOException("Fail to launch r process.\n" +
+                rProcessLauncher.getErrorMessage());
+      }
+    }
     // flush output
     eval("cat('')");
   }
@@ -222,33 +210,31 @@ public class ZeppelinR implements ExecuteResultHandler {
     }
   }
 
+  private boolean isRProcessInitialized() {
+    return rProcessLauncher != null && rProcessLauncher.isRunning();
+  }
+
   /**
    * Send request to r repl and return response
    * @return responseValue
    */
-  private Object request() throws RuntimeException, InterpreterException {
-    if (!rScriptRunning) {
+  private Object request() throws RuntimeException {
+    if (!isRProcessInitialized()) {
       throw new RuntimeException("r repl is not running");
     }
 
-    // wait for rscript initialized
-    if (!rScriptInitialized) {
-      waitForRScriptInitialized();
-    }
-
     rResponseValue = null;
-
     synchronized (rRequestNotifier) {
       rRequestNotifier.notify();
     }
 
     Object respValue = null;
     synchronized (rResponseNotifier) {
-      while (rResponseValue == null && rScriptRunning) {
+      while (rResponseValue == null && isRProcessInitialized()) {
         try {
           rResponseNotifier.wait(1000);
         } catch (InterruptedException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
       respValue = rResponseValue;
@@ -263,39 +249,6 @@ public class ZeppelinR implements ExecuteResultHandler {
   }
 
   /**
-   * Wait until src/main/resources/R/zeppelin_sparkr.R is initialized
-   * and call onScriptInitialized()
-   *
-   * @throws InterpreterException
-   */
-  private void waitForRScriptInitialized() throws InterpreterException {
-    synchronized (rScriptInitializeNotifier) {
-      long startTime = System.nanoTime();
-      while (rScriptInitialized == false &&
-          rScriptRunning &&
-          System.nanoTime() - startTime < 10L * 1000 * 1000000) {
-        try {
-          rScriptInitializeNotifier.wait(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.getMessage(), e);
-        }
-      }
-    }
-
-    String errorMessage = "";
-    try {
-      initialOutput.flush();
-      errorMessage = new String(initialOutput.toByteArray());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    if (rScriptInitialized == false) {
-      throw new InterpreterException("sparkr is not responding " + errorMessage);
-    }
-  }
-
-  /**
    * invoked by src/main/resources/R/zeppelin_sparkr.R
    * @return
    */
@@ -305,7 +258,7 @@ public class ZeppelinR implements ExecuteResultHandler {
         try {
           rRequestNotifier.wait(1000);
         } catch (InterruptedException e) {
-          logger.error(e.getMessage(), e);
+          LOGGER.error(e.getMessage(), e);
         }
       }
 
@@ -332,10 +285,7 @@ public class ZeppelinR implements ExecuteResultHandler {
    * invoked by src/main/resources/R/zeppelin_sparkr.R
    */
   public void onScriptInitialized() {
-    synchronized (rScriptInitializeNotifier) {
-      rScriptInitialized = true;
-      rScriptInitializeNotifier.notifyAll();
-    }
+    rProcessLauncher.initialized();
   }
 
   /**
@@ -359,14 +309,16 @@ public class ZeppelinR implements ExecuteResultHandler {
       throw new InterpreterException(e);
     }
 
-    logger.info("File {} created", scriptPath);
+    LOGGER.info("File {} created", scriptPath);
   }
 
   /**
    * Terminate this R repl
    */
   public void close() {
-    executor.getWatchdog().destroyProcess();
+    if (rProcessLauncher != null) {
+      rProcessLauncher.stop();
+    }
     new File(scriptPath).delete();
     zeppelinR.remove(hashCode());
   }
@@ -381,34 +333,56 @@ public class ZeppelinR implements ExecuteResultHandler {
     return zeppelinR.get(hashcode);
   }
 
-  /**
-   * Pass InterpreterOutput to capture the repl output
-   * @param out
-   */
-  public void setInterpreterOutput(InterpreterOutput out) {
-    outputStream.setInterpreterOutput(out);
+  class RProcessLauncher extends ProcessLauncher {
+
+    public RProcessLauncher(CommandLine commandLine,
+                           Map<String, String> envs,
+                           ProcessLogOutputStream processLogOutput) {
+      super(commandLine, envs, processLogOutput);
+    }
+
+    @Override
+    public void waitForReady(int timeout) {
+      long startTime = System.currentTimeMillis();
+      synchronized (this) {
+        while (state == State.LAUNCHED) {
+          LOGGER.info("Waiting for R process initialized");
+          try {
+            wait(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          if ((System.currentTimeMillis() - startTime) > timeout) {
+            onTimeout();
+            break;
+          }
+        }
+      }
+    }
+
+    public void initialized() {
+      synchronized (this) {
+        this.state = State.RUNNING;
+        notify();
+      }
+    }
   }
 
-  @Override
-  public void onProcessComplete(int i) {
-    logger.info("process complete {}", i);
-    rScriptRunning = false;
-  }
+  public static class RProcessLogOutputStream extends ProcessLauncher.ProcessLogOutputStream {
 
-  @Override
-  public void onProcessFailed(ExecuteException e) {
-    logger.error(e.getMessage(), e);
-    rScriptRunning = false;
-  }
-
-
-  public static class SparkRInterpreterOutputStream extends InterpreterOutputStream {
-
+    private InterpreterOutput interpreterOutput;
     private SparkRInterpreter sparkRInterpreter;
 
-    public SparkRInterpreterOutputStream(Logger logger, SparkRInterpreter sparkRInterpreter) {
-      super(logger);
+    public RProcessLogOutputStream(SparkRInterpreter sparkRInterpreter) {
       this.sparkRInterpreter = sparkRInterpreter;
+    }
+
+    /**
+     * Redirect r process output to interpreter output.
+     * @param interpreterOutput
+     */
+    public void setInterpreterOutput(InterpreterOutput interpreterOutput) {
+      this.interpreterOutput = interpreterOutput;
     }
 
     @Override
@@ -417,6 +391,21 @@ public class ZeppelinR implements ExecuteResultHandler {
       if (s.contains("Java SparkR backend might have failed") // spark 2.x
           || s.contains("Execution halted")) { // spark 1.x
         sparkRInterpreter.getRbackendDead().set(true);
+      }
+      if (interpreterOutput != null) {
+        try {
+          interpreterOutput.write(s);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+      super.close();
+      if (interpreterOutput != null) {
+        interpreterOutput.close();
       }
     }
   }
