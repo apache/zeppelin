@@ -87,6 +87,7 @@
     <module>hazelcastjet</module>
     <module>geode</module>
     <module>ksql</module>
+    <module>sparql</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>

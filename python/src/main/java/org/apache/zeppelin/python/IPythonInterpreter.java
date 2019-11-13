@@ -144,7 +144,8 @@ public class IPythonInterpreter extends Interpreter {
       launchIPythonKernel(ipythonPort);
       setupJVMGateway(jvmGatewayPort);
     } catch (Exception e) {
-      throw new InterpreterException("Fail to open IPythonInterpreter", e);
+      throw new InterpreterException("Fail to open IPythonInterpreter\n" +
+              ExceptionUtils.getStackTrace(e), e);
     }
   }
 

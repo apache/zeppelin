@@ -59,32 +59,33 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
             msg_type = msg['header']['msg_type']
             content = msg['content']
             print("******************* CONTENT ******************")
-            print(str(content)[:400])
             outStatus, outType, output = ipython_pb2.SUCCESS, None, None
             # prepare the reply
             if msg_type == 'stream':
                 outType = ipython_pb2.TEXT
                 output = content['text']
             elif msg_type in ('display_data', 'execute_result'):
-                if 'image/jpeg' in content['data']:
+                print(content['data'])
+                # The if-else order matters, can not be changed. Because ipython may provide multiple output.
+                # TEXT is the last resort type.
+                if 'text/html' in content['data']:
+                    outType = ipython_pb2.HTML
+                    output = content['data']['text/html']
+                elif 'image/jpeg' in content['data']:
                     outType = ipython_pb2.JPEG
                     output = content['data']['image/jpeg']
                 elif 'image/png' in content['data']:
                     outType = ipython_pb2.PNG
                     output = content['data']['image/png']
-                elif 'text/plain' in content['data']:
-                    outType = ipython_pb2.TEXT
-                    output = content['data']['text/plain']
-                elif 'text/html' in content['data']:
-                    outType = ipython_pb2.HTML
-                    output = content['data']['text/html']
                 elif 'application/javascript' in content['data']:
                     outType = ipython_pb2.HTML
                     output = '<script> ' + content['data']['application/javascript'] + ' </script>\n'
-                    print('add to html output: ' + str(content)[:100])
                 elif 'application/vnd.holoviews_load.v0+json' in content['data']:
                     outType = ipython_pb2.HTML
                     output = '<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n'
+                elif 'text/plain' in content['data']:
+                    outType = ipython_pb2.TEXT
+                    output = content['data']['text/plain']
             elif msg_type == 'error':
                 outStatus = ipython_pb2.ERROR
                 outType = ipython_pb2.TEXT

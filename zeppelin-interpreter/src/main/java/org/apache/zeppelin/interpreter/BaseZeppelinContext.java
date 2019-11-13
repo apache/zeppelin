@@ -853,6 +853,25 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
+   * Get object from resource pool
+   * Search local process first and then the other processes
+   *
+   * @param name
+   * @param clazz  The class of the returned value
+   * @return null if resource not found
+   */
+  @ZeppelinApi
+  public <T> T get(String name, Class<T> clazz) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    Resource resource = resourcePool.get(name);
+    if (resource != null) {
+      return resource.get(clazz);
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Remove object from resourcePool
    *
    * @param name

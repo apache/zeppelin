@@ -1,0 +1,42 @@
+[
+  {
+    "group": "sparql",
+    "name": "sparql",
+    "className": "org.apache.zeppelin.sparql.SparqlInterpreter",
+    "properties": {
+      "sparql.engine": {
+        "envName": "SPARQL_ENGINE",
+        "propertyName": "sparql.engine",
+        "defaultValue": "jena",
+        "description": "The sparql engine to use for the queries. Default: jena",
+        "type": "string"
+      },
+      "sparql.endpoint": {
+        "envName": "SPARQL_SERVICE_ENDPOINT",
+        "propertyName": "sparql.endpoint",
+        "defaultValue": "http://dbpedia.org/sparql",
+        "description": "Complete URL of the endpoint. Default: http://dbpedia.org/sparql",
+        "type": "string"
+      },
+      "sparql.replaceURIs": {
+        "envName": "SPARQL_REPLACE_URI",
+        "propertyName": "sparql.replaceURIs",
+        "defaultValue": true,
+        "description": "Replace the URIs in the result with the prefixes. Default: true",
+        "type": "checkbox"
+      },
+      "sparql.removeDatatypes": {
+        "envName": "SPARQL_REMOVE_DATATYPES",
+        "propertyName": "sparql.removeDatatypes",
+        "defaultValue": true,
+        "description": "Remove the datatypes from Literals so Zeppelin can use the values. Default: true",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "sparql",
+      "editOnDblClick": false,
+      "completionKey": "TAB"
+    }
+  }
+]

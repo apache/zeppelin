@@ -155,7 +155,12 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
     @Override
     protected void processLine(String s, int i) {
-      LOGGER.debug("Process Output: " + s);
+      // print Interpreter launch command for diagnose purpose
+      if (s.startsWith("Interpreter launch command")) {
+        LOGGER.info(s);
+      } else {
+        LOGGER.debug("Process Output: " + s);
+      }
       if (catchLaunchOutput) {
         launchOutput.append(s + "\n");
       }

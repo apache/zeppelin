@@ -24,16 +24,23 @@ import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.catalyst.expressions.GenericRow;
+import org.apache.spark.sql.types.StructType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class Spark2Shims extends SparkShims {
 
-  public Spark2Shims(Properties properties) {
+  private SparkSession sparkSession;
+
+  public Spark2Shims(Properties properties, Object entryPoint) {
     super(properties);
+    this.sparkSession = (SparkSession) entryPoint;
   }
 
   public void setupSparkListener(final String master,
@@ -93,4 +100,22 @@ public class Spark2Shims extends SparkShims {
     }
   }
 
+  @Override
+  public Dataset<Row> getAsDataFrame(String value) {
+    String[] lines = value.split("\\n");
+    String head = lines[0];
+    String[] columns = head.split("\t");
+    StructType schema = new StructType();
+    for (String column : columns) {
+      schema = schema.add(column, "String");
+    }
+
+    List<Row> rows = new ArrayList<>();
+    for (int i = 1; i < lines.length; ++i) {
+      String[] tokens = lines[i].split("\t");
+      Row row = new GenericRow(tokens);
+      rows.add(row);
+    }
+    return sparkSession.createDataFrame(rows, schema);
+  }
 }

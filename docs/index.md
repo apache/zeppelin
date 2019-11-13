@@ -159,6 +159,7 @@ limitations under the License.
   * [Scio](./interpreter/scio.html)
   * [Shell](./interpreter/shell.html)
   * [Spark](./interpreter/spark.html)
+  * [Sparql](./interpreter/sparql.html)
   * [Submarine](./interpreter/submarine.html)
 
 #### External Resources
