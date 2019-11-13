@@ -28,13 +28,18 @@ import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.experimental.CollectSink;
 import org.apache.flink.table.sinks.RetractStreamTableSink;
 import org.apache.flink.types.Row;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.UUID;
 
 /**
  * Table sink for collecting the results locally using sockets.
  */
 public class CollectStreamTableSink implements RetractStreamTableSink<Row> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CollectStreamTableSink.class);
 
   private final InetAddress targetAddress;
   private final int targetPort;
@@ -46,6 +51,7 @@ public class CollectStreamTableSink implements RetractStreamTableSink<Row> {
   public CollectStreamTableSink(InetAddress targetAddress,
                                 int targetPort,
                                 TypeSerializer<Tuple2<Boolean, Row>> serializer) {
+    LOGGER.info("Use address: " + targetAddress.getHostAddress() + ":" + targetPort);
     this.targetAddress = targetAddress;
     this.targetPort = targetPort;
     this.serializer = serializer;
@@ -85,7 +91,7 @@ public class CollectStreamTableSink implements RetractStreamTableSink<Row> {
     // add sink
     return stream
             .addSink(new CollectSink<>(targetAddress, targetPort, serializer))
-            .name("Zeppelin Flink Sql Stream Collect Sink")
+            .name("Zeppelin Flink Sql Stream Collect Sink " + UUID.randomUUID())
             .setParallelism(1);
   }
 

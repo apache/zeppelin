@@ -38,14 +38,14 @@ if [[ -n "$PYTHON" ]] ; then
     pip install -q numpy==1.14.5 pandas==0.21.1 matplotlib==2.1.1 scipy==1.2.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 \
     protobuf==3.7.0 pandasql==0.7.3 ipython==5.8.0 ipykernel==4.10.0 bokeh==1.3.4
   else
-    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.6.1 \
-    pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4
+    pip install -q pycodestyle==2.5.0
+    pip install -q numpy==1.17.3 pandas==0.25.0 scipy==1.3.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 protobuf==3.10.0 \
+    pandasql==0.7.3 ipython==7.8.0 matplotlib==3.0.3 ipykernel==5.1.2 jupyter_client==5.3.4 bokeh==1.3.4 pycodestyle==2.5.0 apache_beam==2.15.0
   fi
 
   if [[ -n "$TENSORFLOW" ]] ; then
     check_results=`conda search -c conda-forge tensorflow`
     echo "search tensorflow = $check_results"
-
     pip install tensorflow==${TENSORFLOW}
   fi
 fi

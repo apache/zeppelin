@@ -3,6 +3,7 @@
     "group": "flink",
     "name": "flink",
     "className": "org.apache.zeppelin.flink.FlinkInterpreter",
+    "defaultInterpreter": true,
     "properties": {
       "flink.execution.mode": {
         "envName": null,
@@ -39,18 +40,18 @@
         "description": "Memory for TaskManager (mb)",
         "type": "number"
       },
-      "flink.tm.num": {
-        "envName": null,
-        "propertyName": null,
-        "defaultValue": "2",
-        "description": "Number of TaskManager",
-        "type": "number"
-      },
       "flink.tm.slot": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "1",
         "description": "Number of slot per TaskManager",
+        "type": "number"
+      },
+      "local.number-taskmanager": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "4",
+        "description": "Number of TaskManager in local mode",
         "type": "number"
       },
       "flink.yarn.appName": {
@@ -67,11 +68,25 @@
         "description": "yarn queue name",
         "type": "string"
       },
-      "flink.yarn.jars": {
+      "flink.udf.jars": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "flink udf jars (comma separated), zeppelin will register udf for user automatically",
+        "type": "string"
+      },
+      "flink.execution.jars": {
         "envName": null,
         "propertyName": null,
         "defaultValue": "",
         "description": "additional user jars (comma separated)",
+        "type": "string"
+      },
+      "flink.execution.packages": {
+        "envName": null,
+        "propertyName": null,
+        "defaultValue": "",
+        "description": "additional user packages (comma separated), e.g. flink connector packages",
         "type": "string"
       },
       "zeppelin.flink.scala.color": {
@@ -102,18 +117,18 @@
         "description": "max number of row returned by sql interpreter.",
         "type": "number"
       },
-      "zeppelin.flink.planner": {
-        "envName": "zeppelin.flink.planner",
-        "propertyName": "zeppelin.flink.planner",
-        "defaultValue": "blink",
-        "description": "planner or flink table api, blink or flink",
-        "type": "number"
-      },
       "zeppelin.pyflink.python": {
         "envName": "zeppelin.pyflink.python",
         "propertyName": "zeppelin.pyflink.python",
         "defaultValue": "python",
         "description": "python executable for pyflink",
+        "type": "string"
+      },
+      "flink.interpreter.close.shutdown_cluster": {
+        "envName": "flink.interpreter.close.shutdown_cluster",
+        "propertyName": "flink.interpreter.close.shutdown_cluster",
+        "defaultValue": "true",
+        "description": "Whether shutdown application when close interpreter",
         "type": "string"
       }
     },
@@ -130,7 +145,13 @@
     "name": "bsql",
     "className": "org.apache.zeppelin.flink.FlinkBatchSqlInterpreter",
     "properties": {
-
+      "zeppelin.flink.concurrentBatchSql.max": {
+        "envName": "",
+        "propertyName": "zeppelin.flink.concurrentBatchSql.max",
+        "defaultValue": "10",
+        "description": "Max concurrent sql of Batch Sql",
+        "type": "number"
+      }
     },
     "editor": {
       "language": "sql",
@@ -143,7 +164,13 @@
     "name": "ssql",
     "className": "org.apache.zeppelin.flink.FlinkStreamSqlInterpreter",
     "properties": {
-
+      "zeppelin.flink.concurrentStreamSql.max": {
+        "envName": "",
+        "propertyName": "zeppelin.flink.concurrentStreamSql.max",
+        "defaultValue": "10",
+        "description": "Max concurrent sql of Stream Sql",
+        "type": "number"
+      }
     },
     "editor": {
       "language": "sql",
@@ -160,7 +187,9 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   },
 
@@ -173,7 +202,9 @@
     },
     "editor": {
       "language": "python",
-      "editOnDblClick": false
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
     }
   }
 ]

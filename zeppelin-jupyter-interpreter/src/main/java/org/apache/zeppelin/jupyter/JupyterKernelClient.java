@@ -197,6 +197,9 @@ public class JupyterKernelClient {
               LOGGER.error("Unexpected IOException", e);
             }
             break;
+          case CLEAR:
+            interpreterOutput.getInterpreterOutput().clear();
+            break;
           default:
             LOGGER.error("Unrecognized type:" + executeResponse.getType());
         }

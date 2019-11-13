@@ -1,0 +1,341 @@
+{
+  "paragraphs": [
+    {
+      "title": "Overview",
+      "text": "%md\n\nThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this [docker](https://kafka-connect-datagen.readthedocs.io/en/latest/) to create kafka cluster and source data \n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-01-19 15:36:08.418",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": false,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eThis tutorial demonstrate how to use Flink do streaming processing via its streaming sql + udf. In this tutorial, we read data from kafka queue and do some simple processing (just filtering here) and then write it back to another kafka queue. We use this \u003ca href\u003d\"https://kafka-connect-datagen.readthedocs.io/en/latest/\"\u003edocker\u003c/a\u003e to create kafka cluster and source data\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579054287919_-61477360",
+      "id": "paragraph_1579054287919_-61477360",
+      "dateCreated": "2020-01-15 10:11:27.919",
+      "dateStarted": "2020-01-19 15:36:08.710",
+      "dateFinished": "2020-01-19 15:36:18.597",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create kafka source table",
+      "text": "%flink.ssql\n\nDROP TABLE IF EXISTS source_kafka;\n\nCREATE TABLE source_kafka (\n    status  STRING,\n    direction STRING,\n    event_ts BIGINT\n) WITH (\n  \u0027connector.type\u0027 \u003d \u0027kafka\u0027,       \n  \u0027connector.version\u0027 \u003d \u0027universal\u0027,\n  \u0027connector.topic\u0027 \u003d \u0027generated.events\u0027,\n  \u0027connector.startup-mode\u0027 \u003d \u0027earliest-offset\u0027,\n  \u0027connector.properties.zookeeper.connect\u0027 \u003d \u0027localhost:2181\u0027,\n  \u0027connector.properties.bootstrap.servers\u0027 \u003d \u0027localhost:9092\u0027,\n  \u0027connector.properties.group.id\u0027 \u003d \u0027testGroup\u0027,\n  \u0027connector.startup-mode\u0027 \u003d \u0027earliest-offset\u0027,\n  \u0027format.type\u0027\u003d\u0027json\u0027,\n  \u0027update-mode\u0027 \u003d \u0027append\u0027\n);",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 09:49:50.067",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Table has been dropped.\nTable has been created.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578044987529_1240899810",
+      "id": "paragraph_1578044987529_1240899810",
+      "dateCreated": "2020-01-03 17:49:47.529",
+      "dateStarted": "2020-02-25 09:49:50.077",
+      "dateFinished": "2020-02-25 09:50:02.240",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Create kafka sink table",
+      "text": "%flink.ssql\n\nDROP TABLE IF EXISTS sink_kafka;\n\nCREATE TABLE sink_kafka (\n    status  STRING,\n    direction STRING,\n    event_ts TIMESTAMP(3),\n    WATERMARK FOR event_ts AS event_ts - INTERVAL \u00275\u0027 SECOND\n) WITH (\n  \u0027connector.type\u0027 \u003d \u0027kafka\u0027,       \n  \u0027connector.version\u0027 \u003d \u0027universal\u0027,    \n  \u0027connector.topic\u0027 \u003d \u0027generated.events2\u0027,\n  \u0027connector.properties.zookeeper.connect\u0027 \u003d \u0027localhost:2181\u0027,\n  \u0027connector.properties.bootstrap.servers\u0027 \u003d \u0027localhost:9092\u0027,\n  \u0027connector.properties.group.id\u0027 \u003d \u0027testGroup\u0027,\n  \u0027format.type\u0027\u003d\u0027json\u0027,\n  \u0027update-mode\u0027 \u003d \u0027append\u0027\n)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 09:50:08.130",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Table has been dropped.\nTable has been created.\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905686087_1273839451",
+      "id": "paragraph_1578905686087_1273839451",
+      "dateCreated": "2020-01-13 16:54:46.087",
+      "dateStarted": "2020-02-25 09:50:08.136",
+      "dateFinished": "2020-02-25 09:50:08.357",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Transform the data in source table and write it to sink table",
+      "text": "%flink.ssql\n\ninsert into sink_kafka select status, direction, cast(event_ts/1000000000 as timestamp(3)) from source_kafka where status \u003c\u003e \u0027foo\u0027\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-25 09:50:10.681",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1578905715189_33634195",
+      "id": "paragraph_1578905715189_33634195",
+      "dateCreated": "2020-01-13 16:55:15.189",
+      "dateStarted": "2020-02-25 09:50:10.751",
+      "dateFinished": "2020-02-25 09:40:04.300",
+      "status": "ABORT"
+    },
+    {
+      "title": "Preview sink table result",
+      "text": "%flink.ssql(type\u003dupdate)\n\nselect * from sink_kafka order by event_ts desc limit 10;",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-07 10:00:28.140",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "status0",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "direction1",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "priority": 0.0,
+                          "direction": "asc"
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "event_ts2",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "status": "string",
+                      "direction": "string",
+                      "event_ts": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "type": "update"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "status\tdirection\tevent_ts\nbar\tright\t2020-02-07 02:05:27.0\nbar\tleft\t2020-02-07 02:05:27.0\nbar\tleft\t2020-02-07 02:05:27.0\nbaz\tup\t2020-02-07 02:05:27.0\nbaz\tup\t2020-02-07 02:05:27.0\nbaz\tdown\t2020-02-07 02:05:27.0\nbaz\tleft\t2020-02-07 02:05:32.0\nbaz\tup\t2020-02-07 02:05:32.0\nbaz\tup\t2020-02-07 02:05:32.0\nbaz\tleft\t2020-02-07 02:05:32.0\n"
+          },
+          {
+            "type": "TEXT",
+            "data": "Fail to run sql command: select * from sink_kafka order by event_ts desc limit 10\njava.io.IOException: Fail to run stream sql job\n\tat org.apache.zeppelin.flink.sql.AbstractStreamSqlJob.run(AbstractStreamSqlJob.java:164)\n\tat org.apache.zeppelin.flink.FlinkStreamSqlInterpreter.callSelect(FlinkStreamSqlInterpreter.java:108)\n\tat org.apache.zeppelin.flink.FlinkSqlInterrpeter.callCommand(FlinkSqlInterrpeter.java:203)\n\tat org.apache.zeppelin.flink.FlinkSqlInterrpeter.runSqlList(FlinkSqlInterrpeter.java:151)\n\tat org.apache.zeppelin.flink.FlinkSqlInterrpeter.interpret(FlinkSqlInterrpeter.java:104)\n\tat org.apache.zeppelin.interpreter.LazyOpenInterpreter.interpret(LazyOpenInterpreter.java:103)\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer$InterpretJob.jobRun(RemoteInterpreterServer.java:676)\n\tat org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer$InterpretJob.jobRun(RemoteInterpreterServer.java:569)\n\tat org.apache.zeppelin.scheduler.Job.run(Job.java:172)\n\tat org.apache.zeppelin.scheduler.AbstractScheduler.runJob(AbstractScheduler.java:121)\n\tat org.apache.zeppelin.scheduler.ParallelScheduler.lambda$runJobInScheduler$0(ParallelScheduler.java:39)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n\tat java.lang.Thread.run(Thread.java:748)\nCaused by: java.util.concurrent.ExecutionException: org.apache.flink.client.program.ProgramInvocationException: Job failed (JobID: ebcc8d8e16f2e95b3145e50ee5a73e13)\n\tat java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:357)\n\tat java.util.concurrent.CompletableFuture.get(CompletableFuture.java:1895)\n\tat org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.execute(StreamExecutionEnvironment.java:1640)\n\tat org.apache.flink.api.java.ScalaShellStreamEnvironment.execute(ScalaShellStreamEnvironment.java:80)\n\tat org.apache.flink.streaming.api.environment.StreamExecutionEnvironment.execute(StreamExecutionEnvironment.java:1620)\n\tat org.apache.flink.table.planner.delegation.StreamExecutor.execute(StreamExecutor.java:42)\n\tat org.apache.flink.table.api.internal.TableEnvironmentImpl.execute(TableEnvironmentImpl.java:643)\n\tat org.apache.zeppelin.flink.sql.AbstractStreamSqlJob.run(AbstractStreamSqlJob.java:153)\n\t... 13 more\nCaused by: org.apache.flink.client.program.ProgramInvocationException: Job failed (JobID: ebcc8d8e16f2e95b3145e50ee5a73e13)\n\tat org.apache.flink.client.deployment.ClusterClientJobClientAdapter.lambda$null$6(ClusterClientJobClientAdapter.java:112)\n\tat java.util.concurrent.CompletableFuture.uniApply(CompletableFuture.java:602)\n\tat java.util.concurrent.CompletableFuture$UniApply.tryFire(CompletableFuture.java:577)\n\tat java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:474)\n\tat java.util.concurrent.CompletableFuture.complete(CompletableFuture.java:1962)\n\tat org.apache.flink.client.program.rest.RestClusterClient.lambda$pollResourceAsync$21(RestClusterClient.java:565)\n\tat java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:760)\n\tat java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:736)\n\tat java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:474)\n\tat java.util.concurrent.CompletableFuture.complete(CompletableFuture.java:1962)\n\tat org.apache.flink.runtime.concurrent.FutureUtils.lambda$retryOperationWithDelay$8(FutureUtils.java:291)\n\tat java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:760)\n\tat java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:736)\n\tat java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:474)\n\tat java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:561)\n\tat java.util.concurrent.CompletableFuture$UniCompose.tryFire(CompletableFuture.java:929)\n\tat java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:442)\n\t... 3 more\nCaused by: org.apache.flink.runtime.client.JobCancellationException: Job was cancelled.\n\tat org.apache.flink.runtime.jobmaster.JobResult.toJobExecutionResult(JobResult.java:149)\n\tat org.apache.flink.client.deployment.ClusterClientJobClientAdapter.lambda$null$6(ClusterClientJobClientAdapter.java:110)\n\t... 19 more\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579058345516_-1005807622",
+      "id": "paragraph_1579058345516_-1005807622",
+      "dateCreated": "2020-01-15 11:19:05.518",
+      "dateStarted": "2020-02-07 10:00:28.144",
+      "dateFinished": "2020-02-07 10:05:39.084",
+      "status": "ABORT"
+    },
+    {
+      "text": "%flink.ssql\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-06 22:17:54.896",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1579058056677_-1981512536",
+      "id": "paragraph_1579058056677_-1981512536",
+      "dateCreated": "2020-01-15 11:14:16.685",
+      "status": "READY"
+    }
+  ],
+  "name": "Streaming ETL",
+  "id": "2EYD56B9B",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-SNAPSHOT",
+  "permissions": {
+    "owners": [],
+    "runners": [],
+    "readers": [],
+    "writers": []
+  },
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {},
+  "path": "/Flink Tutorial/Streaming ETL"
+}

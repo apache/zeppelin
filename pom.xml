@@ -1105,8 +1105,8 @@
                <!--The following files are mechanical-->
               <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
               <exclude>**/R/rzeppelin/NAMESPACE</exclude>
-
-              <exclude>zeppelin-jupyter-adapter/src/main/resources/grpc/**/*</exclude>
+              
+              <exclude>zeppelin-jupyter-interpreter/src/main/resources/grpc/jupyter/*.py</exclude>
             </excludes>
           </configuration>
 
