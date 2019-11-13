@@ -204,7 +204,7 @@ public class SparkRInterpreter extends AbstractInterpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.NONE;
+    return FormType.NATIVE;
   }
 
   @Override

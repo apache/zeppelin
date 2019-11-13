@@ -237,7 +237,7 @@ public class SubmarineInterpreter extends Interpreter {
     commandOptions[1] = new ParamOption(COMMAND_JOB_SHOW, COMMAND_JOB_SHOW);
     commandOptions[2] = new ParamOption(COMMAND_USAGE, COMMAND_USAGE);
     String command = (String) context.getGui().
-        select("Submarine Command", "", commandOptions);
+        select("Submarine Command", commandOptions, "");
 
     String distributed = this.properties.getProperty(MACHINELEARNING_DISTRIBUTED_ENABLE, "false");
 
