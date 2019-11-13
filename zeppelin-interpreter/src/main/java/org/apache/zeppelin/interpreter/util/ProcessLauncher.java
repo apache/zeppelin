@@ -59,11 +59,19 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
                          Map<String, String> envs) {
     this.commandLine = commandLine;
     this.envs = envs;
+    this.processOutput = new ProcessLogOutputStream();
+  }
+
+  public ProcessLauncher(CommandLine commandLine,
+                         Map<String, String> envs,
+                         ProcessLogOutputStream processLogOutput) {
+    this.commandLine = commandLine;
+    this.envs = envs;
+    this.processOutput = processLogOutput;
   }
 
   public void launch() {
     DefaultExecutor executor = new DefaultExecutor();
-    this.processOutput = new ProcessLogOutputStream();
     executor.setStreamHandler(new PumpStreamHandler(processOutput));
     this.watchdog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
     executor.setWatchdog(watchdog);
@@ -140,7 +148,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     processOutput.stopCatchLaunchOutput();
   }
 
-  class ProcessLogOutputStream extends LogOutputStream {
+  public static class ProcessLogOutputStream extends LogOutputStream {
 
     private boolean catchLaunchOutput = true;
     private StringBuilder launchOutput = new StringBuilder();
