@@ -21,10 +21,12 @@ ARG ZEPPELIN_GROUP_ID=2100
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="0.9.0-SNAPSHOT"
+
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+    LC_ALL=en_US.UTF-8 \
+    ZEPPELIN_ADDR="0.0.0.0"
 
 RUN groupadd --gid $ZEPPELIN_GROUP_ID zeppelin \
     && useradd -ms /bin/bash -d ${Z_HOME} zeppelin --uid $ZEPPELIN_USER_ID --gid $ZEPPELIN_GROUP_ID
