@@ -136,11 +136,6 @@ function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   };
 
   $scope.updateCredentialInfo = function(form, data, entity) {
-    if (!$scope.isValidCredential()) {
-      showToast('Username \\ Entity can not be empty.', 'danger');
-      return;
-    }
-
     let credential = {
       entity: entity,
       username: data.username,
