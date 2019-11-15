@@ -55,6 +55,13 @@
       <name>Twitter Maven Repo</name>
       <url>https://maven.twttr.com</url>
     </repository>
+
+    <!-- Temporary repo -->
+    <repository>
+      <id>bintray-ileasile-artifacts-missing_jars</id>
+      <name>bintray</name>
+      <url>https://ileasile-artifacts.bintray.com/missing_jars</url>
+    </repository>
   </repositories>
 
   <dependencies>
