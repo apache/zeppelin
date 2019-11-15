@@ -361,8 +361,6 @@ public class ZeppelinServer extends ResourceConfig {
         new ServletHolder(serviceLocator.getService(NotebookServer.class));
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
 
-    final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-
     webapp.addServlet(servletHolder, "/ws/*");
   }
 
