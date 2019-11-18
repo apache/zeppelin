@@ -321,9 +321,11 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       iPySparkInterpreter.close();
       return;
     }
-    executor.getWatchdog().destroyProcess();
-    new File(scriptPath).delete();
-    gatewayServer.shutdown();
+    if (executor != null) {
+      executor.getWatchdog().destroyProcess();
+      new File(scriptPath).delete();
+      gatewayServer.shutdown();
+    }
   }
 
   PythonInterpretRequest pythonInterpretRequest = null;
@@ -520,11 +522,13 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return;
     }
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    sparkInterpreter.cancel(context);
-    try {
-      interrupt();
-    } catch (IOException e) {
-      LOGGER.error("Error", e);
+    if (sparkInterpreter.getSparkContext() != null) {
+      sparkInterpreter.cancel(context);
+      try {
+        interrupt();
+      } catch (IOException e) {
+        LOGGER.error("Error", e);
+      }
     }
   }
 

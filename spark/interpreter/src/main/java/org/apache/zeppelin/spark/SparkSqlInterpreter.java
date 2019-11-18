@@ -142,9 +142,10 @@ public class SparkSqlInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) throws InterpreterException {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     SQLContext sqlc = sparkInterpreter.getSQLContext();
-    SparkContext sc = sqlc.sparkContext();
-
-    sc.cancelJobGroup(Utils.buildJobGroupId(context));
+    if (sqlc != null) {
+      SparkContext sc = sqlc.sparkContext();
+      sc.cancelJobGroup(Utils.buildJobGroupId(context));
+    }
   }
 
   @Override
@@ -156,7 +157,11 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) throws InterpreterException {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    return sparkInterpreter.getProgress(context);
+    if (sparkInterpreter.getSparkContext() == null) {
+      return 0;
+    }else {
+      return sparkInterpreter.getProgress(context);
+    }
   }
 
   @Override

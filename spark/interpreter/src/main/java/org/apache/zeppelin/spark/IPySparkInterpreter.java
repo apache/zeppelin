@@ -117,14 +117,16 @@ public class IPySparkInterpreter extends IPythonInterpreter {
 
   @Override
   public void cancel(InterpreterContext context) throws InterpreterException {
-    super.cancel(context);
-    sparkInterpreter.cancel(context);
+    if (sparkInterpreter != null) {
+      super.cancel(context);
+      sparkInterpreter.cancel(context);
+    }
   }
 
   @Override
   public void close() throws InterpreterException {
-    super.close();
     if (sparkInterpreter != null) {
+      super.close();
       sparkInterpreter.close();
     }
   }

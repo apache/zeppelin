@@ -164,6 +164,8 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     if (BaseSparkScalaInterpreter.sessionNum.decrementAndGet() == 0) {
       if (sc != null) {
         sc.stop()
+      }else {
+        System.exit(1)
       }
       if (sparkHttpServer != null) {
         sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)

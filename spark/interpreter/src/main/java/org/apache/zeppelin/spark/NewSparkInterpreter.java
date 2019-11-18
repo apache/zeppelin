@@ -149,7 +149,9 @@ public class NewSparkInterpreter extends AbstractSparkInterpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    sc.cancelJobGroup(Utils.buildJobGroupId(context));
+    if (sc != null) {
+      sc.cancelJobGroup(Utils.buildJobGroupId(context));
+    }
   }
 
   @Override

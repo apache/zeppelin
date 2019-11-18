@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -32,6 +34,7 @@ public class LazyOpenInterpreter
     implements WrappedInterpreter {
   private Interpreter intp;
   volatile boolean opened = false;
+  private Lock lock = new ReentrantLock();
 
   public LazyOpenInterpreter(Interpreter intp) {
     super(new Properties());
@@ -59,15 +62,20 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public synchronized void open() throws InterpreterException {
-    if (opened == true) {
-      return;
-    }
-
-    synchronized (intp) {
-      if (opened == false) {
-        intp.open();
-        opened = true;
+  public void open() throws InterpreterException {
+    if (lock.tryLock()) {
+      try {
+        if (opened == true) {
+          return;
+        }
+        synchronized (intp) {
+          if (opened == false) {
+            intp.open();
+            opened = true;
+          }
+        }
+      }finally {
+        lock.unlock();
       }
     }
   }
@@ -80,8 +88,8 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() throws InterpreterException {
-    synchronized (intp) {
-      if (opened == true) {
+    if (opened == true) {
+      synchronized (intp) {
         intp.close();
         opened = false;
       }
