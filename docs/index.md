@@ -144,6 +144,7 @@ limitations under the License.
   * [Ignite](./interpreter/ignite.html)
   * [JDBC](./interpreter/jdbc.html)
   * [Kylin](./interpreter/kylin.html)
+  * [Kotlin](./interpreter/kotlin.html)
   * [Lens](./interpreter/lens.html)
   * [Livy](./interpreter/livy.html)
   * [Mahout](./interpreter/mahout.html)

@@ -103,6 +103,12 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
+      <artifactId>zeppelin-kotlin</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-python</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -346,7 +352,7 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx2048m -XX:MaxPermSize=256m</argLine>
+          <argLine>-Xmx3072m -XX:MaxPermSize=256m</argLine>
           <excludes>
             <exclude>**/SparkRInterpreterTest.java</exclude>
             <exclude>${pyspark.test.exclude}</exclude>

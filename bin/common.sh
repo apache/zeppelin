@@ -114,7 +114,7 @@ if [[ -z "${ZEPPELIN_MEM}" ]]; then
 fi
 
 if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
-  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx1024m -XX:MaxPermSize=512m"
+  export ZEPPELIN_INTP_MEM="-Xms1024m -Xmx2048m -XX:MaxPermSize=512m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"

@@ -56,6 +56,7 @@ module.exports = function(config) {
       'bower_components/angular-websocket/angular-websocket.min.js',
       'bower_components/ace-builds/src-noconflict/ace.js',
       'bower_components/ace-builds/src-noconflict/mode-scala.js',
+      'bower_components/ace-builds/src-noconflict/mode-kotlin.js',
       'bower_components/ace-builds/src-noconflict/mode-python.js',
       'bower_components/ace-builds/src-noconflict/mode-sql.js',
       'bower_components/ace-builds/src-noconflict/mode-markdown.js',
