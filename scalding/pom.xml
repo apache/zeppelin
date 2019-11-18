@@ -58,9 +58,9 @@
 
     <!-- Temporary repo -->
     <repository>
-      <id>bintray-ileasile-artifacts-missing_jars</id>
+      <id>zeppelin-dependencies</id>
       <name>bintray</name>
-      <url>https://ileasile-artifacts.bintray.com/missing_jars</url>
+      <url>https://jetbrains.bintray.com/zeppelin-dependencies</url>
     </repository>
   </repositories>
 
