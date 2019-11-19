@@ -25,7 +25,7 @@ limitations under the License.
 
 ## Overview
 [SPARQL](https://www.w3.org/TR/sparql11-query/) is an RDF query language able to retrieve and manipulate data stored in Resource Description Framework (RDF) format.
-Apache Zeppelin uses [Apache Jena](https://jena.apache.org/) to query SPARQL-Endpoints.
+Apache Zeppelin for now only supports [Apache Jena](https://jena.apache.org/) to query SPARQL-Endpoints.
 
 To query your endpoint configure it in the Interpreter-Settings and use the **%sparql** interpreter.
 Then write your query in the paragraph.
@@ -39,6 +39,11 @@ If you want the prefixes to replace the URI's, set the replaceURIs setting.
     <th>Description</th>
   </tr>
   <tr>
+    <td>sparql.engine</td>
+    <td>jena</td>
+    <td>The sparql engine to use for the queries</td>
+  </tr>
+  <tr>
     <td>sparql.endpoint</td>
     <td>http://dbpedia.org/sparql</td>
     <td>Complete URL of the endpoint</td>
@@ -48,8 +53,19 @@ If you want the prefixes to replace the URI's, set the replaceURIs setting.
     <td>true</td>
     <td>Replace the URIs in the result with the prefixes</td>
   </tr>
+  <tr>
+    <td>sparql.removeDatatypes</td>
+    <td>true</td>
+    <td>Remove the datatypes from Literals so Zeppelin can use the values</td>
+  </tr>
 </table>
 
 ## Example
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/sparql-example.png" width="100%"/>
+
+## Acknowledgement
+
+This work was partially supported by the Bavarian State Ministry of Economic Affairs,
+Regional Development and Energy within the framework of the Bavarian Research and
+Development Program "Information and Communication Technology".
