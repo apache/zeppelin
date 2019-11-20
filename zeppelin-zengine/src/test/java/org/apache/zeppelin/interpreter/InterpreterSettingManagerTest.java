@@ -138,7 +138,7 @@ public class InterpreterSettingManagerTest extends AbstractInterpreterTest {
     interpreterSetting = interpreterSettingManager2.getByName("test3");
     assertEquals("test3", interpreterSetting.getName());
     assertEquals("test", interpreterSetting.getGroup());
-    assertEquals(6, interpreterSetting.getJavaProperties().size());
+    assertEquals(4, interpreterSetting.getJavaProperties().size());
     assertEquals("value_4", interpreterSetting.getJavaProperties().getProperty("property_4"));
     assertEquals("scoped", interpreterSetting.getOption().perNote);
     assertEquals("scoped", interpreterSetting.getOption().perUser);
