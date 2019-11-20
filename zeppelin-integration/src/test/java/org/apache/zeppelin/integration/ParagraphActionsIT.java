@@ -528,7 +528,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
   }
 
-  @Test
+  //@Test
   public void testSingleDynamicFormTextInput() throws Exception {
     try {
       createNewNote();
