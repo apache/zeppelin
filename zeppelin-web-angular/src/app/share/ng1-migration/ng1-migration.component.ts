@@ -88,6 +88,9 @@ export class Ng1MigrationComponent implements OnDestroy {
         this.editor.layout();
         this.bindEditorEvents();
         this.check();
+        setTimeout(() => {
+          this.editor.focus();
+        }, 150);
       }
     });
   }

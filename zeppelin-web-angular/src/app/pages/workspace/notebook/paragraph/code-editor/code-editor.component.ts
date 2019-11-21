@@ -115,7 +115,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         this.editor.addAction({
           id: item.icon,
           label: item.label,
-          keybindings: item.keyBindings,
           precondition: null,
           keybindingContext: null,
           contextMenuGroupId: 'navigation',
