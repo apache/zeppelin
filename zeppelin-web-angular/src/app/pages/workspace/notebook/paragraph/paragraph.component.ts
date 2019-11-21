@@ -13,7 +13,8 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, ElementRef,
+  Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -60,6 +61,7 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
+import { NgTemplateAdapterService } from '@zeppelin/services/ng-template-adapter.service';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
@@ -384,7 +386,7 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     // TODO(hsuanxyz): save cursor
   }
 
-  cloneParagraph(position: string = 'below') {
+  cloneParagraph(position: string = 'below', newText?: string) {
     let newIndex = -1;
     for (let i = 0; i < this.note.paragraphs.length; i++) {
       if (this.note.paragraphs[i].id === this.paragraph.id) {
@@ -408,10 +410,28 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     this.messageService.copyParagraph(
       newIndex,
       this.paragraph.title,
-      this.paragraph.text,
+      newText || this.paragraph.text,
       config,
       this.paragraph.settings.params
     );
+  }
+
+  runParagraphAfter(text: string) {
+    this.originalText = text;
+    this.dirtyText = undefined;
+
+    if (this.paragraph.config.editorSetting.editOnDblClick) {
+      this.paragraph.config.editorHide = true;
+      this.paragraph.config.tableHide = false;
+      this.commitParagraph();
+    } else if (this.editorSetting.isOutputHidden && !this.paragraph.config.editorSetting.editOnDblClick) {
+      // %md/%angular repl make output to be hidden by default after running
+      // so should open output if repl changed from %md/%angular to another
+      this.paragraph.config.editorHide = false;
+      this.paragraph.config.tableHide = false;
+      this.commitParagraph();
+    }
+    this.editorSetting.isOutputHidden = this.paragraph.config.editorSetting.editOnDblClick;
   }
 
   runParagraph(paragraphText?: string, propagated: boolean = false) {
@@ -421,25 +441,29 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
 
       if (this.heliumService.getSpellByMagic(magic)) {
         this.runParagraphUsingSpell(text, magic, propagated);
+        this.runParagraphAfter(text);
       } else {
-        this.runParagraphUsingBackendInterpreter(text);
+        const check = this.ngTemplateAdapterService.preCheck(text);
+        if (!check) {
+          this.runParagraphUsingBackendInterpreter(text);
+          this.runParagraphAfter(text);
+        } else {
+          this.nzModalService.confirm({
+            nzTitle: 'Do you want to migrate the Angular.js template?',
+            nzContent:
+              'The Angular.js template has been deprecated, please upgrade to Angular template.' +
+              ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank">more info</a>)',
+            nzOnOk: () => {
+              this.ngTemplateAdapterService
+                .openMigrationDialog(check)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(newText => {
+                  this.cloneParagraph('below', newText);
+                });
+            }
+          });
+        }
       }
-
-      this.originalText = text;
-      this.dirtyText = undefined;
-
-      if (this.paragraph.config.editorSetting.editOnDblClick) {
-        this.paragraph.config.editorHide = true;
-        this.paragraph.config.tableHide = false;
-        this.commitParagraph();
-      } else if (this.editorSetting.isOutputHidden && !this.paragraph.config.editorSetting.editOnDblClick) {
-        // %md/%angular repl make output to be hidden by default after running
-        // so should open output if repl changed from %md/%angular to another
-        this.paragraph.config.editorHide = false;
-        this.paragraph.config.tableHide = false;
-        this.commitParagraph();
-      }
-      this.editorSetting.isOutputHidden = this.paragraph.config.editorSetting.editOnDblClick;
     }
   }
 
@@ -693,7 +717,8 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     private cdr: ChangeDetectorRef,
     private ngZService: NgZService,
     private shortcutService: ShortcutService,
-    private host: ElementRef
+    private host: ElementRef,
+    private ngTemplateAdapterService: NgTemplateAdapterService
   ) {
     super(messageService);
   }

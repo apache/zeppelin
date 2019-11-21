@@ -110,7 +110,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
-    this.paragraphControl.updateListOfMenu(monaco);
     if (this.paragraphControl) {
       this.paragraphControl.listOfMenu.forEach((item, index) => {
         this.editor.addAction({
