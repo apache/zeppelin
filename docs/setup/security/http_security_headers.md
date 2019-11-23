@@ -87,11 +87,33 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 ```
 
 
-You can choose appropriate value from below.
+You can choose from an appropriate value from below.
 
 * `DENY`
 * `SAMEORIGIN`
 * `ALLOW-FROM uri`
+
+## Setting up Content-Security-Policy Header
+
+The Content-Security-Policy HTTP response header can indicate browser to avoid clickjacking attacks, by ensuring that their content is not embedded into other sites in a `<frame>`,`<iframe>` or `<object>`.
+
+The following property needs to be updated in the zeppelin-site.xml in order to set Content-Security-Policy header.
+
+```xml
+<property>
+  <name>zeppelin.server.csp.frame</name>
+  <value>frame-ancestors 'none'</value>
+  <description>The Content-Security-Policy HTTP response header can be used to mitigate the risk of content-injection attacks and can be used in conjunction with X-Frame-Options to provide better security for browsers that don't support ALLOWED-FROM.</description>
+</property>
+```
+
+You can choose from an appropriate value below:
+
+* `frame-ancestors 'none'`
+* `frame-ancestors 'self'`
+* `frame-ancestors https://example.com:8443 http://example.com`
+
+Additional documentation can be found on [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors).
 
 ## Setting up Server Header
 

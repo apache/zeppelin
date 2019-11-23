@@ -627,6 +627,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getString(ConfVars.ZEPPELIN_SERVER_XFRAME_OPTIONS);
   }
 
+  public String getCSPFrame() {
+    return getString(ConfVars.ZEPPELIN_SERVER_CSP_FRAME);
+  }
+
   public String getXxssProtection() {
     return getString(ConfVars.ZEPPELIN_SERVER_X_XSS_PROTECTION);
   }
@@ -877,6 +881,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE("zeppelin.websocket.max.text.message.size", "1024000"),
     ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED("zeppelin.server.default.dir.allowed", false),
     ZEPPELIN_SERVER_XFRAME_OPTIONS("zeppelin.server.xframe.options", "SAMEORIGIN"),
+    ZEPPELIN_SERVER_CSP_FRAME("zeppelin.server.csp.frame", "frame-ancestors 'none'"),
     ZEPPELIN_SERVER_JETTY_NAME("zeppelin.server.jetty.name", null),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MAX("zeppelin.server.jetty.thread.pool.max", 400),
     ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN("zeppelin.server.jetty.thread.pool.min", 8),

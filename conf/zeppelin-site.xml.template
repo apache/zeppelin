@@ -539,6 +539,14 @@
 
 <!--
 <property>
+  <name>zeppelin.server.csp.frame</name>
+  <value>frame-ancestors 'none'</value>
+  <description>The Content-Security-Policy HTTP response header can be used to mitigate the risk of content-injection attacks and can be used in conjunction with X-Frame-Options to provide better security for browsers that don't support ALLOWED-FROM.</description>
+</property>
+-->
+
+<!--
+<property>
   <name>zeppelin.server.strict.transport</name>
   <value>max-age=631138519</value>
   <description>The HTTP Strict-Transport-Security response header is a security feature that lets a web site tell browsers that it should only be communicated with using HTTPS, instead of using HTTP. Enable this when Zeppelin is running on HTTPS. Value is in Seconds, the default value is equivalent to 20 years.</description>
