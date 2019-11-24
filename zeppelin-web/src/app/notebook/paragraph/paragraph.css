@@ -354,8 +354,9 @@ table.table-shortcut {
 }
 
 /** set highlight line color */
-#main .ace-chrome .ace_marker-layer .ace_active-line {
-  background: rgba(114, 127, 222, 0.08);
+#main .ace-chrome .ace_marker-layer .ace_active-line,
+#main .ace-chrome .ace_gutter-active-line {
+  background: rgba(114, 127, 222, 0.15);
 }
 
 /** hide not focused cursors */
