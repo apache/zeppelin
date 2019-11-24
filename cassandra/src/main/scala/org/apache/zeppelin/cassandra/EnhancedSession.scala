@@ -16,9 +16,12 @@
  */
 package org.apache.zeppelin.cassandra
 
+import java.util.regex.Pattern
+
 import com.datastax.driver.core._
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 import org.apache.zeppelin.interpreter.InterpreterException
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
@@ -38,7 +41,8 @@ class EnhancedSession(val session: Session) {
   val materializedViewDisplay = DisplaySystem.MaterializedViewDisplay
   val helpDisplay = DisplaySystem.HelpDisplay
   private val noResultDisplay = DisplaySystem.NoResultDisplay
-
+  private val DEFAULT_CHECK_TIME = 200 // half second
+  private val LOGGER = LoggerFactory.getLogger(classOf[EnhancedSession])
 
   val HTML_MAGIC = "%html \n"
 
@@ -181,6 +185,20 @@ class EnhancedSession(val session: Session) {
   }
 
 
+  private def execute(st: Statement): Any = {
+    val rs = session.execute(st)
+    if (EnhancedSession.isDDLStatement(st)) {
+      if (!rs.getExecutionInfo.isSchemaInAgreement) {
+        val metadata = session.getCluster.getMetadata
+        while(!metadata.checkSchemaAgreement) {
+          LOGGER.info("Schema is still not in agreement, waiting...")
+          Thread.sleep(DEFAULT_CHECK_TIME)
+        }
+      }
+    }
+    rs
+  }
+
   def execute(st: Any): Any = {
     st match {
       case x:DescribeClusterCmd => execute(x)
@@ -197,8 +215,29 @@ class EnhancedSession(val session: Session) {
       case x:DescribeMaterializedViewCmd => execute(x)
       case x:DescribeMaterializedViewsCmd => execute(x)
       case x:HelpCmd => execute(x)
-      case x:Statement => session.execute(x)
+      case x:Statement => execute(x)
       case _ => throw new InterpreterException(s"Cannot execute statement '$st' of type ${st.getClass}")
+    }
+  }
+}
+
+object EnhancedSession {
+  private val DDL_REGEX = Pattern.compile("^(CREATE|DROP|ALTER) .*", Pattern.CASE_INSENSITIVE)
+
+  def isDDLStatement(query: String): Boolean = {
+    DDL_REGEX.matcher(query.trim).matches()
+  }
+
+  def isDDLStatement(st: Statement): Boolean = {
+    st match {
+      case x:BoundStatement =>
+        isDDLStatement(x.preparedStatement.getQueryString)
+      case x:BatchStatement =>
+        x.getStatements.asScala.seq.exists(isDDLStatement)
+      case x:RegularStatement =>
+        isDDLStatement(x.getQueryString)
+      case _ => // only should be for StatementWrapper
+        true
     }
   }
 }
