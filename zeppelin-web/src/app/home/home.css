@@ -59,6 +59,14 @@ body .navbar {
   text-decoration: none;
 }
 
+.note-folder-item:hover .note-folder-item-actions {
+  display: inline-block;
+}
+
+.note-folder-item-actions {
+  display: none;
+}
+
 /* Css for the Notebook Dropdown */
 
 .expandable ul {
