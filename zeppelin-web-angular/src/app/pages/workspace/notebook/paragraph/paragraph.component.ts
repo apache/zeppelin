@@ -212,7 +212,6 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       this.focusEditor();
     } else {
       this.blurEditor();
-      (this.host.nativeElement as HTMLElement).focus();
     }
   }
 

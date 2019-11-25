@@ -37,7 +37,7 @@
     "mathjax": "2.7.5",
     "monaco-editor": "^0.18.1",
     "ng-zorro-antd": "^8.4.0",
-    "ng1-template-updater": "0.0.2",
+    "ng1-template-updater": "0.0.4",
     "parse5": "^5.1.1",
     "rxjs": "~6.5.3",
     "systemjs": "^5.0.0",
