@@ -276,9 +276,9 @@ public abstract class BaseZeppelinContext {
                                 List<Object> defaultChecked,
                                 boolean noteForm) {
     if (defaultChecked == null ) {
-      List<Object> defaultValues = new LinkedList<>();
+      defaultChecked = new ArrayList<>();
       for (ParamOption option : options) {
-        defaultValues.add(option.getValue());
+        defaultChecked.add(option.getValue());
       }
     }
     if (noteForm) {
