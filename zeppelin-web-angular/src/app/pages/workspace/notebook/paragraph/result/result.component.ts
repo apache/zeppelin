@@ -16,7 +16,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   Injector,
   Input,
@@ -81,6 +80,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   plainText: string | SafeHtml = '';
   imgData: string | SafeUrl = '';
   tableData = new TableData();
+  frontEndError: string;
   // tslint:disable-next-line:no-any
   visualizations: any[] = [
     {
@@ -236,11 +236,16 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderAngular(): void {
-    this.runtimeCompilerService.createAndCompileTemplate(this.id, this.result.data).then(data => {
-      this.angularComponent = data;
-      // this.angularComponent.moduleFactory
-      this.cdr.markForCheck();
-    });
+    try {
+      this.runtimeCompilerService.createAndCompileTemplate(this.id, this.result.data).then(data => {
+        this.angularComponent = data;
+        // this.angularComponent.moduleFactory
+        this.cdr.markForCheck();
+      });
+    } catch (e) {
+      this.frontEndError = e.message;
+      console.log(e);
+    }
   }
 
   renderText(): void {

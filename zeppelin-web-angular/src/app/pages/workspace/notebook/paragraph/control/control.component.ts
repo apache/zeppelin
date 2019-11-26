@@ -81,38 +81,18 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     disabled: boolean;
     icon: string;
     shortCut: string;
-    keyBindings: number[];
     trigger(): void;
   }> = [];
 
-  updateListOfMenu(monaco?) {
+  updateListOfMenu() {
     this.listOfMenu = [
       {
-        label: 'Move up',
+        label: 'Run',
         show: !this.first,
         disabled: this.isEntireNoteRunning,
-        icon: 'up',
-        trigger: () => this.trigger(this.moveUp),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+K`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_K] : []
-      },
-      {
-        label: 'Move down',
-        show: !this.last,
-        disabled: this.isEntireNoteRunning,
-        icon: 'down',
-        trigger: () => this.trigger(this.moveDown),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+J`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_J] : []
-      },
-      {
-        label: 'Insert new',
-        show: true,
-        disabled: this.isEntireNoteRunning,
-        icon: 'plus',
-        trigger: () => this.trigger(this.insertNew),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+B`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_B] : []
+        icon: 'play-circle',
+        trigger: () => this.trigger(this.runParagraph),
+        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
       },
       {
         label: 'Run all above',
@@ -120,8 +100,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'up-square',
         trigger: () => this.trigger(this.runAllAbove),
-        shortCut: `Ctrl+Shift+Enter`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Shift | monaco.KeyCode.Enter] : []
+        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
       },
       {
         label: 'Run all below',
@@ -129,44 +108,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'down-square',
         trigger: () => this.trigger(this.runAllBelowAndCurrent),
-        shortCut: `Ctrl+Shift+Enter`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Shift | monaco.KeyCode.Enter] : []
-      },
-      {
-        label: 'Clone paragraph',
-        show: true,
-        disabled: this.isEntireNoteRunning,
-        icon: 'copy',
-        trigger: () => this.trigger(this.cloneParagraph),
-        shortCut: `Ctrl+Shift+C`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Shift | monaco.KeyCode.KEY_C] : []
-      },
-      {
-        label: this.title ? 'Hide Title' : 'Show Title',
-        show: true,
-        disabled: false,
-        icon: 'font-colors',
-        trigger: () => this.toggleTitle(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+T`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_T] : []
-      },
-      {
-        label: this.lineNumbers ? 'Hide line numbers' : 'Show line numbers',
-        show: true,
-        disabled: false,
-        icon: 'ordered-list',
-        trigger: () => this.toggleLineNumbers(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+M`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_M] : []
-      },
-      {
-        label: this.enabled ? 'Disable run' : 'Enable run',
-        show: true,
-        disabled: this.isEntireNoteRunning,
-        icon: 'api',
-        trigger: () => this.toggleEnabled(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+R`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_R] : []
+        shortCut: this.isMac ? '⇧+⌘+Enter' : 'Shift+Ctrl+Enter'
       },
       {
         label: 'Link this paragraph',
@@ -174,8 +116,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: false,
         icon: 'export',
         trigger: () => this.goToSingleParagraph(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+W`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_W] : []
+        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+W`
       },
       {
         label: 'Clear output',
@@ -183,8 +124,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'fire',
         trigger: () => this.clearParagraphOutput(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+L`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_L] : []
+        shortCut: this.isMac ? '⌥+⌘+L' : 'Alt+Ctrl+L'
       },
       {
         label: 'Remove',
@@ -192,8 +132,63 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         disabled: this.isEntireNoteRunning,
         icon: 'delete',
         trigger: () => this.onRemoveParagraph(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+D`,
-        keyBindings: monaco ? [monaco.KeyMod.WinCtrl | monaco.KeyMod.Alt | monaco.KeyCode.KEY_D] : []
+        shortCut: this.isMac ? '⇧+Del (Command)' : 'Shift+Del (Command)'
+      },
+      {
+        label: 'Move up',
+        show: !this.first,
+        disabled: this.isEntireNoteRunning,
+        icon: 'up',
+        trigger: () => this.trigger(this.moveUp),
+        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+K (Command)`
+      },
+      {
+        label: 'Move down',
+        show: !this.last,
+        disabled: this.isEntireNoteRunning,
+        icon: 'down',
+        trigger: () => this.trigger(this.moveDown),
+        shortCut: `${this.isMac ? '⌘' : 'Ctrl'}+J (Command)`
+      },
+      {
+        label: 'Insert new',
+        show: true,
+        disabled: this.isEntireNoteRunning,
+        icon: 'plus',
+        trigger: () => this.trigger(this.insertNew),
+        shortCut: `B (Command)`
+      },
+      {
+        label: 'Clone paragraph',
+        show: true,
+        disabled: this.isEntireNoteRunning,
+        icon: 'copy',
+        trigger: () => this.trigger(this.cloneParagraph),
+        shortCut: `C (Command)`
+      },
+      {
+        label: this.title ? 'Hide Title' : 'Show Title',
+        show: true,
+        disabled: false,
+        icon: 'font-colors',
+        trigger: () => this.toggleTitle(),
+        shortCut: `T (Command)`
+      },
+      {
+        label: this.lineNumbers ? 'Hide line numbers' : 'Show line numbers',
+        show: true,
+        disabled: false,
+        icon: 'ordered-list',
+        trigger: () => this.toggleLineNumbers(),
+        shortCut: `L (Command)`
+      },
+      {
+        label: this.enabled ? 'Disable run' : 'Enable run',
+        show: true,
+        disabled: this.isEntireNoteRunning,
+        icon: 'api',
+        trigger: () => this.toggleEnabled(),
+        shortCut: `R (Command)`
       }
     ];
   }

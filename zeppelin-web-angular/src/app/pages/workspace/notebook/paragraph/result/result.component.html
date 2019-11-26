@@ -65,7 +65,7 @@
          zeppelinRunScripts
          [scriptsContent]="innerHTML"
          [innerHTML]="innerHTML"></div>
-    <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre [innerHTML]="plainText"></pre></div>
+    <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre>{{plainText}}</pre></div>
     <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img"></div>
   </ng-container>
   <div *ngIf="angularComponent">

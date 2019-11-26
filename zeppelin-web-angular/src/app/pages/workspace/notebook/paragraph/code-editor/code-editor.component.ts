@@ -76,16 +76,10 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     const editor = this.editor;
     this.monacoDisposables.push(
       editor.onDidFocusEditorText(() => {
-        this.ngZone.runOutsideAngular(() => {
-          this.editorFocus.emit();
-          editor.updateOptions({ renderLineHighlight: 'all' });
-        });
+        this.editorFocus.emit();
       }),
       editor.onDidBlurEditorText(() => {
         this.editorBlur.emit();
-        this.ngZone.runOutsideAngular(() => {
-          editor.updateOptions({ renderLineHighlight: 'none' });
-        });
       }),
 
       editor.onDidChangeModelContent(() => {
@@ -110,13 +104,11 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
-    this.paragraphControl.updateListOfMenu(monaco);
     if (this.paragraphControl) {
       this.paragraphControl.listOfMenu.forEach((item, index) => {
         this.editor.addAction({
           id: item.icon,
           label: item.label,
-          keybindings: item.keyBindings,
           precondition: null,
           keybindingContext: null,
           contextMenuGroupId: 'navigation',
