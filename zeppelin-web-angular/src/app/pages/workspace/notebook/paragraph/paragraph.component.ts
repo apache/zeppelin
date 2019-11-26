@@ -13,7 +13,8 @@
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component, ElementRef,
+  Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -25,8 +26,8 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import {merge, Observable, Subject} from 'rxjs';
-import {map, takeUntil} from 'rxjs/operators';
+import { merge, Observable, Subject } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 
 import DiffMatchPatch from 'diff-match-patch';
 import { isEmpty, isEqual } from 'lodash';
@@ -60,6 +61,7 @@ import {
 } from '@zeppelin/services';
 import { SpellResult } from '@zeppelin/spell/spell-result';
 
+import { NgTemplateAdapterService } from '@zeppelin/services/ng-template-adapter.service';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { NotebookParagraphCodeEditorComponent } from './code-editor/code-editor.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
@@ -71,7 +73,7 @@ type Mode = 'edit' | 'command';
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.less'],
   host: {
-    'tabindex': '-1',
+    tabindex: '-1',
     '(focusin)': 'onFocus()'
   },
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -210,7 +212,6 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
       this.focusEditor();
     } else {
       this.blurEditor();
-      (this.host.nativeElement as HTMLElement).focus();
     }
   }
 
@@ -370,21 +371,22 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
         params: p.settings.params
       };
     });
-    this.nzModalService.confirm({
-      nzTitle: 'Run current and all below?',
-      nzContent: 'Are you sure to run current and all below?',
-      nzOnOk: () => {
-        this.messageService.runAllParagraphs(this.note.id, paragraphs);
-      }
-    }).afterClose
-      .pipe(takeUntil(this.destroy$))
+    this.nzModalService
+      .confirm({
+        nzTitle: 'Run current and all below?',
+        nzContent: 'Are you sure to run current and all below?',
+        nzOnOk: () => {
+          this.messageService.runAllParagraphs(this.note.id, paragraphs);
+        }
+      })
+      .afterClose.pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.waitConfirmFromEdit = false;
       });
     // TODO(hsuanxyz): save cursor
   }
 
-  cloneParagraph(position: string = 'below') {
+  cloneParagraph(position: string = 'below', newText?: string) {
     let newIndex = -1;
     for (let i = 0; i < this.note.paragraphs.length; i++) {
       if (this.note.paragraphs[i].id === this.paragraph.id) {
@@ -408,10 +410,28 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     this.messageService.copyParagraph(
       newIndex,
       this.paragraph.title,
-      this.paragraph.text,
+      newText || this.paragraph.text,
       config,
       this.paragraph.settings.params
     );
+  }
+
+  runParagraphAfter(text: string) {
+    this.originalText = text;
+    this.dirtyText = undefined;
+
+    if (this.paragraph.config.editorSetting.editOnDblClick) {
+      this.paragraph.config.editorHide = true;
+      this.paragraph.config.tableHide = false;
+      this.commitParagraph();
+    } else if (this.editorSetting.isOutputHidden && !this.paragraph.config.editorSetting.editOnDblClick) {
+      // %md/%angular repl make output to be hidden by default after running
+      // so should open output if repl changed from %md/%angular to another
+      this.paragraph.config.editorHide = false;
+      this.paragraph.config.tableHide = false;
+      this.commitParagraph();
+    }
+    this.editorSetting.isOutputHidden = this.paragraph.config.editorSetting.editOnDblClick;
   }
 
   runParagraph(paragraphText?: string, propagated: boolean = false) {
@@ -421,25 +441,34 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
 
       if (this.heliumService.getSpellByMagic(magic)) {
         this.runParagraphUsingSpell(text, magic, propagated);
+        this.runParagraphAfter(text);
       } else {
-        this.runParagraphUsingBackendInterpreter(text);
+        const check = this.ngTemplateAdapterService.preCheck(text);
+        if (!check) {
+          this.runParagraphUsingBackendInterpreter(text);
+          this.runParagraphAfter(text);
+        } else {
+          this.waitConfirmFromEdit = true;
+          this.nzModalService
+            .confirm({
+              nzTitle: 'Do you want to migrate the Angular.js template?',
+              nzContent:
+                'The Angular.js template has been deprecated, please upgrade to Angular template.' +
+                ' (<a href="https://angular.io/guide/ajs-quick-reference" target="_blank">more info</a>)',
+              nzOnOk: () => {
+                this.switchMode('command');
+                this.ngTemplateAdapterService
+                  .openMigrationDialog(check)
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe(newText => {
+                    this.cloneParagraph('below', newText);
+                  });
+              }
+            })
+            .afterClose.pipe(takeUntil(this.destroy$))
+            .subscribe(() => (this.waitConfirmFromEdit = false));
+        }
       }
-
-      this.originalText = text;
-      this.dirtyText = undefined;
-
-      if (this.paragraph.config.editorSetting.editOnDblClick) {
-        this.paragraph.config.editorHide = true;
-        this.paragraph.config.tableHide = false;
-        this.commitParagraph();
-      } else if (this.editorSetting.isOutputHidden && !this.paragraph.config.editorSetting.editOnDblClick) {
-        // %md/%angular repl make output to be hidden by default after running
-        // so should open output if repl changed from %md/%angular to another
-        this.paragraph.config.editorHide = false;
-        this.paragraph.config.tableHide = false;
-        this.commitParagraph();
-      }
-      this.editorSetting.isOutputHidden = this.paragraph.config.editorSetting.editOnDblClick;
     }
   }
 
@@ -693,125 +722,131 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     private cdr: ChangeDetectorRef,
     private ngZService: NgZService,
     private shortcutService: ShortcutService,
-    private host: ElementRef
+    private host: ElementRef,
+    private ngTemplateAdapterService: NgTemplateAdapterService
   ) {
     super(messageService);
   }
 
   ngOnInit() {
     const shortcutService = this.shortcutService.forkByElement(this.host.nativeElement);
-    const observables: Array<Observable<{
-      action: ParagraphActions,
-      event: KeyboardEvent
-    }>> = [];
+    const observables: Array<
+      Observable<{
+        action: ParagraphActions;
+        event: KeyboardEvent;
+      }>
+    > = [];
     Object.entries(ShortcutsMap).forEach(([action, keys]) => {
       const keysArr: string[] = Array.isArray(keys) ? keys : [keys];
       keysArr.forEach(key => {
         observables.push(
-          shortcutService.bindShortcut({
-            keybindings: key
-          }).pipe(
-            takeUntil(this.destroy$),
-            map(({event}) => {
-            return {
-              event,
-              action: action as ParagraphActions
-            }
-          }))
+          shortcutService
+            .bindShortcut({
+              keybindings: key
+            })
+            .pipe(
+              takeUntil(this.destroy$),
+              map(({ event }) => {
+                return {
+                  event,
+                  action: action as ParagraphActions
+                };
+              })
+            )
         );
       });
     });
 
     merge<{
-      action: ParagraphActions,
-      event: KeyboardEvent
+      action: ParagraphActions;
+      event: KeyboardEvent;
     }>(...observables)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(({action, event}) => {
-      if (this.mode === 'command') {
+      .subscribe(({ action, event }) => {
+        if (this.mode === 'command') {
+          switch (action) {
+            case ParagraphActions.InsertAbove:
+              this.insertParagraph('above');
+              break;
+            case ParagraphActions.InsertBelow:
+              this.insertParagraph('below');
+              break;
+            case ParagraphActions.SwitchEditorShow:
+              this.setEditorHide(!this.paragraph.config.editorHide);
+              this.commitParagraph();
+              break;
+            case ParagraphActions.SwitchOutputShow:
+              this.setTableHide(!this.paragraph.config.tableHide);
+              this.commitParagraph();
+              break;
+            case ParagraphActions.SwitchTitleShow:
+              this.paragraph.config.title = !this.paragraph.config.title;
+              this.commitParagraph();
+              break;
+            case ParagraphActions.SwitchLineNumber:
+              this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
+              this.commitParagraph();
+              break;
+            case ParagraphActions.MoveToUp:
+              this.moveUpParagraph();
+              break;
+            case ParagraphActions.MoveToDown:
+              this.moveDownParagraph();
+              break;
+            case ParagraphActions.SwitchEnable:
+              this.paragraph.config.enabled = !this.paragraph.config.enabled;
+              this.commitParagraph();
+              break;
+            case ParagraphActions.ReduceWidth:
+              this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
+              this.cdr.markForCheck();
+              this.changeColWidth(true);
+              break;
+            case ParagraphActions.IncreaseWidth:
+              this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
+              this.cdr.markForCheck();
+              this.changeColWidth(true);
+              break;
+            case ParagraphActions.Delete:
+              this.removeParagraph();
+              break;
+            case ParagraphActions.SelectAbove:
+              event.preventDefault();
+              this.selectAtIndex.emit(this.index - 1);
+              break;
+            case ParagraphActions.SelectBelow:
+              event.preventDefault();
+              this.selectAtIndex.emit(this.index + 1);
+              break;
+            default:
+              break;
+          }
+        }
         switch (action) {
-          case ParagraphActions.InsertAbove:
-            this.insertParagraph('above');
+          case ParagraphActions.EditMode:
+            if (this.mode === 'command') {
+              event.preventDefault();
+            }
+            if (!this.paragraph.config.editorHide) {
+              this.switchMode('edit');
+            }
             break;
-          case ParagraphActions.InsertBelow:
-            this.insertParagraph('below');
-            break;
-          case ParagraphActions.SwitchEditorShow:
-            this.setEditorHide(!this.paragraph.config.editorHide);
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchOutputShow:
-            this.setTableHide(!this.paragraph.config.tableHide);
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchTitleShow:
-            this.paragraph.config.title = !this.paragraph.config.title;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.SwitchLineNumber:
-            this.paragraph.config.lineNumbers = !this.paragraph.config.lineNumbers;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.MoveToUp:
-            this.moveUpParagraph();
-            break;
-          case ParagraphActions.MoveToDown:
-            this.moveDownParagraph();
-            break;
-          case ParagraphActions.SwitchEnable:
-            this.paragraph.config.enabled = !this.paragraph.config.enabled;
-            this.commitParagraph();
-            break;
-          case ParagraphActions.ReduceWidth:
-            this.paragraph.config.colWidth = Math.max(1, this.paragraph.config.colWidth - 1);
-            this.cdr.markForCheck();
-            this.changeColWidth(true);
-            break;
-          case ParagraphActions.IncreaseWidth:
-            this.paragraph.config.colWidth = Math.min(12, this.paragraph.config.colWidth + 1);
-            this.cdr.markForCheck();
-            this.changeColWidth(true);
-            break;
-          case ParagraphActions.Delete:
-            this.removeParagraph();
-            break;
-          case ParagraphActions.SelectAbove:
+          case ParagraphActions.Run:
             event.preventDefault();
-            this.selectAtIndex.emit(this.index - 1);
+            this.runParagraph();
             break;
-          case ParagraphActions.SelectBelow:
+          case ParagraphActions.RunBelow:
+            this.waitConfirmFromEdit = true;
+            this.runAllBelowAndCurrent();
+            break;
+          case ParagraphActions.Cancel:
             event.preventDefault();
-            this.selectAtIndex.emit(this.index + 1);
+            this.cancelParagraph();
             break;
           default:
             break;
         }
-      }
-      switch (action) {
-        case ParagraphActions.EditMode:
-          if (this.mode === 'command') {
-            event.preventDefault();
-          }
-          if (!this.paragraph.config.editorHide) {
-            this.switchMode('edit');
-          }
-          break;
-        case ParagraphActions.Run:
-          event.preventDefault();
-          this.runParagraph();
-          break;
-        case ParagraphActions.RunBelow:
-          this.waitConfirmFromEdit = true;
-          this.runAllBelowAndCurrent();
-          break;
-        case ParagraphActions.Cancel:
-          event.preventDefault();
-          this.cancelParagraph();
-          break;
-        default:
-          break;
-      }
-    });
+      });
 
     this.setResults();
     this.originalText = this.paragraph.text;
@@ -843,12 +878,16 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
 
   ngOnChanges(changes: SimpleChanges): void {
     const { index, select } = changes;
-    if (index && index.currentValue !== index.previousValue && this.select
-    || select && select.currentValue === true && select.previousValue !== true) {
+    if (
+      (index && index.currentValue !== index.previousValue && this.select) ||
+      (select && select.currentValue === true && select.previousValue !== true)
+    ) {
       if (this.host.nativeElement) {
         setTimeout(() => {
-          (this.host.nativeElement as HTMLElement).focus();
-        })
+          if (this.mode === 'command') {
+            (this.host.nativeElement as HTMLElement).focus();
+          }
+        });
       }
     }
   }
