@@ -884,7 +884,9 @@ export class NotebookParagraphComponent extends MessageListenersManager implemen
     ) {
       if (this.host.nativeElement) {
         setTimeout(() => {
-          (this.host.nativeElement as HTMLElement).focus();
+          if (this.mode === 'command') {
+            (this.host.nativeElement as HTMLElement).focus();
+          }
         });
       }
     }
