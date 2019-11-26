@@ -11,6 +11,7 @@
   -->
 
 <zeppelin-code-editor [style.height.px]="height"
-                     [class.dirty]="dirty"
-                     (nzEditorInitialized)="initializedEditor($event)">
+                      [class.focused]="focus"
+                      [class.dirty]="dirty"
+                      (nzEditorInitialized)="initializedEditor($event)">
 </zeppelin-code-editor>

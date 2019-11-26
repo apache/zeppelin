@@ -52,6 +52,7 @@ import { PageHeaderComponent } from '@zeppelin/share/page-header/page-header.com
 import { HumanizeBytesPipe } from '@zeppelin/share/pipes';
 import { RunScriptsDirective } from '@zeppelin/share/run-scripts/run-scripts.directive';
 import { SpinComponent } from '@zeppelin/share/spin/spin.component';
+import { Ng1MigrationComponent } from './ng1-migration/ng1-migration.component';
 import { ResizeHandleComponent } from './resize-handle';
 
 const MODAL_LIST = [
@@ -59,7 +60,8 @@ const MODAL_LIST = [
   NoteImportComponent,
   NoteCreateComponent,
   NoteRenameComponent,
-  FolderRenameComponent
+  FolderRenameComponent,
+  Ng1MigrationComponent
 ];
 const EXPORT_LIST = [HeaderComponent, NodeListComponent, PageHeaderComponent, SpinComponent, ResizeHandleComponent];
 const PIPES = [HumanizeBytesPipe];
