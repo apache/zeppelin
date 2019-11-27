@@ -30,20 +30,25 @@ It is designed to interoperate fully with Java, and the JVM version of its stand
 
 ## Configuration
 <table class="table-configuration">
-  <tr>
-    <th>Name</th>
-    <th>Default</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>zeppelin.kotlin.maxResult</td>
-    <td>1000</td>
-    <td>Max n
-  <tr>
-    <td>zeppelin.kotlin.shortenTypes</td>
-    <td>true</td>
-    <td>Display shortened types instead of full, e.g. Int vs kotlin.Int</td>
-  </tr>
+  <thead>
+      <tr>
+        <th>Name</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td>zeppelin.kotlin.maxResult</td>
+        <td>1000</td>
+        <td>Max n</td>
+      </tr>
+      <tr>
+        <td>zeppelin.kotlin.shortenTypes</td>
+        <td>true</td>
+        <td>Display shortened types instead of full, e.g. Int vs kotlin.Int</td>
+      </tr>
+  </tbody>
 </table>
 
 ## Example
