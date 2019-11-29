@@ -72,6 +72,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
   @Output() readonly runAllBelowAndCurrent = new EventEmitter<void>();
   @Output() readonly cloneParagraph = new EventEmitter<void>();
   @Output() readonly removeParagraph = new EventEmitter<void>();
+  @Output() readonly openSingleParagraph = new EventEmitter<string>();
   fontSizeOption = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   dropdownVisible = false;
   isMac = navigator.appVersion.indexOf('Mac') !== -1;
@@ -115,8 +116,10 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
         show: true,
         disabled: false,
         icon: 'export',
-        trigger: () => this.goToSingleParagraph(),
-        shortCut: `Ctrl+${this.isMac ? 'Option' : 'Alt'}+W`
+        trigger: () => {
+          this.openSingleParagraph.emit(this.pid);
+        },
+        shortCut: this.isMac ? '⌥+⌘+T' : 'Alt+Ctrl+T'
       },
       {
         label: 'Clear output',
@@ -225,13 +228,6 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     }
   }
 
-  goToSingleParagraph() {
-    // TODO(hsuanxyz) asIframe
-    const { noteId } = this.activatedRoute.snapshot.params;
-    const redirectToUrl = `${location.protocol}//${location.host}${location.pathname}#/notebook/${noteId}/paragraph/${this.pid}`;
-    window.open(redirectToUrl);
-  }
-
   changeColWidth(colWidth: number) {
     this.colWidth = +colWidth;
     this.colWidthChange.emit(this.colWidth);
@@ -269,8 +265,7 @@ export class NotebookParagraphControlComponent implements OnInit, OnChanges {
     private cdr: ChangeDetectorRef,
     private nzMessageService: NzMessageService,
     private activatedRoute: ActivatedRoute,
-    private messageService: MessageService,
-    private nzModalService: NzModalService
+    private messageService: MessageService
   ) {}
 
   ngOnInit() {
