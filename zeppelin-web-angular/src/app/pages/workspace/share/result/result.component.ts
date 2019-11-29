@@ -68,6 +68,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   @Input() result: ParagraphIResultsMsgItem;
   @Input() config: ParagraphConfigResult;
   @Input() id: string;
+  @Input() published = false;
   @Input() currentCol = 12;
   @Output() readonly configChange = new EventEmitter<ParagraphConfigResult>();
   @Output() readonly sizeChange = new EventEmitter<NzResizeEvent>();
@@ -223,6 +224,9 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
         break;
     }
     this.cdr.markForCheck();
+    if (this.published) {
+      this.cdr.detectChanges();
+    }
   }
 
   renderHTML(): void {
