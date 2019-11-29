@@ -18,7 +18,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import {
   NzButtonModule,
-  NzCheckboxModule,
   NzDividerModule,
   NzDropDownModule,
   NzFormModule,
@@ -35,23 +34,20 @@ import {
   NzToolTipModule
 } from 'ng-zorro-antd';
 import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
-import { NzResizableModule } from 'ng-zorro-antd/resizable';
 
 import { ShareModule } from '@zeppelin/share';
 
-import { VisualizationModule } from 'src/app/visualizations/visualization.module';
 import { NotebookAddParagraphComponent } from './add-paragraph/add-paragraph.component';
 import { NotebookInterpreterBindingComponent } from './interpreter-binding/interpreter-binding.component';
 import { NotebookParagraphCodeEditorComponent } from './paragraph/code-editor/code-editor.component';
 import { NotebookParagraphControlComponent } from './paragraph/control/control.component';
-import { NotebookParagraphDynamicFormsComponent } from './paragraph/dynamic-forms/dynamic-forms.component';
 import { NotebookParagraphFooterComponent } from './paragraph/footer/footer.component';
 import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 import { NotebookParagraphProgressComponent } from './paragraph/progress/progress.component';
-import { NotebookParagraphResultComponent } from './paragraph/result/result.component';
 import { NotebookPermissionsComponent } from './permissions/permissions.component';
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
+import { WorkspaceShareModule } from '../../workspace/share/share.module';
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
 import { NotebookComponent } from './notebook.component';
@@ -67,18 +63,16 @@ import { NotebookShareModule } from './share/share.module';
     NotebookParagraphComponent,
     NotebookAddParagraphComponent,
     NotebookParagraphCodeEditorComponent,
-    NotebookParagraphResultComponent,
     NotebookParagraphProgressComponent,
     NotebookParagraphFooterComponent,
-    NotebookParagraphControlComponent,
-    NotebookParagraphDynamicFormsComponent
+    NotebookParagraphControlComponent
   ],
   imports: [
     CommonModule,
     PortalModule,
+    WorkspaceShareModule,
     NotebookRoutingModule,
     ShareModule,
-    VisualizationModule,
     NotebookShareModule,
     NzButtonModule,
     NzIconModule,
@@ -92,14 +86,12 @@ import { NotebookShareModule } from './share/share.module';
     FormsModule,
     ReactiveFormsModule,
     NzDividerModule,
-    NzCheckboxModule,
     NzProgressModule,
     NzSwitchModule,
     NzSelectModule,
     NzGridModule,
     NzRadioModule,
     DragDropModule,
-    NzResizableModule,
     NzCodeEditorModule
   ]
 })

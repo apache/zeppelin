@@ -104,20 +104,6 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
 
   initializedEditor(editor: IEditor) {
     this.editor = editor as IStandaloneCodeEditor;
-    if (this.paragraphControl) {
-      this.paragraphControl.listOfMenu.forEach((item, index) => {
-        this.editor.addAction({
-          id: item.icon,
-          label: item.label,
-          precondition: null,
-          keybindingContext: null,
-          contextMenuGroupId: 'navigation',
-          contextMenuOrder: index,
-          run: () => item.trigger()
-        });
-      });
-    }
-
     this.editor.addCommand(
       monaco.KeyCode.Escape,
       () => {

@@ -12,17 +12,12 @@
 
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { NotebookComponent } from './notebook.component';
+import { PublishedParagraphComponent } from './paragraph/paragraph.component';
 
 const routes: Routes = [
   {
-    path: ':noteId',
-    component: NotebookComponent
-  },
-  {
-    path: ':noteId/revision/:revisionId',
-    component: NotebookComponent
+    path: ':paragraphId',
+    component: PublishedParagraphComponent
   }
 ];
 
@@ -30,4 +25,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class NotebookRoutingModule {}
+export class PublishedRoutingModule {}

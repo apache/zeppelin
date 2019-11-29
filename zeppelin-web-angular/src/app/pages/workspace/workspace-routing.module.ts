@@ -31,6 +31,10 @@ const routes: Routes = [
         loadChildren: () => import('@zeppelin/pages/workspace/notebook/notebook.module').then(m => m.NotebookModule)
       },
       {
+        path: 'notebook/:noteId/paragraph',
+        loadChildren: () => import('@zeppelin/pages/workspace/published/published.module').then(m => m.PublishedModule)
+      },
+      {
         path: 'jobmanager',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/job-manager/job-manager.module').then(m => m.JobManagerModule)
