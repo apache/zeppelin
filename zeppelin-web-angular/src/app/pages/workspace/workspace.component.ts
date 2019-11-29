@@ -12,10 +12,13 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
 
+import { ActivatedRoute, NavigationEnd, Route, Router } from '@angular/router';
+import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
+import { log } from 'ng-zorro-antd';
 
 @Component({
   selector: 'zeppelin-workspace',
@@ -26,12 +29,18 @@ import { MessageService } from '@zeppelin/services';
 export class WorkspaceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
   websocketConnected = false;
+  publishMode = false;
 
   constructor(
     public messageService: MessageService,
     private cdr: ChangeDetectorRef,
     private heliumManagerService: HeliumManagerService
   ) {}
+
+  onActivate(e) {
+    this.publishMode = e && e[publishedSymbol];
+    this.cdr.markForCheck();
+  }
 
   ngOnInit() {
     this.messageService.connectedStatus$.pipe(takeUntil(this.destroy$)).subscribe(data => {

@@ -1,0 +1,56 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { PortalModule } from '@angular/cdk/portal';
+import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import {
+  NzButtonModule,
+  NzCheckboxModule,
+  NzDropDownModule,
+  NzIconModule,
+  NzRadioModule,
+  NzSelectModule,
+  NzSwitchModule,
+  NzToolTipModule
+} from 'ng-zorro-antd';
+import { NzResizableModule } from 'ng-zorro-antd/resizable';
+
+import { ShareModule } from '@zeppelin/share';
+import { VisualizationModule } from '@zeppelin/visualizations/visualization.module';
+
+import { NotebookParagraphDynamicFormsComponent } from './dynamic-forms/dynamic-forms.component';
+import { NotebookParagraphResultComponent } from './result/result.component';
+
+@NgModule({
+  exports: [NotebookParagraphResultComponent, NotebookParagraphDynamicFormsComponent],
+  declarations: [NotebookParagraphResultComponent, NotebookParagraphDynamicFormsComponent],
+  imports: [
+    CommonModule,
+    ShareModule,
+    PortalModule,
+    VisualizationModule,
+    FormsModule,
+    NzButtonModule,
+    NzDropDownModule,
+    NzRadioModule,
+    NzResizableModule,
+    NzToolTipModule,
+    NzIconModule,
+    NzCheckboxModule,
+    NzSelectModule,
+    NzSwitchModule
+  ]
+})
+export class WorkspaceShareModule {}

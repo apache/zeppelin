@@ -11,7 +11,7 @@
   -->
 
 <div class="content" [class.blur]="!websocketConnected">
-  <zeppelin-header></zeppelin-header>
-  <router-outlet></router-outlet>
+  <zeppelin-header *ngIf="!publishMode"></zeppelin-header>
+  <router-outlet (activate)="onActivate($event)"></router-outlet>
 </div>
 <zeppelin-spin *ngIf="!websocketConnected" [transparent]="true">Connecting WebSocket ...</zeppelin-spin>

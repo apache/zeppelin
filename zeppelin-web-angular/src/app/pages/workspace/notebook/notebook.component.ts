@@ -21,7 +21,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
-import { Subject} from 'rxjs';
+import { Subject } from 'rxjs';
 import { distinctUntilKeyChanged, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
@@ -29,6 +29,7 @@ import { Permissions } from '@zeppelin/interfaces';
 import { InterpreterBindingItem, MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
 import {
   MessageService,
+  NgZService,
   NoteStatusService,
   NoteVarShareService,
   SecurityService,
@@ -66,6 +67,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     if (isNil(note)) {
       this.router.navigate(['/']).then();
     } else {
+      this.removeParagraphFromNgZ();
       this.note = note;
       const { paragraphId } = this.activatedRoute.snapshot.params;
       if (paragraphId) {
@@ -289,6 +291,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     private ticketService: TicketService,
     private securityService: SecurityService,
     private router: Router,
+    protected ngZService: NgZService
   ) {
     super(messageService);
   }
@@ -315,6 +318,14 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       // TODO(hsuanxyz) scroll to current paragraph
     });
     this.revisionView = !!this.activatedRoute.snapshot.params.revisionId;
+  }
+
+  removeParagraphFromNgZ(): void {
+    if (this.note && Array.isArray(this.note.paragraphs)) {
+      this.note.paragraphs.forEach(p => {
+        this.ngZService.removeParagraph(p.id);
+      });
+    }
   }
 
   ngOnDestroy(): void {

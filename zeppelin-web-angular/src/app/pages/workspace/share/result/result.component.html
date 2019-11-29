@@ -10,7 +10,7 @@
   ~ limitations under the License.
   -->
 
-<div class="setting-bar" *ngIf="result.type === datasetType.TABLE">
+<div class="setting-bar" *ngIf="result.type === datasetType.TABLE && !published">
   <div class="visualization-selector">
     <nz-radio-group [(ngModel)]="config?.graph.mode" (ngModelChange)="switchMode($event)" nzButtonStyle="solid">
       <label *ngFor="let item of visualizations"
@@ -54,7 +54,7 @@
      [nzGridColumnCount]="12"
      [nzMinColumn]="1"
      nzBounds="window">
-  <nz-resize-handle nzDirection="bottomRight">
+  <nz-resize-handle nzDirection="bottomRight" *ngIf="!published">
     <zeppelin-resize-handle></zeppelin-resize-handle>
   </nz-resize-handle>
   <ng-template cdkPortalOutlet></ng-template>
@@ -65,7 +65,7 @@
          zeppelinRunScripts
          [scriptsContent]="innerHTML"
          [innerHTML]="innerHTML"></div>
-    <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre>{{plainText}}</pre></div>
+    <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre [innerHTML]="plainText"></pre></div>
     <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img"></div>
   </ng-container>
   <div *ngIf="angularComponent">

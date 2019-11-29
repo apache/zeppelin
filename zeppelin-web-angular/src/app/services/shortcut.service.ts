@@ -1,7 +1,7 @@
-import {DOCUMENT} from "@angular/common";
-import {Inject, Injectable} from '@angular/core';
-import {EventManager} from "@angular/platform-browser";
-import {Observable} from "rxjs";
+import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable } from '@angular/core';
+import { EventManager } from '@angular/platform-browser';
+import { Observable } from 'rxjs';
 
 export enum ParagraphActions {
   EditMode = 'Paragraph:EditMode',
@@ -23,7 +23,8 @@ export enum ParagraphActions {
   SwitchTitleShow = 'Paragraph:SwitchTitleShow',
   SwitchOutputShow = 'Paragraph:SwitchOutputShow',
   SwitchEditorShow = 'Paragraph:SwitchEditorShow',
-  SwitchEnable = 'Paragraph:SwitchEnable'
+  SwitchEnable = 'Paragraph:SwitchEnable',
+  Link = 'Paragraph:Link'
 }
 
 export const ShortcutsMap = {
@@ -34,6 +35,8 @@ export const ShortcutsMap = {
   [ParagraphActions.Cancel]: 'shift.ctrlCmd.c',
   // Need register special character `¬` in MacOS
   [ParagraphActions.Clear]: ['alt.ctrlCmd.l', 'alt.ctrlCmd.¬'],
+  // Need register special character `†` in MacOS
+  [ParagraphActions.Link]: ['alt.ctrlCmd.t', 'alt.ctrlCmd.†'],
   // Need register special character `®` in MacOS
   [ParagraphActions.SwitchEnable]: ['alt.ctrlCmd.r', 'alt.ctrlCmd.®'],
   // Need register special character `–` in MacOS
@@ -54,28 +57,27 @@ export const ShortcutsMap = {
 };
 
 export interface ShortcutEvent {
-  event: KeyboardEvent
+  event: KeyboardEvent;
   keybindings: string;
 }
 
 export interface ShortcutOption {
-  scope?: HTMLElement,
-  keybindings: string
+  scope?: HTMLElement;
+  keybindings: string;
 }
 
 function isMacOS() {
-  return navigator.platform.indexOf('Mac') > -1
+  return navigator.platform.indexOf('Mac') > -1;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShortcutService {
-
   private element: HTMLElement;
 
-  constructor(private eventManager: EventManager,
-              @Inject(DOCUMENT) _document: any) {
+  // tslint:disable-next-line:no-any
+  constructor(private eventManager: EventManager, @Inject(DOCUMENT) _document: any) {
     this.element = _document;
   }
 
@@ -86,9 +88,9 @@ export class ShortcutService {
   bindShortcut(option: ShortcutOption): Observable<ShortcutEvent> {
     const host = option.scope || this.element;
     // `ctrlCmd` is special symbol, will be replaced `meta` in MacOS, 'control' in Windows/Linux
-    const keybindings = option.keybindings
-      .replace(/ctrlCmd/g, isMacOS() ? 'meta' : 'control');
-    const event = `keydown.${keybindings}`;
+    const keybindings = option.keybindings.replace(/ctrlCmd/g, isMacOS() ? 'meta' : 'control');
+    const eventName = `keydown.${keybindings}`;
+    // tslint:disable-next-line:ban-types
     let dispose: Function;
     return new Observable<ShortcutEvent>(observer => {
       const handler = event => {
@@ -98,12 +100,11 @@ export class ShortcutService {
         });
       };
 
-      dispose = this.eventManager.addEventListener(host, event, handler);
+      dispose = this.eventManager.addEventListener(host, eventName, handler);
 
       return () => {
         dispose();
       };
-    })
+    });
   }
-
 }
