@@ -717,7 +717,7 @@ public class InterpreterSetting {
     }
     Set<String> intersection = new HashSet<>(userAndRoles);
     intersection.retainAll(option.getOwners());
-    return intersection.isEmpty();
+    return !intersection.isEmpty();
   }
 
   //////////////////////////// IMPORTANT ////////////////////////////////////////////////

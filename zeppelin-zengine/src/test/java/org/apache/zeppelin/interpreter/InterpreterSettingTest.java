@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -464,5 +465,57 @@ public class InterpreterSettingTest {
     assertTrue(checkIntpSetting.getOption().perUserShared());
     assertNotNull(checkIntpSetting.getInterpreterInfo("echo"));
     assertNotNull(checkIntpSetting.getInterpreterInfo("double_echo"));
+  }
+
+  @Test
+  public void testIsUserAuthorized() {
+      List<String> userAndRoles = new ArrayList<>();
+      userAndRoles.add("User1");
+      userAndRoles.add("Role1");
+      userAndRoles.add("Role2");
+      List<String> owners;
+      InterpreterSetting interpreterSetting;
+      InterpreterOption interpreterOption;
+
+      // With match
+      owners = new ArrayList<>();
+      owners.add("Role1");
+      interpreterOption = new InterpreterOption();
+      interpreterOption.setUserPermission(true);
+      interpreterOption.owners = owners;
+      interpreterSetting = new InterpreterSetting.Builder()
+          .setId("id")
+          .setName("id")
+          .setGroup("group")
+          .setOption(interpreterOption)
+          .create();
+      assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
+
+      // Without match
+      owners = new ArrayList<>();
+      owners.add("Role88");
+      interpreterOption = new InterpreterOption();
+      interpreterOption.setUserPermission(true);
+      interpreterOption.owners = owners;
+      interpreterSetting = new InterpreterSetting.Builder()
+          .setId("id")
+          .setName("id")
+          .setGroup("group")
+          .setOption(interpreterOption)
+          .create();
+      assertFalse(interpreterSetting.isUserAuthorized(userAndRoles));
+
+      // Without permissions
+      owners = new ArrayList<>();
+      interpreterOption = new InterpreterOption();
+      interpreterOption.setUserPermission(false);
+      interpreterOption.owners = owners;
+      interpreterSetting = new InterpreterSetting.Builder()
+          .setId("id")
+          .setName("id")
+          .setGroup("group")
+          .setOption(interpreterOption)
+          .create();
+      assertTrue(interpreterSetting.isUserAuthorized(userAndRoles));
   }
 }
