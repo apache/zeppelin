@@ -43,6 +43,11 @@ const routes: Routes = [
         path: 'interpreter',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/interpreter/interpreter.module').then(m => m.InterpreterModule)
+      },
+      {
+        path: 'configuration',
+        loadChildren: () =>
+          import('@zeppelin/pages/workspace/configuration/configuration.module').then(m => m.ConfigurationModule)
       }
     ]
   }
