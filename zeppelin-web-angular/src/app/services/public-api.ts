@@ -27,3 +27,4 @@ export * from './array-ordering.service';
 export * from './note-list.service';
 export * from './runtime-compiler.service';
 export * from './shortcut.service';
+export * from './configuration.service';

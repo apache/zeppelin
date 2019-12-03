@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import {
+  NzAddOnModule,
   NzAlertModule,
   NzBadgeModule,
   NzButtonModule,
@@ -74,6 +75,7 @@ const PIPES = [HumanizeBytesPipe];
     FormsModule,
     CommonModule,
     NzMenuModule,
+    NzAddOnModule,
     NzIconModule,
     NzInputModule,
     NzDropDownModule,
