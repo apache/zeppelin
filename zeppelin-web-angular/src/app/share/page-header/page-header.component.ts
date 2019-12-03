@@ -21,7 +21,7 @@ import { InputBoolean } from 'ng-zorro-antd';
 })
 export class PageHeaderComponent implements OnInit {
   @Input() title: string;
-  @Input() description: string;
+  @Input() description: string | TemplateRef<void>;
   @Input() @InputBoolean() divider = false;
   @Input() extra: TemplateRef<void>;
 
