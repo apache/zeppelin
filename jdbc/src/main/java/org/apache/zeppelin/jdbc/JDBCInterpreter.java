@@ -560,9 +560,9 @@ public class JDBCInterpreter extends KerberosInterpreter {
         msg.append(TAB);
       }
       if (StringUtils.isNotEmpty(md.getColumnLabel(i))) {
-        msg.append(replaceReservedChars(md.getColumnLabel(i)));
+        msg.append(removeTablePrefix(replaceReservedChars(md.getColumnLabel(i))));
       } else {
-        msg.append(replaceReservedChars(md.getColumnName(i)));
+        msg.append(removeTablePrefix(replaceReservedChars(md.getColumnName(i))));
       }
     }
     msg.append(NEWLINE);
@@ -810,6 +810,20 @@ public class JDBCInterpreter extends KerberosInterpreter {
       return EMPTY_COLUMN_VALUE;
     }
     return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
+  }
+
+  /**
+   * Hive will prefix table name before the column
+   * @param columnName
+   * @return
+   */
+  private String removeTablePrefix(String columnName) {
+    int index = columnName.indexOf(".");
+    if (index > 0) {
+      return columnName.substring(index + 1);
+    } else {
+      return columnName;
+    }
   }
 
   @Override
