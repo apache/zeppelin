@@ -31,7 +31,7 @@
         "propertyName": "spark.driver.cores",
         "defaultValue": "1",
         "description": "Number of cores to use for the driver process, only in cluster mode.",
-        "type": "int"
+        "type": "number"
       },
       "spark.driver.memory": {
         "envName": "",
@@ -45,7 +45,7 @@
         "propertyName": "spark.executor.cores",
         "defaultValue": "1",
         "description": "The number of cores to use on each executor",
-        "type": "int"
+        "type": "number"
       },
       "spark.executor.memory": {
         "envName": null,
@@ -156,7 +156,7 @@
       "zeppelin.spark.concurrentSQL.max": {
         "envName": null,
         "propertyName": "zeppelin.spark.concurrentSQL.max",
-        "defaultValue": 10,
+        "defaultValue": "10",
         "description": "Max number of SQL concurrently executed",
         "type": "number"
       },
