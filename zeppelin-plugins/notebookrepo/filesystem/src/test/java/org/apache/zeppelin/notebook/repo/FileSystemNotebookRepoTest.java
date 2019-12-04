@@ -74,6 +74,7 @@ public class FileSystemNotebookRepoTest {
 
     Map<String, Object> config = new HashMap<>();
     config.put("config_1", "value_1");
+    config.put("isZeppelinNotebookCronEnable", false);
     note.setConfig(config);
     hdfsNotebookRepo.save(note, authInfo);
     assertEquals(1, hdfsNotebookRepo.list(authInfo).size());
