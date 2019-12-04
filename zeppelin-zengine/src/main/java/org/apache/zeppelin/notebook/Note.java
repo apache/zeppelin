@@ -106,6 +106,7 @@ public class Note implements JsonSerializable {
 
   public Note() {
     generateId();
+    setCronSupported(ZeppelinConfiguration.create());
   }
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
@@ -1032,6 +1033,7 @@ public class Note implements JsonSerializable {
     try
     {
       Note note = gson.fromJson(json, Note.class);
+      note.setCronSupported(ZeppelinConfiguration.create());
       convertOldInput(note);
       note.info.remove("isRunning");
       note.postProcessParagraphs();
