@@ -27,6 +27,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.Properties;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
@@ -419,7 +420,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private void registerInterpreterSetting(List<RegisteredInterpreter> registeredInterpreters,
       String interpreterDir, boolean override) {
 
-    Map<String, DefaultInterpreterProperty> properties = new HashMap<>();
+    Map<String, DefaultInterpreterProperty> properties = new LinkedHashMap<>();
     List<InterpreterInfo> interpreterInfos = new ArrayList<>();
     InterpreterOption option = defaultOption;
     String group = null;

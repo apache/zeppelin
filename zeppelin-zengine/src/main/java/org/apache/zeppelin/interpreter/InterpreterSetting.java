@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -939,7 +940,7 @@ public class InterpreterSetting {
   // For backward compatibility of interpreter.json format after ZEPPELIN-2403
   static Map<String, InterpreterProperty> convertInterpreterProperties(Object properties) {
     if (properties != null && properties instanceof StringMap) {
-      Map<String, InterpreterProperty> newProperties = new HashMap<>();
+      Map<String, InterpreterProperty> newProperties = new LinkedHashMap<>();
       StringMap p = (StringMap) properties;
       for (Object o : p.entrySet()) {
         Map.Entry entry = (Map.Entry) o;
@@ -963,7 +964,7 @@ public class InterpreterSetting {
     } else if (properties instanceof Map) {
       Map<String, Object> dProperties =
           (Map<String, Object>) properties;
-      Map<String, InterpreterProperty> newProperties = new HashMap<>();
+      Map<String, InterpreterProperty> newProperties = new LinkedHashMap<>();
       for (String key : dProperties.keySet()) {
         Object value = dProperties.get(key);
         if (value instanceof InterpreterProperty) {
