@@ -48,6 +48,11 @@ const routes: Routes = [
         path: 'configuration',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/configuration/configuration.module').then(m => m.ConfigurationModule)
+      },
+      {
+        path: 'credential',
+        loadChildren: () =>
+          import('@zeppelin/pages/workspace/credential/credential.module').then(m => m.CredentialModule)
       }
     ]
   }
