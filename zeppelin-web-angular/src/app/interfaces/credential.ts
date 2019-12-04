@@ -10,9 +10,19 @@
  * limitations under the License.
  */
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
+export interface Credential {
+  userCredentials: {
+    [key: string]: CredentialItem;
+  };
+}
+
+export interface CredentialItem {
+  username: string;
+  password: string;
+}
+
+export interface CredentialForm {
+  entity: string;
+  password: string;
+  username: string;
+}
