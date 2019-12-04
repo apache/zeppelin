@@ -9,10 +9,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
+import { CredentialComponent } from './credential.component';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: CredentialComponent
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class CredentialRoutingModule {}
