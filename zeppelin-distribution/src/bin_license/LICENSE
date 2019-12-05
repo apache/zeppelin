@@ -141,7 +141,7 @@ The following components are provided under Apache License.
     (Apache 2.0) akka-remote (com.typesafe.akka:akka-remote_2.10:2.3.7 - http://akka.io/)
     (Apache 2.0) akka-slf4j (com.typesafe.akka:akka-slf4j_2.10:2.3.7 - http://akka.io/)
     (Apache 2.0) Metrics Core Library (com.yammer.metrics:metrics-core:2.2.0 - http://metrics.codahale.com/metrics-core/)
-    (Apache 2.0) Commons BeanUtils Bean Collections (commons-beanutils:commons-beanutils-bean-collections:1.8.3 - http://commons.apache.org/beanutils/)
+    (Apache 2.0) Commons BeanUtils Bean Collections (commons-beanutils:commons-beanutils-bean-collections:1.9.4 - http://commons.apache.org/beanutils/)
     (Apache 2.0) Metrics Core (io.dropwizard.metrics:metrics-core:3.1.0 - http://metrics.codahale.com/metrics-core/)
     (Apache 2.0) Graphite Integration for Metrics (io.dropwizard.metrics:metrics-graphite:3.1.0 - http://metrics.codahale.com/metrics-graphite/)
     (Apache 2.0) Jackson Integration for Metrics (io.dropwizard.metrics:metrics-json:3.1.0 - http://metrics.codahale.com/metrics-json/)
