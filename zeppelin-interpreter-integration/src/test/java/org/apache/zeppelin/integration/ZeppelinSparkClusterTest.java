@@ -399,7 +399,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
   }
 
-  // @Test
+  @Test
   public void pySparkTest() throws IOException {
     // create new note
     Note note = null;
@@ -412,6 +412,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("55\n", p.getReturn().message().get(0).getData());
+
+      // simple form via local properties
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.pyspark(form=simple) print('name_' + '${name=abc}')");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
+
       if (!isSpark2()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
