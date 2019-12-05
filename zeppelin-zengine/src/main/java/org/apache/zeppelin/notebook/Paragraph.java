@@ -465,9 +465,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
       // inject form
       String script = this.scriptText;
-      if (interpreter.getFormType() == FormType.NATIVE) {
-        settings.clear();
-      } else if (interpreter.getFormType() == FormType.SIMPLE) {
+      if ("simple".equalsIgnoreCase(localProperties.get("form")) ||
+              interpreter.getFormType() == FormType.SIMPLE) {
         // inputs will be built from script body
         LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
         LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
@@ -490,6 +489,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         }
         script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
         script = Input.getSimpleQuery(settings.getParams(), script, false);
+      } else {
+        settings.clear();
       }
 
       LOGGER.debug("RUN : " + script);
