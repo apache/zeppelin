@@ -9,11 +9,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
-export * from './notebook-repo';
+import { NotebookReposComponent } from './notebook-repos.component';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: NotebookReposComponent
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class NotebookReposRoutingModule {}
