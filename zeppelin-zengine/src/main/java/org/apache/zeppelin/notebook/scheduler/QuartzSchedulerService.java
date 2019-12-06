@@ -54,6 +54,19 @@ public class QuartzSchedulerService implements SchedulerService {
     this.notebook = notebook;
     this.scheduler = new StdSchedulerFactory().getScheduler();
     this.scheduler.start();
+
+    Thread loadingNotesThread = new Thread(){
+      @Override
+      public void run() {
+        LOGGER.info("Starting init cronjobs");
+        notebook.getNotesInfo().stream()
+                .forEach(entry -> refreshCron(entry.getId()));
+        LOGGER.info("Complete init cronjobs");
+      }
+    };
+    loadingNotesThread.setName("Init CronJob Thread");
+    loadingNotesThread.setDaemon(true);
+    loadingNotesThread.start();
   }
 
   @Override
