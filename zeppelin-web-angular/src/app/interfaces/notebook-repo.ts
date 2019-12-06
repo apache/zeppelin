@@ -10,10 +10,23 @@
  * limitations under the License.
  */
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
-export * from './notebook-repo';
+export interface NotebookRepo {
+  name: string;
+  className: string;
+  settings: NotebookRepoSettingsItem[];
+}
+
+export interface NotebookRepoPutData {
+  name: string;
+  settings: {
+    [key: string]: string;
+  };
+}
+
+export interface NotebookRepoSettingsItem {
+  type: string;
+  // tslint:disable-next-line:no-any
+  value: any[];
+  selected: string;
+  name: string;
+}

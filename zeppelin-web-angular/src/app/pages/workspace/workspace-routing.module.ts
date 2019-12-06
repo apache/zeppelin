@@ -53,6 +53,11 @@ const routes: Routes = [
         path: 'credential',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/credential/credential.module').then(m => m.CredentialModule)
+      },
+      {
+        path: 'notebook-repos',
+        loadChildren: () =>
+          import('@zeppelin/pages/workspace/notebook-repos/notebook-repos.module').then(m => m.NotebookReposModule)
       }
     ]
   }

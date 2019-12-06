@@ -10,10 +10,28 @@
  * limitations under the License.
  */
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
-export * from './notebook-repo';
+@import 'theme-mixin';
+
+.themeMixin({
+
+  display: block;
+  margin-bottom: @card-padding-base;
+  position: relative;
+
+  ::ng-deep .repo-item {
+    &.edit {
+      background: @orange-1;
+    }
+  }
+
+  .extra-wrap {
+    button {
+      transition: none;
+    }
+    button + button {
+      margin-bottom: 0;
+      margin-left: 8px;
+    }
+  }
+
+});
