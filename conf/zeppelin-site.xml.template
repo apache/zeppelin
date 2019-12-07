@@ -555,6 +555,14 @@
 
 <!--
 <property>
+  <name>zeppelin.server.xcontent.type.options</name>
+  <value>nosniff</value>
+  <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value "nosniff" is really the only meaningful value.</description>
+</property>
+-->
+
+<!--
+<property>
   <name>zeppelin.interpreter.callback.portRange</name>
   <value>10000:10010</value>
 </property>
