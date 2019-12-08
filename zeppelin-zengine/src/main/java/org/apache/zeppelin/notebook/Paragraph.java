@@ -233,6 +233,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         } else {
           this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
         }
+        config.putAll(localProperties);
       } else {
         setIntpText("");
         this.scriptText = this.text.trim();
