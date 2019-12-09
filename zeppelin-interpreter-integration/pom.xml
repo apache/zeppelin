@@ -503,6 +503,10 @@
               <groupId>org.apache.zeppelin</groupId>
               <artifactId>zeppelin-python</artifactId>
             </exclusion>
+            <exclusion>
+              <groupId>org.apache.zeppelin</groupId>
+              <artifactId>r</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
       </dependencies>
