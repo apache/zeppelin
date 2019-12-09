@@ -389,14 +389,10 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    int maxConcurrency = Integer.parseInt(
-        getProperty("zeppelin.interpreter.max.poolsize",
-            ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE.getIntValue() + ""));
     // one session own one Scheduler, so that when one session is closed, all the jobs/paragraphs
     // running under the scheduler of this session will be aborted.
     Scheduler s = new RemoteScheduler(
-        RemoteInterpreter.class.getSimpleName() + "-" + getInterpreterGroup().getId() + "-"
-            + sessionId,
+        RemoteInterpreter.class.getSimpleName() + getInterpreterGroup().getId(),
         SchedulerFactory.singleton().getExecutor(),
         this);
     return SchedulerFactory.singleton().createOrGetScheduler(s);

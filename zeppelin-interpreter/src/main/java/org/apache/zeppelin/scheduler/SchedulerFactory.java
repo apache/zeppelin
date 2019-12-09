@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Factory class for creating schedulers except RemoteScheduler as RemoteScheudler runs in
+ * Factory class for creating schedulers except RemoteScheduler as RemoteScheduler runs in
  * zeppelin server process instead of interpreter process.
  *
  */
@@ -116,5 +116,4 @@ public class SchedulerFactory {
   public ExecutorService getExecutor() {
     return executor;
   }
-  
 }
