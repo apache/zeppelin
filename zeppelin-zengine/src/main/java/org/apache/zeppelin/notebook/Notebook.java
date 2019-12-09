@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +42,8 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.notebook.NoteManager.Folder;
+import org.apache.zeppelin.notebook.NoteManager.NoteNode;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
@@ -297,11 +298,13 @@ public class Notebook {
   public void restoreAll(AuthenticationInfo subject) throws IOException {
     NoteManager.Folder trash = noteManager.getTrashFolder();
     // restore notes under trash folder
-    for (NoteManager.NoteNode noteNode : trash.getNotes().values()) {
+    List<NoteNode> notes = trash.getNotes().values().stream().collect(Collectors.toList());
+    for (NoteManager.NoteNode noteNode : notes) {
       moveNote(noteNode.getNoteId(), noteNode.getNotePath().replace("/~Trash", ""), subject);
     }
     // restore folders under trash folder
-    for (NoteManager.Folder folder : trash.getFolders().values()) {
+    List<Folder> folders = trash.getFolders().values().stream().collect(Collectors.toList());
+    for (NoteManager.Folder folder : folders) {
       moveFolder(folder.getPath(), folder.getPath().replace("/~Trash", ""), subject);
     }
   }
