@@ -93,6 +93,20 @@ You can choose appropriate value from below.
 * `SAMEORIGIN`
 * `ALLOW-FROM uri`
 
+## Setting up X-Content-Type-Options Header
+
+The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value `nosniff` is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.
+
+Zeppelin server will add this header to HTTP response by default. The following property needs to be updated in the zeppelin-site.xml in order to change X-Content-Type-Options header value.
+
+```xml
+<property>
+  <name>zeppelin.server.xcontent.type.options</name>
+  <value>nosniff</value>
+  <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks.</description>
+</property>
+```
+
 ## Setting up Server Header
 
 Security conscious organisations does not want to reveal the Application Server name and version to prevent finding this information easily by Attacker while fingerprinting the Application. The exact version number can tell an Attacker if the current Application Server is patched for or vulnerable to certain publicly known CVE associated to it.
