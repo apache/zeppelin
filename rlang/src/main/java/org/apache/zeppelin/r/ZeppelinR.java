@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.spark;
+package org.apache.zeppelin.r;
 
-import org.apache.commons.exec.*;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.spark.SparkRBackend;
+import org.apache.zeppelin.r.SparkRBackend;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,22 +40,113 @@ import java.util.Map;
 public class ZeppelinR {
   private static Logger LOGGER = LoggerFactory.getLogger(ZeppelinR.class);
 
-  private final SparkRInterpreter sparkRInterpreter;
-  private final String rCmdPath;
-  private final SparkVersion sparkVersion;
-  private final int timeout;
+  private RInterpreter rInterpreter;
   private RProcessLogOutputStream processOutputStream;
-  private final String scriptPath;
-  private final String libPath;
   static Map<Integer, ZeppelinR> zeppelinR = Collections.synchronizedMap(new HashMap());
-  private final int port;
   private RProcessLauncher rProcessLauncher;
 
   /**
    * Request to R repl
    */
-  Request rRequestObject = null;
-  Integer rRequestNotifier = new Integer(0);
+  private Request rRequestObject = null;
+  private Integer rRequestNotifier = new Integer(0);
+
+  /**
+   * Response from R repl
+   */
+  private Object rResponseValue = null;
+  private boolean rResponseError = false;
+  private Integer rResponseNotifier = new Integer(0);
+
+  public ZeppelinR(RInterpreter rInterpreter) {
+    this.rInterpreter = rInterpreter;
+  }
+
+  /**
+   * Start R repl
+   * @throws IOException
+   */
+  public void open() throws IOException, InterpreterException {
+
+    String rCmdPath = rInterpreter.getProperty("zeppelin.R.cmd", "R");
+    String sparkRLibPath;
+
+    if (System.getenv("SPARK_HOME") != null) {
+      // local or yarn-client mode when SPARK_HOME is specified
+      sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
+    } else if (System.getenv("ZEPPELIN_HOME") != null){
+      // embedded mode when SPARK_HOME is not specified or for native R support
+      String interpreter = "r";
+      if (rInterpreter.isSparkSupported()) {
+        interpreter = "spark";
+      }
+      sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/" + interpreter + "/R/lib";
+      // workaround to make sparkr work without SPARK_HOME
+      System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/" + interpreter);
+    } else {
+      // yarn-cluster mode
+      sparkRLibPath = "sparkr";
+    }
+    if (!new File(sparkRLibPath).exists()) {
+      throw new InterpreterException(String.format("sparkRLib %s doesn't exist", sparkRLibPath));
+    }
+
+    File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
+    FileOutputStream out = null;
+    InputStream in = null;
+    try {
+      out = new FileOutputStream(scriptFile);
+      in = getClass().getClassLoader().getResourceAsStream("R/zeppelin_sparkr.R");
+      IOUtils.copy(in, out);
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    } finally {
+      if (out != null) {
+        out.close();
+      }
+      if (in != null) {
+        in.close();
+      }
+    }
+
+    zeppelinR.put(hashCode(), this);
+    String timeout = rInterpreter.getProperty("spark.r.backendConnectionTimeout", "6000");
+
+    CommandLine cmd = CommandLine.parse(rCmdPath);
+    cmd.addArgument("--no-save");
+    cmd.addArgument("--no-restore");
+    cmd.addArgument("-f");
+    cmd.addArgument(scriptFile.getAbsolutePath());
+    cmd.addArgument("--args");
+    cmd.addArgument(Integer.toString(hashCode()));
+    cmd.addArgument(Integer.toString(SparkRBackend.get().port()));
+    cmd.addArgument(sparkRLibPath);
+    cmd.addArgument(rInterpreter.sparkVersion() + "");
+    cmd.addArgument(timeout);
+    cmd.addArgument(rInterpreter.isSparkSupported() + "");
+    if (rInterpreter.isSecretSupported()) {
+      cmd.addArgument(SparkRBackend.get().socketSecret());
+    }
+    // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
+    LOGGER.info("R Command: " + cmd.toString());
+    processOutputStream = new RProcessLogOutputStream(rInterpreter);
+    Map env = EnvironmentUtils.getProcEnvironment();
+    rProcessLauncher = new RProcessLauncher(cmd, env, processOutputStream);
+    rProcessLauncher.launch();
+    rProcessLauncher.waitForReady(30 * 1000);
+
+    if (!rProcessLauncher.isRunning()) {
+      if (rProcessLauncher.isLaunchTimeout()) {
+        throw new IOException("Launch r process is time out.\n" +
+                rProcessLauncher.getErrorMessage());
+      } else {
+        throw new IOException("Fail to launch r process.\n" +
+                rProcessLauncher.getErrorMessage());
+      }
+    }
+    // flush output
+    eval("cat('')");
+  }
 
   public void setInterpreterOutput(InterpreterOutput out) {
     processOutputStream.setInterpreterOutput(out);
@@ -88,78 +182,6 @@ public class ZeppelinR {
     public Object getValue() {
       return value;
     }
-  }
-
-  /**
-   * Response from R repl
-   */
-  Object rResponseValue = null;
-  boolean rResponseError = false;
-  Integer rResponseNotifier = new Integer(0);
-
-  /**
-   * Create ZeppelinR instance
-   * @param rCmdPath R repl commandline path
-   * @param libPath sparkr library path
-   */
-  public ZeppelinR(String rCmdPath, String libPath, int sparkRBackendPort,
-      SparkVersion sparkVersion, int timeout, SparkRInterpreter sparkRInterpreter) {
-    this.rCmdPath = rCmdPath;
-    this.libPath = libPath;
-    this.sparkVersion = sparkVersion;
-    this.port = sparkRBackendPort;
-    this.timeout = timeout;
-    this.sparkRInterpreter = sparkRInterpreter;
-    try {
-      File scriptFile = File.createTempFile("zeppelin_sparkr-", ".R");
-      scriptPath = scriptFile.getAbsolutePath();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Start R repl
-   * @throws IOException
-   */
-  public void open() throws IOException, InterpreterException {
-    createRScript();
-
-    zeppelinR.put(hashCode(), this);
-
-    CommandLine cmd = CommandLine.parse(rCmdPath);
-    cmd.addArgument("--no-save");
-    cmd.addArgument("--no-restore");
-    cmd.addArgument("-f");
-    cmd.addArgument(scriptPath);
-    cmd.addArgument("--args");
-    cmd.addArgument(Integer.toString(hashCode()));
-    cmd.addArgument(Integer.toString(port));
-    cmd.addArgument(libPath);
-    cmd.addArgument(Integer.toString(sparkVersion.toNumber()));
-    cmd.addArgument(Integer.toString(timeout));
-    if (sparkVersion.isSecretSocketSupported()) {
-      cmd.addArgument(SparkRBackend.socketSecret());
-    }
-    // dump out the R command to facilitate manually running it, e.g. for fault diagnosis purposes
-    LOGGER.info("R Command: " + cmd.toString());
-    processOutputStream = new RProcessLogOutputStream(sparkRInterpreter);
-    Map env = EnvironmentUtils.getProcEnvironment();
-    rProcessLauncher = new RProcessLauncher(cmd, env, processOutputStream);
-    rProcessLauncher.launch();
-    rProcessLauncher.waitForReady(30 * 1000);
-
-    if (!rProcessLauncher.isRunning()) {
-      if (rProcessLauncher.isLaunchTimeout()) {
-        throw new IOException("Launch r process is time out.\n" +
-                rProcessLauncher.getErrorMessage());
-      } else {
-        throw new IOException("Fail to launch r process.\n" +
-                rProcessLauncher.getErrorMessage());
-      }
-    }
-    // flush output
-    eval("cat('')");
   }
 
   /**
@@ -289,37 +311,12 @@ public class ZeppelinR {
   }
 
   /**
-   * Create R script in tmp dir
-   */
-  private void createRScript() throws InterpreterException {
-    ClassLoader classLoader = getClass().getClassLoader();
-    File out = new File(scriptPath);
-
-    if (out.exists() && out.isDirectory()) {
-      throw new InterpreterException("Can't create r script " + out.getAbsolutePath());
-    }
-
-    try {
-      FileOutputStream outStream = new FileOutputStream(out);
-      IOUtils.copy(
-          classLoader.getResourceAsStream("R/zeppelin_sparkr.R"),
-          outStream);
-      outStream.close();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-
-    LOGGER.info("File {} created", scriptPath);
-  }
-
-  /**
    * Terminate this R repl
    */
   public void close() {
     if (rProcessLauncher != null) {
       rProcessLauncher.stop();
     }
-    new File(scriptPath).delete();
     zeppelinR.remove(hashCode());
   }
 
@@ -371,10 +368,10 @@ public class ZeppelinR {
   public static class RProcessLogOutputStream extends ProcessLauncher.ProcessLogOutputStream {
 
     private InterpreterOutput interpreterOutput;
-    private SparkRInterpreter sparkRInterpreter;
+    private RInterpreter rInterpreter;
 
-    public RProcessLogOutputStream(SparkRInterpreter sparkRInterpreter) {
-      this.sparkRInterpreter = sparkRInterpreter;
+    public RProcessLogOutputStream(RInterpreter rInterpreter) {
+      this.rInterpreter = rInterpreter;
     }
 
     /**
@@ -390,7 +387,7 @@ public class ZeppelinR {
       super.processLine(s, i);
       if (s.contains("Java SparkR backend might have failed") // spark 2.x
           || s.contains("Execution halted")) { // spark 1.x
-        sparkRInterpreter.getRbackendDead().set(true);
+        rInterpreter.getRbackendDead().set(true);
       }
       if (interpreterOutput != null) {
         try {

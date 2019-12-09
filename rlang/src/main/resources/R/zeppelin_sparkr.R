@@ -23,9 +23,10 @@ port <- as.integer(args[2])
 libPath <- args[3]
 version <- as.integer(args[4])
 timeout <- as.integer(args[5])
+isSparkSupported <- args[6]
 authSecret <- NULL
-if (length(args) >= 6) {
-  authSecret <- args[6]
+if (length(args) >= 7) {
+  authSecret <- args[7]
 }
 
 rm(args)
@@ -46,19 +47,23 @@ if (is.null(authSecret)) {
 assign(".scStartTime", as.integer(Sys.time()), envir = SparkR:::.sparkREnv)
 
 # getZeppelinR
-.zeppelinR = SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinR", "getZeppelinR", hashCode)
+.zeppelinR = SparkR:::callJStatic("org.apache.zeppelin.r.ZeppelinR", "getZeppelinR", hashCode)
 
-# setup spark env
-assign(".sc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkContext"), envir = SparkR:::.sparkREnv)
-assign("sc", get(".sc", envir = SparkR:::.sparkREnv), envir=.GlobalEnv)
-if (version >= 20000) {
-  assign(".sparkRsession", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkSession"), envir = SparkR:::.sparkREnv)
-  assign("spark", get(".sparkRsession", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
-  assign(".sparkRjsc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getJavaSparkContext"), envir = SparkR:::.sparkREnv)
+if (isSparkSupported == "true") {
+  # setup spark env
+  assign(".sc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkContext"), envir = SparkR:::.sparkREnv)
+  assign("sc", get(".sc", envir = SparkR:::.sparkREnv), envir=.GlobalEnv)
+  if (version >= 20000) {
+   assign(".sparkRsession", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSparkSession"), envir = SparkR:::.sparkREnv)
+   assign("spark", get(".sparkRsession", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
+   assign(".sparkRjsc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getJavaSparkContext"), envir = SparkR:::.sparkREnv)
+  }
+  assign(".sqlc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSqlContext"), envir = SparkR:::.sparkREnv)
+  assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
+  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getZeppelinContext"), envir = .GlobalEnv)
+} else {
+  assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.r.RInterpreter", "getRZeppelinContext"), envir = .GlobalEnv)
 }
-assign(".sqlc", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getSqlContext"), envir = SparkR:::.sparkREnv)
-assign("sqlContext", get(".sqlc", envir = SparkR:::.sparkREnv), envir = .GlobalEnv)
-assign(".zeppelinContext", SparkR:::callJStatic("org.apache.zeppelin.spark.ZeppelinRContext", "getZeppelinContext"), envir = .GlobalEnv)
 
 z.put <- function(name, object) {
   SparkR:::callJMethod(.zeppelinContext, "put", name, object)

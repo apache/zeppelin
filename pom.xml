@@ -57,6 +57,7 @@
     <module>zeppelin-interpreter-api</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
+    <module>rlang</module>
     <module>kotlin</module>
     <module>groovy</module>
     <module>spark</module>
