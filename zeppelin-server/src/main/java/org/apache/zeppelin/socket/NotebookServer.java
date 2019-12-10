@@ -1031,7 +1031,13 @@ public class NotebookServer extends WebSocketServlet
   private void emptyTrash(NotebookSocket conn,
                           Message fromMessage) throws IOException {
     getNotebookService().emptyTrash(getServiceContext(fromMessage),
-        new WebSocketServiceCallback(conn));
+        new WebSocketServiceCallback(conn) {
+          @Override
+          public void onSuccess(Object result, ServiceContext context) throws IOException {
+            super.onSuccess(result, context);
+            broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
+          }
+        });
   }
 
   private void updateParagraph(NotebookSocket conn,
