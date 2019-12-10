@@ -298,6 +298,8 @@ public class Notebook {
   public void restoreAll(AuthenticationInfo subject) throws IOException {
     NoteManager.Folder trash = noteManager.getTrashFolder();
     // restore notes under trash folder
+    // If the value changes in the loop, a concurrent modification exception is thrown.
+    // Collector implementation of collect methods to maintain immutability.
     List<NoteNode> notes = trash.getNotes().values().stream().collect(Collectors.toList());
     for (NoteManager.NoteNode noteNode : notes) {
       moveNote(noteNode.getNoteId(), noteNode.getNotePath().replace("/~Trash", ""), subject);
