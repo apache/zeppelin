@@ -20,7 +20,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, RouterModule } from '@angular/router';
 
 import { ZeppelinHeliumModule } from '@zeppelin/helium';
-import { en_US, NzModalService, NzNotificationService, NZ_I18N } from 'ng-zorro-antd';
+import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
 import { loadMonacoLanguage } from '@zeppelin/languages';

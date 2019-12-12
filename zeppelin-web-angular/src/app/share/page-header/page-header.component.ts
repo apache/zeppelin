@@ -11,7 +11,7 @@
  */
 
 import { ChangeDetectionStrategy, Component, Input, OnInit, TemplateRef } from '@angular/core';
-import { InputBoolean } from 'ng-zorro-antd';
+import { InputBoolean } from 'ng-zorro-antd/core';
 
 @Component({
   selector: 'zeppelin-page-header',

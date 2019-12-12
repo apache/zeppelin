@@ -16,23 +16,20 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IconDefinition } from '@ant-design/icons-angular';
 import { ClockCircleOutline, FileOutline, FileUnknownOutline, SearchOutline } from '@ant-design/icons-angular/icons';
-import {
-  NzBadgeModule,
-  NzCardModule,
-  NzDividerModule,
-  NzEmptyModule,
-  NzFormModule,
-  NzGridModule,
-  NzHighlightModule,
-  NzIconModule,
-  NzInputModule,
-  NzModalModule,
-  NzProgressModule,
-  NzSelectModule,
-  NzSkeletonModule,
-  NzToolTipModule,
-  NZ_ICONS
-} from 'ng-zorro-antd';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzHighlightModule } from 'ng-zorro-antd/core';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzEmptyModule } from 'ng-zorro-antd/empty';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzIconModule, NZ_ICONS } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzProgressModule } from 'ng-zorro-antd/progress';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 

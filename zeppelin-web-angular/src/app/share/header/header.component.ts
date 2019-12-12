@@ -12,7 +12,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { NzModalService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';

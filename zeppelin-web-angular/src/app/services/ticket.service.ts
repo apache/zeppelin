@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 import { forkJoin, BehaviorSubject, Subject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
-import { NzMessageService } from 'ng-zorro-antd';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 import { ITicket, ITicketWrapped, IZeppelinVersion } from '@zeppelin/interfaces';
 import { ConfigurationsInfo } from '@zeppelin/sdk';

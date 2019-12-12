@@ -12,7 +12,7 @@
 
 import { Injectable } from '@angular/core';
 import { Ng1MigrationComponent } from '@zeppelin/share/ng1-migration/ng1-migration.component';
-import { NzModalService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { Observable } from 'rxjs';
 
 export interface NgTemplateCheckResult {

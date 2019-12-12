@@ -12,7 +12,7 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 
-import { NzModalRef } from 'ng-zorro-antd';
+import { NzModalRef } from 'ng-zorro-antd/modal';
 
 import { MessageService } from '@zeppelin/services/message.service';
 import { NoteListService } from '@zeppelin/services/note-list.service';

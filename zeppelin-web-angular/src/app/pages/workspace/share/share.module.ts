@@ -15,17 +15,15 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import {
-  NzButtonModule,
-  NzCheckboxModule,
-  NzDropDownModule,
-  NzIconModule,
-  NzRadioModule,
-  NzSelectModule,
-  NzSwitchModule,
-  NzToolTipModule
-} from 'ng-zorro-antd';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzResizableModule } from 'ng-zorro-antd/resizable';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 import { VisualizationModule } from '@zeppelin/visualizations/visualization.module';

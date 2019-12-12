@@ -13,7 +13,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { NzModalService, NzNotificationService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { MessageInterceptor } from '@zeppelin/interfaces';
 import { MessageReceiveDataTypeMap, OP, WebSocketMessage } from '@zeppelin/sdk';

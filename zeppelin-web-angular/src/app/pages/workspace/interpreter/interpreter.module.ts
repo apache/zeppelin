@@ -13,26 +13,24 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {
-  NzAlertModule,
-  NzBadgeModule,
-  NzButtonModule,
-  NzCardModule,
-  NzCheckboxModule,
-  NzDividerModule,
-  NzDropDownModule,
-  NzFormModule,
-  NzIconModule,
-  NzInputModule,
-  NzMessageModule,
-  NzModalModule,
-  NzRadioModule,
-  NzSelectModule,
-  NzSwitchModule,
-  NzTableModule,
-  NzTagModule,
-  NzToolTipModule
-} from 'ng-zorro-antd';
+import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMessageModule } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 import { ShareModule } from '@zeppelin/share';
 

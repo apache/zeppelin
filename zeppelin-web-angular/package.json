@@ -74,6 +74,7 @@
     "monaco-editor-webpack-plugin": "^1.7.0",
     "ng-packagr": "^5.4.0",
     "ngx-build-plus": "^8.1.5",
+    "nz-tslint-rules": "^0.800.2",
     "prettier": "^1.17.0",
     "protractor": "~5.4.0",
     "ts-node": "~7.0.0",
