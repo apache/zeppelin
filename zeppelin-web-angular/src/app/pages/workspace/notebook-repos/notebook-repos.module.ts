@@ -14,15 +14,13 @@ import { NgModule } from '@angular/core';
 
 import { ShareModule } from '@zeppelin/share';
 
-import {
-  NzButtonModule,
-  NzCardModule,
-  NzFormModule,
-  NzIconModule,
-  NzInputModule,
-  NzSelectModule,
-  NzTableModule
-} from 'ng-zorro-antd';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NotebookRepoItemComponent } from './item/item.component';

@@ -13,7 +13,7 @@
 import { moveItemInArray, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { NzModalService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { InterpreterService, MessageService } from '@zeppelin/services';

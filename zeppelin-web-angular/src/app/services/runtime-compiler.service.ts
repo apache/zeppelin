@@ -10,7 +10,6 @@
  * limitations under the License.
  */
 
-import { CommonModule } from '@angular/common';
 import {
   Compiler,
   Component,
@@ -20,10 +19,8 @@ import {
   NgModuleFactory,
   Type
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
-import { NgZorroAntdModule } from 'ng-zorro-antd';
-
+import { RuntimeDynamicModuleModule } from '@zeppelin/core';
 import { NgZService } from './ng-z.service';
 
 export class DynamicTemplate {
@@ -63,7 +60,7 @@ export class RuntimeCompilerService {
       declarations: [dynamicComponent],
       exports: [dynamicComponent],
       entryComponents: [dynamicComponent],
-      imports: [CommonModule, NgZorroAntdModule, FormsModule]
+      imports: [RuntimeDynamicModuleModule]
     })(class DynamicModule {});
 
     this.compiledModule = await this.compiler.compileModuleAndAllComponentsAsync(dynamicModule);

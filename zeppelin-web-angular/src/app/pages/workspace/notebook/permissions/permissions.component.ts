@@ -21,7 +21,8 @@ import {
   Output
 } from '@angular/core';
 
-import { NzMessageService, NzModalService } from 'ng-zorro-antd';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { Permissions } from '@zeppelin/interfaces';
 import { SecurityService, TicketService } from '@zeppelin/services';

@@ -15,20 +15,18 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import {
-  NzButtonModule,
-  NzCardModule,
-  NzCheckboxModule,
-  NzDropDownModule,
-  NzFormModule,
-  NzGridModule,
-  NzIconModule,
-  NzInputModule,
-  NzMenuModule,
-  NzRadioModule,
-  NzTableModule,
-  NzTagModule
-} from 'ng-zorro-antd';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzRadioModule } from 'ng-zorro-antd/radio';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 
 import { AreaChartVisualizationComponent } from './area-chart/area-chart-visualization.component';
 import { BarChartVisualizationComponent } from './bar-chart/bar-chart-visualization.component';

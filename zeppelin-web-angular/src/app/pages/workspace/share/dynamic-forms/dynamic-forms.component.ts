@@ -25,7 +25,7 @@ import {
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
-import { NzCheckBoxOptionInterface } from 'ng-zorro-antd';
+import { NzCheckBoxOptionInterface } from 'ng-zorro-antd/checkbox';
 
 import { DynamicForms, DynamicFormsItem, DynamicFormsType, DynamicFormParams } from '@zeppelin/sdk';
 
