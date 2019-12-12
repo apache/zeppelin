@@ -14,7 +14,8 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { get } from 'lodash';
-import { NzModalRef, UploadFile } from 'ng-zorro-antd';
+import { NzModalRef } from 'ng-zorro-antd/modal';
+import { UploadFile } from 'ng-zorro-antd/upload';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { OP } from '@zeppelin/sdk';

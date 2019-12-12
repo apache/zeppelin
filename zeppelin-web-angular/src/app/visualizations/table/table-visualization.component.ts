@@ -13,7 +13,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 
 import { filter, maxBy, minBy, orderBy, sumBy } from 'lodash';
-import { NzTableComponent } from 'ng-zorro-antd';
+import { NzTableComponent } from 'ng-zorro-antd/table';
 import { utils, writeFile, WorkSheet } from 'xlsx';
 
 import { TableData, Visualization, VISUALIZATION } from '@zeppelin/visualization';

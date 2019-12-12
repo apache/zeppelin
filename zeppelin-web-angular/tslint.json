@@ -1,6 +1,7 @@
 {
-  "rulesDirectory": ["node_modules/codelyzer"],
+  "rulesDirectory": ["node_modules/codelyzer", "node_modules/nz-tslint-rules"],
   "rules": {
+    "nz-secondary-entry-imports": true,
     "banana-in-box": true,
     "templates-no-negated-async": true,
     "no-life-cycle-call": false,

@@ -12,7 +12,8 @@
 
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 
-import { NzModalService, NzTreeNode } from 'ng-zorro-antd';
+import { NzTreeNode } from 'ng-zorro-antd/core';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';

@@ -12,7 +12,7 @@
 
 import { Injectable } from '@angular/core';
 
-import { NzModalService } from 'ng-zorro-antd';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { FolderRenameComponent } from '@zeppelin/share/folder-rename/folder-rename.component';
 import { NoteCreateComponent } from '@zeppelin/share/note-create/note-create.component';

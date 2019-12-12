@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { ShareModule } from '@zeppelin/share';
-import { NzTableModule } from 'ng-zorro-antd';
+import { NzTableModule } from 'ng-zorro-antd/table';
 import { ConfigurationRoutingModule } from './configuration-routing.module';
 import { ConfigurationComponent } from './configuration.component';
 
