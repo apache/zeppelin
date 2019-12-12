@@ -83,7 +83,7 @@ public class PythonInterpreter extends Interpreter {
     iPythonInterpreter = getIPythonInterpreter();
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
         StringUtils.isEmpty(
-            iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
+            iPythonInterpreter.checkKernelPrerequisite(getPythonExec()))) {
       try {
         iPythonInterpreter.open();
         LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");

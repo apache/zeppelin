@@ -58,8 +58,8 @@ public class IPyFlinkInterpreter extends IPythonInterpreter {
   }
 
   @Override
-  protected Map<String, String> setupIPythonEnv() throws IOException {
-    Map<String, String> envs = super.setupIPythonEnv();
+  protected Map<String, String> setupKernelEnv() throws IOException {
+    Map<String, String> envs = super.setupKernelEnv();
     String pythonPath = envs.getOrDefault("PYTHONPATH", "");
     String pyflinkPythonPath = PyFlinkInterpreter.getPyFlinkPythonPath(properties);
     envs.put("PYTHONPATH", pythonPath + ":" + pyflinkPythonPath);

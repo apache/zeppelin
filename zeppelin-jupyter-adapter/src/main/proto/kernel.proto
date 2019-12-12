@@ -1,0 +1,108 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.apache.zeppelin.interpreter.jupyter.proto";
+option java_outer_classname = "JupyterKernelProto";
+option objc_class_prefix = "JupyterKernel";
+
+package jupyter;
+
+// The JupyterKernel service definition.
+service JupyterKernel {
+  // Sends code
+  rpc execute (ExecuteRequest) returns (stream ExecuteResponse) {}
+
+  // Get completion
+  rpc complete (CompletionRequest) returns (CompletionResponse) {}
+
+  // Cancel the running statement
+  rpc cancel (CancelRequest) returns (CancelResponse) {}
+
+  // Get jupyter kernel status
+  rpc status (StatusRequest) returns (StatusResponse) {}
+
+  // Stop jupyter kernel
+  rpc stop(StopRequest) returns (StopResponse) {}
+}
+
+enum ExecuteStatus {
+  SUCCESS = 0;
+  ERROR = 1;
+}
+
+enum KernelStatus {
+  STARTING = 0;
+  RUNNING = 1;
+}
+
+enum OutputType {
+  TEXT = 0;
+  PNG = 1;
+  JPEG = 2;
+  HTML = 3;
+  SVG = 4;
+  JSON = 5;
+  LaTeX = 6;
+}
+
+// The request message containing the code
+message ExecuteRequest {
+  string code = 1;
+}
+
+// The response message containing the execution result.
+message ExecuteResponse {
+  ExecuteStatus status = 1;
+  OutputType type = 2;
+  string output = 3;
+}
+
+message CancelRequest {
+
+}
+
+message CancelResponse {
+
+}
+
+message CompletionRequest {
+  string code = 1;
+  int32 cursor = 2;
+}
+
+message CompletionResponse {
+  repeated string matches = 1;
+}
+
+message StatusRequest {
+
+}
+
+message StatusResponse {
+  KernelStatus status = 1;
+}
+
+message StopRequest {
+
+}
+
+message StopResponse {
+
+}

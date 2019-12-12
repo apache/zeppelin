@@ -15,25 +15,25 @@
 * limitations under the License.
 */
 
-package org.apache.zeppelin.python;
+package org.apache.zeppelin.interpreter;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.jupyter.proto.JupyterKernelGrpc;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
-import org.apache.zeppelin.python.proto.CancelRequest;
-import org.apache.zeppelin.python.proto.CancelResponse;
-import org.apache.zeppelin.python.proto.CompletionRequest;
-import org.apache.zeppelin.python.proto.CompletionResponse;
-import org.apache.zeppelin.python.proto.ExecuteRequest;
-import org.apache.zeppelin.python.proto.ExecuteResponse;
-import org.apache.zeppelin.python.proto.ExecuteStatus;
-import org.apache.zeppelin.python.proto.IPythonGrpc;
-import org.apache.zeppelin.python.proto.OutputType;
-import org.apache.zeppelin.python.proto.StatusRequest;
-import org.apache.zeppelin.python.proto.StatusResponse;
-import org.apache.zeppelin.python.proto.StopRequest;
+import org.apache.zeppelin.interpreter.jupyter.proto.CancelRequest;
+import org.apache.zeppelin.interpreter.jupyter.proto.CancelResponse;
+import org.apache.zeppelin.interpreter.jupyter.proto.CompletionRequest;
+import org.apache.zeppelin.interpreter.jupyter.proto.CompletionResponse;
+import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteRequest;
+import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteResponse;
+import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteStatus;
+import org.apache.zeppelin.interpreter.jupyter.proto.OutputType;
+import org.apache.zeppelin.interpreter.jupyter.proto.StatusRequest;
+import org.apache.zeppelin.interpreter.jupyter.proto.StatusResponse;
+import org.apache.zeppelin.interpreter.jupyter.proto.StopRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,33 +44,33 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Grpc client for IPython kernel
+ * Grpc client for Jupyter kernel
  */
-public class IPythonClient {
+public class JupyterKernelClient {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(IPythonClient.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelClient.class.getName());
 
   private final ManagedChannel channel;
-  private final IPythonGrpc.IPythonBlockingStub blockingStub;
-  private final IPythonGrpc.IPythonStub asyncStub;
-  private volatile boolean maybeIPythonFailed = false;
+  private final JupyterKernelGrpc.JupyterKernelBlockingStub blockingStub;
+  private final JupyterKernelGrpc.JupyterKernelStub asyncStub;
+  private volatile boolean maybeKernelFailed = false;
 
   private SecureRandom random = new SecureRandom();
 
   /**
    * Construct client for accessing RouteGuide server at {@code host:port}.
    */
-  public IPythonClient(String host, int port) {
+  public JupyterKernelClient(String host, int port) {
     this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
   }
 
   /**
    * Construct client for accessing RouteGuide server using the existing channel.
    */
-  public IPythonClient(ManagedChannelBuilder<?> channelBuilder) {
+  public JupyterKernelClient(ManagedChannelBuilder<?> channelBuilder) {
     channel = channelBuilder.build();
-    blockingStub = IPythonGrpc.newBlockingStub(channel);
-    asyncStub = IPythonGrpc.newStub(channel);
+    blockingStub = JupyterKernelGrpc.newBlockingStub(channel);
+    asyncStub = JupyterKernelGrpc.newStub(channel);
   }
 
   public void shutdown() throws InterruptedException {
@@ -84,7 +84,7 @@ public class IPythonClient {
     final ExecuteResponse.Builder finalResponseBuilder = ExecuteResponse.newBuilder()
         .setStatus(ExecuteStatus.SUCCESS);
     final AtomicBoolean completedFlag = new AtomicBoolean(false);
-    maybeIPythonFailed = false;
+    maybeKernelFailed = false;
     LOGGER.debug("stream_execute code:\n" + request.getCode());
     asyncStub.execute(request, new StreamObserver<ExecuteResponse>() {
       OutputType lastOutputType = null;
@@ -97,7 +97,7 @@ public class IPythonClient {
           case TEXT:
             try {
               if (executeResponse.getOutput().startsWith("%")) {
-                // the output from ipython kernel maybe specify format already.
+                // the output from jupyter kernel maybe specify format already.
                 interpreterOutput.write((executeResponse.getOutput()).getBytes());
               } else {
                 // only add %text when the previous output type is not TEXT.
@@ -154,7 +154,7 @@ public class IPythonClient {
         }
         LOGGER.error("Fail to call IPython grpc", throwable);
         finalResponseBuilder.setStatus(ExecuteStatus.ERROR);
-        maybeIPythonFailed = true;
+        maybeKernelFailed = true;
         completedFlag.set(true);
         synchronized (completedFlag) {
           completedFlag.notify();
@@ -221,12 +221,12 @@ public class IPythonClient {
     asyncStub.stop(request, null);
   }
 
-  public boolean isMaybeIPythonFailed() {
-    return maybeIPythonFailed;
+  public boolean isMaybeKernelFailed() {
+    return maybeKernelFailed;
   }
 
   public static void main(String[] args) {
-    IPythonClient client = new IPythonClient("localhost", 50053);
+    JupyterKernelClient client = new JupyterKernelClient("localhost", 50053);
     client.status(StatusRequest.newBuilder().build());
 
     ExecuteResponse response = client.block_execute(ExecuteRequest.newBuilder().

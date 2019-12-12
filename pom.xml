@@ -58,6 +58,7 @@
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>rlang</module>
+    <module>zeppelin-jupyter-adapter</module>
     <module>kotlin</module>
     <module>groovy</module>
     <module>spark</module>
@@ -1086,7 +1087,7 @@
               <exclude>**/R/rzeppelin/DESCRIPTION</exclude>
               <exclude>**/R/rzeppelin/NAMESPACE</exclude>
 
-              <exclude>python/src/main/resources/grpc/**/*</exclude>
+              <exclude>zeppelin-jupyter-adapter/src/main/resources/grpc/**/*</exclude>
             </excludes>
           </configuration>
 

@@ -13,6 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/usr/bin/env bash
 
-python -m grpc_tools.protoc -I../../proto --python_out=python --grpc_python_out=python ../../proto/ipython.proto
+import grpc
+
+import kernel_pb2
+import kernel_pb2_grpc
+
+
+def run():
+    channel = grpc.insecure_channel('localhost:50053')
+    stub = kernel_pb2_grpc.JupyterKernelStub(channel)
+    response = stub.execute(kernel_pb2.ExecuteRequest(code="import time\nfor i in range(1,4):\n\ttime.sleep(1)\n\tprint(i)\n" +
+                                                            "%matplotlib inline\nimport matplotlib.pyplot as plt\ndata=[1,1,2,3,4]\nplt.figure()\nplt.plot(data)"))
+    for r in response:
+        print("output:" + r.output)
+
+    response = stub.execute(kernel_pb2.ExecuteRequest(code="range?"))
+    for r in response:
+        print(r)
+
+if __name__ == '__main__':
+    run()
