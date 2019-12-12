@@ -18,7 +18,7 @@ import { ActivatedRoute, NavigationEnd, Route, Router } from '@angular/router';
 import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
-import { log } from 'ng-zorro-antd';
+import { log } from 'ng-zorro-antd/core';
 
 @Component({
   selector: 'zeppelin-workspace',

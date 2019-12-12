@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { NzInputModule } from 'ng-zorro-antd';
+import { NzInputModule } from 'ng-zorro-antd/input';
 
 import { ElasticInputComponent } from './elastic-input/elastic-input.component';
 
