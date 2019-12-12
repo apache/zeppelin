@@ -516,9 +516,11 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
               this.commitParagraph();
               break;
             case ParagraphActions.MoveToUp:
+              event.preventDefault();
               this.moveUpParagraph();
               break;
             case ParagraphActions.MoveToDown:
+              event.preventDefault();
               this.moveDownParagraph();
               break;
             case ParagraphActions.SwitchEnable:
@@ -620,6 +622,10 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
         });
       }
     }
+  }
+
+  getElement(): HTMLElement {
+    return this.host && this.host.nativeElement;
   }
 
   ngOnDestroy(): void {
