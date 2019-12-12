@@ -23,8 +23,8 @@ import time
 from concurrent import futures
 
 import grpc
-import ipython_pb2
-import ipython_pb2_grpc
+import kernel_pb2
+import kernel_pb2_grpc
 
 is_py2 = sys.version[0] == '2'
 if is_py2:
@@ -33,11 +33,12 @@ else:
     import queue as queue
 
 
-class IPython(ipython_pb2_grpc.IPythonServicer):
+class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
 
-    def __init__(self, server):
-        self._status = ipython_pb2.STARTING
+    def __init__(self, server, kernel_name):
+        self._status = kernel_pb2.STARTING
         self._server = server
+        self._kernel_name = kernel_name
         # issue with execute_interactive and auto completion: https://github.com/jupyter/jupyter_client/issues/429
         # in all case because ipython does not support run and auto completion at the same time: https://github.com/jupyter/notebook/issues/3763
         # For now we will lock to ensure that there is no concurrent bug that can "hang" the kernel
@@ -46,8 +47,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
     def start(self):
         print("starting...")
         sys.stdout.flush()
-        self._km, self._kc = jupyter_client.manager.start_new_kernel(kernel_name='python')
-        self._status = ipython_pb2.RUNNING
+        self._km, self._kc = jupyter_client.manager.start_new_kernel(kernel_name=self._kernel_name)
+        self._status = kernel_pb2.RUNNING
 
     def execute(self, request, context):
         print("execute code:\n")
@@ -59,42 +60,42 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
             msg_type = msg['header']['msg_type']
             content = msg['content']
             print("******************* CONTENT ******************")
-            outStatus, outType, output = ipython_pb2.SUCCESS, None, None
+            outStatus, outType, output = kernel_pb2.SUCCESS, None, None
             # prepare the reply
             if msg_type == 'stream':
-                outType = ipython_pb2.TEXT
+                outType = kernel_pb2.TEXT
                 output = content['text']
             elif msg_type in ('display_data', 'execute_result'):
                 print(content['data'])
                 # The if-else order matters, can not be changed. Because ipython may provide multiple output.
                 # TEXT is the last resort type.
                 if 'text/html' in content['data']:
-                    outType = ipython_pb2.HTML
+                    outType = kernel_pb2.HTML
                     output = content['data']['text/html']
                 elif 'image/jpeg' in content['data']:
-                    outType = ipython_pb2.JPEG
+                    outType = kernel_pb2.JPEG
                     output = content['data']['image/jpeg']
                 elif 'image/png' in content['data']:
-                    outType = ipython_pb2.PNG
+                    outType = kernel_pb2.PNG
                     output = content['data']['image/png']
                 elif 'application/javascript' in content['data']:
-                    outType = ipython_pb2.HTML
+                    outType = kernel_pb2.HTML
                     output = '<script> ' + content['data']['application/javascript'] + ' </script>\n'
                 elif 'application/vnd.holoviews_load.v0+json' in content['data']:
-                    outType = ipython_pb2.HTML
+                    outType = kernel_pb2.HTML
                     output = '<script> ' + content['data']['application/vnd.holoviews_load.v0+json'] + ' </script>\n'
                 elif 'text/plain' in content['data']:
-                    outType = ipython_pb2.TEXT
+                    outType = kernel_pb2.TEXT
                     output = content['data']['text/plain']
             elif msg_type == 'error':
-                outStatus = ipython_pb2.ERROR
-                outType = ipython_pb2.TEXT
+                outStatus = kernel_pb2.ERROR
+                outType = kernel_pb2.TEXT
                 output = '\n'.join(content['traceback'])
 
             # send reply if we supported the output type
             if outType is not None:
                 stream_reply_queue.put(
-                    ipython_pb2.ExecuteResponse(status=outStatus,
+                    kernel_pb2.ExecuteResponse(status=outStatus,
                                                 type=outType,
                                                 output=output))
         def execute_worker():
@@ -121,8 +122,8 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
 
             # if kernel is not alive or thread is still alive, it means that we face an issue.
             if not self.isKernelAlive() or t.is_alive():
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.ERROR,
-                                                  type=ipython_pb2.TEXT,
+                yield kernel_pb2.ExecuteResponse(status=kernel_pb2.ERROR,
+                                                  type=kernel_pb2.TEXT,
                                                   output="Ipython kernel has been stopped. Please check logs. It might be because of an out of memory issue.")
         if payload_reply:
             result = []
@@ -130,21 +131,21 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
                 if payload['data']['text/plain']:
                     result.append(payload['data']['text/plain'])
             if result:
-                yield ipython_pb2.ExecuteResponse(status=ipython_pb2.SUCCESS,
-                                                  type=ipython_pb2.TEXT,
+                yield kernel_pb2.ExecuteResponse(status=kernel_pb2.SUCCESS,
+                                                  type=kernel_pb2.TEXT,
                                                   output='\n'.join(result))
 
     def cancel(self, request, context):
         self._km.interrupt_kernel()
-        return ipython_pb2.CancelResponse()
+        return kernel_pb2.CancelResponse()
 
     def complete(self, request, context):
         with self._lock:
             reply = self._kc.complete(request.code, request.cursor, reply=True, timeout=None)
-        return ipython_pb2.CompletionResponse(matches=reply['content']['matches'])
+        return kernel_pb2.CompletionResponse(matches=reply['content']['matches'])
 
     def status(self, request, context):
-        return ipython_pb2.StatusResponse(status = self._status)
+        return kernel_pb2.StatusResponse(status = self._status)
 
     def isKernelAlive(self):
         return self._km.is_alive()
@@ -154,18 +155,18 @@ class IPython(ipython_pb2_grpc.IPythonServicer):
 
     def stop(self, request, context):
         self.terminate()
-        return ipython_pb2.StopResponse()
+        return kernel_pb2.StopResponse()
 
 
-def serve(port):
+def serve(kernel_name, port):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    ipython = IPython(server)
-    ipython_pb2_grpc.add_IPythonServicer_to_server(ipython, server)
+    kernel = KernelServer(server, kernel_name)
+    kernel_pb2_grpc.add_JupyterKernelServicer_to_server(kernel, server)
     server.add_insecure_port('[::]:' + port)
     server.start()
-    ipython.start()
+    kernel.start()
     try:
-        while ipython.isKernelAlive():
+        while kernel.isKernelAlive():
             time.sleep(5)
     except KeyboardInterrupt:
         print("interrupted")
@@ -173,8 +174,8 @@ def serve(port):
         print("shutdown")
         # we let 2 sc for all request to be complete
         server.stop(2)
-        ipython.terminate()
+        kernel.terminate()
         os._exit(0)
 
 if __name__ == '__main__':
-    serve(sys.argv[1])
+    serve(sys.argv[1], sys.argv[2])

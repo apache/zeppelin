@@ -384,7 +384,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     tearDown();
 
     Properties properties = initIntpProperties();
-    properties.setProperty("zeppelin.ipython.grpc.message_size", "4000");
+    properties.setProperty("zeppelin.jupyter.kernel.grpc.message_size", "4000");
 
     startInterpreter(properties);
 
@@ -443,7 +443,7 @@ public class IPythonInterpreterTest extends BasePythonInterpreterTest {
     Thread.sleep(3000);
     IPythonInterpreter iPythonInterpreter = (IPythonInterpreter)
             ((LazyOpenInterpreter) interpreter).getInnerInterpreter();
-    iPythonInterpreter.getIPythonProcessLauncher().stop();
+    iPythonInterpreter.getKernelProcessLauncher().stop();
     waiter.await(3000);
   }
 
