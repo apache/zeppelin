@@ -69,7 +69,6 @@ export class NotebookActionBarComponent extends MessageListenersManager implemen
     { name: '12h', value: '0 0 0/12 * * ?' },
     { name: '1d', value: '0 0 0 * * ?' }
   ];
-
   updateNoteName(name: string) {
     const trimmedNewName = name.trim();
     if (trimmedNewName.length > 0 && this.note.name !== trimmedNewName) {
