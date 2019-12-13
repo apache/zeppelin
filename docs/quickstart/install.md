@@ -40,7 +40,7 @@ Apache Zeppelin officially supports and is tested on the following environments:
   </tr>
   <tr>
     <td>OS</td>
-    <td>Mac OSX <br /> Ubuntu 14.X <br /> CentOS 6.X <br /> Windows 7 Pro SP1</td>
+    <td>Mac OSX <br /> Ubuntu 16.X</td>
   </tr>
 </table>
 
@@ -53,7 +53,7 @@ Two binary packages are available on the [download page](http://zeppelin.apache.
   
 ### Building Zeppelin from source
 
-follow the instructions [How to Build](../setup/basics/how_to_build.html), If you want to build from source instead of using binary package.
+Follow the instructions [How to Build](../setup/basics/how_to_build.html), If you want to build from source instead of using binary package.
 
 ## Starting Apache Zeppelin
 
@@ -63,12 +63,6 @@ On all unix like platforms:
 
 ```
 bin/zeppelin-daemon.sh start
-```
-
-If you are on Windows:
-
-```
-bin\zeppelin.cmd
 ```
 
 After Zeppelin has started successfully, go to [http://localhost:8080](http://localhost:8080) with your web browser.
