@@ -206,6 +206,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderDefaultDisplay() {
+    this.frontEndError = '';
     switch (this.result.type) {
       case DatasetType.TABLE:
         this.renderGraph();
@@ -240,16 +241,17 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderAngular(): void {
-    try {
-      this.runtimeCompilerService.createAndCompileTemplate(this.id, this.result.data).then(data => {
+    this.runtimeCompilerService
+      .createAndCompileTemplate(this.id, this.result.data)
+      .then(data => {
         this.angularComponent = data;
-        // this.angularComponent.moduleFactory
+        this.cdr.markForCheck();
+      })
+      .catch(error => {
+        this.angularComponent = null;
+        this.frontEndError = error.message;
         this.cdr.markForCheck();
       });
-    } catch (e) {
-      this.frontEndError = e.message;
-      console.log(e);
-    }
   }
 
   renderText(): void {

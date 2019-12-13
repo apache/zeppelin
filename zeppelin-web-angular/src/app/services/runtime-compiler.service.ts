@@ -11,15 +11,17 @@
  */
 
 import {
+  ChangeDetectionStrategy,
   Compiler,
   Component,
   Injectable,
-  ModuleWithComponentFactories,
   NgModule,
   NgModuleFactory,
+  NO_ERRORS_SCHEMA,
   Type
 } from '@angular/core';
 
+import { CompileDirectiveMetadata, HtmlParser, TemplateParser } from '@angular/compiler';
 import { RuntimeDynamicModuleModule } from '@zeppelin/core';
 import { NgZService } from './ng-z.service';
 
@@ -33,16 +35,17 @@ export class DynamicTemplate {
   ) {}
 }
 
+export class DynamicTemplateError {
+  constructor(public message: string) {}
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class RuntimeCompilerService {
-  // tslint:disable-next-line:no-any
-  private compiledModule?: ModuleWithComponentFactories<any>;
-
   public async createAndCompileTemplate(paragraphId: string, template: string): Promise<DynamicTemplate> {
     const ngZService = this.ngZService;
-    const dynamicComponent = Component({ template: template })(
+    const dynamicComponent = Component({ template: template, selector: `dynamic-${paragraphId}` })(
       class DynamicTemplateComponent {
         z = {
           set: (key: string, value, id: string) => ngZService.setContextValue(key, value, id),
@@ -63,8 +66,13 @@ export class RuntimeCompilerService {
       imports: [RuntimeDynamicModuleModule]
     })(class DynamicModule {});
 
-    this.compiledModule = await this.compiler.compileModuleAndAllComponentsAsync(dynamicModule);
-    return new DynamicTemplate(template, dynamicComponent, this.compiledModule.ngModuleFactory);
+    try {
+      this.compiler.clearCache();
+      const compiledModule = await this.compiler.compileModuleAndAllComponentsAsync(dynamicModule);
+      return new DynamicTemplate(template, dynamicComponent, compiledModule.ngModuleFactory);
+    } catch (e) {
+      throw new DynamicTemplateError(`${e}`);
+    }
   }
 
   constructor(private compiler: Compiler, private ngZService: NgZService) {}

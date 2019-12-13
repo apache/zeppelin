@@ -68,6 +68,7 @@
     <div *ngSwitchCase="datasetType.TEXT" class="text-plain"><pre [innerHTML]="plainText"></pre></div>
     <div *ngSwitchCase="datasetType.IMG" class="img"><img [src]="imgData" alt="img"></div>
   </ng-container>
+  <div *ngIf="frontEndError" class="text-plain"><pre>{{frontEndError}}</pre></div>
   <div *ngIf="angularComponent">
     <ng-container *ngComponentOutlet="angularComponent.component;ngModuleFactory: angularComponent.moduleFactory;injector: injector"></ng-container>
   </div>
