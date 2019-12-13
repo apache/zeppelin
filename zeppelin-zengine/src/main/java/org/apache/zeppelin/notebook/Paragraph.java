@@ -557,7 +557,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext.remove();
       }
     } catch (Exception e) {
-      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
