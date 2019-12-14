@@ -427,12 +427,6 @@
 </property>
 
 <property>
-  <name>zeppelin.anonymous.allowed</name>
-  <value>true</value>
-  <description>Anonymous user allowed by default</description>
-</property>
-
-<property>
   <name>zeppelin.username.force.lowercase</name>
   <value>false</value>
   <description>Force convert username case to lower case, useful for Active Directory/LDAP. Default is not to change case</description>

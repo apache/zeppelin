@@ -112,7 +112,8 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     assertNull("Deleted note should be null", deletedNote);
   }
 
-  @Test
+  //  @Test
+  // This can be removed as now there is no anonymous user if Shiro is configured.
   public void testThatUserCanSearchNote() throws IOException {
     String noteId1 = createNoteForUser("test1", "admin", "password1");
     createParagraphForUser(noteId1, "admin", "password1", "title1",

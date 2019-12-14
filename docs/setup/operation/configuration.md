@@ -108,12 +108,6 @@ If both are defined, then the **environment variables** will take priority.
     <td>If provided, encrypt passwords on the credentials.json file (passwords will be stored as plain-text otherwise</td>
   </tr>  
   <tr>
-    <td>N/A</td>
-    <td><h6 class="properties">zeppelin.anonymous.allowed</h6></td>
-    <td>true</td>
-    <td>The anonymous user is allowed by default.</td>
-  </tr>
-  <tr>
     <td><h6 class="properties">ZEPPELIN_SERVER_CONTEXT_PATH</h6></td>
     <td><h6 class="properties">zeppelin.server.context.path</h6></td>
     <td>/</td>

@@ -44,10 +44,7 @@ cp conf/shiro.ini.template conf/shiro.ini
 
 For the further information about  `shiro.ini` file format, please refer to [Shiro Configuration](http://shiro.apache.org/configuration.html#Configuration-INISections).
 
-### 2. Secure the Websocket channel
-Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-site.xml`. If you don't have this file yet, just copy `conf/zeppelin-site.xml.template` to `conf/zeppelin-site.xml`.
-
-### 3. Start Zeppelin
+### 2. Start Zeppelin
 
 ```bash
 bin/zeppelin-daemon.sh start #(or restart)
@@ -55,7 +52,7 @@ bin/zeppelin-daemon.sh start #(or restart)
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 
-### 4. Login
+### 3. Login
 Finally, you can login using one of the below **username/password** combinations.
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
