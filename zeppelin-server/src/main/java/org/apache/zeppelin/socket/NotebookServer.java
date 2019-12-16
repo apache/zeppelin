@@ -1831,10 +1831,6 @@ public class NotebookServer extends WebSocketServlet
 
     p.setStatusToUserParagraph(p.getStatus());
     broadcastParagraph(p.getNote(), p);
-    //    for (NoteEventListener listener : notebook.getNoteEventListeners()) {
-    //      listener.onParagraphStatusChange(p, after);
-    //    }
-
     try {
       broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
     } catch (IOException e) {

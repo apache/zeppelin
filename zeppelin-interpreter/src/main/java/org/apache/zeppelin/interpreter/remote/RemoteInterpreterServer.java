@@ -889,7 +889,6 @@ public class RemoteInterpreterServer extends Thread
     synchronized (interpreterGroup) {
       List<Interpreter> interpreters = interpreterGroup.get(sessionId);
       if (interpreters == null) {
-        logger.info("getStatus:" + Status.UNKNOWN.name());
         return Status.UNKNOWN.name();
       }
 
@@ -902,7 +901,6 @@ public class RemoteInterpreterServer extends Thread
         }
       }
     }
-    logger.info("getStatus:" + Status.UNKNOWN.name());
     return Status.UNKNOWN.name();
   }
 
