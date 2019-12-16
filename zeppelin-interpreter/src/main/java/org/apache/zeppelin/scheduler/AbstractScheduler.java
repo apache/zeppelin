@@ -120,25 +120,26 @@ public abstract class AbstractScheduler implements Scheduler {
     }
     runningJob.run();
     Object jobResult = runningJob.getReturn();
-    if (runningJob.isAborted()) {
-      runningJob.setStatus(Job.Status.ABORT);
-      LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
-          runningJob.getErrorMessage());
-    } else if (runningJob.getException() != null) {
-      LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-          runningJob.getReturn());
-      runningJob.setStatus(Job.Status.ERROR);
-    } else if (jobResult != null && jobResult instanceof InterpreterResult
-        && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
-      LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
-          runningJob.getReturn());
-      runningJob.setStatus(Job.Status.ERROR);
-    } else {
-      LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
-          runningJob.getReturn());
-      runningJob.setStatus(Job.Status.FINISHED);
+    synchronized (runningJob) {
+      if (runningJob.isAborted()) {
+        runningJob.setStatus(Job.Status.ABORT);
+        LOGGER.debug("Job Aborted, " + runningJob.getId() + ", " +
+                runningJob.getErrorMessage());
+      } else if (runningJob.getException() != null) {
+        LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
+                runningJob.getReturn());
+        runningJob.setStatus(Job.Status.ERROR);
+      } else if (jobResult != null && jobResult instanceof InterpreterResult
+              && ((InterpreterResult) jobResult).code() == InterpreterResult.Code.ERROR) {
+        LOGGER.debug("Job Error, " + runningJob.getId() + ", " +
+                runningJob.getReturn());
+        runningJob.setStatus(Job.Status.ERROR);
+      } else {
+        LOGGER.debug("Job Finished, " + runningJob.getId() + ", Result: " +
+                runningJob.getReturn());
+        runningJob.setStatus(Job.Status.FINISHED);
+      }
     }
-
     LOGGER.info("Job " + runningJob.getId() + " finished by scheduler " + name);
     // reset aborted flag to allow retry
     runningJob.aborted = false;
