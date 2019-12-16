@@ -112,27 +112,6 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
     assertNull("Deleted note should be null", deletedNote);
   }
 
-  //  @Test
-  // This can be removed as now there is no anonymous user if Shiro is configured.
-  public void testThatUserCanSearchNote() throws IOException {
-    String noteId1 = createNoteForUser("test1", "admin", "password1");
-    createParagraphForUser(noteId1, "admin", "password1", "title1",
-            "ThisIsToTestSearchMethodWithPermissions 1");
-
-    String noteId2 = createNoteForUser("test2", "user1", "password2");
-    createParagraphForUser(noteId1, "admin", "password1", "title2",
-            "ThisIsToTestSearchMethodWithPermissions 2");
-
-    //set permission for each note
-    setPermissionForNote(noteId1, "admin", "password1");
-    setPermissionForNote(noteId1, "user1", "password2");
-
-    searchNoteBasedOnPermission("ThisIsToTestSearchMethodWithPermissions", "admin", "password1");
-
-    deleteNoteForUser(noteId1, "admin", "password1");
-    deleteNoteForUser(noteId2, "user1", "password2");
-  }
-
   private void userTryRemoveNote(String noteId, String user, String pwd,
           Matcher<? super HttpMethodBase> m) throws IOException {
     DeleteMethod delete = httpDelete(("/notebook/" + noteId), user, pwd);
@@ -194,35 +173,5 @@ public class NotebookSecurityRestApiTest extends AbstractTestRestApi {
             "\"],\"runners\":[\"" + user + "\"],\"writers\":[\"" + user + "\"]}";
     PutMethod put = httpPut(("/notebook/" + noteId + "/permissions"), payload, user, pwd);
     put.releaseConnection();
-  }
-
-  private void searchNoteBasedOnPermission(String searchText, String user, String pwd)
-          throws IOException{
-    GetMethod searchNote = httpGet(("/notebook/search?q=" + searchText), user, pwd);
-    Map<String, Object> respSearchResult = gson.fromJson(searchNote.getResponseBodyAsString(),
-            new TypeToken<Map<String, Object>>() {}.getType());
-    ArrayList searchBody = (ArrayList) respSearchResult.get("body");
-    assertEquals("At-least one search results is there", true, searchBody.size() >= 1);
-
-    for (int i = 0; i < searchBody.size(); i++) {
-      Map<String, String> searchResult = (Map<String, String>) searchBody.get(i);
-      String userId = searchResult.get("id").split("/", 2)[0];
-
-      GetMethod getPermission = httpGet(("/notebook/" + userId + "/permissions"), user, pwd);
-      Map<String, Object> resp = gson.fromJson(getPermission.getResponseBodyAsString(),
-              new TypeToken<Map<String, Object>>() {}.getType());
-      Map<String, ArrayList> permissions = (Map<String, ArrayList>) resp.get("body");
-      ArrayList owners = permissions.get("owners");
-      ArrayList readers = permissions.get("readers");
-      ArrayList writers = permissions.get("writers");
-      ArrayList runners = permissions.get("runners");
-
-      if (owners.size() != 0 && readers.size() != 0 && writers.size() != 0 && runners.size() != 0) {
-        assertEquals("User has permissions  ", true, (owners.contains(user) ||
-                readers.contains(user) || writers.contains(user) || runners.contains(user)));
-      }
-      getPermission.releaseConnection();
-    }
-    searchNote.releaseConnection();
   }
 }
