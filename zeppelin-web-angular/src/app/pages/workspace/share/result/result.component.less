@@ -42,6 +42,38 @@
         height: auto;
         width: auto;
       }
+
+      table {
+        border: none;
+        border-collapse: collapse;
+        border-spacing: 0;
+        color: @text-color;
+        table-layout: fixed;
+        width: 100%;
+      }
+      thead {
+        color: @table-header-color;
+        border-bottom: @border-width-base @border-style-base @border-color-split;
+        vertical-align: bottom;
+      }
+      tr, th, td {
+        text-align: right;
+        vertical-align: middle;
+        padding: 0.5em 0.5em;
+        line-height: normal;
+        white-space: normal;
+        max-width: none;
+        border: none;
+      }
+      th {
+        font-weight: bold;
+      }
+      tbody tr:nth-child(odd) {
+        background: darken(@table-header-bg, 3%);
+      }
+      tbody tr:hover {
+        background: @table-row-hover-bg;
+      }
     }
   }
 
