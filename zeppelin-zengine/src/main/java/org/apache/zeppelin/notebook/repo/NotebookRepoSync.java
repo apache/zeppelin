@@ -91,7 +91,7 @@ public class NotebookRepoSync implements NotebookRepoWithVersionControl {
     }
 
     // sync for anonymous mode on start
-    if (getRepoCount() > 1 && conf.getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED)) {
+    if (getRepoCount() > 1 && conf.isAnonymousAllowed()) {
       try {
         sync(AuthenticationInfo.ANONYMOUS);
       } catch (IOException e) {

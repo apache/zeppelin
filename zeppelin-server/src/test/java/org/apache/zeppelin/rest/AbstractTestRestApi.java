@@ -215,9 +215,6 @@ public abstract class AbstractTestRestApi {
 
       if (withAuth) {
         isRunningWithAuth = true;
-        // Set Anonymous session to false.
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(),
-                "false");
 
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
@@ -321,9 +318,7 @@ public abstract class AbstractTestRestApi {
       LOG.info("Test Zeppelin terminated.");
 
       if (isRunningWithAuth) {
-        isRunningWithAuth = false;
-        System
-            .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
+        isRunningWithAuth = shiroIni.exists();
       }
 
       if (deleteConfDir && !TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {

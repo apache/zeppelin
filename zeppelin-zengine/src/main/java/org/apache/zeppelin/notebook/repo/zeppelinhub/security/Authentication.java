@@ -49,7 +49,6 @@ public class Authentication implements Runnable {
   private static final String CIPHER_MODE = "AES/CBC/PKCS5PADDING";
   private static final int ivSize = 16;
 
-  private static final String ZEPPELIN_CONF_ANONYMOUS_ALLOWED = "zeppelin.anonymous.allowed";
   private static final String ZEPPELINHUB_USER_KEY = "zeppelinhub.user.key";
   private String token;
   private boolean authEnabled;
@@ -75,8 +74,7 @@ public class Authentication implements Runnable {
     client = new HttpClient(connectionManager);
     this.token = token;
 
-    authEnabled = !conf.getBoolean("ZEPPELIN_ALLOW_ANONYMOUS",
-        ZEPPELIN_CONF_ANONYMOUS_ALLOWED, true);
+    authEnabled = !conf.isAnonymousAllowed();
 
     userKey = conf.getString("ZEPPELINHUB_USER_KEY",
         ZEPPELINHUB_USER_KEY, "");
