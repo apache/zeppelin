@@ -29,6 +29,11 @@
   }
 
   ::ng-deep {
+
+    .visualization-selector .ant-radio-button-wrapper {
+      padding: 0 10px;
+    }
+
     .inner-html, .text-plain {
 
       overflow: auto;
@@ -53,7 +58,7 @@
       }
       thead {
         color: @table-header-color;
-        border-bottom: @border-width-base @border-style-base @border-color-split;
+        border-bottom: 2px @border-style-base fade(@black, 65%);
         vertical-align: bottom;
       }
       tr, th, td {
