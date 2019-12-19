@@ -333,7 +333,6 @@ public class ZeppelinServer extends ResourceConfig {
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
-    connector.setSoLingerTime(-1);
     connector.setHost(conf.getServerAddress());
     if (conf.useSsl()) {
       connector.setPort(conf.getServerSslPort());
