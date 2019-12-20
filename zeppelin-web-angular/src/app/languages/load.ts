@@ -10,10 +10,19 @@
  * limitations under the License.
  */
 
-import { languages } from 'monaco-editor';
+import { editor, languages } from 'monaco-editor';
 import { conf as ScalaConf, language as ScalaLanguage } from './scala';
 
-export const loadMonacoLanguage = () => {
+export const loadMonacoBefore = () => {
+  editor.defineTheme('zeppelin-theme', {
+    base: 'vs',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.lineHighlightBackground': '#0000FF10'
+    }
+  });
+  editor.setTheme('zeppelin-theme');
   languages.register({ id: 'scala' });
   languages.setMonarchTokensProvider('scala', ScalaLanguage);
   languages.setLanguageConfiguration('scala', ScalaConf);

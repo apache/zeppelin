@@ -18,6 +18,7 @@ import { ActivatedRoute, NavigationEnd, Route, Router } from '@angular/router';
 import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
+import { setTheme } from '@zeppelin/visualizations/g2.config';
 import { log } from 'ng-zorro-antd/core';
 
 @Component({
@@ -47,6 +48,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
       this.websocketConnected = data;
       this.cdr.markForCheck();
     });
+    setTheme();
     this.heliumManagerService.initPackages();
   }
 

@@ -125,11 +125,9 @@
               (click)="toggleExtension('revisions')">
         <i nz-icon nzType="swap" nzTheme="outline"></i>
       </button>
-      <nz-button-group nzSize="small">
-        <button nz-button nz-dropdown [nzDropdownMenu]="revisionsMenu" nzTrigger="click">
-          {{currentRevision}}
-        </button>
-      </nz-button-group>
+      <button nz-button nz-dropdown [nzDropdownMenu]="revisionsMenu" nzTrigger="click">
+        {{currentRevision}}
+      </button>
       <nz-dropdown-menu #revisionsMenu="nzDropdownMenu">
         <ul nz-menu>
           <li nz-menu-item *ngFor="let r of noteRevisions" (click)="visitRevision(r)">
@@ -188,7 +186,8 @@
         <div class="ant-dropdown-menu padding-sm scheduler">
           Run note with cron scheduler.
           Either choose from preset or write your own
-          <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger" target="_blank">
+          <a href="https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html"
+             target="_blank">
             cron expression
           </a>
           .
@@ -226,7 +225,8 @@
       <button nz-button nzNoAnimation (click)="togglePermissions()">
         <i nz-icon nzType="lock" [nzTheme]="activatedExtension === 'permissions' ? 'fill' : 'outline'"></i>
       </button>
-      <button [nzDropdownMenu]="menu" nz-button nzNoAnimation nzSize="small" nz-dropdown nzTrigger="click">{{note.config.looknfeel}}
+      <button [nzDropdownMenu]="menu" nz-button nzNoAnimation nzSize="small" nz-dropdown
+              nzTrigger="click">{{note.config.looknfeel}}
         <i nz-icon nzType="down"></i>
       </button>
       <nz-dropdown-menu #menu="nzDropdownMenu">

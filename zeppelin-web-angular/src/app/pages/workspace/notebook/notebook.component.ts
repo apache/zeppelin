@@ -36,6 +36,7 @@ import {
   TicketService
 } from '@zeppelin/services';
 
+import { scrollIntoViewIfNeeded } from '@zeppelin/utility/element';
 import { NotebookParagraphComponent } from './paragraph/paragraph.component';
 
 @Component({
@@ -151,7 +152,14 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
       if (movedPara) {
         const listOfRestPara = this.note.paragraphs.filter(p => p.id !== data.id);
         this.note.paragraphs = [...listOfRestPara.slice(0, data.index), movedPara, ...listOfRestPara.slice(data.index)];
+        const paragraphComponent = this.listOfNotebookParagraphComponent.find(e => e.paragraph.id === data.id);
         this.cdr.markForCheck();
+        if (paragraphComponent) {
+          // Call when next tick
+          setTimeout(() => {
+            scrollIntoViewIfNeeded(paragraphComponent.getElement());
+          });
+        }
       }
     }
   }
