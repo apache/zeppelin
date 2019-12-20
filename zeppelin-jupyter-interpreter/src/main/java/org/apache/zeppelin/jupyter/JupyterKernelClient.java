@@ -194,14 +194,21 @@ public class JupyterKernelClient {
     responseBuilder.setStatus(ExecuteStatus.SUCCESS);
     Iterator<ExecuteResponse> iter = blockingStub.execute(request);
     StringBuilder outputBuilder = new StringBuilder();
-    while (iter.hasNext()) {
-      ExecuteResponse nextResponse = iter.next();
-      if (nextResponse.getStatus() == ExecuteStatus.ERROR) {
-        responseBuilder.setStatus(ExecuteStatus.ERROR);
+    try {
+      // iter.hasNext may throw exception, so use try catch outside.
+      while (iter.hasNext()) {
+        ExecuteResponse nextResponse = iter.next();
+        if (nextResponse.getStatus() == ExecuteStatus.ERROR) {
+          responseBuilder.setStatus(ExecuteStatus.ERROR);
+        }
+        outputBuilder.append(nextResponse.getOutput());
       }
-      outputBuilder.append(nextResponse.getOutput());
+      responseBuilder.setOutput(outputBuilder.toString());
+    } catch (Exception e) {
+      responseBuilder.setStatus(ExecuteStatus.ERROR);
+      responseBuilder.setOutput(outputBuilder.toString());
     }
-    responseBuilder.setOutput(outputBuilder.toString());
+
     return responseBuilder.build();
   }
 

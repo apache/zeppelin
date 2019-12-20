@@ -20,20 +20,6 @@
 set -ev
 touch ~/.environ
 
-# Install R dependencies if SPARKR is true
-if [[ "${SPARKR}" = "true" ]] ; then
-  echo "R_LIBS=~/R" > ~/.Renviron
-  echo "export R_LIBS=~/R" >> ~/.environ
-  source ~/.environ
-  if [[ ! -d "$HOME/R/knitr" ]] ; then
-    mkdir -p ~/R
-    R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-    R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-    R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-    R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
-  fi
-fi
-
 # Install Python dependencies for Python specific tests
 if [[ -n "$PYTHON" ]] ; then
   wget https://repo.continuum.io/miniconda/Miniconda${PYTHON}-4.6.14-Linux-x86_64.sh -O miniconda.sh
@@ -48,7 +34,7 @@ if [[ -n "$PYTHON" ]] ; then
   conda info -a
   conda config --add channels conda-forge
 
-  if [[ $PYTHON == "2" ]] ; then
+  if [[ "$PYTHON" == "2" ]] ; then
     pip install -q numpy==1.14.5 pandas==0.21.1 matplotlib==2.1.1 scipy==1.2.1 grpcio==1.19.0 bkzep==0.6.1 hvplot==0.5.2 \
     protobuf==3.7.0 pandasql==0.7.3 ipython==5.8.0 ipykernel==4.10.0 bokeh==1.3.4
   else
@@ -62,4 +48,24 @@ if [[ -n "$PYTHON" ]] ; then
 
     pip install tensorflow==${TENSORFLOW}
   fi
+fi
+
+# Install R dependencies if R is true
+if [[ "$R" == "true" ]] ; then
+  echo "R_LIBS=~/R" > ~/.Renviron
+  echo "export R_LIBS=~/R" >> ~/.environ
+  source ~/.environ
+
+  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+  sudo add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+  sudo apt-get update
+  sudo apt-get install r-base
+
+  mkdir -p ~/R
+  R -e "install.packages('evaluate', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('base64enc', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
+  R -e "install.packages('IRkernel', repos = 'http://cran.us.r-project.org', lib='~/R');IRkernel::installspec()" > /dev/null 2>&1
+
 fi

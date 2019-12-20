@@ -246,6 +246,18 @@
   },
   {
     "group": "spark",
+    "name": "ir",
+    "className": "org.apache.zeppelin.spark.SparkIRInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "spark",
     "name": "kotlin",
     "className": "org.apache.zeppelin.spark.KotlinSparkInterpreter",
     "properties": {
