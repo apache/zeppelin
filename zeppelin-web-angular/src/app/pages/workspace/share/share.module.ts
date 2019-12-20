@@ -28,6 +28,8 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { ShareModule } from '@zeppelin/share';
 import { VisualizationModule } from '@zeppelin/visualizations/visualization.module';
 
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NotebookParagraphDynamicFormsComponent } from './dynamic-forms/dynamic-forms.component';
 import { NotebookParagraphResultComponent } from './result/result.component';
 
@@ -48,7 +50,9 @@ import { NotebookParagraphResultComponent } from './result/result.component';
     NzIconModule,
     NzCheckboxModule,
     NzSelectModule,
-    NzSwitchModule
+    NzSwitchModule,
+    NzInputModule,
+    NzGridModule
   ]
 })
 export class WorkspaceShareModule {}

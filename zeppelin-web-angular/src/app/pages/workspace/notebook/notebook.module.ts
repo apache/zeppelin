@@ -45,6 +45,7 @@ import { NotebookParagraphProgressComponent } from './paragraph/progress/progres
 import { NotebookPermissionsComponent } from './permissions/permissions.component';
 import { NotebookRevisionsComparatorComponent } from './revisions-comparator/revisions-comparator.component';
 
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { WorkspaceShareModule } from '../../workspace/share/share.module';
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
@@ -90,7 +91,8 @@ import { NotebookShareModule } from './share/share.module';
     NzGridModule,
     NzRadioModule,
     DragDropModule,
-    NzCodeEditorModule
+    NzCodeEditorModule,
+    NzCheckboxModule
   ]
 })
 export class NotebookModule {}
