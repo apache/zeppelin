@@ -25,7 +25,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 import { MESSAGE_INTERCEPTOR, TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
-import { loadMonacoLanguage } from '@zeppelin/languages';
+import { loadMonacoBefore } from '@zeppelin/languages';
 import { TicketService } from '@zeppelin/services';
 import { ShareModule } from '@zeppelin/share';
 
@@ -37,7 +37,7 @@ import { RUNTIME_COMPILER_PROVIDERS } from './app-runtime-compiler.providers';
 import { AppComponent } from './app.component';
 
 export const loadMonaco = () => {
-  loadMonacoLanguage();
+  loadMonacoBefore();
 };
 
 registerLocaleData(en);
