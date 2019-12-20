@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.jupyter;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.grpc.ManagedChannelBuilder;
@@ -25,6 +25,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.jupyter.proto.CancelRequest;
 import org.apache.zeppelin.interpreter.jupyter.proto.CompletionRequest;
 import org.apache.zeppelin.interpreter.jupyter.proto.CompletionResponse;
@@ -52,10 +57,11 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Jupyter Kernel adapter for Zeppelin. All the jupyter kernel could be used by Zeppelin
- * by extending this class.
+ * Jupyter Kernel Interpreter for Zeppelin. One instance of this class represents one
+ * Jupyter Kernel. You can enhance the jupyter kernel by extending this class.
+ * e.g. IPythonInterpreter.
  */
-public abstract class JupyterKernelInterpreter extends Interpreter {
+public class JupyterKernelInterpreter extends Interpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelInterpreter.class);
 
@@ -63,6 +69,8 @@ public abstract class JupyterKernelInterpreter extends Interpreter {
   protected JupyterKernelClient jupyterKernelClient;
 
   protected BaseZeppelinContext zeppelinContext;
+
+  private String kernel;
   // working directory of jupyter kernel
   protected File kernelWorkDir;
   // python executable file for launching the jupyter kernel
@@ -71,11 +79,18 @@ public abstract class JupyterKernelInterpreter extends Interpreter {
 
   private InterpreterOutputStream interpreterOutput = new InterpreterOutputStream(LOGGER);
 
+  public JupyterKernelInterpreter(String kernel, Properties properties) {
+    this(properties);
+    this.kernel = kernel;
+  }
+
   public JupyterKernelInterpreter(Properties properties) {
     super(properties);
   }
 
-  public abstract String getKernelName();
+  public String getKernelName() {
+    return this.kernel;
+  }
 
   public List<String> getRequiredPackages() {
     List<String> requiredPackages = new ArrayList<>();
@@ -85,7 +100,9 @@ public abstract class JupyterKernelInterpreter extends Interpreter {
     return requiredPackages;
   }
 
-  public abstract BaseZeppelinContext buildZeppelinContext();
+  protected BaseZeppelinContext buildZeppelinContext() {
+    return new JupyterZeppelinContext(null, 1000);
+  }
 
   @Override
   public void open() throws InterpreterException {
