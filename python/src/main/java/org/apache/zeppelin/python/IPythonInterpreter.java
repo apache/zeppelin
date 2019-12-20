@@ -22,11 +22,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.JupyterKernelInterpreter;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteRequest;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteResponse;
 import org.apache.zeppelin.interpreter.jupyter.proto.ExecuteStatus;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
+import org.apache.zeppelin.jupyter.JupyterKernelInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
@@ -39,7 +39,9 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * IPython Interpreter for Zeppelin
+ * IPython Interpreter for Zeppelin. It enhances the JupyterKernelInterpreter by setting up
+ * communication between JVM and Python process via py4j. So that in IPythonInterpreter
+ * you can use ZeppelinContext.
  */
 public class IPythonInterpreter extends JupyterKernelInterpreter {
 

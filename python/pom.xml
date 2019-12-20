@@ -43,7 +43,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-jupyter-adapter</artifactId>
+      <artifactId>zeppelin-jupyter-interpreter</artifactId>
       <version>${project.version}</version>
     </dependency>
 
