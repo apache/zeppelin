@@ -38,6 +38,7 @@
         <interpreter.name>r</interpreter.name>
         <jsoup.version>1.12.1</jsoup.version>
         <spark.version>2.4.3</spark.version>
+        <grpc.version>1.15.0</grpc.version>
 
         <spark.archive>spark-${spark.version}</spark.archive>
         <spark.src.download.url>
@@ -50,6 +51,38 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.zeppelin</groupId>
+            <artifactId>zeppelin-jupyter-interpreter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.zeppelin</groupId>
+            <artifactId>zeppelin-jupyter-interpreter</artifactId>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-lang</groupId>
@@ -158,7 +191,7 @@
                             <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
                         </excludes>
                     </artifactSet>
-                    <outputFile>${project.build.directory}/../../interpreter/rlang/${interpreter.jar.name}-${project.version}.jar</outputFile>
+                    <outputFile>${project.build.directory}/../../interpreter/r/${interpreter.jar.name}-${project.version}.jar</outputFile>
                 </configuration>
                 <executions>
                     <execution>
@@ -183,6 +216,19 @@
                 </configuration>
             </plugin>
 
+            <!-- publish test jar as well so that spark module can use it -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -67,8 +67,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private JupyterKernelProcessLauncher jupyterKernelProcessLauncher;
   protected JupyterKernelClient jupyterKernelClient;
-
-  protected BaseZeppelinContext zeppelinContext;
+  protected BaseZeppelinContext z;
 
   private String kernel;
   // working directory of jupyter kernel
@@ -120,7 +119,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       }
       kernelLaunchTimeout = Integer.parseInt(
               getProperty("zeppelin.jupyter.kernel.launch.timeout", "30000"));
-      this.zeppelinContext = buildZeppelinContext();
+      this.z = buildZeppelinContext();
       int kernelPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       int message_size = Integer.parseInt(getProperty("zeppelin.jupyter.kernel.grpc.message_size",
               32 * 1024 * 1024 + ""));
@@ -240,9 +239,9 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   @Override
   public InterpreterResult internalInterpret(String st,
                                      InterpreterContext context) throws InterpreterException {
-    zeppelinContext.setGui(context.getGui());
-    zeppelinContext.setNoteGui(context.getNoteGui());
-    zeppelinContext.setInterpreterContext(context);
+    z.setGui(context.getGui());
+    z.setNoteGui(context.getNoteGui());
+    z.setInterpreterContext(context);
     interpreterOutput.setInterpreterOutput(context.out);
     try {
       ExecuteResponse response =
@@ -310,7 +309,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   }
 
   public BaseZeppelinContext getZeppelinContext() {
-    return zeppelinContext;
+    return z;
   }
 
   public class JupyterKernelProcessLauncher extends ProcessLauncher {
