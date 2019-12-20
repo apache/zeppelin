@@ -72,7 +72,8 @@
               "src/styles/theme/light/antd-light.less",
               "src/styles.less",
               "./node_modules/highlight.js/styles/github.css",
-              "./node_modules/monaco-editor/min/vs/editor/editor.main.css"
+              "./node_modules/monaco-editor/min/vs/editor/editor.main.css",
+              "./node_modules/github-markdown-css/github-markdown.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

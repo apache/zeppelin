@@ -29,7 +29,7 @@ import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import * as Convert from 'ansi-to-html';
+import { default as AnsiUp } from 'ansi_up';
 import * as hljs from 'highlight.js';
 import { NzResizeEvent } from 'ng-zorro-antd/resizable';
 import { utils, writeFile, WorkSheet, WritingOptions } from 'xlsx';
@@ -206,6 +206,7 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderDefaultDisplay() {
+    this.frontEndError = '';
     switch (this.result.type) {
       case DatasetType.TABLE:
         this.renderGraph();
@@ -240,22 +241,22 @@ export class NotebookParagraphResultComponent implements OnInit, AfterViewInit, 
   }
 
   renderAngular(): void {
-    try {
-      this.runtimeCompilerService.createAndCompileTemplate(this.id, this.result.data).then(data => {
+    this.runtimeCompilerService
+      .createAndCompileTemplate(this.id, this.result.data)
+      .then(data => {
         this.angularComponent = data;
-        // this.angularComponent.moduleFactory
+        this.cdr.markForCheck();
+      })
+      .catch(error => {
+        this.angularComponent = null;
+        this.frontEndError = error.message;
         this.cdr.markForCheck();
       });
-    } catch (e) {
-      this.frontEndError = e.message;
-      console.log(e);
-    }
   }
 
   renderText(): void {
-    // tslint:disable-next-line:no-any
-    const convert: any = new Convert();
-    this.plainText = this.sanitizer.bypassSecurityTrustHtml(convert.toHtml(this.result.data));
+    const ansiUp = new AnsiUp();
+    this.plainText = this.sanitizer.bypassSecurityTrustHtml(ansiUp.ansi_to_html(this.result.data));
   }
 
   renderImg(): void {

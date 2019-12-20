@@ -83,6 +83,9 @@ export class BarChartVisualizationComponent extends G2VisualizationComponentBase
     const key = this.getKey();
     this.setScale();
 
+    this.chart.tooltip({
+      shared: false
+    });
     if (get(this.config.setting, 'multiBarChart.stacked', false)) {
       this.chart
         .intervalStack()

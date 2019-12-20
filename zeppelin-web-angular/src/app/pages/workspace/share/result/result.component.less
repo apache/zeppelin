@@ -29,6 +29,11 @@
   }
 
   ::ng-deep {
+
+    .visualization-selector .ant-radio-button-wrapper {
+      padding: 0 10px;
+    }
+
     .inner-html, .text-plain {
 
       overflow: auto;
@@ -41,6 +46,37 @@
         max-width: 100%;
         height: auto;
         width: auto;
+      }
+
+      table {
+        border: none;
+        border-collapse: collapse;
+        border-spacing: 0;
+        color: @text-color;
+        table-layout: fixed;
+      }
+      thead {
+        color: @table-header-color;
+        border-bottom: 2px @border-style-base fade(@black, 65%);
+        vertical-align: bottom;
+      }
+      tr, th, td {
+        text-align: right;
+        vertical-align: middle;
+        padding: 0.5em 0.5em;
+        line-height: normal;
+        white-space: normal;
+        max-width: none;
+        border: none;
+      }
+      th {
+        font-weight: bold;
+      }
+      tbody tr:nth-child(odd) {
+        background: darken(@table-header-bg, 3%);
+      }
+      tbody tr:hover {
+        background: @table-row-hover-bg;
       }
     }
   }

@@ -9,13 +9,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NzModule } from './ng-zorro-antd-module';
 
-@NgModule({
-  declarations: [],
-  exports: [CommonModule, FormsModule, NzModule]
-})
-export class RuntimeDynamicModuleModule {}
+export function scrollIntoViewIfNeeded(element: HTMLElement, center = true): void {
+  // tslint:disable-next-line:no-any
+  if (element && typeof (element as any).scrollIntoViewIfNeeded === 'function') {
+    // tslint:disable-next-line:no-any
+    (element as any).scrollIntoViewIfNeeded(center);
+  }
+}
