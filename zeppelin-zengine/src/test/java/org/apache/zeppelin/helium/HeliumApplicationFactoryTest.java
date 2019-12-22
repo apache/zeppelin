@@ -233,7 +233,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

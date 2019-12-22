@@ -255,8 +255,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
       assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
       // when: restart interpreter
-      for (InterpreterSetting setting : TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
-              .getInterpreterSettings(note.getId())) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
         if (setting.getName().equals("md")) {
           // call restart interpreter API
           PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
@@ -309,8 +308,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
       // when: get md interpreter
       InterpreterSetting mdIntpSetting = null;
-      for (InterpreterSetting setting : TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
-              .getInterpreterSettings(note.getId())) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
         if (setting.getName().equals("md")) {
           mdIntpSetting = setting;
           break;

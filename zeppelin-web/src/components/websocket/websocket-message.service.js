@@ -320,12 +320,12 @@ function WebsocketMessageService($rootScope, websocketEvents) {
       });
     },
 
-    getEditorSetting: function(paragraphId, replName) {
+    getEditorSetting: function(paragraphId, magic) {
       websocketEvents.sendNewEvent({
         op: 'EDITOR_SETTING',
         data: {
           paragraphId: paragraphId,
-          magic: replName,
+          magic: magic,
         },
       });
     },

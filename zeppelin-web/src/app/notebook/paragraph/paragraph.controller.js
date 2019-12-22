@@ -767,7 +767,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.editor.setHighlightActiveLine($scope.paragraphFocused);
 
       if ($scope.paragraphFocused) {
-        let prefix = '%' + getInterpreterName($scope.paragraph.text);
+        let prefix = getParagraphMagic($scope.paragraph.text);
         let paragraphText = $scope.paragraph.text ? $scope.paragraph.text.trim() : '';
 
         $scope.editor.focus();
@@ -1103,10 +1103,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  let getEditorSetting = function(paragraph, interpreterName) {
+  let getEditorSetting = function(paragraph, magic) {
     let deferred = $q.defer();
     if (!$scope.revisionView) {
-      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
+      websocketMsgSrv.getEditorSetting(paragraph.id, magic);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
           if (paragraph.id === data.paragraphId) {
@@ -1136,7 +1136,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         !setInterpreterBindings) {
         session.setMode($scope.paragraph.config.editorMode);
       } else {
-        let magic = getInterpreterName(paragraphText);
+        let magic = getParagraphMagic(paragraphText);
         if (editorSetting.magic !== magic) {
           editorSetting.magic = magic;
           getEditorSetting($scope.paragraph, magic)
@@ -1151,8 +1151,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     setInterpreterBindings = false;
   };
 
-  const getInterpreterName = function(paragraphText) {
-    let intpNameRegexp = /^\s*%(.+?)(\s|\()/g;
+  // return the text that is composed of interpreter name and paragraph properties
+  const getParagraphMagic = function(paragraphText) {
+    let intpNameRegexp = /^\s*(%.+?)(\s)/g;
     let match = intpNameRegexp.exec(paragraphText);
     if (match) {
       return match[1].trim();
