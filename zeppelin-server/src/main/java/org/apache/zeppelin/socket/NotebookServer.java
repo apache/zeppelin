@@ -86,7 +86,6 @@ import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.CorsUtils;
-import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
@@ -522,9 +521,16 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
+    List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
-    List<InterpreterSettingsList> settingList =
-        InterpreterBindingUtils.getInterpreterBindings(getNotebook(), noteId);
+    Note note = getNotebook().getNote(noteId);
+    if (note != null) {
+      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      for (InterpreterSetting setting : bindedSettings) {
+        settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
+                setting.getInterpreterInfos(), true));
+      }
+    }
     conn.send(serializeMessage(
         new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
   }
@@ -1892,7 +1898,7 @@ public class NotebookServer extends WebSocketServlet
   private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)
       throws IOException {
     List<InterpreterSetting> settings =
-        getNotebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
+        getNotebook().getBindedInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -1931,8 +1937,7 @@ public class NotebookServer extends WebSocketServlet
         continue;
       }
 
-      List<InterpreterSetting> intpSettings =
-          getNotebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
+      List<InterpreterSetting> intpSettings = note.getBindedInterpreterSettings();
       if (intpSettings.isEmpty()) {
         continue;
       }
@@ -1967,10 +1972,10 @@ public class NotebookServer extends WebSocketServlet
 
   private void getEditorSetting(NotebookSocket conn, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("paragraphId");
-    String replName = (String) fromMessage.get("magic");
+    String magic = (String) fromMessage.get("magic");
     String noteId = connectionManager.getAssociatedNoteId(conn);
 
-    getNotebookService().getEditorSetting(noteId, replName,
+    getNotebookService().getEditorSetting(noteId, magic,
         getServiceContext(fromMessage),
         new WebSocketServiceCallback<Map<String, Object>>(conn) {
           @Override

@@ -26,11 +26,14 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.Properties;
 import java.util.Set;
 import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.apache.zeppelin.cluster.ClusterManagerServer;
 import org.apache.zeppelin.cluster.event.ClusterEvent;
 import org.apache.zeppelin.cluster.event.ClusterEventListener;
@@ -51,7 +54,9 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphTextParser;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -126,6 +131,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private String defaultInterpreterGroup;
   private final Gson gson;
 
+  private Notebook notebook;
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private ApplicationEventListener appEventListener;
@@ -134,6 +140,7 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
   private RemoteInterpreterEventServer interpreterEventServer;
+  private Map<String, String> jupyterKernelLanguageMap = new HashMap<>();
 
   @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
@@ -308,10 +315,23 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
   }
 
   private void init() throws IOException {
-
+    loadJupyterKernelLanguageMap();
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+  }
+
+  private void loadJupyterKernelLanguageMap() throws IOException {
+    String kernels = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
+    for (String kernel : kernels.split(",")) {
+      String[] tokens = kernel.split(":");
+      if (tokens.length != 2) {
+        throw new IOException("Invalid kernel specified in " +
+                ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS.getVarName() + ", Invalid kernel: " + kernel +
+                ", please use format kernel_name:language");
+      }
+      this.jupyterKernelLanguageMap.put(tokens[0].trim(), tokens[1].trim());
+    }
   }
 
   private void loadInterpreterSettingFromDefaultDir(boolean override) throws IOException {
@@ -345,6 +365,10 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     } else {
       LOGGER.warn("InterpreterDir {} doesn't exist", interpreterDirPath);
     }
+  }
+
+  public void setNotebook(Notebook notebook) {
+    this.notebook = notebook;
   }
 
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
@@ -438,26 +462,27 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     }
   }
 
-  @VisibleForTesting
   public InterpreterSetting getDefaultInterpreterSetting(String noteId) {
-    List<InterpreterSetting> allInterpreterSettings = getInterpreterSettings(noteId);
-    return allInterpreterSettings.size() > 0 ? allInterpreterSettings.get(0) : null;
-  }
-
-  public List<InterpreterSetting> getInterpreterSettings(String noteId) {
-    return get();
+    try {
+      Note note = notebook.getNote(noteId);
+      InterpreterSetting interpreterSetting = interpreterSettings.get(note.getDefaultInterpreterGroup());
+      if (interpreterSetting == null) {
+        interpreterSetting = get().get(0);
+      }
+      return interpreterSetting;
+    } catch (Exception e) {
+      LOGGER.warn("Fail to get note: " + noteId, e);
+      return get().get(0);
+    }
   }
 
   public InterpreterSetting getInterpreterSettingByName(String name) {
-    try {
-      for (InterpreterSetting setting : interpreterSettings.values()) {
-        if (setting.getName().equals(name)) {
-          return setting;
-        }
+    for (InterpreterSetting setting : interpreterSettings.values()) {
+      if (setting.getName().equals(name)) {
+        return setting;
       }
-      throw new RuntimeException("No such interpreter setting: " + name);
-    } finally {
     }
+    return null;
   }
 
   public ManagedInterpreterGroup getInterpreterGroupById(String groupId) {
@@ -470,34 +495,75 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     return null;
   }
 
-  //TODO(zjffdu) logic here is a little ugly
-  public Map<String, Object> getEditorSetting(Interpreter interpreter, String user, String noteId,
-      String replName) {
-    Map<String, Object> editor = DEFAULT_EDITOR;
-    String group = StringUtils.EMPTY;
-    try {
-      String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
-      List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
-      for (InterpreterSetting intpSetting : intpSettings) {
-        String[] replNameSplit = replName.split("\\.");
-        if (replNameSplit.length == 2) {
-          group = replNameSplit[0];
+  /**
+   * Get editor setting for one paragraph based on its magic part and noteId
+   *
+   * @param magic
+   * @param noteId
+   * @return
+   */
+  public Map<String, Object> getEditorSetting(String magic, String noteId) {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(magic);
+    if (StringUtils.isBlank(parseResult.getIntpText())) {
+      // Use default interpreter setting if no interpreter is specified.
+      InterpreterSetting interpreterSetting = getDefaultInterpreterSetting(noteId);
+      try {
+        return interpreterSetting.getDefaultInterpreterInfo().getEditor();
+      } catch (Exception e) {
+        LOGGER.warn(e.getMessage());
+        return DEFAULT_EDITOR;
+      }
+    } else {
+      String[] replNameSplit = parseResult.getIntpText().split("\\.");
+      if (replNameSplit.length == 1) {
+        // Either interpreter group or interpreter name is specified.
+
+        // Assume it is interpreter name
+        String intpName = replNameSplit[0];
+        InterpreterSetting defaultInterpreterSetting = getDefaultInterpreterSetting(noteId);
+        InterpreterInfo interpreterInfo = defaultInterpreterSetting.getInterpreterInfo(intpName);
+        if (interpreterInfo != null) {
+          return interpreterInfo.getEditor();
         }
-        // when replName is 'name' of interpreter
-        if (intpSetting.getName().equals(defaultSettingName)) {
-          editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
+
+        // Then assume it is interpreter group name
+        String intpGroupName = replNameSplit[0];
+        if (intpGroupName.equals("jupyter")) {
+          InterpreterSetting interpreterSetting = interpreterSettings.get("jupyter");
+          Map<String, Object> jupyterEditorSetting = interpreterSetting.getInterpreterInfos().get(0).getEditor();
+          String kernel = parseResult.getLocalProperties().get("kernel");
+          if (kernel != null) {
+            String language = jupyterKernelLanguageMap.get(kernel);
+            if (language != null) {
+              jupyterEditorSetting.put("language", language);
+            }
+          }
+          return jupyterEditorSetting;
+        } else {
+          try {
+            InterpreterSetting interpreterSetting = getInterpreterSettingByName(intpGroupName);
+            if (interpreterSetting == null) {
+              return DEFAULT_EDITOR;
+            }
+            return interpreterSetting.getDefaultInterpreterInfo().getEditor();
+          } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+            return DEFAULT_EDITOR;
+          }
         }
-        // when replName is 'alias name' of interpreter or 'group' of interpreter
-        if (replName.equals(intpSetting.getName()) || group.equals(intpSetting.getName())) {
-          editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
-          break;
+      } else {
+        // Both interpreter group and name are specified. e.g. spark.pyspark
+        String intpGroupName = replNameSplit[0];
+        String intpName = replNameSplit[1];
+        try {
+          InterpreterSetting interpreterSetting = getInterpreterSettingByName(intpGroupName);
+          return interpreterSetting.getInterpreterInfo(intpName).getEditor();
+        } catch (Exception e) {
+          LOGGER.warn(e.getMessage());
+          return DEFAULT_EDITOR;
         }
       }
-    } catch (NullPointerException e) {
-      // Use `debug` level because this log occurs frequently
-      LOGGER.debug("Couldn't get interpreter editor setting");
     }
-    return editor;
   }
 
   // Get configuration parameters from `interpreter-setting.json`
@@ -719,16 +785,6 @@ public class InterpreterSettingManager implements NoteEventListener, ClusterEven
     saveToFile();
 
     return setting;
-  }
-
-  @VisibleForTesting
-  public void closeNote(String user, String noteId) {
-    // close interpreters in this note session
-    LOGGER.info("Close Note: {}", noteId);
-    List<InterpreterSetting> settings = getInterpreterSettings(noteId);
-    for (InterpreterSetting setting : settings) {
-      setting.closeInterpreters(user, noteId);
-    }
   }
 
   public Map<String, InterpreterSetting> getInterpreterSettingTemplates() {

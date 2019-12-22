@@ -94,6 +94,8 @@ public class Notebook {
     this.notebookRepo = notebookRepo;
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
+    // TODO(zjffdu) cycle refer, not a good solution
+    this.interpreterSettingManager.setNotebook(this);
     this.noteSearchService = noteSearchService;
     this.credentials = credentials;
 

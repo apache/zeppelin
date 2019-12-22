@@ -81,8 +81,7 @@ public class CronJob implements org.quartz.Job {
       logger.error(e.getMessage(), e);
     }
     if (releaseResource) {
-      for (InterpreterSetting setting :
-          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
         try {
           notebook
               .getInterpreterSettingManager()

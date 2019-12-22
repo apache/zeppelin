@@ -1005,6 +1005,15 @@ public class InterpreterSetting {
     waitForReady(Long.MAX_VALUE);
   }
 
+  public InterpreterInfo getDefaultInterpreterInfo() throws Exception {
+    for (InterpreterInfo interpreterInfo : interpreterInfos) {
+      if (interpreterInfo.isDefaultInterpreter()) {
+        return interpreterInfo;
+      }
+    }
+    throw new Exception("No default interpreter info found in interpreter setting: " + name);
+  }
+
   public static String toJson(InterpreterSetting intpSetting) {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
