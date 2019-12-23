@@ -432,7 +432,7 @@ public class MongoNotebookRepo implements NotebookRepo {
   /**
    * Convert document to note.
    */
-  private Note documentToNote(Document doc) {
+  private Note documentToNote(Document doc) throws IOException {
     // document to JSON
     String json = doc.toJson();
     // JSON to note

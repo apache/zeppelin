@@ -35,6 +35,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,7 +171,7 @@ public class NoteTest {
     assertNotEquals(System.identityHashCode(user1Paragraph), System.identityHashCode(user2Paragraph));
   }
 
-  public void testNoteJson() {
+  public void testNoteJson() throws IOException {
     Note note = new Note("test", "", interpreterFactory, interpreterSettingManager, paragraphJobListener, credentials, noteEventListener);
     note.setName("/test_note");
     note.getConfig().put("config_1", "value_1");

@@ -994,8 +994,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark\nimport com.databricks.spark.csv._");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
-
-      TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
