@@ -1,0 +1,16 @@
+@import "theme-mixin";
+
+:host {
+  display: block;
+  padding: 0 4px;
+}
+
+.themeMixin({
+  .forms-wrap {
+    background: @component-background;
+    border: 1px solid @border-color-split;
+    box-shadow: @card-shadow;
+    padding: 12px;
+    position: relative;
+  }
+});

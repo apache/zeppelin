@@ -34,6 +34,14 @@
     <zeppelin-notebook-revisions-comparator *ngSwitchCase="'revisions'"></zeppelin-notebook-revisions-comparator>
   </div>
   <div class="paragraph-area">
+    <zeppelin-note-form-block *ngIf="isShowNoteForms"
+                              [formDefs]="note.noteForms"
+                              [paramDefs]="note.noteParams"
+                              [noteTitle]="note.config?.noteFormTitle"
+                              (noteFormChange)="onNoteFormChange($event)"
+                              (noteFormNameRemove)="onFormNameRemove($event)"
+                              (noteTitleChange)="onNoteTitleChange($event)">
+    </zeppelin-note-form-block>
     <div class="paragraph-inner" nz-row>
       <zeppelin-notebook-paragraph nz-col
                                    *ngFor="let p of note.paragraphs;let first = first; let last = last; index as i"

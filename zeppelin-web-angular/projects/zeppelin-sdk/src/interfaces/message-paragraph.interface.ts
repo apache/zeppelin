@@ -23,6 +23,7 @@ export interface DynamicFormsItem {
   defaultValue: string | string[];
   hidden: boolean;
   name: string;
+  displayName?: string;
   type: DynamicFormsType;
   argument?: string;
   options?: Array<{ value: string; displayName?: string }>;

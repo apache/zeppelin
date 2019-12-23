@@ -197,6 +197,7 @@ export interface NotesInfoItem extends ID {
 export interface NoteConfig {
   cron?: string;
   releaseresource: boolean;
+  noteFormTitle?: string;
   cronExecutingRoles?: string;
   cronExecutingUser?: string;
   isZeppelinNotebookCronEnable: boolean;

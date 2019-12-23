@@ -1,0 +1,14 @@
+<div class="forms-wrap">
+  <zeppelin-elastic-input [value]="noteTitle"
+                          defaultTitle="Untitled Form"
+                          [min]="true"
+                          (valueUpdate)="setTitle($event)"></zeppelin-elastic-input>
+  <zeppelin-notebook-paragraph-dynamic-forms
+    [runOnChange]="true"
+    [removable]="true"
+    [paramDefs]="paramDefs"
+    [formDefs]="formDefs"
+    (formRemove)="onFormRemove($event)"
+    (formChange)="onFormChange()">
+  </zeppelin-notebook-paragraph-dynamic-forms>
+</div>
