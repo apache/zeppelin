@@ -597,7 +597,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRuntimeInfos() {
+  public void testRuntimeInfos() throws IOException {
     // mock note
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +

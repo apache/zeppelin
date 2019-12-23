@@ -51,6 +51,9 @@ public class JobManagerService {
       throws IOException {
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     Note jobNote = notebook.getNote(noteId);
+    if (jobNote == null) {
+      callback.onFailure(new IOException("Note " + noteId + " not found"), context);
+    }
     notesJobInfo.add(new NoteJobInfo(jobNote));
     callback.onSuccess(notesJobInfo, context);
     return notesJobInfo;

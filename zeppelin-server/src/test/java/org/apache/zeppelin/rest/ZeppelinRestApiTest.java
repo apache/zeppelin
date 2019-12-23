@@ -220,7 +220,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testDeleteNote() throws IOException {
     LOG.info("testDeleteNote");
-
     Note note = null;
     try {
       //Create note and get ID
@@ -229,7 +228,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       testDeleteNote(noteId);
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        if (TestUtils.getInstance(Notebook.class).getNote(note.getId()) != null) {
+          TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        }
       }
     }
   }
@@ -268,7 +269,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       String exportJSON = (String) resp.get("body");
       assertNotNull("Can not find new notejson", exportJSON);
       LOG.info("export JSON:=" + exportJSON);
-      TestUtils.getInstance(Notebook.class).removeNote(sourceNoteId, anonymous);
       get.releaseConnection();
     } finally {
       if (null != note) {
@@ -280,6 +280,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testImportNotebook() throws IOException {
     Note note = null;
+    Note newNote = null;
     Map<String, Object> resp;
     String oldJson;
     String noteName;
@@ -301,14 +302,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       oldJson = getNoteContent(sourceNoteId);
       // delete it first then import it
       TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
-    } finally {
-      if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
-      }
-    }
 
-    Note newNote = null;
-    try {
       // call note post
       PostMethod importPost = httpPost("/notebook/import/", oldJson);
       assertThat(importPost, isAllowed());
@@ -322,12 +316,17 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertEquals("Compare note names", noteName, newNote.getName());
       assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
           .size());
-      // cleanup
-      TestUtils.getInstance(Notebook.class).removeNote(newNote.getId(), anonymous);
       importPost.releaseConnection();
     } finally {
       if (null != note) {
-        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        if (TestUtils.getInstance(Notebook.class).getNote(note.getId()) != null) {
+          TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+        }
+      }
+      if (null != newNote) {
+        if (TestUtils.getInstance(Notebook.class).getNote(newNote.getId()) != null) {
+          TestUtils.getInstance(Notebook.class).removeNote(newNote.getId(), anonymous);
+        }
       }
     }
   }

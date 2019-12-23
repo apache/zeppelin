@@ -658,7 +658,11 @@ public class NotebookServer extends WebSocketServlet
       if (StringUtils.equals(key, "AuthenticationInfo")) {
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
-        note = Note.fromJson(json);
+        try {
+          note = Note.fromJson(json);
+        } catch (IOException e) {
+          LOG.warn("Fail to parse note json", e);
+        }
       } else if (StringUtils.equals(key, "Paragraph")) {
         paragraph = Paragraph.fromJson(json);
       } else if (StringUtils.equals(key, "Set<String>")) {
@@ -1591,15 +1595,22 @@ public class NotebookServer extends WebSocketServlet
                               InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("type", type).put("data", output);
-    Note note = getNotebook().getNote(noteId);
-
-    if (note.isPersonalizedMode()) {
-      String user = note.getParagraph(paragraphId).getUser();
-      if (null != user) {
-        connectionManager.multicastToUser(user, msg);
+    try {
+      Note note = getNotebook().getNote(noteId);
+      if (note == null) {
+        LOG.warn("Note " + noteId + " note found");
+        return;
       }
-    } else {
-      connectionManager.broadcast(noteId, msg);
+      if (note.isPersonalizedMode()) {
+        String user = note.getParagraph(paragraphId).getUser();
+        if (null != user) {
+          connectionManager.multicastToUser(user, msg);
+        }
+      } else {
+        connectionManager.broadcast(noteId, msg);
+      }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onOutputUpdated", e);
     }
   }
 
@@ -1608,14 +1619,18 @@ public class NotebookServer extends WebSocketServlet
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
-    final Note note = getNotebook().getNote(noteId);
-    if (note == null) {
-      // It is possible the note is removed, but the job is still running
-      LOG.warn("Note {} doesn't existed, it maybe deleted.", noteId);
-    } else {
-      note.clearParagraphOutput(paragraphId);
-      Paragraph paragraph = note.getParagraph(paragraphId);
-      broadcastParagraph(note, paragraph);
+    try {
+      final Note note = getNotebook().getNote(noteId);
+      if (note == null) {
+        // It is possible the note is removed, but the job is still running
+        LOG.warn("Note {} doesn't existed, it maybe deleted.", noteId);
+      } else {
+        note.clearParagraphOutput(paragraphId);
+        Paragraph paragraph = note.getParagraph(paragraphId);
+        broadcastParagraph(note, paragraph);
+      }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onOutputClear", e);
     }
   }
 
@@ -1985,32 +2000,36 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onParaInfosReceived(String noteId, String paragraphId,
                                   String interpreterSettingId, Map<String, String> metaInfos) {
-    Note note = getNotebook().getNote(noteId);
-    if (note != null) {
-      Paragraph paragraph = note.getParagraph(paragraphId);
-      if (paragraph != null) {
-        InterpreterSetting setting = getNotebook().getInterpreterSettingManager()
-            .get(interpreterSettingId);
-        String label = metaInfos.get("label");
-        String tooltip = metaInfos.get("tooltip");
-        List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
-        for (String removeKey : keysToRemove) {
-          metaInfos.remove(removeKey);
-        }
+    try {
+      Note note = getNotebook().getNote(noteId);
+      if (note != null) {
+        Paragraph paragraph = note.getParagraph(paragraphId);
+        if (paragraph != null) {
+          InterpreterSetting setting = getNotebook().getInterpreterSettingManager()
+                  .get(interpreterSettingId);
+          String label = metaInfos.get("label");
+          String tooltip = metaInfos.get("tooltip");
+          List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
+          for (String removeKey : keysToRemove) {
+            metaInfos.remove(removeKey);
+          }
 
-        paragraph
-            .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
-        connectionManager.broadcast(
-            note.getId(),
-            new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",
-                paragraph.getRuntimeInfos()));
+          paragraph
+                  .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
+          connectionManager.broadcast(
+                  note.getId(),
+                  new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",
+                          paragraph.getRuntimeInfos()));
+        }
       }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onParaInfosReceived", e);
     }
   }
 
   @Override
   public List<ParagraphInfo> getParagraphList(String user, String noteId)
-      throws TException, ServiceException {
+      throws TException, IOException {
     Notebook notebook = getNotebook();
     Note note = notebook.getNote(noteId);
     if (null == note) {

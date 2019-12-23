@@ -102,7 +102,7 @@ public class NotebookService {
       note = notebook.getNote(noteId);
       if (note != null) {
         if (!checkPermission(noteId, Permission.READER, Message.OP.GET_HOME_NOTE, context,
-            callback)) {
+                callback)) {
           return null;
         }
       }
@@ -802,7 +802,7 @@ public class NotebookService {
     }
     Note revisionNote = null;
     if (revisionId.equals("Head")) {
-      revisionNote = notebook.getNote(noteId);
+      revisionNote = note;
     } else {
       revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
           context.getAutheInfo());

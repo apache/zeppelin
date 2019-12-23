@@ -250,6 +250,7 @@ public class NotebookRestApi extends AbstractRestApi {
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
     Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
 
     LOG.info("Set permissions {} {} {} {} {} {}", noteId, principal, permMap.get("owners"),
         permMap.get("readers"), permMap.get("runners"), permMap.get("writers"));

@@ -20,6 +20,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import java.util.List;
  */
 public class InterpreterBindingUtils {
   public static List<InterpreterSettingsList> getInterpreterBindings(Notebook notebook,
-                                                                     String noteId) {
+                                                                     String noteId) throws IOException {
     List<InterpreterSettingsList> settingList = new LinkedList<>();
     List<InterpreterSetting> selectedSettings =
         notebook.getBindedInterpreterSettings(noteId);
