@@ -9,38 +9,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 @import "theme-mixin";
 
 :host {
   display: block;
+  padding: 0 4px;
 }
 
 .themeMixin({
-  .control-wrap {
-    display: flex;
-  }
-  .form-item {
-    margin-bottom: 24px;
-    .item-label {
-      font-weight: 700;
-    }
-    nz-select {
-      width: 100%;
-    }
-    ::ng-deep .ant-checkbox-wrapper {
-      margin-left: 0;
-      line-height: 32px;
-    }
-    &:hover {
-      .remove-button {
-        color: @text-color-danger;
-      }
-    }
-    .remove-button {
-      margin: 0 4px;
-      transition: color ease-in-out .3s;
-      color: @text-color-secondary;
-    }
+  .forms-wrap {
+    background: @component-background;
+    border: 1px solid @border-color-split;
+    box-shadow: @card-shadow;
+    padding: 12px;
+    position: relative;
   }
 });

@@ -26,7 +26,14 @@ import { distinctUntilKeyChanged, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
-import { InterpreterBindingItem, MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
+import {
+  DynamicFormParams,
+  InterpreterBindingItem,
+  MessageReceiveDataTypeMap,
+  Note,
+  OP,
+  RevisionListItem
+} from '@zeppelin/sdk';
 import {
   MessageService,
   NgZService,
@@ -58,6 +65,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   revisionView = false;
   collaborativeModeUsers = [];
   isNoteDirty = false;
+  isShowNoteForms = false;
   saveTimer = null;
   interpreterBindings: InterpreterBindingItem[] = [];
   activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
@@ -80,6 +88,14 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         this.getPermissions();
         this.note.config.personalizedMode =
           this.note.config.personalizedMode === undefined ? 'false' : this.note.config.personalizedMode;
+      }
+      if (this.note.noteForms && this.note.noteParams) {
+        this.saveNoteForms({
+          formsData: {
+            forms: this.note.noteForms,
+            params: this.note.noteParams
+          }
+        });
       }
       this.cdr.markForCheck();
     }
@@ -125,6 +141,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   saveNoteForms(data: MessageReceiveDataTypeMap[OP.SAVE_NOTE_FORMS]) {
     this.note.noteForms = data.formsData.forms;
     this.note.noteParams = data.formsData.params;
+    this.setNoteFormsStatus();
   }
 
   @MessageListener(OP.NOTE_REVISION)
@@ -288,6 +305,29 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
 
   setAllParagraphEditorHide(editorHide: boolean) {
     this.listOfNotebookParagraphComponent.forEach(p => p.setEditorHide(editorHide));
+  }
+
+  onNoteFormChange(noteParams: DynamicFormParams) {
+    this.messageService.saveNoteForms({
+      noteParams,
+      id: this.note.id
+    });
+  }
+
+  onFormNameRemove(formName: string) {
+    this.messageService.removeNoteForms(this.note, formName);
+  }
+
+  onNoteTitleChange(noteFormTitle: string) {
+    this.messageService.updateNote(this.note.id, this.note.name, {
+      ...this.note.config,
+      noteFormTitle
+    });
+  }
+
+  setNoteFormsStatus() {
+    this.isShowNoteForms = this.note && this.note.noteForms && Object.keys(this.note.noteForms).length !== 0;
+    this.cdr.markForCheck();
   }
 
   constructor(

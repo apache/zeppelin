@@ -9,15 +9,17 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<div class="elastic" #elasticElement [class.min]="min">
-  <input #inputElement
-         [ngModel]="editValue"
-         (ngModelChange)="updateValue($event)"
-         *ngIf="showEditor"
-         (blur)="setEditorState(false)"
-         (keydown.esc)="cancelEdit()"
-         (keydown.enter)="setEditorState(false)"
-         (input)="updateInputWidth()">
-  <p #pElement *ngIf="!showEditor" (click)="setEditorState(true)">{{value || defaultTitle}}</p>
+<div class="forms-wrap">
+  <zeppelin-elastic-input [value]="noteTitle"
+                          defaultTitle="Untitled Form"
+                          [min]="true"
+                          (valueUpdate)="setTitle($event)"></zeppelin-elastic-input>
+  <zeppelin-notebook-paragraph-dynamic-forms
+    [runOnChange]="true"
+    [removable]="true"
+    [paramDefs]="paramDefs"
+    [formDefs]="formDefs"
+    (formRemove)="onFormRemove($event)"
+    (formChange)="onFormChange()">
+  </zeppelin-notebook-paragraph-dynamic-forms>
 </div>
