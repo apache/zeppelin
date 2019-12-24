@@ -42,7 +42,9 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
   @Input() paramDefs: DynamicFormParams;
   @Input() runOnChange = false;
   @Input() disable = false;
+  @Input() removable = false;
   @Output() readonly formChange = new EventEmitter<void>();
+  @Output() readonly formRemove = new EventEmitter<DynamicFormsItem>();
 
   formChange$ = new Subject<void>();
   forms: DynamicFormsItem[] = [];
@@ -95,6 +97,10 @@ export class NotebookParagraphDynamicFormsComponent implements OnInit, OnChanges
     if (this.runOnChange) {
       this.formChange$.next();
     }
+  }
+
+  remove(item: DynamicFormsItem) {
+    this.formRemove.emit(item);
   }
 
   constructor() {}
