@@ -1,0 +1,134 @@
+[
+  {
+    "group": "test",
+    "name": "double_echo",
+    "className": "org.apache.zeppelin.interpreter.DoubleEchoInterpreter",
+    "properties": {
+      "property_1": {
+        "envName": "PROPERTY_1",
+        "propertyName": "property_1",
+        "defaultValue": "value_1",
+        "description": "desc_1"
+      },
+      "property_2": {
+        "envName": "PROPERTY_2",
+        "propertyName": "property_2",
+        "defaultValue": "value_2",
+        "description": "desc_2"
+      }
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "echo",
+    "defaultInterpreter": true,
+    "className": "org.apache.zeppelin.interpreter.EchoInterpreter",
+    "properties": {
+      "property_1": {
+        "envName": "PROPERTY_1",
+        "propertyName": "property_1",
+        "defaultValue": "value_1",
+        "description": "desc_1"
+      },
+      "property_2": {
+        "envName": "PROPERTY_2",
+        "propertyName": "property_2",
+        "defaultValue": "value_2",
+        "description": "desc_2"
+      }
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "sleep",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.SleepInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "get",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.remote.mock.GetEnvPropertyInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "angular_obj",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.remote.mock.GetAngularObjectSizeInterpreter",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "mock",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "mock_ao",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  },
+
+  {
+    "group": "test",
+    "name": "mock_stream",
+    "defaultInterpreter": false,
+    "className": "org.apache.zeppelin.interpreter.remote.mock.MockInterpreterOutputStream",
+    "properties": {
+
+    },
+    "editor": {
+      "language": "java",
+      "editOnDblClick": false
+    }
+  }
+]
