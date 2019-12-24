@@ -600,6 +600,7 @@ public class NotebookService {
     }
 
     note.clearAllParagraphOutput();
+    notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(note, context);
   }
 
