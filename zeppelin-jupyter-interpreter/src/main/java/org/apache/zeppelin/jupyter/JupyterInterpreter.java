@@ -23,8 +23,10 @@ import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -86,7 +88,7 @@ public class JupyterInterpreter extends AbstractInterpreter {
       throw new InterpreterException("No kernel is specified");
     }
     JupyterKernelInterpreter kernelInterpreter = kernelInterpreterMap.get(kernel);
-    if (kernelInterpreter != null) {
+    if (kernelInterpreter == null) {
       throw new InterpreterException("No such interpreter: " + kernel);
     }
     kernelInterpreter.cancel(context);
@@ -108,5 +110,21 @@ public class JupyterInterpreter extends AbstractInterpreter {
       throw new InterpreterException("No such interpreter: " + kernel);
     }
     return  kernelInterpreter.getProgress(context);
+  }
+
+  @Override
+  public List<InterpreterCompletion> completion(
+          String buf,
+          int cursor,
+          InterpreterContext context) throws InterpreterException {
+    String kernel = context.getLocalProperties().get("kernel");
+    if (kernel == null) {
+      throw new InterpreterException("No kernel is specified");
+    }
+    JupyterKernelInterpreter kernelInterpreter = kernelInterpreterMap.get(kernel);
+    if (kernelInterpreter == null) {
+      throw new InterpreterException("No such interpreter: " + kernel);
+    }
+    return kernelInterpreter.completion(buf, cursor, context);
   }
 }
