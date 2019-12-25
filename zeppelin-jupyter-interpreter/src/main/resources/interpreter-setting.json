@@ -8,6 +8,7 @@
     "editor": {
       "language": "text",
       "editOnDblClick": false,
+      "completionKey": "TAB",
       "completionSupport": true
     }
   }

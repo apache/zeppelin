@@ -31,7 +31,7 @@
   <artifactId>zeppelin-jupyter-interpreter</artifactId>
   <packaging>jar</packaging>
   <version>0.9.0-SNAPSHOT</version>
-  <name>Zeppelin: Jupyter Adapter</name>
+  <name>Zeppelin: Jupyter Interpreter</name>
 
   <properties>
     <interpreter.name>jupyter</interpreter.name>
