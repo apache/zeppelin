@@ -191,7 +191,7 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(ret.message().toString(), 2, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
     }
     
@@ -200,7 +200,7 @@ public class SparkSqlInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
     assertEquals(ret.message().toString(), 2, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
     }
 
@@ -213,7 +213,7 @@ public class SparkSqlInterpreterTest {
 
   @Test
   public void testConcurrentSQL() throws InterpreterException, InterruptedException {
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+    if (!sparkInterpreter.getSparkVersion().isSpark1()) {
       sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
     } else {
       sparkInterpreter.interpret("sqlContext.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);

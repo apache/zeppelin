@@ -126,8 +126,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
     return sparkInterpreter.getProgress(context);
   }
 
-  public boolean isSpark2() {
-    return sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_0_0);
+  public boolean isSpark1() {
+    return sparkInterpreter.getSparkVersion().getMajorVersion() == 1;
   }
 
   public JavaSparkContext getJavaSparkContext() {

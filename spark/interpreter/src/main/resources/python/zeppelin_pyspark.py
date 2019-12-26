@@ -20,12 +20,9 @@ from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
 
 # for back compatibility
-from pyspark.sql import SQLContext, HiveContext, Row
+from pyspark.sql import SQLContext, Row
 
 intp = gateway.entry_point
-isSpark2 = intp.isSpark2()
-if isSpark2:
-  from pyspark.sql import SparkSession
 
 jsc = intp.getJavaSparkContext()
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
@@ -43,11 +40,10 @@ jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
-
-if isSpark2:
+if not intp.isSpark1():
+  from pyspark.sql import SparkSession
   spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
   sqlc = __zSqlc__ = __zSpark__._wrapped
-
 else:
   sqlc = __zSqlc__ = SQLContext(sparkContext=sc, sqlContext=intp.getSQLContext())
 

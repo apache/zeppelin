@@ -32,10 +32,10 @@ public class SparkVersion {
   public static final SparkVersion SPARK_2_3_0 = SparkVersion.fromVersionString("2.3.0");
   public static final SparkVersion SPARK_2_3_1 = SparkVersion.fromVersionString("2.3.1");
   public static final SparkVersion SPARK_2_4_0 = SparkVersion.fromVersionString("2.4.0");
-  public static final SparkVersion SPARK_3_0_0 = SparkVersion.fromVersionString("3.0.0");
+  public static final SparkVersion SPARK_3_1_0 = SparkVersion.fromVersionString("3.1.0");
 
   public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_6_0;
-  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_0_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_3_1_0;
 
   private int version;
   private int majorVersion;
@@ -73,6 +73,10 @@ public class SparkVersion {
     return version;
   }
 
+  public int getMajorVersion() {
+    return majorVersion;
+  }
+
   public String toString() {
     return versionString;
   }
@@ -85,8 +89,8 @@ public class SparkVersion {
     return new SparkVersion(versionString);
   }
 
-  public boolean isSpark2() {
-    return this.newerThanEquals(SPARK_2_0_0);
+  public boolean isSpark1() {
+    return this.olderThan(SPARK_2_0_0);
   }
 
   public boolean isSecretSocketSupported() {

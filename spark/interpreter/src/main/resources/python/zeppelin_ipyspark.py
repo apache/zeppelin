@@ -49,9 +49,8 @@ jconf = jsc.getConf()
 conf = SparkConf(_jvm=gateway.jvm, _jconf=jconf)
 sc = _zsc_ = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 
-if intp.isSpark2():
+if not intp.isSpark1():
     from pyspark.sql import SparkSession
-
     spark = __zSpark__ = SparkSession(sc, intp.getSparkSession())
     sqlContext = sqlc = __zSqlc__ = __zSpark__._wrapped
 else:

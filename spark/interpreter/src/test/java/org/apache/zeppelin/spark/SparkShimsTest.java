@@ -125,10 +125,19 @@ public class SparkShimsTest {
       mockIntpEventClient = mock(RemoteInterpreterEventClient.class);
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
       doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
+
       try {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties(), null);
-      } catch (Throwable ignore) {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties(), null);
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_3_1_0.toString(), new Properties(), null);
+      } catch (Throwable e1) {
+        try {
+          sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties(), null);
+        } catch (Throwable e2) {
+          try {
+            sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties(), null);
+          } catch (Throwable e3) {
+            throw new RuntimeException("All SparkShims are tried, but no one can be created.");
+          }
+        }
       }
     }
 

@@ -54,15 +54,20 @@ public abstract class SparkShims {
     this.properties = properties;
   }
 
-  private static SparkShims loadShims(String sparkVersion, Properties properties, Object entryPoint)
-      throws ReflectiveOperationException {
+  private static SparkShims loadShims(int sparkMajorVersion, Properties properties, Object entryPoint)
+      throws Exception {
     Class<?> sparkShimsClass;
-    if ("2".equals(sparkVersion)) {
+    if (sparkMajorVersion == 3) {
+      LOGGER.info("Initializing shims for Spark 3.x");
+      sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark3Shims");
+    } else if (sparkMajorVersion == 2) {
       LOGGER.info("Initializing shims for Spark 2.x");
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark2Shims");
-    } else {
+    } else if (sparkMajorVersion == 1){
       LOGGER.info("Initializing shims for Spark 1.x");
       sparkShimsClass = Class.forName("org.apache.zeppelin.spark.Spark1Shims");
+    } else {
+      throw new Exception("Spark major version: '" + sparkMajorVersion + "' is not supported yet");
     }
 
     Constructor c = sparkShimsClass.getConstructor(Properties.class, Object.class);
@@ -76,20 +81,14 @@ public abstract class SparkShims {
    * @param entryPoint  entryPoint is SparkContext for Spark 1.x SparkSession for Spark 2.x
    * @return
    */
-  public static SparkShims getInstance(String sparkVersion, Properties properties, Object entryPoint) {
+  public static SparkShims getInstance(String sparkVersion,
+                                       Properties properties,
+                                       Object entryPoint) throws Exception {
     if (sparkShims == null) {
-      String sparkMajorVersion = getSparkMajorVersion(sparkVersion);
-      try {
-        sparkShims = loadShims(sparkMajorVersion, properties, entryPoint);
-      } catch (ReflectiveOperationException e) {
-        throw new RuntimeException(e);
-      }
+      int sparkMajorVersion = SparkVersion.fromVersionString(sparkVersion).getMajorVersion();
+      sparkShims = loadShims(sparkMajorVersion, properties, entryPoint);
     }
     return sparkShims;
-  }
-
-  private static String getSparkMajorVersion(String sparkVersion) {
-    return sparkVersion.startsWith("2") ? "2" : "1";
   }
 
   /**
