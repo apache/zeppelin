@@ -1,0 +1,66 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<zeppelin-page-header
+  title="Interpreters"
+  description="Manage interpreters settings. You can create / edit / remove settings. Note can bind / unbind these interpreter settings."
+  [extra]="headerExtra"
+>
+  <nz-input-group [nzPrefix]="prefixSearch">
+    <input [(ngModel)]="searchInterpreter" (ngModelChange)="onSearchChange($event)" class="search-input" nz-input placeholder="Search interpreters..." />
+  </nz-input-group>
+  <ng-template #prefixSearch><i nz-icon nzType="search" nzTheme="outline"></i></ng-template>
+  <ng-template #headerExtra>
+    <button
+      class="repository-trigger"
+      nz-button
+      [nzType]="showRepository ? 'primary' : 'default'"
+      (click)="triggerRepository()">
+      <i nz-icon nzType="database" nzTheme="outline"></i>
+      Repository
+    </button>
+  </ng-template>
+  <div [@collapseMotion]="showRepository ? 'expanded' : 'collapsed' ">
+    <nz-divider nzType="horizontal"></nz-divider>
+    <h2>Repositories</h2>
+    <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
+    <nz-tag *ngFor="let repo of repositories"
+      class="repo-item"
+      [nz-tooltip]="repo.url"
+      nzPlacement="topLeft"
+      [nzMode]="['central', 'local'].indexOf(repo.id) === -1 ? 'closeable' : 'default'"
+      (nzOnClose)="$event.preventDefault(); removeRepository(repo)">
+      {{repo.id}}
+    </nz-tag>
+    <nz-tag class="editable-tag" (click)="createRepository()">
+      <i nz-icon nzType="plus"></i>
+    </nz-tag>
+  </div>
+</zeppelin-page-header>
+<div class="content">
+  <nz-card
+    *ngIf="!showCreateSetting"
+    (click)="showCreateSetting = true"
+    class="create-interpreter" nzHoverable>
+    <i nz-icon nzType="plus"></i>
+    Create
+  </nz-card>
+  <zeppelin-interpreter-item
+    *ngIf="showCreateSetting"
+    mode="create">
+  </zeppelin-interpreter-item>
+  <zeppelin-interpreter-item
+    *ngFor="let item of filteredInterpreterSettings"
+    mode="view"
+    [interpreter]="item">
+  </zeppelin-interpreter-item>
+</div>
