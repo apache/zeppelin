@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -45,8 +46,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
@@ -59,9 +61,9 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.rest.message.UpdateParagraphRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.JobManagerService;
 import org.apache.zeppelin.service.NotebookService;
-import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -74,6 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 @Path("/notebook")
 @Produces("application/json")
+@Singleton
 public class NotebookRestApi extends AbstractRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   private static Gson gson = new Gson();
@@ -82,10 +85,11 @@ public class NotebookRestApi extends AbstractRestApi {
   private Notebook notebook;
   private NotebookServer notebookServer;
   private SearchService noteSearchService;
-  private NotebookAuthorization notebookAuthorization;
+  private AuthorizationService authorizationService;
   private NotebookService notebookService;
   private JobManagerService jobManagerService;
-  private SecurityService securityService;
+  private AuthenticationService authenticationService;
+  private SchedulerService schedulerService;
 
   @Inject
   public NotebookRestApi(
@@ -93,18 +97,21 @@ public class NotebookRestApi extends AbstractRestApi {
       NotebookServer notebookServer,
       NotebookService notebookService,
       SearchService search,
-      NotebookAuthorization notebookAuthorization,
+      AuthorizationService authorizationService,
       ZeppelinConfiguration zConf,
-      SecurityService securityService) {
-    super(securityService);
+      AuthenticationService authenticationService,
+      JobManagerService jobManagerService,
+      SchedulerService schedulerService) {
+    super(authenticationService);
     this.notebook = notebook;
     this.notebookServer = notebookServer;
     this.notebookService = notebookService;
-    this.jobManagerService = new JobManagerService(notebook);
+    this.jobManagerService = jobManagerService;
     this.noteSearchService = search;
-    this.notebookAuthorization = notebookAuthorization;
+    this.authorizationService = authorizationService;
     this.zConf = zConf;
-    this.securityService = securityService;
+    this.authenticationService = authenticationService;
+    this.schedulerService = schedulerService;
   }
 
   /**
@@ -118,10 +125,10 @@ public class NotebookRestApi extends AbstractRestApi {
     checkIfUserCanRead(noteId,
         "Insufficient privileges you cannot get the list of permissions for this note");
     HashMap<String, Set<String>> permissionsMap = new HashMap<>();
-    permissionsMap.put("owners", notebookAuthorization.getOwners(noteId));
-    permissionsMap.put("readers", notebookAuthorization.getReaders(noteId));
-    permissionsMap.put("writers", notebookAuthorization.getWriters(noteId));
-    permissionsMap.put("runners", notebookAuthorization.getRunners(noteId));
+    permissionsMap.put("owners", authorizationService.getOwners(noteId));
+    permissionsMap.put("readers", authorizationService.getReaders(noteId));
+    permissionsMap.put("writers", authorizationService.getWriters(noteId));
+    permissionsMap.put("runners", authorizationService.getRunners(noteId));
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
@@ -147,8 +154,8 @@ public class NotebookRestApi extends AbstractRestApi {
    * Check if the current user is not authenticated(anonymous user) or not.
    */
   private void checkIfUserIsAnon(String errorMsg) {
-    boolean isAuthenticated = securityService.isAuthenticated();
-    if (isAuthenticated && securityService.getPrincipal().equals("anonymous")) {
+    boolean isAuthenticated = authenticationService.isAuthenticated();
+    if (isAuthenticated && authenticationService.getPrincipal().equals("anonymous")) {
       LOG.info("Anonymous user cannot set any permissions for this note.");
       throw new ForbiddenException(errorMsg);
     }
@@ -159,10 +166,10 @@ public class NotebookRestApi extends AbstractRestApi {
    */
   private void checkIfUserIsOwner(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(securityService.getPrincipal());
-    userAndRoles.addAll(securityService.getAssociatedRoles());
-    if (!notebookAuthorization.isOwner(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    userAndRoles.add(authenticationService.getPrincipal());
+    userAndRoles.addAll(authenticationService.getAssociatedRoles());
+    if (!authorizationService.isOwner(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -171,10 +178,10 @@ public class NotebookRestApi extends AbstractRestApi {
    */
   private void checkIfUserCanWrite(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(securityService.getPrincipal());
-    userAndRoles.addAll(securityService.getAssociatedRoles());
-    if (!notebookAuthorization.hasWriteAuthorization(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    userAndRoles.add(authenticationService.getPrincipal());
+    userAndRoles.addAll(authenticationService.getAssociatedRoles());
+    if (!authorizationService.hasWritePermission(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -183,9 +190,9 @@ public class NotebookRestApi extends AbstractRestApi {
    */
   private void checkIfUserCanRead(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(securityService.getPrincipal());
-    userAndRoles.addAll(securityService.getAssociatedRoles());
-    if (!notebookAuthorization.hasReadAuthorization(userAndRoles, noteId)) {
+    userAndRoles.add(authenticationService.getPrincipal());
+    userAndRoles.addAll(authenticationService.getAssociatedRoles());
+    if (!authorizationService.hasReadPermission(userAndRoles, noteId)) {
       throw new ForbiddenException(errorMsg);
     }
   }
@@ -195,10 +202,10 @@ public class NotebookRestApi extends AbstractRestApi {
    */
   private void checkIfUserCanRun(String noteId, String errorMsg) {
     Set<String> userAndRoles = Sets.newHashSet();
-    userAndRoles.add(securityService.getPrincipal());
-    userAndRoles.addAll(securityService.getAssociatedRoles());
-    if (!notebookAuthorization.hasRunAuthorization(userAndRoles, noteId)) {
-      throw new ForbiddenException(errorMsg);
+    userAndRoles.add(authenticationService.getPrincipal());
+    userAndRoles.addAll(authenticationService.getAssociatedRoles());
+    if (!authorizationService.hasRunPermission(userAndRoles, noteId)) {
+     throw new ForbiddenException(errorMsg);
     }
   }
 
@@ -229,20 +236,21 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
-    String principal = securityService.getPrincipal();
-    Set<String> roles = securityService.getAssociatedRoles();
+    String principal = authenticationService.getPrincipal();
+    Set<String> roles = authenticationService.getAssociatedRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
 
     checkIfUserIsAnon(getBlockNotAuthenticatedUserErrorMsg());
     checkIfUserIsOwner(noteId,
-        ownerPermissionError(userAndRoles, notebookAuthorization.getOwners(noteId)));
+        ownerPermissionError(userAndRoles, authorizationService.getOwners(noteId)));
 
     HashMap<String, HashSet<String>> permMap =
         gson.fromJson(req, new TypeToken<HashMap<String, HashSet<String>>>() {
         }.getType());
     Note note = notebook.getNote(noteId);
+    checkIfNoteIsNotNull(note);
 
     LOG.info("Set permissions {} {} {} {} {} {}", noteId, principal, permMap.get("owners"),
         permMap.get("readers"), permMap.get("runners"), permMap.get("writers"));
@@ -254,39 +262,39 @@ public class NotebookRestApi extends AbstractRestApi {
     // Set readers, if runners, writers and owners is empty -> set to user requesting the change
     if (readers != null && !readers.isEmpty()) {
       if (runners.isEmpty()) {
-        runners = Sets.newHashSet(securityService.getPrincipal());
+        runners = Sets.newHashSet(authenticationService.getPrincipal());
       }
       if (writers.isEmpty()) {
-        writers = Sets.newHashSet(securityService.getPrincipal());
+        writers = Sets.newHashSet(authenticationService.getPrincipal());
       }
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(securityService.getPrincipal());
+        owners = Sets.newHashSet(authenticationService.getPrincipal());
       }
     }
     // Set runners, if writers and owners is empty -> set to user requesting the change
     if (runners != null && !runners.isEmpty()) {
       if (writers.isEmpty()) {
-        writers = Sets.newHashSet(securityService.getPrincipal());
+        writers = Sets.newHashSet(authenticationService.getPrincipal());
       }
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(securityService.getPrincipal());
+        owners = Sets.newHashSet(authenticationService.getPrincipal());
       }
     }
     // Set writers, if owners is empty -> set to user requesting the change
     if (writers != null && !writers.isEmpty()) {
       if (owners.isEmpty()) {
-        owners = Sets.newHashSet(securityService.getPrincipal());
+        owners = Sets.newHashSet(authenticationService.getPrincipal());
       }
     }
 
-    notebookAuthorization.setReaders(noteId, readers);
-    notebookAuthorization.setRunners(noteId, runners);
-    notebookAuthorization.setWriters(noteId, writers);
-    notebookAuthorization.setOwners(noteId, owners);
-    LOG.debug("After set permissions {} {} {} {}", notebookAuthorization.getOwners(noteId),
-        notebookAuthorization.getReaders(noteId), notebookAuthorization.getRunners(noteId),
-        notebookAuthorization.getWriters(noteId));
-    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
+    authorizationService.setReaders(noteId, readers);
+    authorizationService.setRunners(noteId, runners);
+    authorizationService.setWriters(noteId, writers);
+    authorizationService.setOwners(noteId, owners);
+    LOG.debug("After set permissions {} {} {} {}", authorizationService.getOwners(noteId),
+            authorizationService.getReaders(noteId), authorizationService.getRunners(noteId),
+            authorizationService.getWriters(noteId));
+    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     notebook.saveNote(note, subject);
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList(subject, userAndRoles);
@@ -352,7 +360,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @POST
   @ZeppelinApi
   public Response createNote(String message) throws IOException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     LOG.info("Create new note by JSON {}", message);
     NewNoteRequest request = NewNoteRequest.fromJson(message);
     Note note = notebookService.createNote(
@@ -360,7 +368,7 @@ public class NotebookRestApi extends AbstractRestApi {
         zConf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_GROUP_DEFAULT),
         getServiceContext(),
         new RestServiceCallback<>());
-    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     if (request.getParagraphs() != null) {
       for (NewParagraphRequest paragraphRequest : request.getParagraphs()) {
         Paragraph p = note.addNewParagraph(subject);
@@ -415,7 +423,7 @@ public class NotebookRestApi extends AbstractRestApi {
     if (request != null) {
       newNoteName = request.getName();
     }
-    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
+    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
     Note newNote = notebookService.cloneNote(noteId, newNoteName, getServiceContext(),
         new RestServiceCallback<Note>(){
           @Override
@@ -469,7 +477,7 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response insertParagraph(@PathParam("noteId") String noteId, String message)
       throws IOException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     LOG.info("insert paragraph {} {}", noteId, message);
 
     Note note = notebook.getNote(noteId);
@@ -526,7 +534,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response updateParagraph(@PathParam("noteId") String noteId,
                                   @PathParam("paragraphId") String paragraphId,
                                   String message) throws IOException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     LOG.info("{} will update paragraph {} {}", user, noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
@@ -554,7 +562,7 @@ public class NotebookRestApi extends AbstractRestApi {
   public Response updateParagraphConfig(@PathParam("noteId") String noteId,
                                         @PathParam("paragraphId") String paragraphId,
                                         String message) throws IOException {
-    String user = securityService.getPrincipal();
+    String user = authenticationService.getPrincipal();
     LOG.info("{} will update paragraph config {} {}", user, noteId, paragraphId);
 
     Note note = notebook.getNote(noteId);
@@ -655,8 +663,8 @@ public class NotebookRestApi extends AbstractRestApi {
     boolean blocking = waitToFinish == null || waitToFinish;
     LOG.info("run note jobs {} waitToFinish: {}", noteId, blocking);
     Note note = notebook.getNote(noteId);
-    AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
-    subject.setRoles(new LinkedList<>(securityService.getAssociatedRoles()));
+    AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
+    subject.setRoles(new LinkedList<>(authenticationService.getAssociatedRoles()));
     checkIfNoteIsNotNull(note);
     checkIfUserCanRun(noteId, "Insufficient privileges you cannot run job for this note");
 
@@ -877,7 +885,7 @@ public class NotebookRestApi extends AbstractRestApi {
     config.put("cron", request.getCronString());
     config.put("releaseresource", request.getReleaseResource());
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -907,7 +915,7 @@ public class NotebookRestApi extends AbstractRestApi {
     config.remove("cron");
     config.remove("releaseresource");
     note.setConfig(config);
-    notebook.refreshCron(note.getId());
+    schedulerService.refreshCron(note.getId());
 
     return new JsonResponse<>(Status.OK).build();
   }
@@ -990,8 +998,8 @@ public class NotebookRestApi extends AbstractRestApi {
   @ZeppelinApi
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notes for: {}", queryTerm);
-    String principal = securityService.getPrincipal();
-    Set<String> roles = securityService.getAssociatedRoles();
+    String principal = authenticationService.getPrincipal();
+    Set<String> roles = authenticationService.getAssociatedRoles();
     HashSet<String> userAndRoles = new HashSet<>();
     userAndRoles.add(principal);
     userAndRoles.addAll(roles);
@@ -999,10 +1007,10 @@ public class NotebookRestApi extends AbstractRestApi {
     for (int i = 0; i < notesFound.size(); i++) {
       String[] ids = notesFound.get(i).get("id").split("/", 2);
       String noteId = ids[0];
-      if (!notebookAuthorization.isOwner(noteId, userAndRoles) &&
-          !notebookAuthorization.isReader(noteId, userAndRoles) &&
-          !notebookAuthorization.isWriter(noteId, userAndRoles) &&
-          !notebookAuthorization.isRunner(noteId, userAndRoles)) {
+      if (!authorizationService.isOwner(noteId, userAndRoles) &&
+          !authorizationService.isReader(noteId, userAndRoles) &&
+          !authorizationService.isWriter(noteId, userAndRoles) &&
+          !authorizationService.isRunner(noteId, userAndRoles)) {
         notesFound.remove(i);
         i--;
       }
@@ -1021,7 +1029,7 @@ public class NotebookRestApi extends AbstractRestApi {
       Map<String, Object> paramsForUpdating = request.getParams();
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
-        AuthenticationInfo subject = new AuthenticationInfo(securityService.getPrincipal());
+        AuthenticationInfo subject = new AuthenticationInfo(authenticationService.getPrincipal());
         notebook.saveNote(note, subject);
       }
     }

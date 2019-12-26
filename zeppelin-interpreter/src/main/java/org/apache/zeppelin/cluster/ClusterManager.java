@@ -86,16 +86,18 @@ import org.apache.zeppelin.cluster.meta.ClusterMetaType;
 import org.apache.zeppelin.cluster.protocol.LocalRaftProtocolFactory;
 import org.apache.zeppelin.cluster.protocol.RaftClientMessagingProtocol;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.launcher.InterpreterClient;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
@@ -111,9 +113,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import static io.atomix.primitive.operation.PrimitiveOperation.operation;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_HOST;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.INTP_TSERVER_PORT;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.ONLINE_STATUS;
+import static org.apache.zeppelin.cluster.meta.ClusterMeta.STATUS;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.DELETE_OPERATION;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.PUT_OPERATION;
 import static org.apache.zeppelin.cluster.meta.ClusterMetaOperation.GET_OPERATION;
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * The base class for cluster management, including the following implementations
@@ -128,10 +135,6 @@ public abstract class ClusterManager {
 
   protected Collection<Node> clusterNodes = new ArrayList<>();
 
-  // raft
-  protected static String ZEPL_CLUSTER_ID = "ZEPL-CLUSTER";
-  protected static String ZEPL_CLIENT_ID = "ZEPL-CLIENT";
-
   protected int raftServerPort = 0;
 
   protected RaftClient raftClient = null;
@@ -139,7 +142,6 @@ public abstract class ClusterManager {
   protected Map<MemberId, Address> raftAddressMap = new ConcurrentHashMap<>();
   protected LocalRaftProtocolFactory protocolFactory
       = new LocalRaftProtocolFactory(protocolSerializer);
-  protected List<MessagingService> messagingServices = new ArrayList<>();
   protected List<MemberId> clusterMemberIds = new ArrayList<MemberId>();
 
   protected AtomicBoolean running = new AtomicBoolean(true);
@@ -150,6 +152,10 @@ public abstract class ClusterManager {
 
   // zeppelin server host & port
   protected String zeplServerHost = "";
+
+  protected ClusterMonitor clusterMonitor = null;
+
+  protected boolean isTest = false;
 
   public ClusterManager() {
     try {
@@ -166,11 +172,12 @@ public abstract class ClusterManager {
             raftServerPort = clusterPort;
           }
 
-          Node node = Node.builder().withId(cluster[i])
-              .withAddress(Address.from(clusterHost, clusterPort)).build();
+          String memberId = clusterHost + ":" + clusterPort;
+          Address address = Address.from(clusterHost, clusterPort);
+          Node node = Node.builder().withId(memberId).withAddress(address).build();
           clusterNodes.add(node);
-          raftAddressMap.put(MemberId.from(cluster[i]), Address.from(clusterHost, clusterPort));
-          clusterMemberIds.add(MemberId.from(cluster[i]));
+          raftAddressMap.put(MemberId.from(memberId), address);
+          clusterMemberIds.add(MemberId.from(memberId));
         }
       }
     } catch (UnknownHostException e) {
@@ -218,7 +225,7 @@ public abstract class ClusterManager {
           LOGGER.error(e.getMessage());
         }
 
-        MemberId memberId = MemberId.from(ZEPL_CLIENT_ID + zeplServerHost + ":" + raftClientPort);
+        MemberId memberId = MemberId.from(zeplServerHost + ":" + raftClientPort);
         Address address = Address.from(zeplServerHost, raftClientPort);
         raftAddressMap.put(memberId, address);
 
@@ -254,7 +261,7 @@ public abstract class ClusterManager {
               while (!raftInitialized()) {
                 retry++;
                 if (0 == retry % 30) {
-                  LOGGER.error("Raft incomplete initialization! retry[{}]", retry);
+                  LOGGER.warn("Raft incomplete initialization! retry[{}]", retry);
                 }
                 Thread.sleep(100);
               }
@@ -270,6 +277,7 @@ public abstract class ClusterManager {
               if (true == success) {
                 // The operation was successfully deleted
                 clusterMetaQueue.remove(metaEntity);
+                LOGGER.info("Cluster Meta Consume success! {}", metaEntity);
               } else {
                 LOGGER.error("Cluster Meta Consume faild!");
               }
@@ -308,8 +316,21 @@ public abstract class ClusterManager {
     }
   }
 
-  public String getClusterName() {
-    return zeplServerHost + ":" + raftServerPort;
+  public String getClusterNodeName() {
+    if (isTest) {
+      // Start three cluster servers in the test case at the same time,
+      // need to avoid duplicate names
+      return this.zeplServerHost + ":" + this.raftServerPort;
+    }
+
+    String hostName = "";
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      hostName = addr.getHostName().toString();
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+    return hostName;
   }
 
   // put metadata into cluster metadata
@@ -417,6 +438,63 @@ public abstract class ClusterManager {
     return clusterMeta;
   }
 
+  public InterpreterClient getIntpProcessStatus(String intpName,
+                                                int timeout,
+                                                ClusterCallback<HashMap<String, Object>> callback) {
+    final int CHECK_META_INTERVAL = 1000;
+    int MAX_RETRY_GET_META = timeout / CHECK_META_INTERVAL;
+    int retryGetMeta = 0;
+    while (retryGetMeta++ < MAX_RETRY_GET_META) {
+      HashMap<String, Object> intpMeta = getClusterMeta(INTP_PROCESS_META, intpName).get(intpName);
+      if (interpreterMetaOnline(intpMeta)) {
+        // connect exist Interpreter Process
+        String intpTSrvHost = (String) intpMeta.get(INTP_TSERVER_HOST);
+        int intpTSrvPort = (int) intpMeta.get(INTP_TSERVER_PORT);
+        LOGGER.info("interpreter thrift {}:{} service is online!", intpTSrvHost, intpTSrvPort);
+
+        // Check if the interpreter thrift service is available
+        boolean remoteIntpAccessible =
+            RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(intpTSrvHost, intpTSrvPort);
+        if (remoteIntpAccessible) {
+          LOGGER.info("interpreter thrift {}:{} accessible!", intpTSrvHost, intpTSrvPort);
+          return callback.online(intpMeta);
+        } else {
+          LOGGER.error("interpreter thrift {}:{} service is not available!",
+              intpTSrvHost, intpTSrvPort);
+          try {
+            Thread.sleep(CHECK_META_INTERVAL);
+            LOGGER.warn("retry {} times to get {} meta!", retryGetMeta, intpName);
+          } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+          }
+        }
+      } else {
+        try {
+          Thread.sleep(CHECK_META_INTERVAL);
+        } catch (InterruptedException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    LOGGER.error("retry {} times not get {} meta!", retryGetMeta, intpName);
+    callback.offline();
+    return null;
+  }
+
+  // Check if the interpreter is online
+  private boolean interpreterMetaOnline(HashMap<String, Object> intpProcMeta) {
+    if (null != intpProcMeta
+        && intpProcMeta.containsKey(INTP_TSERVER_HOST)
+        && intpProcMeta.containsKey(INTP_TSERVER_PORT)
+        && intpProcMeta.containsKey(STATUS)
+        && StringUtils.equals((String) intpProcMeta.get(STATUS), ONLINE_STATUS)) {
+      return true;
+    }
+
+    return false;
+  }
+
   protected static final Serializer protocolSerializer = Serializer.using(Namespace.builder()
       .register(OpenSessionRequest.class)
       .register(OpenSessionResponse.class)
@@ -470,7 +548,7 @@ public abstract class ClusterManager {
       .register(ArrayList.class)
       .register(HashMap.class)
       .register(ClusterMetaEntity.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(Collections.emptyList().getClass())
       .register(HashSet.class)
       .register(DefaultRaftMember.class)
@@ -498,7 +576,7 @@ public abstract class ClusterManager {
       .register(ClusterMetaEntity.class)
       .register(HashMap.class)
       .register(HashSet.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(DefaultRaftMember.class)
       .register(MemberId.class)
       .register(RaftMember.Type.class)
@@ -514,7 +592,7 @@ public abstract class ClusterManager {
       .register(ClusterMetaOperation.class)
       .register(ClusterMetaType.class)
       .register(HashMap.class)
-      .register(Date.class)
+      .register(LocalDateTime.class)
       .register(Maps.immutableEntry(new String(), new Object()).getClass())
       .build());
 }

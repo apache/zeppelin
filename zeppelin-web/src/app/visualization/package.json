@@ -6,7 +6,7 @@
   "dependencies": {
     "json3": "~3.3.1",
     "nvd3": "~1.7.1",
-    "lodash": "~3.9.3"
+    "lodash": "~4.17.15"
   },
   "repository": {
     "type": "git",

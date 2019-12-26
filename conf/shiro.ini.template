@@ -110,6 +110,7 @@ admin = *
 # uncomment the line second last line (/** = anon) and comment the last line (/** = authc)
 #
 /api/version = anon
+/api/cluster/address = anon
 # Allow all authenticated users to restart interpreters on a notebook page.
 # Comment out the following line if you would like to authorize only admin users to restart interpreters.
 /api/interpreter/setting/restart/** = authc

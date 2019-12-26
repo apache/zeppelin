@@ -136,6 +136,14 @@ let zeppelinWebApp = angular.module('zeppelinWebApp', requiredModules)
         templateUrl: 'app/search/result-list.html',
         controller: 'SearchResultCtrl',
       })
+      .when('/cluster', {
+        templateUrl: 'app/cluster/cluster.html',
+        controller: 'ClusterCtrl',
+      })
+      .when('/cluster/:nodeName/:intpName', {
+        templateUrl: 'app/cluster/node.html',
+        controller: 'NodeCtrl',
+      })
       .otherwise({
         redirectTo: '/',
       });

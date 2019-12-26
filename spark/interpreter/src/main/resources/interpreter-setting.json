@@ -75,18 +75,25 @@
         "description": "Override Spark UI default URL",
         "type": "string"
       },
-      "zeppelin.spark.useNew": {
-        "envName": null,
-        "propertyName": "zeppelin.spark.useNew",
-        "defaultValue": true,
-        "description": "Whether use new spark interpreter implementation",
-        "type": "checkbox"
-      },
       "zeppelin.spark.ui.hidden": {
         "envName": null,
         "propertyName": "zeppelin.spark.ui.hidden",
         "defaultValue": false,
         "description": "Whether to hide spark ui in zeppelin ui",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.scala.color": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.scala.color",
+        "defaultValue": true,
+        "description": "Whether to enable color output of spark scala interpreter",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.deprecatedMsg.show": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.deprecatedMsg.show",
+        "defaultValue": true,
+        "description": "Whether show the spark deprecated message",
         "type": "checkbox"
       }
     },
@@ -147,33 +154,6 @@
     },
     "editor": {
       "language": "sql",
-      "editOnDblClick": false,
-      "completionKey": "TAB",
-      "completionSupport": true
-    }
-  },
-  {
-    "group": "spark",
-    "name": "dep",
-    "className": "org.apache.zeppelin.spark.DepInterpreter",
-    "properties": {
-      "zeppelin.dep.localrepo": {
-        "envName": "ZEPPELIN_DEP_LOCALREPO",
-        "propertyName": null,
-        "defaultValue": "local-repo",
-        "description": "local repository for dependency loader",
-        "type": "string"
-      },
-      "zeppelin.dep.additionalRemoteRepository": {
-        "envName": null,
-        "propertyName": null,
-        "defaultValue": "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
-        "description": "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.",
-        "type": "textarea"
-      }
-    },
-    "editor": {
-      "language": "scala",
       "editOnDblClick": false,
       "completionKey": "TAB",
       "completionSupport": true
@@ -261,6 +241,40 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false,
+      "completionSupport": false
+    }
+  },
+  {
+    "group": "spark",
+    "name": "kotlin",
+    "className": "org.apache.zeppelin.spark.KotlinSparkInterpreter",
+    "properties": {
+      "zeppelin.spark.printREPLOutput": {
+        "envName": null,
+        "propertyName": "zeppelin.spark.printREPLOutput",
+        "defaultValue": true,
+        "description": "Print REPL output",
+        "type": "checkbox"
+      },
+      "zeppelin.spark.maxResult": {
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.maxResult",
+        "defaultValue": "1000",
+        "description": "Max number of result to display.",
+        "type": "number"
+      },
+      "zeppelin.kotlin.shortenTypes": {
+        "envName": null,
+        "propertyName": "zeppelin.kotlin.shortenTypes",
+        "defaultValue": true,
+        "description": "Show short types instead of full, e.g. List<String> or kotlin.collections.List<kotlin.String>",
+        "type": "checkbox"
+      }
+    },
+    "editor": {
+      "language": "kotlin",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
       "completionSupport": false
     }
   }

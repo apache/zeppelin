@@ -52,14 +52,31 @@ class PyZeppelinContext(object):
     def __contains__(self, item):
         return self.z.containsKey(item)
 
-    def add(self, key, value):
-        self.__setitem__(key, value)
-
     def put(self, key, value):
         self.__setitem__(key, value)
 
     def get(self, key):
         return self.__getitem__(key)
+
+    def getAsDataFrame(self, key):
+        value = self.get(key)
+        try:
+            import pandas as pd
+        except ImportError:
+            print("fail to call getAsDataFrame as pandas is not installed")
+        return pd.read_csv(StringIO(value), sep="\t")
+
+    def remove(self, key):
+        self.z.remove(key)
+
+    def angular(self, key, noteId = None, paragraphId = None):
+        return self.z.angular(key, noteId, paragraphId)
+
+    def contains(self, key):
+        return self.contains(key)
+
+    def add(self, key, value):
+        self.__setitem__(key, value)
 
     def getInterpreterContext(self):
         return self.z.getInterpreterContext()
@@ -70,23 +87,56 @@ class PyZeppelinContext(object):
     def textbox(self, name, defaultValue=""):
         return self.z.textbox(name, defaultValue)
 
-    def password(self, name):
-        return self.z.password(name)
-
     def noteTextbox(self, name, defaultValue=""):
         return self.z.noteTextbox(name, defaultValue)
 
+    def password(self, name):
+        return self.z.password(name)
+
+    def notePassword(self, name):
+        return self.z.notePassword(name)
+
     def select(self, name, options, defaultValue=""):
-        return self.z.select(name, defaultValue, self.getParamOptions(options))
+        return self.z.select(name, self.getParamOptions(options), defaultValue)
 
     def noteSelect(self, name, options, defaultValue=""):
-        return self.z.noteSelect(name, defaultValue, self.getParamOptions(options))
+        return self.z.noteSelect(name, self.getParamOptions(options), defaultValue)
 
     def checkbox(self, name, options, defaultChecked=[]):
-        return self.z.checkbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+        return self.z.checkbox(name, self.getParamOptions(options), self.getDefaultChecked(defaultChecked))
 
     def noteCheckbox(self, name, options, defaultChecked=[]):
-        return self.z.noteCheckbox(name, self.getDefaultChecked(defaultChecked), self.getParamOptions(options))
+        return self.z.noteCheckbox(name, self.getParamOptions(options), self.getDefaultChecked(defaultChecked))
+
+    def run(self, paragraphId):
+        return self.z.run(paragraphId)
+
+    def run(self, noteId, paragraphId):
+        return self .z.run(noteId, paragraphId)
+
+    def runNote(self, noteId):
+        return self.z.runNote(noteId)
+
+    def runAll(self):
+        return self.z.runAll()
+
+    def angular(self, name, noteId = None, paragraphId = None):
+        if noteId == None:
+            return self.z.angular(name, self.z.getInterpreterContext().getNoteId(), paragraphId)
+        else:
+            return self.z.angular(name, noteId, paragraphId)
+
+    def angularBind(self, name, value, noteId = None, paragraphId = None):
+        if noteId == None:
+            return self.z.angularBind(name, value, noteId, paragraphId)
+        else:
+            return self.z.angularBind(name, value, self.z.getInterpreterContext().getNoteId(), paragraphId)
+
+    def angularUnbind(self, name, noteId = None):
+        if noteId == None:
+            self.z.angularUnbind(name, self.z.getInterpreterContext().getNoteId())
+        else:
+            self.z.angularUnbind(name, noteId)
 
     def registerHook(self, event, cmd, replName=None):
         if replName is None:
@@ -152,6 +202,7 @@ class PyZeppelinContext(object):
 
         body_buf = StringIO("")
         rows = df.head(self.max_result).values if exceed_limit else df.values
+        rowNumber = len(rows)
         index = df.index.values
         for idx, row in zip(index, rows):
             if show_index:
@@ -161,13 +212,16 @@ class PyZeppelinContext(object):
             for cell in row[1:]:
                 body_buf.write("\t")
                 body_buf.write(str(cell))
-            body_buf.write("\n")
+            # don't print '\n' after the last row
+            if idx != (rowNumber - 1):
+                body_buf.write("\n")
         body_buf.seek(0)
         header_buf.seek(0)
         print("%table " + header_buf.read() + body_buf.read())
-        body_buf.close(); header_buf.close()
+        body_buf.close()
+        header_buf.close()
         if exceed_limit:
-            print("%html <font color=red>Results are limited by {}.</font>".format(self.max_result))
+            print("\n%html <font color=red>Results are limited by {}.</font>".format(self.max_result))
 
     def show_matplotlib(self, p, fmt="png", width="auto", height="auto",
                         **kwargs):

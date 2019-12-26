@@ -33,13 +33,13 @@ public class TableDataProxy implements TableData {
   @Override
   public ColumnDef[] columns() {
     return (ColumnDef[]) resource.invokeMethod(
-        "columns", null, null);
+        "columns");
   }
 
   @Override
   public Iterator<Row> rows() {
     String resourceName = resource.getResourceId().getName() + ".rows";
-    Resource rows = resource.invokeMethod("rows", null, null, resourceName);
+    Resource rows = resource.invokeMethod("rows", resourceName);
 
     ProxyRowIterator it = new ProxyRowIterator(rows);
     return it;

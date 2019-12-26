@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 
 import com.google.common.collect.Maps;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.dep.Repository;
@@ -33,8 +34,8 @@ import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.service.InterpreterService;
-import org.apache.zeppelin.service.SecurityService;
 import org.apache.zeppelin.service.ServiceContext;
 import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -61,22 +62,23 @@ import java.util.Map;
  */
 @Path("/interpreter")
 @Produces("application/json")
+@Singleton
 public class InterpreterRestApi {
 
   private static final Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
-  private final SecurityService securityService;
+  private final AuthenticationService authenticationService;
   private final InterpreterService interpreterService;
   private final InterpreterSettingManager interpreterSettingManager;
   private final NotebookServer notebookServer;
 
   @Inject
   public InterpreterRestApi(
-      SecurityService securityService,
+      AuthenticationService authenticationService,
       InterpreterService interpreterService,
       InterpreterSettingManager interpreterSettingManager,
       NotebookServer notebookWsServer) {
-    this.securityService = securityService;
+    this.authenticationService = authenticationService;
     this.interpreterService = interpreterService;
     this.interpreterSettingManager = interpreterSettingManager;
     this.notebookServer = notebookWsServer;
@@ -198,7 +200,7 @@ public class InterpreterRestApi {
       if (null == noteId) {
         interpreterSettingManager.close(settingId);
       } else {
-        interpreterSettingManager.restart(settingId, noteId, securityService.getPrincipal());
+        interpreterSettingManager.restart(settingId, noteId, authenticationService.getPrincipal());
       }
 
     } catch (InterpreterException e) {

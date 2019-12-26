@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -47,12 +48,19 @@
     <repository>
       <id>conjars</id>
       <name>Concurrent Maven Repo</name>
-      <url>http://conjars.org/repo</url>
+      <url>https://conjars.org/repo</url>
     </repository>
     <repository>
       <id>twitter</id>
       <name>Twitter Maven Repo</name>
-      <url>http://maven.twttr.com</url>
+      <url>https://maven.twttr.com</url>
+    </repository>
+
+    <!-- Temporary repo -->
+    <repository>
+      <id>zeppelin-dependencies</id>
+      <name>bintray</name>
+      <url>https://jetbrains.bintray.com/zeppelin-dependencies</url>
     </repository>
   </repositories>
 

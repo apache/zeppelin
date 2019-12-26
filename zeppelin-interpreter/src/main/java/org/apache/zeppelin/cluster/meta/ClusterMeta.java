@@ -31,14 +31,16 @@ import java.util.Map;
 public class ClusterMeta implements Serializable {
   private static Logger logger = LoggerFactory.getLogger(ClusterMeta.class);
 
+  // The name of each server node in the cluster
+  public static String NODE_NAME            = "NODE_NAME";
+
   // zeppelin-server meta
   public static String SERVER_HOST          = "SERVER_HOST";
   public static String SERVER_PORT          = "SERVER_PORT";
-  public static String SERVER_TSERVER_HOST  = "SERVER_TSERVER_HOST";
-  public static String SERVER_TSERVER_PORT  = "SERVER_TSERVER_PORT";
   public static String SERVER_START_TIME    = "SERVER_START_TIME";
 
   // interperter-process meta
+  public static String INTP_PROCESS_NAME    = "INTP_PROCESS_NAME";
   public static String INTP_TSERVER_HOST    = "INTP_TSERVER_HOST";
   public static String INTP_TSERVER_PORT    = "INTP_TSERVER_PORT";
   public static String INTP_START_TIME      = "INTP_START_TIME";
@@ -49,12 +51,14 @@ public class ClusterMeta implements Serializable {
   public static String MEMORY_CAPACITY      = "MEMORY_CAPACITY";
   public static String MEMORY_USED          = "MEMORY_USED";
 
-  public static String HEARTBEAT            = "HEARTBEAT";
+  public static String LATEST_HEARTBEAT     = "LATEST_HEARTBEAT";
 
   // zeppelin-server or interperter-process status
   public static String STATUS               = "STATUS";
   public static String ONLINE_STATUS        = "ONLINE";
   public static String OFFLINE_STATUS       = "OFFLINE";
+  public static String INTP_PROCESS_COUNT   = "INTP_PROCESS_COUNT";
+  public static String INTP_PROCESS_LIST    = "INTP_PROCESS_LIST";
 
   // cluster_name = host:port
   // Map:cluster_name -> {server_tserver_host,server_tserver_port,cpu_capacity,...}
@@ -69,7 +73,7 @@ public class ClusterMeta implements Serializable {
     Map<String, Object> mapValue = (Map<String, Object>) value;
 
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         // Because it may be partially updated metadata information
         if (mapServerMeta.containsKey(key)) {
           Map<String, Object> values = mapServerMeta.get(key);
@@ -78,7 +82,7 @@ public class ClusterMeta implements Serializable {
           mapServerMeta.put(key, mapValue);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (mapInterpreterMeta.containsKey(key)) {
           Map<String, Object> values = mapInterpreterMeta.get(key);
           values.putAll(mapValue);
@@ -93,7 +97,7 @@ public class ClusterMeta implements Serializable {
     Map<String, Object> values = null;
 
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         if (null == key || StringUtils.isEmpty(key)) {
           return mapServerMeta;
         }
@@ -103,7 +107,7 @@ public class ClusterMeta implements Serializable {
           logger.warn("can not find key : {}", key);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (null == key || StringUtils.isEmpty(key)) {
           return mapInterpreterMeta;
         }
@@ -123,14 +127,14 @@ public class ClusterMeta implements Serializable {
 
   public Map<String, Object> remove(ClusterMetaType type, String key) {
     switch (type) {
-      case ServerMeta:
+      case SERVER_META:
         if (mapServerMeta.containsKey(key)) {
           return mapServerMeta.remove(key);
         } else {
           logger.warn("can not find key : {}", key);
         }
         break;
-      case IntpProcessMeta:
+      case INTP_PROCESS_META:
         if (mapInterpreterMeta.containsKey(key)) {
           return mapInterpreterMeta.remove(key);
         } else {

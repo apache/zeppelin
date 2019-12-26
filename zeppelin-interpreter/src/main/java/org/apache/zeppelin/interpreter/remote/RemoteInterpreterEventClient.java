@@ -28,13 +28,16 @@ import org.apache.zeppelin.interpreter.thrift.AppStatusUpdateEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputAppendEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateAllEvent;
 import org.apache.zeppelin.interpreter.thrift.OutputUpdateEvent;
+import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventService;
 import org.apache.zeppelin.interpreter.thrift.RunParagraphsEvent;
+import org.apache.zeppelin.interpreter.thrift.ServiceException;
 import org.apache.zeppelin.resource.RemoteResource;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePoolConnector;
 import org.apache.zeppelin.resource.ResourceSet;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +89,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
+  public synchronized List<ParagraphInfo> getParagraphList(String user, String noteId)
+      throws TException, ServiceException {
+    List<ParagraphInfo> paragraphList = intpEventServiceClient.getParagraphList(user, noteId);
+    return paragraphList;
+  }
+
   @Override
   public synchronized Object readResource(ResourceId resourceId) {
     try {
@@ -115,39 +124,20 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       Object[] params) {
     LOGGER.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
 
-    return null;
-    //    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
-    //        resourceId,
-    //        methodName,
-    //        paramTypes,
-    //        params,
-    //        null);
-    //
-    //    synchronized (getInvokeResponse) {
-    //      // wait for previous response consumed
-    //      while (getInvokeResponse.containsKey(invokeMethod)) {
-    //        try {
-    //          getInvokeResponse.wait();
-    //        } catch (InterruptedException e) {
-    //          LOGGER.warn(e.getMessage(), e);
-    //        }
-    //      }
-    //      // send request
-    //      sendEvent(new RemoteInterpreterEvent(
-    //          RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
-    //          invokeMethod.toJson()));
-    //      // wait for response
-    //      while (!getInvokeResponse.containsKey(invokeMethod)) {
-    //        try {
-    //          getInvokeResponse.wait();
-    //        } catch (InterruptedException e) {
-    //          LOGGER.warn(e.getMessage(), e);
-    //        }
-    //      }
-    //      Object o = getInvokeResponse.remove(invokeMethod);
-    //      getInvokeResponse.notifyAll();
-    //      return o;
-    //    }
+    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
+            resourceId,
+            methodName,
+            paramTypes,
+            params,
+            null);
+    try {
+      ByteBuffer buffer = intpEventServiceClient.invokeMethod(intpGroupId, invokeMethod.toJson());
+      Object o = Resource.deserializeObject(buffer);
+      return o;
+    } catch (TException | IOException | ClassNotFoundException e) {
+      LOGGER.error("Failed to invoke method", e);
+      return null;
+    }
   }
 
   /**
@@ -169,39 +159,24 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
       String returnResourceName) {
     LOGGER.debug("Request Invoke method {} of Resource {}", methodName, resourceId.getName());
 
-    return null;
-    //    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
-    //        resourceId,
-    //        methodName,
-    //        paramTypes,
-    //        params,
-    //        returnResourceName);
-    //
-    //    synchronized (getInvokeResponse) {
-    //      // wait for previous response consumed
-    //      while (getInvokeResponse.containsKey(invokeMethod)) {
-    //        try {
-    //          getInvokeResponse.wait();
-    //        } catch (InterruptedException e) {
-    //          LOGGER.warn(e.getMessage(), e);
-    //        }
-    //      }
-    //      // send request
-    //      sendEvent(new RemoteInterpreterEvent(
-    //          RemoteInterpreterEventType.RESOURCE_INVOKE_METHOD,
-    //          invokeMethod.toJson()));
-    //      // wait for response
-    //      while (!getInvokeResponse.containsKey(invokeMethod)) {
-    //        try {
-    //          getInvokeResponse.wait();
-    //        } catch (InterruptedException e) {
-    //          LOGGER.warn(e.getMessage(), e);
-    //        }
-    //      }
-    //      Resource o = (Resource) getInvokeResponse.remove(invokeMethod);
-    //      getInvokeResponse.notifyAll();
-    //      return o;
-    //    }
+    InvokeResourceMethodEventMessage invokeMethod = new InvokeResourceMethodEventMessage(
+            resourceId,
+            methodName,
+            paramTypes,
+            params,
+            returnResourceName);
+
+    try {
+      ByteBuffer serializedResource = intpEventServiceClient.invokeMethod(intpGroupId, invokeMethod.toJson());
+      Resource deserializedResource = (Resource) Resource.deserializeObject(serializedResource);
+      RemoteResource remoteResource = RemoteResource.fromJson(gson.toJson(deserializedResource));
+      remoteResource.setResourcePoolConnector(this);
+
+      return remoteResource;
+    } catch (TException | IOException | ClassNotFoundException e) {
+      LOGGER.error("Failed to invoke method", e);
+      return null;
+    }
   }
 
   public synchronized void onInterpreterOutputAppend(

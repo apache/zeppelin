@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.service;
 
+import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -39,6 +40,7 @@ public class JobManagerService {
 
   private Notebook notebook;
 
+  @Inject
   public JobManagerService(Notebook notebook) {
     this.notebook = notebook;
   }
@@ -49,6 +51,9 @@ public class JobManagerService {
       throws IOException {
     List<NoteJobInfo> notesJobInfo = new ArrayList<>();
     Note jobNote = notebook.getNote(noteId);
+    if (jobNote == null) {
+      callback.onFailure(new IOException("Note " + noteId + " not found"), context);
+    }
     notesJobInfo.add(new NoteJobInfo(jobNote));
     callback.onSuccess(notesJobInfo, context);
     return notesJobInfo;

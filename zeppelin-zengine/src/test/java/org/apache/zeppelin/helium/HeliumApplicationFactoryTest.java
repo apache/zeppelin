@@ -29,7 +29,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.search.SearchService;
@@ -50,7 +49,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
   public void setUp() throws Exception {
     super.setUp();
 
-    heliumAppFactory = new HeliumApplicationFactory();
     // set AppEventListener properly
     for (InterpreterSetting interpreterSetting : interpreterSettingManager.get()) {
       interpreterSetting.setAppEventListener(heliumAppFactory);
@@ -58,7 +56,6 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     SearchService search = mock(SearchService.class);
     notebookRepo = mock(NotebookRepo.class);
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.init(conf);
     notebook =
         new Notebook(
             conf,
@@ -66,11 +63,9 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
             interpreterFactory,
             interpreterSettingManager,
             search,
-            notebookAuthorization,
             new Credentials(false, null, null));
 
-
-    heliumAppFactory.setNotebook(notebook);
+    heliumAppFactory = new HeliumApplicationFactory(notebook, null);
 
     notebook.addNotebookEventListener(heliumAppFactory);
 
@@ -238,7 +233,7 @@ public class HeliumApplicationFactoryTest extends AbstractInterpreterTest {
 
     Note note1 = notebook.createNote("note1", anonymous);
     String mock1IntpSettingId = null;
-    for (InterpreterSetting setting : notebook.getBindedInterpreterSettings(note1.getId())) {
+    for (InterpreterSetting setting : note1.getBindedInterpreterSettings()) {
       if (setting.getName().equals("mock1")) {
         mock1IntpSettingId = setting.getId();
         break;

@@ -31,6 +31,7 @@ if [[ -z "${WORKING_DIR}" ]]; then
   WORKING_DIR="/tmp/zeppelin-release"
 fi
 
+rm -rf "${WORKING_DIR}"
 mkdir "${WORKING_DIR}"
 
 # If set to 'yes', release script will deploy artifacts to SNAPSHOT repository.
@@ -42,7 +43,7 @@ usage() {
   exit 1
 }
 
-function git_clone() { 
+function git_clone() {
   echo "Clone the source"
   # clone source
   git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git "${WORKING_DIR}/zeppelin"

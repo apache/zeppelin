@@ -66,6 +66,7 @@ public class DependencyResolverTest {
 
   @Test
   public void testDelRepo() {
+    resolver.addRepo("securecentral", "https://repo1.maven.org/maven2", false);
     int reposCnt = resolver.getRepos().size();
     resolver.delRepo("securecentral");
     resolver.delRepo("badId");
@@ -87,14 +88,14 @@ public class DependencyResolverTest {
 
     // load from added repository
     resolver.addRepo("sonatype",
-        "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
-    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
-    assertEquals(testCopyPath.list().length, 8);
+        "https://oss.sonatype.org/content/repositories/ksoap2-android-releases/", false);
+    resolver.load("com.google.code.ksoap2-android:ksoap2-jsoup:3.6.3", testCopyPath);
+    assertEquals(testCopyPath.list().length, 10);
 
     // load invalid artifact
     resolver.delRepo("sonatype");
     exception.expect(RepositoryException.class);
-    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
+    resolver.load("com.agimatec:agimatec-validation:0.12.0", testCopyPath);
   }
 
   @Test

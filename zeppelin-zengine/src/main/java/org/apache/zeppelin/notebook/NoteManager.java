@@ -53,6 +53,7 @@ public class NoteManager {
   private Folder trash;
 
   private NotebookRepo notebookRepo;
+  // noteId -> notePath
   private Map<String, String> notesInfo;
 
   public NoteManager(NotebookRepo notebookRepo) throws IOException {
@@ -87,7 +88,7 @@ public class NoteManager {
     for (String notePath : notesInfo.values()) {
       try {
         notes.add(getNoteNode(notePath).getNote());
-      } catch (IOException e) {
+      } catch (Exception e) {
         LOGGER.warn("Fail to load note: " + notePath, e);
       }
     }
@@ -114,7 +115,7 @@ public class NoteManager {
       }
     }
     if (checkDuplicates && curFolder.containsNote(tokens[tokens.length - 1])) {
-      throw new IOException("Note " + note.getPath() + " existed");
+      throw new IOException("Note '" + note.getPath() + "' existed");
     }
     curFolder.addNote(tokens[tokens.length -1], note);
     this.notesInfo.put(note.getId(), note.getPath());
@@ -163,6 +164,12 @@ public class NoteManager {
    */
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
     addOrUpdateNoteNode(note);
+    this.notebookRepo.save(note, subject);
+    note.setLoaded(true);
+  }
+
+  public void addNote(Note note, AuthenticationInfo subject) throws IOException {
+    addOrUpdateNoteNode(note, true);
     this.notebookRepo.save(note, subject);
     note.setLoaded(true);
   }
@@ -259,6 +266,13 @@ public class NoteManager {
     return notes;
   }
 
+  /**
+   * Get note from NotebookRepo.
+   *
+   * @param noteId
+   * @return return null if not found on NotebookRepo.
+   * @throws IOException
+   */
   public Note getNote(String noteId) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {

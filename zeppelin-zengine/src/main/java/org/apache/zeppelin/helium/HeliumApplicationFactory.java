@@ -16,21 +16,29 @@
  */
 package org.apache.zeppelin.helium;
 
-import org.apache.zeppelin.interpreter.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import javax.inject.Inject;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteApplicationResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
-import org.apache.zeppelin.notebook.*;
+import org.apache.zeppelin.notebook.ApplicationState;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteEventListener;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.ExecutorFactory;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * HeliumApplicationFactory
@@ -41,9 +49,16 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
   private Notebook notebook;
   private ApplicationEventListener applicationEventListener;
 
-  public HeliumApplicationFactory() {
-    executor = ExecutorFactory.singleton().createOrGet(
-        HeliumApplicationFactory.class.getName(), 10);
+  @Inject
+  public HeliumApplicationFactory(
+      Notebook notebook, ApplicationEventListener applicationEventListener) {
+    this.executor =
+        ExecutorFactory.singleton().createOrGet(HeliumApplicationFactory.class.getName(), 10);
+    this.notebook = notebook;
+    this.applicationEventListener = applicationEventListener;
+
+    // TODO(jl): Hmmmmmmmm...
+    this.notebook.addNotebookEventListener(this);
   }
 
   private boolean isRemote(InterpreterGroup group) {
@@ -379,12 +394,18 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
       return null;
     }
 
-    Note note = notebook.getNote(noteId);
-
-    if (note == null) {
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+      if (note == null) {
+        logger.warn("Note " + noteId + " not found");
+        return null;
+      }
+    } catch (IOException e) {
       logger.error("Can't get note {}", noteId);
       return null;
     }
+
     Paragraph paragraph = note.getParagraph(paragraphId);
     if (paragraph == null) {
       logger.error("Can't get paragraph {}", paragraphId);
@@ -394,22 +415,6 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
     ApplicationState appFound = paragraph.getApplicationState(appId);
 
     return appFound;
-  }
-
-  public Notebook getNotebook() {
-    return notebook;
-  }
-
-  public void setNotebook(Notebook notebook) {
-    this.notebook = notebook;
-  }
-
-  public ApplicationEventListener getApplicationEventListener() {
-    return applicationEventListener;
-  }
-
-  public void setApplicationEventListener(ApplicationEventListener applicationEventListener) {
-    this.applicationEventListener = applicationEventListener;
   }
 
   @Override

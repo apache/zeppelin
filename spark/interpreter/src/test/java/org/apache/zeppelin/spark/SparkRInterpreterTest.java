@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -53,10 +55,10 @@ public class SparkRInterpreterTest {
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
     properties.setProperty("zeppelin.spark.test", "true");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.R.knitr", "true");
     properties.setProperty("spark.r.backendConnectionTimeout", "10");
-
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
+    
     InterpreterContext context = getInterpreterContext();
     InterpreterContext.set(context);
     sparkRInterpreter = new SparkRInterpreter(properties);
@@ -78,8 +80,6 @@ public class SparkRInterpreterTest {
 
   @Test
   public void testSparkRInterpreter() throws InterpreterException, InterruptedException {
-
-
     InterpreterResult result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().get(0).getData().contains("2"));
@@ -148,6 +148,35 @@ public class SparkRInterpreterTest {
     result = sparkRInterpreter.interpret("1+1", getInterpreterContext());
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     assertTrue(result.message().get(0).getData().contains("sparkR backend is dead"));
+  }
+
+  @Test
+  public void testInvalidR() throws InterpreterException {
+    tearDown();
+
+    Properties properties = new Properties();
+    properties.setProperty("zeppelin.R.cmd", "invalid_r");
+    properties.setProperty("spark.master", "local");
+    properties.setProperty("spark.app.name", "test");
+    
+    InterpreterGroup interpreterGroup = new InterpreterGroup();
+    Interpreter sparkRInterpreter = new LazyOpenInterpreter(new SparkRInterpreter(properties));
+    Interpreter sparkInterpreter = new LazyOpenInterpreter(new SparkInterpreter(properties));
+    interpreterGroup.addInterpreterToSession(sparkRInterpreter, "session_1");
+    interpreterGroup.addInterpreterToSession(sparkInterpreter, "session_1");
+    sparkRInterpreter.setInterpreterGroup(interpreterGroup);
+    sparkInterpreter.setInterpreterGroup(interpreterGroup);
+
+    InterpreterContext context = getInterpreterContext();
+    InterpreterContext.set(context);
+
+    try {
+      sparkRInterpreter.interpret("1+1", getInterpreterContext());
+      fail("Should fail to open SparkRInterpreter");
+    } catch (InterpreterException e) {
+      String stacktrace = ExceptionUtils.getStackTrace(e);
+      assertTrue(stacktrace, stacktrace.contains("No such file or directory"));
+    }
   }
 
   private InterpreterContext getInterpreterContext() {

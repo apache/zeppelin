@@ -31,6 +31,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.NotebookImportDeserializer;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.notebook.socket.WatcherMessage;
 import org.apache.zeppelin.user.AuthenticationInfo;
@@ -83,6 +84,13 @@ public class ConnectionManager {
       .create()
       .isZeppelinNotebookCollaborativeModeEnable();
 
+
+  private AuthorizationService authorizationService;
+
+  public void setAuthorizationService(
+          AuthorizationService authorizationService) {
+    this.authorizationService = authorizationService;
+  }
 
   public void addConnection(NotebookSocket conn) {
     connectedSockets.add(conn);
@@ -354,13 +362,12 @@ public class ConnectionManager {
   public void broadcastNoteListExcept(List<NoteInfo> notesInfo,
                                       AuthenticationInfo subject) {
     Set<String> userAndRoles;
-    NotebookAuthorization authInfo = NotebookAuthorization.getInstance();
     for (String user : userSocketMap.keySet()) {
       if (subject.getUser().equals(user)) {
         continue;
       }
       //reloaded already above; parameter - false
-      userAndRoles = authInfo.getRoles(user);
+      userAndRoles = authorizationService.getRoles(user);
       userAndRoles.add(user);
       // TODO(zjffdu) is it ok for comment the following line ?
       // notesInfo = generateNotesInfo(false, new AuthenticationInfo(user), userAndRoles);

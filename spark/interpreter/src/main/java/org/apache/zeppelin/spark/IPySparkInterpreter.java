@@ -59,7 +59,7 @@ public class IPySparkInterpreter extends IPythonInterpreter {
         !conf.get("spark.submit.deployMode").equals("cluster")) {
       setAdditionalPythonPath(PythonUtils.sparkPythonPath());
     }
-    setAddBulitinPy4j(false);
+    setUseBuiltinPy4j(false);
     setAdditionalPythonInitFile("python/zeppelin_ipyspark.py");
     setProperty("zeppelin.py4j.useAuth",
         sparkInterpreter.getSparkVersion().isSecretSocketSupported() + "");
@@ -67,8 +67,8 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   }
 
   @Override
-  protected Map<String, String> setupIPythonEnv() throws IOException {
-    Map<String, String> env = super.setupIPythonEnv();
+  protected Map<String, String> setupKernelEnv() throws IOException {
+    Map<String, String> env = super.setupKernelEnv();
     // set PYSPARK_PYTHON
     SparkConf conf = sparkInterpreter.getSparkContext().getConf();
     if (conf.contains("spark.pyspark.python")) {
@@ -83,7 +83,9 @@ public class IPySparkInterpreter extends IPythonInterpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st, InterpreterContext context) {
+  public InterpreterResult interpret(String st,
+                                     InterpreterContext context) throws InterpreterException {
+    Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(), context, properties);
     InterpreterContext.set(context);
     String jobGroupId = Utils.buildJobGroupId(context);
     String jobDesc = Utils.buildJobDesc(context);

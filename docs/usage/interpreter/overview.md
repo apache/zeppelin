@@ -139,8 +139,8 @@ This approach works, but is not particularly convenient. `ConfInterpreter` can p
 
 `ConfInterpreter` is a generic interpreter that can be used by any interpreter. The input format should be the property file format.
 It can be used to make custom settings for any interpreter. However, `ConfInterpreter` needs to be run before that interpreter process is launched. When that interpreter process is launched is determined by the interpreter mode setting.
-So users need to understand the ([interpreter mode setting ](../usage/interpreter/interpreter_bindings_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g., if we set the Spark interpreter setting as isolated per note, then, under this setting, each note will launch one interpreter process. 
-In this scenario, users need to put `ConfInterpreter` as the first paragraph as in the below example. Otherwise, the customized setting cannot be applied (actually it would report ERROR)
+So users need to understand the [interpreter mode setting](../usage/interpreter/interpreter_bindings_mode.html) of Zeppelin and be aware of when the interpreter process is launched. E.g., if we set the Spark interpreter setting as isolated per note, then, under this setting, each note will launch one interpreter process. 
+In this scenario, users need to put `ConfInterpreter` as the first paragraph as in the below example. Otherwise, the customized setting cannot be applied (actually it would report ERROR).
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/conf_interpreter.png" width="700px">
 
 
@@ -150,3 +150,19 @@ Before 0.8.0, shutting down Zeppelin also meant to shutdown all the running inte
 In such cases, interpreter process recovery is necessary. Starting from 0.8.0, users can enable interpreter process recovery via the setting `zeppelin.recovery.storage.class` as 
 `org.apache.zeppelin.interpreter.recovery.FileSystemRecoveryStorage` or other implementations if available in the future. By default it is `org.apache.zeppelin.interpreter.recovery.NullRecoveryStorage`,
  which means recovery is not enabled. Enabling recovery means shutting down Zeppelin would not terminate interpreter processes, and when Zeppelin is restarted, it would try to reconnect to the existing running interpreter processes. If you want to kill all the interpreter processes after terminating Zeppelin even when recovery is enabled, you can run `bin/stop-interpreter.sh` 
+
+## Credential Injection
+
+Credentials from the credential manager can be injected into Notebooks. Credential injection works by replacing the following patterns in Notebooks with matching credentials for the Credential Manager: `{user.CREDENTIAL_ENTITY}` and `{password.CREDENTIAL_ENTITY}`. However, credential injection must be enabled per Interpreter, by adding a boolean `injectCredentials` setting in the Interpreters configuration. Injected passwords are removed from Notebook output to prevent accidentally leaking passwords.
+
+**Credential Injection Setting**
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_injection_setting.png" width="500px">
+
+**Credential Entry Example**
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/credential_entry.png" width="500px">
+
+**Credential Injection Example**
+```
+val password = "{password.SOME_CREDENTIAL_ENTITY}"
+val username = "{user.SOME_CREDENTIAL_ENTITY}"
+```

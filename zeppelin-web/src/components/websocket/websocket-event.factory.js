@@ -107,7 +107,7 @@ function WebsocketEventFactory($rootScope, $websocket, $location, baseUrlSrv, ng
         closeByBackdrop: false,
         closeByKeyboard: false,
         title: 'Insufficient privileges',
-        message: data.info.toString(),
+        message: _.escape(data.info.toString()),
         buttons: btn,
       });
     } else if (op === 'PARAGRAPH') {

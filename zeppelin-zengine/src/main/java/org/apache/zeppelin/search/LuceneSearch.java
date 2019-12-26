@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -84,6 +85,7 @@ public class LuceneSearch extends SearchService {
   private IndexWriterConfig indexWriterConfig;
   private IndexWriter indexWriter;
 
+  @Inject
   public LuceneSearch(ZeppelinConfiguration zeppelinConfiguration) {
     super("LuceneSearch-Thread");
     this.zeppelinConfiguration = zeppelinConfiguration;

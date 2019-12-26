@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +43,8 @@ import java.util.Properties;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
 
 public class FlinkInterpreterTest {
 
@@ -53,14 +56,21 @@ public class FlinkInterpreterTest {
   // catch the interpreter output in onUpdate
   private List<InterpreterResultMessageOutput> messageOutput;
 
+
   @Before
   public void setUp() throws InterpreterException {
     Properties p = new Properties();
+    p.setProperty("zeppelin.flink.printREPLOutput", "true");
+    p.setProperty("zeppelin.flink.scala.color", "false");
+    p.setProperty("flink.execution.mode", "local");
+
     interpreter = new FlinkInterpreter(p);
     InterpreterGroup intpGroup = new InterpreterGroup();
     interpreter.setInterpreterGroup(intpGroup);
     interpreter.open();
-    context = InterpreterContext.builder().build();
+    context = InterpreterContext.builder()
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
+            .build();
     InterpreterContext.set(context);
   }
 
@@ -70,7 +80,7 @@ public class FlinkInterpreterTest {
   }
 
   @Test
-  public void testBasicScala() throws InterpreterException, IOException {
+  public void testBasicScala() throws InterpreterException {
     InterpreterResult result = interpreter.interpret("val a=\"hello world\"",
         getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -130,21 +140,15 @@ public class FlinkInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     // case class
-    result = interpreter.interpret(
-        "case class Bank(age:Integer, job:String, marital : String, education : String," +
-            " balance : Integer)\n",
-        getInterpreterContext());
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-
-    // ZeppelinContext
-    context = getInterpreterContext();
-    result = interpreter.interpret("val ds = benv.fromElements(1,2,3)\nz.show(ds)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
-    assertEquals(InterpreterResult.Type.TABLE, messageOutput.get(0).getType());
-    assertEquals("f0\n" +
-        "1\n" +
-        "2\n" +
-        "3\n", messageOutput.get(0).toInterpreterResultMessage().getData());
+    //    result = interpreter.interpret(
+    //            "case class WC(word: String, count: Int)\n" +
+    //            "val wordCounts = benv.fromElements(\n" +
+    //            "WC(\"hello\", 1),\n" +
+    //            "WC(\"world\", 2),\n" +
+    //            "WC(\"world\", 8))\n" +
+    //            "wordCounts.collect()",
+    //        getInterpreterContext());
+    //    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
     context = getInterpreterContext();
     result = interpreter.interpret("z.input(\"name\", \"default_name\")",
@@ -200,20 +204,26 @@ public class FlinkInterpreterTest {
     List<InterpreterCompletion> completions = interpreter.completion("a.", 2,
         getInterpreterContext());
     assertTrue(completions.size() > 0);
+
+    completions = interpreter.completion("benv.", 5, getInterpreterContext());
+    assertTrue(completions.size() > 0);
   }
 
-
-  // Disable it for now as there's extra std output from flink shell.
   @Test
-  public void testWordCount() throws InterpreterException, IOException {
-    interpreter.interpret("val text = benv.fromElements(\"To be or not to be\")",
+  public void testBatchWordCount() throws InterpreterException, IOException {
+    InterpreterResult result = interpreter.interpret(
+            "val data = benv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")",
         getInterpreterContext());
-    interpreter.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }" +
-        ".map { (_, 1) }.groupBy(0).sum(1)", getInterpreterContext());
-    InterpreterResult result = interpreter.interpret("counts.print()", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = interpreter.interpret(
+            "data.flatMap(line => line.split(\"\\\\s\"))\n" +
+            "  .map(w => (w, 1))\n" +
+            "  .groupBy(0)\n" +
+            "  .sum(1)\n" +
+            "  .print()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
-    String[] expectedCounts = {"(to,2)", "(be,2)", "(or,1)", "(not,1)"};
+    String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
     Arrays.sort(expectedCounts);
 
     String[] counts = output.split("\n");
@@ -222,12 +232,50 @@ public class FlinkInterpreterTest {
     assertArrayEquals(expectedCounts, counts);
   }
 
+  @Test
+  public void testStreamWordCount() throws InterpreterException {
+    InterpreterResult result = interpreter.interpret(
+            "val data = senv.fromElements(\"hello world\", \"hello flink\", \"hello hadoop\")",
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = interpreter.interpret(
+            "data.flatMap(line => line.split(\"\\\\s\"))\n" +
+                    "  .map(w => (w, 1))\n" +
+                    "  .keyBy(0)\n" +
+                    "  .sum(1)\n" +
+                    "  .print()\n" +
+                    "senv.execute()", getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
+    String[] expectedCounts = {"(hello,3)", "(world,1)", "(flink,1)", "(hadoop,1)"};
+    for (String expectedCount : expectedCounts) {
+      assertTrue(output, output.contains(expectedCount));
+    }
+  }
+
+  //@Test
+  public void testStreamUDF() throws InterpreterException {
+    InterpreterResult result = interpreter.interpret(
+            "class MyUpper extends ScalarFunction {\n" +
+                    "  def eval(str: String) = str.toUpperCase\n" +
+                    "}\n" +
+                    "stenv.registerFunction(\"myupper\", new MyUpper())",
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    result = interpreter.interpret(
+            "val data = Seq(\"Hello\", \"Flink\")\n" +
+            "val source = senv.fromCollection(data).toTable(stenv, 'word)\n" +
+            "source.select(\"myupper(word)\").print()",
+            getInterpreterContext());
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
+
   private InterpreterContext getInterpreterContext() {
     output = "";
     messageOutput = new ArrayList<>();
     InterpreterContext context = InterpreterContext.builder()
-        .setInterpreterOut(new InterpreterOutput(null))
         .setAngularObjectRegistry(new AngularObjectRegistry("flink", null))
+        .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
         .build();
     context.out = new InterpreterOutput(
         new InterpreterOutputListener() {

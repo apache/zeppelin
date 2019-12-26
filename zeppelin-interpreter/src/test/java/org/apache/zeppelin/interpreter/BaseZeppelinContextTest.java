@@ -133,7 +133,7 @@ public class BaseZeppelinContextTest {
     }
 
     @Override
-    protected String showData(Object obj) {
+    public String showData(Object obj, int maxResult) {
       return null;
     }
   }

@@ -19,6 +19,7 @@ package org.apache.zeppelin.rest;
 import java.io.IOException;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -28,19 +29,20 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.service.ConfigurationService;
-import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.AuthenticationService;
 
 /** Configurations Rest API Endpoint. */
 @Path("/configurations")
 @Produces("application/json")
+@Singleton
 public class ConfigurationsRestApi extends AbstractRestApi {
 
   private ConfigurationService configurationService;
 
   @Inject
   public ConfigurationsRestApi(
-      SecurityService securityService, ConfigurationService configurationService) {
-    super(securityService);
+          AuthenticationService authenticationService, ConfigurationService configurationService) {
+    super(authenticationService);
     this.configurationService = configurationService;
   }
 

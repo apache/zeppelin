@@ -58,17 +58,14 @@ public class PluginManager {
 
   public NotebookRepo loadNotebookRepo(String notebookRepoClassName) throws IOException {
     LOGGER.info("Loading NotebookRepo Plugin: " + notebookRepoClassName);
-    // load plugin from classpath directly when it is test.
-    // otherwise load it from plugin folder
-    String isTest = System.getenv("IS_ZEPPELIN_TEST");
-    if (isTest != null && isTest.equals("true")) {
-      try {
-        NotebookRepo notebookRepo = (NotebookRepo)
-            (Class.forName(notebookRepoClassName).newInstance());
-        return notebookRepo;
-      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
-      }
+    // load plugin from classpath directly first for these builtin NotebookRepo (such as VFSNoteBookRepo
+    // and GitNotebookRepo). If fails, then try to load it from plugin folder
+    try {
+      NotebookRepo notebookRepo = (NotebookRepo)
+              (Class.forName(notebookRepoClassName).newInstance());
+      return notebookRepo;
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);
@@ -112,7 +109,7 @@ public class PluginManager {
             (Class.forName(notebookRepoClassName).newInstance());
         return notebookRepo;
       } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName, e);
+        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
       }
     }
 
@@ -143,6 +140,19 @@ public class PluginManager {
       return cachedLaunchers.get(launcherPlugin);
     }
     LOGGER.info("Loading Interpreter Launcher Plugin: " + launcherPlugin);
+    // load plugin from classpath directly first for these builtin InterpreterLauncher.
+    // If fails, then try to load it from plugin folder.
+    try {
+      InterpreterLauncher launcher = (InterpreterLauncher)
+              (Class.forName("org.apache.zeppelin.interpreter.launcher." + launcherPlugin))
+                      .getConstructor(ZeppelinConfiguration.class, RecoveryStorage.class)
+                      .newInstance(zConf, recoveryStorage);
+      return launcher;
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException
+            | NoSuchMethodException | InvocationTargetException e) {
+      LOGGER.warn("Fail to instantiate InterpreterLauncher from classpath directly:" + launcherPlugin, e);
+    }
+
     URLClassLoader pluginClassLoader = getPluginClassLoader(pluginsDir, "Launcher", launcherPlugin);
     String pluginClass = "org.apache.zeppelin.interpreter.launcher." + launcherPlugin;
     InterpreterLauncher launcher = null;

@@ -84,7 +84,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     newElem(
       interpreterContext,
       name,
-      angularObjects + (name -> angularObject),
+      angularObjects + ((name, angularObject)),
       elem)
   }
 
@@ -147,7 +147,7 @@ abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
     newElem(
       interpreterContext,
       modelName,
-      angularObjects + (eventName -> angularObject),
+      angularObjects + ((eventName, angularObject)),
       elem)
   }
 

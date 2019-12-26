@@ -17,14 +17,16 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
+import java.io.Serializable;
 import org.apache.zeppelin.common.JsonSerializable;
 
 /**
  * Identifying resource
  */
-public class ResourceId implements JsonSerializable {
+public class ResourceId implements JsonSerializable, Serializable {
   private static final Gson gson = new Gson();
 
+  // resourcePoolId is the interpreterGroupId which is unique across one Zeppelin instance
   private final String resourcePoolId;
   private final String name;
   private final String noteId;

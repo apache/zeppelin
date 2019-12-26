@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.python;
 
+import net.jodah.concurrentunit.ConcurrentTestCase;
 import org.apache.zeppelin.display.ui.CheckBox;
 import org.apache.zeppelin.display.ui.Password;
 import org.apache.zeppelin.display.ui.Select;
@@ -41,10 +42,11 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public abstract class BasePythonInterpreterTest {
+public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
 
   protected InterpreterGroup intpGroup;
   protected Interpreter interpreter;
+  protected boolean isPython2;
 
   @Before
   public abstract void setUp() throws InterpreterException;
@@ -201,19 +203,22 @@ public abstract class BasePythonInterpreterTest {
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(0, interpreterResultMessages.size());
+
+    // multiple text output
+    context = getInterpreterContext();
+    result = interpreter.interpret(
+            "for i in range(1,4):\n" + "\tprint(i)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    interpreterResultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals("1\n2\n3\n", interpreterResultMessages.get(0).getData());
   }
 
   @Test
   public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
-    // there's no completion for 'a.' because it is not recognized by compiler for now.
-    InterpreterContext context = getInterpreterContext();
-    String st = "a='hello'\na.";
-    List<InterpreterCompletion> completions = interpreter.completion(st, st.length(), context);
-    assertEquals(0, completions.size());
-
     // define `a` first
-    context = getInterpreterContext();
-    st = "a='hello'";
+    InterpreterContext context = getInterpreterContext();
+    String st = "a='hello'";
     InterpreterResult result = interpreter.interpret(st, context);
     Thread.sleep(100);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
@@ -221,7 +226,7 @@ public abstract class BasePythonInterpreterTest {
     // now we can get the completion for `a.`
     context = getInterpreterContext();
     st = "a.";
-    completions = interpreter.completion(st, st.length(), context);
+    List<InterpreterCompletion> completions = interpreter.completion(st, st.length(), context);
     // it is different for python2 and python3 and may even different for different minor version
     // so only verify it is larger than 20
     assertTrue(completions.size() > 20);
@@ -297,7 +302,8 @@ public abstract class BasePythonInterpreterTest {
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
         "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    assertEquals(context.out.toInterpreterResultMessage().toString(),
+            InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());

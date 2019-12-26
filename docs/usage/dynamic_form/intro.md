@@ -120,7 +120,9 @@ print("Hello "+z.textbox("name"))
 
     </div>
 </div>
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_prog.png" width="500px" />
+
+Use `z.input()` instead in version 0.7.3 or prior. `z.input()` is deprecated in 0.8.0.
 
 ### Text input form with default value
 <div class="codetabs">
@@ -141,7 +143,9 @@ print("Hello "+z.textbox("name", "sun"))
 
     </div>
 </div>
-<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" width="500px" />
+
+Use `z.input()` instead in version 0.7.3 or prior. `z.input()` is deprecated in 0.8.0.
 
 ### Password form
 <div class="codetabs">

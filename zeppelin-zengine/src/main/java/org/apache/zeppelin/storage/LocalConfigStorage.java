@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.storage;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterInfoSaving;
@@ -32,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
@@ -102,15 +104,21 @@ public class LocalConfigStorage extends ConfigStorage {
     atomicWriteToFile(credentials, credentialPath);
   }
 
-  private String readFromFile(File file) throws IOException {
-    return IOUtils.toString(new FileInputStream(file));
+  @VisibleForTesting
+  static String readFromFile(File file) throws IOException {
+    try (FileInputStream is = new FileInputStream(file)) {
+      return IOUtils.toString(is);
+    }
   }
 
-  private void atomicWriteToFile(String content, File file) throws IOException {
-    File directory = file.getParentFile();
-    File tempFile = File.createTempFile(file.getName(), null, directory);
-    FileOutputStream out = new FileOutputStream(tempFile);
-    try {
+  @VisibleForTesting
+  static void atomicWriteToFile(String content, File file) throws IOException {
+    FileSystem defaultFileSystem = FileSystems.getDefault();
+    Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
+    Path destinationDirectory = destinationFilePath.getParent();
+    Files.createDirectories(destinationDirectory);
+    File tempFile = Files.createTempFile(destinationDirectory, file.getName(), null).toFile();
+    try (FileOutputStream out = new FileOutputStream(tempFile)) {
       IOUtils.write(content, out);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
@@ -118,12 +126,10 @@ public class LocalConfigStorage extends ConfigStorage {
       }
       throw iox;
     }
-    out.close();
-    FileSystem defaultFileSystem = FileSystems.getDefault();
-    Path tempFilePath = defaultFileSystem.getPath(tempFile.getCanonicalPath());
-    Path destinationFilePath = defaultFileSystem.getPath(file.getCanonicalPath());
     try {
-      Files.move(tempFilePath, destinationFilePath, StandardCopyOption.ATOMIC_MOVE);
+      file.getParentFile().mkdirs();
+      Files.move(tempFile.toPath(), destinationFilePath,
+              StandardCopyOption.REPLACE_EXISTING); //StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException iox) {
       if (!tempFile.delete()) {
         tempFile.deleteOnExit();

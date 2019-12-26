@@ -102,6 +102,7 @@ public class PySparkInterpreterMatplotlibTest {
     p.setProperty("zeppelin.dep.localrepo", tmpDir.newFolder().getAbsolutePath());
     p.setProperty("zeppelin.pyspark.useIPython", "false");
     p.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    p.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
     return p;
   }
 

@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 
 /**
  * Contains the Spark and Zeppelin Contexts made available to SparkR.
@@ -27,7 +28,7 @@ import org.apache.spark.sql.SQLContext;
 public class ZeppelinRContext {
   private static SparkContext sparkContext;
   private static SQLContext sqlContext;
-  private static SparkZeppelinContext zeppelinContext;
+  private static BaseZeppelinContext zeppelinContext;
   private static Object sparkSession;
   private static JavaSparkContext javaSparkContext;
 
@@ -35,7 +36,7 @@ public class ZeppelinRContext {
     ZeppelinRContext.sparkContext = sparkContext;
   }
 
-  public static void setZeppelinContext(SparkZeppelinContext zeppelinContext) {
+  public static void setZeppelinContext(BaseZeppelinContext zeppelinContext) {
     ZeppelinRContext.zeppelinContext = zeppelinContext;
   }
 
@@ -55,7 +56,7 @@ public class ZeppelinRContext {
     return sqlContext;
   }
 
-  public static SparkZeppelinContext getZeppelinContext() {
+  public static BaseZeppelinContext getZeppelinContext() {
     return zeppelinContext;
   }
 

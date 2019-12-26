@@ -99,6 +99,11 @@ public class SparkShimsTest {
             public String showDataFrame(Object obj, int maxResult) {
               return null;
             }
+
+            @Override
+            public Object getAsDataFrame(String value) {
+              return null;
+            }
           };
       assertEquals(expected, sparkShims.supportYarn6615(version));
     }
@@ -121,15 +126,17 @@ public class SparkShimsTest {
       when(mockContext.getIntpEventClient()).thenReturn(mockIntpEventClient);
       doNothing().when(mockIntpEventClient).onParaInfosReceived(argumentCaptor.capture());
       try {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_2_0_0.toString(), new Properties(), null);
       } catch (Throwable ignore) {
-        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties());
+        sparkShims = SparkShims.getInstance(SparkVersion.SPARK_1_6_0.toString(), new Properties(), null);
       }
     }
 
     @Test
     public void runUnderLocalTest() {
-      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, mockContext);
+      Properties properties = new Properties();
+      properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
+      sparkShims.buildSparkJobUrl("local", "http://sparkurl", 0, properties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));
@@ -138,8 +145,9 @@ public class SparkShimsTest {
 
     @Test
     public void runUnderYarnTest() {
-
-      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, mockContext);
+      Properties properties = new Properties();
+      properties.setProperty("spark.jobGroup.id", "zeppelin|user1|noteId|paragraphId");
+      sparkShims.buildSparkJobUrl("yarn", "http://sparkurl", 0, properties, mockContext);
 
       Map<String, String> mapValue = argumentCaptor.getValue();
       assertTrue(mapValue.keySet().contains("jobUrl"));

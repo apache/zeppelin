@@ -29,6 +29,8 @@ import java.util.List;
 public class FileSystemStorage {
 
   private static Logger LOGGER = LoggerFactory.getLogger(FileSystemStorage.class);
+  private static final String S3A = "s3a";
+  private static final String FS_DEFAULTFS = "fs.defaultFS";
 
   // only do UserGroupInformation.loginUserFromKeytab one time, otherwise you will still get
   // your ticket expired.
@@ -60,18 +62,42 @@ public class FileSystemStorage {
   public FileSystemStorage(ZeppelinConfiguration zConf, String path) throws IOException {
     this.zConf = zConf;
     this.hadoopConf = new Configuration();
-    // disable checksum for local file system. because interpreter.json may be updated by
-    // non-hadoop filesystem api
-    // disable caching for file:// scheme to avoid getting LocalFS which does CRC checks
-    this.hadoopConf.setBoolean("fs.file.impl.disable.cache", true);
-    this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
-    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+    URI zepConfigURI;
+    URI defaultFSURI;
 
     try {
-      this.fs = FileSystem.get(new URI(path), this.hadoopConf);
+      zepConfigURI = new URI(path);
     } catch (URISyntaxException e) {
+      LOGGER.error("Failed to get Zeppelin config URI");
       throw new IOException(e);
     }
+    // disable checksum for local file system. because interpreter.json may be updated by
+    // non-hadoop filesystem api
+    // disable caching for file:// scheme to avoid getting LocalFS which does CRC checks.
+
+    this.hadoopConf.setBoolean("fs.file.impl.disable.cache", true);
+    String defaultFS = this.hadoopConf.get(FS_DEFAULTFS);
+    try {
+      defaultFSURI = new URI(defaultFS);
+    } catch (URISyntaxException e) {
+      LOGGER.error("Failed to get defaultFS URI");
+      throw new IOException(e);
+    }
+
+    // to check whether underlying fileSystemStorage is S3A or not
+    if (!isS3AFileSystem(defaultFSURI, zepConfigURI)) {
+      this.hadoopConf.set("fs.file.impl", RawLocalFileSystem.class.getName());
+    }
+
+    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+
+    this.fs = FileSystem.get(zepConfigURI, this.hadoopConf);
+  }
+  
+  public boolean isS3AFileSystem(URI defaultFSURI, URI zepConfigURI) {
+    return defaultFSURI.getScheme().equals(S3A)
+      || (StringUtils.isNotEmpty(zepConfigURI.getScheme())
+      && zepConfigURI.getScheme().equals(S3A));
   }
 
   public FileSystem getFs() {

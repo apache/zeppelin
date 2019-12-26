@@ -25,10 +25,19 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import java.util.Properties;
 import java.util.Set;
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
+import org.apache.zeppelin.cluster.ClusterManagerServer;
+import org.apache.zeppelin.cluster.event.ClusterEvent;
+import org.apache.zeppelin.cluster.event.ClusterEventListener;
+import org.apache.zeppelin.cluster.event.ClusterMessage;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.Dependency;
@@ -45,7 +54,9 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.ApplicationState;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphTextParser;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
@@ -53,6 +64,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.util.ReflectionUtils;
 import org.apache.zeppelin.storage.ConfigStorage;
+import org.eclipse.jetty.util.annotation.ManagedAttribute;
+import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.Proxy;
@@ -76,10 +89,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.apache.zeppelin.cluster.ClusterManagerServer.CLUSTER_INTP_SETTING_EVENT_TOPIC;
 
 
 /**
@@ -87,8 +101,8 @@ import java.util.stream.Collectors;
  * (load/create/update/remove/get)
  * TODO(zjffdu) We could move it into another separated component.
  */
-public class InterpreterSettingManager implements InterpreterSettingManagerMBean,
-    NoteEventListener {
+@ManagedObject("interpreterSettingManager")
+public class InterpreterSettingManager implements NoteEventListener, ClusterEventListener {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterSettingManager.class);
   private static final Map<String, Object> DEFAULT_EDITOR = ImmutableMap.of(
@@ -117,6 +131,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   private String defaultInterpreterGroup;
   private final Gson gson;
 
+  private Notebook notebook;
   private AngularObjectRegistryListener angularObjectRegistryListener;
   private RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   private ApplicationEventListener appEventListener;
@@ -125,7 +140,9 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   private RecoveryStorage recoveryStorage;
   private ConfigStorage configStorage;
   private RemoteInterpreterEventServer interpreterEventServer;
+  private Map<String, String> jupyterKernelLanguageMap = new HashMap<>();
 
+  @Inject
   public InterpreterSettingManager(ZeppelinConfiguration zeppelinConfiguration,
                                    AngularObjectRegistryListener angularObjectRegistryListener,
                                    RemoteInterpreterProcessListener
@@ -235,26 +252,13 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
 
       InterpreterSetting interpreterSettingTemplate =
           interpreterSettingTemplates.get(savedInterpreterSetting.getGroup());
-      // InterpreterSettingTemplate is from interpreter-setting.json which represent the latest
+      // InterpreterSettingTemplate is from interpreter-setting.json which represent the initialized
       // InterpreterSetting, while InterpreterSetting is from interpreter.json which represent
       // the user saved interpreter setting
       if (interpreterSettingTemplate != null) {
-        savedInterpreterSetting.setInterpreterDir(interpreterSettingTemplate.getInterpreterDir());
-        // merge properties from interpreter-setting.json and interpreter.json
-        Map<String, InterpreterProperty> mergedProperties =
-            new HashMap<>(InterpreterSetting.convertInterpreterProperties(
-                interpreterSettingTemplate.getProperties()));
-        Map<String, InterpreterProperty> savedProperties = InterpreterSetting
-            .convertInterpreterProperties(savedInterpreterSetting.getProperties());
-        for (Map.Entry<String, InterpreterProperty> entry : savedProperties.entrySet()) {
-          // only merge properties whose value is not empty
-          if (entry.getValue().getValue() != null && !
-              StringUtils.isBlank(entry.getValue().toString())) {
-            mergedProperties.put(entry.getKey(), entry.getValue());
-          }
-        }
-        savedInterpreterSetting.setProperties(mergedProperties);
-        // merge InterpreterInfo
+        // merge InterpreterDir, InterpreterInfo & InterpreterRunner
+        savedInterpreterSetting.setInterpreterDir(
+            interpreterSettingTemplate.getInterpreterDir());
         savedInterpreterSetting.setInterpreterInfos(
             interpreterSettingTemplate.getInterpreterInfos());
         savedInterpreterSetting.setInterpreterRunner(
@@ -277,6 +281,15 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       LOGGER.info("Create Interpreter Setting {} from interpreter.json",
           savedInterpreterSetting.getName());
       interpreterSettings.put(savedInterpreterSetting.getId(), savedInterpreterSetting);
+    }
+
+    for (InterpreterSetting interpreterSettingTemplate : interpreterSettingTemplates.values()) {
+      InterpreterSetting interpreterSetting = new InterpreterSetting(interpreterSettingTemplate);
+      initInterpreterSetting(interpreterSetting);
+      // add newly detected interpreter if it doesn't exist in interpreter.json
+      if (!interpreterSettings.containsKey(interpreterSetting.getId())) {
+        interpreterSettings.put(interpreterSetting.getId(), interpreterSetting);
+      }
     }
 
     if (infoSaving.interpreterRepositories != null) {
@@ -302,10 +315,23 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   }
 
   private void init() throws IOException {
-
+    loadJupyterKernelLanguageMap();
     loadInterpreterSettingFromDefaultDir(true);
     loadFromFile();
     saveToFile();
+  }
+
+  private void loadJupyterKernelLanguageMap() throws IOException {
+    String kernels = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS);
+    for (String kernel : kernels.split(",")) {
+      String[] tokens = kernel.split(":");
+      if (tokens.length != 2) {
+        throw new IOException("Invalid kernel specified in " +
+                ConfVars.ZEPPELIN_INTERPRETER_JUPYTER_KERNELS.getVarName() + ", Invalid kernel: " + kernel +
+                ", please use format kernel_name:language");
+      }
+      this.jupyterKernelLanguageMap.put(tokens[0].trim(), tokens[1].trim());
+    }
   }
 
   private void loadInterpreterSettingFromDefaultDir(boolean override) throws IOException {
@@ -339,6 +365,10 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     } else {
       LOGGER.warn("InterpreterDir {} doesn't exist", interpreterDirPath);
     }
+  }
+
+  public void setNotebook(Notebook notebook) {
+    this.notebook = notebook;
   }
 
   public RemoteInterpreterProcessListener getRemoteInterpreterProcessListener() {
@@ -398,7 +428,9 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       //TODO(zjffdu) merge RegisteredInterpreter & InterpreterInfo
       InterpreterInfo interpreterInfo =
           new InterpreterInfo(registeredInterpreter.getClassName(), registeredInterpreter.getName(),
-              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor());
+              registeredInterpreter.isDefaultInterpreter(), registeredInterpreter.getEditor(),
+              registeredInterpreter.getConfig());
+      interpreterInfo.setConfig(registeredInterpreter.getConfig());
       group = registeredInterpreter.getGroup();
       runner = registeredInterpreter.getRunner();
       // use defaultOption if it is not specified in interpreter-setting.json
@@ -430,26 +462,27 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
-  @VisibleForTesting
   public InterpreterSetting getDefaultInterpreterSetting(String noteId) {
-    List<InterpreterSetting> allInterpreterSettings = getInterpreterSettings(noteId);
-    return allInterpreterSettings.size() > 0 ? allInterpreterSettings.get(0) : null;
-  }
-
-  public List<InterpreterSetting> getInterpreterSettings(String noteId) {
-    return get();
+    try {
+      Note note = notebook.getNote(noteId);
+      InterpreterSetting interpreterSetting = interpreterSettings.get(note.getDefaultInterpreterGroup());
+      if (interpreterSetting == null) {
+        interpreterSetting = get().get(0);
+      }
+      return interpreterSetting;
+    } catch (Exception e) {
+      LOGGER.warn("Fail to get note: " + noteId, e);
+      return get().get(0);
+    }
   }
 
   public InterpreterSetting getInterpreterSettingByName(String name) {
-    try {
-      for (InterpreterSetting setting : interpreterSettings.values()) {
-        if (setting.getName().equals(name)) {
-          return setting;
-        }
+    for (InterpreterSetting setting : interpreterSettings.values()) {
+      if (setting.getName().equals(name)) {
+        return setting;
       }
-      throw new RuntimeException("No such interpreter setting: " + name);
-    } finally {
     }
+    return null;
   }
 
   public ManagedInterpreterGroup getInterpreterGroupById(String groupId) {
@@ -462,34 +495,93 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     return null;
   }
 
-  //TODO(zjffdu) logic here is a little ugly
-  public Map<String, Object> getEditorSetting(Interpreter interpreter, String user, String noteId,
-      String replName) {
-    Map<String, Object> editor = DEFAULT_EDITOR;
-    String group = StringUtils.EMPTY;
-    try {
-      String defaultSettingName = getDefaultInterpreterSetting(noteId).getName();
-      List<InterpreterSetting> intpSettings = getInterpreterSettings(noteId);
-      for (InterpreterSetting intpSetting : intpSettings) {
-        String[] replNameSplit = replName.split("\\.");
-        if (replNameSplit.length == 2) {
-          group = replNameSplit[0];
+  /**
+   * Get editor setting for one paragraph based on its magic part and noteId
+   *
+   * @param magic
+   * @param noteId
+   * @return
+   */
+  public Map<String, Object> getEditorSetting(String magic, String noteId) {
+    ParagraphTextParser.ParseResult parseResult = ParagraphTextParser.parse(magic);
+    if (StringUtils.isBlank(parseResult.getIntpText())) {
+      // Use default interpreter setting if no interpreter is specified.
+      InterpreterSetting interpreterSetting = getDefaultInterpreterSetting(noteId);
+      try {
+        return interpreterSetting.getDefaultInterpreterInfo().getEditor();
+      } catch (Exception e) {
+        LOGGER.warn(e.getMessage());
+        return DEFAULT_EDITOR;
+      }
+    } else {
+      String[] replNameSplit = parseResult.getIntpText().split("\\.");
+      if (replNameSplit.length == 1) {
+        // Either interpreter group or interpreter name is specified.
+
+        // Assume it is interpreter name
+        String intpName = replNameSplit[0];
+        InterpreterSetting defaultInterpreterSetting = getDefaultInterpreterSetting(noteId);
+        InterpreterInfo interpreterInfo = defaultInterpreterSetting.getInterpreterInfo(intpName);
+        if (interpreterInfo != null) {
+          return interpreterInfo.getEditor();
         }
-        // when replName is 'name' of interpreter
-        if (intpSetting.getName().equals(defaultSettingName)) {
-          editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
+
+        // Then assume it is interpreter group name
+        String intpGroupName = replNameSplit[0];
+        if (intpGroupName.equals("jupyter")) {
+          InterpreterSetting interpreterSetting = interpreterSettings.get("jupyter");
+          Map<String, Object> jupyterEditorSetting = interpreterSetting.getInterpreterInfos().get(0).getEditor();
+          String kernel = parseResult.getLocalProperties().get("kernel");
+          if (kernel != null) {
+            String language = jupyterKernelLanguageMap.get(kernel);
+            if (language != null) {
+              jupyterEditorSetting.put("language", language);
+            }
+          }
+          return jupyterEditorSetting;
+        } else {
+          try {
+            InterpreterSetting interpreterSetting = getInterpreterSettingByName(intpGroupName);
+            if (interpreterSetting == null) {
+              return DEFAULT_EDITOR;
+            }
+            return interpreterSetting.getDefaultInterpreterInfo().getEditor();
+          } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+            return DEFAULT_EDITOR;
+          }
         }
-        // when replName is 'alias name' of interpreter or 'group' of interpreter
-        if (replName.equals(intpSetting.getName()) || group.equals(intpSetting.getName())) {
-          editor = intpSetting.getEditorFromSettingByClassName(interpreter.getClassName());
-          break;
+      } else {
+        // Both interpreter group and name are specified. e.g. spark.pyspark
+        String intpGroupName = replNameSplit[0];
+        String intpName = replNameSplit[1];
+        try {
+          InterpreterSetting interpreterSetting = getInterpreterSettingByName(intpGroupName);
+          return interpreterSetting.getInterpreterInfo(intpName).getEditor();
+        } catch (Exception e) {
+          LOGGER.warn(e.getMessage());
+          return DEFAULT_EDITOR;
         }
       }
-    } catch (NullPointerException e) {
-      // Use `debug` level because this log occurs frequently
-      LOGGER.debug("Couldn't get interpreter editor setting");
     }
-    return editor;
+  }
+
+  // Get configuration parameters from `interpreter-setting.json`
+  // based on the interpreter group ID
+  public Map<String, Object> getConfigSetting(String interpreterGroupId) {
+    InterpreterSetting interpreterSetting = get(interpreterGroupId);
+    if (null != interpreterSetting) {
+      List<InterpreterInfo> interpreterInfos = interpreterSetting.getInterpreterInfos();
+      int infoSize = interpreterInfos.size();
+      for (InterpreterInfo intpInfo : interpreterInfos) {
+        if ((intpInfo.isDefaultInterpreter() || (infoSize == 1))
+            && (intpInfo.getConfig() != null)) {
+          return intpInfo.getConfig();
+        }
+      }
+    }
+
+    return new HashMap<>();
   }
 
   public List<ManagedInterpreterGroup> getAllInterpreterGroup() {
@@ -609,37 +701,30 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
    * changed
    */
   private void copyDependenciesFromLocalPath(final InterpreterSetting setting) {
-    setting.setStatus(InterpreterSetting.Status.DOWNLOADING_DEPENDENCIES);
-      final Thread t = new Thread() {
-        public void run() {
-          try {
-            List<Dependency> deps = setting.getDependencies();
-            if (deps != null) {
-              for (Dependency d : deps) {
-                File destDir = new File(
-                    conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    try {
+      List<Dependency> deps = setting.getDependencies();
+      if (deps != null) {
+        LOGGER.info("Start to copy dependencies for interpreter: " + setting.getName());
+        for (Dependency d : deps) {
+          File destDir = new File(
+              conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
 
-                int numSplits = d.getGroupArtifactVersion().split(":").length;
-                if (!(numSplits >= 3 && numSplits <= 6)) {
-                  dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
-                      new File(destDir, setting.getId()));
-                }
-              }
-            }
-            setting.setStatus(InterpreterSetting.Status.READY);
-          } catch (Exception e) {
-            LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
-                    " go to interpreter setting page click on edit and save it again to make " +
-                    "this interpreter work properly.",
-                setting.getGroup()), e);
-            setting.setErrorReason(e.getLocalizedMessage());
-            setting.setStatus(InterpreterSetting.Status.ERROR);
-          } finally {
-
+          int numSplits = d.getGroupArtifactVersion().split(":").length;
+          if (!(numSplits >= 3 && numSplits <= 6)) {
+            dependencyResolver.copyLocalDependency(d.getGroupArtifactVersion(),
+                new File(destDir, setting.getId()));
           }
         }
-      };
-      t.start();
+        LOGGER.info("Finish copy dependencies for interpreter: " + setting.getName());
+      }
+    } catch (Exception e) {
+      LOGGER.error(String.format("Error while copying deps for interpreter group : %s," +
+              " go to interpreter setting page click on edit and save it again to make " +
+              "this interpreter work properly.",
+          setting.getGroup()), e);
+      setting.setErrorReason(e.getLocalizedMessage());
+      setting.setStatus(InterpreterSetting.Status.ERROR);
+    }
   }
 
   /**
@@ -656,9 +741,29 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   }
 
   public InterpreterSetting createNewSetting(String name, String group,
-      List<Dependency> dependencies, InterpreterOption option, Map<String, InterpreterProperty> p)
+                                             List<Dependency> dependencies,
+                                             InterpreterOption option,
+                                             Map<String, InterpreterProperty> properties)
       throws IOException {
 
+    InterpreterSetting interpreterSetting = null;
+    try {
+      interpreterSetting = inlineCreateNewSetting(name, group, dependencies, option, properties);
+
+      broadcastClusterEvent(ClusterEvent.CREATE_INTP_SETTING, interpreterSetting);
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
+    }
+
+    return interpreterSetting;
+  }
+
+  private InterpreterSetting inlineCreateNewSetting(String name, String group,
+                                                    List<Dependency> dependencies,
+                                                    InterpreterOption option,
+                                                    Map<String, InterpreterProperty> properties)
+      throws IOException {
     if (name.indexOf(".") >= 0) {
       throw new IOException("'.' is invalid for InterpreterSetting name.");
     }
@@ -674,23 +779,12 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     //TODO(zjffdu) Should use setDependencies
     setting.appendDependencies(dependencies);
     setting.setInterpreterOption(option);
-    setting.setProperties(p);
+    setting.setProperties(properties);
     initInterpreterSetting(setting);
     interpreterSettings.put(setting.getId(), setting);
     saveToFile();
+
     return setting;
-  }
-
-
-
-  @VisibleForTesting
-  public void closeNote(String user, String noteId) {
-    // close interpreters in this note session
-    LOGGER.info("Close Note: {}", noteId);
-    List<InterpreterSetting> settings = getInterpreterSettings(noteId);
-    for (InterpreterSetting setting : settings) {
-      setting.closeInterpreters(user, noteId);
-    }
   }
 
   public Map<String, InterpreterSetting> getInterpreterSettingTemplates() {
@@ -730,13 +824,14 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     dependencyResolver.delRepo(id);
     saveToFile();
   }
-
-  /** Change interpreter properties and restart */
-  public void setPropertyAndRestart(
+  
+  /** restart in interpreter setting page */
+  private InterpreterSetting inlineSetPropertyAndRestart(
       String id,
       InterpreterOption option,
       Map<String, InterpreterProperty> properties,
-      List<Dependency> dependencies)
+      List<Dependency> dependencies,
+      boolean initiator)
       throws InterpreterException, IOException {
     InterpreterSetting intpSetting = interpreterSettings.get(id);
     if (intpSetting != null) {
@@ -746,13 +841,32 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
         intpSetting.setProperties(properties);
         intpSetting.setDependencies(dependencies);
         intpSetting.postProcessing();
-        saveToFile();
+        if (initiator) {
+          saveToFile();
+        }
       } catch (Exception e) {
         loadFromFile();
         throw new IOException(e);
       }
     } else {
       throw new InterpreterException("Interpreter setting id " + id + " not found");
+    }
+    return intpSetting;
+  }
+
+  /** Change interpreter properties and restart */
+  public void setPropertyAndRestart(
+      String id,
+      InterpreterOption option,
+      Map<String, InterpreterProperty> properties,
+      List<Dependency> dependencies)
+      throws InterpreterException, IOException {
+    try {
+      InterpreterSetting intpSetting = inlineSetPropertyAndRestart(id, option, properties, dependencies, true);
+      // broadcast cluster event
+      broadcastClusterEvent(ClusterEvent.UPDATE_INTP_SETTING, intpSetting);
+    } catch (Exception e) {
+      throw e;
     }
   }
 
@@ -771,8 +885,11 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
+  @VisibleForTesting
   public void restart(String id) throws InterpreterException {
-    interpreterSettings.get(id).close();
+    InterpreterSetting setting = interpreterSettings.get(id);
+    copyDependenciesFromLocalPath(setting);
+    setting.close();
   }
 
   public InterpreterSetting get(String id) {
@@ -790,6 +907,17 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   }
 
   public void remove(String id) throws IOException {
+    boolean removed = inlineRemove(id, true);
+    if (removed) {
+      // broadcast cluster event
+      InterpreterSetting intpSetting = new InterpreterSetting();
+      intpSetting.setId(id);
+      broadcastClusterEvent(ClusterEvent.DELETE_INTP_SETTING, intpSetting);
+    }
+  }
+
+  private boolean inlineRemove(String id, boolean initiator) throws IOException {
+    boolean removed = false;
     // 1. close interpreter groups of this interpreter setting
     // 2. remove this interpreter setting
     // 3. remove this interpreter setting from note binding
@@ -799,11 +927,18 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
       InterpreterSetting intp = interpreterSettings.get(id);
       intp.close();
       interpreterSettings.remove(id);
-      saveToFile();
+      if (initiator) {
+        // Event initiator saves the file
+        // Cluster event accepting nodes do not need to save files repeatedly
+        saveToFile();
+      }
+      removed = true;
     }
 
     File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
     FileUtils.deleteDirectory(localRepoDir);
+
+    return removed;
   }
 
   /**
@@ -868,7 +1003,7 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
     }
   }
 
-  @Override
+  @ManagedAttribute
   public Set<String> getRunningInterpreters() {
     Set<String> runningInterpreters = Sets.newHashSet();
     for (Map.Entry<String, InterpreterSetting> entry : interpreterSettings.entrySet()) {
@@ -955,4 +1090,61 @@ public class InterpreterSettingManager implements InterpreterSettingManagerMBean
   public void onParagraphStatusChange(Paragraph p, Job.Status status) throws IOException {
 
   }
+
+  @Override
+  public void onClusterEvent(String msg) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("onClusterEvent : {}", msg);
+    }
+
+    try {
+      Gson gson = new Gson();
+      ClusterMessage message = ClusterMessage.deserializeMessage(msg);
+      String jsonIntpSetting = message.get("intpSetting");
+      InterpreterSetting intpSetting = InterpreterSetting.fromJson(jsonIntpSetting);
+      String id = intpSetting.getId();
+      String name = intpSetting.getName();
+      String group = intpSetting.getGroup();
+      InterpreterOption option = intpSetting.getOption();
+      HashMap<String, InterpreterProperty> properties
+          = (HashMap<String, InterpreterProperty>) InterpreterSetting
+          .convertInterpreterProperties(intpSetting.getProperties());
+      List<Dependency> dependencies = intpSetting.getDependencies();
+
+      switch (message.clusterEvent) {
+        case CREATE_INTP_SETTING:
+          inlineCreateNewSetting(name, group, dependencies, option, properties);
+          break;
+        case UPDATE_INTP_SETTING:
+          inlineSetPropertyAndRestart(id, option, properties, dependencies, false);
+          break;
+        case DELETE_INTP_SETTING:
+          inlineRemove(id, false);
+          break;
+        default:
+          LOGGER.error("Unknown clusterEvent:{}, msg:{} ", message.clusterEvent, msg);
+          break;
+      }
+    } catch (IOException e) {
+      LOGGER.error(e.getMessage(), e);
+    } catch (InterpreterException e) {
+      LOGGER.error(e.getMessage(), e);
+    }
+  }
+
+  // broadcast cluster event
+  private void broadcastClusterEvent(ClusterEvent event, InterpreterSetting intpSetting) {
+    if (!conf.isClusterMode()) {
+      return;
+    }
+
+    String jsonIntpSetting = InterpreterSetting.toJson(intpSetting);
+
+    ClusterMessage message = new ClusterMessage(event);
+    message.put("intpSetting", jsonIntpSetting);
+    String msg = ClusterMessage.serializeMessage(message);
+    ClusterManagerServer.getInstance().broadcastClusterEvent(
+        CLUSTER_INTP_SETTING_EVENT_TOPIC, msg);
+  }
+
 }

@@ -143,7 +143,7 @@ enable 3rd party vendor repository (Cloudera, Hortonworks)
 
 #### -Pexamples (optional)
 
-Bulid examples under zeppelin-examples directory
+Build examples under zeppelin-examples directory
 
 
 ### Build command examples

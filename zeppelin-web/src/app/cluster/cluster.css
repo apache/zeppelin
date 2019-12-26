@@ -1,0 +1,226 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.cluster-col {
+  margin: 0;
+  padding: 0;
+}
+
+.cluster {
+  padding: 2px 8px 4px 8px;
+  min-height: 32px;
+}
+
+.cluster-manager-header {
+  margin: -10px -10px 20px;
+  padding: 10px 15px 15px 15px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.cluster-manager-header .header {
+  font-family: 'Roboto', sans-serif;
+}
+
+.cluster-search-tool {
+  display: inline-block;
+  margin-left: 15px;
+}
+
+#cluster-manager-header .cluster-search-tool .search-input {
+  margin-right: 7px;
+  min-width: 215px;
+}
+
+#cluster-manager-header .cluster-search-tool .search-input > input {
+  font-family: 'FontAwesome', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  border-radius: 4px;
+  font-size: 14px;
+  padding-left: 10px;
+}
+
+#cluster-manager-header .cluster-search-tool .dropdown-toggle {
+  border-radius: 3px;
+  float: none;
+  min-width: 150px;
+  text-align: left;
+  margin-right: 5px;
+}
+
+
+#cluster-manager-header .cluster-search-tool .date-sort-button {
+  min-width: 180px;
+}
+
+.cluster-search-tool .dropdown-text-desc {
+  color: gray;
+  font-weight: 400;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.cluster-search-tool .dropdown-text-value {
+  margin-left: 2px;
+  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.search-tool-dropdown-content > li > a {
+  border-bottom: 1px solid #eee;
+}
+
+.search-tool-dropdown-content > li:last-child > a {
+  border-bottom: none;
+}
+
+.cluster-icon-desc-container {
+  display: inline-block;
+  margin-top: 10px;
+  margin-right: 30px;
+  float: right;
+}
+
+.cluster-desc-icon {
+  margin-right: 3px;
+}
+
+.cluster-pagination-container {
+  text-align: center;
+  margin-top: 50px;
+  padding-bottom: 100px;
+}
+
+.cluster-counter {
+  float: right;
+  clear: both;
+  margin-left: 8px;
+  margin-top: 6px;
+}
+
+.cluster-counter .cluster-counter-label {
+  color: gray;
+}
+
+.cluster-counter .cluster-counter-value {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/*
+  node Style
+*/
+
+.node-space {
+  margin-bottom: 5px !important;
+  padding: 10px 10px 10px 10px !important;
+  min-height: 30px;
+}
+
+.node-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.node-types i {
+  font-weight: bold;
+  font-size: 10px;
+}
+
+
+/*
+  node Controls CSS
+*/
+
+.node .runControl {
+  font-size: 1px;
+  color: #AAAAAA;
+  height:4px;
+  margin: 0px 0px 0px 0px;
+}
+
+.node .runControl .progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  z-index: 100;
+  border-radius: 0;
+}
+
+.node .control span {
+  margin-left: 4px;
+}
+
+.node .control {
+  background: rgba(255,255,255,0.85);
+  float: right;
+  color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position: absolute;
+  clear: both;
+  right: 15px;
+  text-align: right;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.node .control li {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #333333;
+}
+
+.node .control .tooltip {
+  z-index: 10003;
+}
+
+.node .control .node-control-btn {
+  cursor: pointer;
+  color: #3071A9;
+}
+
+@-webkit-keyframes spinnerRotateAnimation
+{
+  from{-webkit-transform:rotate(0deg);}
+  to{-webkit-transform:rotate(360deg);}
+}
+@-moz-keyframes spinnerRotateAnimation
+{
+  from{-moz-transform:rotate(0deg);}
+  to{-moz-transform:rotate(360deg);}
+}
+@-ms-keyframes spinnerRotateAnimation
+{
+  from{-ms-transform:rotate(0deg);}
+  to{-ms-transform:rotate(360deg);}
+}
+
+@keyframes spinnerRotateAnimation {
+  from {transform: rotate(0deg);}
+  to{transform: rotate(360deg);}
+}
+
+.spinAnimation{
+  -webkit-animation-name: spinnerRotateAnimation;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-name: spinnerRotateAnimation;
+  -moz-animation-duration: 1s;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-timing-function: linear;
+  -ms-animation-name: spinnerRotateAnimation;
+  -ms-animation-duration: 1s;
+  -ms-animation-iteration-count: infinite;
+  -ms-animation-timing-function: linear;
+}

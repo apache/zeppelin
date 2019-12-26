@@ -5,3 +5,10 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 Portions of this software were developed at NFLabs, Inc. (http://www.nflabs.com)
+
+# Third-party library binaries
+
+1. libpty binary library
+
+   * Pseudo terminal(PTY) implementation in Java
+   * (Eclipse Public License) pty4j - http://www.eclipse.org/legal/epl-v10.html

@@ -52,5 +52,20 @@
       "editOnDblClick": false,
       "completionSupport": false
     }
+  },
+  {
+    "group": "sh",
+    "name": "terminal",
+    "className": "org.apache.zeppelin.shell.TerminalInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "sh",
+      "editOnDblClick": false,
+      "completionSupport": false
+    },
+    "config": {
+      "checkEmpty": false
+    }
   }
 ]

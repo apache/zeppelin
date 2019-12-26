@@ -374,9 +374,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
 
     try {
       // remove magic from paragraphText
-      const splited = paragraphText.split(magic);
+      const splited = paragraphText.slice(paragraphText.indexOf(magic) + magic.length);
       // remove leading spaces
-      const textWithoutMagic = splited[1].replace(/^\s+/g, '');
+      const textWithoutMagic = splited.replace(/^\s+/g, '');
 
       if (!propagated) {
         $scope.paragraph.dateStarted = $scope.getFormattedParagraphTime();
@@ -509,33 +509,18 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     $scope.$emit('runAllBelowAndCurrent', paragraph, true);
   };
 
-  $scope.runAllToOrFromThis = function(paragraph) {
-    BootstrapDialog.show({
-      message: 'Run paragraphs:',
-      title: '',
-      buttons: [{
-        label: 'Close',
-        action: function(dialog) {
-          dialog.close();
-        },
-      },
-      {
-        label: 'Run all above',
-        cssClass: 'btn-primary',
-        action: function(dialog) {
-          $scope.$emit('runAllAbove', paragraph, false);
-          dialog.close();
-        },
-      },
-      {
-        label: 'Run current and all below',
-        cssClass: 'btn-primary',
-        action: function(dialog) {
-          $scope.$emit('runAllBelowAndCurrent', paragraph, false);
-          dialog.close();
-        },
-      }],
-    });
+  $scope.runAllFromThisFromShortcut = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
+    $scope.$emit('runAllBelowAndCurrent', paragraph, false);
+  };
+
+  $scope.runAllToThisFromShortcut = function(paragraph) {
+    if ($scope.isNoteRunning) {
+      return;
+    }
+    $scope.$emit('runAllAbove', paragraph, false);
   };
 
   $scope.turnOnAutoRun = function(paragraph) {
@@ -782,7 +767,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
       $scope.editor.setHighlightActiveLine($scope.paragraphFocused);
 
       if ($scope.paragraphFocused) {
-        let prefix = '%' + getInterpreterName($scope.paragraph.text);
+        let prefix = getParagraphMagic($scope.paragraph.text);
         let paragraphText = $scope.paragraph.text ? $scope.paragraph.text.trim() : '';
 
         $scope.editor.focus();
@@ -1118,10 +1103,10 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     }
   };
 
-  let getEditorSetting = function(paragraph, interpreterName) {
+  let getEditorSetting = function(paragraph, magic) {
     let deferred = $q.defer();
     if (!$scope.revisionView) {
-      websocketMsgSrv.getEditorSetting(paragraph.id, interpreterName);
+      websocketMsgSrv.getEditorSetting(paragraph.id, magic);
       $timeout(
         $scope.$on('editorSetting', function(event, data) {
           if (paragraph.id === data.paragraphId) {
@@ -1151,7 +1136,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         !setInterpreterBindings) {
         session.setMode($scope.paragraph.config.editorMode);
       } else {
-        let magic = getInterpreterName(paragraphText);
+        let magic = getParagraphMagic(paragraphText);
         if (editorSetting.magic !== magic) {
           editorSetting.magic = magic;
           getEditorSetting($scope.paragraph, magic)
@@ -1166,8 +1151,9 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
     setInterpreterBindings = false;
   };
 
-  const getInterpreterName = function(paragraphText) {
-    let intpNameRegexp = /^\s*%(.+?)(\s|\()/g;
+  // return the text that is composed of interpreter name and paragraph properties
+  const getParagraphMagic = function(paragraphText) {
+    let intpNameRegexp = /^\s*(%.+?)(\s)/g;
     let match = intpNameRegexp.exec(paragraphText);
     if (match) {
       return match[1].trim();
@@ -1686,9 +1672,11 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $timeout(() => $scope.$emit('moveFocusToNextParagraph', paragraphId));
       } else if (!keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.runParagraphFromShortcut($scope.getEditorValue());
-      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 13) { // Ctrl + Shift + Enter
-        $scope.runAllToOrFromThis($scope.paragraph);
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 38) { // Ctrl + Shift + UP
+        $scope.runAllToThisFromShortcut($scope.paragraph);
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 40) { // Ctrl + Shift + Down
+        $scope.runAllFromThisFromShortcut($scope.paragraph);
+      }else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph($scope.paragraph);
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
         $scope.removeParagraph($scope.paragraph);

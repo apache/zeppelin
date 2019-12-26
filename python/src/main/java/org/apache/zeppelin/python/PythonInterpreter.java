@@ -17,14 +17,11 @@
 
 package org.apache.zeppelin.python;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,11 +33,11 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InvalidHookException;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterUtils;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
+import org.apache.zeppelin.interpreter.util.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import py4j.GatewayServer;
@@ -52,30 +49,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Interpreter for Python, it is the first implementation of interpreter for Python, so with less
  * features compared to IPythonInterpreter, but requires less prerequisites than
  * IPythonInterpreter, only python installation is required.
  */
-public class PythonInterpreter extends Interpreter implements ExecuteResultHandler {
+public class PythonInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(PythonInterpreter.class);
   private static final int MAX_TIMEOUT_SEC = 30;
 
   private GatewayServer gatewayServer;
-  private DefaultExecutor executor;
+  private PythonProcessLauncher pythonProcessLauncher;
   private File pythonWorkDir;
   protected boolean useBuiltinPy4j = true;
 
   // used to forward output from python process to InterpreterOutput
   private InterpreterOutputStream outputStream;
-  private AtomicBoolean pythonScriptRunning = new AtomicBoolean(false);
-  private AtomicBoolean pythonScriptInitialized = new AtomicBoolean(false);
   private long pythonPid = -1;
   private IPythonInterpreter iPythonInterpreter;
   private BaseZeppelinContext zeppelinContext;
-  private String condaPythonExec;  // set by PythonCondaInterpreter
+  // set by PythonCondaInterpreter
+  private String condaPythonExec;
   private boolean usePy4jAuth = false;
 
   public PythonInterpreter(Properties property) {
@@ -88,7 +83,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     iPythonInterpreter = getIPythonInterpreter();
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
         StringUtils.isEmpty(
-            iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
+            iPythonInterpreter.checkKernelPrerequisite(getPythonExec()))) {
       try {
         iPythonInterpreter.open();
         LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
@@ -145,22 +140,33 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     cmd.addArgument(serverAddress, false);
     cmd.addArgument(Integer.toString(port), false);
 
-    executor = new DefaultExecutor();
     outputStream = new InterpreterOutputStream(LOGGER);
-    PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-    executor.setStreamHandler(streamHandler);
-    executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
     Map<String, String> env = setupPythonEnv();
     if (usePy4jAuth) {
       env.put("PY4J_GATEWAY_SECRET", secret);
     }
     LOGGER.info("Launching Python Process Command: " + cmd.getExecutable() +
         " " + StringUtils.join(cmd.getArguments(), " "));
-    executor.execute(cmd, env, this);
-    pythonScriptRunning.set(true);
+
+    pythonProcessLauncher = new PythonProcessLauncher(cmd, env);
+    pythonProcessLauncher.launch();
+    pythonProcessLauncher.waitForReady(MAX_TIMEOUT_SEC * 1000);
+
+    if (!pythonProcessLauncher.isRunning()) {
+      if (pythonProcessLauncher.isLaunchTimeout()) {
+        throw new IOException("Launch python process is time out.\n" +
+                pythonProcessLauncher.getErrorMessage());
+      } else {
+        throw new IOException("Fail to launch python process.\n" +
+                pythonProcessLauncher.getErrorMessage());
+      }
+    }
   }
 
-
+  @VisibleForTesting
+  public PythonProcessLauncher getPythonProcessLauncher() {
+    return pythonProcessLauncher;
+  }
 
   private void createPythonScript() throws IOException {
     // set java.io.tmpdir to /tmp on MacOS, because docker can not share the /var folder which will
@@ -238,11 +244,15 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       iPythonInterpreter.close();
       return;
     }
-
-    pythonScriptRunning.set(false);
-    pythonScriptInitialized.set(false);
-    executor.getWatchdog().destroyProcess();
-    gatewayServer.shutdown();
+    if (pythonProcessLauncher != null) {
+      if (pythonProcessLauncher.isRunning()) {
+        LOGGER.info("Kill python process");
+        pythonProcessLauncher.stop();
+      }
+    }
+    if (gatewayServer != null) {
+      gatewayServer.shutdown();
+    }
 
     // reset these 2 monitors otherwise when you restart PythonInterpreter it would fails to execute
     // python code as these 2 objects are in incorrect state.
@@ -321,10 +331,9 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
   // called by Python Process
   public void onPythonScriptInitialized(long pid) {
     pythonPid = pid;
-    synchronized (pythonScriptInitialized) {
+    synchronized (pythonProcessLauncher) {
       LOGGER.debug("onPythonScriptInitialized is called");
-      pythonScriptInitialized.set(true);
-      pythonScriptInitialized.notifyAll();
+      pythonProcessLauncher.initialized();
     }
   }
 
@@ -348,7 +357,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     }
 
     synchronized (statementFinishedNotifier) {
-      while (statementOutput == null) {
+      while (statementOutput == null && pythonProcessLauncher.isRunning()) {
         try {
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
@@ -365,41 +374,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       return iPythonInterpreter.interpret(st, context);
     }
 
-    if (!pythonScriptRunning.get()) {
-      return new InterpreterResult(Code.ERROR, "python process not running "
-          + outputStream.toString());
-    }
-
     outputStream.setInterpreterOutput(context.out);
-
-    synchronized (pythonScriptInitialized) {
-      long startTime = System.currentTimeMillis();
-      while (!pythonScriptInitialized.get()
-          && System.currentTimeMillis() - startTime < MAX_TIMEOUT_SEC * 1000) {
-        try {
-          LOGGER.info("Wait for PythonScript initialized");
-          pythonScriptInitialized.wait(100);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-
-    List<InterpreterResultMessage> errorMessage;
-    try {
-      context.out.flush();
-      errorMessage = context.out.toInterpreterResultMessage();
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-
-    if (!pythonScriptInitialized.get()) {
-      // timeout. didn't get initialized message
-      errorMessage.add(new InterpreterResultMessage(
-          InterpreterResult.Type.TEXT, "Failed to initialize Python"));
-      return new InterpreterResult(Code.ERROR, errorMessage);
-    }
-
     BaseZeppelinContext z = getZeppelinContext();
     z.setInterpreterContext(context);
     z.setGui(context.getGui());
@@ -417,7 +392,12 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       } catch (IOException e) {
         throw new InterpreterException(e);
       }
-      return new InterpreterResult(Code.SUCCESS);
+      if (pythonProcessLauncher.isRunning()) {
+        return new InterpreterResult(Code.SUCCESS);
+      } else {
+        return new InterpreterResult(Code.ERROR,
+                "Python process is abnormally exited, please check your code and log.");
+      }
     }
   }
 
@@ -483,7 +463,7 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
     synchronized (statementFinishedNotifier) {
       long startTime = System.currentTimeMillis();
       while (statementOutput == null
-          && pythonScriptRunning.get()) {
+          && pythonProcessLauncher.isRunning()) {
         try {
           if (System.currentTimeMillis() - startTime > MAX_TIMEOUT_SEC * 1000) {
             LOGGER.error("Python completion didn't have response for {}sec.", MAX_TIMEOUT_SEC);
@@ -578,29 +558,66 @@ public class PythonInterpreter extends Interpreter implements ExecuteResultHandl
       InterpreterResult result = interpret(bootstrapCode + "\n" + "__zeppelin__._displayhook()",
           InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
-        throw new IOException("Fail to run bootstrap script: " + resourceName);
+        throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+      } else {
+        LOGGER.debug("Bootstrap python successfully.");
       }
     } catch (InterpreterException e) {
       throw new IOException(e);
     }
   }
 
-  @Override
-  public void onProcessComplete(int exitValue) {
-    LOGGER.info("python process terminated. exit code " + exitValue);
-    pythonScriptRunning.set(false);
-    pythonScriptInitialized.set(false);
-  }
-
-  @Override
-  public void onProcessFailed(ExecuteException e) {
-    LOGGER.error("python process failed", e);
-    pythonScriptRunning.set(false);
-    pythonScriptInitialized.set(false);
-  }
-
   // Called by Python Process, used for debugging purpose
   public void logPythonOutput(String message) {
     LOGGER.debug("Python Process Output: " + message);
+  }
+
+  class PythonProcessLauncher extends ProcessLauncher {
+
+    PythonProcessLauncher(CommandLine commandLine, Map<String, String> envs) {
+      super(commandLine, envs);
+    }
+
+    @Override
+    public void waitForReady(int timeout) {
+      long startTime = System.currentTimeMillis();
+      synchronized (this) {
+        while (state == State.LAUNCHED) {
+          LOGGER.info("Waiting for python process initialized");
+          try {
+            wait(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          if ((System.currentTimeMillis() - startTime) > timeout) {
+            onTimeout();
+            break;
+          }
+        }
+      }
+    }
+
+    public void initialized() {
+      synchronized (this) {
+        this.state = State.RUNNING;
+        notify();
+      }
+    }
+
+    @Override
+    public void onProcessFailed(ExecuteException e) {
+      super.onProcessFailed(e);
+      synchronized (statementFinishedNotifier) {
+        statementFinishedNotifier.notify();
+      }
+    }
+
+    @Override
+    public void onProcessComplete(int exitValue) {
+      super.onProcessComplete(exitValue);
+      synchronized (statementFinishedNotifier) {
+        statementFinishedNotifier.notify();
+      }
+    }
   }
 }

@@ -14,7 +14,7 @@
 
 angular.module('zeppelinWebApp').controller('CredentialCtrl', CredentialController);
 
-function CredentialController($scope, $http, baseUrlSrv, ngToast) {
+function CredentialController($scope, $rootScope, $http, baseUrlSrv, ngToast) {
   'ngInject';
 
   ngToast.dismiss();
@@ -136,9 +136,9 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
   };
 
   $scope.updateCredentialInfo = function(form, data, entity) {
-    if (!$scope.isValidCredential()) {
-      showToast('Username \\ Entity can not be empty.', 'danger');
-      return;
+    if (!data.username || !data.password) {
+      showToast('Username \\ Password can not be empty.', 'danger');
+      return false;
     }
 
     let credential = {
@@ -197,6 +197,17 @@ function CredentialController($scope, $http, baseUrlSrv, ngToast) {
       ngToast.danger({content: message, verticalPosition: verticalPosition, timeout: timeout});
     }
   }
+
+  $scope.getCredentialDocsLink = function() {
+    const currentVersion = $rootScope.zeppelinVersion;
+    const isVersionOver0Point7 = currentVersion && currentVersion.split('.')[1] > 7;
+    /*
+     * Add '/setup' to doc link on the version over 0.7.0
+     */
+    return `https://zeppelin.apache.org/docs/${currentVersion}${
+      isVersionOver0Point7 ? '/setup' : ''
+    }/security/datasource_authorization.html`;
+  };
 
   let init = function() {
     getAvailableInterpreters();

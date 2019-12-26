@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
   
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -26,14 +27,18 @@
     <relativePath>../zeppelin-interpreter-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>zeppelin-ignite_2.10</artifactId>
+  <artifactId>zeppelin-ignite</artifactId>
   <packaging>jar</packaging>
   <version>0.9.0-SNAPSHOT</version>
   <name>Zeppelin: Apache Ignite interpreter</name>
 
   <properties>
     <interpreter.name>ignite</interpreter.name>
-    <ignite.version>2.3.0</ignite.version>
+    <ignite.version>2.7.6</ignite.version>
+    <ignite.scala.version>${scala.2.11.version}</ignite.scala.version>
+
+    <!--plugin versions-->
+    <plugin.scala.version>2.15.2</plugin.scala.version>
   </properties>
 
   <dependencies>
@@ -65,25 +70,55 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
+      <version>${ignite.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
+      <version>${ignite.scala.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
+      <version>${ignite.scala.version}</version>
     </dependency>
 
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <version>${plugin.scala.version}</version>
+        <configuration>
+          <scalaVersion>${ignite.scala.version}</scalaVersion>
+        </configuration>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>

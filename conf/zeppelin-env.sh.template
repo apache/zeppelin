@@ -18,13 +18,16 @@
 
 # export JAVA_HOME=
 # export MASTER=                 		# Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode.
+# export ZEPPELIN_ADDR                  # Bind address (default 127.0.0.1)
+# export ZEPPELIN_PORT                  # port number to listen (default 8080)
+# export ZEPPELIN_LOCAL_IP              # Zeppelin's thrift server ip address, if not specified, one random IP address will be choosen.
 # export ZEPPELIN_JAVA_OPTS      		# Additional jvm options. for example, export ZEPPELIN_JAVA_OPTS="-Dspark.executor.memory=8g -Dspark.cores.max=16"
 # export ZEPPELIN_MEM            		# Zeppelin jvm mem options Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 # export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default -Xms1024m -Xmx1024m -XX:MaxPermSize=512m
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options.
 # export ZEPPELIN_SSL_PORT       		# ssl port (used when ssl environment variable is set to true)
 # export ZEPPELIN_JMX_ENABLE    		# Enable JMX feature by defining "true"
-# export ZEPPELIN_JMX_PORT      		# Port number which JMX uses. Default: "9996"
+# export ZEPPELIN_JMX_PORT      		# Port number which JMX uses. If not set, JMX won't be enabled
 
 # export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        		# The pid files are stored. ${ZEPPELIN_HOME}/run by default.
@@ -59,6 +62,8 @@
 # export ZEPPELIN_NOTEBOOK_ONE_WAY_SYNC	# If there are multiple notebook storages, should we treat the first one as the only source of truth?
 # export ZEPPELIN_NOTEBOOK_PUBLIC   # Make notebook public by default when created, private otherwise
 
+# export DOCKER_TIME_ZONE # Set to the same time zone as the zeppelin server. E.g, "America/New_York" or "Asia/Shanghai"
+
 #### Spark interpreter configuration ####
 
 ## Kerberos ticket refresh setting
@@ -72,6 +77,7 @@
 # export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
 # export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
 # export SPARK_APP_NAME                         # (optional) The name of spark application.
+# export SPARK_CONF_DIR                         # (optional) In the zeppelin interpreter on docker mode, Need to set the local spark conf folder path
 
 ## Use embedded spark binaries ##
 ## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
@@ -91,7 +97,6 @@
 # export ZEPPELIN_SPARK_IMPORTIMPLICIT  # Import implicits, UDF collection, and sql if set true. true by default.
 # export ZEPPELIN_SPARK_MAXRESULT       # Max number of Spark SQL result to display. 1000 by default.
 # export ZEPPELIN_WEBSOCKET_MAX_TEXT_MESSAGE_SIZE       # Size in characters of the maximum text message to be received by websocket. Defaults to 1024000
-
 
 #### HBase interpreter configuration ####
 

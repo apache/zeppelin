@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Splitter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -32,17 +30,13 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.ParagraphJobListener;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.SchedulerException;
 
@@ -62,8 +56,8 @@ public class LuceneSearchTest {
     when(interpreterSettingManager.getDefaultInterpreterSetting()).thenReturn(defaultInterpreterSetting);
     notebook = new Notebook(ZeppelinConfiguration.create(), mock(NotebookRepo.class),
         mock(InterpreterFactory.class), interpreterSettingManager,
-        noteSearchService, mock(NotebookAuthorization.class),
-        mock(Credentials.class));
+        noteSearchService,
+        mock(Credentials.class), null);
   }
 
   @After

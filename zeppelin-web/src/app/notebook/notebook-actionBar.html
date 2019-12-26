@@ -24,7 +24,7 @@ limitations under the License.
          tooltip-placement="bottom"
          uib-tooltip={{noteName(note)}}
          ng-click="input.showEditor = !revisionView; input.value = note.name"
-         ng-show="!input.showEditor"><span>{{noteName(note)}}</span></p>
+         ng-show="!input.showEditor"><span>{{notePath(note)}}</span></p>
     </div>
     <div style="float: left; padding-bottom: 10px">
       <span class="labelBtn btn-group">
@@ -274,7 +274,7 @@ limitations under the License.
           <li>
             <div class="cron-preset-container">
               Run note with cron scheduler.
-              Either choose from preset or write your own <a href="http://www.quartz-scheduler.org/documentation/quartz-2.1.x/tutorials/crontrigger" target="_blank">cron expression</a>.
+              Either choose from preset or write your own <a href="https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/tutorial-lesson-06.html" target="_blank">cron expression</a>.
               <div>
                 <span>- Preset</span>
                 <a class="cron-preset" ng-repeat="cr in cronOption"

@@ -69,7 +69,8 @@ fi
 
 . "${bin}/common.sh"
 
-ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}"
+ZEPPELIN_INTERPRETER_API_JAR=$(find "${ZEPPELIN_HOME}/interpreter" -name 'zeppelin-interpreter-api-*.jar')
+ZEPPELIN_INTP_CLASSPATH="${CLASSPATH}:${ZEPPELIN_INTERPRETER_API_JAR}"
 
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
@@ -79,20 +80,17 @@ fi
 # add test classes for unittest
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes" ]]; then
   ZEPPELIN_INTP_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
-  if [[ -n "${ZEPPELIN_ZENGINE_TEST}" ]]; then
-    addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
-  fi
+  addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-zengine/target/test-classes"
 fi
 
 addJarInDirForIntp "${ZEPPELIN_HOME}/zeppelin-interpreter-api/target"
-addJarInDirForIntp "${ZEPPELIN_HOME}/lib/interpreter"
 addJarInDirForIntp "${INTERPRETER_DIR}"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
-ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
+ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTP_GROUP_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}-${PORT}.pid"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_GROUP_ID}-"
 
 if [[ -z "$ZEPPELIN_IMPERSONATE_CMD" ]]; then
@@ -108,7 +106,7 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
     ZEPPELIN_LOGFILE+="${ZEPPELIN_IMPERSONATE_USER}-"
 fi
 ZEPPELIN_LOGFILE+="${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
-JAVA_INTP_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
+JAVA_INTP_OPTS+=" -Dzeppelin.log.file='${ZEPPELIN_LOGFILE}'"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
@@ -205,8 +203,11 @@ elif [[ "${INTERPRETER_ID}" == "pig" ]]; then
     echo "TEZ_CONF_DIR is not set, configuration might not be loaded"
   fi
 elif [[ "${INTERPRETER_ID}" == "flink" ]]; then
+  addJarInDirForIntp "${FLINK_HOME}/lib"
+  addJarInDirForIntp "${FLINK_HOME}/opt"
+
   if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-    ZEPPELIN_INTP_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    ZEPPELIN_INTP_CLASSPATH+=`hadoop classpath`
     export HADOOP_CONF_DIR=${HADOOP_CONF_DIR}
   else
     # autodetect HADOOP_CONF_HOME by heuristic
@@ -236,9 +237,9 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]]; then
 fi
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
+    INTERPRETER_RUN_COMMAND+=' '` echo ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" --driver-java-options \"${JAVA_INTP_OPTS}\" ${SPARK_SUBMIT_OPTIONS} ${ZEPPELIN_SPARK_CONF} ${SPARK_APP_JAR} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
 else
-    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH} ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} ${INTP_GROUP_ID} ${INTP_PORT}`
+    INTERPRETER_RUN_COMMAND+=' '` echo ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp \"${ZEPPELIN_INTP_CLASSPATH_OVERRIDES}:${ZEPPELIN_INTP_CLASSPATH}\" ${ZEPPELIN_SERVER} ${CALLBACK_HOST} ${PORT} \"${INTP_GROUP_ID}\" ${INTP_PORT}`
 fi
 
 
@@ -246,13 +247,14 @@ if [[ ! -z "$ZEPPELIN_IMPERSONATE_USER" ]] && [[ -n "${suid}" || -z "${SPARK_SUB
     INTERPRETER_RUN_COMMAND+="'"
 fi
 
+echo "Interpreter launch command: $INTERPRETER_RUN_COMMAND"
 eval $INTERPRETER_RUN_COMMAND &
 pid=$!
 
 if [[ -z "${pid}" ]]; then
   exit 1;
 else
-  echo ${pid} > ${ZEPPELIN_PID}
+  echo ${pid} > "${ZEPPELIN_PID}"
 fi
 
 

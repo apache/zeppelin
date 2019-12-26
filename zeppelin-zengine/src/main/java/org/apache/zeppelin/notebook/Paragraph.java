@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,19 +33,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.common.JsonSerializable;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.helium.HeliumPackage;
+import org.apache.zeppelin.interpreter.Constants;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -52,13 +55,13 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.JobWithProgressPoller;
-import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
@@ -94,6 +97,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
+  private transient Boolean configSettingNeedUpdate = true;
   private transient String scriptText;
   private transient Interpreter interpreter;
   private transient Note note;
@@ -103,6 +107,12 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, String> localProperties = new HashMap<>();
   private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
+  public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
+  private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
+  public static String  PARAGRAPH_CONFIG_TITLE = "title";
+  private static boolean PARAGRAPH_CONFIG_TITLE_DEFAULT = false;
+  public static String  PARAGRAPH_CONFIG_CHECK_EMTPY = "checkEmpty";
+  private static boolean PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT = true;
 
   @VisibleForTesting
   Paragraph() {
@@ -161,6 +171,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return p;
   }
 
+  private void setIntpText(String newIntptext) {
+    if (null == intpText || !this.intpText.equals(newIntptext)) {
+      this.configSettingNeedUpdate = true;
+    }
+    this.intpText = newIntptext;
+  }
+
   public void clearUserParagraphs() {
     userParagraphMap.clear();
   }
@@ -191,7 +208,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       Matcher matcher = REPL_PATTERN.matcher(this.text);
       if (matcher.matches()) {
         String headingSpace = matcher.group(1);
-        this.intpText = matcher.group(2);
+        setIntpText(matcher.group(2));
 
         if (matcher.groupCount() == 3 && matcher.group(3) != null) {
           String localPropertiesText = matcher.group(3);
@@ -216,8 +233,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         } else {
           this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
         }
+        config.putAll(localProperties);
       } else {
-        this.intpText = "";
+        setIntpText("");
         this.scriptText = this.text.trim();
       }
     }
@@ -330,12 +348,58 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return null;
   }
 
-  public boolean isBlankParagraph() {
+  public boolean shouldSkipRunParagraph() {
+    // Because the user can arbitrarily specify the paragraph's interpreter
+    // So need to determine the configuration of the interpreter
+    // and the secondary interpreter at runtime.
+    Map<String, Object> intpConfig = this.config;
+
+    if (!StringUtils.isBlank(intpText)) {
+      String[] intpList = intpText.split("\\.");
+      if (intpList.length > 0) {
+        InterpreterSettingManager intpSettingManager = note.getInterpreterSettingManager();
+        String intpName = intpList[0];
+        try {
+          InterpreterSetting intpSetting = intpSettingManager.getInterpreterSettingByName(intpName);
+          String intpInfoName = intpName; // e.g %sh
+
+          // e.g %sh.terminal
+          if (intpList.length == 2) {
+            intpInfoName = intpList[1];
+          }
+          InterpreterInfo interpreterInfo = intpSetting.getInterpreterInfo(intpInfoName);
+          if (null != interpreterInfo && null != interpreterInfo.getConfig()) {
+            intpConfig = interpreterInfo.getConfig();
+          }
+        } catch (RuntimeException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    }
+
+    // check interpreter-setting.json `config.checkEmpty` is equal false
+    Object configCheckEmpty = intpConfig.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
+    if (null != configCheckEmpty) {
+      boolean checkEmtpy = PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT;
+      try {
+        checkEmtpy = (boolean) configCheckEmpty;
+      } catch (ClassCastException e) {
+        LOGGER.error(e.getMessage(), e);
+      } catch (Exception e) {
+        LOGGER.error(e.getMessage(), e);
+      }
+      if (!checkEmtpy) {
+        LOGGER.info("This interpreter config `interpreter-setting.json` set config.{} = false", 
+            PARAGRAPH_CONFIG_CHECK_EMTPY);
+        return false;
+      }
+    }
+
     return Strings.isNullOrEmpty(scriptText);
   }
 
   public boolean execute(boolean blocking) {
-    if (isBlankParagraph()) {
+    if (shouldSkipRunParagraph()) {
       LOGGER.info("Skip to run blank paragraph. {}", getId());
       setStatus(Job.Status.FINISHED);
       return true;
@@ -344,6 +408,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     try {
       this.interpreter = getBindedInterpreter();
       setStatus(Status.READY);
+
       if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
         setAuthenticationInfo(getAuthenticationInfo());
         interpreter.getScheduler().submit(this);
@@ -363,96 +428,136 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
     } catch (InterpreterNotFoundException e) {
       InterpreterResult intpResult =
-          new InterpreterResult(InterpreterResult.Code.ERROR);
+          new InterpreterResult(InterpreterResult.Code.ERROR,
+                  String.format("Interpreter %s not found", this.intpText));
       setReturn(intpResult, e);
       setStatus(Job.Status.ERROR);
-      throw new RuntimeException(e);
+      return false;
     }
   }
 
   @Override
   protected InterpreterResult jobRun() throws Throwable {
-    this.runtimeInfos.clear();
-    this.interpreter = getBindedInterpreter();
-    if (this.interpreter == null) {
-      LOGGER.error("Can not find interpreter name " + intpText);
-      throw new RuntimeException("Can not find interpreter for " + intpText);
-    }
-    LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
-        getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
-    InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
-        interpreter.getInterpreterGroup()).getInterpreterSetting();
-    if (interpreterSetting != null) {
-      interpreterSetting.waitForReady();
-    }
-    if (this.user != null) {
-      if (subject != null && !interpreterSetting.isUserAuthorized(subject.getUsersAndRoles())) {
-        String msg = String.format("%s has no permission for %s", subject.getUser(), intpText);
-        LOGGER.error(msg);
-        return new InterpreterResult(Code.ERROR, msg);
+    try {
+      this.runtimeInfos.clear();
+      this.interpreter = getBindedInterpreter();
+      if (this.interpreter == null) {
+        LOGGER.error("Can not find interpreter name " + intpText);
+        throw new RuntimeException("Can not find interpreter for " + intpText);
       }
-    }
-
-    for (Paragraph p : userParagraphMap.values()) {
-      p.setText(getText());
-    }
-
-    // inject form
-    String script = this.scriptText;
-    if (interpreter.getFormType() == FormType.NATIVE) {
-      settings.clear();
-    } else if (interpreter.getFormType() == FormType.SIMPLE) {
-      // inputs will be built from script body
-      LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
-      LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
-      final AngularObjectRegistry angularRegistry =
-          interpreter.getInterpreterGroup().getAngularObjectRegistry();
-      String scriptBody = extractVariablesFromAngularRegistry(script, inputs, angularRegistry);
-
-      settings.setForms(inputs);
-      if (!noteInputs.isEmpty()) {
-        if (!note.getNoteForms().isEmpty()) {
-          Map<String, Input> currentNoteForms =  note.getNoteForms();
-          for (String s : noteInputs.keySet()) {
-            if (!currentNoteForms.containsKey(s)) {
-              currentNoteForms.put(s, noteInputs.get(s));
-            }
-          }
-        } else {
-          note.setNoteForms(noteInputs);
+      LOGGER.info("Run paragraph [paragraph_id: {}, interpreter: {}, note_id: {}, user: {}]",
+              getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
+      InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+              interpreter.getInterpreterGroup()).getInterpreterSetting();
+      if (interpreterSetting != null) {
+        interpreterSetting.waitForReady();
+      }
+      if (this.user != null) {
+        if (subject != null && !interpreterSetting.isUserAuthorized(subject.getUsersAndRoles())) {
+          String msg = String.format("%s has no permission for %s", subject.getUser(), intpText);
+          LOGGER.error(msg);
+          return new InterpreterResult(Code.ERROR, msg);
         }
       }
-      script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
-      script = Input.getSimpleQuery(settings.getParams(), script, false);
-    }
-    LOGGER.debug("RUN : " + script);
-    try {
-      InterpreterContext context = getInterpreterContext();
-      InterpreterContext.set(context);
-      InterpreterResult ret = interpreter.interpret(script, context);
 
-      if (interpreter.getFormType() == FormType.NATIVE) {
-        note.setNoteParams(context.getNoteGui().getParams());
-        note.setNoteForms(context.getNoteGui().getForms());
+      for (Paragraph p : userParagraphMap.values()) {
+        p.setText(getText());
       }
 
-      if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
-        return getReturn();
+      // inject form
+      String script = this.scriptText;
+      if ("simple".equalsIgnoreCase(localProperties.get("form")) ||
+              interpreter.getFormType() == FormType.SIMPLE) {
+        // inputs will be built from script body
+        LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
+        LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
+        final AngularObjectRegistry angularRegistry =
+                interpreter.getInterpreterGroup().getAngularObjectRegistry();
+        String scriptBody = extractVariablesFromAngularRegistry(script, inputs, angularRegistry);
+
+        settings.setForms(inputs);
+        if (!noteInputs.isEmpty()) {
+          if (!note.getNoteForms().isEmpty()) {
+            Map<String, Input> currentNoteForms = note.getNoteForms();
+            for (String s : noteInputs.keySet()) {
+              if (!currentNoteForms.containsKey(s)) {
+                currentNoteForms.put(s, noteInputs.get(s));
+              }
+            }
+          } else {
+            note.setNoteForms(noteInputs);
+          }
+        }
+        script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
+        script = Input.getSimpleQuery(settings.getParams(), script, false);
+      } else {
+        settings.clear();
       }
 
-      context.out.flush();
-      List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-      resultMessages.addAll(ret.message());
-      InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
-      Paragraph p = getUserParagraph(getUser());
-      if (null != p) {
-        p.setResult(res);
-        p.settings.setParams(settings.getParams());
-      }
+      LOGGER.debug("RUN : " + script);
+      try {
+        InterpreterContext context = getInterpreterContext();
+        InterpreterContext.set(context);
 
-      return res;
-    } finally {
-      InterpreterContext.remove();
+        // Inject credentials
+        String injectPropStr = interpreter.getProperty(Constants.INJECT_CREDENTIALS, "false");
+        injectPropStr = context.getStringLocalProperty(Constants.INJECT_CREDENTIALS, injectPropStr);
+        boolean shouldInjectCredentials = Boolean.parseBoolean(injectPropStr);
+
+        InterpreterResult ret = null;
+        if (shouldInjectCredentials) {
+          UserCredentials creds = context.getAuthenticationInfo().getUserCredentials();
+          CredentialInjector credinjector = new CredentialInjector(creds);
+          String code = credinjector.replaceCredentials(script);
+          ret = interpreter.interpret(code, context);
+          ret = credinjector.hidePasswords(ret);
+        } else {
+          ret = interpreter.interpret(script, context);
+        }
+
+        if (interpreter.getFormType() == FormType.NATIVE) {
+          note.setNoteParams(context.getNoteGui().getParams());
+          note.setNoteForms(context.getNoteGui().getForms());
+        }
+
+        if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
+          return getReturn();
+        }
+
+        context.out.flush();
+        List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
+        resultMessages.addAll(ret.message());
+        InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
+        Paragraph p = getUserParagraph(getUser());
+        if (null != p) {
+          p.setResult(res);
+          p.settings.setParams(settings.getParams());
+        }
+
+        // After the paragraph is executed,
+        // need to apply the paragraph to the configuration in the
+        // `interpreter-setting.json` config
+        if (this.configSettingNeedUpdate) {
+          this.configSettingNeedUpdate = false;
+          InterpreterSettingManager intpSettingManager
+                  = this.note.getInterpreterSettingManager();
+          if (null != intpSettingManager) {
+            InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
+            if (null != intpGroup && intpGroup instanceof ManagedInterpreterGroup) {
+              String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
+              Map<String, Object> config
+                      = intpSettingManager.getConfigSetting(name);
+              mergeConfig(config);
+            }
+          }
+        }
+
+        return res;
+      } finally {
+        InterpreterContext.remove();
+      }
+    } catch (Exception e) {
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
@@ -565,8 +670,48 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return config;
   }
 
+  // NOTE: function setConfig(...) will overwrite all configuration
+  // Merge configuration, you need to use function mergeConfig(...)
   public void setConfig(Map<String, Object> config) {
     this.config = config;
+  }
+
+  // [ZEPPELIN-3919] Paragraph config default value can be customized
+  // apply the `interpreter-setting.json` config
+  // When creating a paragraph, it will update some of the configuration
+  // parameters of the paragraph from the web side.
+  // Need to deal with 2 situations
+  // 1. The interpreter does not have a config configuration set,
+  //    so newConfig is equal to null, Need to be processed using the
+  //    default parameters of the interpreter
+  // 2. The user manually modified the  interpreter types of this paragraph.
+  //    Need to delete the existing configuration of this paragraph,
+  //    update with the specified interpreter configuration
+  public void mergeConfig(Map<String, Object> newConfig) {
+    if (null == newConfig || 0 == newConfig.size()) {
+      newConfig = getDefaultConfigSetting();
+    }
+
+    List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
+        PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_CHECK_EMTPY);
+    for (String removeKey : keysToRemove) {
+      if ((false == newConfig.containsKey(removeKey))
+          && (true == config.containsKey(removeKey))) {
+        this.config.remove(removeKey);
+      }
+    }
+
+    this.config.putAll(newConfig);
+  }
+
+  // default parameters of the interpreter
+  private Map<String, Object> getDefaultConfigSetting() {
+    Map<String, Object> config = new HashMap<>();
+    config.put(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_TITLE_DEFAULT);
+    config.put(PARAGRAPH_CONFIG_CHECK_EMTPY, PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT);
+
+    return config;
   }
 
   public void setReturn(InterpreterResult value, Throwable t) {
@@ -655,7 +800,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
           info = new ParagraphRuntimeInfo(key, label, tooltip, group, intpSettingId);
           this.runtimeInfos.put(key, info);
         }
-        info.addValue(infos.get(key));
+        info.addValue(infos);
       }
     }
   }

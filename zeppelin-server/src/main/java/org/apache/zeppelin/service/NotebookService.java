@@ -19,7 +19,17 @@
 package org.apache.zeppelin.service;
 
 
+import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
+
 import com.google.common.base.Strings;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -33,16 +43,17 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.NoteManager;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.ParagraphTextParser;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
 import org.apache.zeppelin.notebook.socket.Message;
 import org.apache.zeppelin.rest.exception.BadRequestException;
 import org.apache.zeppelin.rest.exception.ForbiddenException;
 import org.apache.zeppelin.rest.exception.NoteNotFoundException;
 import org.apache.zeppelin.rest.exception.ParagraphNotFoundException;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.bitbucket.cowwoc.diffmatchpatch.DiffMatchPatch;
 import org.joda.time.DateTime;
@@ -50,18 +61,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
-import static org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN;
 
 
 /**
@@ -79,64 +78,21 @@ public class NotebookService {
   private static final DateTimeFormatter TRASH_CONFLICT_TIMESTAMP_FORMATTER =
       DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-  private static NotebookService self;
-
   private ZeppelinConfiguration zConf;
   private Notebook notebook;
-  private NotebookAuthorization notebookAuthorization;
-  private NotebookServer notebookServer;
-  private CountDownLatch notebookServerInjected;
+  private AuthorizationService authorizationService;
+  private SchedulerService schedulerService;
 
   @Inject
-  public NotebookService(Notebook notebook) {
+  public NotebookService(
+      Notebook notebook,
+      AuthorizationService authorizationService,
+      ZeppelinConfiguration zeppelinConfiguration,
+      SchedulerService schedulerService) {
     this.notebook = notebook;
-    this.notebookAuthorization = notebook.getNotebookAuthorization();
-    this.zConf = notebook.getConf();
-    NotebookService.self = this;
-    notebookServerInjected = new CountDownLatch(1);
-  }
-
-  /**
-   * This is a temporal trick to connect injected class to non-injected class like {@link
-   * org.apache.zeppelin.socket.NotebookServer}. This will be removed after refactoring of
-   * Notebook\* classes.
-   *
-   * @return NotebookService
-   */
-  public static NotebookService getInstance() {
-    if (null == NotebookService.self) {
-      throw new IllegalStateException("NotebookService should be called after injection");
-    } else {
-      return NotebookService.self;
-    }
-  }
-
-  /**
-   * Only NotebookServer will call this method to register itself. This will be
-   * changed @PostConstruct. Please see {@link NotebookServer#NotebookServer()}
-   *
-   * @param notebookServer NotebookServer instance to be injected
-   */
-  public void injectNotebookServer(NotebookServer notebookServer) {
-    this.notebookServer = notebookServer;
-    // Notebook was initialized by injection, thus it should be not null
-    notebook.setParagraphJobListener(notebookServer);
-    notebookServerInjected.countDown();
-  }
-
-  /**
-   * This is a conservative to avoid timing issue between registering it and using it.
-   *
-   * @return NotebookServer instance
-   */
-  public NotebookServer getNotebookServer() {
-    try {
-      notebookServerInjected.await();
-      return notebookServer;
-    } catch (InterruptedException e) {
-      LOGGER.info("Interrupted. getNotebookServer will return null");
-      return null;
-    }
+    this.authorizationService = authorizationService;
+    this.zConf = zeppelinConfiguration;
+    this.schedulerService = schedulerService;
   }
 
   public Note getHomeNote(ServiceContext context,
@@ -147,7 +103,7 @@ public class NotebookService {
       note = notebook.getNote(noteId);
       if (note != null) {
         if (!checkPermission(noteId, Permission.READER, Message.OP.GET_HOME_NOTE, context,
-            callback)) {
+                callback)) {
           return null;
         }
       }
@@ -196,11 +152,18 @@ public class NotebookService {
       callback.onSuccess(note, context);
       return note;
     } catch (IOException e) {
-      callback.onFailure(new IOException("Fail to create note", e), context);
+      callback.onFailure(e, context);
       return null;
     }
   }
 
+  /**
+   * normalize both note name and note folder
+   *
+   * @param notePath
+   * @return
+   * @throws IOException
+   */
   String normalizeNotePath(String notePath) throws IOException {
     if (StringUtils.isBlank(notePath)) {
       notePath = "/Untitled Note";
@@ -224,10 +187,10 @@ public class NotebookService {
   public void removeNote(String noteId,
                          ServiceContext context,
                          ServiceCallback<String> callback) throws IOException {
-    if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
-      return;
-    }
     if (notebook.getNote(noteId) != null) {
+      if (!checkPermission(noteId, Permission.OWNER, Message.OP.DEL_NOTE, context, callback)) {
+        return;
+      }
       notebook.removeNote(noteId, context.getAutheInfo());
       callback.onSuccess("Delete note successfully", context);
     } else {
@@ -246,7 +209,8 @@ public class NotebookService {
         LOGGER.error("Fail to reload notes from repository", e);
       }
     }
-    List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+    List<NoteInfo> notesInfo = notebook.getNotesInfo(
+            noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
     callback.onSuccess(notesInfo, context);
     return notesInfo;
   }
@@ -349,7 +313,7 @@ public class NotebookService {
     p.setConfig(config);
 
     if (note.isPersonalizedMode()) {
-      p = note.getParagraph(paragraphId);
+      p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
@@ -359,7 +323,7 @@ public class NotebookService {
 
     try {
       notebook.saveNote(note, context.getAutheInfo());
-      boolean result = note.run(p.getId(), blocking);
+      boolean result = note.run(p.getId(), blocking, context.getAutheInfo().getUser());
       callback.onSuccess(p, context);
       return result;
     } catch (Exception ex) {
@@ -490,7 +454,7 @@ public class NotebookService {
       throw new NoteNotFoundException(noteId);
     }
     Paragraph newPara = note.insertNewParagraph(index, context.getAutheInfo());
-    newPara.setConfig(config);
+    newPara.mergeConfig(config);
     notebook.saveNote(note, context.getAutheInfo());
     callback.onSuccess(newPara, context);
     return newPara;
@@ -666,7 +630,7 @@ public class NotebookService {
     note.setName(name);
     note.setConfig(config);
     if (cronUpdated) {
-      notebook.refreshCron(note.getId());
+      schedulerService.refreshCron(note.getId());
     }
 
     notebook.saveNote(note, context.getAutheInfo());
@@ -747,7 +711,7 @@ public class NotebookService {
     }
 
     NotebookRepoWithVersionControl.Revision revision =
-        notebook.checkpointNote(noteId, note.getName(), commitMessage, context.getAutheInfo());
+        notebook.checkpointNote(noteId, note.getPath(), commitMessage, context.getAutheInfo());
     callback.onSuccess(revision, context);
     return revision;
   }
@@ -839,7 +803,7 @@ public class NotebookService {
     }
     Note revisionNote = null;
     if (revisionId.equals("Head")) {
-      revisionNote = notebook.getNote(noteId);
+      revisionNote = note;
     } else {
       revisionNote = notebook.getNoteByRevision(noteId, note.getPath(), revisionId,
           context.getAutheInfo());
@@ -867,7 +831,8 @@ public class NotebookService {
     }
 
     try {
-      List<InterpreterCompletion> completions = note.completion(paragraphId, buffer, cursor);
+      List<InterpreterCompletion> completions = note.completion(paragraphId, buffer, cursor,
+              context.getAutheInfo());
       callback.onSuccess(completions, context);
       return completions;
     } catch (RuntimeException e) {
@@ -877,7 +842,7 @@ public class NotebookService {
   }
 
   public void getEditorSetting(String noteId,
-                               String replName,
+                               String magic,
                                ServiceContext context,
                                ServiceCallback<Map<String, Object>> callback) throws IOException {
     Note note = notebook.getNote(noteId);
@@ -886,14 +851,11 @@ public class NotebookService {
       return;
     }
     try {
-      Interpreter intp = notebook.getInterpreterFactory().getInterpreter(
-          context.getAutheInfo().getUser(), noteId, replName,
-          notebook.getNote(noteId).getDefaultInterpreterGroup());
       Map<String, Object> settings = notebook.getInterpreterSettingManager().
-          getEditorSetting(intp, context.getAutheInfo().getUser(), noteId, replName);
+          getEditorSetting(magic, noteId);
       callback.onSuccess(settings, context);
-    } catch (InterpreterNotFoundException e) {
-      callback.onFailure(new IOException("Fail to find interpreter", e), context);
+    } catch (Exception e) {
+      callback.onFailure(new IOException("Fail to getEditorSetting", e), context);
       return;
     }
   }
@@ -975,7 +937,8 @@ public class NotebookService {
                            ServiceCallback<List<NoteInfo>> callback) throws IOException {
     try {
       notebook.removeFolder(folderPath, context.getAutheInfo());
-      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(
+              noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
       return notesInfo;
     } catch (IOException e) {
@@ -991,8 +954,10 @@ public class NotebookService {
     //TODO(zjffdu) folder permission check
 
     try {
-      notebook.moveFolder(folderPath, newFolderPath, context.getAutheInfo());
-      List<NoteInfo> notesInfo = notebook.getNotesInfo(context.getUserAndRoles());
+      notebook.moveFolder(normalizeNotePath(folderPath),
+              normalizeNotePath(newFolderPath), context.getAutheInfo());
+      List<NoteInfo> notesInfo = notebook.getNotesInfo(
+              noteId -> authorizationService.isReader(noteId, context.getUserAndRoles()));
       callback.onSuccess(notesInfo, context);
       return notesInfo;
     } catch (IOException e) {
@@ -1102,8 +1067,7 @@ public class NotebookService {
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      List<InterpreterSetting> settings =
-          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId());
+      List<InterpreterSetting> settings = note.getBindedInterpreterSettings();
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup(user, note.getId()) == null) {
           continue;
@@ -1212,20 +1176,20 @@ public class NotebookService {
     Set<String> allowed = null;
     switch (permission) {
       case READER:
-        isAllowed = notebookAuthorization.isReader(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getReaders(noteId);
+        isAllowed = authorizationService.isReader(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getReaders(noteId);
         break;
       case WRITER:
-        isAllowed = notebookAuthorization.isWriter(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getWriters(noteId);
+        isAllowed = authorizationService.isWriter(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getWriters(noteId);
         break;
       case RUNNER:
-        isAllowed = notebookAuthorization.isRunner(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getRunners(noteId);
+        isAllowed = authorizationService.isRunner(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getRunners(noteId);
         break;
       case OWNER:
-        isAllowed = notebookAuthorization.isOwner(noteId, context.getUserAndRoles());
-        allowed = notebookAuthorization.getOwners(noteId);
+        isAllowed = authorizationService.isOwner(noteId, context.getUserAndRoles());
+        allowed = authorizationService.getOwners(noteId);
         break;
     }
     if (isAllowed) {

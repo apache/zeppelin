@@ -12,10 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM centos:centos6
+FROM centos:centos7
 
-ENV SPARK_PROFILE 2.1
-ENV SPARK_VERSION 2.1.2
+ENV SPARK_PROFILE 2.4
+ENV SPARK_VERSION 2.4.0
 ENV HADOOP_PROFILE 2.7
 ENV HADOOP_VERSION 2.7.0
 
@@ -29,7 +29,7 @@ tar \
 curl \
 svn \
 cyrus-sasl-md5 \
-libevent2-devel \
+libevent-devel \
 && \
 yum clean all
 
@@ -45,19 +45,19 @@ ENV PATH $PATH:$JAVA_HOME/bin
 RUN curl -s http://www.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE.tgz | tar -xz -C /usr/local/
 RUN cd /usr/local && ln -s spark-$SPARK_VERSION-bin-hadoop$HADOOP_PROFILE spark
 
-# update boot script
-COPY entrypoint.sh /etc/entrypoint.sh
-RUN chown root.root /etc/entrypoint.sh
-RUN chmod 700 /etc/entrypoint.sh
-
 # install mesos
-RUN wget http://repos.mesosphere.com/el/6/x86_64/RPMS/mesos-1.0.0-2.0.89.centos65.x86_64.rpm
-RUN rpm -Uvh mesos-1.0.0-2.0.89.centos65.x86_64.rpm
+RUN wget http://repos.mesosphere.com/el/7/x86_64/RPMS/mesos-1.7.0-2.0.1.el7.x86_64.rpm
+RUN rpm -Uvh mesos-1.7.0-2.0.1.el7.x86_64.rpm
 
 #spark
 EXPOSE 8080 7077 7072 8081 8082
 
 #mesos
 EXPOSE 5050 5051
+
+# update boot script
+COPY entrypoint.sh /etc/entrypoint.sh
+RUN chown root.root /etc/entrypoint.sh
+RUN chmod 700 /etc/entrypoint.sh
 
 ENTRYPOINT ["/etc/entrypoint.sh"]

@@ -62,7 +62,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
                                                  final String paragraphId) {
 
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
-    if (!remoteInterpreterProcess.isRunning()) {
+    if (null == remoteInterpreterProcess || !remoteInterpreterProcess.isRunning()) {
       return super.add(name, o, noteId, paragraphId, true);
     }
 

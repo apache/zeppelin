@@ -1,0 +1,18 @@
+@base <http://example.org/> .
+@prefix : <http://example.org/stats#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rel: <http://www.perceive.net/schemas/relationship/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<#green-goblin>
+    rel:enemyOf <#spiderman> ;
+    a foaf:Person ;
+    foaf:name "Green Goblin" .
+
+<#spiderman>
+    :born "1962-10-15T14:00.00"^^xsd:dateTime ;
+    rel:enemyOf <#green-goblin> ;
+    a foaf:Person ;
+    foaf:name "Spiderman", "Человек-паук"@ru .

@@ -11,9 +11,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<form>
 <input type="text"
        class="note-name-query form-control"
        ng-click="$event.stopPropagation()"
        placeholder="&#xf002 Filter"
        ng-model="$parent.query.q"
        ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 300, 'blur': 0 } }" />
+</form>

@@ -28,6 +28,9 @@ limitations under the License.
 
 When you connect to Apache Zeppelin, you will be asked to enter your credentials. Once you logged in, then you have access to all notes including other user's notes.
 
+## Important Note
+By default, Zeppelin allows anonymous access. It is strongly recommended that you consider setting up Apache Shiro for authentication (as described in this document, see 2 Secure the Websocket channel), or only deploy and use Zeppelin in a secured and trusted environment.
+
 ## Security Setup
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
@@ -41,10 +44,7 @@ cp conf/shiro.ini.template conf/shiro.ini
 
 For the further information about  `shiro.ini` file format, please refer to [Shiro Configuration](http://shiro.apache.org/configuration.html#Configuration-INISections).
 
-### 2. Secure the Websocket channel
-Set to property **zeppelin.anonymous.allowed** to **false** in `conf/zeppelin-site.xml`. If you don't have this file yet, just copy `conf/zeppelin-site.xml.template` to `conf/zeppelin-site.xml`.
-
-### 3. Start Zeppelin
+### 2. Start Zeppelin
 
 ```bash
 bin/zeppelin-daemon.sh start #(or restart)
@@ -52,7 +52,7 @@ bin/zeppelin-daemon.sh start #(or restart)
 
 Then you can browse Zeppelin at [http://localhost:8080](http://localhost:8080).
 
-### 4. Login
+### 3. Login
 Finally, you can login using one of the below **username/password** combinations.
 
 <center><img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/zeppelin-login.png"></center>
@@ -80,7 +80,7 @@ activeDirectoryRealm.groupRolesMap = "CN=aGroupName,OU=groups,DC=SOME_GROUP,DC=C
 activeDirectoryRealm.authorizationCachingEnabled = false
 activeDirectoryRealm.principalSuffix = @corp.company.net
 
-ldapRealm = org.apache.zeppelin.server.LdapGroupRealm
+ldapRealm = org.apache.zeppelin.realm.LdapGroupRealm
 # search base for ldap groups (only relevant for LdapGroupRealm):
 ldapRealm.contextFactory.environment[ldap.searchBase] = dc=COMPANY,dc=COM
 ldapRealm.contextFactory.url = ldap://ldap.test.com:389

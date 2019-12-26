@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -30,35 +31,45 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Lists;
-
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.AbstractInterpreterTest;
+import org.apache.zeppelin.interpreter.Constants;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.InterpreterResultMessage;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSetting.Status;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
+import org.apache.zeppelin.user.UserCredentials;
+import org.apache.zeppelin.user.UsernamePassword;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
 
 public class ParagraphTest extends AbstractInterpreterTest {
 
@@ -342,4 +353,59 @@ public class ParagraphTest extends AbstractInterpreterTest {
     }
   }
 
+  //(TODO zjffdu) temporary disable it.
+  //https://github.com/apache/zeppelin/pull/3416
+  @Ignore
+  @Test
+  public void credentialReplacement() throws Throwable {
+    Note mockNote = mock(Note.class);
+    Credentials creds = mock(Credentials.class);
+    when(mockNote.getCredentials()).thenReturn(creds);
+    Paragraph spyParagraph = spy(new Paragraph("para_1", mockNote, null));
+    UserCredentials uc = mock(UserCredentials.class);
+    when(creds.getUserCredentials(anyString())).thenReturn(uc);
+    UsernamePassword up = new UsernamePassword("user", "pwd");
+    when(uc.getUsernamePassword("ent")).thenReturn(up );
+
+    Interpreter mockInterpreter = mock(Interpreter.class);
+    spyParagraph.setInterpreter(mockInterpreter);
+    doReturn(mockInterpreter).when(spyParagraph).getBindedInterpreter();
+
+    ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
+    when(mockInterpreter.getInterpreterGroup()).thenReturn(mockInterpreterGroup);
+    when(mockInterpreterGroup.getId()).thenReturn("mock_id_1");
+    when(mockInterpreterGroup.getAngularObjectRegistry()).thenReturn(mock(AngularObjectRegistry.class));
+    when(mockInterpreterGroup.getResourcePool()).thenReturn(mock(ResourcePool.class));
+    when(mockInterpreter.getFormType()).thenReturn(FormType.NONE);
+
+    ParagraphJobListener mockJobListener = mock(ParagraphJobListener.class);
+    doReturn(mockJobListener).when(spyParagraph).getListener();
+    doNothing().when(mockJobListener).onOutputUpdateAll(Mockito.<Paragraph>any(), Mockito.anyList());
+
+    InterpreterResult mockInterpreterResult = mock(InterpreterResult.class);
+    when(mockInterpreter.interpret(anyString(), Mockito.<InterpreterContext>any())).thenReturn(mockInterpreterResult);
+    when(mockInterpreterResult.code()).thenReturn(Code.SUCCESS);
+
+    AuthenticationInfo user1 = new AuthenticationInfo("user1");
+    spyParagraph.setAuthenticationInfo(user1);
+    
+    spyParagraph.setText("val x = \"usr={user.ent}&pass={password.ent}\"");
+    
+    // Credentials should only be injected when it is enabled for an interpreter or when specified in a local property
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("false");
+    spyParagraph.jobRun();
+    verify(mockInterpreter).interpret(eq("val x = \"usr={user.ent}&pass={password.ent}\""), any(InterpreterContext.class));
+   
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
+    mockInterpreter.setProperty(Constants.INJECT_CREDENTIALS, "true");
+    spyParagraph.jobRun();
+    verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
+
+    // Check if local property override works
+    when(mockInterpreter.getProperty(Constants.INJECT_CREDENTIALS, "false")).thenReturn("true");
+    spyParagraph.getLocalProperties().put(Constants.INJECT_CREDENTIALS, "true");
+    spyParagraph.jobRun();
+    verify(mockInterpreter).interpret(eq("val x = \"usr=user&pass=pwd\""), any(InterpreterContext.class));
+    
+  }
 }

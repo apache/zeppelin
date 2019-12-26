@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
   
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -37,6 +38,7 @@
     <commons.lang3.version>3.4</commons.lang3.version>
     <markdown4j.version>2.2-cj-1.0</markdown4j.version>
     <pegdown.version>1.6.0</pegdown.version>
+    <flexmark.all.version>0.50.40</flexmark.all.version>
   </properties>
 
   <dependencies>
@@ -51,6 +53,12 @@
       <groupId>org.pegdown</groupId>
       <artifactId>pegdown</artifactId>
       <version>${pegdown.version}</version>
+    </dependency>
+
+    <dependency>
+       <groupId>com.vladsch.flexmark</groupId>
+       <artifactId>flexmark-all</artifactId>
+       <version>${flexmark.all.version}</version>
     </dependency>
 
     <dependency>

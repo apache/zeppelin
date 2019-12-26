@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 
 
 import com.google.common.io.Files;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 
@@ -51,9 +54,9 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.pyspark.python", "python");
     properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     properties.setProperty("zeppelin.pyspark.useIPython", "false");
-    properties.setProperty("zeppelin.spark.useNew", "true");
     properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
     // create interpreter group
     intpGroup = new InterpreterGroup();
@@ -92,6 +95,47 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
   @Test
   public void testPySpark() throws InterruptedException, InterpreterException, IOException {
     IPySparkInterpreterTest.testPySpark(interpreter, mockRemoteEventClient);
+  }
+
+  @Override
+  @Test
+  public void testFailtoLaunchPythonProcess() throws InterpreterException {
+    tearDown();
+
+    intpGroup = new InterpreterGroup();
+
+    Properties properties = new Properties();
+    properties.setProperty("spark.app.name", "Zeppelin Test");
+    properties.setProperty("spark.pyspark.python", "invalid_python");
+    properties.setProperty("zeppelin.python.useIPython", "false");
+    properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
+    properties.setProperty("zeppelin.spark.test", "true");
+    properties.setProperty("zeppelin.spark.maxResult", "3");
+
+    interpreter = new LazyOpenInterpreter(new PySparkInterpreter(properties));
+    interpreter.setInterpreterGroup(intpGroup);
+    Interpreter sparkInterpreter =
+            new LazyOpenInterpreter(new SparkInterpreter(properties));
+    sparkInterpreter.setInterpreterGroup(intpGroup);
+    LazyOpenInterpreter iPySparkInterpreter =
+            new LazyOpenInterpreter(new IPySparkInterpreter(properties));
+    iPySparkInterpreter.setInterpreterGroup(intpGroup);
+
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(interpreter);
+    intpGroup.get("note").add(sparkInterpreter);
+    intpGroup.get("note").add(iPySparkInterpreter);
+
+
+    InterpreterContext.set(getInterpreterContext());
+
+    try {
+      interpreter.interpret("1+1", getInterpreterContext());
+      fail("Should fail to open PySparkInterpreter");
+    } catch (InterpreterException e) {
+      String stacktrace = ExceptionUtils.getStackTrace(e);
+      assertTrue(stacktrace, stacktrace.contains("No such file or directory"));
+    }
   }
 
   @Override

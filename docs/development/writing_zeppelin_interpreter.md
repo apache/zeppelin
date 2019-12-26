@@ -118,6 +118,11 @@ Here is an example of `interpreter-setting.json` on your own interpreter.
       "language": "your-syntax-highlight-language",
       "editOnDblClick": false,
       "completionKey": "TAB"
+    },
+    "config": {
+      "runOnSelectionChange": true/false,
+      "title": true/false,
+      "checkEmpty": true/false
     }
   },
   {
@@ -183,6 +188,36 @@ Currently `TAB` is only available option.
 }
 ```
 
+### Notebook paragraph display title (Optional)
+The notebook paragraph does not display the title by default.
+You can have the title of the notebook display the title by `config.title=true`.
+
+```json
+"config": {
+  "title": true  # default: false
+}
+```
+
+### Notebook run on selection change (Optional)
+The dynamic form in the notebook triggers execution when the selection is modified.
+You can make the dynamic form in the notebook not trigger execution after selecting the modification by setting `config.runOnSelectionChange=false`.
+
+```json
+"config": {
+  "runOnSelectionChange": false # default: true
+}
+```
+
+
+### Check if the paragraph is empty before running (Optional)
+The notebook's paragraph default will not run if it is empty.
+You can set `config.checkEmpty=false`, to run even when the paragraph of the notebook is empty.
+
+```json
+"config": {
+  "checkEmpty": false # default: true
+}
+```
 
 ## Install your interpreter binary
 

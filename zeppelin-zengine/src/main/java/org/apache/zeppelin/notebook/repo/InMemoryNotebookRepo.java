@@ -71,6 +71,12 @@ public class InMemoryNotebookRepo implements NotebookRepo {
 
   @Override
   public void move(String folderPath, String newFolderPath, AuthenticationInfo subject) {
+    if (!folderPath.startsWith("/")) {
+      throw new RuntimeException(String.format("folderPath '%s' is not started with '/'", folderPath));
+    }
+    if (folderPath.startsWith("//")) {
+      throw new RuntimeException(String.format("folderPath '%s' is started with '//'", folderPath));
+    }
     if (!newFolderPath.startsWith("/")) {
       throw new RuntimeException(String.format("newFolderPath '%s' is not started with '/'", newFolderPath));
     }

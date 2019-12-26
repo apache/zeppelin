@@ -73,7 +73,7 @@
 
 <property>
   <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
 

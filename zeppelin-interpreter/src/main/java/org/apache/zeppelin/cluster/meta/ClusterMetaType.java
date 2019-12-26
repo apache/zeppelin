@@ -20,6 +20,6 @@ package org.apache.zeppelin.cluster.meta;
  * Type of cluster metadata
  */
 public enum ClusterMetaType {
-  ServerMeta,
-  IntpProcessMeta
+  SERVER_META,
+  INTP_PROCESS_META
 }

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,13 +44,13 @@ import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
+import org.apache.zeppelin.notebook.AuthorizationService;
 import org.apache.zeppelin.realm.jwt.JWTAuthenticationToken;
 import org.apache.zeppelin.realm.jwt.KnoxJwtRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosRealm;
 import org.apache.zeppelin.realm.kerberos.KerberosToken;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.service.SecurityService;
+import org.apache.zeppelin.service.AuthenticationService;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,17 +60,22 @@ import org.slf4j.LoggerFactory;
  */
 @Path("/login")
 @Produces("application/json")
+@Singleton
 public class LoginRestApi {
   private static final Logger LOG = LoggerFactory.getLogger(LoginRestApi.class);
   private static final Gson gson = new Gson();
   private ZeppelinConfiguration zConf;
-  private SecurityService securityService;
+
+  private AuthenticationService authenticationService;
+  private AuthorizationService authorizationService;
 
   @Inject
   public LoginRestApi(Notebook notebook,
-      SecurityService securityService) {
+                      AuthenticationService authenticationService,
+                      AuthorizationService authorizationService) {
     this.zConf = notebook.getConf();
-    this.securityService = securityService;
+    this.authenticationService = authenticationService;
+    this.authorizationService = authorizationService;
   }
 
   @GET
@@ -124,7 +130,7 @@ public class LoginRestApi {
   }
 
   private KerberosRealm getKerberosRealm() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -141,7 +147,7 @@ public class LoginRestApi {
   }
 
   private KnoxJwtRealm getJTWRealm() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -158,7 +164,7 @@ public class LoginRestApi {
   }
 
   private boolean isKnoxSSOEnabled() {
-    Collection realmsList = securityService.getRealmsList();
+    Collection realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
@@ -179,8 +185,8 @@ public class LoginRestApi {
       currentUser.getSession(true);
       currentUser.login(token);
 
-      Set<String> roles = securityService.getAssociatedRoles();
-      String principal = securityService.getPrincipal();
+      Set<String> roles = authenticationService.getAssociatedRoles();
+      String principal = authenticationService.getPrincipal();
       String ticket;
       if ("anonymous".equals(principal)) {
         ticket = "anonymous";
@@ -197,7 +203,7 @@ public class LoginRestApi {
       // if no exception, that's it, we're done!
 
       // set roles for user in NotebookAuthorization module
-      NotebookAuthorization.getInstance().setRoles(principal, roles);
+      authorizationService.setRoles(principal, roles);
     } catch (AuthenticationException uae) {
       // username wasn't in the system, show them an error message?
       // password didn't match, try again?
@@ -281,7 +287,7 @@ public class LoginRestApi {
 
   private void logoutCurrentUser() {
     Subject currentUser = org.apache.shiro.SecurityUtils.getSubject();
-    TicketContainer.instance.removeTicket(securityService.getPrincipal());
+    TicketContainer.instance.removeTicket(authenticationService.getPrincipal());
     currentUser.getSession().stop();
     currentUser.logout();
   }

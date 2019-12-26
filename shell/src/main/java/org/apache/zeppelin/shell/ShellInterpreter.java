@@ -23,6 +23,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,14 +84,22 @@ public class ShellInterpreter extends KerberosInterpreter {
     }
   }
 
+  @Override
+  protected boolean isInterpolate() {
+    return Boolean.parseBoolean(getProperty("zeppelin.shell.interpolation", "false"));
+  }
 
   @Override
-  public InterpreterResult interpret(String originalCmd, InterpreterContext contextInterpreter) {
-    String cmd = Boolean.parseBoolean(getProperty("zeppelin.shell.interpolation")) ?
-            interpolate(originalCmd, contextInterpreter.getResourcePool()) : originalCmd;
+  public BaseZeppelinContext getZeppelinContext() {
+    return null;
+  }
+
+  @Override
+  public InterpreterResult internalInterpret(String cmd,
+                                             InterpreterContext contextInterpreter) {
     LOGGER.debug("Run shell command '" + cmd + "'");
     OutputStream outStream = new ByteArrayOutputStream();
-    
+
     CommandLine cmdLine = CommandLine.parse(shell);
     // the Windows CMD shell doesn't handle multiline statements,
     // they need to be delimited by '&&' instead
@@ -113,7 +122,7 @@ public class ShellInterpreter extends KerberosInterpreter {
       }
 
       int exitVal = executor.execute(cmdLine);
-      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId() 
+      LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
           + " return with exit value: " + exitVal);
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
@@ -167,7 +176,7 @@ public class ShellInterpreter extends KerberosInterpreter {
 
   @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
-      InterpreterContext interpreterContext) {
+                                                InterpreterContext interpreterContext) {
     return null;
   }
 

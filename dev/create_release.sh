@@ -55,11 +55,7 @@ function make_source_package() {
   echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --armor \
     --output "zeppelin-${RELEASE_VERSION}.tgz.asc" \
     --detach-sig "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 \
-    --print-md MD5 "zeppelin-${RELEASE_VERSION}.tgz" > \
-    "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.md5"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 \
-    --print-md SHA512 "zeppelin-${RELEASE_VERSION}.tgz" > \
+  ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}.tgz" > \
     "${WORKING_DIR}/zeppelin-${RELEASE_VERSION}.tgz.sha512"
 }
 
@@ -89,15 +85,11 @@ function make_binary_release() {
   echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --armor \
     --output "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc" \
     --detach-sig "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz"
-  echo "${GPG_PASSPHRASE}" | gpg --passphrase-fd 0 --print-md MD5 \
-    "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" > \
-    "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5"
   ${SHASUM} -a 512 "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" > \
     "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512"
 
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz" "${WORKING_DIR}/"
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.asc" "${WORKING_DIR}/"
-  mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.md5" "${WORKING_DIR}/"
   mv "zeppelin-${RELEASE_VERSION}-bin-${BIN_RELEASE_NAME}.tgz.sha512" "${WORKING_DIR}/"
 
   # clean up build dir

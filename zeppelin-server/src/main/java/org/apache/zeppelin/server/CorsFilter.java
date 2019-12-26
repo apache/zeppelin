@@ -76,6 +76,7 @@ public class CorsFilter implements Filter {
       response.setHeader("Strict-Transport-Security", zeppelinConfiguration.getStrictTransport());
     }
     response.setHeader("X-XSS-Protection", zeppelinConfiguration.getXxssProtection());
+    response.setHeader("X-Content-Type-Options", zeppelinConfiguration.getXContentTypeOptions());
   }
 
   @Override

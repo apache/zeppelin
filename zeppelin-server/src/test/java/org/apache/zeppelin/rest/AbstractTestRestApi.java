@@ -35,7 +35,9 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.plugin.PluginManager;
+import org.apache.zeppelin.utils.TestUtils;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -83,6 +85,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static String zeppelinShiroKnox =
@@ -106,6 +109,7 @@ public abstract class AbstractTestRestApi {
           "admin = *\n" +
           "[urls]\n" +
           "/api/version = anon\n" +
+          "/api/cluster/address = anon\n" +
           "/** = authc";
 
   private static File knoxSsoPem = null;
@@ -159,6 +163,7 @@ public abstract class AbstractTestRestApi {
     @Override
     public void run() {
       try {
+        TestUtils.clearInstances();
         ZeppelinServer.main(new String[]{""});
       } catch (Exception e) {
         LOG.error("Exception in WebDriverManager while getWebDriver ", e);
@@ -174,7 +179,7 @@ public abstract class AbstractTestRestApi {
           throws Exception {
     LOG.info("Starting ZeppelinServer withAuth: {}, testClassName: {}, withKnox: {}",
         withAuth, testClassName, withKnox);
-    
+
     if (!WAS_RUNNING) {
       // copy the resources files to a temp folder
       zeppelinHome = new File("..");
@@ -206,12 +211,10 @@ public abstract class AbstractTestRestApi {
 
       LOG.info("Staring test Zeppelin up...");
       ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      LOG.info("zconf.getClusterAddress() = {}", conf.getClusterAddress());
 
       if (withAuth) {
         isRunningWithAuth = true;
-        // Set Anonymous session to false.
-        System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName(),
-                "false");
 
         // Create a shiro env test.
         shiroIni = new File(confDir, "shiro.ini");
@@ -246,7 +249,7 @@ public abstract class AbstractTestRestApi {
       if (started == false) {
         throw new RuntimeException("Can not start Zeppelin server");
       }
-      ZeppelinServer.notebook.setParagraphJobListener(ZeppelinServer.notebookWsServer);
+      //ZeppelinServer.notebook.setParagraphJobListener(NotebookServer.getInstance());
       LOG.info("Test Zeppelin stared.");
     }
   }
@@ -254,11 +257,11 @@ public abstract class AbstractTestRestApi {
   protected static void startUpWithKnoxEnable(String testClassName) throws Exception {
     start(true, testClassName, true, true);
   }
-  
+
   protected static void startUpWithAuthenticationEnable(String testClassName) throws Exception {
     start(true, testClassName, false, true);
   }
-  
+
   protected static void startUp(String testClassName) throws Exception {
     start(false, testClassName, false, true);
   }
@@ -281,13 +284,14 @@ public abstract class AbstractTestRestApi {
   }
 
   protected static void shutDown(final boolean deleteConfDir) throws Exception {
-    if (!WAS_RUNNING && ZeppelinServer.notebook != null) {
+
+    if (!WAS_RUNNING && TestUtils.getInstance(Notebook.class) != null) {
       // restart interpreter to stop all interpreter processes
-      List<InterpreterSetting> settingList = ZeppelinServer.notebook.getInterpreterSettingManager()
+      List<InterpreterSetting> settingList = TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
               .get();
-      if (!ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (!TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
         for (InterpreterSetting setting : settingList) {
-          ZeppelinServer.notebook.getInterpreterSettingManager().restart(setting.getId());
+          TestUtils.getInstance(Notebook.class).getInterpreterSettingManager().restart(setting.getId());
         }
       }
       if (shiroIni != null) {
@@ -312,20 +316,19 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Test Zeppelin terminated.");
-      
+
       if (isRunningWithAuth) {
-        isRunningWithAuth = false;
-        System
-            .clearProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED.getVarName());
+        isRunningWithAuth = shiroIni.exists();
       }
 
-      if (deleteConfDir && !ZeppelinServer.notebook.getConf().isRecoveryEnabled()) {
+      if (deleteConfDir && !TestUtils.getInstance(Notebook.class).getConf().isRecoveryEnabled()) {
         // don't delete interpreter.json when recovery is enabled. otherwise the interpreter setting
         // id will change after zeppelin restart, then we can not recover interpreter process
         // properly
         FileUtils.deleteDirectory(confDir);
       }
     }
+
   }
 
   protected static boolean checkIfServerIsRunning() {
@@ -349,7 +352,7 @@ public abstract class AbstractTestRestApi {
   protected static GetMethod httpGet(String path) throws IOException {
     return httpGet(path, StringUtils.EMPTY, StringUtils.EMPTY);
   }
-  
+
   protected static GetMethod httpGet(String path, String user, String pwd) throws IOException {
     return httpGet(path, user, pwd, StringUtils.EMPTY);
   }
@@ -459,7 +462,7 @@ public abstract class AbstractTestRestApi {
     }
     return true;
   }
-  
+
   protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
     return new TypeSafeMatcher<HttpMethodBase>() {
       WeakReference<HttpMethodBase> method;

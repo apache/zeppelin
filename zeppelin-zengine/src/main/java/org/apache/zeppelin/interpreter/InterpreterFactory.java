@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import com.google.common.base.Preconditions;
+import javax.inject.Inject;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +31,17 @@ import java.util.List;
  * Factory class for creating interpreters.
  *
  */
-public class InterpreterFactory {
+public class InterpreterFactory implements InterpreterFactoryInterface {
   private static final Logger LOGGER = LoggerFactory.getLogger(InterpreterFactory.class);
 
   private final InterpreterSettingManager interpreterSettingManager;
 
+  @Inject
   public InterpreterFactory(InterpreterSettingManager interpreterSettingManager) {
     this.interpreterSettingManager = interpreterSettingManager;
   }
 
+  @Override
   public Interpreter getInterpreter(String user,
                                     String noteId,
                                     String replName,

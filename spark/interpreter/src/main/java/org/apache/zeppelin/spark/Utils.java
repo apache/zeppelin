@@ -18,10 +18,12 @@
 package org.apache.zeppelin.spark;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -33,7 +35,10 @@ import java.util.regex.Pattern;
  */
 class Utils {
   public static Logger logger = LoggerFactory.getLogger(Utils.class);
-  private static final String SCALA_COMPILER_VERSION = evaluateScalaCompilerVersion();
+  public static String DEPRRECATED_MESSAGE =
+          "%html <font color=\"red\">Spark lower than 2.2 is deprecated, " +
+          "if you don't want to see this message, please set " +
+          "zeppelin.spark.deprecateMsg.show to false.</font>";
 
   static Object invokeMethod(Object o, String name) {
     return invokeMethod(o, name, new Class[]{}, new Object[]{});
@@ -100,45 +105,6 @@ class Utils {
     }
   }
 
-  static boolean isScala2_11() {
-    return !isScala2_10();
-  }
-  
-  static boolean isCompilerAboveScala2_11_7() {
-    if (isScala2_10() || SCALA_COMPILER_VERSION == null) {
-      return false;
-    }
-    Pattern p = Pattern.compile("([0-9]+)[.]([0-9]+)[.]([0-9]+)");
-    Matcher m = p.matcher(SCALA_COMPILER_VERSION);
-    if (m.matches()) {
-      int major = Integer.parseInt(m.group(1));
-      int minor = Integer.parseInt(m.group(2));
-      int bugfix = Integer.parseInt(m.group(3));
-      return (major > 2 || (major == 2 && minor > 11) || (major == 2 && minor == 11 && bugfix > 7));
-    }
-    return false;
-  }
-
-  private static String evaluateScalaCompilerVersion() {
-    String version = null;
-    try {
-      Properties p = new Properties();
-      Class<?> completionClass = findClass("scala.tools.nsc.interpreter.JLineCompletion");
-      if (completionClass != null) {
-        try (java.io.InputStream in = completionClass.getClass()
-          .getResourceAsStream("/compiler.properties")) {
-          p.load(in);
-          version = p.getProperty("version.number");
-        } catch (java.io.IOException e) {
-          logger.error("Failed to evaluate Scala compiler version", e);
-        }
-      }
-    } catch (RuntimeException e) {
-      logger.error("Failed to evaluate Scala compiler version", e);
-    }
-    return version;
-  }
-
   static boolean isSpark2() {
     try {
       Class.forName("org.apache.spark.sql.SparkSession");
@@ -149,23 +115,15 @@ class Utils {
   }
   
   public static String buildJobGroupId(InterpreterContext context) {
-    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
+    String uName = "anonymous";
+    if (context.getAuthenticationInfo() != null) {
+      uName = getUserName(context.getAuthenticationInfo());
+    }
+    return "zeppelin|" + uName + "|" + context.getNoteId() + "|" + context.getParagraphId();
   }
 
   public static String buildJobDesc(InterpreterContext context) {
     return "Started by: " + getUserName(context.getAuthenticationInfo());
-  }
-
-  public static String getNoteId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(indexOf + 1, secondIndex);
-  }
-
-  public static String getParagraphId(String jobgroupId) {
-    int indexOf = jobgroupId.indexOf("-");
-    int secondIndex = jobgroupId.indexOf("-", indexOf + 1);
-    return jobgroupId.substring(secondIndex + 1, jobgroupId.length());
   }
 
   public static String getUserName(AuthenticationInfo info) {
@@ -177,5 +135,21 @@ class Utils {
       uName = "anonymous";
     }
     return uName;
+  }
+
+  public static void printDeprecateMessage(SparkVersion sparkVersion,
+                                            InterpreterContext context,
+                                            Properties properties) throws InterpreterException {
+    context.out.clear();
+    if (sparkVersion.olderThan(SparkVersion.SPARK_2_2_0)
+            && Boolean.parseBoolean(
+                    properties.getProperty("zeppelin.spark.deprecatedMsg.show", "true"))) {
+      try {
+        context.out.write(DEPRRECATED_MESSAGE);
+        context.out.write("%text ");
+      } catch (IOException e) {
+        throw new InterpreterException(e);
+      }
+    }
   }
 }

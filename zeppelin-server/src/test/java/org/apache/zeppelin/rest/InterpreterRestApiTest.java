@@ -28,10 +28,12 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.utils.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,7 +80,7 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    assertEquals(ZeppelinServer.notebook.getInterpreterSettingManager()
+    assertEquals(TestUtils.getInstance(Notebook.class).getInterpreterSettingManager()
                     .getInterpreterSettingTemplates().size(), body.entrySet().size());
     get.releaseConnection();
   }
@@ -233,101 +235,111 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   public void testInterpreterRestart() throws IOException, InterruptedException {
-    // when: create new note
-    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
-    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Paragraph p = note.getLastParagraph();
-    Map config = p.getConfig();
-    config.put("enabled", true);
+    Note note = null;
+    try {
+      // when: create new note
+      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p = note.getLastParagraph();
+      Map config = p.getConfig();
+      config.put("enabled", true);
 
-    // when: run markdown paragraph
-    p.setConfig(config);
-    p.setText("%md markdown");
-    p.setAuthenticationInfo(anonymous);
-    note.run(p.getId());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-    assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
+      // when: run markdown paragraph
+      p.setConfig(config);
+      p.setText("%md markdown");
+      p.setAuthenticationInfo(anonymous);
+      note.run(p.getId());
+      while (p.getStatus() != Status.FINISHED) {
+        Thread.sleep(100);
+      }
+      assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
-    // when: restart interpreter
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager()
-            .getInterpreterSettings(note.getId())) {
-      if (setting.getName().equals("md")) {
-        // call restart interpreter API
-        PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
-        assertThat("test interpreter restart:", put, isAllowed());
-        put.releaseConnection();
-        break;
+      // when: restart interpreter
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
+        if (setting.getName().equals("md")) {
+          // call restart interpreter API
+          PutMethod put = httpPut("/interpreter/setting/restart/" + setting.getId(), "");
+          assertThat("test interpreter restart:", put, isAllowed());
+          put.releaseConnection();
+          break;
+        }
+      }
+
+      // when: run markdown paragraph, again
+      p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      p.setConfig(config);
+      p.setText("%md markdown restarted");
+      p.setAuthenticationInfo(anonymous);
+      note.run(p.getId());
+      while (p.getStatus() != Status.FINISHED) {
+        Thread.sleep(100);
+      }
+
+      // then
+      assertEquals(p.getReturn().message().get(0).getData(),
+              getSimulatedMarkdownResult("markdown restarted"));
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
       }
     }
-
-    // when: run markdown paragraph, again
-    p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    p.setConfig(config);
-    p.setText("%md markdown restarted");
-    p.setAuthenticationInfo(anonymous);
-    note.run(p.getId());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-
-    // then
-    assertEquals(p.getReturn().message().get(0).getData(),
-            getSimulatedMarkdownResult("markdown restarted"));
-    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
   public void testRestartInterpreterPerNote() throws IOException, InterruptedException {
-    // when: create new note
-    Note note = ZeppelinServer.notebook.createNote("note1", anonymous);
-    note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
-    Paragraph p = note.getLastParagraph();
-    Map config = p.getConfig();
-    config.put("enabled", true);
+    Note note = null;
+    try {
+      // when: create new note
+      note = TestUtils.getInstance(Notebook.class).createNote("note2", anonymous);
+      note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
+      Paragraph p = note.getLastParagraph();
+      Map config = p.getConfig();
+      config.put("enabled", true);
 
-    // when: run markdown paragraph.
-    p.setConfig(config);
-    p.setText("%md markdown");
-    p.setAuthenticationInfo(anonymous);
-    note.run(p.getId());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-    assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
+      // when: run markdown paragraph.
+      p.setConfig(config);
+      p.setText("%md markdown");
+      p.setAuthenticationInfo(anonymous);
+      note.run(p.getId());
+      while (p.getStatus() != Status.FINISHED) {
+        Thread.sleep(100);
+      }
+      assertEquals(p.getReturn().message().get(0).getData(), getSimulatedMarkdownResult("markdown"));
 
-    // when: get md interpreter
-    InterpreterSetting mdIntpSetting = null;
-    for (InterpreterSetting setting : ZeppelinServer.notebook.getInterpreterSettingManager()
-            .getInterpreterSettings(note.getId())) {
-      if (setting.getName().equals("md")) {
-        mdIntpSetting = setting;
-        break;
+      // when: get md interpreter
+      InterpreterSetting mdIntpSetting = null;
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
+        if (setting.getName().equals("md")) {
+          mdIntpSetting = setting;
+          break;
+        }
+      }
+
+      String jsonRequest = "{\"noteId\":\"" + note.getId() + "\"}";
+
+      // Restart isolated mode of Interpreter for note.
+      mdIntpSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
+      PutMethod put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+      assertThat("isolated interpreter restart:", put, isAllowed());
+      put.releaseConnection();
+
+      // Restart scoped mode of Interpreter for note.
+      mdIntpSetting.getOption().setPerNote(InterpreterOption.SCOPED);
+      put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+      assertThat("scoped interpreter restart:", put, isAllowed());
+      put.releaseConnection();
+
+      // Restart shared mode of Interpreter for note.
+      mdIntpSetting.getOption().setPerNote(InterpreterOption.SHARED);
+      put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
+      assertThat("shared interpreter restart:", put, isAllowed());
+      put.releaseConnection();
+
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
       }
     }
-
-    String jsonRequest = "{\"noteId\":\"" + note.getId() + "\"}";
-
-    // Restart isolated mode of Interpreter for note.
-    mdIntpSetting.getOption().setPerNote(InterpreterOption.ISOLATED);
-    PutMethod put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
-    assertThat("isolated interpreter restart:", put, isAllowed());
-    put.releaseConnection();
-
-    // Restart scoped mode of Interpreter for note.
-    mdIntpSetting.getOption().setPerNote(InterpreterOption.SCOPED);
-    put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
-    assertThat("scoped interpreter restart:", put, isAllowed());
-    put.releaseConnection();
-
-    // Restart shared mode of Interpreter for note.
-    mdIntpSetting.getOption().setPerNote(InterpreterOption.SHARED);
-    put = httpPut("/interpreter/setting/restart/" + mdIntpSetting.getId(), jsonRequest);
-    assertThat("shared interpreter restart:", put, isAllowed());
-    put.releaseConnection();
-
-    ZeppelinServer.notebook.removeNote(note.getId(), anonymous);
   }
 
   @Test
@@ -369,6 +381,6 @@ public class InterpreterRestApiTest extends AbstractTestRestApi {
   }
 
   private static String getSimulatedMarkdownResult(String markdown) {
-    return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n</div>", markdown);
+    return String.format("<div class=\"markdown-body\">\n<p>%s</p>\n\n</div>", markdown);
   }
 }

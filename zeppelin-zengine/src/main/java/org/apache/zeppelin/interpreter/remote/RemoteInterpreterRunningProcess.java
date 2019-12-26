@@ -88,4 +88,14 @@ public class RemoteInterpreterRunningProcess extends RemoteInterpreterProcess {
   public boolean isRunning() {
     return RemoteInterpreterUtils.checkIfRemoteEndpointAccessible(getHost(), getPort());
   }
+
+  @Override
+  public void processStarted(int port, String host) {
+    // assume process is externally managed. nothing to do
+  }
+
+  @Override
+  public String getErrorMessage() {
+    return null;
+  }
 }

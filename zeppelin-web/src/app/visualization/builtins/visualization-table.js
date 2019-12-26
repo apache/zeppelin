@@ -66,6 +66,7 @@ export default class TableVisualization extends Visualization {
     this.passthrough = new PassthroughTransformation(config);
     this.emitTimeout = null;
     this.isRestoring = false;
+    this.isUpdated = false;
 
     initializeTableConfig(config, TABLE_OPTION_SPECS);
   }
@@ -230,6 +231,15 @@ export default class TableVisualization extends Visualization {
     gridOptions.columnDefs.map((colDef) => {
       colDef.menuItems = [
         {
+          title: 'Copy Column Name',
+          action: function() {
+            self.copyStringToClipboard(this.context.col.displayName);
+          },
+          active: function() {
+            return false;
+          },
+        },
+        {
           title: 'Type: String',
           action: function() {
             self.updateColDefType(this.context.col.colDef, TableColumnType.STRING);
@@ -300,7 +310,7 @@ export default class TableVisualization extends Visualization {
       const columnNames = columns.map((c) => c.name);
       let gridData = row.map((r) => {
         return columnNames.reduce((acc, colName, index) => {
-          acc[colName] = r[index];
+          acc[colName + index] = r[index];
           return acc;
         }, {});
       });
@@ -373,7 +383,12 @@ export default class TableVisualization extends Visualization {
       // gridApi.selection.on.rowSelectionChangedBatch(scope, () => { self.persistConfigWithGridState(self.config) })
     };
 
-    if (!gridElem) {
+    if (!gridElem || this.isUpdated) {
+      if (this.isUpdated) {
+        this.targetEl.find(gridElem).off();
+        this.targetEl.find(gridElem).detach();
+        this.isUpdated = false;
+      }
       // create, compile and append grid elem
       gridElem = angular.element(
         `<div id="${gridElemId}" ui-grid="${gridElemId}"
@@ -502,6 +517,12 @@ export default class TableVisualization extends Visualization {
           initializeTableConfig(configObj, TABLE_OPTION_SPECS);
           self.persistConfigWithGridState(configObj);
         },
+        applyTableOption: () => {
+          this.isUpdated = true;
+          // emit config to re-render table
+          configObj.initialized = true;
+          self.persistConfig(configObj);
+        },
         tableWidgetOnKeyDown: (event, optSpec) => {
           const code = event.keyCode || event.which;
           if (code === 13 && isInputWidget(optSpec)) {
@@ -514,5 +535,15 @@ export default class TableVisualization extends Visualization {
         },
       },
     };
+  }
+
+  copyStringToClipboard(copyString) {
+    const strToClipboard = document.createElement('textarea');
+    strToClipboard.value = copyString;
+    document.body.appendChild(strToClipboard);
+    strToClipboard.select();
+    document.execCommand('copy');
+    document.body.removeChild(strToClipboard);
+    return;
   }
 }

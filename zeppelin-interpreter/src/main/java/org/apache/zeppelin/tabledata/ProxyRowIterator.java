@@ -33,13 +33,13 @@ public class ProxyRowIterator implements Iterator<Row> {
 
   @Override
   public boolean hasNext() {
-    rows.invokeMethod("hasNext", null, null);
+    rows.invokeMethod("hasNext");
     return false;
   }
 
   @Override
   public Row next() {
-    return (Row) rows.invokeMethod("next", null, null);
+    return (Row) rows.invokeMethod("next");
   }
 
   @Override

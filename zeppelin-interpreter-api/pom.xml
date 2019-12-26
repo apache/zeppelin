@@ -17,7 +17,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -64,10 +64,10 @@
               <exclude>org.slf4j:slf4j-log4j12</exclude>
               <!-- Leave commons-logging unshaded so downstream users can configure logging. -->
               <exclude>commons-logging:commons-logging</exclude>
+              <!-- Leave commons-exec unshaded so downstream users can use ProcessLauncher. -->
+              <exclude>org.apache.commons:commons-exec</exclude>
               <!-- Leave log4j unshaded so downstream users can configure logging. -->
               <exclude>log4j:log4j</exclude>
-              <exclude>com.esotericsoftware:kryo</exclude>
-              <exclude>com.esotericsoftware:reflectasm</exclude>
             </excludes>
           </artifactSet>
           <filters>
@@ -111,6 +111,8 @@
                 <exclude>org/slf4j/**/*</exclude>
                 <exclude>org/apache/commons/logging/*</exclude>
                 <exclude>org/apache/commons/logging/**/*</exclude>
+                <exclude>org/apache/commons/exec/*</exclude>
+                <exclude>org/apache/commons/exec/**/*</exclude>
                 <exclude>org/apache/log4j/*</exclude>
                 <exclude>org/apache/log4j/**/*</exclude>
                 <exclude>org/sonatype/*</exclude>
@@ -134,6 +136,10 @@
               <pattern>io</pattern>
               <shadedPattern>${shaded.dependency.prefix}.io</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>com.esotericsoftware</pattern>
+              <shadedPattern>${shaded.dependency.prefix}.com.esotericsoftware</shadedPattern>
+            </relocation>
           </relocations>
         </configuration>
         <executions>
@@ -142,6 +148,29 @@
             <goals>
               <goal>shade</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>copy-to-interpreter</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo>ANT TASK - copying files....</echo>
+                <copy todir="${project.basedir}/../interpreter" overwrite="true" flatten="true">
+                  <fileset dir="${project.build.directory}" includes="zeppelin-interpreter-api-*.jar" >
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>

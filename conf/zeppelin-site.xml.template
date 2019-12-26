@@ -20,9 +20,15 @@
 <configuration>
 
 <property>
+  <name>zeppelin.cluster.addr</name>
+  <value></value>
+  <description>Server cluster address, eg. 127.0.0.1:6000,127.0.0.2:6000,127.0.0.3:6000</description>
+</property>
+
+<property>
   <name>zeppelin.server.addr</name>
-  <value>0.0.0.0</value>
-  <description>Server address</description>
+  <value>127.0.0.1</value>
+  <description>Server binding address</description>
 </property>
 
 <property>
@@ -280,7 +286,7 @@
 <property>
   <name>zeppelin.notebook.mongo.autoimport</name>
   <value>false</value>
-  <description>import local notes into MongoDB automatically on startup</description>
+  <description>import local notes into MongoDB automatically on startup, reset to false after import to avoid repeated import</description>
 </property>
 -->
 
@@ -310,7 +316,7 @@
 
 <property>
   <name>zeppelin.interpreter.dep.mvnRepo</name>
-  <value>http://repo1.maven.org/maven2/</value>
+  <value>https://repo1.maven.org/maven2/</value>
   <description>Remote principal repository for interpreter's additional dependency loading</description>
 </property>
 
@@ -328,7 +334,7 @@
 
 <property>
   <name>zeppelin.helium.npm.installer.url</name>
-  <value>http://registry.npmjs.org/</value>
+  <value>https://registry.npmjs.org/</value>
   <description>Remote Npm installer url for Helium dependency loader</description>
 </property>
 
@@ -421,12 +427,6 @@
 </property>
 
 <property>
-  <name>zeppelin.anonymous.allowed</name>
-  <value>true</value>
-  <description>Anonymous user allowed by default</description>
-</property>
-
-<property>
   <name>zeppelin.username.force.lowercase</name>
   <value>false</value>
   <description>Force convert username case to lower case, useful for Active Directory/LDAP. Default is not to change case</description>
@@ -495,6 +495,28 @@
 
 <!--
 <property>
+    <name>zeppelin.server.jetty.thread.pool.max</name>
+    <value>400</value>
+    <description>Max Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.min</name>
+    <value>8</value>
+    <description>Min Thread pool number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+<!--
+<property>
+    <name>zeppelin.server.jetty.thread.pool.timeout</name>
+    <value>30</value>
+    <description>Timeout number for QueuedThreadPool in Jetty Server</description>
+</property>
+-->
+
+<!--
+<property>
     <name>zeppelin.server.authorization.header.clear</name>
     <value>true</value>
     <description>Authorization header to be cleared if server is running as authcBasic</description>
@@ -522,6 +544,14 @@
   <name>zeppelin.server.xxss.protection</name>
   <value>1</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.server.xcontent.type.options</name>
+  <value>nosniff</value>
+  <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value "nosniff" is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.</description>
 </property>
 -->
 
@@ -584,4 +614,41 @@
   <description>Notebook cron folders</description>
 </property>
 -->
+
+<property>
+  <name>zeppelin.run.mode</name>
+  <value>auto</value>
+  <description>'auto|local|k8s|docker'</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.portforward</name>
+  <value>false</value>
+  <description>Port forward to interpreter rpc port. Set 'true' only on local development when zeppelin.k8s.mode 'on'</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.container.image</name>
+  <value>apache/zeppelin:0.9.0-SNAPSHOT</value>
+  <description>Docker image for interpreters</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.spark.container.image</name>
+  <value>apache/spark:latest</value>
+  <description>Docker image for Spark executors</description>
+</property>
+
+<property>
+  <name>zeppelin.k8s.template.dir</name>
+  <value>k8s</value>
+  <description>Kubernetes yaml spec files</description>
+</property>
+
+  <property>
+    <name>zeppelin.docker.container.image</name>
+    <value>apache/zeppelin:0.8.0</value>
+    <description>Docker image for interpreters</description>
+  </property>
+
 </configuration>

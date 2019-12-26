@@ -21,7 +21,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,7 @@ import org.apache.zeppelin.server.JsonResponse;
  */
 @Path("/helium")
 @Produces("application/json")
+@Singleton
 public class HeliumRestApi {
   Logger logger = LoggerFactory.getLogger(HeliumRestApi.class);
 
@@ -117,7 +120,13 @@ public class HeliumRestApi {
   @Path("suggest/{noteId}/{paragraphId}")
   public Response suggest(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId) {
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+    } catch (IOException e) {
+      return new JsonResponse(Response.Status.NOT_FOUND,
+              "Fail to get note: " + noteId + "\n" + ExceptionUtils.getStackTrace(e)).build();
+    }
     if (note == null) {
       return new JsonResponse(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
     }
@@ -140,7 +149,13 @@ public class HeliumRestApi {
   @Path("load/{noteId}/{paragraphId}")
   public Response load(@PathParam("noteId") String noteId,
           @PathParam("paragraphId") String paragraphId, String heliumPackage) {
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+    } catch (IOException e) {
+      return new JsonResponse(Response.Status.NOT_FOUND,
+              "Fail to get note: " + noteId + "\n" + ExceptionUtils.getStackTrace(e)).build();
+    }
     if (note == null) {
       return new JsonResponse(Response.Status.NOT_FOUND, "Note " + noteId + " not found").build();
     }

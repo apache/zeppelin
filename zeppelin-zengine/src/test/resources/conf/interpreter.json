@@ -120,6 +120,31 @@
         "users": [],
         "isUserImpersonate": false
       }
+    },
+
+    "2C5EERVGA" : {
+      "group": "config_test",
+      "name": "config_test",
+      "className": "org.apache.zeppelin.interpreter.mock.MockInterpreter1",
+      "properties": {
+      },
+      "config": {
+        "fontSize": 9,
+        "colWidth": 12,
+        "runOnSelectionChange": false,
+        "title": true,
+        "checkEmpty": false
+      },
+      "option": {
+        "remote": true,
+        "port": -1,
+        "perNote": "shared",
+        "perUser": "shared",
+        "isExistingProcess": false,
+        "setPermission": false,
+        "users": [],
+        "isUserImpersonate": false
+      }
     }
   },
   "interpreterBindings": {
@@ -132,7 +157,7 @@
     {
       "id": "central",
       "type": "default",
-      "url": "http://repo1.maven.org/maven2/",
+      "url": "https://repo1.maven.org/maven2/",
       "releasePolicy": {
         "enabled": true,
         "updatePolicy": "daily",

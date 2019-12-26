@@ -55,7 +55,9 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void runParagraph(int paragraphNo) {
-    driver.findElement(By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']")).click();
+    By by = By.xpath(getParagraphXPath(paragraphNo) + "//span[@class='icon-control-play']");
+    pollingWait(by, 5);
+    driver.findElement(by).click();
   }
 
 
@@ -119,6 +121,16 @@ abstract public class AbstractZeppelinIT {
         .sendKeys(Keys.ENTER);
     block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(".//*[@id='main']//button[@ng-click='moveNoteToTrash(note.id)']")));
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This note will be moved to trash')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+    ZeppelinITUtils.sleep(100, false);
+  }
+
+  protected void deleteTrashNotebook(final WebDriver driver) {
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
+    driver.findElement(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']"))
+        .sendKeys(Keys.ENTER);
+    block.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(".//*[@id='main']//button[@ng-click='removeNote(note.id)']")));
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'This cannot be undone. Are you sure?')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     ZeppelinITUtils.sleep(100, false);
   }

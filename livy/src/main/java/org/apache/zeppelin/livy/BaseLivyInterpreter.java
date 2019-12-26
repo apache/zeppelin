@@ -34,6 +34,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -55,7 +56,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseLivyInterpreter.class);
   private static Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-  private static final String SESSION_NOT_FOUND_PATTERN = "\"Session '\\d+' not found.\"";
+  private static final String SESSION_NOT_FOUND_PATTERN = "(.*)\"Session '\\d+' not found.\"(.*)";
 
   protected volatile SessionInfo sessionInfo;
   private String livyURL;
@@ -571,6 +572,59 @@ public abstract class BaseLivyInterpreter extends Interpreter {
     callRestAPI("/sessions/" + sessionInfo.id + "/statements/" + statementId + "/cancel", "POST");
   }
 
+  private SSLContext getSslContext() {
+    try {
+      // Build truststore
+      String trustStoreFile = getProperty("zeppelin.livy.ssl.trustStore");
+      String trustStorePassword = getProperty("zeppelin.livy.ssl.trustStorePassword");
+      String trustStoreType = getProperty("zeppelin.livy.ssl.trustStoreType",
+              KeyStore.getDefaultType());
+      if (StringUtils.isBlank(trustStoreFile)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
+      }
+      if (StringUtils.isBlank(trustStorePassword)) {
+        throw new RuntimeException("No zeppelin.livy.ssl.trustStorePassword specified " +
+                "for livy ssl");
+      }
+      KeyStore trustStore = getStore(trustStoreFile, trustStoreType, trustStorePassword);
+      SSLContextBuilder builder = SSLContexts.custom();
+      builder.loadTrustMaterial(trustStore);
+
+      // Build keystore
+      String keyStoreFile = getProperty("zeppelin.livy.ssl.keyStore");
+      String keyStorePassword = getProperty("zeppelin.livy.ssl.keyStorePassword");
+      String keyPassword = getProperty("zeppelin.livy.ssl.keyPassword", keyStorePassword);
+      String keyStoreType = getProperty("zeppelin.livy.ssl.keyStoreType",
+              KeyStore.getDefaultType());
+      if (StringUtils.isNotBlank(keyStoreFile)) {
+        KeyStore keyStore = getStore(keyStoreFile, keyStoreType, keyStorePassword);
+        builder.loadKeyMaterial(keyStore, keyPassword.toCharArray()).useTLS();
+      }
+      return builder.build();
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to create SSL Context", e);
+    }
+  }
+
+  private KeyStore getStore(String file, String type, String password) {
+    FileInputStream inputStream = null;
+    try {
+      inputStream = new FileInputStream(file);
+      KeyStore trustStore = KeyStore.getInstance(type);
+      trustStore.load(new FileInputStream(file), password.toCharArray());
+      return trustStore;
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to open keystore " + file, e);
+    } finally {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          LOGGER.error("Failed to close keystore file", e);
+        }
+      }
+    }
+  }
 
   private RestTemplate createRestTemplate() {
     String keytabLocation = getProperty("zeppelin.livy.keytab");
@@ -580,47 +634,32 @@ public abstract class BaseLivyInterpreter extends Interpreter {
 
     HttpClient httpClient = null;
     if (livyURL.startsWith("https:")) {
-      String keystoreFile = getProperty("zeppelin.livy.ssl.trustStore");
-      String password = getProperty("zeppelin.livy.ssl.trustStorePassword");
-      if (StringUtils.isBlank(keystoreFile)) {
-        throw new RuntimeException("No zeppelin.livy.ssl.trustStore specified for livy ssl");
-      }
-      if (StringUtils.isBlank(password)) {
-        throw new RuntimeException("No zeppelin.livy.ssl.trustStorePassword specified " +
-            "for livy ssl");
-      }
-      FileInputStream inputStream = null;
       try {
-        inputStream = new FileInputStream(keystoreFile);
-        KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        trustStore.load(new FileInputStream(keystoreFile), password.toCharArray());
-        SSLContext sslContext = SSLContexts.custom()
-            .loadTrustMaterial(trustStore)
-            .build();
+        SSLContext sslContext = getSslContext();
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
         HttpClientBuilder httpClientBuilder = HttpClients.custom().setSSLSocketFactory(csf);
-        RequestConfig reqConfig = new RequestConfig() {
-          @Override
-          public boolean isAuthenticationEnabled() {
-            return true;
-          }
-        };
-        httpClientBuilder.setDefaultRequestConfig(reqConfig);
-        Credentials credentials = new Credentials() {
-          @Override
-          public String getPassword() {
-            return null;
-          }
-
-          @Override
-          public Principal getUserPrincipal() {
-            return null;
-          }
-        };
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(AuthScope.ANY, credentials);
-        httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
         if (isSpnegoEnabled) {
+          RequestConfig reqConfig = new RequestConfig() {
+            @Override
+            public boolean isAuthenticationEnabled() {
+              return true;
+            }
+          };
+          httpClientBuilder.setDefaultRequestConfig(reqConfig);
+          Credentials credentials = new Credentials() {
+            @Override
+            public String getPassword() {
+              return null;
+            }
+
+            @Override
+            public Principal getUserPrincipal() {
+              return null;
+            }
+          };
+          CredentialsProvider credsProvider = new BasicCredentialsProvider();
+          credsProvider.setCredentials(AuthScope.ANY, credentials);
+          httpClientBuilder.setDefaultCredentialsProvider(credsProvider);
           Registry<AuthSchemeProvider> authSchemeProviderRegistry =
               RegistryBuilder.<AuthSchemeProvider>create()
                   .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory())
@@ -631,18 +670,10 @@ public abstract class BaseLivyInterpreter extends Interpreter {
         httpClient = httpClientBuilder.build();
       } catch (Exception e) {
         throw new RuntimeException("Failed to create SSL HttpClient", e);
-      } finally {
-        if (inputStream != null) {
-          try {
-            inputStream.close();
-          } catch (IOException e) {
-            LOGGER.error("Failed to close keystore file", e);
-          }
-        }
       }
     }
 
-    RestTemplate restTemplate = null;
+    RestTemplate restTemplate;
     if (isSpnegoEnabled) {
       if (httpClient == null) {
         restTemplate = new KerberosRestTemplate(keytabLocation, principal);
@@ -657,7 +688,7 @@ public abstract class BaseLivyInterpreter extends Interpreter {
       }
     }
     restTemplate.getMessageConverters().add(0,
-            new StringHttpMessageConverter(Charset.forName("UTF-8")));
+            new StringHttpMessageConverter(StandardCharsets.UTF_8));
     return restTemplate;
   }
 

@@ -26,7 +26,7 @@ limitations under the License.
 ## Overview
 [Apache Spark](http://spark.apache.org) is a fast and general-purpose cluster computing system.
 It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
-Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below five interpreters.
+Apache Spark is supported in Zeppelin with Spark interpreter group which consists of below six interpreters.
 
 <table class="table-configuration">
   <tr>
@@ -38,6 +38,11 @@ Apache Spark is supported in Zeppelin with Spark interpreter group which consist
     <td>%spark</td>
     <td>SparkInterpreter</td>
     <td>Creates a SparkContext and provides a Scala environment</td>
+  </tr>
+  <tr>
+    <td>%spark.kotlin</td>
+    <td>KotlinSparkInterpreter</td>
+    <td>Provides a Kotlin environment</td>
   </tr>
   <tr>
     <td>%spark.pyspark</td>
@@ -104,15 +109,15 @@ You can also set other Spark properties which are not listed in the table. For a
     <td>Local repository for dependency loader</td>
   </tr>
   <tr>
-    <td><code>PYSPARK_PYTHON</code></td>
+    <td>`PYSPARK_PYTHON`</td>
     <td>python</td>
     <td>Python binary executable to use for PySpark in both driver and workers (default is <code>python</code>).
             Property <code>spark.pyspark.python</code> take precedence if it is set</td>
   </tr>
   <tr>
-    <td><code>PYSPARK_DRIVER_PYTHON</code></td>
+    <td>`PYSPARK_DRIVER_PYTHON`</td>
     <td>python</td>
-    <td>Python binary executable to use for PySpark in driver only (default is <code>PYSPARK_PYTHON</code>).
+    <td>Python binary executable to use for PySpark in driver only (default is `PYSPARK_PYTHON`).
             Property <code>spark.pyspark.driver.python</code> take precedence if it is set</td>
   </tr>
   <tr>
@@ -159,6 +164,10 @@ You can also set other Spark properties which are not listed in the table. For a
   <td>zeppelin.spark.uiWebUrl</td>
     <td></td>
     <td>Overrides Spark UI default URL. Value should be a full URL (ex: http://{hostName}/{uniquePath}</td>
+  </tr>
+  <td>zeppelin.spark.scala.color</td>
+    <td>true</td>
+    <td>Whether to enable color output of spark scala interpreter</td>
   </tr>
 </table>
 
@@ -210,10 +219,10 @@ You can either specify them in `zeppelin-env.sh`, or in interpreter setting page
 in interpreter setting page means you can use multiple versions of `spark` & `hadoop` in one zeppelin instance.
 
 ### 4. New Version of SparkInterpreter
-There's one new version of SparkInterpreter with better spark support and code completion starting from Zeppelin 0.8.0. We enable it by default, but user can still use the old version of SparkInterpreter by setting `zeppelin.spark.useNew` as `false` in its interpreter setting.
+Starting from 0.9, we totally removed the old spark interpreter implementation, and make the new spark interpreter as the official spark interpreter.
 
 ## SparkContext, SQLContext, SparkSession, ZeppelinContext
-SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Python and R environments.
+SparkContext, SQLContext and ZeppelinContext are automatically created and exposed as variable names `sc`, `sqlContext` and `z`, respectively, in Scala, Kotlin, Python and R environments.
 Staring from 0.6.1 SparkSession is available as variable `spark` when you are using Spark 2.x.
 
 > Note that Scala/Python/R environment shares the same SparkContext, SQLContext and ZeppelinContext instance.
@@ -228,14 +237,9 @@ There're 2 kinds of properties that would be passed to SparkConf
  * Non-standard spark property (prefix with `zeppelin.spark.`).  e.g. `zeppelin.spark.property_1`, `property_1` will be passed to `SparkConf`
 
 ## Dependency Management
-There are two ways to load external libraries in Spark interpreter. First is using interpreter setting menu and second is loading Spark properties.
 
-### 1. Setting Dependencies via Interpreter Setting
-Please see [Dependency Management](../usage/interpreter/dependency_management.html) for the details.
-
-### 2. Loading Spark Properties
-Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations.
-The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properties that user can set to distribute libraries are:
+For spark interpreter, you should not use Zeppelin's [Dependency Management](../usage/interpreter/dependency_management.html) for managing 
+third party dependencies, (`%spark.dep` also is not the recommended approach starting from Zeppelin 0.8). Instead you should set spark properties (`spark.jars`, `spark.files`, `spark.jars.packages`) in 2 ways.
 
 <table class="table-configuration">
   <tr>
@@ -260,15 +264,16 @@ The first is command line options such as --master and Zeppelin can pass these o
   </tr>
 </table>
 
-Here are few examples:
+### 1. Set spark properties in zeppelin side.
 
-* `SPARK_SUBMIT_OPTIONS` in `conf/zeppelin-env.sh`
+In zeppelin side, you can either set them in spark interpreter setting page or via [Generic ConfInterpreter](../usage/interpreter/overview.html).
+It is not recommended to set them in `SPARK_SUBMIT_OPTIONS`. Because it will be shared by all spark interpreters, you can not set different dependencies for different users.
 
-  ```bash
-    export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
-  ```
+### 2. Set spark properties in spark side.
 
-* `SPARK_HOME/conf/spark-defaults.conf`
+In spark side, you can set them in `spark-defaults.conf`.
+
+e.g.
 
   ```
     spark.jars        /path/mylib1.jar,/path/mylib2.jar
@@ -276,54 +281,6 @@ Here are few examples:
     spark.files       /path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
   ```
 
-### 3. Dynamic Dependency Loading via %spark.dep interpreter
-> Note: `%spark.dep` interpreter loads libraries to `%spark` and `%spark.pyspark` but not to  `%spark.sql` interpreter. So we recommend you to use the first option instead.
-
-When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%spark.dep` interpreter.
-
- * Load libraries recursively from maven repository
- * Load libraries from local filesystem
- * Add additional maven repository
- * Automatically add libraries to SparkCluster (You can turn off)
-
-Dep interpreter leverages Scala environment. So you can write any Scala code here.
-Note that `%spark.dep` interpreter should be used before `%spark`, `%spark.pyspark`, `%spark.sql`.
-
-Here's usages.
-
-```scala
-%spark.dep
-z.reset() // clean up previously added artifact and repository
-
-// add maven repository
-z.addRepo("RepoName").url("RepoURL")
-
-// add maven snapshot repository
-z.addRepo("RepoName").url("RepoURL").snapshot()
-
-// add credentials for private maven repository
-z.addRepo("RepoName").url("RepoURL").username("username").password("password")
-
-// add artifact from filesystem
-z.load("/path/to.jar")
-
-// add artifact from maven repository, with no dependency
-z.load("groupId:artifactId:version").excludeAll()
-
-// add artifact recursively
-z.load("groupId:artifactId:version")
-
-// add artifact recursively except comma separated GroupID:ArtifactId list
-z.load("groupId:artifactId:version").exclude("groupId:artifactId,groupId:artifactId, ...")
-
-// exclude with pattern
-z.load("groupId:artifactId:version").exclude(*)
-z.load("groupId:artifactId:version").exclude("groupId:artifactId:*")
-z.load("groupId:artifactId:version").exclude("groupId:*")
-
-// local() skips adding artifact to spark clusters (skipping sc.addJar())
-z.load("groupId:artifactId:version").local()
-```
 
 ## ZeppelinContext
 Zeppelin automatically injects `ZeppelinContext` as variable `z` in your Scala/Python environment. `ZeppelinContext` provides some additional functions and utilities.
@@ -369,6 +326,12 @@ If you don't want to use IPython, then you can set `zeppelin.pyspark.useIPython`
 Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
 <img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+
+## Deprecate Spark 2.2 and earlier versions
+Starting from 0.9, Zeppelin deprecate Spark 2.2 and earlier versions. So you will see a warning message when you use Spark 2.2 and earlier.
+You can get rid of this message by setting `zeppelin.spark.deprecatedMsg.show` to `false`.
+
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/spark_deprecate.png">
 
 ### Configuration Setup
 

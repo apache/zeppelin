@@ -18,42 +18,6 @@
 
 package org.apache.zeppelin.service;
 
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
-import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookAuthorization;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSettingsInfo;
-import org.apache.zeppelin.search.LuceneSearch;
-import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.user.AuthenticationInfo;
-import org.apache.zeppelin.user.Credentials;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -68,6 +32,43 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.InMemoryNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.scheduler.QuartzSchedulerService;
+import org.apache.zeppelin.notebook.scheduler.SchedulerService;
+import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.user.Credentials;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class NotebookServiceTest {
 
@@ -89,9 +90,12 @@ public class NotebookServiceTest {
     InterpreterSettingManager mockInterpreterSettingManager = mock(InterpreterSettingManager.class);
     InterpreterFactory mockInterpreterFactory = mock(InterpreterFactory.class);
     Interpreter mockInterpreter = mock(Interpreter.class);
-    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any())).thenReturn(mockInterpreter);
-    when(mockInterpreter.interpret(eq("invalid_code"), any())).thenReturn(new InterpreterResult(Code.ERROR, "failed"));
-    when(mockInterpreter.interpret(eq("1+1"), any())).thenReturn(new InterpreterResult(Code.SUCCESS, "succeed"));
+    when(mockInterpreterFactory.getInterpreter(any(), any(), any(), any()))
+        .thenReturn(mockInterpreter);
+    when(mockInterpreter.interpret(eq("invalid_code"), any()))
+        .thenReturn(new InterpreterResult(Code.ERROR, "failed"));
+    when(mockInterpreter.interpret(eq("1+1"), any()))
+        .thenReturn(new InterpreterResult(Code.SUCCESS, "succeed"));
     doCallRealMethod().when(mockInterpreter).getScheduler();
     when(mockInterpreter.getFormType()).thenReturn(FormType.NATIVE);
     ManagedInterpreterGroup mockInterpreterGroup = mock(ManagedInterpreterGroup.class);
@@ -100,7 +104,6 @@ public class NotebookServiceTest {
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
-    NotebookAuthorization notebookAuthorization = NotebookAuthorization.getInstance();
     Credentials credentials = new Credentials(false, null, null);
     Notebook notebook =
         new Notebook(
@@ -109,9 +112,14 @@ public class NotebookServiceTest {
             mockInterpreterFactory,
             mockInterpreterSettingManager,
             searchService,
-            notebookAuthorization,
-            credentials);
-    notebookService = new NotebookService(notebook);
+            credentials,
+            null);
+    AuthorizationService authorizationService =
+        new AuthorizationService(notebook, notebook.getConf());
+    SchedulerService schedulerService = new QuartzSchedulerService(zeppelinConfiguration, notebook);
+    notebookService =
+        new NotebookService(
+            notebook, authorizationService, zeppelinConfiguration, schedulerService);
 
     String interpreterName = "test";
     when(mockInterpreterSetting.getName()).thenReturn(interpreterName);
@@ -131,6 +139,14 @@ public class NotebookServiceTest {
     assertEquals("note1", note1.getName());
     assertEquals(1, note1.getParagraphCount());
     verify(callback).onSuccess(note1, context);
+
+    // create duplicated note
+    reset(callback);
+    Note note2 = notebookService.createNote("/folder_1/note1", "test", context, callback);
+    assertNull(note2);
+    ArgumentCaptor<Exception> exception = ArgumentCaptor.forClass(Exception.class);
+    verify(callback).onFailure(exception.capture(), any(ServiceContext.class));
+    assertTrue(exception.getValue().getMessage().equals("Note '/folder_1/note1' existed"));
 
     // list note
     reset(callback);
@@ -159,8 +175,15 @@ public class NotebookServiceTest {
     assertEquals(1, notesInfo.size());
     assertEquals("/folder_3/new_name", notesInfo.get(0).getPath());
 
+    // move folder in case of folder path without prefix '/'
+    reset(callback);
+    notesInfo = notebookService.renameFolder("folder_3", "folder_4", context, callback);
+    verify(callback).onSuccess(notesInfo, context);
+    assertEquals(1, notesInfo.size());
+    assertEquals("/folder_4/new_name", notesInfo.get(0).getPath());
+
     // create another note
-    Note note2 = notebookService.createNote("/note2", "test", context, callback);
+    note2 = notebookService.createNote("/note2", "test", context, callback);
     assertEquals("note2", note2.getName());
     verify(callback).onSuccess(note2, context);
 
@@ -188,7 +211,7 @@ public class NotebookServiceTest {
     verify(callback).onSuccess(notesInfo, context);
 
     // delete folder
-    notesInfo = notebookService.removeFolder("/folder_3", context, callback);
+    notesInfo = notebookService.removeFolder("/folder_4", context, callback);
     verify(callback).onSuccess(notesInfo, context);
 
     // list note again

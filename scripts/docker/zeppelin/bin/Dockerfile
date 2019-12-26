@@ -16,12 +16,20 @@
 FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
+ARG ZEPPELIN_USER_ID=2100
+ARG ZEPPELIN_GROUP_ID=2100
+
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
 ENV Z_VERSION="0.9.0-SNAPSHOT"
+
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+    LC_ALL=en_US.UTF-8 \
+    ZEPPELIN_ADDR="0.0.0.0"
+
+RUN groupadd --gid $ZEPPELIN_GROUP_ID zeppelin \
+    && useradd -ms /bin/bash -d ${Z_HOME} zeppelin --uid $ZEPPELIN_USER_ID --gid $ZEPPELIN_GROUP_ID
 
 RUN echo "$LOG_TAG update and install basic packages" && \
     apt-get -y update && \
@@ -63,19 +71,18 @@ RUN echo "$LOG_TAG Install python related packages" && \
     apt-get install -y gfortran && \
     # numerical/algebra packages
     apt-get install -y libblas-dev libatlas-dev liblapack-dev && \
-    # font, image for matplotlib
+    # font, image
     apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
     # for tkinter
     apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev && \
-    pip install numpy && \
-    pip install matplotlib
+    pip install numpy==1.12.1 pandas==0.21.1 matplotlib==2.1.1 pandasql==0.7.3 ipython==5.4.1 jupyter_client==5.1.0 ipykernel==4.7.0 bokeh==0.12.10 ggplot==0.11.5 grpcio==1.8.2 bkzep==0.4.0
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && \
     gpg -a --export E084DAB9 | apt-key add - && \
     apt-get -y update && \
-    apt-get -y install r-base r-base-dev && \
+    apt-get -y --allow-unauthenticated install r-base r-base-dev && \
     R -e "install.packages('knitr', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('ggplot2', repos='http://cran.us.r-project.org')" && \
     R -e "install.packages('googleVis', repos='http://cran.us.r-project.org')" && \
@@ -86,15 +93,27 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
-RUN echo "$LOG_TAG Download Zeppelin binary" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+# Install kubectl
+RUN apt-get install -y apt-transport-https && \
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+    apt-get update && \
+    apt-get install -y kubectl
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \
     apt-get clean
+
+RUN echo "$LOG_TAG Download Zeppelin binary" && \
+    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    mv /zeppelin-${Z_VERSION}-bin-all/* ${Z_HOME}/ && \
+    chown -R zeppelin:zeppelin ${Z_HOME}/  
+
+COPY log4j.properties ${Z_HOME}/conf/
+
+USER zeppelin
 
 EXPOSE 8080
 

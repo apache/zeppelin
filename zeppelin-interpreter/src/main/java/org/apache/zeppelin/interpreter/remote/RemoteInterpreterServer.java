@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -28,6 +29,9 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.cluster.ClusterManagerClient;
+import org.apache.zeppelin.cluster.meta.ClusterMeta;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -65,14 +69,16 @@ import org.apache.zeppelin.resource.DistributedResourcePool;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
-import org.apache.zeppelin.resource.WellKnownResourceName;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -80,8 +86,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -90,6 +99,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.apache.zeppelin.cluster.meta.ClusterMetaType.INTP_PROCESS_META;
 
 /**
  * Entry point for Interpreter process.
@@ -128,6 +139,10 @@ public class RemoteInterpreterServer extends Thread
   private ConcurrentMap<String, Integer> progressMap = new ConcurrentHashMap<>();
 
   private boolean isTest;
+
+  // cluster manager client
+  ClusterManagerClient clusterManagerClient = ClusterManagerClient.getInstance();
+  ZeppelinConfiguration zconf = ZeppelinConfiguration.create();
 
   public RemoteInterpreterServer(String intpEventServerHost,
                                  int intpEventServerPort,
@@ -175,6 +190,8 @@ public class RemoteInterpreterServer extends Thread
     server = new TThreadPoolServer(
         new TThreadPoolServer.Args(serverTransport).processor(processor));
     remoteWorksResponsePool = Collections.synchronizedMap(new HashMap<String, Object>());
+
+    clusterManagerClient.start(interpreterGroupId);
   }
 
   @Override
@@ -193,16 +210,24 @@ public class RemoteInterpreterServer extends Thread
             }
           }
 
-          if (!interrupted) {
-            RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
-            try {
-              intpEventServiceClient.registerInterpreterProcess(registerInfo);
-            } catch (TException e) {
-              logger.error("Error while registering interpreter: {}", registerInfo, e);
+          if (zconf.isClusterMode()) {
+            // Cluster mode, discovering interpreter processes through metadata registration
+            // TODO (Xun): Unified use of cluster metadata for process discovery of all operating modes
+            // 1. Can optimize the startup logic of the process
+            // 2. Can solve the problem that running the interpreter's IP in docker may be a virtual IP
+            putClusterMeta();
+          } else {
+            if (!interrupted) {
+              RegisterInfo registerInfo = new RegisterInfo(host, port, interpreterGroupId);
               try {
-                shutdown();
-              } catch (TException e1) {
-                logger.warn("Exception occurs while shutting down", e1);
+                intpEventServiceClient.registerInterpreterProcess(registerInfo);
+              } catch (TException e) {
+                logger.error("Error while registering interpreter: {}", registerInfo, e);
+                try {
+                  shutdown();
+                } catch (TException e1) {
+                  logger.warn("Exception occurs while shutting down", e1);
+                }
               }
             }
           }
@@ -215,18 +240,25 @@ public class RemoteInterpreterServer extends Thread
   @Override
   public void shutdown() throws TException {
     logger.info("Shutting down...");
+    // delete interpreter cluster meta
+    deleteClusterMeta();
+
     if (interpreterGroup != null) {
-      for (List<Interpreter> session : interpreterGroup.values()) {
-        for (Interpreter interpreter : session) {
-          try {
-            interpreter.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+      synchronized (interpreterGroup) {
+        for (List<Interpreter> session : interpreterGroup.values()) {
+          for (Interpreter interpreter : session) {
+            try {
+              interpreter.close();
+            } catch (InterpreterException e) {
+              logger.warn("Fail to close interpreter", e);
+            }
           }
         }
       }
     }
-
+    if (!isTest) {
+      SchedulerFactory.singleton().destroy();
+    }
     server.stop();
 
     // server.stop() does not always finish server.serve() loop
@@ -244,8 +276,11 @@ public class RemoteInterpreterServer extends Thread
     }
 
     if (server.isServing()) {
+      logger.info("Force shutting down");
       System.exit(0);
     }
+
+    logger.info("Shutting down");
   }
 
   public int getPort() {
@@ -278,8 +313,55 @@ public class RemoteInterpreterServer extends Thread
     RemoteInterpreterServer remoteInterpreterServer =
         new RemoteInterpreterServer(zeppelinServerHost, port, interpreterGroupId, portRange);
     remoteInterpreterServer.start();
+
+    // add signal handler
+    Signal.handle(new Signal("TERM"), new SignalHandler() {
+      @Override
+      public void handle(Signal signal) {
+        try {
+          remoteInterpreterServer.shutdown();
+        } catch (TException e) {
+          logger.error("Error on shutdown RemoteInterpreterServer", e);
+        }
+      }
+    });
+
     remoteInterpreterServer.join();
     System.exit(0);
+  }
+
+  // Submit interpreter process metadata information to cluster metadata
+  private void putClusterMeta() {
+    if (!zconf.isClusterMode()){
+      return;
+    }
+    String nodeName = clusterManagerClient.getClusterNodeName();
+
+    // commit interpreter meta
+    HashMap<String, Object> meta = new HashMap<>();
+    meta.put(ClusterMeta.NODE_NAME, nodeName);
+    meta.put(ClusterMeta.INTP_PROCESS_NAME, interpreterGroupId);
+    meta.put(ClusterMeta.INTP_TSERVER_HOST, host);
+    meta.put(ClusterMeta.INTP_TSERVER_PORT, port);
+    meta.put(ClusterMeta.INTP_START_TIME, LocalDateTime.now());
+    meta.put(ClusterMeta.LATEST_HEARTBEAT, LocalDateTime.now());
+    meta.put(ClusterMeta.STATUS, ClusterMeta.ONLINE_STATUS);
+
+    clusterManagerClient.putClusterMeta(INTP_PROCESS_META, interpreterGroupId, meta);
+  }
+
+  private void deleteClusterMeta() {
+    if (!zconf.isClusterMode()){
+      return;
+    }
+
+    try {
+      // delete interpreter cluster meta
+      clusterManagerClient.deleteClusterMeta(INTP_PROCESS_META, interpreterGroupId);
+      Thread.sleep(300);
+    } catch (InterruptedException e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -403,27 +485,27 @@ public class RemoteInterpreterServer extends Thread
     }
 
     // close interpreters
-    List<Interpreter> interpreters;
-    synchronized (interpreterGroup) {
-      interpreters = interpreterGroup.get(sessionId);
-    }
-    if (interpreters != null) {
-      Iterator<Interpreter> it = interpreters.iterator();
-      while (it.hasNext()) {
-        Interpreter inp = it.next();
-        if (inp.getClassName().equals(className)) {
-          try {
-            inp.close();
-          } catch (InterpreterException e) {
-            logger.warn("Fail to close interpreter", e);
+    if (interpreterGroup != null) {
+      synchronized (interpreterGroup) {
+        List<Interpreter> interpreters = interpreterGroup.get(sessionId);
+        if (interpreters != null) {
+          Iterator<Interpreter> it = interpreters.iterator();
+          while (it.hasNext()) {
+            Interpreter inp = it.next();
+            if (inp.getClassName().equals(className)) {
+              try {
+                inp.close();
+              } catch (InterpreterException e) {
+                logger.warn("Fail to close interpreter", e);
+              }
+              it.remove();
+              break;
+            }
           }
-          it.remove();
-          break;
         }
       }
     }
   }
-
 
   @Override
   public RemoteInterpreterResult interpret(String sessionId, String className, String st,
@@ -597,27 +679,40 @@ public class RemoteInterpreterServer extends Thread
         // data from context.out is prepended to InterpreterResult if both defined
         context.out.flush();
         List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-        resultMessages.addAll(result.message());
 
+        for (InterpreterResultMessage resultMessage : result.message()) {
+          // only add non-empty InterpreterResultMessage
+          if (!StringUtils.isBlank(resultMessage.getData())) {
+            resultMessages.add(resultMessage);
+          }
+        }
+
+        List<String> stringResult = new ArrayList<>();
         for (InterpreterResultMessage msg : resultMessages) {
           if (msg.getType() == InterpreterResult.Type.IMG) {
             logger.debug("InterpreterResultMessage: IMAGE_DATA");
           } else {
             logger.debug("InterpreterResultMessage: " + msg.toString());
           }
+          stringResult.add(msg.getData());
         }
         // put result into resource pool
-        if (resultMessages.size() > 0) {
-          int lastMessageIndex = resultMessages.size() - 1;
-          if (resultMessages.get(lastMessageIndex).getType() == InterpreterResult.Type.TABLE) {
+        if (context.getLocalProperties().containsKey("saveAs")) {
+          if (stringResult.size() == 1) {
+            logger.info("Saving result into ResourcePool as single string: " +
+                    context.getLocalProperties().get("saveAs"));
             context.getResourcePool().put(
-                context.getNoteId(),
-                context.getParagraphId(),
-                WellKnownResourceName.ZeppelinTableResult.toString(),
-                resultMessages.get(lastMessageIndex));
+                    context.getLocalProperties().get("saveAs"), stringResult.get(0));
+          } else {
+            logger.info("Saving result into ResourcePool as string list: " +
+                    context.getLocalProperties().get("saveAs"));
+            context.getResourcePool().put(
+                    context.getLocalProperties().get("saveAs"), stringResult);
           }
         }
         return new InterpreterResult(result.code(), resultMessages);
+      } catch (Throwable e) {
+        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
       } finally {
         Thread.currentThread().setContextClassLoader(currentThreadContextClassloader);
         InterpreterContext.remove();
@@ -794,7 +889,6 @@ public class RemoteInterpreterServer extends Thread
     synchronized (interpreterGroup) {
       List<Interpreter> interpreters = interpreterGroup.get(sessionId);
       if (interpreters == null) {
-        logger.info("getStatus:" + Status.UNKNOWN.name());
         return Status.UNKNOWN.name();
       }
 
@@ -807,7 +901,6 @@ public class RemoteInterpreterServer extends Thread
         }
       }
     }
-    logger.info("getStatus:" + Status.UNKNOWN.name());
     return Status.UNKNOWN.name();
   }
 
@@ -923,7 +1016,6 @@ public class RemoteInterpreterServer extends Thread
     for (Resource r : resourceSet) {
       result.add(r.toJson());
     }
-
     return result;
   }
 
@@ -957,7 +1049,6 @@ public class RemoteInterpreterServer extends Thread
       String noteId, String paragraphId, String resourceName, String invokeMessage) {
     InvokeResourceMethodEventMessage message =
         InvokeResourceMethodEventMessage.fromJson(invokeMessage);
-
     Resource resource = resourcePool.get(noteId, paragraphId, resourceName, false);
     if (resource == null || resource.get() == null) {
       return ByteBuffer.allocate(0);
@@ -971,13 +1062,20 @@ public class RemoteInterpreterServer extends Thread
         if (message.shouldPutResultIntoResourcePool()) {
           // if return resource name is specified,
           // then put result into resource pool
-          // and return empty byte buffer
+          // and return the Resource class instead of actual return object.
           resourcePool.put(
               noteId,
               paragraphId,
               message.returnResourceName,
               ret);
-          return ByteBuffer.allocate(0);
+
+          Resource returnValResource = resourcePool.get(noteId, paragraphId, message.returnResourceName);
+          ByteBuffer serialized = Resource.serializeObject(returnValResource);
+          if (serialized == null) {
+            return ByteBuffer.allocate(0);
+          } else {
+            return serialized;
+          }
         } else {
           // if return resource name is not specified,
           // then return serialized result
@@ -994,31 +1092,6 @@ public class RemoteInterpreterServer extends Thread
       }
     }
   }
-
-  //  /**
-  //   * Get payload of resource from remote
-  //   *
-  //   * @param invokeResourceMethodEventMessage json serialized InvokeResourcemethodEventMessage
-  //   * @param object                           java serialized of the object
-  //   * @throws TException
-  //   */
-  //  @Override
-  //  public void resourceResponseInvokeMethod(
-  //      String invokeResourceMethodEventMessage, ByteBuffer object) throws TException {
-  //    InvokeResourceMethodEventMessage message =
-  //        InvokeResourceMethodEventMessage.fromJson(invokeResourceMethodEventMessage);
-  //
-  //    if (message.shouldPutResultIntoResourcePool()) {
-  //      Resource resource = resourcePool.get(
-  //          message.resourceId.getNoteId(),
-  //          message.resourceId.getParagraphId(),
-  //          message.returnResourceName,
-  //          true);
-  //      eventClient.putResponseInvokeMethod(message, resource);
-  //    } else {
-  //      eventClient.putResponseInvokeMethod(message, object);
-  //    }
-  //  }
 
   @Override
   public void angularRegistryPush(String registryAsString) throws TException {

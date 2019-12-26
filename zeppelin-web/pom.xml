@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -45,7 +46,7 @@
 
     <!--plugin versions-->
     <plugin.frontend.nodeDownloadRoot>https://nodejs.org/dist/</plugin.frontend.nodeDownloadRoot>
-    <plugin.frontend.npmDownloadRoot>http://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
+    <plugin.frontend.npmDownloadRoot>https://registry.npmjs.org/npm/-/</plugin.frontend.npmDownloadRoot>
   </properties>
 
   <build>
@@ -111,7 +112,7 @@
             <phase>test</phase>
             <configuration>
               <skip>${web.e2e.disabled}</skip>
-              <arguments>run test</arguments>
+              <arguments>run karma-test</arguments>
             </configuration>
           </execution>
 
@@ -173,7 +174,7 @@
           and results in https://issues.apache.org/jira/browse/ZEPPELIN-69
 
           There is no better way to do it, as per
-          http://jira.codehaus.org/browse/MCOBERTURA-154
+          https://jira.codehaus.org/browse/MCOBERTURA-154
       -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

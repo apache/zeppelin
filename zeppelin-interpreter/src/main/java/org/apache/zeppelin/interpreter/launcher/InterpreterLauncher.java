@@ -28,6 +28,8 @@ import java.util.Properties;
  */
 public abstract class InterpreterLauncher {
 
+  private static String SPECIAL_CHARACTER="{}()<>&*‘|=?;[]$–#~!.\"%/\\:+,`";
+
   protected ZeppelinConfiguration zConf;
   protected Properties properties;
   protected RecoveryStorage recoveryStorage;
@@ -37,15 +39,30 @@ public abstract class InterpreterLauncher {
     this.recoveryStorage = recoveryStorage;
   }
 
+  public void setProperties(Properties props) {
+    this.properties = props;
+  }
+
   protected int getConnectTimeout() {
     int connectTimeout =
         zConf.getInt(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
-    if (properties.containsKey(
+    if (properties != null && properties.containsKey(
         ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName())) {
       connectTimeout = Integer.parseInt(properties.getProperty(
           ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT.getVarName()));
     }
     return connectTimeout;
+  }
+
+  public static String escapeSpecialCharacter(String command) {
+    StringBuilder builder = new StringBuilder();
+    for (char c : command.toCharArray()) {
+      if (SPECIAL_CHARACTER.indexOf(c) != -1) {
+        builder.append("\\");
+      }
+      builder.append(c);
+    }
+    return builder.toString();
   }
 
   public abstract InterpreterClient launch(InterpreterLaunchContext context) throws IOException;

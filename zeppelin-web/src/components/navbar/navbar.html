@@ -102,6 +102,7 @@ limitations under the License.
               <li><a href="#/credential">Credential</a></li>
               <li><a href="#/helium">Helium</a></li>
               <li><a href="#/configuration">Configuration</a></li>
+              <li ng-if="clusterAddr !== ''"><a href="#/cluster">Cluster</a> </li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'" role="separator" style="margin: 5px 0;" class="divider"></li>
               <li ng-if="ticket.principal && ticket.principal !== 'anonymous'"><a ng-click="navbar.logout()">Logout</a></li>
             </ul>

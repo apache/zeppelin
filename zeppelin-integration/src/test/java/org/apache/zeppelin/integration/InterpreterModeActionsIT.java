@@ -66,13 +66,14 @@ public class InterpreterModeActionsIT extends AbstractZeppelinIT {
       "admin = *\n" +
       "[urls]\n" +
       "/api/version = anon\n" +
+      "/api/cluster/address = anon\n" +
       "/** = authc";
 
   static String originalShiro = "";
   static String interpreterOptionPath = "";
   static String originalInterpreterOption = "";
 
-  static String cmdPsPython = "ps aux | grep 'zeppelin_ipython' | grep -v 'grep' | wc -l";
+  static String cmdPsPython = "ps aux | grep 'kernel_server.py' | grep -v 'grep' | wc -l";
   static String cmdPsInterpreter = "ps aux | grep 'zeppelin/interpreter/python/*' |" +
       " sed -E '/grep|local-repo/d' | wc -l";
 

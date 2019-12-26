@@ -1,0 +1,15 @@
+[
+  {
+    "group": "jupyter",
+    "name": "jupyter",
+    "className": "org.apache.zeppelin.jupyter.JupyterInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "text",
+      "editOnDblClick": false,
+      "completionKey": "TAB",
+      "completionSupport": true
+    }
+  }
+]

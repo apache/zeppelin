@@ -30,13 +30,15 @@ public class InterpreterInfo {
   @SerializedName("class") private String className;
   private boolean defaultInterpreter = false;
   private Map<String, Object> editor;
+  private Map<String, Object> config;
 
   public InterpreterInfo(String className, String name, boolean defaultInterpreter,
-      Map<String, Object> editor) {
+                         Map<String, Object> editor, Map<String, Object> config) {
     this.className = className;
     this.name = name;
     this.defaultInterpreter = defaultInterpreter;
     this.editor = editor;
+    this.config = config;
   }
 
   public String getName() {
@@ -78,5 +80,13 @@ public class InterpreterInfo {
     boolean sameIsDefaultInterpreter = defaultInterpreter == other.isDefaultInterpreter();
 
     return sameName && sameClassName && sameIsDefaultInterpreter;
+  }
+
+  public Map<String, Object> getConfig() {
+    return config;
+  }
+
+  public void setConfig(Map<String, Object> config) {
+    this.config = config;
   }
 }

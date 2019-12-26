@@ -16,9 +16,24 @@
  */
 package org.apache.zeppelin.helium;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
@@ -26,13 +41,12 @@ import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.resource.*;
+import org.apache.zeppelin.resource.DistributedResourcePool;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourceSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * Manages helium packages
@@ -52,6 +66,22 @@ public class Helium {
   private final HeliumApplicationFactory applicationFactory;
   private final InterpreterSettingManager interpreterSettingManager;
 
+  @Inject
+  public Helium(
+      ZeppelinConfiguration conf,
+      HeliumBundleFactory heliumBundleFactory,
+      HeliumApplicationFactory heliumApplicationFactory,
+      InterpreterSettingManager interpreterSettingManager) throws IOException {
+    this(
+        conf.getHeliumConfPath(),
+        conf.getHeliumRegistry(),
+        new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO), "helium-registry-cache"),
+        heliumBundleFactory,
+        heliumApplicationFactory,
+        interpreterSettingManager);
+  }
+
+  @VisibleForTesting
   public Helium(
       String heliumConfPath,
       String registryPaths,
@@ -68,6 +98,13 @@ public class Helium {
     this.interpreterSettingManager = interpreterSettingManager;
     heliumConf = loadConf(heliumConfPath);
     allPackages = getAllPackageInfo();
+
+    // TODO(jl): Refactor it
+    try {
+      bundleFactory.buildAllPackages(getBundlePackagesToBundle());
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 
   /**
@@ -417,7 +454,7 @@ public class Helium {
         }
       }
     }
-    new LinkedList<>().addAll(orderedBundlePackages);
+    output.addAll(orderedBundlePackages);
     return output;
   }
 

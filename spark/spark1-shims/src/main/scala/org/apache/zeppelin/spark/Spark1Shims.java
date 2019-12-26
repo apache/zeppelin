@@ -23,17 +23,24 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.catalyst.expressions.GenericRow;
+import org.apache.spark.sql.types.StructType;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.ResultMessages;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class Spark1Shims extends SparkShims {
 
-  public Spark1Shims(Properties properties) {
+  private SparkContext sc;
+
+  public Spark1Shims(Properties properties, Object entryPoint) {
     super(properties);
+    this.sc = (SparkContext) entryPoint;
   }
 
   public void setupSparkListener(final String master,
@@ -45,7 +52,7 @@ public class Spark1Shims extends SparkShims {
       public void onJobStart(SparkListenerJobStart jobStart) {
         if (sc.getConf().getBoolean("spark.ui.enabled", true) &&
             !Boolean.parseBoolean(properties.getProperty("zeppelin.spark.ui.hidden", "false"))) {
-          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), context);
+          buildSparkJobUrl(master, sparkWebUrl, jobStart.jobId(), jobStart.properties(), context);
         }
       }
     });
@@ -56,12 +63,20 @@ public class Spark1Shims extends SparkShims {
     if (obj instanceof DataFrame) {
       DataFrame df = (DataFrame) obj;
       String[] columns = df.columns();
+      // DDL will empty DataFrame
+      if (columns.length == 0) {
+        return "";
+      }
+      // fetch maxResult+1 rows so that we can check whether it is larger than zeppelin.spark.maxResult
       List<Row> rows = df.takeAsList(maxResult + 1);
-
       StringBuilder msg = new StringBuilder();
       msg.append("%table ");
       msg.append(StringUtils.join(columns, "\t"));
       msg.append("\n");
+      boolean isLargerThanMaxResult = rows.size() > maxResult;
+      if (isLargerThanMaxResult) {
+        rows = rows.subList(0, maxResult);
+      }
       for (Row row : rows) {
         for (int i = 0; i < row.size(); ++i) {
           msg.append(row.get(i));
@@ -72,7 +87,7 @@ public class Spark1Shims extends SparkShims {
         msg.append("\n");
       }
 
-      if (rows.size() > maxResult) {
+      if (isLargerThanMaxResult) {
         msg.append("\n");
         msg.append(ResultMessages.getExceedsLimitRowsMessage(maxResult, "zeppelin.spark.maxResult"));
       }
@@ -82,5 +97,25 @@ public class Spark1Shims extends SparkShims {
     } else {
       return obj.toString();
     }
+  }
+
+  @Override
+  public DataFrame getAsDataFrame(String value) {
+    String[] lines = value.split("\\n");
+    String head = lines[0];
+    String[] columns = head.split("\t");
+    StructType schema = new StructType();
+    for (String column : columns) {
+      schema = schema.add(column, "String");
+    }
+
+    List<Row> rows = new ArrayList<>();
+    for (int i = 1; i < lines.length; ++i) {
+      String[] tokens = lines[i].split("\t");
+      Row row = new GenericRow(tokens);
+      rows.add(row);
+    }
+    return SQLContext.getOrCreate(sc)
+            .createDataFrame(rows, schema);
   }
 }

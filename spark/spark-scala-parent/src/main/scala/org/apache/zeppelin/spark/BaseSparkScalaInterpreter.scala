@@ -19,28 +19,36 @@ package org.apache.zeppelin.spark
 
 
 import java.io.File
+import java.net.URLClassLoader
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
+import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.{JobProgressUtil, SparkConf, SparkContext}
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream
-import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterResult}
+import org.apache.zeppelin.interpreter.{BaseZeppelinContext, InterpreterContext, InterpreterGroup, InterpreterResult}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
-import scala.tools.nsc.interpreter.Completion.ScalaCompleter
+import scala.tools.nsc.interpreter.Completion
 import scala.util.control.NonFatal
 
 /**
   * Base class for different scala versions of SparkInterpreter. It should be
   * binary compatible between multiple scala versions.
+  *
   * @param conf
   * @param depFiles
+  * @param properties
+  * @param interpreterGroup
   */
 abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
                                          val depFiles: java.util.List[String],
-                                         val printReplOutput: java.lang.Boolean) {
+                                         val properties: java.util.Properties,
+                                         val interpreterGroup: InterpreterGroup,
+                                         val sparkInterpreterClassLoader: URLClassLoader)
+  extends AbstractSparkScalaInterpreter() {
 
   protected lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
@@ -56,7 +64,9 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected var sparkUrl: String = _
 
-  protected var scalaCompleter: ScalaCompleter = _
+  protected var scalaCompletion: Completion = _
+
+  protected var z: SparkZeppelinContext = _
 
   protected val interpreterOutput: InterpreterOutputStream
 
@@ -86,12 +96,12 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   def interpret(code: String, context: InterpreterContext): InterpreterResult = {
 
     val originalOut = System.out
+
     def _interpret(code: String): scala.tools.nsc.interpreter.Results.Result = {
       Console.withOut(interpreterOutput) {
         System.setOut(Console.out)
         interpreterOutput.setInterpreterOutput(context.out)
         interpreterOutput.ignoreLeadingNewLinesFromScalaReporter()
-        context.out.clear()
 
         val status = scalaInterpret(code) match {
           case success@scala.tools.nsc.interpreter.IR.Success =>
@@ -118,6 +128,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     // reset the java stdout
     System.setOut(originalOut)
 
+    context.out.write("")
     val lastStatus = _interpret(code) match {
       case scala.tools.nsc.interpreter.IR.Success =>
         InterpreterResult.Code.SUCCESS
@@ -127,7 +138,10 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         InterpreterResult.Code.INCOMPLETE
     }
 
-    new InterpreterResult(lastStatus)
+    lastStatus match {
+      case InterpreterResult.Code.INCOMPLETE => new InterpreterResult( lastStatus, "Incomplete expression" )
+      case _ => new InterpreterResult(lastStatus)
+    }
   }
 
   protected def interpret(code: String): InterpreterResult =
@@ -135,17 +149,19 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected def scalaInterpret(code: String): scala.tools.nsc.interpreter.IR.Result
 
-  protected def completion(buf: String,
-                           cursor: Int,
-                           context: InterpreterContext): java.util.List[InterpreterCompletion] = {
-    val completions = scalaCompleter.complete(buf.substring(0, cursor), cursor).candidates
-      .map(e => new InterpreterCompletion(e, e, null))
-    scala.collection.JavaConversions.seqAsJavaList(completions)
-  }
-
   protected def getProgress(jobGroup: String, context: InterpreterContext): Int = {
     JobProgressUtil.progress(sc, jobGroup)
   }
+
+  override def getSparkContext: SparkContext = sc
+
+  override def getSqlContext: SQLContext = sqlContext
+
+  override def getSparkSession: AnyRef = sparkSession
+
+  override def getSparkUrl: String = sparkUrl
+
+  override def getZeppelinContext: BaseZeppelinContext = z
 
   protected def bind(name: String, tpe: String, value: Object, modifier: List[String]): Unit
 
@@ -157,20 +173,18 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind(name, tpe, value, modifier.asScala.toList)
 
   protected def close(): Unit = {
-    if (BaseSparkScalaInterpreter.sessionNum.decrementAndGet() == 0) {
-      if (sc != null) {
-        sc.stop()
-      }
-      if (sparkHttpServer != null) {
-        sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
-      }
-      sc = null
-      sqlContext = null
-      if (sparkSession != null) {
-        sparkSession.getClass.getMethod("stop").invoke(sparkSession)
-        sparkSession = null
-      }
+    if (sparkHttpServer != null) {
+      sparkHttpServer.getClass.getMethod("stop").invoke(sparkHttpServer)
     }
+    if (sc != null) {
+      sc.stop()
+    }
+    sc = null
+    if (sparkSession != null) {
+      sparkSession.getClass.getMethod("stop").invoke(sparkSession)
+      sparkSession = null
+    }
+    sqlContext = null
   }
 
   protected def createSparkContext(): Unit = {
@@ -236,7 +250,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     builder.getClass.getMethod("config", classOf[SparkConf]).invoke(builder, conf)
 
     if (conf.get("spark.sql.catalogImplementation", "in-memory").toLowerCase == "hive"
-        || conf.get("spark.useHiveContext", "false").toLowerCase == "true") {
+      || conf.get("spark.useHiveContext", "false").toLowerCase == "true") {
       val hiveSiteExisted: Boolean =
         Thread.currentThread().getContextClassLoader.getResource("hive-site.xml") != null
       val hiveClassesPresent =
@@ -289,6 +303,26 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     // print empty string otherwise the last statement's output of this method
     // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
     interpret("print(\"\")")
+  }
+
+  protected def createZeppelinContext(): Unit = {
+
+    var sparkShims: SparkShims = null
+    if (isSparkSessionPresent()) {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sparkSession)
+    } else {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sc)
+    }
+    var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
+    if (StringUtils.isBlank(webUiUrl)) {
+      webUiUrl = sparkUrl;
+    }
+    sparkShims.setupSparkListener(sc.master, webUiUrl, InterpreterContext.get)
+
+    z = new SparkZeppelinContext(sc, sparkShims,
+      interpreterGroup.getInterpreterHookRegistry,
+      properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
+    bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))
   }
 
   private def isSparkSessionPresent(): Boolean = {
@@ -370,20 +404,28 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def getUserJars(): Seq[String] = {
-    val sparkJars = conf.getOption("spark.jars").map(_.split(","))
-      .map(_.filter(_.nonEmpty)).toSeq.flatten
-    val depJars = depFiles.asScala.filter(_.endsWith(".jar"))
-    // add zeppelin spark interpreter jar
-    val zeppelinInterpreterJarURL = getClass.getProtectionDomain.getCodeSource.getLocation
-    // zeppelinInterpreterJarURL might be a folder when under unit testing
-    val result = if (new File(zeppelinInterpreterJarURL.getFile).isDirectory) {
-      sparkJars ++ depJars
-    } else {
-      sparkJars ++ depJars ++ Seq(zeppelinInterpreterJarURL.getFile)
+    var classLoader = Thread.currentThread().getContextClassLoader
+    var extraJars = Seq.empty[String]
+    while (classLoader != null) {
+      if (classLoader.getClass.getCanonicalName ==
+        "org.apache.spark.util.MutableURLClassLoader") {
+        extraJars = classLoader.asInstanceOf[URLClassLoader].getURLs()
+          // Check if the file exists.
+          .filter { u => u.getProtocol == "file" && new File(u.getPath).isFile }
+          // Some bad spark packages depend on the wrong version of scala-reflect. Blacklist it.
+          .filterNot {
+            u => Paths.get(u.toURI).getFileName.toString.contains("org.scala-lang_scala-reflect")
+          }
+          .map(url => url.toString).toSeq
+        classLoader = null
+      } else {
+        classLoader = classLoader.getParent
+      }
     }
-    conf.set("spark.jars", result.mkString(","))
-    LOGGER.debug("User jar for spark repl: " + conf.get("spark.jars"))
-    result
+
+    extraJars ++= sparkInterpreterClassLoader.getURLs().map(_.toString)
+    LOGGER.debug("User jar for spark repl: " + extraJars.mkString(","))
+    extraJars
   }
 
   protected def getUserFiles(): Seq[String] = {
