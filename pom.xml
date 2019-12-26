@@ -91,6 +91,7 @@
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-web</module>
+    <module>zeppelin-web-angular</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
@@ -108,8 +109,8 @@
     <scalacheck.version>1.12.5</scalacheck.version>
 
     <!-- frontend maven plugin related versions-->
-    <node.version>v8.9.3</node.version>
-    <npm.version>5.5.1</npm.version>
+    <node.version>v10.15.3</node.version>
+    <npm.version>6.4.1</npm.version>
     <plugin.frontend.version>1.6</plugin.frontend.version>
 
     <!-- common library versions -->

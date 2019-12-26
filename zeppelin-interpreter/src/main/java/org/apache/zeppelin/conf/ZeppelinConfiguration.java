@@ -306,6 +306,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_SSL_PORT);
   }
 
+  public int getServerAngularSslPort() {
+    return getInt(ConfVars.ZEPPELIN_SSL_PORT);
+  }
+
   public boolean useClientAuth() {
     return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
   }
@@ -321,6 +325,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public int getServerPort() {
     return getInt(ConfVars.ZEPPELIN_PORT);
+  }
+
+  public int getServerAngularPort() {
+    return getInt(ConfVars.ZEPPELIN_ANGULAR_PORT);
   }
 
   public String getServerContextPath() {
@@ -800,9 +808,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_HOME("zeppelin.home", "./"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "127.0.0.1"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
+    ZEPPELIN_ANGULAR_PORT("zeppelin.server.angular.port", 9090),
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_PORT("zeppelin.server.ssl.port", 8443),
+    ZEPPELIN_ANGULAR_SSL_PORT("zeppelin.server.angular.ssl.port", 9443),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
@@ -812,6 +822,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "zeppelin-web/dist"),
+    ZEPPELIN_ANGULAR_WAR("zeppelin.angular.war", "zeppelin-web-angular/dist"),
     ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
 
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),

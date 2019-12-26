@@ -42,6 +42,7 @@
       <outputDirectory>/lib</outputDirectory>
       <excludes>
         <exclude>${project.groupId}:zeppelin-web</exclude>
+        <exclude>${project.groupId}:zeppelin-web-angular</exclude>
       </excludes>
       <useProjectArtifact>false</useProjectArtifact>
       <useTransitiveFiltering>true</useTransitiveFiltering>
