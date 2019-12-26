@@ -1,0 +1,105 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "theme-mixin";
+
+.scheduler {
+  width: 300px;
+
+  .cron-preset {
+    margin-right: 6px;
+
+    &.selected {
+      font-weight: bold;
+    }
+  }
+
+  > div {
+    line-height: 24px;
+
+    span {
+      margin-right: 6px;
+    }
+
+    input {
+      display: inline-block;
+      width: 160px;
+    }
+  }
+}
+
+.themeMixin({
+  nz-dropdown-button {
+    height: 24px;
+    line-height: 22px;
+    margin-left: -1px;
+  }
+  .bar {
+    height: 50px;
+    background: @component-background;
+    box-shadow: -2px 4px 2px 0 rgba(0, 0, 0, 0.06);
+    padding: 0 15px;
+    position: absolute;
+    width: 100%;
+    top: 0;
+    line-height: 50px;
+
+    &.simple {
+      box-shadow: none;
+
+      .control {
+        display: none;
+      }
+
+      .setting {
+        display: none;
+      }
+
+      &:hover {
+        .control {
+          display: block;
+        }
+
+        .setting {
+          display: block;
+        }
+      }
+    }
+
+    .title {
+      float: left;
+      width: auto;
+      max-width: 40%;
+    }
+
+    .control {
+      float: left;
+
+      nz-button-group {
+        margin-right: 24px;
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+
+    .setting {
+      float: right;
+
+      button {
+        box-shadow: none;
+        border: none;
+      }
+    }
+  }
+});

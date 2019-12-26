@@ -1,0 +1,54 @@
+<div class="code-editor">
+  <zeppelin-code-editor
+    (nzEditorInitialized)="onEditorInit($event)"
+    [nzEditorOption]="{
+    language: 'html' ,
+    minimap: {
+    enabled: false
+    }
+  }">
+  </zeppelin-code-editor>
+</div>
+<div class="messages">
+
+  <div class="fix-bar">
+    <button nz-button
+            [disabled]="(messageDetails.length - errorCount) === 0"
+            class="fix-btn"
+            nzSize="small"
+            nzType="link"
+            (click)="fix()">
+      Quick Fix
+    </button>
+    <span class="log-counts">
+      <span>
+        <i nz-icon class="error" nzType="stop" nzTheme="outline"></i>
+        {{errorCount}}
+      </span>
+       <span>
+        <i nz-icon class="close" nzType="issues-close" nzTheme="outline"></i>
+         {{messageDetails.length - errorCount}}
+      </span>
+    </span>
+  </div>
+
+  <div class="message"
+       (click)="scrollToLine(item)"
+       *ngFor="let item of messageDetails">
+    <i *ngIf="item.level === 0" nz-icon class="error" nzType="stop" nzTheme="outline"></i>
+    <i *ngIf="item.level === 2" nz-icon class="close" nzType="issues-close" nzTheme="outline"></i>
+    <span class="position"> ({{(item.pos.line + 1) + ',' + (item.pos.character + 1)}})</span>
+    {{item.message}}
+    <a *ngIf="item.url" [href]="item.url" target="_blank">more</a>
+  </div>
+</div>
+
+<div *nzModalFooter>
+  <button nz-button (click)="cancel()">Cancel</button>
+  <button nz-button
+          nzType="primary"
+          [disabled]="this.messageDetails.length"
+          (click)="updateAndCopy()">
+    Update and Copy
+  </button>
+</div>
