@@ -27,6 +27,8 @@ import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,13 +52,16 @@ public class IPythonKernelTest {
 
   protected InterpreterGroup intpGroup;
   protected Interpreter interpreter;
+  private ResourcePool resourcePool;
 
   @Before
   public void setUp() throws InterpreterException {
     Properties properties = new Properties();
     interpreter = new LazyOpenInterpreter(new JupyterInterpreter(properties));
     intpGroup = new InterpreterGroup();
-    intpGroup.put("session_1", new ArrayList<Interpreter>());
+    resourcePool = new LocalResourcePool("local");
+    intpGroup.setResourcePool(resourcePool);
+    intpGroup.put("session_1", new ArrayList<>());
     intpGroup.get("session_1").add(interpreter);
     interpreter.setInterpreterGroup(intpGroup);
 
@@ -217,7 +222,23 @@ public class IPythonKernelTest {
   }
 
   @Test
-  public void testCodeCompletion() throws InterpreterException, IOException, InterruptedException {
+  public void testInterpolate() throws InterpreterException, IOException {
+    intpGroup.getResourcePool().put("name", "hello");
+    InterpreterContext context = getInterpreterContext();
+    context.getLocalProperties().put("interpolate", "true");
+
+    String st = "print('{name}')";
+    InterpreterResult result = interpreter.interpret(st, context);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    List<InterpreterResultMessage> interpreterResultMessages =
+            context.out.toInterpreterResultMessage();
+    assertEquals(1, interpreterResultMessages.size());
+    assertEquals("hello\n", interpreterResultMessages.get(0).getData());
+  }
+
+  @Test
+  public void testCodeCompletion() throws InterpreterException, InterruptedException {
     // define `a` first
     InterpreterContext context = getInterpreterContext();
     String st = "a='hello'";
@@ -256,6 +277,7 @@ public class IPythonKernelTest {
             .setInterpreterOut(new InterpreterOutput(null))
             .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .setLocalProperties(localProperties)
+            .setResourcePool(resourcePool)
             .build();
   }
 }

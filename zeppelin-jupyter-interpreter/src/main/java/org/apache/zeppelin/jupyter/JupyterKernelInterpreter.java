@@ -25,8 +25,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.zeppelin.interpreter.AbstractInterpreter;
 import org.apache.zeppelin.interpreter.BaseZeppelinContext;
-import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -61,7 +61,7 @@ import java.util.Properties;
  * Jupyter Kernel. You can enhance the jupyter kernel by extending this class.
  * e.g. IPythonInterpreter.
  */
-public class JupyterKernelInterpreter extends Interpreter {
+public class JupyterKernelInterpreter extends AbstractInterpreter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelInterpreter.class);
 
@@ -238,7 +238,7 @@ public class JupyterKernelInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st,
+  public InterpreterResult internalInterpret(String st,
                                      InterpreterContext context) throws InterpreterException {
     zeppelinContext.setGui(context.getGui());
     zeppelinContext.setNoteGui(context.getNoteGui());
