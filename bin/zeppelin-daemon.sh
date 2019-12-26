@@ -81,6 +81,7 @@ addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-web-angular/target/lib"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
