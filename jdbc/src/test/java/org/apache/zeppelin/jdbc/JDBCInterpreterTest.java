@@ -246,7 +246,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals("select '\\', ';'", multipleSqlArray.get(6));
     assertEquals("select '''', ';'", multipleSqlArray.get(7));
     assertEquals("select /*+ scan */ * from test_table", multipleSqlArray.get(8));
-    assertEquals("--singleLineComment\nselect * from test_table", multipleSqlArray.get(9));
+    assertEquals("select * from test_table", multipleSqlArray.get(9));
   }
 
   @Test
@@ -685,7 +685,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
         "*/\n" +
         "-- a ; b\n" +
         "select * from test_table WHERE ID = ';--';\n" +
-        "select * from test_table WHERE ID = '/*' -- test";
+        "select * from test_table WHERE ID = '/*'; -- test";
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, interpreterContext);
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
