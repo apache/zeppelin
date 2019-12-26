@@ -115,14 +115,14 @@ public class SparkShinyInterpreterTest extends ShinyInterpreterTest {
 
     // verify shiny app via calling its rest api
     HttpResponse<String> response = Unirest.get(shinyURL).asString();
-    if (sparkInterpreter.getSparkVersion().isSpark2()) {
-      assertEquals(200, response.getStatus());
-      assertTrue(response.getBody(), response.getBody().contains("Spark Version"));
-    } else {
+    if (sparkInterpreter.getSparkVersion().isSpark1()) {
       // spark 1.x will fail due to sparkR.version is not available for spark 1.x
       assertEquals(500, response.getStatus());
       assertTrue(response.getBody(),
               response.getBody().contains("could not find function \"sparkR.version\""));
+    } else {
+      assertEquals(200, response.getStatus());
+      assertTrue(response.getBody(), response.getBody().contains("Spark Version"));
     }
   }
 }

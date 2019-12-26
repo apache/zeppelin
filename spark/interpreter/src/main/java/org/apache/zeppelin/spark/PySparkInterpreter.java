@@ -206,7 +206,7 @@ public class PySparkInterpreter extends PythonInterpreter {
     }
   }
 
-  public boolean isSpark2() {
-    return sparkInterpreter.getSparkVersion().newerThanEquals(SparkVersion.SPARK_2_0_0);
+  public boolean isSpark1() {
+    return sparkInterpreter.getSparkVersion().getMajorVersion() == 1;
   }
 }

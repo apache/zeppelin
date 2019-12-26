@@ -48,13 +48,19 @@ public class DownloadUtils {
   }
 
   public static String downloadSpark(String version) {
+    String hadoopVersion = "2.7";
+    if (version.startsWith("1.")) {
+      // Use hadoop 2.6 for spark 1.x
+      hadoopVersion = "2.6";
+    }
     String sparkDownloadFolder = downloadFolder + "/spark";
-    File targetSparkHomeFolder = new File(sparkDownloadFolder + "/spark-" + version + "-bin-hadoop2.6");
+    File targetSparkHomeFolder =
+            new File(sparkDownloadFolder + "/spark-" + version + "-bin-hadoop" + hadoopVersion);
     if (targetSparkHomeFolder.exists()) {
       LOGGER.info("Skip to download spark as it is already downloaded.");
       return targetSparkHomeFolder.getAbsolutePath();
     }
-    download("spark", version, "-bin-hadoop2.6.tgz");
+    download("spark", version, "-bin-hadoop" + hadoopVersion + ".tgz");
     return targetSparkHomeFolder.getAbsolutePath();
   }
 
