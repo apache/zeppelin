@@ -16,9 +16,14 @@
  */
 package org.apache.zeppelin.integration;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.display.ui.CheckBox;
+import org.apache.zeppelin.display.ui.Select;
+import org.apache.zeppelin.display.ui.TextBox;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterProperty;
@@ -279,8 +284,15 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       // test basic dataframe api
       Paragraph p = note.addNewParagraph(anonymous);
-      p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-              "df.collect()");
+      if (isSpark2()) {
+        p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.collect()");
+      } else {
+        p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.collect()");
+      }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertTrue(p.getReturn().message().get(0).getData().contains(
@@ -288,12 +300,62 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // test display DataFrame
       p = note.addNewParagraph(anonymous);
-      p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))\n" +
-          "z.show(df)");
+      if (isSpark2()) {
+        p.setText("%spark val df=spark.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.createOrReplaceTempView(\"test_table\")\n" +
+                "z.show(df)");
+      } else {
+        p.setText("%spark val df=sqlContext.createDataFrame(Seq((\"hello\",20)))" +
+                ".toDF(\"name\", \"age\")\n" +
+                "df.registerTempTable(\"test_table\")\n" +
+                "z.show(df)");
+      }
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
-      assertEquals("_1\t_2\nhello\t20\n", p.getReturn().message().get(0).getData());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // run sql and save it into resource pool
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.sql(saveAs=table_result) select * from test_table");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from spark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark val df=z.getAsDataFrame(\"table_result\")\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from pyspark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.pyspark df=z.getAsDataFrame('table_result')\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from ipyspark
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.ipyspark df=z.getAsDataFrame('table_result')\nz.show(df)");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TABLE, p.getReturn().message().get(0).getType());
+      assertEquals("name\tage\nhello\t20\n", p.getReturn().message().get(0).getData());
+
+      // get resource from sparkr
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.r df=z.getAsDataFrame('table_result')\ndf");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals(InterpreterResult.Type.TEXT, p.getReturn().message().get(0).getType());
+      assertTrue(p.getReturn().toString(),
+              p.getReturn().message().get(0).getData().contains("name age\n1 hello  20"));
 
       // test display DataSet
       if (isSpark2()) {
@@ -337,7 +399,7 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
   }
 
-  // @Test
+  @Test
   public void pySparkTest() throws IOException {
     // create new note
     Note note = null;
@@ -350,6 +412,14 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note.run(p.getId(), true);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("55\n", p.getReturn().message().get(0).getData());
+
+      // simple form via local properties
+      p = note.addNewParagraph(anonymous);
+      p.setText("%spark.pyspark(form=simple) print('name_' + '${name=abc}')");
+      note.run(p.getId(), true);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertEquals("name_abc\n", p.getReturn().message().get(0).getData());
+
       if (!isSpark2()) {
         // run sqlContext test
         p = note.addNewParagraph(anonymous);
@@ -518,14 +588,18 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       Paragraph p3 = note.addNewParagraph(anonymous);
       p3.setText("%spark.pyspark print(z.get(\"var_1\"))");
 
-      // resources across interpreter processes (via DistributedResourcePool)
       Paragraph p4 = note.addNewParagraph(anonymous);
-      p4.setText("%python print(z.get('var_1'))");
+      p4.setText("%spark.r z.get(\"var_1\")");
+
+      // resources across interpreter processes (via DistributedResourcePool)
+      Paragraph p5 = note.addNewParagraph(anonymous);
+      p5.setText("%python print(z.get('var_1'))");
 
       note.run(p1.getId(), true);
       note.run(p2.getId(), true);
       note.run(p3.getId(), true);
       note.run(p4.getId(), true);
+      note.run(p5.getId(), true);
 
       assertEquals(Status.FINISHED, p1.getStatus());
       assertEquals(Status.FINISHED, p2.getStatus());
@@ -533,7 +607,10 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       assertEquals(Status.FINISHED, p3.getStatus());
       assertEquals("hello world\n", p3.getReturn().message().get(0).getData());
       assertEquals(Status.FINISHED, p4.getStatus());
-      assertEquals("hello world\n", p4.getReturn().message().get(0).getData());
+      assertTrue(p4.getReturn().toString(),
+              p4.getReturn().message().get(0).getData().contains("hello world"));
+      assertEquals(Status.FINISHED, p5.getStatus());
+      assertEquals("hello world\n", p5.getReturn().message().get(0).getData());
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
@@ -592,6 +669,13 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       waitForFinish(p);
       assertEquals(Status.FINISHED, p.getStatus());
       assertEquals(sparkVersion, p.getReturn().message().get(0).getData());
+
+      p.setText("%spark.pyspark sc.version");
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
+      assertTrue(p.getReturn().toString(),
+              p.getReturn().message().get(0).getData().contains(sparkVersion));
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
@@ -615,12 +699,12 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     try {
       note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
       Paragraph p = note.addNewParagraph(anonymous);
-      String code = "%spark.spark println(z.textbox(\"my_input\", \"default_name\"))\n" +
+      String code = "%spark println(z.textbox(\"my_input\", \"default_name\"))\n" +
           "println(z.password(\"my_pwd\"))\n" +
           "println(z.select(\"my_select\", \"1\"," +
           "Seq((\"1\", \"select_1\"), (\"2\", \"select_2\"))))\n" +
-          "val items=z.checkbox(\"my_checkbox\", Seq(\"2\"), " +
-          "Seq((\"1\", \"check_1\"), (\"2\", \"check_2\")))\n" +
+          "val items=z.checkbox(\"my_checkbox\", " +
+          "Seq((\"1\", \"check_1\"), (\"2\", \"check_2\")), Seq(\"2\"))\n" +
           "println(items(0))";
       p.setText(code);
       note.run(p.getId());
@@ -738,6 +822,164 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testScalaNoteDynamicForms() throws IOException {
+    Note note = null;
+    try {
+      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      Paragraph p1 = note.addNewParagraph(anonymous);
+
+      // create TextBox
+      p1.setText("%spark z.noteTextbox(\"name\", \"world\")");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      Input input = p1.getNote().getNoteForms().get("name");
+      assertTrue(input instanceof TextBox);
+      TextBox inputTextBox = (TextBox) input;
+      assertEquals("name", inputTextBox.getDisplayName());
+      assertEquals("world", inputTextBox.getDefaultValue());
+      assertEquals("world", p1.getNote().getNoteParams().get("name"));
+
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${name}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+
+      // create Select
+      p1.setText("%spark z.noteSelect(\"language\", Seq((\"java\" -> \"JAVA\"), (\"scala\" -> \"SCALA\")), \"java\")");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      input = p1.getNote().getNoteForms().get("language");
+      assertTrue(input instanceof Select);
+      Select select = (Select) input;
+      assertEquals("language", select.getDisplayName());
+      assertEquals("java", select.getDefaultValue());
+      assertEquals("java", p1.getNote().getNoteParams().get("language"));
+
+      p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${language}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java"));
+
+      // create Checkbox
+      p1.setText("%spark z.noteCheckbox(\"languages\", Seq((\"java\" -> \"JAVA\"), (\"scala\" -> \"SCALA\")), Seq(\"java\", \"scala\"))");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      input = p1.getNote().getNoteForms().get("languages");
+      assertTrue(input instanceof CheckBox);
+      CheckBox checkbox = (CheckBox) input;
+      assertEquals("languages", checkbox.getDisplayName());
+      assertEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
+      assertEquals(Lists.newArrayList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
+
+      p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${checkbox:languages}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testPythonNoteDynamicForms() throws IOException {
+    Note note = null;
+    try {
+      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      Paragraph p1 = note.addNewParagraph(anonymous);
+
+      // create TextBox
+      p1.setText("%spark.pyspark z.noteTextbox(\"name\", \"world\")");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      Input input = p1.getNote().getNoteForms().get("name");
+      assertTrue(input instanceof TextBox);
+      TextBox inputTextBox = (TextBox) input;
+      assertEquals("name", inputTextBox.getDisplayName());
+      assertEquals("world", inputTextBox.getDefaultValue());
+      assertEquals("world", p1.getNote().getNoteParams().get("name"));
+
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${name}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+
+      // create Select
+      p1.setText("%spark.pyspark z.noteSelect('language', [('java', 'JAVA'), ('scala', 'SCALA')], 'java')");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      input = p1.getNote().getNoteForms().get("language");
+      assertTrue(input instanceof Select);
+      Select select = (Select) input;
+      assertEquals("language", select.getDisplayName());
+      assertEquals("java", select.getDefaultValue());
+      assertEquals("java", p1.getNote().getNoteParams().get("language"));
+
+      p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${language}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java"));
+
+      // create Checkbox
+      p1.setText("%spark.pyspark z.noteCheckbox('languages', [('java', 'JAVA'), ('scala', 'SCALA')], ['java', 'scala'])");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      input = p1.getNote().getNoteForms().get("languages");
+      assertTrue(input instanceof CheckBox);
+      CheckBox checkbox = (CheckBox) input;
+      assertEquals("languages", checkbox.getDisplayName());
+      assertEquals(new Object[]{"java", "scala"}, checkbox.getDefaultValue());
+      assertEquals(Lists.newArrayList("java", "scala"), p1.getNote().getNoteParams().get("languages"));
+
+      p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${checkbox:languages}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello java,scala"));
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
+  public void testRNoteDynamicForms() throws IOException {
+    Note note = null;
+    try {
+      note = TestUtils.getInstance(Notebook.class).createNote("note1", anonymous);
+      Paragraph p1 = note.addNewParagraph(anonymous);
+
+      // create TextBox
+      p1.setText("%spark.r z.noteTextbox(\"name\", \"world\")");
+      note.run(p1.getId(), true);
+      assertEquals(Status.FINISHED, p1.getStatus());
+      Input input = p1.getNote().getNoteForms().get("name");
+      assertTrue(input instanceof TextBox);
+      TextBox inputTextBox = (TextBox) input;
+      assertEquals("name", inputTextBox.getDisplayName());
+      assertEquals("world", inputTextBox.getDefaultValue());
+      assertEquals("world", p1.getNote().getNoteParams().get("name"));
+
+      Paragraph p2 = note.addNewParagraph(anonymous);
+      p2.setText("%md hello $${name}");
+      note.run(p2.getId(), true);
+      assertEquals(Status.FINISHED, p2.getStatus());
+      assertTrue(p2.getReturn().toString(), p2.getReturn().toString().contains("hello world"));
+    } finally {
+      if (null != note) {
+        TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
+      }
+    }
+  }
+
+  @Test
   public void testConfInterpreter() throws IOException {
     Note note = null;
     try {
@@ -752,8 +994,6 @@ public abstract class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p1.setText("%spark\nimport com.databricks.spark.csv._");
       note.run(p1.getId(), true);
       assertEquals(Status.FINISHED, p1.getStatus());
-
-      TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);
     } finally {
       if (null != note) {
         TestUtils.getInstance(Notebook.class).removeNote(note.getId(), anonymous);

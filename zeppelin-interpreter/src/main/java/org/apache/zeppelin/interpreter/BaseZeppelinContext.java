@@ -56,7 +56,7 @@ public abstract class BaseZeppelinContext {
   }
 
   // Map interpreter class name (to be used by hook registry) from
-  // given replName in parapgraph
+  // given replName in paragraph
   public abstract Map<String, String> getInterpreterClassMap();
 
   public abstract List<Class> getSupportedClasses();
@@ -79,7 +79,8 @@ public abstract class BaseZeppelinContext {
   public abstract String showData(Object obj, int maxResult);
 
   /**
-   * @deprecated use z.textbox instead
+   * Create paragraph level dynamic form of textbox with empty value.
+   * @deprecated Use {@link #textbox(String) textbox} instead.
    */
   @Deprecated
   @ZeppelinApi
@@ -88,7 +89,8 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * @deprecated use z.textbox instead
+   * Create paragraph level dynamic form of textbox with empty value.
+   * @deprecated Use {@link #textbox(String, String) textbox} instead.
    */
   @Deprecated
   @ZeppelinApi
@@ -96,80 +98,51 @@ public abstract class BaseZeppelinContext {
     return textbox(name, defaultValue.toString(), false);
   }
 
+  /**
+   * Create paragraph level dynamic form of textbox with empty value.
+   * TODO(zjffdu) Return String instead
+   *
+   * @param name
+   * @return text value of this textbox
+   */
   @ZeppelinApi
   public Object textbox(String name) {
-    return textbox(name, "", false);
+    return textbox(name, "");
   }
 
+  /**
+   * Create paragraph level dynamic form of textbox with default value.
+   *
+   * @param name
+   * @param defaultValue
+   * @return text value of this textbox
+   */
   @ZeppelinApi
   public Object textbox(String name, String defaultValue) {
     return textbox(name, defaultValue, false);
   }
 
-  @ZeppelinApi
-  public Object password(String name) {
-    return password(name, false);
-  }
-
-  @ZeppelinApi
-  public Object password(String name, boolean noteForm) {
-    if (noteForm) {
-      return noteGui.password(name);
-    } else {
-      return gui.password(name);
-    }
-  }
-
-  @ZeppelinApi
-  public List<Object> checkbox(String name, ParamOption[] options) {
-    return checkbox(name, options, false);
-  }
-
-  @ZeppelinApi
-  public List<Object> checkbox(String name, List<Object> defaultChecked,
-                                     ParamOption[] options) {
-    return checkbox(name, defaultChecked, options, false);
-  }
-
-  @ZeppelinApi
-  public Object select(String name, Object defaultValue, ParamOption[] paramOptions) {
-    return select(name, defaultValue, paramOptions, false);
-  }
-
+  /**
+   * Create note level dynamic form of textbox with empty value.
+   *
+   * @param name
+   * @return text value of this textbox
+   */
   @ZeppelinApi
   public Object noteTextbox(String name) {
-    return textbox(name, "");
+    return noteTextbox(name, "");
   }
 
+  /**
+   * Create note level dynamic form of textbox with default value.
+   *
+   * @param name
+   * @param defaultValue
+   * @return text value of this textbox
+   */
   @ZeppelinApi
   public Object noteTextbox(String name, String defaultValue) {
     return textbox(name, defaultValue, true);
-  }
-
-  @ZeppelinApi
-  public List<Object> noteCheckbox(String name, ParamOption[] options) {
-    return checkbox(name, options, true);
-  }
-
-  @ZeppelinApi
-  public List<Object> noteCheckbox(String name, List<Object> defaultChecked,
-                                         ParamOption[] options) {
-    return checkbox(name, defaultChecked, options, true);
-  }
-
-  @ZeppelinApi
-  public Object noteSelect(String name, Object defaultValue, ParamOption[] paramOptions) {
-    return select(name, defaultValue, paramOptions, true);
-  }
-
-
-  private Object select(String name, Object defaultValue, ParamOption[] paramOptions,
-                        boolean noteForm) {
-    if (noteForm) {
-      return noteGui.select(name, defaultValue, paramOptions);
-    } else {
-      return gui.select(name, defaultValue, paramOptions);
-    }
   }
 
   private Object textbox(String name, String defaultValue, boolean noteForm) {
@@ -180,25 +153,227 @@ public abstract class BaseZeppelinContext {
     }
   }
 
-  private List<Object> checkbox(String name, ParamOption[] options,
-                                      boolean noteForm) {
-    List<Object> defaultValues = new LinkedList<>();
-    for (ParamOption option : options) {
-      defaultValues.add(option.getValue());
-    }
+  /**
+   * Create paragraph level dynamic form of password.
+   *
+   * @param name
+   * @return  text value of this password
+   */
+  @ZeppelinApi
+  public Object password(String name) {
+    return password(name, false);
+  }
+
+  /**
+   * Create note level dynamic form of password.
+   *
+   * @param name
+   * @return text value of this password
+   */
+  @ZeppelinApi
+  public Object notePassword(String name) {
+    return password(name, true);
+  }
+
+  private Object password(String name, boolean noteForm) {
     if (noteForm) {
-      return noteGui.checkbox(name, defaultValues, options);
+      return noteGui.password(name);
     } else {
-      return gui.checkbox(name, defaultValues, options);
+      return gui.password(name);
     }
   }
 
-  private List<Object> checkbox(String name, List<Object> defaultChecked,
-                                      ParamOption[] options, boolean noteForm) {
+  /**
+   * create paragraph level of dynamic form of checkbox with no item checked.
+   *
+   * @param name
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  public List<Object> checkbox(String name, ParamOption[] options) {
+    return checkbox(name, options, null, false);
+  }
+
+  /**
+   * create paragraph level of dynamic form of checkbox with default checked items.
+   *
+   * @param name
+   * @param options
+   * @param defaultChecked
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  public List<Object> checkbox(String name,
+                               ParamOption[] options,
+                               List defaultChecked) {
+    return checkbox(name, options, defaultChecked, false);
+  }
+
+  /**
+   * create paragraph level of dynamic form of checkbox with default checked items.
+   * @deprecated Use {@link #checkbox(String, ParamOption[], List<Object>) checkbox} instead.
+   *
+   * @param name
+   * @param defaultChecked
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @Deprecated
+  @ZeppelinApi
+  public List<Object> checkbox(String name,
+                               List<Object> defaultChecked,
+                               ParamOption[] options) {
+    return checkbox(name, options, defaultChecked, false);
+  }
+
+  /**
+   * create note level of dynamic form of checkbox with no item checked.
+   *
+   * @param name
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  public List<Object> noteCheckbox(String name, ParamOption[] options) {
+    return checkbox(name, options, null, true);
+  }
+
+  /**
+   * create note level of dynamic form of checkbox with default checked items.
+   * @deprecated Use {@link #noteCheckbox(String, ParamOption[], List<Object>) noteCheckbox} instead.
+   *
+   * @param name
+   * @param defaultChecked
+   * @param options
+   * @return list of checked values of this checkbox
+   */
+  @Deprecated
+  @ZeppelinApi
+  public List<Object> noteCheckbox(String name,
+                                   List<Object> defaultChecked,
+                                   ParamOption[] options) {
+    return checkbox(name, options, defaultChecked, true);
+  }
+
+  /**
+   * create note level of dynamic form of checkbox with default checked items.
+   *
+   * @param name
+   * @param options
+   * @param defaultChecked
+   * @return list of checked values of this checkbox
+   */
+  @ZeppelinApi
+  public List<Object> noteCheckbox(String name,
+                                   ParamOption[] options,
+                                   List defaultChecked) {
+    return checkbox(name, options, defaultChecked, true);
+  }
+
+  private List<Object> checkbox(String name,
+                                ParamOption[] options,
+                                List<Object> defaultChecked,
+                                boolean noteForm) {
+    if (defaultChecked == null ) {
+      defaultChecked = new ArrayList<>();
+      for (ParamOption option : options) {
+        defaultChecked.add(option.getValue());
+      }
+    }
     if (noteForm) {
-      return noteGui.checkbox(name, defaultChecked, options);
+      return noteGui.checkbox(name, options, defaultChecked);
     } else {
-      return gui.checkbox(name, defaultChecked, options);
+      return gui.checkbox(name, options, defaultChecked);
+    }
+  }
+
+  /**
+   * create paragraph level of dynamic form of Select with no item selected.
+   *
+   * @param name
+   * @param paramOptions
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  public Object select(String name, ParamOption[] paramOptions) {
+    return select(name, paramOptions, null, false);
+  }
+
+  /**
+   * create paragraph level of dynamic form of Select with default selected item.
+   * @deprecated Use {@link #select(String, ParamOption[], Object) select} instead.
+   *
+   * @param name
+   * @param defaultValue
+   * @param paramOptions
+   * @return text value of selected item
+   */
+  @Deprecated
+  @ZeppelinApi
+  public Object select(String name, Object defaultValue, ParamOption[] paramOptions) {
+    return select(name, paramOptions, defaultValue, false);
+  }
+
+  /**
+   * create paragraph level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param paramOptions
+   * @param defaultValue
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  public Object select(String name, ParamOption[] paramOptions, Object defaultValue) {
+    return select(name, paramOptions, defaultValue, false);
+  }
+
+  /**
+   * create paragraph level of dynamic form of Select with no item selected.
+   *
+   * @param name
+   * @param paramOptions
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  public Object noteSelect(String name, ParamOption[] paramOptions) {
+    return select(name, null, paramOptions, true);
+  }
+
+  /**
+   * create note level of dynamic form of Select with default selected item.
+   * @deprecated Use {@link #noteSelect(String, ParamOption[], Object) noteSelect} instead.
+   *
+   * @param name
+   * @param defaultValue
+   * @param paramOptions
+   * @return text value of selected item
+   */
+  @Deprecated
+  @ZeppelinApi
+  public Object noteSelect(String name, Object defaultValue, ParamOption[] paramOptions) {
+    return select(name, paramOptions, defaultValue, true);
+  }
+
+  /**
+   * create note level of dynamic form of Select with default selected item.
+   *
+   * @param name
+   * @param paramOptions
+   * @param defaultValue
+   * @return text value of selected item
+   */
+  @ZeppelinApi
+  public Object noteSelect(String name, ParamOption[] paramOptions, Object defaultValue) {
+    return select(name, paramOptions, defaultValue, true);
+  }
+
+  private Object select(String name, ParamOption[] paramOptions, Object defaultValue,
+                        boolean noteForm) {
+    if (noteForm) {
+      return noteGui.select(name, paramOptions, defaultValue);
+    } else {
+      return gui.select(name, paramOptions, defaultValue);
     }
   }
 
@@ -209,7 +384,6 @@ public abstract class BaseZeppelinContext {
   public GUI getGui() {
     return gui;
   }
-
 
   public GUI getNoteGui() {
     return noteGui;
@@ -287,7 +461,9 @@ public abstract class BaseZeppelinContext {
    * Run paragraph by id
    *
    * @param paragraphId
-   * @param checkCurrentParagraph
+   * @param checkCurrentParagraph check whether you call this run method in the current paragraph.
+   *          Set it to false only when you are sure you are not invoking this method to run current
+   *          paragraph. Otherwise you would run current paragraph in infinite loop.
    */
   @ZeppelinApi
   public void run(String paragraphId, boolean checkCurrentParagraph) throws IOException {
@@ -306,7 +482,6 @@ public abstract class BaseZeppelinContext {
    *
    * @param noteId
    */
-  @ZeppelinApi
   public void run(String noteId, String paragraphId, InterpreterContext context)
       throws IOException {
     run(noteId, paragraphId, context, true);
@@ -318,8 +493,7 @@ public abstract class BaseZeppelinContext {
    * @param noteId
    * @param context
    */
-  @ZeppelinApi
-  public void run(String noteId, String paragraphId, InterpreterContext context,
+  private void run(String noteId, String paragraphId, InterpreterContext context,
                   boolean checkCurrentParagraph) throws IOException {
 
     if (paragraphId.equals(context.getParagraphId()) && checkCurrentParagraph) {
@@ -332,6 +506,7 @@ public abstract class BaseZeppelinContext {
         .runParagraphs(noteId, paragraphIds, paragraphIndices, context.getParagraphId());
   }
 
+  @ZeppelinApi
   public void runNote(String noteId) throws IOException {
     runNote(noteId, interpreterContext);
   }
@@ -359,6 +534,7 @@ public abstract class BaseZeppelinContext {
    *          Set it to false only when you are sure you are not invoking this method to run current
    *          paragraph. Otherwise you would run current paragraph in infinite loop.
    */
+  @ZeppelinApi
   public void run(int idx, boolean checkCurrentParagraph) throws IOException {
     String noteId = interpreterContext.getNoteId();
     run(noteId, idx, interpreterContext, checkCurrentParagraph);
@@ -371,7 +547,7 @@ public abstract class BaseZeppelinContext {
    * @param idx     index starting from 0
    * @param context interpreter context
    */
-  public void run(String noteId, int idx, InterpreterContext context) throws IOException {
+  private void run(String noteId, int idx, InterpreterContext context) throws IOException {
     run(noteId, idx, context, true);
   }
 
@@ -384,7 +560,7 @@ public abstract class BaseZeppelinContext {
    * Set it to false only when you are sure you are not invoking this method to run current
    * paragraph. Otherwise you would run current paragraph in infinite loop.
    */
-  public void run(String noteId, int idx, InterpreterContext context,
+  private void run(String noteId, int idx, InterpreterContext context,
                   boolean checkCurrentParagraph) throws IOException {
 
     List<String> paragraphIds = new ArrayList<>();
@@ -394,6 +570,11 @@ public abstract class BaseZeppelinContext {
         .runParagraphs(noteId, paragraphIds, paragraphIndices, context.getParagraphId());
   }
 
+  /**
+   * Run all paragraphs of current note except this.
+   *
+   * @throws IOException
+   */
   @ZeppelinApi
   public void runAll() throws IOException {
     runAll(interpreterContext);
@@ -401,38 +582,68 @@ public abstract class BaseZeppelinContext {
 
   /**
    * Run all paragraphs. except this.
+   *
+   * @param context
+   * @throws IOException
    */
-  @ZeppelinApi
   public void runAll(InterpreterContext context) throws IOException {
     runNote(context.getNoteId());
   }
 
-  private AngularObject getAngularObject(String name, InterpreterContext interpreterContext) {
+  private AngularObject getAngularObject(String name,
+                                         String noteId,
+                                         String paragraphId,
+                                         InterpreterContext interpreterContext) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    String noteId = interpreterContext.getNoteId();
-    // try get local object
-    AngularObject paragraphAo = registry.get(name, noteId, interpreterContext.getParagraphId());
-    AngularObject noteAo = registry.get(name, noteId, null);
-
-    AngularObject ao = paragraphAo != null ? paragraphAo : noteAo;
-
-    if (ao == null) {
-      // then global object
-      ao = registry.get(name, null, null);
-    }
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     return ao;
   }
 
 
   /**
-   * Get angular object. Look up notebook scope first and then global scope
+   * Get angular object. Look up note scope first and then global scope
    *
    * @param name variable name
    * @return value
    */
   @ZeppelinApi
   public Object angular(String name) {
-    AngularObject ao = getAngularObject(name, interpreterContext);
+    AngularObject ao = getAngularObject(name, interpreterContext.getNoteId(),
+            interpreterContext.getParagraphId(), interpreterContext);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  /**
+   * Get note scope angular object.
+   *
+   * @param name
+   * @param noteId
+   * @return value
+   */
+  public Object angular(String name, String noteId) {
+    AngularObject ao = getAngularObject(name, noteId,
+            interpreterContext.getParagraphId(), interpreterContext);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  /**
+   * Get paragraph scope angular object.
+   *
+   * @param name
+   * @param noteId
+   * @param paragraphId
+   * @return value
+   */
+  public Object angular(String name, String noteId, String paragraphId) {
+    AngularObject ao = getAngularObject(name, noteId, paragraphId, interpreterContext);
     if (ao == null) {
       return null;
     } else {
@@ -458,11 +669,12 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display system.
+   * Create angular variable in note scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    *
    * @param name name of the variable
    * @param o    value
+   * @throws TException
    */
   @ZeppelinApi
   public void angularBind(String name, Object o) throws TException {
@@ -596,11 +808,12 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display system.
+   * Create angular variable in note scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    *
    * @param name name of the variable
    * @param o    value
+   * @param noteId
    */
   public void angularBind(String name, Object o, String noteId) throws TException {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
@@ -613,7 +826,26 @@ public abstract class BaseZeppelinContext {
   }
 
   /**
-   * Create angular variable in notebook scope and bind with front end Angular display
+   * Create angular variable in note scope and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   *
+   * @param name name of the variable
+   * @param o    value
+   * @param noteId
+   * @param paragraphId
+   */
+  public void angularBind(String name, Object o, String noteId, String paragraphId) throws TException {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+    if (registry.get(name, noteId, paragraphId) == null) {
+      registry.add(name, o, noteId, paragraphId);
+    } else {
+      registry.get(name, noteId, paragraphId).set(o);
+    }
+  }
+
+  /**
+   * Create angular variable in note scope and bind with front end Angular display
    * system.
    * If variable exists, value will be overwritten and watcher will be added.
    *
@@ -814,6 +1046,25 @@ public abstract class BaseZeppelinContext {
     Resource resource = resourcePool.get(name);
     if (resource != null) {
       return resource.get();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get object from resource pool
+   * Search local process first and then the other processes
+   *
+   * @param name
+   * @param clazz  The class of the returned value
+   * @return null if resource not found
+   */
+  @ZeppelinApi
+  public <T> T get(String name, Class<T> clazz) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    Resource resource = resourcePool.get(name);
+    if (resource != null) {
+      return resource.get(clazz);
     } else {
       return null;
     }

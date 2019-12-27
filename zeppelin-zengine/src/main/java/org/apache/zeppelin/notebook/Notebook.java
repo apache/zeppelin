@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +42,8 @@ import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
+import org.apache.zeppelin.notebook.NoteManager.Folder;
+import org.apache.zeppelin.notebook.NoteManager.NoteNode;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.notebook.repo.NotebookRepoWithVersionControl;
@@ -93,6 +94,8 @@ public class Notebook {
     this.notebookRepo = notebookRepo;
     this.replFactory = replFactory;
     this.interpreterSettingManager = interpreterSettingManager;
+    // TODO(zjffdu) cycle refer, not a good solution
+    this.interpreterSettingManager.setNotebook(this);
     this.noteSearchService = noteSearchService;
     this.credentials = credentials;
 
@@ -175,11 +178,15 @@ public class Notebook {
    * @throws IOException, IllegalArgumentException
    */
   public String exportNote(String noteId) throws IOException {
-    Note note = getNote(noteId);
-    if (note == null) {
+    try {
+      Note note = getNote(noteId);
+      if (note == null) {
+        throw new IOException("Note " + noteId + " not found");
+      }
+      return note.toJson();
+    } catch (IOException e) {
       throw new IOException(noteId + " not found");
     }
-    return note.toJson();
   }
 
   /**
@@ -210,7 +217,7 @@ public class Notebook {
    * @param sourceNoteId - the note ID to clone
    * @param newNotePath  - the path of the new note
    * @return noteId
-   * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   * @throws IOException
    */
   public Note cloneNote(String sourceNoteId, String newNotePath, AuthenticationInfo subject)
       throws IOException {
@@ -230,31 +237,34 @@ public class Notebook {
   public void removeNote(String noteId, AuthenticationInfo subject) throws IOException {
     LOGGER.info("Remove note " + noteId);
     Note note = getNote(noteId);
-    if (null != note) {
-      noteManager.removeNote(noteId, subject);
-      fireNoteRemoveEvent(note, subject);
+    if (note == null) {
+      throw new IOException("Note " + noteId + " not found");
     }
+    noteManager.removeNote(noteId, subject);
+    fireNoteRemoveEvent(note, subject);
   }
 
-  public Note getNote(String id) {
-    try {
-      Note note = noteManager.getNote(id);
-      if (note == null) {
-        return null;
-      }
-      note.setInterpreterFactory(replFactory);
-      note.setInterpreterSettingManager(interpreterSettingManager);
-      note.setParagraphJobListener(paragraphJobListener);
-      note.setNoteEventListeners(noteEventListeners);
-      note.setCredentials(credentials);
-      for (Paragraph p : note.getParagraphs()) {
-        p.setNote(note);
-      }
-      return note;
-    } catch (IOException e) {
-      LOGGER.warn("Fail to get note: " + id, e);
+  /**
+   * Get note from NotebookRepo and also initialize it with other properties that is not
+   * persistent in NotebookRepo, such as paragraphJobListener.
+   * @param noteId
+   * @return null if note not found.
+   * @throws IOException when fail to get it from NotebookRepo.
+   */
+  public Note getNote(String noteId) throws IOException {
+    Note note = noteManager.getNote(noteId);
+    if (note == null) {
       return null;
     }
+    note.setInterpreterFactory(replFactory);
+    note.setInterpreterSettingManager(interpreterSettingManager);
+    note.setParagraphJobListener(paragraphJobListener);
+    note.setNoteEventListeners(noteEventListeners);
+    note.setCredentials(credentials);
+    for (Paragraph p : note.getParagraphs()) {
+      p.setNote(note);
+    }
+    return note;
   }
 
   public void saveNote(Note note, AuthenticationInfo subject) throws IOException {
@@ -297,11 +307,15 @@ public class Notebook {
   public void restoreAll(AuthenticationInfo subject) throws IOException {
     NoteManager.Folder trash = noteManager.getTrashFolder();
     // restore notes under trash folder
-    for (NoteManager.NoteNode noteNode : trash.getNotes().values()) {
+    // If the value changes in the loop, a concurrent modification exception is thrown.
+    // Collector implementation of collect methods to maintain immutability.
+    List<NoteNode> notes = trash.getNotes().values().stream().collect(Collectors.toList());
+    for (NoteManager.NoteNode noteNode : notes) {
       moveNote(noteNode.getNoteId(), noteNode.getNotePath().replace("/~Trash", ""), subject);
     }
     // restore folders under trash folder
-    for (NoteManager.Folder folder : trash.getFolders().values()) {
+    List<Folder> folders = trash.getFolders().values().stream().collect(Collectors.toList());
+    for (NoteManager.Folder folder : folders) {
       moveFolder(folder.getPath(), folder.getPath().replace("/~Trash", ""), subject);
     }
   }
@@ -356,7 +370,8 @@ public class Notebook {
     try {
       note = noteManager.getNote(id);
     } catch (IOException e) {
-      LOGGER.error("Failed to load " + id, e);
+      LOGGER.error("Fail to get note: " + id, e);
+      return null;
     }
     if (note == null) {
       return null;
@@ -514,32 +529,29 @@ public class Notebook {
     }
   }
 
-
-  public List<InterpreterSetting> getBindedInterpreterSettings(String noteId) {
-    Note note = getNote(noteId);
-    if (note != null) {
-      Set<InterpreterSetting> settings = new HashSet<>();
-      for (Paragraph p : note.getParagraphs()) {
-        try {
-          Interpreter intp = p.getBindedInterpreter();
-          settings.add((
-              (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
-        } catch (InterpreterNotFoundException e) {
-          // ignore this
-        }
-      }
-      // add the default interpreter group
-      InterpreterSetting defaultIntpSetting =
-          interpreterSettingManager.getByName(note.getDefaultInterpreterGroup());
-      if (defaultIntpSetting != null) {
-        settings.add(defaultIntpSetting);
-      }
-      return new ArrayList<>(settings);
-    } else {
-      return new LinkedList<>();
+  public List<InterpreterSetting> getBindedInterpreterSettings(String noteId) throws IOException {
+    Note note  = getNote(noteId);
+    if (note == null) {
+      return new ArrayList<>();
     }
+    Set<InterpreterSetting> settings = new HashSet<>();
+    for (Paragraph p : note.getParagraphs()) {
+      try {
+        Interpreter intp = p.getBindedInterpreter();
+        settings.add((
+                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+      } catch (InterpreterNotFoundException e) {
+        // ignore this
+      }
+    }
+    // add the default interpreter group
+    InterpreterSetting defaultIntpSetting =
+            interpreterSettingManager.getByName(note.getDefaultInterpreterGroup());
+    if (defaultIntpSetting != null) {
+      settings.add(defaultIntpSetting);
+    }
+    return new ArrayList<>(settings);
   }
-
 
   public InterpreterFactory getInterpreterFactory() {
     return replFactory;

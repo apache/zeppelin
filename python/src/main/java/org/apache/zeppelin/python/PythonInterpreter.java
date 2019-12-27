@@ -83,7 +83,7 @@ public class PythonInterpreter extends Interpreter {
     iPythonInterpreter = getIPythonInterpreter();
     if (getProperty("zeppelin.python.useIPython", "true").equals("true") &&
         StringUtils.isEmpty(
-            iPythonInterpreter.checkIPythonPrerequisite(getPythonExec()))) {
+            iPythonInterpreter.checkKernelPrerequisite(getPythonExec()))) {
       try {
         iPythonInterpreter.open();
         LOGGER.info("IPython is available, Use IPythonInterpreter to replace PythonInterpreter");
@@ -559,6 +559,8 @@ public class PythonInterpreter extends Interpreter {
           InterpreterContext.get());
       if (result.code() != Code.SUCCESS) {
         throw new IOException("Fail to run bootstrap script: " + resourceName + "\n" + result);
+      } else {
+        LOGGER.debug("Bootstrap python successfully.");
       }
     } catch (InterpreterException e) {
       throw new IOException(e);

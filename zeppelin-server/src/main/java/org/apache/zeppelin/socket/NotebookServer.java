@@ -86,7 +86,6 @@ import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.CorsUtils;
-import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.util.annotation.ManagedObject;
@@ -522,9 +521,16 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void getInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
+    List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
-    List<InterpreterSettingsList> settingList =
-        InterpreterBindingUtils.getInterpreterBindings(getNotebook(), noteId);
+    Note note = getNotebook().getNote(noteId);
+    if (note != null) {
+      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      for (InterpreterSetting setting : bindedSettings) {
+        settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
+                setting.getInterpreterInfos(), true));
+      }
+    }
     conn.send(serializeMessage(
         new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
   }
@@ -658,7 +664,11 @@ public class NotebookServer extends WebSocketServlet
       if (StringUtils.equals(key, "AuthenticationInfo")) {
         authenticationInfo = AuthenticationInfo.fromJson(json);
       } else if (StringUtils.equals(key, "Note")) {
-        note = Note.fromJson(json);
+        try {
+          note = Note.fromJson(json);
+        } catch (IOException e) {
+          LOG.warn("Fail to parse note json", e);
+        }
       } else if (StringUtils.equals(key, "Paragraph")) {
         paragraph = Paragraph.fromJson(json);
       } else if (StringUtils.equals(key, "Set<String>")) {
@@ -1031,7 +1041,13 @@ public class NotebookServer extends WebSocketServlet
   private void emptyTrash(NotebookSocket conn,
                           Message fromMessage) throws IOException {
     getNotebookService().emptyTrash(getServiceContext(fromMessage),
-        new WebSocketServiceCallback(conn));
+        new WebSocketServiceCallback(conn) {
+          @Override
+          public void onSuccess(Object result, ServiceContext context) throws IOException {
+            super.onSuccess(result, context);
+            broadcastNoteList(context.getAutheInfo(), context.getUserAndRoles());
+          }
+        });
   }
 
   private void updateParagraph(NotebookSocket conn,
@@ -1585,15 +1601,22 @@ public class NotebookServer extends WebSocketServlet
                               InterpreterResult.Type type, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", noteId)
         .put("paragraphId", paragraphId).put("index", index).put("type", type).put("data", output);
-    Note note = getNotebook().getNote(noteId);
-
-    if (note.isPersonalizedMode()) {
-      String user = note.getParagraph(paragraphId).getUser();
-      if (null != user) {
-        connectionManager.multicastToUser(user, msg);
+    try {
+      Note note = getNotebook().getNote(noteId);
+      if (note == null) {
+        LOG.warn("Note " + noteId + " note found");
+        return;
       }
-    } else {
-      connectionManager.broadcast(noteId, msg);
+      if (note.isPersonalizedMode()) {
+        String user = note.getParagraph(paragraphId).getUser();
+        if (null != user) {
+          connectionManager.multicastToUser(user, msg);
+        }
+      } else {
+        connectionManager.broadcast(noteId, msg);
+      }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onOutputUpdated", e);
     }
   }
 
@@ -1602,14 +1625,18 @@ public class NotebookServer extends WebSocketServlet
    */
   @Override
   public void onOutputClear(String noteId, String paragraphId) {
-    final Note note = getNotebook().getNote(noteId);
-    if (note == null) {
-      // It is possible the note is removed, but the job is still running
-      LOG.warn("Note {} doesn't existed, it maybe deleted.", noteId);
-    } else {
-      note.clearParagraphOutput(paragraphId);
-      Paragraph paragraph = note.getParagraph(paragraphId);
-      broadcastParagraph(note, paragraph);
+    try {
+      final Note note = getNotebook().getNote(noteId);
+      if (note == null) {
+        // It is possible the note is removed, but the job is still running
+        LOG.warn("Note {} doesn't existed, it maybe deleted.", noteId);
+      } else {
+        note.clearParagraphOutput(paragraphId);
+        Paragraph paragraph = note.getParagraph(paragraphId);
+        broadcastParagraph(note, paragraph);
+      }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onOutputClear", e);
     }
   }
 
@@ -1825,10 +1852,6 @@ public class NotebookServer extends WebSocketServlet
 
     p.setStatusToUserParagraph(p.getStatus());
     broadcastParagraph(p.getNote(), p);
-    //    for (NoteEventListener listener : notebook.getNoteEventListeners()) {
-    //      listener.onParagraphStatusChange(p, after);
-    //    }
-
     try {
       broadcastUpdateNoteJobInfo(System.currentTimeMillis() - 5000);
     } catch (IOException e) {
@@ -1875,7 +1898,7 @@ public class NotebookServer extends WebSocketServlet
   private void sendAllAngularObjects(Note note, String user, NotebookSocket conn)
       throws IOException {
     List<InterpreterSetting> settings =
-        getNotebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
+        getNotebook().getBindedInterpreterSettings(note.getId());
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -1914,8 +1937,7 @@ public class NotebookServer extends WebSocketServlet
         continue;
       }
 
-      List<InterpreterSetting> intpSettings =
-          getNotebook().getInterpreterSettingManager().getInterpreterSettings(note.getId());
+      List<InterpreterSetting> intpSettings = note.getBindedInterpreterSettings();
       if (intpSettings.isEmpty()) {
         continue;
       }
@@ -1950,10 +1972,10 @@ public class NotebookServer extends WebSocketServlet
 
   private void getEditorSetting(NotebookSocket conn, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("paragraphId");
-    String replName = (String) fromMessage.get("magic");
+    String magic = (String) fromMessage.get("magic");
     String noteId = connectionManager.getAssociatedNoteId(conn);
 
-    getNotebookService().getEditorSetting(noteId, replName,
+    getNotebookService().getEditorSetting(noteId, magic,
         getServiceContext(fromMessage),
         new WebSocketServiceCallback<Map<String, Object>>(conn) {
           @Override
@@ -1983,32 +2005,36 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onParaInfosReceived(String noteId, String paragraphId,
                                   String interpreterSettingId, Map<String, String> metaInfos) {
-    Note note = getNotebook().getNote(noteId);
-    if (note != null) {
-      Paragraph paragraph = note.getParagraph(paragraphId);
-      if (paragraph != null) {
-        InterpreterSetting setting = getNotebook().getInterpreterSettingManager()
-            .get(interpreterSettingId);
-        String label = metaInfos.get("label");
-        String tooltip = metaInfos.get("tooltip");
-        List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
-        for (String removeKey : keysToRemove) {
-          metaInfos.remove(removeKey);
-        }
+    try {
+      Note note = getNotebook().getNote(noteId);
+      if (note != null) {
+        Paragraph paragraph = note.getParagraph(paragraphId);
+        if (paragraph != null) {
+          InterpreterSetting setting = getNotebook().getInterpreterSettingManager()
+                  .get(interpreterSettingId);
+          String label = metaInfos.get("label");
+          String tooltip = metaInfos.get("tooltip");
+          List<String> keysToRemove = Arrays.asList("noteId", "paraId", "label", "tooltip");
+          for (String removeKey : keysToRemove) {
+            metaInfos.remove(removeKey);
+          }
 
-        paragraph
-            .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
-        connectionManager.broadcast(
-            note.getId(),
-            new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",
-                paragraph.getRuntimeInfos()));
+          paragraph
+                  .updateRuntimeInfos(label, tooltip, metaInfos, setting.getGroup(), setting.getId());
+          connectionManager.broadcast(
+                  note.getId(),
+                  new Message(OP.PARAS_INFO).put("id", paragraphId).put("infos",
+                          paragraph.getRuntimeInfos()));
+        }
       }
+    } catch (IOException e) {
+      LOG.warn("Fail to call onParaInfosReceived", e);
     }
   }
 
   @Override
   public List<ParagraphInfo> getParagraphList(String user, String noteId)
-      throws TException, ServiceException {
+      throws TException, IOException {
     Notebook notebook = getNotebook();
     Note note = notebook.getNote(noteId);
     if (null == note) {

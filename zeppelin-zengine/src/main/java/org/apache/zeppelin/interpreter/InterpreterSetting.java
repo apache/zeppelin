@@ -717,7 +717,7 @@ public class InterpreterSetting {
     }
     Set<String> intersection = new HashSet<>(userAndRoles);
     intersection.retainAll(option.getOwners());
-    return intersection.isEmpty();
+    return !intersection.isEmpty();
   }
 
   //////////////////////////// IMPORTANT ////////////////////////////////////////////////
@@ -933,8 +933,12 @@ public class InterpreterSetting {
               InterpreterPropertyType.STRING.getValue());
           newProperties.put(entry.getKey().toString(), newProperty);
         } else {
-          // already converted
-          return (Map<String, InterpreterProperty>) properties;
+          StringMap stringMap = (StringMap) entry.getValue();
+          InterpreterProperty newProperty = new InterpreterProperty(
+                  entry.getKey().toString(),
+                  stringMap.get("value"),
+                  stringMap.containsKey("type") ? stringMap.get("type").toString() : "string");
+          newProperties.put(newProperty.getName(), newProperty);
         }
       }
       return newProperties;
@@ -999,6 +1003,15 @@ public class InterpreterSetting {
 
   public void waitForReady() throws InterpreterException {
     waitForReady(Long.MAX_VALUE);
+  }
+
+  public InterpreterInfo getDefaultInterpreterInfo() throws Exception {
+    for (InterpreterInfo interpreterInfo : interpreterInfos) {
+      if (interpreterInfo.isDefaultInterpreter()) {
+        return interpreterInfo;
+      }
+    }
+    throw new Exception("No default interpreter info found in interpreter setting: " + name);
   }
 
   public static String toJson(InterpreterSetting intpSetting) {

@@ -50,7 +50,7 @@ public class RemoteScheduler extends AbstractScheduler {
     // wait until it is submitted to the remote
     while (!jobRunner.isJobSubmittedInRemote()) {
       try {
-        Thread.sleep(500);
+        Thread.sleep(100);
       } catch (InterruptedException e) {
         LOGGER.error("Exception in RemoteScheduler while jobRunner.isJobSubmittedInRemote " +
             "queue.wait", e);
@@ -59,24 +59,20 @@ public class RemoteScheduler extends AbstractScheduler {
   }
 
   /**
-   * Role of the class is get status info from remote process from PENDING to
-   * RUNNING status.
+   * Role of the class is getting status info from remote process from PENDING to
+   * RUNNING status. This thread will exist after job is in RUNNING/FINISHED state.
    */
   private class JobStatusPoller extends Thread {
-    private long initialPeriodMsec;
-    private long initialPeriodCheckIntervalMsec;
     private long checkIntervalMsec;
     private volatile boolean terminate;
     private JobListener listener;
     private Job job;
-    volatile Status lastStatus;
+    private volatile Status lastStatus;
 
-    public JobStatusPoller(long initialPeriodMsec,
-                           long initialPeriodCheckIntervalMsec, long checkIntervalMsec, Job job,
-                           JobListener listener) {
+    public JobStatusPoller(Job job,
+                           JobListener listener,
+                           long checkIntervalMsec) {
       setName("JobStatusPoller-" + job.getId());
-      this.initialPeriodMsec = initialPeriodMsec;
-      this.initialPeriodCheckIntervalMsec = initialPeriodCheckIntervalMsec;
       this.checkIntervalMsec = checkIntervalMsec;
       this.job = job;
       this.listener = listener;
@@ -85,19 +81,10 @@ public class RemoteScheduler extends AbstractScheduler {
 
     @Override
     public void run() {
-      long started = System.currentTimeMillis();
       while (terminate == false) {
-        long current = System.currentTimeMillis();
-        long interval;
-        if (current - started < initialPeriodMsec) {
-          interval = initialPeriodCheckIntervalMsec;
-        } else {
-          interval = checkIntervalMsec;
-        }
-
         synchronized (this) {
           try {
-            this.wait(interval);
+            this.wait(checkIntervalMsec);
           } catch (InterruptedException e) {
             LOGGER.error("Exception in RemoteScheduler while run this.wait", e);
           }
@@ -109,12 +96,11 @@ public class RemoteScheduler extends AbstractScheduler {
         }
 
         Status newStatus = getStatus();
-        if (newStatus == Status.UNKNOWN) { // unknown
-          continue;
-        }
-
-        if (newStatus != Status.READY && newStatus != Status.PENDING) {
-          // we don't need more
+        if (newStatus == Status.RUNNING ||
+                newStatus == Status.FINISHED ||
+                newStatus == Status.ERROR ||
+                newStatus == Status.ABORT) {
+          // Exit this thread when job is in RUNNING/FINISHED/ERROR/ABORT state.
           break;
         }
       }
@@ -128,26 +114,13 @@ public class RemoteScheduler extends AbstractScheduler {
       }
     }
 
-
-    private Status getLastStatus() {
-      if (terminate == true) {
-        if (job.getErrorMessage() != null) {
-          return Status.ERROR;
-        } else if (lastStatus != Status.FINISHED &&
-            lastStatus != Status.ERROR &&
-            lastStatus != Status.ABORT) {
-          return Status.FINISHED;
-        } else {
-          return (lastStatus == null) ? Status.FINISHED : lastStatus;
-        }
-      } else {
-        return (lastStatus == null) ? Status.UNKNOWN : lastStatus;
-      }
-    }
-
-    public synchronized Status getStatus() {
+    public Status getStatus() {
       if (!remoteInterpreter.isOpened()) {
-        return getLastStatus();
+        if (lastStatus != null) {
+          return lastStatus;
+        } else {
+          return job.getStatus();
+        }
       }
       Status status = Status.valueOf(remoteInterpreter.getStatus(job.getId()));
       if (status == Status.UNKNOWN) {
@@ -155,8 +128,8 @@ public class RemoteScheduler extends AbstractScheduler {
         // maybe not submitted, maybe already finished
         return job.getStatus();
       }
+      listener.onStatusChange(job, lastStatus, status);
       lastStatus = status;
-      listener.onStatusChange(job, null, status);
       return status;
     }
   }
@@ -166,7 +139,7 @@ public class RemoteScheduler extends AbstractScheduler {
     private RemoteScheduler scheduler;
     private Job job;
     private volatile boolean jobExecuted;
-    volatile boolean jobSubmittedRemotely;
+    private volatile boolean jobSubmittedRemotely;
 
     public JobRunner(RemoteScheduler scheduler, Job job) {
       this.scheduler = scheduler;
@@ -181,8 +154,7 @@ public class RemoteScheduler extends AbstractScheduler {
 
     @Override
     public void run() {
-      JobStatusPoller jobStatusPoller = new JobStatusPoller(1500, 100, 500,
-          job, this);
+      JobStatusPoller jobStatusPoller = new JobStatusPoller(job, this, 100);
       jobStatusPoller.start();
       scheduler.runJob(job);
       jobExecuted = true;
@@ -199,12 +171,12 @@ public class RemoteScheduler extends AbstractScheduler {
     public void onProgressUpdate(Job job, int progress) {
     }
 
+    // Call by JobStatusPoller thread, update status when JobStatusPoller get new status.
     @Override
     public void onStatusChange(Job job, Status before, Status after) {
-      // Update remoteStatus
       if (jobExecuted == false) {
         if (after == Status.FINISHED || after == Status.ABORT
-            || after == Status.ERROR) {
+                || after == Status.ERROR) {
           // it can be status of last run.
           // so not updating the remoteStatus
           return;
@@ -216,12 +188,14 @@ public class RemoteScheduler extends AbstractScheduler {
         jobSubmittedRemotely = true;
       }
 
-      // only set status when it is RUNNING
-      // We would set other status based on the interpret result
-      if (after == Status.RUNNING) {
-        job.setStatus(Status.RUNNING);
+      // only set status when the status fetched from JobStatusPoller is RUNNING,
+      // the status of job itself is still in PENDING.
+      // Because the status from JobStatusPoller may happen after the job is finished.
+      synchronized (job) {
+        if (after == Status.RUNNING && job.getStatus() == Status.PENDING) {
+          job.setStatus(Status.RUNNING);
+        }
       }
     }
   }
-
 }

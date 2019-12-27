@@ -98,6 +98,7 @@ public class PySparkInterpreter extends PythonInterpreter {
       try {
         bootstrapInterpreter("python/zeppelin_pyspark.py");
       } catch (IOException e) {
+        LOGGER.error("Fail to bootstrap pyspark", e);
         throw new InterpreterException("Fail to bootstrap pyspark", e);
       }
     }

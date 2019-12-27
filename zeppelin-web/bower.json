@@ -47,12 +47,14 @@
       "main": [
         "src-noconflict/ace.js",
         "src-noconflict/mode-scala.js",
+        "src-noconflict/mode-kotlin.js",
         "src-noconflict/mode-python.js",
         "src-noconflict/mode-sql.js",
         "src-noconflict/mode-markdown.js",
         "src-noconflict/mode-pig.js",
         "src-noconflict/mode-sh.js",
         "src-noconflict/mode-r.js",
+        "src-noconflict/mode-sparql.js",
         "src-noconflict/keybinding-emacs.js",
         "src-noconflict/ext-language_tools.js",
         "src-noconflict/theme-chrome.js"

@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.conf;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -25,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
@@ -44,6 +43,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
   private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
+
+  private Boolean anonymousAllowed;
 
   private static final String HELIUM_PACKAGE_DEFAULT_URL =
       "https://s3.amazonaws.com/helium-package/helium.json";
@@ -566,7 +567,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public boolean isAnonymousAllowed() {
-    return getBoolean(ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
+    if (anonymousAllowed == null) {
+      anonymousAllowed = this.getShiroPath().equals(StringUtils.EMPTY);
+    }
+    return anonymousAllowed;
   }
 
   public boolean isUsernameForceLowerCase() {
@@ -629,6 +633,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public String getXxssProtection() {
     return getString(ConfVars.ZEPPELIN_SERVER_X_XSS_PROTECTION);
+  }
+
+  public String getXContentTypeOptions() {
+    return getString(ConfVars.ZEPPELIN_SERVER_X_CONTENT_TYPE_OPTIONS);
   }
 
   public String getStrictTransport() {
@@ -808,6 +816,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
     ZEPPELIN_INTERPRETER_JSON("zeppelin.interpreter.setting", "interpreter-setting.json"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
+    ZEPPELIN_INTERPRETER_JUPYTER_KERNELS("zeppelin.interpreter.jupyter.kernels", "python:python,ir:r"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_DEP_MVNREPO("zeppelin.interpreter.dep.mvnRepo",
         "https://repo1.maven.org/maven2/"),
@@ -870,7 +879,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
-    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true),
     ZEPPELIN_USERNAME_FORCE_LOWERCASE("zeppelin.username.force.lowercase", false),
     ZEPPELIN_CREDENTIALS_PERSIST("zeppelin.credentials.persist", true),
     ZEPPELIN_CREDENTIALS_ENCRYPT_KEY("zeppelin.credentials.encryptKey", null),
@@ -885,6 +893,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_AUTHORIZATION_HEADER_CLEAR("zeppelin.server.authorization.header.clear", true),
     ZEPPELIN_SERVER_STRICT_TRANSPORT("zeppelin.server.strict.transport", "max-age=631138519"),
     ZEPPELIN_SERVER_X_XSS_PROTECTION("zeppelin.server.xxss.protection", "1"),
+    ZEPPELIN_SERVER_X_CONTENT_TYPE_OPTIONS("zeppelin.server.xcontent.type.options", "nosniff"),
 
     ZEPPELIN_SERVER_KERBEROS_KEYTAB("zeppelin.server.kerberos.keytab", ""),
     ZEPPELIN_SERVER_KERBEROS_PRINCIPAL("zeppelin.server.kerberos.principal", ""),

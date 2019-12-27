@@ -204,8 +204,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
-            .getInterpreterSettings(note1.getId());
+    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("md")) {
         interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
@@ -273,8 +272,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
-        .getInterpreterSettings(note1.getId());
+    List<InterpreterSetting> settings = note1.getBindedInterpreterSettings();
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("angular")) {
         interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
@@ -373,8 +371,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
-    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager()
-        .getInterpreterSettings(note1.getId());
+    List<InterpreterSetting> settings = notebook.getInterpreterSettingManager().get();
     for (InterpreterSetting setting : settings) {
       if (setting.getName().equals("angular")) {
         interpreterGroup = setting.getOrCreateInterpreterGroup("anonymous", "sharedProcess");
@@ -597,7 +594,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRuntimeInfos() {
+  public void testRuntimeInfos() throws IOException {
     // mock note
     String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"note\":{\"paragraphs\": [{\"text\": \"Test " +

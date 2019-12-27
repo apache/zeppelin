@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -54,12 +55,30 @@ public class QuartzSchedulerService implements SchedulerService {
     this.notebook = notebook;
     this.scheduler = new StdSchedulerFactory().getScheduler();
     this.scheduler.start();
+
+    // Do in a separated thread because there may be many notes,
+    // loop all notes in the main thread may block the restarting of Zeppelin server
+    Thread loadingNotesThread = new Thread(() -> {
+        LOGGER.info("Starting init cronjobs");
+        notebook.getNotesInfo().stream()
+                .forEach(entry -> refreshCron(entry.getId()));
+        LOGGER.info("Complete init cronjobs");
+    });
+    loadingNotesThread.setName("Init CronJob Thread");
+    loadingNotesThread.setDaemon(true);
+    loadingNotesThread.start();
   }
 
   @Override
   public void refreshCron(String noteId) {
     removeCron(noteId);
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+    } catch (IOException e) {
+      LOGGER.warn("Fail to get note: " + noteId, e);
+      return;
+    }
     if (note == null || note.isTrash()) {
       return;
     }

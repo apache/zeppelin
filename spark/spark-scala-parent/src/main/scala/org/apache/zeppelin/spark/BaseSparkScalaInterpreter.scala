@@ -138,7 +138,10 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
         InterpreterResult.Code.INCOMPLETE
     }
 
-    new InterpreterResult(lastStatus)
+    lastStatus match {
+      case InterpreterResult.Code.INCOMPLETE => new InterpreterResult( lastStatus, "Incomplete expression" )
+      case _ => new InterpreterResult(lastStatus)
+    }
   }
 
   protected def interpret(code: String): InterpreterResult =
@@ -303,7 +306,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
   }
 
   protected def createZeppelinContext(): Unit = {
-    val sparkShims = SparkShims.getInstance(sc.version, properties)
+
+    var sparkShims: SparkShims = null
+    if (isSparkSessionPresent()) {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sparkSession)
+    } else {
+      sparkShims = SparkShims.getInstance(sc.version, properties, sc)
+    }
     var webUiUrl = properties.getProperty("zeppelin.spark.uiWebUrl");
     if (StringUtils.isBlank(webUiUrl)) {
       webUiUrl = sparkUrl;
@@ -312,7 +321,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
     z = new SparkZeppelinContext(sc, sparkShims,
       interpreterGroup.getInterpreterHookRegistry,
-      properties.getProperty("zeppelin.spark.maxResult").toInt)
+      properties.getProperty("zeppelin.spark.maxResult", "1000").toInt)
     bind("z", z.getClass.getCanonicalName, z, List("""@transient"""))
   }
 

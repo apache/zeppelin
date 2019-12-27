@@ -17,83 +17,61 @@
 
 package org.apache.zeppelin.spark;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkRBackend;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.BaseZeppelinContext;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.r.RInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 
 /**
  * R and SparkR interpreter with visualization support.
  */
-public class SparkRInterpreter extends Interpreter {
-  private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
+public class SparkRInterpreter extends RInterpreter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreter.class);
 
-  private String renderOptions;
   private SparkInterpreter sparkInterpreter;
+  private SparkVersion sparkVersion;
   private boolean isSpark2;
-  private ZeppelinR zeppelinR;
-  private AtomicBoolean rbackendDead = new AtomicBoolean(false);
   private SparkContext sc;
   private JavaSparkContext jsc;
-  private String secret;
 
   public SparkRInterpreter(Properties property) {
     super(property);
   }
 
   @Override
+  protected boolean isSparkSupported() {
+    return true;
+  }
+
+  @Override
+  protected boolean isSecretSupported() {
+    return sparkVersion.isSecretSocketSupported();
+  }
+
+  @Override
+  protected int sparkVersion() {
+    return new SparkVersion(sc.version()).toNumber();
+  }
+
+  @Override
   public void open() throws InterpreterException {
-    String rCmdPath = getProperty("zeppelin.R.cmd", "R");
-    String sparkRLibPath;
-
-    if (System.getenv("SPARK_HOME") != null) {
-      // local or yarn-client mode when SPARK_HOME is specified
-      sparkRLibPath = System.getenv("SPARK_HOME") + "/R/lib";
-    } else if (System.getenv("ZEPPELIN_HOME") != null){
-      // embedded mode when SPARK_HOME is not specified
-      sparkRLibPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/spark/R/lib";
-      // workaround to make sparkr work without SPARK_HOME
-      System.setProperty("spark.test.home", System.getenv("ZEPPELIN_HOME") + "/interpreter/spark");
-    } else {
-      // yarn-cluster mode
-      sparkRLibPath = "sparkr";
-    }
-    if (!new File(sparkRLibPath).exists()) {
-      throw new InterpreterException(String.format("sparkRLib %s doesn't exist", sparkRLibPath));
-    }
-
     this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
-    // Share the same SparkRBackend across sessions
-    SparkVersion sparkVersion = new SparkVersion(sc.version());
-    synchronized (SparkRBackend.backend()) {
-      if (!SparkRBackend.isStarted()) {
-        SparkRBackend.init(sparkVersion);
-        SparkRBackend.start();
-      }
-    }
+    this.sparkVersion = new SparkVersion(sc.version());
     this.isSpark2 = sparkVersion.newerThanEquals(SparkVersion.SPARK_2_0_0);
-    int timeout = this.sc.getConf().getInt("spark.r.backendConnectionTimeout", 6000);
 
     ZeppelinRContext.setSparkContext(sc);
     ZeppelinRContext.setJavaSparkContext(jsc);
@@ -102,37 +80,17 @@ public class SparkRInterpreter extends Interpreter {
     }
     ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
     ZeppelinRContext.setZeppelinContext(sparkInterpreter.getZeppelinContext());
-
-    zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, SparkRBackend.port(), sparkVersion, timeout, this);
-    try {
-      zeppelinR.open();
-      logger.info("ZeppelinR is opened successfully.");
-    } catch (IOException e) {
-      throw new InterpreterException("Exception while opening SparkRInterpreter", e);
-    }
-
-    if (useKnitr()) {
-      zeppelinR.eval("library('knitr')");
-    }
-    renderOptions = getProperty("zeppelin.R.render.options",
-        "out.format = 'html', comment = NA, echo = FALSE, results = 'asis', message = F, " +
-            "warning = F, fig.retina = 2");
+    super.open();
   }
 
   @Override
-  public InterpreterResult interpret(String lines, InterpreterContext interpreterContext)
+  public InterpreterResult internalInterpret(String lines, InterpreterContext interpreterContext)
       throws InterpreterException {
     Utils.printDeprecateMessage(sparkInterpreter.getSparkVersion(),
             interpreterContext, properties);
     String jobGroup = Utils.buildJobGroupId(interpreterContext);
     String jobDesc = Utils.buildJobDesc(interpreterContext);
     sparkInterpreter.getSparkContext().setJobGroup(jobGroup, jobDesc, false);
-
-    String imageWidth = getProperty("zeppelin.R.image.width", "100%");
-    if (interpreterContext.getLocalProperties().containsKey("imageWidth")) {
-      imageWidth = interpreterContext.getLocalProperties().get("imageWidth");
-    }
-
     String setJobGroup = "";
     // assign setJobGroup to dummy__, otherwise it would print NULL for this statement
     if (isSpark2) {
@@ -152,41 +110,16 @@ public class SparkRInterpreter extends Interpreter {
       }
       lines = setPoolStmt + "\n" + lines;
     }
-    try {
-      // render output with knitr
-      if (rbackendDead.get()) {
-        return new InterpreterResult(InterpreterResult.Code.ERROR,
-            "sparkR backend is dead, please try to increase spark.r.backendConnectionTimeout");
-      }
-      if (useKnitr()) {
-        zeppelinR.setInterpreterOutput(null);
-        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
-        zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
-        String html = zeppelinR.getS0(".zres");
-
-        RDisplay rDisplay = render(html, imageWidth);
-
-        return new InterpreterResult(
-            rDisplay.code(),
-            rDisplay.typ(),
-            rDisplay.content()
-        );
-      } else {
-        // alternatively, stream the output (without knitr)
-        zeppelinR.setInterpreterOutput(interpreterContext.out);
-        zeppelinR.eval(lines);
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
-      }
-    } catch (Exception e) {
-      logger.error("Exception while connecting to R", e);
-      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-    }
+    return super.internalInterpret(lines, interpreterContext);
   }
 
   @Override
   public void close() throws InterpreterException {
-    zeppelinR.close();
-    this.sparkInterpreter.close();
+    super.close();
+    if (this.sparkInterpreter != null) {
+      this.sparkInterpreter.close();
+      this.sparkInterpreter = null;
+    }
   }
 
   @Override
@@ -198,7 +131,7 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.NONE;
+    return FormType.NATIVE;
   }
 
   @Override
@@ -217,16 +150,13 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
+  public BaseZeppelinContext getZeppelinContext() {
+    return sparkInterpreter.getZeppelinContext();
+  }
+
+  @Override
   public List<InterpreterCompletion> completion(String buf, int cursor,
                                                 InterpreterContext interpreterContext) {
     return new ArrayList<>();
-  }
-
-  private boolean useKnitr() {
-    return Boolean.parseBoolean(getProperty("zeppelin.R.knitr", "true"));
-  }
-
-  public AtomicBoolean getRbackendDead() {
-    return rbackendDead;
   }
 }

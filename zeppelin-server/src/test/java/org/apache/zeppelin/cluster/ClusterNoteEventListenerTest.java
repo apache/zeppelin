@@ -26,6 +26,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,7 +56,11 @@ public class ClusterNoteEventListenerTest implements ClusterEventListener {
         authenticationInfo = AuthenticationInfo.fromJson(json);
         LOGGER.debug(authenticationInfo.toJson());
       } else if (key.equals("Note")) {
-        note = Note.fromJson(json);
+        try {
+          note = Note.fromJson(json);
+        } catch (IOException e) {
+          LOGGER.warn("Fail to parse note json", e);
+        }
         LOGGER.debug(note.toJson());
       } else if (key.equals("Paragraph")) {
         paragraph = Paragraph.fromJson(json);

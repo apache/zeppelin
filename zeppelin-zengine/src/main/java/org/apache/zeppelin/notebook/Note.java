@@ -26,11 +26,14 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObject;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -106,6 +109,7 @@ public class Note implements JsonSerializable {
 
   public Note() {
     generateId();
+    setCronSupported(ZeppelinConfiguration.create());
   }
 
   public Note(String path, String defaultInterpreterGroup, InterpreterFactory factory,
@@ -893,10 +897,11 @@ public class Note implements JsonSerializable {
     }
   }
 
+  // TODO(zjffdu) how does this used ?
   private void snapshotAngularObjectRegistry(String user) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(getId());
+    List<InterpreterSetting> settings = getBindedInterpreterSettings();
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -913,7 +918,7 @@ public class Note implements JsonSerializable {
   private void removeAllAngularObjectInParagraph(String user, String paragraphId) {
     angularObjects = new HashMap<>();
 
-    List<InterpreterSetting> settings = interpreterSettingManager.getInterpreterSettings(getId());
+    List<InterpreterSetting> settings = getBindedInterpreterSettings();
     if (settings == null || settings.size() == 0) {
       return;
     }
@@ -949,6 +954,26 @@ public class Note implements JsonSerializable {
         }
       }
     }
+  }
+
+  public List<InterpreterSetting> getBindedInterpreterSettings() {
+    Set<InterpreterSetting> settings = new HashSet<>();
+    for (Paragraph p : getParagraphs()) {
+      try {
+        Interpreter intp = p.getBindedInterpreter();
+        settings.add((
+                (ManagedInterpreterGroup) intp.getInterpreterGroup()).getInterpreterSetting());
+      } catch (InterpreterNotFoundException e) {
+        // ignore this
+      }
+    }
+    // add the default interpreter group
+    InterpreterSetting defaultIntpSetting =
+            interpreterSettingManager.getByName(getDefaultInterpreterGroup());
+    if (defaultIntpSetting != null) {
+      settings.add(defaultIntpSetting);
+    }
+    return new ArrayList<>(settings);
   }
 
   /**
@@ -1027,13 +1052,26 @@ public class Note implements JsonSerializable {
   public String toJson() {
     return gson.toJson(this);
   }
-
-  public static Note fromJson(String json) {
-    Note note = gson.fromJson(json, Note.class);
-    convertOldInput(note);
-    note.info.remove("isRunning");
-    note.postProcessParagraphs();
-    return note;
+  
+  /**
+   * Parse note json from note file. Throw IOException if fail to parse note json.
+   *
+   * @param json
+   * @return Note
+   * @throws IOException if fail to parse note json (note file may be corrupted)
+   */
+  public static Note fromJson(String json) throws IOException {
+    try {
+      Note note = gson.fromJson(json, Note.class);
+      note.setCronSupported(ZeppelinConfiguration.create());
+      convertOldInput(note);
+      note.info.remove("isRunning");
+      note.postProcessParagraphs();
+      return note;
+    } catch (Exception e) {
+      logger.error("Fail to parse note json: " + e.toString());
+      throw new IOException("Fail to parse note json: " + json, e);
+    }
   }
 
   public void postProcessParagraphs() {

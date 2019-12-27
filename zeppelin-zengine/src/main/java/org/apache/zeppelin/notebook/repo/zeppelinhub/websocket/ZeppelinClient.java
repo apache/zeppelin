@@ -287,7 +287,7 @@ public class ZeppelinClient {
     return getNoteMsg;
   }
 
-  public void handleMsgFromZeppelin(String message, String noteId) {
+  public void handleMsgFromZeppelin(String message, String noteId) throws IOException {
     Map<String, String> meta = new HashMap<>();
     //TODO(khalid): don't use zeppelinhubToken in this class, decouple
     meta.put("noteId", noteId);
@@ -315,7 +315,7 @@ public class ZeppelinClient {
 
   }
 
-  private void relayToAllZeppelinHub(ZeppelinhubMessage hubMsg, String noteId) {
+  private void relayToAllZeppelinHub(ZeppelinhubMessage hubMsg, String noteId) throws IOException {
     if (StringUtils.isBlank(noteId)) {
       return;
     }

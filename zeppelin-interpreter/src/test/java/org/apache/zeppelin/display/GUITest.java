@@ -49,16 +49,16 @@ public class GUITest {
   @Test
   public void testSelect() {
     GUI gui = new GUI();
-    Object selected = gui.select("list_1", null, options);
+    Object selected = gui.select("list_1", options, null);
     // use the first one as the default value
     assertEquals("1", selected);
 
     gui = new GUI();
-    selected = gui.select("list_1", "2", options);
+    selected = gui.select("list_1", options,  "2");
     assertEquals("2", selected);
     // "2" is selected by above statement, so even this default value is "1", the selected value is
     // still "2"
-    selected = gui.select("list_1", "1", options);
+    selected = gui.select("list_1", options, "1");
     assertEquals("2", selected);
   }
 
@@ -66,10 +66,10 @@ public class GUITest {
   public void testGson() {
     GUI gui = new GUI();
     gui.textbox("textbox_1", "default_text_1");
-    gui.select("select_1", "1", options);
+    gui.select("select_1", options, "1");
     List<Object> list = new ArrayList();
     list.add("1");
-    gui.checkbox("checkbox_1", list, options);
+    gui.checkbox("checkbox_1", options, list);
 
     String json = gui.toJson();
     System.out.println(json);

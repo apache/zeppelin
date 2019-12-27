@@ -48,7 +48,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 public class SparkInterpreterTest {
@@ -263,7 +262,7 @@ public class SparkInterpreterTest {
     assertEquals("pwd", pwd.getName());
 
     context = getInterpreterContext();
-    result = interpreter.interpret("z.checkbox(\"checkbox_1\", Seq(\"value_2\"), Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")))", context);
+    result = interpreter.interpret("z.checkbox(\"checkbox_1\", Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")), Seq(\"value_2\"))", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("checkbox_1") instanceof CheckBox);
@@ -278,7 +277,7 @@ public class SparkInterpreterTest {
     assertEquals("name_2", checkBox.getOptions()[1].getDisplayName());
 
     context = getInterpreterContext();
-    result = interpreter.interpret("z.select(\"select_1\", Seq(\"value_2\"), Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")))", context);
+    result = interpreter.interpret("z.select(\"select_1\", Seq((\"value_1\", \"name_1\"), (\"value_2\", \"name_2\")), Seq(\"value_2\"))", context);
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertEquals(1, context.getGui().getForms().size());
     assertTrue(context.getGui().getForms().get("select_1") instanceof Select);

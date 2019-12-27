@@ -35,9 +35,7 @@ public class AngularObjectRegistry {
   private final String GLOBAL_KEY = "_GLOBAL_";
   private AngularObjectRegistryListener listener;
   private String interpreterId;
-  
-
-  AngularObjectListener angularObjectListener;
+  private AngularObjectListener angularObjectListener;
 
   public AngularObjectRegistry(final String interpreterId,
       final AngularObjectRegistryListener listener) {

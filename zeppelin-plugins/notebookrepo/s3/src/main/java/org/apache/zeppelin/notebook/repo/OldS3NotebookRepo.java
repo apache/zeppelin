@@ -187,6 +187,8 @@ public class OldS3NotebookRepo implements OldNotebookRepo {
             info = getNoteInfo(objectSummary.getKey());
             if (info != null) {
               infos.add(info);
+            } else {
+              LOG.debug("Unable to get notebook info for key: " + objectSummary.getKey());
             }
           }
         }
@@ -215,7 +217,7 @@ public class OldS3NotebookRepo implements OldNotebookRepo {
 
   private OldNoteInfo getNoteInfo(String key) throws IOException {
     Note note = getNote(key);
-    return new OldNoteInfo(note);
+    return note != null ? new OldNoteInfo(note) : null;
   }
 
   @Override

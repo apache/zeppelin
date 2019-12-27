@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.scheduler;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -25,17 +25,23 @@ import java.util.concurrent.Executors;
  */
 public class FIFOScheduler extends AbstractScheduler {
 
-  private Executor executor;
+  private ExecutorService executor;
 
   FIFOScheduler(String name) {
     super(name);
     executor = Executors.newSingleThreadExecutor(
-        new SchedulerThreadFactory("FIFOScheduler-Worker-"));
+        new SchedulerThreadFactory("FIFOScheduler-" + name + "-Worker-"));
   }
 
   @Override
   public void runJobInScheduler(final Job job) {
     // run job in the SingleThreadExecutor since this is FIFO.
     executor.execute(() -> runJob(job));
+  }
+
+  @Override
+  public void stop() {
+    super.stop();
+    executor.shutdownNow();
   }
 }

@@ -67,7 +67,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
         env.put(key, properties.getProperty(key));
       }
       if (isSparkConf(key, properties.getProperty(key))) {
-        sparkProperties.setProperty(key, toShellFormat(properties.getProperty(key)));
+        sparkProperties.setProperty(key, properties.getProperty(key));
       }
     }
 
@@ -137,7 +137,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
       sparkConfBuilder.append(" --proxy-user " + context.getUserName());
     }
 
-    env.put("ZEPPELIN_SPARK_CONF", sparkConfBuilder.toString());
+    env.put("ZEPPELIN_SPARK_CONF", escapeSpecialCharacter(sparkConfBuilder.toString()));
 
     // set these env in the order of
     // 1. interpreter-setting
@@ -333,16 +333,6 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
   private boolean isYarnMode() {
     return getSparkMaster(properties).startsWith("yarn");
-  }
-
-  private String toShellFormat(String value) {
-    if (value.contains("'") && value.contains("\"")) {
-      throw new RuntimeException("Spark property value could not contain both \" and '");
-    } else if (value.contains("'")) {
-      return "\"" + value + "\"";
-    } else {
-      return "'" + value + "'";
-    }
   }
 
 }

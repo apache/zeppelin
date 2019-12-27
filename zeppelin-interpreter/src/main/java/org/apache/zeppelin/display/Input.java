@@ -220,7 +220,7 @@ public class Input<T> implements Serializable {
     String displayName = null;
     String type = null;
     String arg = null;
-    Object defaultValue = "";
+    Object defaultValue = null;
     ParamOption[] paramOptions = null;
 
     // get var name type
@@ -350,17 +350,25 @@ public class Input<T> implements Serializable {
         Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
             : Arrays.asList((Object[]) value);
         List<Object> validChecked = new LinkedList<>();
-        for (Object o : checked) {  // filter out obsolete checked values
-          for (ParamOption option : optionInput.getOptions()) {
-            if (option.getValue().equals(o)) {
-              validChecked.add(o);
-              break;
+        for (Object o : checked) {
+          // filter out obsolete checked values
+          if (optionInput.getOptions() != null) {
+            for (ParamOption option : optionInput.getOptions()) {
+              if (option.getValue().equals(o)) {
+                validChecked.add(o);
+                break;
+              }
             }
           }
         }
-        params.put(input.name, validChecked);
-        expanded = StringUtils.join(validChecked, delimiter);
-      } else {  // single-selection
+        if (validChecked.isEmpty()) {
+          expanded = StringUtils.join(checked, delimiter);
+        } else {
+          params.put(input.name, validChecked);
+          expanded = StringUtils.join(validChecked, delimiter);
+        }
+      } else {
+        // single-selection
         expanded = value.toString();
       }
       replaced = match.replaceFirst(expanded);

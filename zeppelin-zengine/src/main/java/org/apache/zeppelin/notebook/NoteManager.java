@@ -88,7 +88,7 @@ public class NoteManager {
     for (String notePath : notesInfo.values()) {
       try {
         notes.add(getNoteNode(notePath).getNote());
-      } catch (IOException e) {
+      } catch (Exception e) {
         LOGGER.warn("Fail to load note: " + notePath, e);
       }
     }
@@ -266,6 +266,13 @@ public class NoteManager {
     return notes;
   }
 
+  /**
+   * Get note from NotebookRepo.
+   *
+   * @param noteId
+   * @return return null if not found on NotebookRepo.
+   * @throws IOException
+   */
   public Note getNote(String noteId) throws IOException {
     String notePath = this.notesInfo.get(noteId);
     if (notePath == null) {

@@ -32,6 +32,7 @@ hbase           org.apache.zeppelin:zeppelin-hbase:0.9.0                Hbase in
 ignite          org.apache.zeppelin:zeppelin-ignite:0.9.0               Ignite interpreter
 java            org.apache.zeppelin:zeppelin-java:0.9.0                 Java interpreter
 jdbc            org.apache.zeppelin:zeppelin-jdbc:0.9.0                 Jdbc interpreter
+kotlin          org.apache.zeppelin:zeppelin-kotlin:0.9.0               Kotlin interpreter
 kylin           org.apache.zeppelin:zeppelin-kylin:0.9.0                Kylin interpreter
 lens            org.apache.zeppelin:zeppelin-lens:0.9.0                 Lens interpreter
 livy            org.apache.zeppelin:zeppelin-livy:0.9.0                 Livy interpreter
@@ -43,4 +44,5 @@ sap             org.apache.zeppelin:zeppelin-sap:0.9.0                  SAP Supp
 scalding        org.apache.zeppelin:zeppelin-scalding_2.0.10:0.9.0      Scalding interpreter
 scio            org.apache.zeppelin:zeppelin-scio:0.9.0                 Scio interpreter
 shell           org.apache.zeppelin:zeppelin-shell:0.9.0                Shell command
+sparql          org.apache.zeppelin:zeppelin-sparql:0.9.0               Sparql interpreter
 submarine       org.apache.zeppelin:zeppelin-submarine:0.9.0            Submarine interpreter

@@ -55,6 +55,13 @@
       <name>Twitter Maven Repo</name>
       <url>https://maven.twttr.com</url>
     </repository>
+
+    <!-- Temporary repo -->
+    <repository>
+      <id>zeppelin-dependencies</id>
+      <name>bintray</name>
+      <url>https://jetbrains.bintray.com/zeppelin-dependencies</url>
+    </repository>
   </repositories>
 
   <dependencies>

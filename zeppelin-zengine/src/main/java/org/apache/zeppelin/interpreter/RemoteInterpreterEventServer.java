@@ -140,6 +140,7 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
     if (appendFuture != null) {
       appendFuture.cancel(true);
     }
+    appendService.shutdownNow();
     LOGGER.info("RemoteInterpreterEventServer is stopped");
   }
 
@@ -359,7 +360,12 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
         + ", user = " + user);
 
     if (user != null && noteId != null) {
-      List<ParagraphInfo> paragraphInfos = listener.getParagraphList(user, noteId);
+      List<ParagraphInfo> paragraphInfos = null;
+      try {
+        paragraphInfos = listener.getParagraphList(user, noteId);
+      } catch (IOException e) {
+       throw new TException(e);
+      }
       return paragraphInfos;
     } else {
       LOGGER.error("user or noteId is null!");

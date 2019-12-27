@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.scheduler;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,17 @@ public class CronJob implements org.quartz.Job {
 
     Notebook notebook = (Notebook) jobDataMap.get("notebook");
     String noteId = jobDataMap.getString("noteId");
-    Note note = notebook.getNote(noteId);
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+      if (note == null) {
+        logger.warn("Note " + noteId + " not found");
+        return;
+      }
+    } catch (IOException e) {
+      logger.warn("Fail to get note: " + noteId, e);
+      return;
+    }
     if (note.haveRunningOrPendingParagraphs()) {
       logger.warn(
           "execution of the cron job is skipped because there is a running or pending "
@@ -70,8 +81,7 @@ public class CronJob implements org.quartz.Job {
       logger.error(e.getMessage(), e);
     }
     if (releaseResource) {
-      for (InterpreterSetting setting :
-          notebook.getInterpreterSettingManager().getInterpreterSettings(note.getId())) {
+      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
         try {
           notebook
               .getInterpreterSettingManager()

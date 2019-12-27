@@ -333,7 +333,6 @@ public class ZeppelinServer extends ResourceConfig {
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
-    connector.setSoLingerTime(-1);
     connector.setHost(conf.getServerAddress());
     if (conf.useSsl()) {
       connector.setPort(conf.getServerSslPort());
@@ -360,8 +359,6 @@ public class ZeppelinServer extends ResourceConfig {
     final ServletHolder servletHolder =
         new ServletHolder(serviceLocator.getService(NotebookServer.class));
     servletHolder.setInitParameter("maxTextMessageSize", maxTextMessageSize);
-
-    final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 
     webapp.addServlet(servletHolder, "/ws/*");
   }

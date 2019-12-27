@@ -233,6 +233,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         } else {
           this.scriptText = this.text.substring(headingSpace.length() + intpText.length() + 1).trim();
         }
+        config.putAll(localProperties);
       } else {
         setIntpText("");
         this.scriptText = this.text.trim();
@@ -465,9 +466,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
       // inject form
       String script = this.scriptText;
-      if (interpreter.getFormType() == FormType.NATIVE) {
-        settings.clear();
-      } else if (interpreter.getFormType() == FormType.SIMPLE) {
+      if ("simple".equalsIgnoreCase(localProperties.get("form")) ||
+              interpreter.getFormType() == FormType.SIMPLE) {
         // inputs will be built from script body
         LinkedHashMap<String, Input> inputs = Input.extractSimpleQueryForm(script, false);
         LinkedHashMap<String, Input> noteInputs = Input.extractSimpleQueryForm(script, true);
@@ -490,6 +490,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         }
         script = Input.getSimpleQuery(note.getNoteParams(), scriptBody, true);
         script = Input.getSimpleQuery(settings.getParams(), script, false);
+      } else {
+        settings.clear();
       }
 
       LOGGER.debug("RUN : " + script);
@@ -555,7 +557,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext.remove();
       }
     } catch (Exception e) {
-      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 

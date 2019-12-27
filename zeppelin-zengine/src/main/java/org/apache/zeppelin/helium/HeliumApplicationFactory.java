@@ -394,12 +394,18 @@ public class HeliumApplicationFactory implements ApplicationEventListener, NoteE
       return null;
     }
 
-    Note note = notebook.getNote(noteId);
-
-    if (note == null) {
+    Note note = null;
+    try {
+      note = notebook.getNote(noteId);
+      if (note == null) {
+        logger.warn("Note " + noteId + " not found");
+        return null;
+      }
+    } catch (IOException e) {
       logger.error("Can't get note {}", noteId);
       return null;
     }
+
     Paragraph paragraph = note.getParagraph(paragraphId);
     if (paragraph == null) {
       logger.error("Can't get paragraph {}", paragraphId);

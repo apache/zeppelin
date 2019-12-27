@@ -427,12 +427,6 @@
 </property>
 
 <property>
-  <name>zeppelin.anonymous.allowed</name>
-  <value>true</value>
-  <description>Anonymous user allowed by default</description>
-</property>
-
-<property>
   <name>zeppelin.username.force.lowercase</name>
   <value>false</value>
   <description>Force convert username case to lower case, useful for Active Directory/LDAP. Default is not to change case</description>
@@ -550,6 +544,14 @@
   <name>zeppelin.server.xxss.protection</name>
   <value>1</value>
   <description>The HTTP X-XSS-Protection response header is a feature of Internet Explorer, Chrome and Safari that stops pages from loading when they detect reflected cross-site scripting (XSS) attacks. When value is set to 1 and a cross-site scripting attack is detected, the browser will sanitize the page (remove the unsafe parts).</description>
+</property>
+-->
+
+<!--
+<property>
+  <name>zeppelin.server.xcontent.type.options</name>
+  <value>nosniff</value>
+  <description>The HTTP X-Content-Type-Options response header helps to prevent MIME type sniffing attacks. It directs the browser to honor the type specified in the Content-Type header, rather than trying to determine the type from the content itself. The default value "nosniff" is really the only meaningful value. This header is supported on all browsers except Safari and Safari on iOS.</description>
 </property>
 -->
 
