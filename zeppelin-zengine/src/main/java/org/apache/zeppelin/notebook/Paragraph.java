@@ -105,7 +105,8 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   // personalized
   private transient Map<String, Paragraph> userParagraphMap = new HashMap<>();
   private transient Map<String, String> localProperties = new HashMap<>();
-  private transient Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
+  // serialize runtimeInfos to frontend but not to note file (via gson's ExclusionStrategy)
+  private Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
 
   public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
