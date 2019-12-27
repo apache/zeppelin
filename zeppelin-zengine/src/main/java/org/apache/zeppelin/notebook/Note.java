@@ -18,6 +18,8 @@
 package org.apache.zeppelin.notebook;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -64,11 +66,26 @@ import java.util.Set;
  */
 public class Note implements JsonSerializable {
   private static final Logger logger = LoggerFactory.getLogger(Note.class);
+
+  // serialize Paragraph#runtimeInfos to frontend but not to note file
+  private static final ExclusionStrategy strategy = new ExclusionStrategy() {
+    @Override
+    public boolean shouldSkipField(FieldAttributes f) {
+      return f.getName().equals("runtimeInfos");
+    }
+
+    @Override
+    public boolean shouldSkipClass(Class<?> clazz) {
+      return false;
+    }
+  };
+
   private static Gson gson = new GsonBuilder()
       .setPrettyPrinting()
       .setDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
       .registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .registerTypeAdapterFactory(Input.TypeAdapterFactory)
+      .setExclusionStrategies(strategy)
       .create();
 
   private List<Paragraph> paragraphs = new LinkedList<>();
