@@ -58,6 +58,54 @@
   text-align: center;
 }
 
+.html-result {
+  overflow: auto
+}
+
+.html-result ol, ul, dl {
+  padding-left: 20px;
+}
+
+.html-result img {
+  max-width: 100%;
+  height: auto;
+  width: auto;
+}
+
+.html-result table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.html-result thead {
+  border-bottom: 2px solid #3f3f3f;
+  vertical-align: bottom;
+}
+
+.html-result tr, th, td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+
+.html-result th {
+  font-weight: bold;
+}
+
+.html-result tbody tr:nth-child(odd) {
+  background: #f2f2f2;
+}
+
+.html-result tbody tr:hover {
+  background: #aeaeae
+}
+
 /* D3 Graph Configuration */
 marker {
   fill: #D3D3D3;
