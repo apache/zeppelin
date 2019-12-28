@@ -88,29 +88,31 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
 
     StringBuilder builder = new StringBuilder();
     List<String> sqls = sqlSplitter.splitSql(st);
-    for (String sql : sqls) {
-      sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
-      sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
+    int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
+            "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
 
-      try {
-        Method method = sqlc.getClass().getMethod("sql", String.class);
-        int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
-                "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
-        String result = sparkInterpreter.getZeppelinContext().showData(
-                method.invoke(sqlc, sql), maxResult);
-        sc.clearJobGroup();
+    sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+    sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
+    String curSql = null;
+    try {
+      for (String sql : sqls) {
+        curSql = sql;
+        String result = sparkInterpreter.getZeppelinContext().showData(sqlc.sql(sql), maxResult);
         builder.append(result);
-      } catch (Exception e) {
-        if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
-          builder.append("%text " + ExceptionUtils.getStackTrace(e));
-        } else {
-          logger.error("Invocation target exception", e);
-          String msg = e.getCause().getMessage()
-                  + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
-          builder.append("\n%text " + msg);
-        }
-        return new InterpreterResult(Code.ERROR, builder.toString());
       }
+    } catch (Exception e) {
+      builder.append("\n%text Error happens in sql: " + curSql + "\n");
+      if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace", "false"))) {
+        builder.append(ExceptionUtils.getStackTrace(e));
+      } else {
+        logger.error("Invocation target exception", e);
+        String msg = e.getCause().getMessage()
+                + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+        builder.append(msg);
+      }
+      return new InterpreterResult(Code.ERROR, builder.toString());
+    } finally {
+      sc.clearJobGroup();
     }
 
     return new InterpreterResult(Code.SUCCESS, builder.toString());

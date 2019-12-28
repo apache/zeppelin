@@ -195,18 +195,20 @@ public class SparkSqlInterpreterTest {
     // One correct sql + One invalid sql
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals(ret.message().toString(), 3, ret.message().size());
+    assertEquals(ret.message().toString(), 4, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
     assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
-    assertTrue(ret.message().toString(), ret.message().get(2).getData().contains("ParseException"));
+    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(3).getType());
+    assertTrue(ret.message().toString(), ret.message().get(3).getData().contains("ParseException"));
 
     // One correct sql + One invalid sql + One valid sql (skipped)
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql; select count(1) from gr", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals(ret.message().toString(), 3, ret.message().size());
+    assertEquals(ret.message().toString(), 4, ret.message().size());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
     assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
-    assertTrue(ret.message().toString(), ret.message().get(2).getData().contains("ParseException"));
+    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(3).getType());
+    assertTrue(ret.message().toString(), ret.message().get(3).getData().contains("ParseException"));
   }
 
   @Test
