@@ -71,7 +71,7 @@ public class Spark2Shims extends SparkShims {
       // fetch maxResult+1 rows so that we can check whether it is larger than zeppelin.spark.maxResult
       List<Row> rows = df.takeAsList(maxResult + 1);
       StringBuilder msg = new StringBuilder();
-      msg.append("%table ");
+      msg.append("\n%table ");
       msg.append(StringUtils.join(columns, "\t"));
       msg.append("\n");
       boolean isLargerThanMaxResult = rows.size() > maxResult;

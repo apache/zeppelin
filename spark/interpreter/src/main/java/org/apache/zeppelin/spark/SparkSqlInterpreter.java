@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+import org.apache.zeppelin.interpreter.util.SqlSplitter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
   private Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
 
   private SparkInterpreter sparkInterpreter;
+  private SqlSplitter sqlSplitter;
 
   public SparkSqlInterpreter(Properties property) {
     super(property);
@@ -52,6 +54,7 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
   @Override
   public void open() throws InterpreterException {
     this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
+    this.sqlSplitter = new SqlSplitter();
   }
 
   public boolean concurrentSQL() {
@@ -82,26 +85,35 @@ public class SparkSqlInterpreter extends AbstractInterpreter {
     sparkInterpreter.getZeppelinContext().setInterpreterContext(context);
     SQLContext sqlc = sparkInterpreter.getSQLContext();
     SparkContext sc = sqlc.sparkContext();
-    sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
-    sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
 
-    try {
-      Method method = sqlc.getClass().getMethod("sql", String.class);
-      int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
-              "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
-      String msg = sparkInterpreter.getZeppelinContext().showData(
-          method.invoke(sqlc, st), maxResult);
-      sc.clearJobGroup();
-      return new InterpreterResult(Code.SUCCESS, msg);
-    } catch (Exception e) {
-      if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
-        return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
+    StringBuilder builder = new StringBuilder();
+    List<String> sqls = sqlSplitter.splitSql(st);
+    for (String sql : sqls) {
+      sc.setLocalProperty("spark.scheduler.pool", context.getLocalProperties().get("pool"));
+      sc.setJobGroup(Utils.buildJobGroupId(context), Utils.buildJobDesc(context), false);
+
+      try {
+        Method method = sqlc.getClass().getMethod("sql", String.class);
+        int maxResult = Integer.parseInt(context.getLocalProperties().getOrDefault("limit",
+                "" + sparkInterpreter.getZeppelinContext().getMaxResult()));
+        String result = sparkInterpreter.getZeppelinContext().showData(
+                method.invoke(sqlc, sql), maxResult);
+        sc.clearJobGroup();
+        builder.append(result);
+      } catch (Exception e) {
+        if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
+          builder.append("%text " + ExceptionUtils.getStackTrace(e));
+        } else {
+          logger.error("Invocation target exception", e);
+          String msg = e.getCause().getMessage()
+                  + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+          builder.append("\n%text " + msg);
+        }
+        return new InterpreterResult(Code.ERROR, builder.toString());
       }
-      logger.error("Invocation target exception", e);
-      String msg = e.getCause().getMessage()
-              + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
-      return new InterpreterResult(Code.ERROR, msg);
     }
+
+    return new InterpreterResult(Code.SUCCESS, builder.toString());
   }
 
   @Override
