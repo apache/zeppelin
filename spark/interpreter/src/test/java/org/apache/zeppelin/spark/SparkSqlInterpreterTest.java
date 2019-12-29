@@ -174,7 +174,7 @@ public class SparkSqlInterpreterTest {
   public void testMultipleStatements() throws InterpreterException {
     sparkInterpreter.interpret("case class P(age:Int)", context);
     sparkInterpreter.interpret(
-            "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4),P(5),P(6),P(7),P(8)))",
+            "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4)))",
             context);
     sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
 
@@ -182,33 +182,27 @@ public class SparkSqlInterpreterTest {
     InterpreterResult ret = sqlInterpreter.interpret(
             "select * --comment_1\nfrom gr;select count(1) from gr", context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
-    assertEquals(ret.message().toString(), 5, ret.message().size());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(0).getType());
-    assertEquals(ret.message().toString(), "\n", ret.message().get(0).getData());
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
     assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
-    assertEquals(ret.message().toString(), "\n", ret.message().get(2).getData());
-    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(3).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(4).getType());
-    assertEquals(ret.message().toString(), "", ret.message().get(4).getData());
 
     // One correct sql + One invalid sql
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals(ret.message().toString(), 4, ret.message().size());
-    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(3).getType());
-    assertTrue(ret.message().toString(), ret.message().get(3).getData().contains("ParseException"));
-
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
+    }
+    
     // One correct sql + One invalid sql + One valid sql (skipped)
     ret = sqlInterpreter.interpret("select * from gr;invalid_sql; select count(1) from gr", context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
-    assertEquals(ret.message().toString(), 4, ret.message().size());
-    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
-    assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(3).getType());
-    assertTrue(ret.message().toString(), ret.message().get(3).getData().contains("ParseException"));
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
+    }
 
     // Two 2 comments
     ret = sqlInterpreter.interpret(

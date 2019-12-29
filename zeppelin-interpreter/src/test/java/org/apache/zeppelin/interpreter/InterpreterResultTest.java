@@ -33,7 +33,7 @@ public class InterpreterResultTest {
     result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "%this is a TEXT type");
     assertEquals("No magic", InterpreterResult.Type.TEXT, result.message().get(0).getType());
     result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "%\n");
-    assertEquals("No magic", InterpreterResult.Type.TEXT, result.message().get(0).getType());
+    assertEquals(0, result.message().size());
   }
 
   @Test
