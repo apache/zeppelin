@@ -209,6 +209,12 @@ public class SparkSqlInterpreterTest {
     assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(2).getType());
     assertEquals(ret.message().toString(), Type.TEXT, ret.message().get(3).getType());
     assertTrue(ret.message().toString(), ret.message().get(3).getData().contains("ParseException"));
+
+    // Two 2 comments
+    ret = sqlInterpreter.interpret(
+            "--comment_1\n--comment_2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), 0, ret.message().size());
   }
 
   @Test
