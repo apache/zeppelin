@@ -449,8 +449,11 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
               getId(), this.interpreter.getClassName(), note.getId(), subject.getUser());
       InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
               interpreter.getInterpreterGroup()).getInterpreterSetting();
-      if (interpreterSetting != null) {
-        interpreterSetting.waitForReady();
+      if (interpreterSetting.getStatus() != InterpreterSetting.Status.READY) {
+        String message = String.format("Interpreter Setting '%s' is not ready, its status is %s",
+                interpreterSetting.getName(), interpreterSetting.getStatus());
+        LOGGER.error(message);
+        throw new RuntimeException(message);
       }
       if (this.user != null) {
         if (subject != null && !interpreterSetting.isUserAuthorized(subject.getUsersAndRoles())) {
