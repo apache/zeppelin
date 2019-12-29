@@ -171,6 +171,47 @@ public class SparkSqlInterpreterTest {
   }
 
   @Test
+  public void testMultipleStatements() throws InterpreterException {
+    sparkInterpreter.interpret("case class P(age:Int)", context);
+    sparkInterpreter.interpret(
+            "val gr = sc.parallelize(Seq(P(1),P(2),P(3),P(4)))",
+            context);
+    sparkInterpreter.interpret("gr.toDF.registerTempTable(\"gr\")", context);
+
+    // Two correct sql
+    InterpreterResult ret = sqlInterpreter.interpret(
+            "select * --comment_1\nfrom gr;select count(1) from gr", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(1).getType());
+
+    // One correct sql + One invalid sql
+    ret = sqlInterpreter.interpret("select * from gr;invalid_sql", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
+    }
+    
+    // One correct sql + One invalid sql + One valid sql (skipped)
+    ret = sqlInterpreter.interpret("select * from gr;invalid_sql; select count(1) from gr", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertEquals(ret.message().toString(), 2, ret.message().size());
+    assertEquals(ret.message().toString(), Type.TABLE, ret.message().get(0).getType());
+    if (sparkInterpreter.getSparkVersion().isSpark2()) {
+      assertTrue(ret.message().toString(), ret.message().get(1).getData().contains("ParseException"));
+    }
+
+    // Two 2 comments
+    ret = sqlInterpreter.interpret(
+            "--comment_1\n--comment_2", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
+    assertEquals(ret.message().toString(), 0, ret.message().size());
+  }
+
+  @Test
   public void testConcurrentSQL() throws InterpreterException, InterruptedException {
     if (sparkInterpreter.getSparkVersion().isSpark2()) {
       sparkInterpreter.interpret("spark.udf.register(\"sleep\", (e:Int) => {Thread.sleep(e*1000); e})", context);
