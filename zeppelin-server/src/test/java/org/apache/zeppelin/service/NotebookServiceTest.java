@@ -103,6 +103,7 @@ public class NotebookServiceTest {
     InterpreterSetting mockInterpreterSetting = mock(InterpreterSetting.class);
     when(mockInterpreterSetting.isUserAuthorized(any())).thenReturn(true);
     when(mockInterpreterGroup.getInterpreterSetting()).thenReturn(mockInterpreterSetting);
+    when(mockInterpreterSetting.getStatus()).thenReturn(InterpreterSetting.Status.READY);
     SearchService searchService = new LuceneSearch(zeppelinConfiguration);
     Credentials credentials = new Credentials(false, null, null);
     Notebook notebook =
