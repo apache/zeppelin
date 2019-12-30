@@ -98,12 +98,18 @@
   font-weight: bold;
 }
 
+.html-result tbody tr {
+  border-bottom: 1px solid;
+  border-color: #d4d4d4;
+  background: #fff;
+}
+
 .html-result tbody tr:nth-child(odd) {
-  background: #f2f2f2;
+  background: #fdfdfd;
 }
 
 .html-result tbody tr:hover {
-  background: #aeaeae
+  background: #f2f2f2
 }
 
 /* D3 Graph Configuration */
