@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/zeppelin-visualization",
+  "dest": "../../out-lib/zeppelin-visualization",
   "lib": {
     "entryFile": "src/public-api.ts"
   }

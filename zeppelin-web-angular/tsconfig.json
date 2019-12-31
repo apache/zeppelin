@@ -8,22 +8,22 @@
         "./src/environments/*"
       ],
       "@zeppelin/helium": [
-        "./dist/zeppelin-helium"
+        "out-lib/zeppelin-helium"
       ],
       "@zeppelin/helium/*": [
-        "./dist/zeppelin-helium/*"
+        "out-lib/zeppelin-helium/*"
       ],
       "@zeppelin/visualization": [
-        "dist/zeppelin-visualization"
+        "out-lib/zeppelin-visualization"
       ],
       "@zeppelin/visualization/*": [
-        "dist/zeppelin-visualization/*"
+        "out-lib/zeppelin-visualization/*"
       ],
       "@zeppelin/sdk": [
-        "dist/zeppelin-sdk"
+        "out-lib/zeppelin-sdk"
       ],
       "@zeppelin/sdk/*": [
-        "dist/zeppelin-sdk/*"
+        "out-lib/zeppelin-sdk/*"
       ]
     },
     "outDir": "./dist/out-tsc",
