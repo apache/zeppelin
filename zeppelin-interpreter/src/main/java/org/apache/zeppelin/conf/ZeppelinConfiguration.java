@@ -803,7 +803,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_PORT("zeppelin.server.ssl.port", 8443),
-    ZEPPELIN__SSL_PORT("zeppelin.server.angular.ssl.port", 9443),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),

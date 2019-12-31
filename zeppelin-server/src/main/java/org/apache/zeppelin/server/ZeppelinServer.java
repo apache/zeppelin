@@ -97,6 +97,7 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
+  private static final String WEB_APP_CONTEXT_NEXT = "next";
 
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
@@ -179,10 +180,10 @@ public class ZeppelinServer extends ResourceConfig {
 
     // Multiple Web UI
     final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
-    final WebAppContext angularWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), "/next");
+    final WebAppContext nextWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
 
     initWebApp(defaultWebApp);
-    initWebApp(angularWebApp);
+    initWebApp(nextWebApp);
     // Cluster Manager Server
     setupClusterManagerServer(sharedServiceLocator);
 
