@@ -5,7 +5,7 @@
     "postinstall": "npm run build:projects",
     "ng": "./node_modules/.bin/ng",
     "start": "ng serve --proxy-config proxy.conf.js --extra-webpack-config webpack.partial.js",
-    "build": "ng build --prod --extra-webpack-config webpack.partial.js",
+    "build": "ng build --prod --extra-webpack-config webpack.partial.js --base-href /next/",
     "build:projects": "npm run build-project:sdk && npm run build-project:vis && npm run build-project:helium",
     "build-helium-vis-example": " ng build --project helium-vis-example",
     "build-project:sdk": " ng build --project zeppelin-sdk",
