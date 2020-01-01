@@ -97,6 +97,7 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
+  private static final String WEB_APP_CONTEXT_NEXT = "/next";
 
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
@@ -118,9 +119,6 @@ public class ZeppelinServer extends ResourceConfig {
 
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     jettyWebServer.setHandler(contexts);
-
-    // Web UI
-    final WebAppContext webApp = setupWebAppContext(contexts, conf);
 
     sharedServiceLocator = ServiceLocatorFactory.getInstance().create("shared-locator");
     ServiceLocatorUtilities.enableImmediateScope(sharedServiceLocator);
@@ -180,25 +178,12 @@ public class ZeppelinServer extends ResourceConfig {
           }
         });
 
-    webApp.addEventListener(
-        new ServletContextListener() {
-          @Override
-          public void contextInitialized(ServletContextEvent servletContextEvent) {
-            servletContextEvent
-                .getServletContext()
-                .setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
-          }
+    // Multiple Web UI
+    final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
+    final WebAppContext nextWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
 
-          @Override
-          public void contextDestroyed(ServletContextEvent servletContextEvent) {}
-        });
-
-    // Create `ZeppelinServer` using reflection and setup REST Api
-    setupRestApiContextHandler(webApp, conf);
-
-    // Notebook server
-    setupNotebookServer(webApp, conf, sharedServiceLocator);
-
+    initWebApp(defaultWebApp);
+    initWebApp(nextWebApp);
     // Cluster Manager Server
     setupClusterManagerServer(sharedServiceLocator);
 
@@ -304,14 +289,18 @@ public class ZeppelinServer extends ResourceConfig {
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
-    ServerConnector connector;
+    initServerConnector(server, conf.getServerPort(), conf.getServerSslPort());
+    return server;
+  }
+  private static void initServerConnector(Server server, int port, int sslPort) {
 
+    ServerConnector connector;
     HttpConfiguration httpConfig = new HttpConfiguration();
     httpConfig.addCustomizer(new ForwardedRequestCustomizer());
     if (conf.useSsl()) {
-      LOG.debug("Enabling SSL for Zeppelin Server on port " + conf.getServerSslPort());
+      LOG.debug("Enabling SSL for Zeppelin Server on port " + sslPort);
       httpConfig.setSecureScheme("https");
-      httpConfig.setSecurePort(conf.getServerSslPort());
+      httpConfig.setSecurePort(sslPort);
       httpConfig.setOutputBufferSize(32768);
       httpConfig.setResponseHeaderSize(8192);
       httpConfig.setSendServerVersion(true);
@@ -321,28 +310,20 @@ public class ZeppelinServer extends ResourceConfig {
       httpsConfig.addCustomizer(src);
 
       connector =
-          new ServerConnector(
-              server,
-              new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
-              new HttpConnectionFactory(httpsConfig));
+              new ServerConnector(
+                      server,
+                      new SslConnectionFactory(getSslContextFactory(conf), HttpVersion.HTTP_1_1.asString()),
+                      new HttpConnectionFactory(httpsConfig));
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+      connector.setPort(port);
     }
-
     configureRequestHeaderSize(conf, connector);
     // Set some timeout options to make debugging easier.
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
-    if (conf.useSsl()) {
-      connector.setPort(conf.getServerSslPort());
-    } else {
-      connector.setPort(conf.getServerPort());
-    }
-
     server.addConnector(connector);
-
-    return server;
   }
 
   private static void configureRequestHeaderSize(
@@ -437,19 +418,20 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static WebAppContext setupWebAppContext(
-      ContextHandlerCollection contexts, ZeppelinConfiguration conf) {
+      ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
     WebAppContext webApp = new WebAppContext();
-    webApp.setContextPath(conf.getServerContextPath());
-    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-    if (warPath.isDirectory()) {
+    webApp.setContextPath(contextPath);
+    LOG.info("warPath is: {}", warPath);
+    File warFile = new File(warPath);
+    if (warFile.isDirectory()) {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
-      webApp.setResourceBase(warPath.getPath());
+      webApp.setResourceBase(warFile.getPath());
       webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
-      webApp.setWar(warPath.getAbsolutePath());
-      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR));
+      webApp.setWar(warFile.getAbsolutePath());
+      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
       warTempDirectory.mkdir();
       LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
       webApp.setTempDirectory(warTempDirectory);
@@ -463,7 +445,27 @@ public class ZeppelinServer extends ResourceConfig {
     webApp.setInitParameter(
         "org.eclipse.jetty.servlet.Default.dirAllowed",
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
-
     return webApp;
+  }
+
+  private static void initWebApp(WebAppContext webApp) {
+    webApp.addEventListener(
+            new ServletContextListener() {
+              @Override
+              public void contextInitialized(ServletContextEvent servletContextEvent) {
+                servletContextEvent
+                        .getServletContext()
+                        .setAttribute(ServletProperties.SERVICE_LOCATOR, sharedServiceLocator);
+              }
+
+              @Override
+              public void contextDestroyed(ServletContextEvent servletContextEvent) {}
+            });
+
+    // Create `ZeppelinServer` using reflection and setup REST Api
+    setupRestApiContextHandler(webApp, conf);
+
+    // Notebook server
+    setupNotebookServer(webApp, conf, sharedServiceLocator);
   }
 }
