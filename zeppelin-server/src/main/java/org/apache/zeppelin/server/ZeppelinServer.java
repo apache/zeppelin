@@ -97,7 +97,7 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
-  private static final String WEB_APP_CONTEXT_NEXT = "next";
+  private static final String WEB_APP_CONTEXT_NEXT = "/next";
 
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
