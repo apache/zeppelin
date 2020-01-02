@@ -54,7 +54,7 @@
 
         <dependency>
             <groupId>org.apache.zeppelin</groupId>
-            <artifactId>zeppelin-jupyter-interpreter</artifactId>
+            <artifactId>zeppelin-jupyter-interpreter-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -65,25 +65,7 @@
             <classifier>tests</classifier>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
-        </dependency>
-
+        
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
