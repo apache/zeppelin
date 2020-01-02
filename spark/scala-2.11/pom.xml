@@ -32,7 +32,7 @@
   <name>Zeppelin: Spark Interpreter Scala_2.11</name>
 
   <properties>
-    <spark.version>2.4.3</spark.version>
+    <spark.version>2.4.4</spark.version>
     <spark.scala.version>2.11.12</spark.scala.version>
     <spark.scala.binary.version>2.11</spark.scala.binary.version>
     <spark.scala.compile.version>${spark.scala.version}</spark.scala.compile.version>

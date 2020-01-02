@@ -63,7 +63,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
    * @return
    */
   protected int sparkVersion() {
-    return 20403;
+    return 20404;
   }
 
   /**
