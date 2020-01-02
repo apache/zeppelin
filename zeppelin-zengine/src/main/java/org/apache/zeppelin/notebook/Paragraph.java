@@ -396,7 +396,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
     }
 
-    return Strings.isNullOrEmpty(scriptText);
+    // don't skip paragraph when local properties is not empty.
+    // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
+    return Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
   public boolean execute(boolean blocking) {

@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,6 +67,13 @@ public class IPythonKernelTest {
     interpreter.setInterpreterGroup(intpGroup);
 
     interpreter.open();
+  }
+
+  @After
+  public void tearDown() throws InterpreterException {
+    if (interpreter != null) {
+      interpreter.close();
+    }
   }
 
   @Test
