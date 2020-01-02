@@ -34,14 +34,16 @@
   <name>Zeppelin: BigQuery interpreter</name>
 
   <properties>
-    <project.http.version>1.21.0</project.http.version>
-    <project.oauth.version>1.21.0</project.oauth.version>
+    <project.http.version>1.34.0</project.http.version>
+    <project.oauth.version>1.30.5</project.oauth.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <bigquery.test.exclude>**/BigQueryInterpreterTest.java</bigquery.test.exclude>
 
     <!-- library versions -->
-    <bigquery.api.version>v2-rev265-1.21.0</bigquery.api.version>
-    <gson.version>2.6</gson.version>
+    <bigquery.api.version>v2-rev20190917-1.30.3</bigquery.api.version>
+    <gson.version>2.8.6</gson.version>
+    <guava.version>22.0</guava.version>
+
     <interpreter.name>bigquery</interpreter.name>
   </properties>
 
@@ -71,6 +73,11 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
     </dependency>
 
   </dependencies>
