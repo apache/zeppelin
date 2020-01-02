@@ -123,10 +123,10 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
       int kernelPort = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
       int message_size = Integer.parseInt(getProperty("zeppelin.jupyter.kernel.grpc.message_size",
               32 * 1024 * 1024 + ""));
-      jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
-              kernelPort)
-              .usePlaintext(true).maxInboundMessageSize(message_size));
 
+      jupyterKernelClient = new JupyterKernelClient(ManagedChannelBuilder.forAddress("127.0.0.1",
+              kernelPort).usePlaintext(true).maxInboundMessageSize(message_size),
+              getProperties());
       launchJupyterKernel(kernelPort);
     } catch (Exception e) {
       throw new InterpreterException("Fail to open JupyterKernelInterpreter:\n" +
@@ -221,7 +221,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
   @Override
   public void close() throws InterpreterException {
     if (jupyterKernelProcessLauncher != null) {
-      LOGGER.info("Killing Jupyter Kernel Process");
+      LOGGER.info("Shutdown Jupyter Kernel Process");
       if (jupyterKernelProcessLauncher.isRunning()) {
         jupyterKernelClient.stop(StopRequest.newBuilder().build());
         try {
@@ -243,6 +243,7 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     z.setNoteGui(context.getNoteGui());
     z.setInterpreterContext(context);
     interpreterOutput.setInterpreterOutput(context.out);
+    jupyterKernelClient.setInterpreterContext(context);
     try {
       ExecuteResponse response =
               jupyterKernelClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),

@@ -26,6 +26,7 @@ import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,20 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
     this.commandLine = commandLine;
     this.envs = envs;
     this.processOutput = processLogOutput;
+  }
+
+  /**
+   * In some cases we need to redirect process output to paragraph's InterpreterOutput.
+   * e.g. In %r.shiny for shiny app
+   * @param redirectedContext
+   */
+  public void setRedirectedContext(InterpreterContext redirectedContext) {
+    if (redirectedContext != null) {
+      LOGGER.info("Start to redirect process output to interpreter output");
+    } else {
+      LOGGER.info("Stop to redirect process output to interpreter output");
+    }
+    this.processOutput.redirectedContext = redirectedContext;
   }
 
   public void launch() {
@@ -152,6 +167,7 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
 
     private boolean catchLaunchOutput = true;
     private StringBuilder launchOutput = new StringBuilder();
+    private InterpreterContext redirectedContext;
 
     public void stopCatchLaunchOutput() {
       this.catchLaunchOutput = false;
@@ -171,6 +187,13 @@ public abstract class ProcessLauncher implements ExecuteResultHandler {
       }
       if (catchLaunchOutput) {
         launchOutput.append(s + "\n");
+      }
+      if (redirectedContext != null) {
+        try {
+          redirectedContext.out.write(s + "\n");
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
