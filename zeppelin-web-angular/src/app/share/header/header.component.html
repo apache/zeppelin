@@ -56,9 +56,9 @@
             [routerLink]="['/credential']">Credential
           </a>
         </li>
-        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
-          <a [routerLink]="['/helium']">Helium</a>
-        </li>
+<!--        <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">-->
+<!--          <a [routerLink]="['/helium']">Helium</a>-->
+<!--        </li>-->
         <li nz-menu-item routerLinkActive="ant-dropdown-menu-item-selected">
           <a [routerLink]="['/configuration']">Configuration</a>
         </li>
@@ -66,6 +66,8 @@
           <li nz-menu-divider></li>
           <li nz-menu-item (click)="logout()">Logout</li>
         </ng-container>
+        <li nz-menu-divider></li>
+        <li nz-menu-item><a href="/">Old Version</a></li>
       </ul>
     </nz-dropdown-menu>
   </div>
