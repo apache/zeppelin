@@ -48,12 +48,6 @@
     </dependency>
 
     <dependency>
-      <groupId>net.sf.py4j</groupId>
-      <artifactId>py4j</artifactId>
-      <version>${python.py4j.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty</artifactId>
       <version>${grpc.version}</version>
