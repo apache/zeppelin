@@ -124,7 +124,7 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
           sparkProperties.put("spark.jars", StringUtils.join(additionalJars, ","));
         }
       } catch (Exception e) {
-        throw new IOException("Cannot make a list of additional jars from localRepo: {}", e);
+        throw new IOException("Fail to set additional jars for spark interpreter", e);
       }
     }
 
