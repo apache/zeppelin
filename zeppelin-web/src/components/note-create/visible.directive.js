@@ -36,11 +36,9 @@ function modalvisible() {
       });
       element.on('shown.bs.modal', function(e) {
         if (scope.targetinput) {
-          let input = angular.element(e.target).find('input#' + scope.targetinput);
-          let startSelect = input.value.lastIndexOf('/');
-          let endSelect = input.value.length;
+          let input = angular.element(e.target).find('input#' + scope.targetinput)[0];
           input.focus();
-          input.setSelectionRange(startSelect, endSelect);
+          input.setSelectionRange(input.value.lastIndexOf('/'), input.value.length());
         }
         postVisibleMethod();
       });
