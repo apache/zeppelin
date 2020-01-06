@@ -235,6 +235,15 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector,
     }
   }
 
+  public synchronized void checkpointOutput(String noteId, String paragraphId) {
+    try {
+      intpEventServiceClient.checkpointOutput(noteId, paragraphId);
+    } catch (TException e) {
+      LOGGER.warn("Fail to checkpointOutput of paragraph: " +
+              paragraphId + " of note: " + noteId, e);
+    }
+  }
+
   public synchronized void onAppOutputAppend(
       String noteId, String paragraphId, int index, String appId, String output) {
     AppOutputAppendEvent event =

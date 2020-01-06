@@ -42,4 +42,6 @@ public interface RemoteInterpreterProcessListener {
                                   String interpreterSettingId, Map<String, String> metaInfos);
 
   List<ParagraphInfo> getParagraphList(String user, String noteId) throws TException, IOException;
+
+  void checkpointOutput(String noteId, String paragraphId);
 }

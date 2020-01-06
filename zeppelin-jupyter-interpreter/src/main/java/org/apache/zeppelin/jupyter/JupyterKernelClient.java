@@ -119,6 +119,8 @@ public class JupyterKernelClient {
                 height + "\" width=\"" + width + "\" frameBorder=\"0\"></iframe>");
         context.out.flush();
         context.out.write("\n%text ");
+        context.getIntpEventClient().checkpointOutput(context.getNoteId(),
+                context.getParagraphId());
         return true;
       }
     }
