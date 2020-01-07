@@ -37,9 +37,9 @@ function modalvisible() {
       element.on('shown.bs.modal', function(e) {
         if (scope.targetinput) {
           let i = angular.element(document.getElementById(scope.targetinput));
-          let s = i.val().lastIndexOf('/') < 0 ? 1 : i.val().lastIndexOf('/') + 1;
+          let s = i.val().lastIndexOf('/');
           i[0].focus();
-          i[0].setSelectionRange(s, i.val().length);
+          i[0].setSelectionRange(s + 1, i.val().length);
         }
         postVisibleMethod();
       });
