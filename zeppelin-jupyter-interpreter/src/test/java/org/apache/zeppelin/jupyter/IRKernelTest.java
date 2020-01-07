@@ -64,7 +64,9 @@ public class IRKernelTest {
 
   @After
   public void tearDown() throws InterpreterException {
-    interpreter.close();
+    if (interpreter != null) {
+      interpreter.close();
+    }
   }
 
   @Test

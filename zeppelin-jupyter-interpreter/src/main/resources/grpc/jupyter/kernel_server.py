@@ -51,22 +51,21 @@ class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
         self._status = kernel_pb2.RUNNING
 
     def execute(self, request, context):
-        print("execute code:\n")
-        print(request.code.encode('utf-8'))
+        # print("execute code:\n")
+        # print(request.code.encode('utf-8'))
         sys.stdout.flush()
         stream_reply_queue = queue.Queue(maxsize = 30)
         payload_reply = []
         def _output_hook(msg):
             msg_type = msg['header']['msg_type']
             content = msg['content']
-            print("******************* CONTENT ******************")
             outStatus, outType, output = kernel_pb2.SUCCESS, None, None
             # prepare the reply
             if msg_type == 'stream':
                 outType = kernel_pb2.TEXT
                 output = content['text']
             elif msg_type in ('display_data', 'execute_result'):
-                print(content['data'])
+                # print(content['data'])
                 # The if-else order matters, can not be changed. Because ipython may provide multiple output.
                 # TEXT is the last resort type.
                 if 'text/html' in content['data']:

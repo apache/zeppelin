@@ -32,6 +32,11 @@
         "description": "",
         "type": "textarea"
       }
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   },
   {
@@ -39,6 +44,37 @@
     "name": "ir",
     "className": "org.apache.zeppelin.r.IRInterpreter",
     "properties": {
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": true
+    }
+  },
+  {
+    "group": "r",
+    "name": "shiny",
+    "className": "org.apache.zeppelin.r.ShinyInterpreter",
+    "properties": {
+      "zeppelin.R.shiny.iframe_width": {
+        "envName": "",
+        "propertyName": "zeppelin.R.shiny.iframe_width",
+        "defaultValue": "100%",
+        "description": "",
+        "type": "text"
+      },
+      "zeppelin.R.shiny.iframe_height": {
+        "envName": "",
+        "propertyName": "zeppelin.R.shiny.iframe_height",
+        "defaultValue": "500px",
+        "description": "",
+        "type": "text"
+      }
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": true
     }
   }
 ]

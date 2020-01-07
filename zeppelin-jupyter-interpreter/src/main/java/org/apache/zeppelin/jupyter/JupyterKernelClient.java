@@ -21,6 +21,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.jupyter.proto.JupyterKernelGrpc;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.interpreter.jupyter.proto.CancelRequest;
@@ -40,8 +41,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Grpc client for Jupyter kernel
@@ -49,32 +53,76 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class JupyterKernelClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JupyterKernelClient.class.getName());
+  // used for matching shiny url
+  private static Pattern ShinyListeningPattern =
+          Pattern.compile(".*Listening on (http:\\S*).*", Pattern.DOTALL);
 
   private final ManagedChannel channel;
   private final JupyterKernelGrpc.JupyterKernelBlockingStub blockingStub;
   private final JupyterKernelGrpc.JupyterKernelStub asyncStub;
   private volatile boolean maybeKernelFailed = false;
 
+  private Properties properties;
+  private InterpreterContext context;
   private SecureRandom random = new SecureRandom();
 
   /**
    * Construct client for accessing RouteGuide server at {@code host:port}.
    */
-  public JupyterKernelClient(String host, int port) {
-    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true));
+  public JupyterKernelClient(String host,
+                             int port) {
+    this(ManagedChannelBuilder.forAddress(host, port).usePlaintext(true), new Properties());
   }
 
   /**
    * Construct client for accessing RouteGuide server using the existing channel.
    */
-  public JupyterKernelClient(ManagedChannelBuilder<?> channelBuilder) {
+  public JupyterKernelClient(ManagedChannelBuilder<?> channelBuilder, Properties properties) {
     channel = channelBuilder.build();
     blockingStub = JupyterKernelGrpc.newBlockingStub(channel);
     asyncStub = JupyterKernelGrpc.newStub(channel);
+    this.properties = properties;
   }
 
   public void shutdown() throws InterruptedException {
     channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+  }
+
+  /**
+   * set current InterpreterContext.
+   * @param context
+   */
+  public void setInterpreterContext(InterpreterContext context) {
+    this.context = context;
+  }
+
+  /**
+   * This is for shiny interpreter. It's better not to put this in the general
+   * JupyterKernelClient, we may need to create a specififc JupyterKernelClient for R Kernel.
+   * @param response
+   * @return true if shiny url is matched
+   * @throws IOException
+   */
+  private boolean checkForShinyApp(String response) throws IOException {
+    if (context.getInterpreterClassName() != null &&
+            context.getInterpreterClassName().equals("org.apache.zeppelin.r.ShinyInterpreter")) {
+      Matcher matcher = ShinyListeningPattern.matcher(response);
+      if (matcher.matches()) {
+        String url = matcher.group(1);
+        LOGGER.info("Matching shiny app url: " + url);
+        context.out.clear();
+        String defaultHeight = properties.getProperty("zeppelin.R.shiny.iframe_height", "500px");
+        String height = context.getLocalProperties().getOrDefault("height", defaultHeight);
+        String defaultWidth = properties.getProperty("zeppelin.R.shiny.iframe_width", "100%");
+        String width = context.getLocalProperties().getOrDefault("width", defaultWidth);
+        context.out.write("\n%html " + "<iframe src=\"" + url + "\" height =\"" +
+                height + "\" width=\"" + width + "\" frameBorder=\"0\"></iframe>");
+        context.out.flush();
+        context.out.write("\n%text ");
+        return true;
+      }
+    }
+    return false;
   }
 
   // execute the code and make the output as streaming by writing it to InterpreterOutputStream
@@ -96,6 +144,9 @@ public class JupyterKernelClient {
         switch (executeResponse.getType()) {
           case TEXT:
             try {
+              if (checkForShinyApp(executeResponse.getOutput())) {
+                break;
+              }
               if (executeResponse.getOutput().startsWith("%")) {
                 // the output from jupyter kernel maybe specify format already.
                 interpreterOutput.write((executeResponse.getOutput()).getBytes());
@@ -239,6 +290,5 @@ public class JupyterKernelClient {
     ExecuteResponse response = client.block_execute(ExecuteRequest.newBuilder().
         setCode("abcd=2").build());
     System.out.println(response.getOutput());
-
   }
 }

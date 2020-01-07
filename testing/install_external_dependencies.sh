@@ -67,5 +67,6 @@ if [[ "$R" == "true" ]] ; then
   R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', lib='~/R')"  > /dev/null 2>&1
   R -e "install.packages('IRkernel', repos = 'http://cran.us.r-project.org', lib='~/R');IRkernel::installspec()" > /dev/null 2>&1
+  R -e "install.packages('shiny', repos = 'http://cran.us.r-project.org', lib='~/R');IRkernel::installspec()" > /dev/null 2>&1
 
 fi

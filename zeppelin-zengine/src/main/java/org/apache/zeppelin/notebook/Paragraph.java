@@ -396,7 +396,9 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       }
     }
 
-    return Strings.isNullOrEmpty(scriptText);
+    // don't skip paragraph when local properties is not empty.
+    // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
+    return Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
   public boolean execute(boolean blocking) {
@@ -558,7 +560,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         InterpreterContext.remove();
       }
     } catch (Exception e) {
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, ExceptionUtils.getStackTrace(e));
     }
   }
 
