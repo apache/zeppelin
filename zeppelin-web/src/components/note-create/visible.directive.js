@@ -36,9 +36,10 @@ function modalvisible() {
       });
       element.on('shown.bs.modal', function(e) {
         if (scope.targetinput) {
-          let i = angular.element(document.getElementById('noteName'));
-          i.focus();
-          i.setSelectionRange(i.val().lastIndexOf('/'), i.val().length());
+          let i = angular.element(document.getElementById(scope.targetinput));
+          let s = i.val().lastIndexOf('/') < 0 ? 1 : i.val().lastIndexOf('/') + 1;
+          i[0].focus();
+          i[0].setSelectionRange(s, i.val().length);
         }
         postVisibleMethod();
       });
