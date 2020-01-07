@@ -31,6 +31,7 @@ import IEditor = monaco.editor.IEditor;
 import { InterpreterBindingItem } from '@zeppelin/sdk';
 import { CompletionService, MessageService } from '@zeppelin/services';
 
+import { pt2px } from '@zeppelin/utility/css-unit-conversion';
 import { NotebookParagraphControlComponent } from '../control/control.component';
 
 @Component({
@@ -139,7 +140,7 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
     if (this.editor) {
       this.editor.updateOptions({
         readOnly: this.readOnly,
-        fontSize: this.fontSize,
+        fontSize: pt2px(this.fontSize),
         renderLineHighlight: this.focus ? 'all' : 'none',
         minimap: { enabled: false },
         lineNumbers: this.lineNumbers ? 'on' : 'off',
