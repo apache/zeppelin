@@ -47,7 +47,7 @@ import static org.mockito.Mockito.mock;
 
 public class ShinyInterpreterTest {
 
-  private ShinyInterpreter interpreter;
+  protected ShinyInterpreter interpreter;
 
   @Before
   public void setUp() throws InterpreterException {
