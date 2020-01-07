@@ -238,7 +238,8 @@
     "editor": {
       "language": "python",
       "editOnDblClick": false,
-      "completionSupport": true
+      "completionSupport": true,
+      "completionKey": "TAB"
     }
   },
   {
@@ -278,7 +279,8 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false,
-      "completionSupport": false
+      "completionSupport": false,
+      "completionKey": "TAB"
     }
   },
   {
@@ -290,7 +292,21 @@
     "editor": {
       "language": "r",
       "editOnDblClick": false,
-      "completionSupport": true
+      "completionSupport": true,
+      "completionKey": "TAB"
+    }
+  },
+  {
+    "group": "spark",
+    "name": "shiny",
+    "className": "org.apache.zeppelin.spark.SparkShinyInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "r",
+      "editOnDblClick": false,
+      "completionSupport": true,
+      "completionKey": "TAB"
     }
   },
   {
