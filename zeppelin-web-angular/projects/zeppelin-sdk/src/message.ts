@@ -116,6 +116,10 @@ export class Message {
     this.send<OP.PING>(OP.PING);
   }
 
+  close() {
+    this.close$.next();
+  }
+
   opened(): Observable<Event> {
     return this.open$.asObservable();
   }

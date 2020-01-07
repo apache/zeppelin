@@ -10,8 +10,7 @@
   ~ limitations under the License.
   -->
 
-<div class="content" [class.blur]="!websocketConnected">
+<div class="content">
   <zeppelin-header *ngIf="!publishMode"></zeppelin-header>
   <router-outlet (activate)="onActivate($event)"></router-outlet>
 </div>
-<zeppelin-spin *ngIf="!websocketConnected" [transparent]="true">Connecting WebSocket ...</zeppelin-spin>
