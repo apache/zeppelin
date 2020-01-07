@@ -72,7 +72,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.uiWebUrl", "fake_spark_weburl");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -388,7 +387,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.printREPLOutput", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -416,7 +414,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("spark.scheduler.mode", "FAIR");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -446,7 +443,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("spark.ui.enabled", "false");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -472,7 +468,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.ui.hidden", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
@@ -497,7 +492,6 @@ public class SparkInterpreterTest {
     properties.setProperty("spark.master", "local");
     properties.setProperty("spark.app.name", "test");
     properties.setProperty("zeppelin.spark.maxResult", "100");
-    properties.setProperty("zeppelin.spark.test", "true");
     // disable color output for easy testing
     properties.setProperty("zeppelin.spark.scala.color", "false");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
