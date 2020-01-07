@@ -10,16 +10,15 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 
-import { ActivatedRoute, NavigationEnd, Route, Router } from '@angular/router';
-import { publishedSymbol, Published } from '@zeppelin/core/paragraph-base/published';
+import { publishedSymbol } from '@zeppelin/core/paragraph-base/published';
 import { HeliumManagerService } from '@zeppelin/helium-manager';
 import { MessageService } from '@zeppelin/services';
 import { setTheme } from '@zeppelin/visualizations/g2.config';
-import { log } from 'ng-zorro-antd/core';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'zeppelin-workspace',
@@ -29,26 +28,48 @@ import { log } from 'ng-zorro-antd/core';
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
-  websocketConnected = false;
+  private messageId = null;
   publishMode = false;
 
   constructor(
     public messageService: MessageService,
     private cdr: ChangeDetectorRef,
+    private nzMessageService: NzMessageService,
     private heliumManagerService: HeliumManagerService
   ) {}
 
-  onActivate(e) {
-    this.publishMode = e && e[publishedSymbol];
+  onActivate(component) {
+    this.publishMode = component && component[publishedSymbol];
     this.cdr.markForCheck();
   }
 
-  ngOnInit() {
+  /**
+   * Close the old connection manually when the network is offline
+   * and connect a new, the {@link MessageService} will auto-retry
+   */
+  @HostListener('window:offline')
+  onOffline() {
+    this.messageService.close();
+    this.messageService.connect();
+  }
+
+  setUpWebsocketReconnectMessage() {
     this.messageService.connectedStatus$.pipe(takeUntil(this.destroy$)).subscribe(data => {
-      this.websocketConnected = data;
+      if (!data) {
+        if (this.messageId === null) {
+          this.messageId = this.nzMessageService.loading('Connecting WebSocket ...', { nzDuration: 0 }).messageId;
+        }
+      } else {
+        this.nzMessageService.remove(this.messageId);
+        this.messageId = null;
+      }
       this.cdr.markForCheck();
     });
+  }
+
+  ngOnInit() {
     setTheme();
+    this.setUpWebsocketReconnectMessage();
     this.heliumManagerService.initPackages();
   }
 
