@@ -54,7 +54,7 @@
   <modules>
     <module>zeppelin-interpreter-parent</module>
     <module>zeppelin-interpreter</module>
-    <module>zeppelin-interpreter-api</module>
+    <module>zeppelin-interpreter-shaded</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-display</module>
     <module>rlang</module>

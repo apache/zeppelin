@@ -50,7 +50,7 @@
 
         <dependency>
             <groupId>org.apache.zeppelin</groupId>
-            <artifactId>zeppelin-interpreter-api</artifactId>
+            <artifactId>zeppelin-interpreter-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
 
