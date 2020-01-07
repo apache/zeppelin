@@ -78,7 +78,7 @@
 
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
-      <artifactId>zeppelin-interpreter-api</artifactId>
+      <artifactId>zeppelin-interpreter-shaded</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -499,7 +499,7 @@
               <exclude>org.scala-lang:scala-reflect</exclude>
               <exclude>commons-lang:commons-lang</exclude>
               <exclude>org.apache.commons:commons-compress</exclude>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
+              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
             </excludes>
           </artifactSet>
 

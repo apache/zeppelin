@@ -142,7 +142,7 @@
 
       <!--
       shade for python interpreter is different from other interpreter, it depends on zeppelin-interpreter instead of
-      zeppelin-interpreter-api. Because spark interpreter depends on python interpreter and spark's py4j conflict with python interpreter's py4j.
+      zeppelin-interpreter-shaded. Because spark interpreter depends on python interpreter and spark's py4j conflict with python interpreter's py4j.
       python interpreter would generate 2 versions of jars, one is shaded jar which is used for running python interpreter, another is normal jar
       which is used by spark interpreter as dependency.
       -->
@@ -164,7 +164,7 @@
           </transformers>
           <artifactSet>
             <excludes>
-              <exclude>org.apache.zeppelin:zeppelin-interpreter-api</exclude>
+              <exclude>org.apache.zeppelin:zeppelin-interpreter-shaded</exclude>
             </excludes>
           </artifactSet>
           <outputFile>${project.build.directory}/../../interpreter/python/${interpreter.jar.name}-${project.version}.jar</outputFile>
