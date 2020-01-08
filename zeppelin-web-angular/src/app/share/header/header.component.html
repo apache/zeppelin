@@ -73,7 +73,11 @@
   </div>
   <div class="search">
     <nz-input-group [nzPrefixIcon]="'search'">
-      <input type="text" nz-input placeholder="Search"/>
+      <input type="text"
+             nz-input
+             placeholder="Search"
+             (keyup.enter)="onSearch()"
+             [(ngModel)]="queryStr"/>
     </nz-input-group>
   </div>
 </div>
