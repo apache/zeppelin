@@ -10,11 +10,10 @@
  * limitations under the License.
  */
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
-export * from './notebook-repo';
-export * from './notebook-search';
+export interface NotebookSearchResultItem {
+  id: string;
+  name: string;
+  snippet: string;
+  text: string;
+  header: string;
+}

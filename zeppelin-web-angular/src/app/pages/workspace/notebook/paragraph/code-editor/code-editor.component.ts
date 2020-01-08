@@ -145,7 +145,9 @@ export class NotebookParagraphCodeEditorComponent implements OnChanges, OnDestro
         lineNumbers: this.lineNumbers ? 'on' : 'off',
         glyphMargin: false,
         folding: false,
-        scrollBeyondLastLine: false
+        scrollBeyondLastLine: false,
+        contextmenu: false,
+        matchBrackets: false
       });
     }
   }

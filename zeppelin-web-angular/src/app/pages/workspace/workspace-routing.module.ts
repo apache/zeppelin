@@ -35,6 +35,11 @@ const routes: Routes = [
         loadChildren: () => import('@zeppelin/pages/workspace/published/published.module').then(m => m.PublishedModule)
       },
       {
+        path: 'search/:queryStr',
+        loadChildren: () =>
+          import('@zeppelin/pages/workspace/notebook-search/notebook-search.module').then(m => m.NotebookSearchModule)
+      },
+      {
         path: 'jobmanager',
         loadChildren: () =>
           import('@zeppelin/pages/workspace/job-manager/job-manager.module').then(m => m.JobManagerModule)
