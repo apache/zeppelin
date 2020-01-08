@@ -10,11 +10,20 @@
  * limitations under the License.
  */
 
-export * from './ticket';
-export * from './trash-folder-id';
-export * from './interpreter';
-export * from './message-interceptor';
-export * from './security';
-export * from './credential';
-export * from './notebook-repo';
-export * from './notebook-search';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+import { NotebookSearchComponent } from './notebook-search.component';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: NotebookSearchComponent
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class NotebookSearchRoutingModule {}

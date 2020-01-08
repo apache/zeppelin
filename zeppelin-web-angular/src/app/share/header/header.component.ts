@@ -20,6 +20,7 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { MessageReceiveDataTypeMap, OP } from '@zeppelin/sdk';
 import { MessageService, TicketService } from '@zeppelin/services';
+import { NotebookSearchService } from '@zeppelin/services/notebook-search.service';
 import { AboutZeppelinComponent } from '@zeppelin/share/about-zeppelin/about-zeppelin.component';
 
 @Component({
@@ -32,6 +33,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
   private destroy$ = new Subject();
   connectStatus = 'error';
   noteListVisible = false;
+  queryStr: string | null = null;
 
   about() {
     this.nzModalService.create({
@@ -46,6 +48,13 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     this.ticketService.logout().subscribe();
   }
 
+  onSearch() {
+    this.queryStr = this.queryStr.trim();
+    if (this.queryStr) {
+      this.router.navigate(['/search', this.queryStr]);
+    }
+  }
+
   @MessageListener(OP.CONFIGURATIONS_INFO)
   getConfiguration(data: MessageReceiveDataTypeMap[OP.CONFIGURATIONS_INFO]) {
     this.ticketService.setConfiguration(data);
@@ -56,6 +65,7 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
     private nzModalService: NzModalService,
     public messageService: MessageService,
     private router: Router,
+    private notebookSearchService: NotebookSearchService,
     private cdr: ChangeDetectorRef
   ) {
     super(messageService);
@@ -76,6 +86,11 @@ export class HeaderComponent extends MessageListenersManager implements OnInit, 
         this.noteListVisible = false;
         this.cdr.markForCheck();
       });
+
+    this.notebookSearchService
+      .queried()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(queryStr => (this.queryStr = queryStr));
   }
 
   ngOnDestroy() {
