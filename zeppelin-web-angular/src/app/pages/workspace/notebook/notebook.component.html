@@ -47,6 +47,7 @@
                                    *ngFor="let p of note.paragraphs;let first = first; let last = last; index as i"
                                    [nzSpan]="p.config.colWidth * 2"
                                    [select]="p.id === selectId"
+                                   [scrolled]="p.id === scrolledId"
                                    [index]="i"
                                    [paragraph]="p"
                                    [note]="note"
