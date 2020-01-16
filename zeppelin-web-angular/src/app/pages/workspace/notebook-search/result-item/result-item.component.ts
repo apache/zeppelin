@@ -20,6 +20,7 @@ import {
   OnDestroy,
   SimpleChanges
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { NotebookSearchResultItem } from '@zeppelin/interfaces';
 import { getKeywordPositions, KeywordPosition } from '@zeppelin/utility/get-keyword-positions';
 import { editor, Range } from 'monaco-editor';
@@ -34,9 +35,9 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 })
 export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
   @Input() result: NotebookSearchResultItem;
-
+  queryParams = {};
   displayName = '';
-  routerLink = '';
+  routerLink = [];
   mergedStr: string;
   keywords: string[] = [];
   highlightPositions: KeywordPosition[] = [];
@@ -54,13 +55,23 @@ export class NotebookSearchResultItemComponent implements OnChanges, OnDestroy {
     contextmenu: false
   };
 
-  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef) {}
+  constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private router: ActivatedRoute) {}
 
   setDisplayNameAndRouterLink(): void {
-    const noteId = this.result.id.split('/', 2)[0];
+    const term = this.router.snapshot.params.queryStr;
+    const listOfId = this.result.id.split('/');
+    const [noteId, hasParagraph, paragraph] = listOfId;
+    if (!hasParagraph) {
+      this.routerLink = ['/', 'notebook', this.result.id];
+      this.queryParams = {};
+    } else {
+      this.routerLink = ['/', 'notebook', noteId];
+      this.queryParams = {
+        paragraph,
+        term
+      };
+    }
     this.displayName = this.result.name ? this.result.name : `Note ${noteId}`;
-
-    this.routerLink = `/notebook/${noteId}`;
   }
 
   setHighlightKeyword(): void {

@@ -22,7 +22,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
 import { Subject } from 'rxjs';
-import { distinctUntilKeyChanged, takeUntil } from 'rxjs/operators';
+import { distinctUntilKeyChanged, map, startWith, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
@@ -58,6 +58,7 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   note: Note['note'];
   permissions: Permissions;
   selectId: string | null = null;
+  scrolledId: string | null = null;
   isOwner = true;
   noteRevisions: RevisionListItem[] = [];
   currentRevision: string;
@@ -248,6 +249,10 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.selectId = id;
   }
 
+  onParagraphScrolled(id: string) {
+    this.scrolledId = id;
+  }
+
   onSelectAtIndex(index: number) {
     const scopeIndex = Math.min(this.note.paragraphs.length, Math.max(0, index));
     if (this.note.paragraphs[scopeIndex]) {
@@ -345,6 +350,16 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   ngOnInit() {
+    this.activatedRoute.queryParamMap
+      .pipe(
+        startWith(this.activatedRoute.snapshot.queryParamMap),
+        takeUntil(this.destroy$),
+        map(data => data.get('paragraph'))
+      )
+      .subscribe(id => {
+        this.onParagraphSelect(id);
+        this.onParagraphScrolled(id);
+      });
     this.activatedRoute.params
       .pipe(
         takeUntil(this.destroy$),
