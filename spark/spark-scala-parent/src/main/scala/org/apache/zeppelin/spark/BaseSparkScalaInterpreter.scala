@@ -423,7 +423,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       }
     }
 
-    extraJars ++= sparkInterpreterClassLoader.getURLs().map(_.toString)
+    extraJars ++= sparkInterpreterClassLoader.getURLs().map(_.getPath())
     LOGGER.debug("User jar for spark repl: " + extraJars.mkString(","))
     extraJars
   }
