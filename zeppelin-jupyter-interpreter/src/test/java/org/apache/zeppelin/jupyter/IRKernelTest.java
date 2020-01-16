@@ -86,7 +86,7 @@ public class IRKernelTest {
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
-    assertEquals(result.toString(), InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertEquals(result.toString(), InterpreterResult.Type.HTML, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("object 'unknown_var' not found"));
 
@@ -99,6 +99,7 @@ public class IRKernelTest {
     assertEquals(resultMessages.toString(),
             InterpreterResult.Type.IMG, resultMessages.get(0).getType());
 
+    // ggplot2
     result = interpreter.interpret("library(ggplot2)\n" +
             "ggplot(diamonds, aes(x=carat, y=price, color=cut)) + geom_point()",
             getInterpreterContext());
@@ -107,6 +108,22 @@ public class IRKernelTest {
     assertEquals(1, resultMessages.size());
     assertEquals(resultMessages.toString(),
             InterpreterResult.Type.IMG, resultMessages.get(0).getType());
+
+    // googlevis
+    context = getInterpreterContext();
+    result = interpreter.interpret("library(googleVis)\n" +
+            "df=data.frame(country=c(\"US\", \"GB\", \"BR\"), \n" +
+            "              val1=c(10,13,14), \n" +
+            "              val2=c(23,12,32))\n" +
+            "Bar <- gvisBarChart(df)\n" +
+            "print(Bar, tag = 'chart')", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(resultMessages.toString(),
+            InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertTrue(resultMessages.get(0).getData(),
+            resultMessages.get(0).getData().contains("javascript"));
   }
 
   protected InterpreterContext getInterpreterContext() {

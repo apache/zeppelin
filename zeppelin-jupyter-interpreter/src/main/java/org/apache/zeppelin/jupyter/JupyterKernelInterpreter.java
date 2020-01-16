@@ -245,6 +245,11 @@ public class JupyterKernelInterpreter extends AbstractInterpreter {
     interpreterOutput.setInterpreterOutput(context.out);
     jupyterKernelClient.setInterpreterContext(context);
     try {
+      // always use html output for ir kernel. otherwise some R packages doesn't work.
+      // e.g. googlevis
+      if (getKernelName().equals("ir")) {
+        context.out.write("%html\n");
+      }
       ExecuteResponse response =
               jupyterKernelClient.stream_execute(ExecuteRequest.newBuilder().setCode(st).build(),
                       interpreterOutput);

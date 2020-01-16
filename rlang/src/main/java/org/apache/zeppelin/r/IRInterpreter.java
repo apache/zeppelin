@@ -133,7 +133,7 @@ public class IRInterpreter extends JupyterKernelInterpreter {
             .replace("${timeout}", timeout)
             .replace("${isSparkSupported}", "\"" + isSparkSupported() + "\"")
             .replace("${authSecret}", "\"" + sparkRBackend.socketSecret() + "\"");
-    LOGGER.info("Init IRKernel via script:\n" + code);
+    LOGGER.debug("Init IRKernel via script:\n" + code);
     ExecuteResponse response = jupyterKernelClient.block_execute(ExecuteRequest.newBuilder()
             .setCode(code).build());
     if (response.getStatus() != ExecuteStatus.SUCCESS) {
