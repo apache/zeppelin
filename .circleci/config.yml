@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: centos:7
+      - checkout
+
+workflows:
+  version: 2
+  all:
+    jobs:
+      - build
