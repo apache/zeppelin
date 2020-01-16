@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: centos:7
+    steps:
       - checkout
 
 workflows:
