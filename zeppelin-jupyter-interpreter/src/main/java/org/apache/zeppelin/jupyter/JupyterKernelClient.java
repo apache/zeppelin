@@ -22,6 +22,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.jupyter.proto.JupyterKernelGrpc;
 import org.apache.zeppelin.interpreter.util.InterpreterOutputStream;
 import org.apache.zeppelin.interpreter.jupyter.proto.CancelRequest;
@@ -155,12 +157,15 @@ public class JupyterKernelClient {
                 // the output from jupyter kernel maybe specify format already.
                 interpreterOutput.write((executeResponse.getOutput()).getBytes());
               } else {
-                // only add %text when the previous output type is not TEXT.
+                // only add %text when the previous output type is not TEXT & HTML.
                 // Reason :
                 // 1. if no `%text`, it will be treated as previous output type.
                 // 2. Always prepend `%text `, there will be an extra line separator,
                 // because `%text ` appends line separator first.
-                if (lastOutputType != OutputType.TEXT) {
+                InterpreterResultMessageOutput curOutput =
+                        interpreterOutput.getInterpreterOutput().getCurrentOutput();
+                if (curOutput != null && curOutput.getType() != InterpreterResult.Type.HTML &&
+                        curOutput.getType() != InterpreterResult.Type.TEXT) {
                   interpreterOutput.write("%text ".getBytes());
                 }
                 interpreterOutput.write(executeResponse.getOutput().getBytes());
