@@ -3,6 +3,7 @@
     "group": "sh",
     "name": "sh",
     "className": "org.apache.zeppelin.shell.ShellInterpreter",
+    "defaultInterpreter": true,
     "properties": {
       "shell.command.timeout.millisecs": {
         "envName": "SHELL_COMMAND_TIMEOUT",
