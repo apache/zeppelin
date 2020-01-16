@@ -219,7 +219,7 @@ public class PythonInterpreter extends Interpreter {
     if (!env.containsKey("PYTHONPATH")) {
       env.put("PYTHONPATH", path);
     } else {
-      env.put("PYTHONPATH", env.get("PYTHONPATH") + ":" + path);
+      env.put("PYTHONPATH", env.get("PYTHONPATH") + File.pathSeparator + path);
     }
   }
 
