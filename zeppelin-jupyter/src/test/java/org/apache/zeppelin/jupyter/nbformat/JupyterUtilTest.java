@@ -48,14 +48,14 @@ public class JupyterUtilTest {
   @Test
   public void getNote() throws Exception {
     InputStream resource = getClass().getResourceAsStream("/examples.ipynb");
-    Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "%python", "%md");
+    Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "", "%python", "%md");
   }
 
   @Test
   public void getNoteAndVerifyData() throws Exception {
     String noteName = "Note converted from Jupyter";
     InputStream resource = getClass().getResourceAsStream("/basic.ipynb");
-    Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "%python", "%md");
+    Note n = new JupyterUtil().getNote(new InputStreamReader(resource), "", "%python", "%md");
     Gson gson = new Gson();
     System.out.println(gson.toJson(n));
     System.out.println(n.getParagraphs().size());

@@ -63,6 +63,7 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.interpreter.thrift.ParagraphInfo;
 import org.apache.zeppelin.interpreter.thrift.ServiceException;
+import org.apache.zeppelin.jupyter.JupyterUtil;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteEventListener;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -84,6 +85,7 @@ import org.apache.zeppelin.service.SimpleServiceCallback;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.types.InterpreterSettingsList;
 import org.apache.zeppelin.user.AuthenticationInfo;
+import org.apache.zeppelin.util.IdHashes;
 import org.apache.zeppelin.utils.CorsUtils;
 import org.apache.zeppelin.utils.TestUtils;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
@@ -330,6 +332,9 @@ public class NotebookServer extends WebSocketServlet
           break;
         case IMPORT_NOTE:
           importNote(conn, messagereceived);
+          break;
+        case CONVERT_NOTE_NBFORMAT:
+          convertNote(conn, messagereceived);
           break;
         case COMMIT_PARAGRAPH:
           updateParagraph(conn, messagereceived);
@@ -1143,9 +1148,27 @@ public class NotebookServer extends WebSocketServlet
         });
   }
 
+  protected void convertNote(NotebookSocket conn, Message fromMessage) throws IOException {
+    String note = gson.toJson(fromMessage.get("note"));
+
+    Message resp = new Message(OP.CONVERT_NOTE_NBFORMAT)
+            .put("nbformat", new JupyterUtil().getNbformat(note))
+            .put("name", fromMessage.get("name"));
+
+    conn.send(serializeMessage(resp));
+  }
+
   protected Note importNote(NotebookSocket conn, Message fromMessage) throws IOException {
+    String noteJson = null;
     String noteName = (String) ((Map) fromMessage.get("note")).get("name");
-    String noteJson = gson.toJson(fromMessage.get("note"));
+    // Checking whether the notebook data is from a Jupyter or a Zeppelin Notebook.
+    // Jupyter notebooks have paragraphs under the "cells" label.
+    if (((Map) fromMessage.get("note")).get("cells") == null) {
+      noteJson = gson.toJson(fromMessage.get("note"));
+    } else {
+      noteJson = new JupyterUtil().getJson(
+              gson.toJson(fromMessage.get("note")), IdHashes.generateId(), "%python", "%md");
+    }
     Note note = getNotebookService().importNote(noteName, noteJson, getServiceContext(fromMessage),
         new WebSocketServiceCallback<Note>(conn) {
           @Override

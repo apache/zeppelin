@@ -64,6 +64,9 @@ public class Message implements JsonSerializable {
                       // @param name name for the cloned note
     IMPORT_NOTE,      // [c-s] import notebook
                       // @param object notebook
+
+    CONVERT_NOTE_NBFORMAT,     // converting note to nbformat
+
     NOTE_UPDATE,
 
     NOTE_RENAME,

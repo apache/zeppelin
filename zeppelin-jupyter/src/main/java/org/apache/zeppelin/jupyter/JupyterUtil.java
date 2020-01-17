@@ -16,28 +16,19 @@
  */
 package org.apache.zeppelin.jupyter;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.jupyter.nbformat.Cell;
 import org.apache.zeppelin.jupyter.nbformat.CodeCell;
 import org.apache.zeppelin.jupyter.nbformat.DisplayData;
@@ -55,6 +46,18 @@ import org.apache.zeppelin.jupyter.zformat.Result;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 import org.apache.zeppelin.markdown.MarkdownParser;
 import org.apache.zeppelin.markdown.PegdownParser;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -85,21 +88,21 @@ public class JupyterUtil {
     return getGson(gsonBuilder).fromJson(in, Nbformat.class);
   }
 
-  public Note getNote(Reader in, String codeReplaced, String markdownReplaced) {
-    return getNote(in, new GsonBuilder(), codeReplaced, markdownReplaced);
+  public Note getNote(Reader in, String id, String codeReplaced, String markdownReplaced) {
+    return getNote(in, id, new GsonBuilder(), codeReplaced, markdownReplaced);
   }
 
-  public Note getNote(Reader in, GsonBuilder gsonBuilder, String codeReplaced,
+  public Note getNote(Reader in, String id, GsonBuilder gsonBuilder, String codeReplaced,
       String markdownReplaced) {
-    return getNote(getNbformat(in, gsonBuilder), codeReplaced, markdownReplaced);
+    return getNote(getNbformat(in, gsonBuilder), id, codeReplaced, markdownReplaced);
   }
 
-  public Note getNote(Nbformat nbformat, String codeReplaced, String markdownReplaced) {
+  public Note getNote(Nbformat nbformat, String id, String codeReplaced, String markdownReplaced) {
     Note note = new Note();
 
     String name = nbformat.getMetadata().getTitle();
     if (null == name) {
-      name = "Note converted from Jupyter";
+      name = "Note converted from Jupyter_" + id;
     }
     note.setName(name);
     
@@ -123,7 +126,7 @@ public class JupyterUtil {
       }
 
       List<String> source = Output.verifyEndOfLine(sourceRaws);
-      String codeText = Joiner.on("").join(source);
+      String codeText = StringUtils.join(source, "");
 
       if (cell instanceof CodeCell) {
         interpreterName = codeReplaced;
@@ -160,11 +163,100 @@ public class JupyterUtil {
     return note;
   }
 
-
-  
   private Gson getGson(GsonBuilder gsonBuilder) {
     return gsonBuilder.registerTypeAdapterFactory(cellTypeFactory)
         .registerTypeAdapterFactory(outputTypeFactory).create();
+  }
+
+  public String getJson(String input, String id, String codeReplaced, String markdownReplaced ) {
+    Note note = getNote(new StringReader(input), id, codeReplaced, markdownReplaced);
+    return new Gson().toJson(note);
+  }
+
+  public String getNbformat(String note) {
+    Note noteFormat = getGson(new GsonBuilder()).fromJson(note, Note.class);
+
+    JsonObject nbformat = new JsonObject();
+    JsonArray cells = new JsonArray();
+
+    RegularExpression MD = new RegularExpression("%md\\s");
+    RegularExpression SQL = new RegularExpression("%sql\\s");
+    RegularExpression UNKNOWN_MAGIC = new RegularExpression("%\\w+\\s");
+    RegularExpression HTML = new RegularExpression("%html\\s");
+    RegularExpression SPARK = new RegularExpression("%spark\\s");
+
+    int index = 0;
+    for (Paragraph paragraph : noteFormat.getParagraphs()) {
+      String code = StringUtils.stripStart(paragraph.getText(), " ");
+      JsonObject codeJson = new JsonObject();
+
+      if (code == null || code.trim().isEmpty())
+        continue;
+
+      if (MD.matches(code)) {
+        codeJson.addProperty("cell_type", "markdown");
+        codeJson.add("metadata", new JsonObject());
+        codeJson.addProperty("source",
+                StringUtils.stripStart(StringUtils.stripStart(code, "%md"),
+                        "\n"));  // remove '%md'
+      } else if (SQL.matches(code) || HTML.matches(code)) {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        codeJson.add("metadata", new JsonObject());
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", "%" + code);  // add % to convert to cell magic
+      } else if (SPARK.matches(code)) {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("autoscroll", "auto");
+        codeJson.add("metadata", metadataJson);
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", code);
+      } else if (UNKNOWN_MAGIC.matches(code)) {
+        // use raw cells for unknown magic
+        codeJson.addProperty("cell_type", "raw");
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("format", "text/plain");
+        codeJson.add("metadata", metadataJson);
+        codeJson.addProperty("source", code);
+      } else {
+        codeJson.addProperty("cell_type", "code");
+        codeJson.addProperty("execution_count", index);
+        JsonObject metadataJson = new JsonObject();
+        metadataJson.addProperty("autoscroll", "auto");
+        codeJson.add("metadata", metadataJson);
+        codeJson.add("outputs", new JsonArray());
+        codeJson.addProperty("source", code);
+      }
+
+      cells.add(codeJson);
+
+      index++;
+    }
+
+    JsonObject metadataJson = new JsonObject();
+
+    JsonObject kernelspecJson = new JsonObject();
+    kernelspecJson.addProperty("language", "scala");
+    kernelspecJson.addProperty("name", "spark2-scala");
+
+    JsonObject languageInfoJson = new JsonObject();
+    languageInfoJson.addProperty("codemirror_mode", "text/x-scala");
+    languageInfoJson.addProperty("file_extension", ".scala");
+    languageInfoJson.addProperty("mimetype", "text/x-scala");
+    languageInfoJson.addProperty("name", "scala");
+    languageInfoJson.addProperty("pygments_lexer", "scala");
+
+    metadataJson.addProperty("name", noteFormat.getName());
+    metadataJson.add("kernelspec", kernelspecJson);
+    metadataJson.add("language_info", languageInfoJson);
+
+    nbformat.add("metadata", metadataJson);
+    nbformat.addProperty("nbformat", 4);
+    nbformat.addProperty("nbformat_minor", 2);
+    nbformat.add("cells", cells);
+    return nbformat.toString();
   }
 
   public static void main(String[] args) throws ParseException, IOException {
@@ -185,7 +277,7 @@ public class JupyterUtil {
 
     try (BufferedReader in = new BufferedReader(new FileReader(jupyterPath.toFile()));
         FileWriter fw = new FileWriter(zeppelinPath.toFile())) {
-      Note note = new JupyterUtil().getNote(in, "%python", "%md");
+      Note note = new JupyterUtil().getNote(in, "id", "%python", "%md");
       Gson gson = new GsonBuilder().setPrettyPrinting().create();
       gson.toJson(note, fw);
     }

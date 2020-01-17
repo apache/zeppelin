@@ -73,7 +73,15 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-click="exportNote()"
-              tooltip-placement="bottom" uib-tooltip="Export this note"
+              tooltip-placement="bottom" uib-tooltip="Export this note (json)"
+              ng-disabled="revisionView">
+        <i class="fa fa-download"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="exportNbformat()"
+              tooltip-placement="bottom" uib-tooltip="Export this note (ipynb)"
               ng-disabled="revisionView">
         <i class="fa fa-download"></i>
       </button>

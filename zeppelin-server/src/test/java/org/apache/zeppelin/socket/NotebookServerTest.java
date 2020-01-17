@@ -43,6 +43,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -443,6 +444,30 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
     assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0)
             .getText());
+    notebook.removeNote(note.getId(), anonymous);
+  }
+
+  @Test
+  public void testImportJupyterNote() throws IOException {
+    String jupyterNoteJson = IOUtils.toString(getClass().getResourceAsStream("/Lecture-4.ipynb"));
+    String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
+            "{\"note\": " + jupyterNoteJson + "}}";
+    Message messageReceived = notebookServer.deserializeMessage(msg);
+    Note note = null;
+    try {
+      note = notebookServer.importNote(null, messageReceived);
+    } catch (NullPointerException e) {
+      //broadcastNoteList(); failed nothing to worry.
+      LOG.error("Exception in NotebookServerTest while testImportJupyterNote, failed nothing to " +
+              "worry ", e);
+    }
+
+    assertNotEquals(null, notebook.getNote(note.getId()));
+    assertTrue(notebook.getNote(note.getId()).getName(),
+            notebook.getNote(note.getId()).getName().startsWith("Note converted from Jupyter_"));
+    assertEquals("md", notebook.getNote(note.getId()).getParagraphs().get(0).getIntpText());
+    assertEquals("# matplotlib - 2D and 3D plotting in Python",
+            notebook.getNote(note.getId()).getParagraphs().get(0).getScriptText());
     notebook.removeNote(note.getId(), anonymous);
   }
 

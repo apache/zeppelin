@@ -114,11 +114,20 @@ function NoteImportCtrl($scope, $timeout, websocketMsgSrv) {
       }
     }
     if (result.paragraphs && result.paragraphs.length > 0) {
+      // zeppelin notebook format
       if (!$scope.note.noteImportName) {
         $scope.note.noteImportName = result.name;
       } else {
         result.name = $scope.note.noteImportName;
       }
+      websocketMsgSrv.importNote(result);
+      // angular.element('#noteImportModal').modal('hide');
+    } else if (result.cells && result.cells.length > 0) {
+      // nbviewer notebook format
+      if (!$scope.note.noteImportName) {
+        $scope.note.noteImportName = result.metadata.kernelspec.display_name;
+      }
+      result.name = $scope.note.noteImportName;
       websocketMsgSrv.importNote(result);
       // angular.element('#noteImportModal').modal('hide');
     } else {
