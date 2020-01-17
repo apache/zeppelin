@@ -28,8 +28,21 @@ import java.util.Map;
  */
 public class ExecuteResult extends Output {
 
+  /**
+   * TODO(zjffdu) not sure why I have to use String here, otherwise Gson will throw NumberFormatException
+   * even when the data format is correct.
+   * The data in json file is "22", but somehow I see "22.0" when exception happens
+   * com.google.gson.JsonSyntaxException: java.lang.NumberFormatException: For input string: "22.0"
+   *
+   * 	at com.google.gson.internal.bind.TypeAdapters$7.read(TypeAdapters.java:232)
+   * 	at com.google.gson.internal.bind.TypeAdapters$7.read(TypeAdapters.java:222)
+   * 	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1.read(ReflectiveTypeAdapterFactory.java:93)
+   * 	at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:172)
+   * 	at com.google.gson.TypeAdapter.fromJsonTree(TypeAdapter.java:281)
+   * 	at com.google.gson.typeadapters.RuntimeTypeAdapterFactory$1.read(RuntimeTypeAdapterFactory.java:214)
+   */
   @SerializedName("execution_count")
-  private int executionCount;
+  private String executionCount;
 
   @SerializedName("data")
   private Map<String, Object> data;

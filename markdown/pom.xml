@@ -35,7 +35,7 @@
 
   <properties>
     <interpreter.name>md</interpreter.name>
-    <commons.lang3.version>3.4</commons.lang3.version>
+    <commons.lang3.version>3.7</commons.lang3.version>
     <markdown4j.version>2.2-cj-1.0</markdown4j.version>
     <pegdown.version>1.6.0</pegdown.version>
     <flexmark.all.version>0.50.40</flexmark.all.version>

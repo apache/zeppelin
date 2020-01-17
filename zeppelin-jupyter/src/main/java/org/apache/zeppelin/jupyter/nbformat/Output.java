@@ -16,8 +16,8 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
-import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.jupyter.types.JupyterOutputType;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
@@ -82,7 +82,7 @@ public abstract class Output {
       outputsRaws.addAll((List<String>) outputsObject);
     }
     List<String> outputs = verifyEndOfLine(outputsRaws);
-    String outputData = Joiner.on("").join(outputs);
+    String outputData = StringUtils.join(outputs, "");
     if (type == JupyterOutputType.IMAGE_PNG) {
       String base64CodeRaw = outputData;
       String base64Code = base64CodeRaw.replace("\n", "");

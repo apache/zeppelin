@@ -16,13 +16,12 @@
  */
 package org.apache.zeppelin.jupyter.nbformat;
 
-import com.google.common.base.Joiner;
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.jupyter.types.ZeppelinOutputType;
 import org.apache.zeppelin.jupyter.zformat.TypeData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -61,7 +60,7 @@ public class Stream extends Output {
   @Override
   public TypeData toZeppelinResult() {
     List<String> text = verifyEndOfLine(getText());
-    String result = Joiner.on("").join(text);
+    String result = StringUtils.join(text, "");
     return new TypeData(getTypeOfZeppelin().toString(), result);
   }
 }
