@@ -96,6 +96,7 @@
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
+    <module>mongodb</module>
   </modules>
 
   <properties>
