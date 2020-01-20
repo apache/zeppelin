@@ -1108,12 +1108,12 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     // create paragraphs
     Paragraph p1 = note.addNewParagraph(anonymous);
     Map<String, Object> config = p1.getConfig();
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_TITLE));
-    assertTrue(config.containsKey(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY));
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE));
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_TITLE));
+    assertTrue(config.containsKey(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY));
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The config_test interpreter sets the default parameters
     // in interpreter/config_test/interpreter-setting.json
@@ -1123,29 +1123,35 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
     //      "checkEmpty": true
     //    },
     p1.setText("%config_test sleep 1000");
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
-
-    // wait until first paragraph finishes and second paragraph starts
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    p1.execute(true);
 
     // Check if the config_test interpreter default parameter takes effect
     LOGGER.info("p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
 
     // The mock1 interpreter does not set default parameters
     p1.setText("%mock1 sleep 1000");
-    note.runAll(AuthenticationInfo.ANONYMOUS, false);
+    p1.execute(true);
 
-    // wait until first paragraph finishes and second paragraph starts
-    while (p1.getStatus() != Status.FINISHED) Thread.yield();
-
-    // Check if the mock1 interpreter parameter is updated
+    // mock1 has no config setting in interpreter-setting.json, so keep the previous config
     LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_TITLE), false);
-    assertEquals(config.get(Paragraph.PARAGRAPH_CONFIG_CHECK_EMTPY), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
+
+    // user manually change config
+    p1.getConfig().put(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, true);
+    p1.getConfig().put(InterpreterSetting.PARAGRAPH_CONFIG_TITLE, false);
+    p1.setText("%mock1 sleep 1000");
+    p1.execute(true);
+
+    // manually config change take effect after execution
+    LOGGER.info("changed intp p1.getConfig() =  " + p1.getConfig());
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE), true);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_TITLE), false);
+    assertEquals(config.get(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY), false);
   }
 
   @Test

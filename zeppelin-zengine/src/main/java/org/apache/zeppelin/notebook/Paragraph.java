@@ -20,7 +20,6 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,8 +44,6 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterInfo;
 import org.apache.zeppelin.interpreter.InterpreterNotFoundException;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterOutputListener;
@@ -55,7 +52,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.InterpreterSettingManager;
 import org.apache.zeppelin.interpreter.ManagedInterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -81,7 +77,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private static Logger LOGGER = LoggerFactory.getLogger(Paragraph.class);
   private static Pattern REPL_PATTERN =
       Pattern.compile("(\\s*)%([\\w\\.]+)(\\(.*?\\))?.*", Pattern.DOTALL);
-
+  
   private String title;
   // text is composed of intpText and scriptText.
   private String text;
@@ -97,7 +93,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
 
   /************** Transient fields which are not serializabled  into note json **************/
   private transient String intpText;
-  private transient Boolean configSettingNeedUpdate = true;
   private transient String scriptText;
   private transient Interpreter interpreter;
   private transient Note note;
@@ -109,12 +104,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
   private transient List<InterpreterResultMessage> outputBuffer = new ArrayList<>();
 
-  public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
-  private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
-  public static String  PARAGRAPH_CONFIG_TITLE = "title";
-  private static boolean PARAGRAPH_CONFIG_TITLE_DEFAULT = false;
-  public static String  PARAGRAPH_CONFIG_CHECK_EMTPY = "checkEmpty";
-  private static boolean PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT = true;
+
 
   @VisibleForTesting
   Paragraph() {
@@ -174,9 +164,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   private void setIntpText(String newIntptext) {
-    if (null == intpText || !this.intpText.equals(newIntptext)) {
-      this.configSettingNeedUpdate = true;
-    }
     this.intpText = newIntptext;
   }
 
@@ -351,66 +338,27 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   public boolean shouldSkipRunParagraph() {
-    // Because the user can arbitrarily specify the paragraph's interpreter
-    // So need to determine the configuration of the interpreter
-    // and the secondary interpreter at runtime.
-    Map<String, Object> intpConfig = this.config;
-
-    if (!StringUtils.isBlank(intpText)) {
-      String[] intpList = intpText.split("\\.");
-      if (intpList.length > 0) {
-        InterpreterSettingManager intpSettingManager = note.getInterpreterSettingManager();
-        String intpName = intpList[0];
-        try {
-          InterpreterSetting intpSetting = intpSettingManager.getInterpreterSettingByName(intpName);
-          String intpInfoName = intpName; // e.g %sh
-
-          // e.g %sh.terminal
-          if (intpList.length == 2) {
-            intpInfoName = intpList[1];
-          }
-          InterpreterInfo interpreterInfo = intpSetting.getInterpreterInfo(intpInfoName);
-          if (null != interpreterInfo && null != interpreterInfo.getConfig()) {
-            intpConfig = interpreterInfo.getConfig();
-          }
-        } catch (RuntimeException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
-    }
-
-    // check interpreter-setting.json `config.checkEmpty` is equal false
-    Object configCheckEmpty = intpConfig.get(PARAGRAPH_CONFIG_CHECK_EMTPY);
-    if (null != configCheckEmpty) {
-      boolean checkEmtpy = PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT;
-      try {
-        checkEmtpy = (boolean) configCheckEmpty;
-      } catch (ClassCastException e) {
-        LOGGER.error(e.getMessage(), e);
-      } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
-      }
-      if (!checkEmtpy) {
-        LOGGER.info("This interpreter config `interpreter-setting.json` set config.{} = false", 
-            PARAGRAPH_CONFIG_CHECK_EMTPY);
-        return false;
-      }
-    }
-
+    boolean checkEmptyConfig =
+            (Boolean) config.getOrDefault(InterpreterSetting.PARAGRAPH_CONFIG_CHECK_EMTPY, true);
     // don't skip paragraph when local properties is not empty.
     // local properties can customize the behavior of interpreter. e.g. %r.shiny(type=run)
-    return Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
+    return checkEmptyConfig && Strings.isNullOrEmpty(scriptText) && localProperties.isEmpty();
   }
 
   public boolean execute(boolean blocking) {
-    if (shouldSkipRunParagraph()) {
-      LOGGER.info("Skip to run blank paragraph. {}", getId());
-      setStatus(Job.Status.FINISHED);
-      return true;
-    }
-
     try {
       this.interpreter = getBindedInterpreter();
+      InterpreterSetting interpreterSetting = ((ManagedInterpreterGroup)
+              interpreter.getInterpreterGroup()).getInterpreterSetting();
+      Map<String, Object> config
+              = interpreterSetting.getConfig(interpreter.getClassName());
+      mergeConfig(config);
+
+      if (shouldSkipRunParagraph()) {
+        LOGGER.info("Skip to run blank paragraph. {}", getId());
+        setStatus(Job.Status.FINISHED);
+        return true;
+      }
       setStatus(Status.READY);
 
       if (getConfig().get("enabled") == null || (Boolean) getConfig().get("enabled")) {
@@ -539,24 +487,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
         if (null != p) {
           p.setResult(res);
           p.settings.setParams(settings.getParams());
-        }
-
-        // After the paragraph is executed,
-        // need to apply the paragraph to the configuration in the
-        // `interpreter-setting.json` config
-        if (this.configSettingNeedUpdate) {
-          this.configSettingNeedUpdate = false;
-          InterpreterSettingManager intpSettingManager
-                  = this.note.getInterpreterSettingManager();
-          if (null != intpSettingManager) {
-            InterpreterGroup intpGroup = interpreter.getInterpreterGroup();
-            if (null != intpGroup && intpGroup instanceof ManagedInterpreterGroup) {
-              String name = ((ManagedInterpreterGroup) intpGroup).getInterpreterSetting().getName();
-              Map<String, Object> config
-                      = intpSettingManager.getConfigSetting(name);
-              mergeConfig(config);
-            }
-          }
         }
 
         return res;
@@ -696,30 +626,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   //    Need to delete the existing configuration of this paragraph,
   //    update with the specified interpreter configuration
   public void mergeConfig(Map<String, Object> newConfig) {
-    if (null == newConfig || 0 == newConfig.size()) {
-      newConfig = getDefaultConfigSetting();
-    }
-
-    List<String> keysToRemove = Arrays.asList(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE,
-        PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_CHECK_EMTPY);
-    for (String removeKey : keysToRemove) {
-      if ((false == newConfig.containsKey(removeKey))
-          && (true == config.containsKey(removeKey))) {
-        this.config.remove(removeKey);
-      }
-    }
-
     this.config.putAll(newConfig);
-  }
-
-  // default parameters of the interpreter
-  private Map<String, Object> getDefaultConfigSetting() {
-    Map<String, Object> config = new HashMap<>();
-    config.put(PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE, PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT);
-    config.put(PARAGRAPH_CONFIG_TITLE, PARAGRAPH_CONFIG_TITLE_DEFAULT);
-    config.put(PARAGRAPH_CONFIG_CHECK_EMTPY, PARAGRAPH_CONFIG_CHECK_EMTPY_DEFAULT);
-
-    return config;
   }
 
   public void setReturn(InterpreterResult value, Throwable t) {
