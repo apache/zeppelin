@@ -85,6 +85,10 @@ public class InterpreterSetting {
       "language", (Object) "text",
       "editOnDblClick", false);
 
+  public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
+  public static String  PARAGRAPH_CONFIG_TITLE = "title";
+  public static String  PARAGRAPH_CONFIG_CHECK_EMTPY = "checkEmpty";
+
   private String id;
   private String name;
   // the original interpreter setting template name where it is created from
@@ -377,6 +381,19 @@ public class InterpreterSetting {
     }
 
     return null;
+  }
+
+  public Map<String, Object> getConfig(String className) {
+    Map<String, Object> configSetting = new HashMap<>();
+    for (InterpreterInfo intpInfo : interpreterInfos) {
+      if (className.equals(intpInfo.getClassName())) {
+         if (intpInfo.getConfig() != null) {
+           configSetting = intpInfo.getConfig();
+         }
+         break;
+      }
+    }
+    return configSetting;
   }
 
   public RecoveryStorage getRecoveryStorage() {
