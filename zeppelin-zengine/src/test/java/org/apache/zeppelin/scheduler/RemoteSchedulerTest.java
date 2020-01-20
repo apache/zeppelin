@@ -294,4 +294,8 @@ public class RemoteSchedulerTest extends AbstractInterpreterTest
     return null;
   }
 
+  @Override
+  public void checkpointOutput(String noteId, String paragraphId) {
+
+  }
 }

@@ -107,6 +107,8 @@ service RemoteInterpreterEventService {
   void updateAppOutput(1: AppOutputUpdateEvent event);
   void updateAppStatus(1: AppStatusUpdateEvent event);
 
+  void checkpointOutput(1: string noteId, 2: string paragraphId);
+
   void runParagraphs(1: RunParagraphsEvent event);
 
   void addAngularObject(1: string intpGroupId, 2: string json);

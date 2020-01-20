@@ -65,6 +65,7 @@ public class ShinyInterpreter extends AbstractInterpreter {
     this.z = new RZeppelinContext(getInterpreterGroup().getInterpreterHookRegistry(), 1000);
   }
 
+
   @Override
   public void close() throws InterpreterException {
     for (Map.Entry<String,IRInterpreter> entry : shinyIRInterpreters.entrySet()) {
@@ -133,13 +134,21 @@ public class ShinyInterpreter extends AbstractInterpreter {
     synchronized (shinyIRInterpreters) {
       irInterpreter = shinyIRInterpreters.get(shinyApp);
       if (irInterpreter == null) {
-        irInterpreter = new IRInterpreter(properties);
+        irInterpreter = createIRInterpreter();
         irInterpreter.setInterpreterGroup(getInterpreterGroup());
         irInterpreter.open();
         shinyIRInterpreters.put(shinyApp, irInterpreter);
       }
     }
     return irInterpreter;
+  }
+
+  /**
+   * Subclass can overwrite this. e.g. SparkShinyInterpreter.
+   * @return
+   */
+  protected IRInterpreter createIRInterpreter() {
+    return new IRInterpreter(properties);
   }
 
 }

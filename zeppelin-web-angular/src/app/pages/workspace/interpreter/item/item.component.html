@@ -1,0 +1,447 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<nz-card
+  [class.edit]="mode === 'edit'"
+  class="interpreter-item"
+  [nzTitle]="mode !== 'create' ? viewModeTitleTemplate : null"
+  [nzExtra]="mode === 'view' ? extraTemplate : null"
+>
+  <ng-template #viewModeTitleTemplate>
+    <div class="card-title" *ngIf="interpreter">
+      <h3>
+        {{ interpreter.name }}
+        <small class="interpreter-group-item"
+          *ngFor="let item of interpreter.interpreterGroup; first as isFirst"
+          [attr.title]="item.class">
+          <ng-container *ngIf="!isFirst">, %{{ interpreter.name }}.{{ item.name }}</ng-container>
+          <ng-container *ngIf="isFirst">%{{ interpreter.name }}</ng-container>
+        </small>
+        <span class="interpreter-status" [ngSwitch]="interpreter.status">
+          <nz-badge *ngSwitchCase="'READY'"
+            nz-tooltip="Ready"
+            nzStatus="success"></nz-badge>
+          <nz-badge *ngSwitchCase="'ERROR'"
+            nz-tooltip="Error downloading dependencies"
+            nzStatus="error"></nz-badge>
+          <nz-badge *ngSwitchDefault
+            nz-tooltip="Dependencies are downloading"
+            nzStatus="warning"></nz-badge>
+        </span>
+      </h3>
+    </div>
+  </ng-template>
+
+  <nz-alert class="error-alter"
+    *ngIf="interpreter?.status === 'ERROR' && mode === 'view'"
+    nzType="error"
+    nzCloseable
+    nzShowIcon
+    [nzMessage]="interpreter?.errorReason">
+  </nz-alert>
+
+  <ng-template #extraTemplate>
+    <div class="extra-wrap">
+      <button nz-button nzSize="small" (click)="switchToEditMode()">
+        <i nz-icon nzType="edit"></i>
+        Edit
+      </button>
+      <button nz-button nzSize="small" (click)="handleRestart()">
+        <i nz-icon nzType="reload"></i>
+        Restart
+      </button>
+      <button nz-button nzSize="small" (click)="handleRemove()">
+        <i nz-icon nzType="delete"></i>
+        Remove
+      </button>
+    </div>
+  </ng-template>
+
+  <ng-container *ngIf="mode === 'create'">
+    <h3 class="form-title">Create new interpreter</h3>
+    <form class="interpreter-form" nz-form [nzLayout]="'vertical'" [formGroup]="formGroup">
+      <nz-form-item>
+        <nz-form-label nzRequired>Interpreter Name</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="name" placeholder="interpreter name" />
+          <nz-form-explain *ngIf="formGroup.get('name')?.dirty && formGroup.get('name')?.errors?.exist">
+            {{ formGroup.get('name')?.errors?.message }}
+          </nz-form-explain>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzRequired>Interpreter group</nz-form-label>
+        <nz-form-control>
+          <nz-select formControlName="group" nzShowSearch>
+            <nz-option
+              *ngFor="let item of parent.availableInterpreters; trackBy: interpretersTrackFn"
+              [nzValue]="item.name"
+              [nzLabel]="item.name"
+            ></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+  <h3 class="form-title">Option</h3>
+  <p>
+    <a
+      target="_blank"
+      [href]="
+        'https://zeppelin.apache.org/docs/' + ticketService.version + '/usage/interpreter/interpreter_binding_mode.html'
+      "
+      nz-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
+    >
+      <i nz-icon nzType="info-circle" nzTheme="outline"></i>
+    </a>
+    The interpreter will be instantiated
+    <a nz-dropdown [nzDropdownMenu]="interpreterMenu" [nzDisabled]="mode === 'view'">
+      {{ interpreterRunningOption }}
+      <i nz-icon nzType="down"></i>
+    </a>
+    <nz-dropdown-menu #interpreterMenu="nzDropdownMenu">
+
+      <ul nz-menu>
+        <li nz-menu-item>
+          <a (click)="setInterpreterRunningOption('shared', 'shared')">Globally</a>
+        </li>
+        <li nz-menu-item>
+          <a (click)="setInterpreterRunningOption('scoped', '')">Per Note</a>
+        </li>
+        <li nz-menu-item *ngIf="this.ticketService.originTicket.principal !== 'anonymous'">
+          <a (click)="setInterpreterRunningOption('shared', 'scoped')">Per User</a>
+        </li>
+      </ul>
+    </nz-dropdown-menu>
+    in
+    <a nz-dropdown
+       [nzDropdownMenu]="perUserMenu"
+       [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'">
+        <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
+          {{ optionFormGroup.get('perUser').value }}
+        </span>
+      <ng-template #perNote>
+          <span>
+            {{ optionFormGroup.get('perNote').value }}
+          </span>
+      </ng-template>
+      <i nz-icon nzType="down"></i>
+    </a>
+    <nz-dropdown-menu #perUserMenu="nzDropdownMenu">
+      <a nz-dropdown>
+        <span *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName; else perNote">
+          {{ optionFormGroup.get('perUser').value }}
+        </span>
+        <ng-template #perNote>
+          <span>
+            {{ optionFormGroup.get('perNote').value }}
+          </span>
+        </ng-template>
+        <i nz-icon nzType="down"></i>
+      </a>
+      <ul nz-menu [ngSwitch]="interpreterRunningOption">
+        <li nz-menu-item *ngSwitchCase="runningOptionMap.globallyModeName">
+          <a (click)="setPerNoteOrUserOption('perNote', 'shared')">shared per note</a>
+        </li>
+        <ng-container *ngSwitchCase="runningOptionMap.perNoteModeName">
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perNote', 'scoped')">scoped per note</a>
+          </li>
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perNote', 'isolated')">isolated per note</a>
+          </li>
+        </ng-container>
+        <ng-container *ngSwitchCase="runningOptionMap.perUserModeName">
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perUser', 'scoped')">scoped per user</a>
+          </li>
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perUser', 'isolated')">isolated per user</a>
+          </li>
+        </ng-container>
+      </ul>
+    </nz-dropdown-menu>
+    process
+    <ng-container *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName &&
+    ticketService.ticket.principal !== 'anonymous' &&
+    optionFormGroup.get('perNote').value !== sessionOptionMap.shared">
+      and <a disabled>Per Note</a> in
+      <a nz-dropdown
+         [nzDropdownMenu]="perNoteMenu"
+         [nzDisabled]="interpreterRunningOption === runningOptionMap.globallyModeName || mode === 'view'">
+        {{ optionFormGroup.get('perNote').value }}
+        <i nz-icon nzType="down"></i>
+      </a>
+      <nz-dropdown-menu #perNoteMenu="nzDropdownMenu">
+        <ul nz-menu>
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perNote', 'scoped')">scoped per note</a>
+          </li>
+          <li nz-menu-item>
+            <a (click)="setPerNoteOrUserOption('perNote', 'isolated')">isolated per note</a>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+      process
+    </ng-container>
+    .
+    <ng-container *ngIf="interpreterRunningOption === runningOptionMap.perUserModeName &&
+    ticketService.ticket.principal !== 'anonymous' && mode !== 'view'">
+      <button
+        *ngIf="optionFormGroup.get('perNote').value === sessionOptionMap.shared; else minusButton"
+        nz-button
+        (click)="setPerNoteOrUserOption('perNote', 'scoped')">
+        <i nz-icon nzType="plus" nzTheme="outline"></i>
+      </button>
+      <ng-template #minusButton>
+        <button nz-button (click)="setPerNoteOrUserOption('perNote', 'shared')">
+          <i nz-icon nzType="minus" nzTheme="outline"></i>
+        </button>
+      </ng-template>
+    </ng-container>
+  </p>
+  <form class="option-form" nz-form [nzLayout]="'vertical'" [formGroup]="optionFormGroup" #optionForm="ngForm">
+    <nz-form-item
+      *ngIf="
+        interpreterRunningOption === runningOptionMap.perUserModeName &&
+        optionFormGroup.get('perUser').value === sessionOptionMap.isolated
+      "
+    >
+      <nz-form-control>
+        <label nz-checkbox formControlName="isUserImpersonate" [nzDisabled]="mode === 'view'">
+          <span>User Impersonate</span>
+        </label>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control>
+        <label nz-checkbox formControlName="isExistingProcess" [nzDisabled]="mode === 'view'">
+          <span>Connect to existing process</span>
+        </label>
+      </nz-form-control>
+    </nz-form-item>
+
+    <ng-container *ngIf="optionForm.control.get('isExistingProcess').value">
+      <nz-form-item>
+        <nz-form-label>Host</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="host" placeholder="" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Port</nz-form-label>
+        <nz-form-control>
+          <input
+            nz-input
+            formControlName="port"
+            placeholder=""
+            pattern="^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$"
+          />
+        </nz-form-control>
+      </nz-form-item>
+    </ng-container>
+
+    <nz-form-item>
+      <nz-form-control>
+        <label nz-checkbox formControlName="setPermission" [nzDisabled]="mode === 'view'">
+          <span>Set permission</span>
+        </label>
+      </nz-form-control>
+    </nz-form-item>
+
+    <ng-container *ngIf="optionForm.control.get('setPermission').value">
+      <nz-form-item>
+        <nz-form-label>Owners</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            nzMode="tags"
+            class="owners-input"
+            [nzTokenSeparators]="[',']"
+            style="width: 100%;"
+            formControlName="owners"
+            nzPlaceHolder=""
+            nzAllowClear
+            nzShowSearch
+            [nzDisabled]="mode === 'view'"
+            (nzOnSearch)="onUserSearch($event)"
+          >
+            <nz-option *ngFor="let option of userList$ | async" [nzLabel]="option" [nzValue]="option"></nz-option>
+          </nz-select>
+          <nz-form-extra>
+            Enter comma separated users and groups in the fields. Empty field (*) implies anyone can run this
+            interpreter.
+          </nz-form-extra>
+        </nz-form-control>
+      </nz-form-item>
+    </ng-container>
+  </form>
+
+  <ng-container *ngIf="propertiesFormArray.controls?.length || mode !== 'view'">
+    <h3 class="form-title">Properties</h3>
+    <form nz-form [formGroup]="formGroup">
+      <nz-table nzTemplateMode nzSize="small">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+            <th *ngIf="mode === 'create'">Description</th>
+            <th *ngIf="mode !== 'view'" nzWidth="100px">Action</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="properties">
+          <tr *ngFor="let control of propertiesFormArray.controls; index as i" [formGroupName]="i">
+            <td>{{ control.get('key').value }}</td>
+            <td>
+              <ng-container
+                *ngIf="mode !== 'view'; else viewModePropertiesValue"
+                [ngSwitch]="control.get('type').value"
+              >
+                <textarea
+                  *ngSwitchCase="'textarea'"
+                  nz-input
+                  [nzAutosize]="{ maxRows: 3 }"
+                  formControlName="value"
+                  placeholder=""
+                ></textarea>
+                <input *ngSwitchCase="'string'" nz-input formControlName="value" placeholder="" />
+                <input *ngSwitchCase="'number'" nz-input type="number" formControlName="value" placeholder="" />
+                <input *ngSwitchCase="'url'" nz-input type="url" formControlName="value" placeholder="" />
+                <input *ngSwitchCase="'password'" nz-input type="password" formControlName="value" placeholder="" />
+                <label *ngSwitchCase="'checkbox'" nz-checkbox formControlName="value">
+                  {{ control.get('value').value }}
+                </label>
+              </ng-container>
+              <ng-template #viewModePropertiesValue>
+                <ng-container [ngSwitch]="control.get('type').value">
+                  <ng-container *ngSwitchCase="'password'">******</ng-container>
+                  <ng-container *ngSwitchCase="'url'">
+                    <a [href]="control.get('value').value" target="_blank">{{control.get('value').value}}</a>
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>{{ control.get('value').value }}</ng-container>
+                </ng-container>
+              </ng-template>
+            </td>
+            <td *ngIf="mode === 'create'">{{ control.get('description').value }}</td>
+            <td *ngIf="mode !== 'view'">
+              <button class="transparent-button" (click)="removeProperty(i)" nz-button nzShape="circle" nzSize="small">
+                <i nz-icon nzType="close" nzTheme="outline"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="mode !== 'view'" [formGroup]="editingPropertiesFormGroup" #editingForm="ngForm">
+            <td>
+              <input nz-input formControlName="key" placeholder="" />
+            </td>
+            <td>
+              <div class="edit-properties-value">
+                <ng-container [ngSwitch]="editingForm.control.get('type').value">
+                  <textarea
+                    *ngSwitchCase="'textarea'"
+                    nz-input
+                    [nzAutosize]="{ maxRows: 3 }"
+                    formControlName="value"
+                    placeholder=""
+                  ></textarea>
+                  <input *ngSwitchCase="'string'" nz-input formControlName="value" placeholder="" />
+                  <input *ngSwitchCase="'number'" nz-input type="number" formControlName="value" placeholder="" />
+                  <input *ngSwitchCase="'url'" nz-input type="url" formControlName="value" placeholder="" />
+                  <input *ngSwitchCase="'password'" nz-input type="password" formControlName="value" placeholder="" />
+                  <label *ngSwitchCase="'checkbox'" nz-checkbox formControlName="value">
+                    {{ editingForm.control.get('value').value }}
+                  </label>
+                </ng-container>
+                <nz-select class="type-selector" formControlName="type" (ngModelChange)="onTypeChange($event)">
+                  <nz-option *ngFor="let item of parent.propertyTypes" [nzLabel]="item" [nzValue]="item"></nz-option>
+                </nz-select>
+              </div>
+            </td>
+            <td *ngIf="mode === 'create'">N/A</td>
+
+            <td>
+              <button class="transparent-button" (click)="addProperties()" nz-button nzShape="circle" nzSize="small">
+                <i nz-icon nzType="plus" nzTheme="outline"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </form>
+  </ng-container>
+
+  <ng-container *ngIf="dependenciesFormArray.controls?.length || mode !== 'view'">
+    <h3 class="form-title">Dependencies</h3>
+    <form nz-form [formGroup]="formGroup">
+      <nz-table nzTemplateMode nzSize="small">
+        <thead>
+          <tr>
+            <th>Artifact</th>
+            <th>Exclude</th>
+            <th *ngIf="mode !== 'view'" nzWidth="100px">Action</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="dependencies">
+          <tr *ngFor="let control of dependenciesFormArray.controls; index as i" [formGroupName]="i">
+            <ng-container *ngIf="mode !== 'view'; else viewModeDependencies">
+              <td>
+                <input nz-input formControlName="groupArtifactVersion" placeholder="" />
+              </td>
+              <td>
+                <textarea nz-input formControlName="exclusions" placeholder="" [nzAutosize]="{ maxRows: 3 }"></textarea>
+              </td>
+              <td>
+                <button class="transparent-button" (click)="removeDependence(i)" nz-button nzShape="circle" nzSize="small">
+                  <i nz-icon nzType="close" nzTheme="outline"></i>
+                </button>
+              </td>
+            </ng-container>
+            <ng-template #viewModeDependencies>
+              <td>{{ control.get('groupArtifactVersion').value }}</td>
+              <td>{{ control.get('exclusions').value }}</td>
+            </ng-template>
+          </tr>
+          <tr *ngIf="mode !== 'view'" [formGroup]="editingDependenceFormGroup">
+            <td>
+              <input
+                nz-input
+                formControlName="groupArtifactVersion"
+                placeholder="groupId:artifactId:version or local file path"
+              />
+            </td>
+            <td>
+              <textarea
+                nz-input
+                formControlName="exclusions"
+                placeholder="(Optional) comma separated groupId:artifactId list"
+                [nzAutosize]="{ maxRows: 3 }"
+              ></textarea>
+            </td>
+            <td>
+              <button class="transparent-button" (click)="addDependence()" nz-button nzShape="circle" nzSize="small">
+                <i nz-icon nzType="plus" nzTheme="outline"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </form>
+  </ng-container>
+
+  <div class="item-footer" *ngIf="mode !== 'view'">
+    <button nz-button nzType="primary" [disabled]="!formGroup.valid" (click)="handleSave()">
+      Save
+    </button>
+    <button nz-button (click)="handleCancel()">
+      Cancel
+    </button>
+  </div>
+</nz-card>

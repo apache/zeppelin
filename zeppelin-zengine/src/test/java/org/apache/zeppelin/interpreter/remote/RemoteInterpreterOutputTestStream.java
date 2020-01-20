@@ -148,4 +148,8 @@ public class RemoteInterpreterOutputTestStream extends AbstractInterpreterTest
     return null;
   }
 
+  @Override
+  public void checkpointOutput(String noteId, String paragraphId) {
+
+  }
 }

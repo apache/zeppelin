@@ -54,7 +54,6 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("zeppelin.pyspark.python", "python");
     properties.setProperty("zeppelin.dep.localrepo", Files.createTempDir().getAbsolutePath());
     properties.setProperty("zeppelin.pyspark.useIPython", "false");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
     properties.setProperty("zeppelin.spark.deprecatedMsg.show", "false");
 
@@ -109,7 +108,6 @@ public class PySparkInterpreterTest extends PythonInterpreterTest {
     properties.setProperty("spark.pyspark.python", "invalid_python");
     properties.setProperty("zeppelin.python.useIPython", "false");
     properties.setProperty("zeppelin.python.gatewayserver_address", "127.0.0.1");
-    properties.setProperty("zeppelin.spark.test", "true");
     properties.setProperty("zeppelin.spark.maxResult", "3");
 
     interpreter = new LazyOpenInterpreter(new PySparkInterpreter(properties));

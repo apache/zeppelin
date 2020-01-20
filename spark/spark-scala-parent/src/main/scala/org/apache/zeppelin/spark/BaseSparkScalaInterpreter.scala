@@ -52,8 +52,6 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   protected lazy val LOGGER: Logger = LoggerFactory.getLogger(getClass)
 
-  private val isTest = conf.getBoolean("zeppelin.spark.test", false)
-
   protected var sc: SparkContext = _
 
   protected var sqlContext: SQLContext = _
@@ -197,9 +195,7 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
 
   private def spark1CreateContext(): Unit = {
     this.sc = SparkContext.getOrCreate(conf)
-    if (!isTest) {
-      interpreterOutput.write("Created SparkContext.\n".getBytes())
-    }
+    LOGGER.info("Created SparkContext")
     getUserFiles().foreach(file => sc.addFile(file))
 
     sc.getClass.getMethod("ui").invoke(sc).asInstanceOf[Option[_]] match {
@@ -214,19 +210,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     if (hiveEnabled && hiveSiteExisted) {
       sqlContext = Class.forName("org.apache.spark.sql.hive.HiveContext")
         .getConstructor(classOf[SparkContext]).newInstance(sc).asInstanceOf[SQLContext]
-      if (!isTest) {
-        interpreterOutput.write("Created sql context (with Hive support).\n".getBytes())
-      }
+      LOGGER.info("Created sql context (with Hive support)")
     } else {
-      if (hiveEnabled && !hiveSiteExisted && !isTest) {
-        interpreterOutput.write(("spark.useHiveContext is set as true but no hive-site.xml" +
-          " is found in classpath, so zeppelin will fallback to SQLContext.\n").getBytes())
-      }
+      LOGGER.warn("spark.useHiveContext is set as true but no hive-site.xml" +
+          " is found in classpath, so zeppelin will fallback to SQLContext");
       sqlContext = Class.forName("org.apache.spark.sql.SQLContext")
         .getConstructor(classOf[SparkContext]).newInstance(sc).asInstanceOf[SQLContext]
-      if (!isTest) {
-        interpreterOutput.write("Created sql context.\n".getBytes())
-      }
+      LOGGER.info("Created sql context (without Hive support)")
     }
 
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
@@ -258,28 +248,20 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
       if (hiveSiteExisted && hiveClassesPresent) {
         builder.getClass.getMethod("enableHiveSupport").invoke(builder)
         sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
-        if (!isTest) {
-          interpreterOutput.write("Created Spark session (with Hive support).\n".getBytes())
-        }
+        LOGGER.info("Created Spark session (with Hive support)");
       } else {
-        if (!hiveClassesPresent && !isTest) {
-          interpreterOutput.write(
-            "Hive support can not be enabled because spark is not built with hive\n".getBytes)
+        if (!hiveClassesPresent) {
+          LOGGER.warn("Hive support can not be enabled because spark is not built with hive")
         }
-        if (!hiveSiteExisted && !isTest) {
-          interpreterOutput.write(
-            "Hive support can not be enabled because no hive-site.xml found\n".getBytes)
+        if (!hiveSiteExisted) {
+          LOGGER.warn("Hive support can not be enabled because no hive-site.xml found")
         }
         sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
-        if (!isTest) {
-          interpreterOutput.write("Created Spark session.\n".getBytes())
-        }
+        LOGGER.info("Created Spark session (without Hive support)");
       }
     } else {
       sparkSession = builder.getClass.getMethod("getOrCreate").invoke(builder)
-      if (!isTest) {
-        interpreterOutput.write("Created Spark session.\n".getBytes())
-      }
+      LOGGER.info("Created Spark session (without Hive support)");
     }
 
     sc = sparkSession.getClass.getMethod("sparkContext").invoke(sparkSession)

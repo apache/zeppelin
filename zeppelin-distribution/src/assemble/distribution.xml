@@ -26,7 +26,7 @@
   </formats>
   <includeBaseDirectory>true</includeBaseDirectory>
   <baseDirectory>zeppelin-${project.version}</baseDirectory>
- 
+
   <dependencySets>
     <dependencySet>
       <!-- Enable access to all projects in the current multimodule build!
@@ -34,6 +34,7 @@
       <!-- Now, select which projects to include in this module-set. -->
       <includes>
         <include>${project.groupId}:zeppelin-web</include>
+        <include>${project.groupId}:zeppelin-web-angular</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
       <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -42,6 +43,7 @@
       <outputDirectory>/lib</outputDirectory>
       <excludes>
         <exclude>${project.groupId}:zeppelin-web</exclude>
+        <exclude>${project.groupId}:zeppelin-web-angular</exclude>
       </excludes>
       <useProjectArtifact>false</useProjectArtifact>
       <useTransitiveFiltering>true</useTransitiveFiltering>

@@ -79,6 +79,17 @@ matrix:
           packages:
           - google-chrome-stable
 
+    # Run tests (in zeppelin-web-angular)
+    - os: linux
+      sudo: false
+      dist: xenial
+      jdk: "openjdk8"
+      env: CI="true" BUILD_FLAG="clean -DskipTests -DskipRat" TEST_FLAG="package -DskipRat" MODULES="-pl ${INTERPRETERS}" TEST_MODULES="-pl zeppelin-web-angular"
+      addons:
+        apt:
+          packages:
+            - google-chrome-stable
+
     # Test core modules
     # Several tests were excluded from this configuration due to the following issues:
     # HeliumApplicationFactoryTest - https://issues.apache.org/jira/browse/ZEPPELIN-2470

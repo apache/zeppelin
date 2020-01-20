@@ -107,6 +107,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   private transient Map<String, String> localProperties = new HashMap<>();
   // serialize runtimeInfos to frontend but not to note file (via gson's ExclusionStrategy)
   private Map<String, ParagraphRuntimeInfo> runtimeInfos = new HashMap<>();
+  private transient List<InterpreterResultMessage> outputBuffer = new ArrayList<>();
 
   public static String  PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE = "runOnSelectionChange";
   private static boolean PARAGRAPH_CONFIG_RUNONSELECTIONCHANGE_DEFAULT = true;
@@ -613,6 +614,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
                     paragraphJobListener.onOutputUpdateAll(self, messages);
                   }
                   updateParagraphResult(messages);
+                  outputBuffer.clear();
                 } catch (IOException e) {
                   LOGGER.error(e.getMessage(), e);
                 }
@@ -816,6 +818,22 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     this.runtimeInfos.clear();
   }
 
+  public void cleanOutputBuffer() {
+    this.outputBuffer.clear();
+  }
+
+  /**
+   * Save the buffered output to InterpreterResults. So that open another tab or refresh
+   * note you can see the latest checkpoint's output.
+   */
+  public void checkpointOutput() {
+    LOGGER.info("Checkpoint Paragraph output for paragraph: " + getId());
+    this.results = new InterpreterResult(Code.SUCCESS);
+    for (InterpreterResultMessage buffer : outputBuffer) {
+      results.add(buffer);
+    }
+  }
+
   private GUI getNoteGui() {
     GUI gui = new GUI();
     gui.setParams(this.note.getNoteParams());
@@ -884,4 +902,15 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
     return Note.getGson().fromJson(json, Paragraph.class);
   }
 
+  public void updateOutputBuffer(int index, InterpreterResult.Type type, String output) {
+    InterpreterResultMessage interpreterResultMessage = new InterpreterResultMessage(type, output);;
+    if (outputBuffer.size() == index) {
+      outputBuffer.add(interpreterResultMessage);
+    } else if (outputBuffer.size() > index) {
+      outputBuffer.set(index, interpreterResultMessage);
+    } else {
+      LOGGER.warn("Get output of index: " + index + ", but there's only " +
+              outputBuffer.size() + " output in outputBuffer");
+    }
+  }
 }
