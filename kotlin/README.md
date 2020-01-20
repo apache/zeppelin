@@ -8,7 +8,7 @@ Here is the guide to its implementation and how it can be improved and tested.
 For interactive Kotlin execution, an instance of `KotlinRepl` is created.
 To set REPL properties (such as classpath, generated classes output directory, max result, etc.),
 pass `KotlinReplProperties` to its constructor. For example:
-```$java
+```java
 KotlinReplProperties replProperties = new KotlinReplProperties()
     .maxResult(1000)
     .shortenTypes(true);
@@ -22,7 +22,7 @@ making the receiver's fields and methods accessible.
    
 To add your variables/functions, extend `KotlinReceiver` class (in separate file), declare your fields and methods, and pass an instance of it to
 `KotlinReplProperties`. Example:
-```$java
+```java
 // In separate file:
 class CustomReceiver extends KotlinReceiver {
     public int myValue = 1 // will be converted to Kotlin "var myValue: Int"

@@ -91,7 +91,7 @@ For changing the default behavior of when to renew Kerberos ticket following cha
 
 ```bash
 # Change Kerberos refresh interval (default value is 1d). Allowed postfix are ms, s, m, min, h, and d.
-export LAUNCH_KERBEROS_REFRESH_INTERVAL=4h
+export KERBEROS_REFRESH_INTERVAL=4h
 # Change kinit number retries (default value is 5), which means if the kinit command fails for 5 retries consecutively it will close the interpreter. 
 export KINIT_FAIL_THRESHOLD=10
 ```

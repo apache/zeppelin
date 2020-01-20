@@ -641,6 +641,7 @@ public class Note implements JsonSerializable {
   public void clearParagraphOutputFields(Paragraph p) {
     p.setReturn(null, null);
     p.cleanRuntimeInfos();
+    p.cleanOutputBuffer();
   }
 
   public Paragraph clearPersonalizedParagraphOutput(String paragraphId, String user) {
@@ -1094,6 +1095,7 @@ public class Note implements JsonSerializable {
   public void postProcessParagraphs() {
     for (Paragraph p : paragraphs) {
       p.cleanRuntimeInfos();
+      p.cleanOutputBuffer();
       p.parseText();
 
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {

@@ -1,0 +1,58 @@
+<!--
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<nz-card class="job-item">
+  <div class="job-title">
+    <i nz-icon
+      class="note-icon"
+      [nzType]="icon"
+      nzTheme="outline">
+    </i>
+    <a [routerLink]="['notebook', note.noteId]" [innerHTML]="note.noteName | nzHighlight: highlight: 'gi': 'mark-highlight'"></a> -
+    <span class="interpreter"
+          [class.unset]="!note.interpreter">
+      {{note.interpreter || 'interpreter is not set'}}
+    </span>
+    <span class="right-tools">
+      <small>{{relativeTime}}</small>
+      <span>{{note.isRunningJob ? 'RUNNING' : 'READY'}}</span>
+      <span *ngIf="note.isRunningJob">{{progress | percent: '1.0-0'}}</span>
+      <i class="job-control-btn"
+        nz-icon
+        nzTheme="outline"
+        [class.running]="note.isRunningJob"
+        [nz-tooltip]="note.isRunningJob ? 'Stop All Paragraphs' : 'Start All Paragraphs'"
+        [nzType]="note.isRunningJob ? 'pause' : 'caret-right'"
+        (click)="note.isRunningJob ? onStopClick() : onStartClick()"></i>
+    </span>
+  </div>
+  <div>
+    <a *ngFor="let item of note.paragraphs"
+      [nz-tooltip]="item.name + ' is ' + item.status"
+      nzPlacement="topLeft"
+      [nzOverlayStyle]="{ 'margin-left': '-14px' }"
+      [routerLink]="['notebook', note.noteId]"
+      [queryParams]="{paragraph: item.id}">
+      <zeppelin-job-manager-job-status [status]="item.status">
+      </zeppelin-job-manager-job-status>
+    </a>
+  </div>
+</nz-card>
+<nz-progress
+  *ngIf="note.isRunningJob"
+  class="footer-progress"
+  [nzPercent]="progress * 100"
+  [nzShowInfo]="false"
+  nzStatus="active"
+  nzSize="small"
+  nzStrokeLinecap="square">
+</nz-progress>

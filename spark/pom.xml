@@ -198,8 +198,11 @@
         <!-- profile spark-x only affect the embedded spark version in zeppelin distribution -->
         <profile>
             <id>spark-2.4</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
-                <spark.version>2.4.3</spark.version>
+                <spark.version>2.4.4</spark.version>
                 <protobuf.version>2.5.0</protobuf.version>
                 <py4j.version>0.10.7</py4j.version>
             </properties>
@@ -216,9 +219,6 @@
 
         <profile>
             <id>spark-2.2</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <properties>
                 <spark.version>2.2.3</spark.version>
                 <py4j.version>0.10.7</py4j.version>

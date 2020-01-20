@@ -58,8 +58,20 @@ public class SparkIRInterpreter extends IRInterpreter {
     return this.sparkVersion.isSecretSocketSupported();
   }
 
+  /**
+   * We can inject SparkInterpreter in the case that SparkIRInterpreter is used by
+   * SparkShinyInterpreter in which case it is not in the same InterpreterGroup of
+   * SparkInterpreter.
+   * @param sparkInterpreter
+   */
+  public void setSparkInterpreter(SparkInterpreter sparkInterpreter) {
+    this.sparkInterpreter = sparkInterpreter;
+  }
+
   public void open() throws InterpreterException {
-    this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
+    if (sparkInterpreter == null) {
+      this.sparkInterpreter = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class);
+    }
     this.sc = sparkInterpreter.getSparkContext();
     this.jsc = sparkInterpreter.getJavaSparkContext();
     this.sparkVersion = new SparkVersion(sc.version());

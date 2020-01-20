@@ -100,17 +100,14 @@ public class PluginManager {
    */
   public OldNotebookRepo loadOldNotebookRepo(String notebookRepoClassName) throws IOException {
     LOGGER.info("Loading OldNotebookRepo Plugin: " + notebookRepoClassName);
-    // load plugin from classpath directly when it is test.
-    // otherwise load it from plugin folder
-    String isTest = System.getenv("IS_ZEPPELIN_TEST");
-    if (isTest != null && isTest.equals("true")) {
-      try {
-        OldNotebookRepo notebookRepo = (OldNotebookRepo)
-            (Class.forName(notebookRepoClassName).newInstance());
-        return notebookRepo;
-      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-        LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
-      }
+    // load plugin from classpath directly first for these builtin NotebookRepo (such as VFSNoteBookRepo
+    // and GitNotebookRepo). If fails, then try to load it from plugin folder
+    try {
+      OldNotebookRepo notebookRepo = (OldNotebookRepo)
+          (Class.forName(notebookRepoClassName).newInstance());
+      return notebookRepo;
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      LOGGER.warn("Fail to instantiate notebookrepo from classpath directly:" + notebookRepoClassName);
     }
 
     String simpleClassName = notebookRepoClassName.substring(notebookRepoClassName.lastIndexOf(".") + 1);

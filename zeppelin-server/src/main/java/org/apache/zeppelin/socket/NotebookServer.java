@@ -1606,6 +1606,8 @@ public class NotebookServer extends WebSocketServlet
         LOG.warn("Note " + noteId + " note found");
         return;
       }
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      paragraph.updateOutputBuffer(index, type, output);
       if (note.isPersonalizedMode()) {
         String user = note.getParagraph(paragraphId).getUser();
         if (null != user) {
@@ -1884,6 +1886,16 @@ public class NotebookServer extends WebSocketServlet
   @Override
   public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
     // TODO
+  }
+
+  @Override
+  public void checkpointOutput(String noteId, String paragraphId) {
+    try {
+      Note note = getNotebook().getNote(noteId);
+      note.getParagraph(paragraphId).checkpointOutput();
+    } catch (IOException e) {
+      LOG.warn("Fail to save note: " + noteId , e);
+    }
   }
 
   @Override

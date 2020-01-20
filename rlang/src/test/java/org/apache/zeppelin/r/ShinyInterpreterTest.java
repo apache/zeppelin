@@ -28,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResultMessage;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,10 +43,11 @@ import java.util.regex.Pattern;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 public class ShinyInterpreterTest {
 
-  private ShinyInterpreter interpreter;
+  protected ShinyInterpreter interpreter;
 
   @Before
   public void setUp() throws InterpreterException {
@@ -240,6 +242,7 @@ public class ShinyInterpreterTest {
             .setInterpreterOut(new InterpreterOutput(null))
             .setLocalProperties(new HashMap<>())
             .setInterpreterClassName(ShinyInterpreter.class.getName())
+            .setIntpEventClient(mock(RemoteInterpreterEventClient.class))
             .build();
     return context;
   }

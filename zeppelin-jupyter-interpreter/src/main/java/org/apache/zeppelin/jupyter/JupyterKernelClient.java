@@ -104,8 +104,10 @@ public class JupyterKernelClient {
    * @throws IOException
    */
   private boolean checkForShinyApp(String response) throws IOException {
-    if (context.getInterpreterClassName() != null &&
-            context.getInterpreterClassName().equals("org.apache.zeppelin.r.ShinyInterpreter")) {
+    String intpClassName = context.getInterpreterClassName();
+    if (intpClassName != null &&
+            (intpClassName.equals("org.apache.zeppelin.r.ShinyInterpreter") ||
+                    intpClassName.equals("org.apache.zeppelin.spark.SparkShinyInterpreter"))) {
       Matcher matcher = ShinyListeningPattern.matcher(response);
       if (matcher.matches()) {
         String url = matcher.group(1);
@@ -119,6 +121,8 @@ public class JupyterKernelClient {
                 height + "\" width=\"" + width + "\" frameBorder=\"0\"></iframe>");
         context.out.flush();
         context.out.write("\n%text ");
+        context.getIntpEventClient().checkpointOutput(context.getNoteId(),
+                context.getParagraphId());
         return true;
       }
     }

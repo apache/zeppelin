@@ -49,7 +49,6 @@ import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourceId;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.resource.ResourceSet;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,6 +217,11 @@ public class RemoteInterpreterEventServer implements RemoteInterpreterEventServi
   @Override
   public void updateAppStatus(AppStatusUpdateEvent event) throws TException {
     appListener.onStatusChange(event.noteId, event.paragraphId, event.appId, event.status);
+  }
+
+  @Override
+  public void checkpointOutput(String noteId, String paragraphId) throws TException {
+    listener.checkpointOutput(noteId, paragraphId);
   }
 
   @Override
