@@ -88,7 +88,9 @@ public class VFSNotebookRepo implements NotebookRepo {
       LOGGER.info("Notebook dir doesn't exist: {}, creating it.",
           rootNotebookFileObject.getName().getPath());
     }
-    this.rootNotebookFolder = rootNotebookFileObject.getName().getPath();
+    // getPath() method returns a string without root directory in windows, so we use getURI() instead
+    // windows does not support paths with "file:///" prepended, so we replace it by "/"
+    this.rootNotebookFolder = rootNotebookFileObject.getName().getURI().replace("file:///", "/");
   }
 
   @Override
@@ -110,7 +112,9 @@ public class VFSNotebookRepo implements NotebookRepo {
         noteInfos.putAll(listFolder(child));
       }
     } else {
-      String noteFileName = fileObject.getName().getPath();
+      // getPath() method returns a string without root directory in windows, so we use getURI() instead
+      // windows does not support paths with "file:///" prepended. so we replace it by "/"
+      String noteFileName = fileObject.getName().getURI().replace("file:///", "/");
       if (noteFileName.endsWith(".zpln")) {
         try {
           String noteId = getNoteId(noteFileName);
