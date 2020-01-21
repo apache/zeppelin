@@ -110,6 +110,9 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
 
         String scalaVersion = detectSparkScalaVersion(properties.getProperty("SPARK_HOME"));
         Path scalaFolder =  Paths.get(zConf.getZeppelinHome(), "/interpreter/spark/scala-" + scalaVersion);
+        if (!scalaFolder.toFile().exists()) {
+          throw new IOException("spark scala folder " + scalaFolder.toFile() + " doesn't exist");
+        }
         List<String> scalaJars = StreamSupport.stream(
                 Files.newDirectoryStream(scalaFolder, entry -> Files.isRegularFile(entry))
                         .spliterator(),

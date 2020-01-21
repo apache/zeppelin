@@ -102,6 +102,9 @@ public class SparkIRInterpreterTest extends IRInterpreterTest {
     } else {
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       interpreterResultMessages = context.out.toInterpreterResultMessage();
+      if (interpreterResultMessages.get(0).getData().contains("2.2")) {
+        ENABLE_GOOGLEVIS_TEST = false;
+      }
       context = getInterpreterContext();
       result = interpreter.interpret("df <- as.DataFrame(faithful)\nhead(df)", context);
       interpreterResultMessages = context.out.toInterpreterResultMessage();

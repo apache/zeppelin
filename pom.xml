@@ -96,7 +96,6 @@
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
-    <module>zeppelin-web-angular</module>
   </modules>
 
   <properties>
@@ -792,6 +791,16 @@
       <id>r</id>
       <modules>
         <module>r</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>web-angular</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>zeppelin-web-angular</module>
       </modules>
     </profile>
 
