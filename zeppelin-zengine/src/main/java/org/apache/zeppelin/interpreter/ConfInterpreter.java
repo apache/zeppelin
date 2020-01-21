@@ -85,7 +85,7 @@ public class ConfInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() throws InterpreterException {
-    return null;
+    return FormType.NATIVE;
   }
 
   @Override
