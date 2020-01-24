@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.shiro.realm.Realm;
+
 /**
  * Interface for Zeppelin Security.
  * //TODO(zjffdu) rename it to AuthenticationService
@@ -39,7 +41,7 @@ public interface AuthenticationService {
    */
   Set<String> getAssociatedRoles();
 
-  Collection getRealmsList();
+  Collection<Realm> getRealmsList();
 
   boolean isAuthenticated();
 
