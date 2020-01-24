@@ -222,13 +222,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
     bind("sqlContext", sqlContext.getClass.getCanonicalName, sqlContext, List("""@transient"""))
 
-    interpret("import org.apache.spark.SparkContext._")
-    interpret("import sqlContext.implicits._")
-    interpret("import sqlContext.sql")
-    interpret("import org.apache.spark.sql.functions._")
+    scalaInterpret("import org.apache.spark.SparkContext._")
+    scalaInterpret("import sqlContext.implicits._")
+    scalaInterpret("import sqlContext.sql")
+    scalaInterpret("import org.apache.spark.sql.functions._")
     // print empty string otherwise the last statement's output of this method
     // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
-    interpret("print(\"\")")
+    scalaInterpret("print(\"\")")
   }
 
   private def spark2CreateContext(): Unit = {
@@ -278,13 +278,13 @@ abstract class BaseSparkScalaInterpreter(val conf: SparkConf,
     bind("sc", "org.apache.spark.SparkContext", sc, List("""@transient"""))
     bind("sqlContext", "org.apache.spark.sql.SQLContext", sqlContext, List("""@transient"""))
 
-    interpret("import org.apache.spark.SparkContext._")
-    interpret("import spark.implicits._")
-    interpret("import spark.sql")
-    interpret("import org.apache.spark.sql.functions._")
+    scalaInterpret("import org.apache.spark.SparkContext._")
+    scalaInterpret("import spark.implicits._")
+    scalaInterpret("import spark.sql")
+    scalaInterpret("import org.apache.spark.sql.functions._")
     // print empty string otherwise the last statement's output of this method
     // (aka. import org.apache.spark.sql.functions._) will mix with the output of user code
-    interpret("print(\"\")")
+    scalaInterpret("print(\"\")")
   }
 
   protected def createZeppelinContext(): Unit = {
