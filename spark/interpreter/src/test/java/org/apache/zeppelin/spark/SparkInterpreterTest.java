@@ -198,6 +198,15 @@ public class SparkInterpreterTest {
             ").toDF()", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
 
+    // create dataset from case class
+    context = getInterpreterContext();
+    result = interpreter.interpret("case class Person(id:Int, name:String, age:Int, country:String)\n" +
+            "val df2 = spark.createDataFrame(Seq(Person(1, \"andy\", 20, \"USA\"), " +
+            "Person(2, \"jeff\", 23, \"China\"), Person(3, \"james\", 18, \"USA\")))\n" +
+            "df2.printSchema\n" +
+            "df2.show() ", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+
     // spark version
     result = interpreter.interpret("sc.version", getInterpreterContext());
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
