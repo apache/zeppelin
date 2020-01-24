@@ -130,7 +130,7 @@ public class LoginRestApi {
   }
 
   private KerberosRealm getKerberosRealm() {
-    Collection<Realm> realmsList = (Collection<Realm>) authenticationService.getRealmsList();
+    Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
@@ -146,7 +146,7 @@ public class LoginRestApi {
   }
 
   private KnoxJwtRealm getJTWRealm() {
-    Collection<Realm> realmsList = (Collection<Realm>) authenticationService.getRealmsList();
+    Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
@@ -162,7 +162,7 @@ public class LoginRestApi {
   }
 
   private boolean isKnoxSSOEnabled() {
-    Collection<Realm> realmsList = (Collection<Realm>) authenticationService.getRealmsList();
+    Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
         String name = realm.getClass().getName();
