@@ -87,10 +87,9 @@ public class DependencyResolverTest {
     FileUtils.cleanDirectory(testCopyPath);
 
     // load from added repository
-    resolver.addRepo("sonatype",
-        "https://oss.sonatype.org/content/repositories/ksoap2-android-releases/", false);
-    resolver.load("com.google.code.ksoap2-android:ksoap2-jsoup:3.6.3", testCopyPath);
-    assertEquals(testCopyPath.list().length, 10);
+    resolver.addRepo("sonatype", "https://oss.sonatype.org/content/repositories/releases/", false);
+    resolver.load("org.mortbay.jetty:jetty-runner:7.6.16.v20140903", testCopyPath);
+    assertEquals(testCopyPath.list().length, 27);
 
     // load invalid artifact
     resolver.delRepo("sonatype");
