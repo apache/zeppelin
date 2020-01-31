@@ -487,6 +487,14 @@
 
 <!--
 <property>
+    <name>zeppelin.server.send.jetty.name</name>
+    <value>true</value>
+    <description>If set to true, will not show the Jetty version to prevent Fingerprinting</description>
+</property>
+-->
+
+<!--
+<property>
     <name>zeppelin.server.jetty.request.header.size</name>
     <value>8192</value>
     <description>Http Request Header Size Limit (to prevent HTTP 413)</description>

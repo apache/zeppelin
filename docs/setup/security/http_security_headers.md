@@ -122,3 +122,14 @@ The following property needs to be updated in the zeppelin-site.xml in order to 
 ```
 
 The value can be any "String".
+
+Also, it can be removed the from response headers and from 300/400/500 HTTP response pages.
+
+
+```xml
+<property>
+    <name>zeppelin.server.send.jetty.name</name>
+    <value>false</value>
+    <description>If set to true, will not show the Jetty version to prevent Fingerprinting</description>
+</property>
+```
