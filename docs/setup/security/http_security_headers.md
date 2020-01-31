@@ -107,6 +107,19 @@ Zeppelin server will add this header to HTTP response by default. The following 
 </property>
 ```
 
+## Setting up Control-Cache Header
+
+The Cache-Control HTTP header holds directives (instructions) for caching in both requests and responses. A given directive in a request does not mean the same directive should be in the response.
+Zeppelin server will add this header to HTTP response by default. The following property needs to be updated in the zeppelin-site.xml in order to change Control-Cache header value.
+
+```xml
+<property>
+  <name>zeppelin.server.cache-control</name>
+  <value>no-cache</value>
+  <description>The Cache-Control HTTP header holds directives (instructions) for caching in both requests and responses. A given directive in a request does not mean the same directive should be in the response.</description>
+</property>
+```
+
 ## Setting up Server Header
 
 Security conscious organisations does not want to reveal the Application Server name and version to prevent finding this information easily by Attacker while fingerprinting the Application. The exact version number can tell an Attacker if the current Application Server is patched for or vulnerable to certain publicly known CVE associated to it.
