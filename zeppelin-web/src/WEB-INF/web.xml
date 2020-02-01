@@ -31,7 +31,10 @@
 
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
+	<error-page>
+	  <error-code>404</error-code>
+	  <location>/WEB-INF/404.html</location>
+	</error-page>
 	<context-param>
 		<param-name>configuration</param-name>
 		<param-value>deployment</param-value>
