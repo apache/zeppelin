@@ -1,0 +1,195 @@
+{
+  "paragraphs": [
+    {
+      "title": "Introduction",
+      "text": "%md\n\n[Shiny](https://shiny.rstudio.com/tutorial/) is an R package that makes it easy to build interactive web applications (apps) straight from R. For developing one Shiny App in Zeppelin, you need to at least 3 paragraphs (server paragraph, ui paragraph and run type paragraph)\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-05 13:31:39.977",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/text",
+        "editorHide": true,
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003e\u003ca href\u003d\"https://shiny.rstudio.com/tutorial/\"\u003eShiny\u003c/a\u003e is an R package that makes it easy to build interactive web applications (apps) straight from R. For developing one Shiny App in Zeppelin, you need to at least 3 paragraphs (server paragraph, ui paragraph and run type paragraph)\u003c/p\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580880646006_750270749",
+      "id": "paragraph_1580880646006_750270749",
+      "dateCreated": "2020-02-05 13:30:46.006",
+      "dateStarted": "2020-02-05 13:31:30.246",
+      "dateFinished": "2020-02-05 13:31:30.260",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Shiny Server",
+      "text": "%r.shiny(type\u003dserver)\n\n# Define server logic to summarize and view selected dataset ----\nserver \u003c- function(input, output) {\n\n    # Return the requested dataset ----\n    datasetInput \u003c- reactive({\n        switch(input$dataset,\n        \"rock\" \u003d rock,\n        \"pressure\" \u003d pressure,\n        \"cars\" \u003d cars)\n    })\n\n    # Generate a summary of the dataset ----\n    output$summary \u003c- renderPrint({\n        dataset \u003c- datasetInput()\n        summary(dataset)\n    })\n\n    # Show the first \"n\" observations ----\n    output$view \u003c- renderTable({\n        head(datasetInput(), n \u003d input$obs)\n    })\n\n}",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-05 13:31:47.935",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "r",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/r",
+        "type": "server",
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Write server.R to /var/folders/99/mfxjjdtj7x70rvwgkxpq4jm40000gn/T/zeppelin-shiny2111830164672035139 successfully."
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580562566379_-876908296",
+      "id": "paragraph_1580562566379_-876908296",
+      "dateCreated": "2020-02-01 21:09:26.379",
+      "dateStarted": "2020-02-01 21:11:15.492",
+      "dateFinished": "2020-02-01 21:11:19.233",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Shiny UI",
+      "text": "%r.shiny(type\u003dui)\n\n# Define UI for dataset viewer app ----\nui \u003c- fluidPage(\n\n    # App title ----\n    titlePanel(\"Shiny Text\"),\n\n    # Sidebar layout with a input and output definitions ----\n    sidebarLayout(\n\n        # Sidebar panel for inputs ----\n        sidebarPanel(\n    \n            # Input: Selector for choosing dataset ----\n            selectInput(inputId \u003d \"dataset\",\n            label \u003d \"Choose a dataset:\",\n            choices \u003d c(\"rock\", \"pressure\", \"cars\")),\n    \n            # Input: Numeric entry for number of obs to view ----\n            numericInput(inputId \u003d \"obs\",\n            label \u003d \"Number of observations to view:\",\n            value \u003d 10)\n        ),\n\n        # Main panel for displaying outputs ----\n        mainPanel(\n        \n            # Output: Verbatim text for data summary ----\n            verbatimTextOutput(\"summary\"),\n            \n            # Output: HTML table with requested number of observations ----\n            tableOutput(\"view\")\n    \n        )\n    )\n)",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-05 13:31:54.497",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "r",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/r",
+        "type": "ui"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Write ui.R to /var/folders/99/mfxjjdtj7x70rvwgkxpq4jm40000gn/T/zeppelin-shiny2111830164672035139 successfully."
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580562634044_-1915679343",
+      "id": "paragraph_1580562634044_-1915679343",
+      "dateCreated": "2020-02-01 21:10:34.044",
+      "dateStarted": "2020-02-01 21:11:20.973",
+      "dateFinished": "2020-02-01 21:11:20.978",
+      "status": "FINISHED"
+    },
+    {
+      "title": "Shiny App",
+      "text": "%r.shiny(type\u003drun)\n\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2020-02-05 13:32:02.773",
+      "config": {
+        "runOnSelectionChange": true,
+        "title": true,
+        "checkEmpty": true,
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "r",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/r",
+        "type": "run"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ciframe src\u003d\"http://0.0.0.0:65421\" height \u003d\"500px\" width\u003d\"100%\" frameBorder\u003d\"0\"\u003e\u003c/iframe\u003e\n"
+          },
+          {
+            "type": "TEXT",
+            "data": "\nio.grpc.StatusRuntimeException: UNKNOWN: Exception iterating responses: \u0027payload\u0027\n\tat io.grpc.Status.asRuntimeException(Status.java:526)\n\tat io.grpc.stub.ClientCalls$StreamObserverToCallListenerAdapter.onClose(ClientCalls.java:434)\n\tat io.grpc.PartialForwardingClientCallListener.onClose(PartialForwardingClientCallListener.java:39)\n\tat io.grpc.ForwardingClientCallListener.onClose(ForwardingClientCallListener.java:23)\n\tat io.grpc.ForwardingClientCallListener$SimpleForwardingClientCallListener.onClose(ForwardingClientCallListener.java:40)\n\tat io.grpc.internal.CensusStatsModule$StatsClientInterceptor$1$1.onClose(CensusStatsModule.java:678)\n\tat io.grpc.PartialForwardingClientCallListener.onClose(PartialForwardingClientCallListener.java:39)\n\tat io.grpc.ForwardingClientCallListener.onClose(ForwardingClientCallListener.java:23)\n\tat io.grpc.ForwardingClientCallListener$SimpleForwardingClientCallListener.onClose(ForwardingClientCallListener.java:40)\n\tat io.grpc.internal.CensusTracingModule$TracingClientInterceptor$1$1.onClose(CensusTracingModule.java:403)\n\tat io.grpc.internal.ClientCallImpl.closeObserver(ClientCallImpl.java:459)\n\tat io.grpc.internal.ClientCallImpl.access$300(ClientCallImpl.java:63)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.close(ClientCallImpl.java:546)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.access$600(ClientCallImpl.java:467)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed.runInContext(ClientCallImpl.java:584)\n\tat io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)\n\tat io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:123)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n\tat java.lang.Thread.run(Thread.java:748)\n"
+          }
+        ]
+      },
+      "apps": [],
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1580562660988_2021181385",
+      "id": "paragraph_1580562660988_2021181385",
+      "dateCreated": "2020-02-01 21:11:00.988",
+      "dateStarted": "2020-02-01 21:12:51.413",
+      "dateFinished": "2020-02-01 21:12:55.303",
+      "status": "ABORT"
+    }
+  ],
+  "name": "Shiny App",
+  "id": "2EZ66TM57",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0-SNAPSHOT",
+  "permissions": {},
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": true
+  },
+  "info": {},
+  "path": "/R Tutorial/Shiny App"
+}
