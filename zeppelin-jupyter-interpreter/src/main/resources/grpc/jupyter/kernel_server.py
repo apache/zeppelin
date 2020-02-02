@@ -59,6 +59,8 @@ class KernelServer(kernel_pb2_grpc.JupyterKernelServicer):
         def _output_hook(msg):
             msg_type = msg['header']['msg_type']
             content = msg['content']
+            # print("******************")
+            # print(msg)
             outStatus, outType, output = kernel_pb2.SUCCESS, None, None
             # prepare the reply
             if msg_type == 'stream':
