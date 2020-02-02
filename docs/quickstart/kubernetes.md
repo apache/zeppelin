@@ -147,7 +147,8 @@ $ mv zeppelin-distribution/target/zeppelin-*.tar.gz scripts/docker/zeppelin/bin/
 
 # Add following lines right after the commented line above
 ADD zeppelin-${Z_VERSION}.tar.gz /
-RUN ln -s /zeppelin-${Z_VERSION} /zeppelin
+RUN mv ./zeppelin-${Z_VERSION}/* ${Z_HOME}/
+RUN chown -R zeppelin:zeppelin ${Z_HOME}/*
 ...
 ```
 
