@@ -168,6 +168,11 @@ public class JupyterKernelClient {
                         curOutput.getType() != InterpreterResult.Type.TEXT) {
                   interpreterOutput.write("%text ".getBytes());
                 }
+                // explicitly use html output for ir kernel in some cases. otherwise some
+                // R packages doesn't work. e.g. googlevis
+                if (executeResponse.getOutput().contains("<script type=\"text/javascript\">")) {
+                  interpreterOutput.write("\n%html ".getBytes());
+                }
                 interpreterOutput.write(executeResponse.getOutput().getBytes());
               }
               interpreterOutput.getInterpreterOutput().flush();

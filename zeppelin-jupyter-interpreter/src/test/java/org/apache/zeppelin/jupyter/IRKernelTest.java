@@ -87,9 +87,25 @@ public class IRKernelTest {
     assertEquals(InterpreterResult.Code.ERROR, result.code());
     resultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, resultMessages.size());
-    assertEquals(result.toString(), InterpreterResult.Type.HTML, resultMessages.get(0).getType());
+    assertEquals(result.toString(), InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
     assertTrue(resultMessages.toString(),
             resultMessages.get(0).getData().contains("object 'unknown_var' not found"));
+
+    context = getInterpreterContext();
+    result = interpreter.interpret("foo <- TRUE\n" +
+            "print(foo)\n" +
+            "bare <- c(1, 2.5, 4)\n" +
+            "print(bare)\n" +
+            "double <- 15.0\n" +
+            "print(double)", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+    resultMessages = context.out.toInterpreterResultMessage();
+    assertEquals(1, resultMessages.size());
+    assertEquals(result.toString(), InterpreterResult.Type.TEXT, resultMessages.get(0).getType());
+    assertTrue(resultMessages.toString(),
+            resultMessages.get(0).getData().contains("[1] TRUE\n" +
+                    "[1] 1.0 2.5 4.0\n" +
+                    "[1] 15\n"));
 
     // plotting
     context = getInterpreterContext();
@@ -122,11 +138,11 @@ public class IRKernelTest {
               "print(Bar, tag = 'chart')", context);
       assertEquals(InterpreterResult.Code.SUCCESS, result.code());
       resultMessages = context.out.toInterpreterResultMessage();
-      assertEquals(1, resultMessages.size());
+      assertEquals(2, resultMessages.size());
       assertEquals(resultMessages.toString(),
-              InterpreterResult.Type.HTML, resultMessages.get(0).getType());
-      assertTrue(resultMessages.get(0).getData(),
-              resultMessages.get(0).getData().contains("javascript"));
+              InterpreterResult.Type.HTML, resultMessages.get(1).getType());
+      assertTrue(resultMessages.get(1).getData(),
+              resultMessages.get(1).getData().contains("javascript"));
     }
   }
 
