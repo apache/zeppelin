@@ -17,6 +17,10 @@
 
 package org.apache.zeppelin.interpreter;
 
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public abstract class AbstractInterpreter extends Interpreter {
@@ -52,4 +56,11 @@ public abstract class AbstractInterpreter extends Interpreter {
   protected abstract InterpreterResult internalInterpret(
           String st,
           InterpreterContext context) throws InterpreterException;
+
+  @Override
+  public List<InterpreterCompletion> completion(String buf,
+                                                int cursor,
+                                                InterpreterContext interpreterContext) throws InterpreterException {
+    return new ArrayList<>();
+  }
 }
