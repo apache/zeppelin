@@ -212,9 +212,13 @@ public class JupyterKernelClient {
       @Override
       public void onError(Throwable throwable) {
         try {
-          interpreterOutput.getInterpreterOutput().write("\n%text " +
-                  ExceptionUtils.getStackTrace(throwable));
-          interpreterOutput.getInterpreterOutput().flush();
+          // only output the extra error when no error message is displayed before.
+          if (finalResponseBuilder.getStatus() != null &&
+                  finalResponseBuilder.getStatus() != ExecuteStatus.ERROR) {
+            interpreterOutput.getInterpreterOutput().write("\n%text " +
+                    ExceptionUtils.getStackTrace(throwable));
+            interpreterOutput.getInterpreterOutput().flush();
+          }
         } catch (IOException e) {
           LOGGER.error("Unexpected IOException", e);
         }
