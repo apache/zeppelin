@@ -788,13 +788,6 @@
     </profile>
 
     <profile>
-      <id>r</id>
-      <modules>
-        <module>r</module>
-      </modules>
-    </profile>
-
-    <profile>
       <id>web-angular</id>
       <activation>
         <activeByDefault>true</activeByDefault>

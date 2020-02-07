@@ -131,10 +131,6 @@ Available profiles are
 -Pscala-2.11
 ```
 
-##### `-Pr` (optional)
-
-enable [R](https://www.r-project.org/) support with [SparkR](https://spark.apache.org/docs/latest/sparkr.html) integration.
-Note that, this enables R interpreter which is different from sparkR included in Spark interpreter by default.
 
 ##### `-Pvendor-repo` (optional)
 
