@@ -92,10 +92,12 @@
     <module>ksql</module>
     <module>sparql</module>
     <module>zeppelin-web</module>
+    <module>zeppelin-web-angular</module>
     <module>zeppelin-server</module>
     <module>zeppelin-jupyter</module>
     <module>zeppelin-plugins</module>
     <module>zeppelin-distribution</module>
+    <module>zeppelin-web-angular</module>
   </modules>
 
   <properties>

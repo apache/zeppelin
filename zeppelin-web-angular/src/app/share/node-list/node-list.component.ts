@@ -10,8 +10,7 @@
  * limitations under the License.
  */
 
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnInit } from '@angular/core';
-import { TRASH_FOLDER_ID_TOKEN } from '@zeppelin/interfaces';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 
 import { NzTreeNode } from 'ng-zorro-antd/core';
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -97,46 +96,15 @@ export class NodeListComponent extends MessageListenersManager implements OnInit
   @MessageListener(OP.NOTES_INFO)
   getNotes(data: MessageReceiveDataTypeMap[OP.NOTES_INFO]) {
     this.noteListService.setNotes(data.notes);
-    this.nodes = this.noteListService.notes.root.children
-      .sort((v1, v2) => this.noteComparator(v1, v2))
-      .map(item => {
-        return { ...item, key: item.id };
-      });
+    this.nodes = this.noteListService.notes.root.children.map(item => {
+      return { ...item, key: item.id };
+    });
     this.cdr.markForCheck();
-  }
-
-  getNoteName(note) {
-    if (note.title === undefined || note.title.trim() === '') {
-      return 'Note ' + note.id;
-    } else {
-      return note.title;
-    }
-  }
-
-  noteComparator(v1, v2) {
-    const note1 = v1;
-    const note2 = v2;
-    if (note1.id === this.TRASH_FOLDER_ID) {
-      return 1;
-    }
-    if (note2.id === this.TRASH_FOLDER_ID) {
-      return -1;
-    }
-    if (note1.children === undefined && note2.children !== undefined) {
-      return 1;
-    }
-    if (note1.children !== undefined && note2.children === undefined) {
-      return -1;
-    }
-    const noteName1 = this.getNoteName(note1);
-    const noteName2 = this.getNoteName(note2);
-    return noteName1.localeCompare(noteName2);
   }
 
   constructor(
     private noteListService: NoteListService,
     public messageService: MessageService,
-    @Inject(TRASH_FOLDER_ID_TOKEN) public TRASH_FOLDER_ID: string,
     private nzModalService: NzModalService,
     private noteActionService: NoteActionService,
     private cdr: ChangeDetectorRef

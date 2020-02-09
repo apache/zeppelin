@@ -48,7 +48,6 @@ import { NotebookRevisionsComparatorComponent } from './revisions-comparator/rev
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { WorkspaceShareModule } from '../../workspace/share/share.module';
 import { NotebookActionBarComponent } from './action-bar/action-bar.component';
-import { NoteFormBlockComponent } from './note-form-block/note-form-block.component';
 import { NotebookRoutingModule } from './notebook-routing.module';
 import { NotebookComponent } from './notebook.component';
 import { NotebookShareModule } from './share/share.module';
@@ -65,8 +64,7 @@ import { NotebookShareModule } from './share/share.module';
     NotebookParagraphCodeEditorComponent,
     NotebookParagraphProgressComponent,
     NotebookParagraphFooterComponent,
-    NotebookParagraphControlComponent,
-    NoteFormBlockComponent
+    NotebookParagraphControlComponent
   ],
   imports: [
     CommonModule,
