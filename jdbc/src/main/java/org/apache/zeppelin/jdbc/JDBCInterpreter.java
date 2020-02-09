@@ -407,9 +407,8 @@ public class JDBCInterpreter extends KerberosInterpreter {
 
   private void createConnectionPool(String url, String user, String propertyKey,
       Properties properties) throws SQLException, ClassNotFoundException {
-    ConnectionFactory connectionFactory =
-            new DriverManagerConnectionFactory(url, properties);
-
+    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
+        url, JDBCInterpreterHelper.getDriverProperties(user, properties));
     PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
             connectionFactory, null);
     final String maxConnectionLifetime =
