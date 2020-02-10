@@ -1,8 +1,0 @@
-{
-  "name": "@zeppelin/visualization",
-  "version": "0.0.1",
-  "peerDependencies": {
-    "@angular/common": "^8.2.8",
-    "@angular/core": "^8.2.8"
-  }
-}
