@@ -11,7 +11,6 @@
  */
 
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -63,7 +62,7 @@ type Mode = 'edit' | 'command';
   },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy, AfterViewInit {
+export class NotebookParagraphComponent extends ParagraphBase implements OnInit, OnChanges, OnDestroy {
   @ViewChild(NotebookParagraphCodeEditorComponent, { static: false })
   notebookParagraphCodeEditorComponent: NotebookParagraphCodeEditorComponent;
   @ViewChildren(NotebookParagraphResultComponent) notebookParagraphResultComponents: QueryList<
@@ -74,7 +73,6 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
   @Input() looknfeel: string;
   @Input() revisionView: boolean;
   @Input() select: boolean = false;
-  @Input() scrolled: boolean = false;
   @Input() index: number = -1;
   @Input() viewOnly: boolean;
   @Input() last: boolean;
@@ -610,35 +608,24 @@ export class NotebookParagraphComponent extends ParagraphBase implements OnInit,
       });
   }
 
-  scrollIfNeeded(): void {
-    if (this.scrolled && this.host.nativeElement) {
-      setTimeout(() => {
-        this.host.nativeElement.scrollIntoView();
-      });
-    }
-  }
   ngOnChanges(changes: SimpleChanges): void {
-    const { index, select, scrolled } = changes;
+    const { index, select } = changes;
     if (
       (index && index.currentValue !== index.previousValue && this.select) ||
       (select && select.currentValue === true && select.previousValue !== true)
     ) {
-      setTimeout(() => {
-        if (this.mode === 'command' && this.host.nativeElement) {
-          (this.host.nativeElement as HTMLElement).focus();
-        }
-      });
-    }
-    if (scrolled) {
-      this.scrollIfNeeded();
+      if (this.host.nativeElement) {
+        setTimeout(() => {
+          if (this.mode === 'command') {
+            (this.host.nativeElement as HTMLElement).focus();
+          }
+        });
+      }
     }
   }
 
   getElement(): HTMLElement {
     return this.host && this.host.nativeElement;
-  }
-  ngAfterViewInit(): void {
-    this.scrollIfNeeded();
   }
 
   ngOnDestroy(): void {

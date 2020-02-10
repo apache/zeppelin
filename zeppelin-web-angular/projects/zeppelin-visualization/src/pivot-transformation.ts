@@ -16,6 +16,7 @@ import { get } from 'lodash';
 import { TableData } from './table-data';
 import { Transformation } from './transformation';
 
+// tslint:disable-next-line:no-any
 export class PivotTransformation extends Transformation {
   constructor(config) {
     super(config);
@@ -86,8 +87,6 @@ export class PivotTransformation extends Transformation {
     let groups = [];
     let values = [];
     let aggregates = [];
-
-    // set values from config
     if (config.mode !== 'scatterChart') {
       keys = config.keys.map(e => e.name);
       groups = config.groups.map(e => e.name);
@@ -102,7 +101,6 @@ export class PivotTransformation extends Transformation {
       groups = group ? [group] : [];
     }
 
-    // try coercion to number type
     dv.transform({
       type: 'map',
       callback: row => {
@@ -116,10 +114,7 @@ export class PivotTransformation extends Transformation {
       }
     });
 
-    // not applicable with type scatter chart
     if (config.mode !== 'scatterChart') {
-
-      // aggregate values
       dv.transform({
         type: 'aggregate',
         fields: config.values.map(v => v.name),
@@ -128,36 +123,19 @@ export class PivotTransformation extends Transformation {
         groupBy: [...keys, ...groups]
       });
 
-      // fill the rows to keep the charts is continuity
+      // dv.transform({
+      //   type: 'fill-rows',
+      //   groupBy: groups,
+      //   orderBy: keys,
+      //   fillBy: 'order'
+      // });
+
       dv.transform({
         type: 'fill-rows',
         groupBy: [...keys, ...groups],
         fillBy: 'group'
       });
 
-      /**
-       * fill the field to keep the charts is continuity
-       *
-       * before
-       * ```
-       * [
-       *  { x: 0, y: 1 },
-       *  { x: 0, y: 2 },
-       *  { x: 0, y: 3 },
-       *  { x: 0 }
-       * ]
-       * ```
-       * after
-       * ```
-       * [
-       *  { x: 0, y: 1 },
-       *  { x: 0, y: 2 },
-       *  { x: 0, y: 3 },
-       *  { x: 0, y: 0 }
-       * //      ^^^^^ filled this
-       * ]
-       * ```
-       */
       config.values
         .map(v => `${v.name}(${v.aggr})`)
         .forEach(field => {
@@ -187,17 +165,9 @@ export class PivotTransformation extends Transformation {
     Object.keys(dv.rows).forEach(groupKey => {
       const groupName = groupKey.replace(/^_/, '');
       dv.rows[groupKey].forEach(row => {
-        const getKey = () => {
-          if (config.mode !== 'pieChart') {
-            return groupName ? `${row.__key__}.${groupName}` : row.__key__
-          } else {
-            const keyName = keys.map(k => row[k]).join('.');
-            return groupName ? `${keyName}.${groupName}` : keyName;
-          }
-        };
         groupsData.push({
           ...row,
-          __key__: getKey()
+          __key__: groupName ? `${row.__key__}.${groupName}` : row.__key__
         });
       });
     });
@@ -207,7 +177,6 @@ export class PivotTransformation extends Transformation {
         dv.origin.findIndex(o => o[firstKey] === a[firstKey]) - dv.origin.findIndex(o => o[firstKey] === b[firstKey])
     );
 
-    console.log(groupsData);
     dv = ds
       .createView({
         state: {

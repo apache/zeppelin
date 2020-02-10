@@ -56,6 +56,14 @@ if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
   fi
 fi
 
+if [[ -z "${ZEPPELIN_ANGULAR_WAR}" ]]; then
+  if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/dist" ]]; then
+    export ZEPPELIN_ANGULAR_WAR="${ZEPPELIN_HOME}/zeppelin-web-angular/dist"
+  else
+    export ZEPPELIN_ANGULAR_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web-angular*.war")
+  fi
+fi
+
 if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
   . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi

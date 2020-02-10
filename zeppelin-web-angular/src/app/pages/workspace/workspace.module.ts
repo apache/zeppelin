@@ -19,10 +19,8 @@ import { RouterModule } from '@angular/router';
 import { HeliumManagerModule } from '@zeppelin/helium-manager';
 import { ShareModule } from '@zeppelin/share';
 
-import { NzMessageModule } from 'ng-zorro-antd/message';
-import { WorkspaceComponent } from './workspace.component';
-
 import { WorkspaceRoutingModule } from './workspace-routing.module';
+import { WorkspaceComponent } from './workspace.component';
 
 @NgModule({
   declarations: [WorkspaceComponent],
@@ -33,8 +31,7 @@ import { WorkspaceRoutingModule } from './workspace-routing.module';
     HttpClientModule,
     ShareModule,
     RouterModule,
-    HeliumManagerModule,
-    NzMessageModule
+    HeliumManagerModule
   ]
 })
 export class WorkspaceModule {}
