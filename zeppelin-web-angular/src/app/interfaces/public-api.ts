@@ -17,4 +17,3 @@ export * from './message-interceptor';
 export * from './security';
 export * from './credential';
 export * from './notebook-repo';
-export * from './notebook-search';

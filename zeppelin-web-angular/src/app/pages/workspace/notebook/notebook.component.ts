@@ -22,18 +22,11 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { isNil } from 'lodash';
 import { Subject } from 'rxjs';
-import { distinctUntilKeyChanged, map, startWith, takeUntil } from 'rxjs/operators';
+import { distinctUntilKeyChanged, takeUntil } from 'rxjs/operators';
 
 import { MessageListener, MessageListenersManager } from '@zeppelin/core';
 import { Permissions } from '@zeppelin/interfaces';
-import {
-  DynamicFormParams,
-  InterpreterBindingItem,
-  MessageReceiveDataTypeMap,
-  Note,
-  OP,
-  RevisionListItem
-} from '@zeppelin/sdk';
+import { InterpreterBindingItem, MessageReceiveDataTypeMap, Note, OP, RevisionListItem } from '@zeppelin/sdk';
 import {
   MessageService,
   NgZService,
@@ -58,7 +51,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   note: Note['note'];
   permissions: Permissions;
   selectId: string | null = null;
-  scrolledId: string | null = null;
   isOwner = true;
   noteRevisions: RevisionListItem[] = [];
   currentRevision: string;
@@ -66,7 +58,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   revisionView = false;
   collaborativeModeUsers = [];
   isNoteDirty = false;
-  isShowNoteForms = false;
   saveTimer = null;
   interpreterBindings: InterpreterBindingItem[] = [];
   activatedExtension: 'interpreter' | 'permissions' | 'revisions' | 'hide' = 'hide';
@@ -89,14 +80,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
         this.getPermissions();
         this.note.config.personalizedMode =
           this.note.config.personalizedMode === undefined ? 'false' : this.note.config.personalizedMode;
-      }
-      if (this.note.noteForms && this.note.noteParams) {
-        this.saveNoteForms({
-          formsData: {
-            forms: this.note.noteForms,
-            params: this.note.noteParams
-          }
-        });
       }
       this.cdr.markForCheck();
     }
@@ -142,7 +125,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   saveNoteForms(data: MessageReceiveDataTypeMap[OP.SAVE_NOTE_FORMS]) {
     this.note.noteForms = data.formsData.forms;
     this.note.noteParams = data.formsData.params;
-    this.setNoteFormsStatus();
   }
 
   @MessageListener(OP.NOTE_REVISION)
@@ -249,10 +231,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.selectId = id;
   }
 
-  onParagraphScrolled(id: string) {
-    this.scrolledId = id;
-  }
-
   onSelectAtIndex(index: number) {
     const scopeIndex = Math.min(this.note.paragraphs.length, Math.max(0, index));
     if (this.note.paragraphs[scopeIndex]) {
@@ -312,29 +290,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
     this.listOfNotebookParagraphComponent.forEach(p => p.setEditorHide(editorHide));
   }
 
-  onNoteFormChange(noteParams: DynamicFormParams) {
-    this.messageService.saveNoteForms({
-      noteParams,
-      id: this.note.id
-    });
-  }
-
-  onFormNameRemove(formName: string) {
-    this.messageService.removeNoteForms(this.note, formName);
-  }
-
-  onNoteTitleChange(noteFormTitle: string) {
-    this.messageService.updateNote(this.note.id, this.note.name, {
-      ...this.note.config,
-      noteFormTitle
-    });
-  }
-
-  setNoteFormsStatus() {
-    this.isShowNoteForms = this.note && this.note.noteForms && Object.keys(this.note.noteForms).length !== 0;
-    this.cdr.markForCheck();
-  }
-
   constructor(
     private activatedRoute: ActivatedRoute,
     public messageService: MessageService,
@@ -350,16 +305,6 @@ export class NotebookComponent extends MessageListenersManager implements OnInit
   }
 
   ngOnInit() {
-    this.activatedRoute.queryParamMap
-      .pipe(
-        startWith(this.activatedRoute.snapshot.queryParamMap),
-        takeUntil(this.destroy$),
-        map(data => data.get('paragraph'))
-      )
-      .subscribe(id => {
-        this.onParagraphSelect(id);
-        this.onParagraphScrolled(id);
-      });
     this.activatedRoute.params
       .pipe(
         takeUntil(this.destroy$),

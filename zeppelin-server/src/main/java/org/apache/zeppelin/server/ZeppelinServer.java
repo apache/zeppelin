@@ -97,12 +97,13 @@ import org.slf4j.LoggerFactory;
 /** Main class of Zeppelin. */
 public class ZeppelinServer extends ResourceConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
-  private static final String WEB_APP_CONTEXT_NEXT = "/next";
 
   public static Server jettyWebServer;
   public static ServiceLocator sharedServiceLocator;
 
   private static ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+  private static final String CONNCETOR_NAME_DEFAULT = "default";
+  private static final String CONNCETOR_NAME_ANGULAR = "angular";
 
   @Inject
   public ZeppelinServer() {
@@ -179,11 +180,11 @@ public class ZeppelinServer extends ResourceConfig {
         });
 
     // Multiple Web UI
-    final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), conf.getServerContextPath());
-    final WebAppContext nextWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), WEB_APP_CONTEXT_NEXT);
+    final WebAppContext defaultWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_WAR), CONNCETOR_NAME_DEFAULT);
+    final WebAppContext angularWebApp = setupWebAppContext(contexts, conf, conf.getString(ConfVars.ZEPPELIN_ANGULAR_WAR), CONNCETOR_NAME_ANGULAR);
 
     initWebApp(defaultWebApp);
-    initWebApp(nextWebApp);
+    initWebApp(angularWebApp);
     // Cluster Manager Server
     setupClusterManagerServer(sharedServiceLocator);
 
@@ -289,10 +290,11 @@ public class ZeppelinServer extends ResourceConfig {
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_MIN),
                            conf.getInt(ConfVars.ZEPPELIN_SERVER_JETTY_THREAD_POOL_TIMEOUT));
     final Server server = new Server(threadPool);
-    initServerConnector(server, conf.getServerPort(), conf.getServerSslPort());
+    initServerConnector(server, conf.getServerPort(), conf.getServerSslPort(), CONNCETOR_NAME_DEFAULT);
+    initServerConnector(server, conf.getServerAngularPort(), conf.getServerAngularSslPort(), CONNCETOR_NAME_ANGULAR);
     return server;
   }
-  private static void initServerConnector(Server server, int port, int sslPort) {
+  private static void initServerConnector(Server server, int port, int sslPort, String name) {
 
     ServerConnector connector;
     HttpConfiguration httpConfig = new HttpConfiguration();
@@ -323,6 +325,7 @@ public class ZeppelinServer extends ResourceConfig {
     int timeout = 1000 * 30;
     connector.setIdleTimeout(timeout);
     connector.setHost(conf.getServerAddress());
+    connector.setName(name);
     server.addConnector(connector);
   }
 
@@ -418,10 +421,9 @@ public class ZeppelinServer extends ResourceConfig {
   }
 
   private static WebAppContext setupWebAppContext(
-      ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String contextPath) {
+      ContextHandlerCollection contexts, ZeppelinConfiguration conf, String warPath, String connectorName) {
     WebAppContext webApp = new WebAppContext();
-    webApp.setContextPath(contextPath);
-    LOG.info("warPath is: {}", warPath);
+    webApp.setContextPath(conf.getServerContextPath());
     File warFile = new File(warPath);
     if (warFile.isDirectory()) {
       // Development mode, read from FS
@@ -431,8 +433,7 @@ public class ZeppelinServer extends ResourceConfig {
     } else {
       // use packaged WAR
       webApp.setWar(warFile.getAbsolutePath());
-      webApp.setExtractWAR(false);
-      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR) + contextPath);
+      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR));
       warTempDirectory.mkdir();
       LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
       webApp.setTempDirectory(warTempDirectory);
@@ -446,6 +447,7 @@ public class ZeppelinServer extends ResourceConfig {
     webApp.setInitParameter(
         "org.eclipse.jetty.servlet.Default.dirAllowed",
         Boolean.toString(conf.getBoolean(ConfVars.ZEPPELIN_SERVER_DEFAULT_DIR_ALLOWED)));
+    webApp.setVirtualHosts(new String[] {"@" + connectorName});
     return webApp;
   }
 

@@ -33,7 +33,6 @@ export class ElasticInputComponent implements OnChanges {
   @Input() value: string;
   @Input() readonly = false;
   @Input() min = false;
-  @Input() defaultTitle = 'Untitled';
   @Output() readonly valueUpdate = new EventEmitter<string>();
   @ViewChild('inputElement', { read: ElementRef, static: false }) inputElement: ElementRef;
   @ViewChild('pElement', { read: ElementRef, static: false }) pElement: ElementRef;
@@ -48,7 +47,7 @@ export class ElasticInputComponent implements OnChanges {
 
   updateValue(value: string) {
     const trimmedNewName = value.trim();
-    if (typeof value === 'string') {
+    if (trimmedNewName.length > 0 && this.value !== trimmedNewName) {
       this.editValue = trimmedNewName;
     }
   }

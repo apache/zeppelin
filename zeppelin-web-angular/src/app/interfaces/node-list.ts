@@ -27,7 +27,6 @@ export interface NodeItem {
   expanded?: boolean;
   children?: NodeItem[];
   isTrash: boolean;
-  nodeType?: string;
   path?: string;
 }
 
