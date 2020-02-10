@@ -216,7 +216,12 @@ function ResultCtrl($scope, $rootScope, $route, $window, $routeParams, $location
       callback(elem);
     }
 
-    $timeout(retry);
+    if(isDOMLoaded(targetElemId)) {
+      const elem = angular.element(`#${targetElemId}`);
+      callback(elem);
+    } else {
+      $timeout(retry);
+    }
   }
 
   $scope.$on('updateResult', function(event, result, newConfig, paragraphRef, index) {

@@ -212,7 +212,7 @@ function ParagraphCtrl($scope, $rootScope, $route, $window, $routeParams, $locat
         $scope.paragraph.results.msg = [];
       }
 
-      let update = ($scope.paragraph.results.msg[data.index]) ? true : false;
+      let update = typeof $scope.paragraph.results.msg[data.index] !== 'undefined';
 
       $scope.paragraph.results.msg[data.index] = {
         data: data.data,
