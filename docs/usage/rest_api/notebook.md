@@ -61,11 +61,11 @@ Notebooks REST API supports the following operations: List, Create, Get, Delete,
   "message": "",
   "body": [
     {
-      "name":"Homepage",
+      "path":"Homepage",
       "id":"2AV4WUEMK"
     },
     {
-      "name":"Zeppelin Tutorial",
+      "path":"Zeppelin Tutorial",
       "id":"2A94M5J1Z"
     }
   ]
