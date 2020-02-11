@@ -105,11 +105,7 @@ public class LoginRestApi {
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
-        String name = realm.getClass().getName();
-
-        LOG.debug("RealmClass.getName: " + name);
-
-        if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
+        if (realm instanceof KnoxJwtRealm) {
           return (KnoxJwtRealm) realm;
         }
       }
@@ -122,9 +118,7 @@ public class LoginRestApi {
     if (realmsList != null) {
       for (Iterator<Realm> iterator = realmsList.iterator(); iterator.hasNext(); ) {
         Realm realm = iterator.next();
-        String name = realm.getClass().getName();
-        LOG.debug("RealmClass.getName: " + name);
-        if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
+        if (realm instanceof KnoxJwtRealm) {
           return true;
         }
       }
