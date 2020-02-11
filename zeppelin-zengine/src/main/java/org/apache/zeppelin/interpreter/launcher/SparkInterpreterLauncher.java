@@ -120,6 +120,24 @@ public class SparkInterpreterLauncher extends StandardInterpreterLauncher {
                 .map(jar -> jar.toAbsolutePath().toString()).collect(Collectors.toList());
         additionalJars.addAll(scalaJars);
 
+        // add zeppelin-interpreter-shaded
+        Path interpreterFolder = Paths.get(zConf.getZeppelinHome(), "/interpreter");
+        List<String> interpreterJars = StreamSupport.stream(
+                Files.newDirectoryStream(interpreterFolder, entry -> Files.isRegularFile(entry))
+                        .spliterator(),
+                false)
+                .filter(jar -> jar.toFile().getName().startsWith("zeppelin-interpreter-shaded")
+                        && jar.toFile().getName().endsWith(".jar"))
+                .map(jar -> jar.toAbsolutePath().toString())
+                .collect(Collectors.toList());
+        if (interpreterJars.size() == 0) {
+          throw new IOException("zeppelin-interpreter-shaded jar is not found");
+        } else if (interpreterJars.size() > 1) {
+          throw new IOException("more than 1 zeppelin-interpreter-shaded jars are found: "
+                  + StringUtils.join(interpreterJars, ","));
+        }
+        additionalJars.addAll(interpreterJars);
+
         if (sparkProperties.containsKey("spark.jars")) {
           sparkProperties.put("spark.jars", sparkProperties.getProperty("spark.jars") + "," +
                   StringUtils.join(additionalJars, ","));
