@@ -343,10 +343,13 @@ public class NotebookServiceTest {
 
     // run paragraph asynchronously
     reset(callback);
+    p.getConfig().put("colWidth", "6.0");
+    p.getConfig().put("title", true);
     boolean runStatus = notebookService.runParagraph(note1.getId(), p.getId(), "my_title", "1+1",
         new HashMap<>(), new HashMap<>(), false, false, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
+    assertEquals(2, p.getConfig().size());
 
     // run paragraph synchronously via correct code
     reset(callback);
@@ -354,6 +357,7 @@ public class NotebookServiceTest {
         new HashMap<>(), new HashMap<>(), false, true, context, callback);
     assertTrue(runStatus);
     verify(callback).onSuccess(p, context);
+    assertEquals(2, p.getConfig().size());
 
     // run all paragraphs
     reset(callback);

@@ -309,16 +309,24 @@ public class NotebookService {
     p.setText(text);
     p.setTitle(title);
     p.setAuthenticationInfo(context.getAutheInfo());
-    p.settings.setParams(params);
-    p.setConfig(config);
+    if (params != null && !params.isEmpty()) {
+      p.settings.setParams(params);
+    }
+    if (config != null && !config.isEmpty()) {
+      p.setConfig(config);
+    }
 
     if (note.isPersonalizedMode()) {
       p = p.getUserParagraph(context.getAutheInfo().getUser());
       p.setText(text);
       p.setTitle(title);
       p.setAuthenticationInfo(context.getAutheInfo());
-      p.settings.setParams(params);
-      p.setConfig(config);
+      if (params != null && !params.isEmpty()) {
+        p.settings.setParams(params);
+      }
+      if (config != null && !config.isEmpty()) {
+        p.setConfig(config);
+      }
     }
 
     try {
