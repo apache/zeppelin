@@ -60,7 +60,7 @@ public class JupyterUtilTest {
     System.out.println(gson.toJson(n));
     System.out.println(n.getParagraphs().size());
     assertTrue(n.getParagraphs().size() == 8);
-    assertTrue(noteName.equals(n.getName()));
+    assertTrue(n.getName().startsWith(noteName));
 
     Paragraph firstParagraph = n.getParagraphs().get(0);
     assertTrue(firstParagraph.getText().equals("%python\nimport numpy as np"));
