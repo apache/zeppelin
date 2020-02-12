@@ -422,6 +422,9 @@ public class NotebookServer extends WebSocketServlet
         case GET_INTERPRETER_BINDINGS:
           getInterpreterBindings(conn, messagereceived);
           break;
+        case SAVE_INTERPRETER_BINDINGS:
+          saveInterpreterBindings(conn, messagereceived);
+          break;
         case EDITOR_SETTING:
           getEditorSetting(conn, messagereceived);
           break;
@@ -537,6 +540,28 @@ public class NotebookServer extends WebSocketServlet
     }
     conn.send(serializeMessage(
         new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
+  }
+
+  public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
+    List<InterpreterSettingsList> settingList = new ArrayList<>();
+    String noteId = (String) fromMessage.data.get("noteId");
+    Note note = getNotebook().getNote(noteId);
+    if (note != null) {
+      List<String> settingIdList =
+              gson.fromJson(String.valueOf(fromMessage.data.get("selectedSettingIds")),
+                      new TypeToken<ArrayList<String>>() {}.getType());
+      if (!settingIdList.isEmpty()) {
+        note.setDefaultInterpreterGroup(settingIdList.get(0));
+      }
+      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      for (InterpreterSetting setting : bindedSettings) {
+        settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
+                setting.getInterpreterInfos(), true));
+      }
+    }
+
+    conn.send(serializeMessage(
+            new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
   }
 
   public void broadcastNote(Note note) {

@@ -976,7 +976,22 @@ public class Note implements JsonSerializable {
   }
 
   public List<InterpreterSetting> getBindedInterpreterSettings() {
-    Set<InterpreterSetting> settings = new HashSet<>();
+    // use LinkedHashSet because order matters, the first one represent the default interpreter setting.
+    Set<InterpreterSetting> settings = new LinkedHashSet<>();
+    // add the default interpreter group
+    InterpreterSetting defaultIntpSetting =
+            interpreterSettingManager.getByName(getDefaultInterpreterGroup());
+    if (defaultIntpSetting != null) {
+      settings.add(defaultIntpSetting);
+    }
+    // add the interpreter setting with the same group of default interpreter group
+    for (InterpreterSetting intpSetting : interpreterSettingManager.get()) {
+      if (intpSetting.getGroup().equals(defaultIntpSetting.getGroup())) {
+        settings.add(intpSetting);
+      }
+    }
+
+    // add interpreter group used by each paragraph
     for (Paragraph p : getParagraphs()) {
       try {
         Interpreter intp = p.getBindedInterpreter();
@@ -986,12 +1001,7 @@ public class Note implements JsonSerializable {
         // ignore this
       }
     }
-    // add the default interpreter group
-    InterpreterSetting defaultIntpSetting =
-            interpreterSettingManager.getByName(getDefaultInterpreterGroup());
-    if (defaultIntpSetting != null) {
-      settings.add(defaultIntpSetting);
-    }
+
     return new ArrayList<>(settings);
   }
 
