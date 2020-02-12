@@ -363,8 +363,8 @@ function WebsocketMessageService($rootScope, websocketEvents) {
     },
 
     saveInterpreterBindings: function(noteId, selectedSettingIds) {
-      // websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
-      //   data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
+      websocketEvents.sendNewEvent({op: 'SAVE_INTERPRETER_BINDINGS',
+        data: {noteId: noteId, selectedSettingIds: selectedSettingIds}});
     },
 
     listConfigurations: function() {

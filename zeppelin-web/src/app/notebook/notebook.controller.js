@@ -1251,11 +1251,11 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
   };
 
   const isSettingDirty = function() {
-    // if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
-    //   return false;
-    // } else {
-    return false;
-    // }
+    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
+      return false;
+    } else {
+      return false;
+    }
   };
 
   const isPermissionsDirty = function() {

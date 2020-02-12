@@ -42,12 +42,10 @@ limitations under the License.
         <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div>
             <a ng-click="restartInterpreter(item)"
-               ng-class="{'inactivelink': !item.selected}"
                uib-tooltip="Restart">
               <span class="glyphicon glyphicon-refresh btn-md"></span>
             </a>&nbsp
             <div as-sortable-item-handle
-                 ng-click="item.selected = !item.selected"
                  class="btn"
                  ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
               <font style="font-size:16px">{{item.name}}</font>

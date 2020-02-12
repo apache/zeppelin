@@ -172,6 +172,7 @@ public class Message implements JsonSerializable {
     UNSUBSCRIBE_UPDATE_NOTE_JOBS, // [c-s] unsubscribe job information for job management
     // @param unixTime
     GET_INTERPRETER_BINDINGS,    // [c-s] get interpreter bindings
+    SAVE_INTERPRETER_BINDINGS,    // [c-s] save interpreter bindings
     INTERPRETER_BINDINGS,         // [s-c] interpreter bindings
 
     GET_INTERPRETER_SETTINGS,     // [c-s] get interpreter settings
