@@ -450,7 +450,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testRunAll() throws IOException {
+  public void testRunAll() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     // p1
@@ -822,8 +822,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testExportAndImportNote() throws IOException, CloneNotSupportedException,
-      InterruptedException, InterpreterException, SchedulerException, RepositoryException {
+  public void testExportAndImportNote() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -857,7 +856,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testCloneNote() throws IOException {
+  public void testCloneNote() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     final Paragraph p = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -888,7 +887,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
+  public void testResourceRemovealOnParagraphNoteRemove() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     Paragraph p1 = note.addNewParagraph(AuthenticationInfo.ANONYMOUS);
@@ -1155,8 +1154,7 @@ public class NotebookTest extends AbstractInterpreterTest implements ParagraphJo
   }
 
   @Test
-  public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
-      IOException, InterpreterException {
+  public void testAbortParagraphStatusOnInterpreterRestart() throws Exception {
     Note note = notebook.createNote("note1", anonymous);
 
     // create three paragraphs

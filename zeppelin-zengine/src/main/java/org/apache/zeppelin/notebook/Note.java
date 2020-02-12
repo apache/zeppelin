@@ -830,7 +830,7 @@ public class Note implements JsonSerializable {
     }
   }
 
-  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) {
+  public void runAll(AuthenticationInfo authenticationInfo, boolean blocking) throws Exception {
     setRunning(true);
     try {
       for (Paragraph p : getParagraphs()) {
@@ -840,7 +840,8 @@ public class Note implements JsonSerializable {
         p.setAuthenticationInfo(authenticationInfo);
         if (!run(p.getId(), blocking)) {
           logger.warn("Skip running the remain notes because paragraph {} fails", p.getId());
-          break;
+          throw new Exception("Fail to run note because paragraph " + p.getId() + " is failed, " +
+                  p.getReturn());
         }
       }
     } finally {

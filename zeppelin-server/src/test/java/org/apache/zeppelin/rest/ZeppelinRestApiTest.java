@@ -428,7 +428,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testNoteJobs() throws IOException, InterruptedException {
+  public void testNoteJobs() throws Exception {
     LOG.info("testNoteJobs");
 
     Note note = null;
@@ -489,7 +489,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testGetNoteJob() throws IOException, InterruptedException {
+  public void testGetNoteJob() throws Exception {
     LOG.info("testGetNoteJob");
 
     Note note = null;
@@ -544,7 +544,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testRunParagraphWithParams() throws IOException, InterruptedException {
+  public void testRunParagraphWithParams() throws Exception {
     LOG.info("testRunParagraphWithParams");
 
     Note note = null;
@@ -586,7 +586,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testJobs() throws InterruptedException, IOException{
+  public void testJobs() throws Exception {
     // create a note and a paragraph
     Note note = null;
     try {
@@ -634,7 +634,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void testCronDisable() throws InterruptedException, IOException{
+  public void testCronDisable() throws Exception {
     Note note = null;
     try {
       // create a note and a paragraph
