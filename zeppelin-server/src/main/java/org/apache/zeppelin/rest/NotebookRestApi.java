@@ -672,8 +672,7 @@ public class NotebookRestApi extends AbstractRestApi {
       note.runAll(subject, blocking);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
-      return new JsonResponse<>(Status.PRECONDITION_FAILED,
-          ex.getMessage() + "- Not selected or Invalid Interpreter bind").build();
+      return new JsonResponse<>(Status.EXPECTATION_FAILED, ex.getMessage()).build();
     }
     return new JsonResponse<>(Status.OK).build();
   }

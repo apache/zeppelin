@@ -107,6 +107,10 @@ public class CronJob implements org.quartz.Job {
             cronExecutingUser,
             StringUtils.isEmpty(cronExecutingRoles) ? null : cronExecutingRoles,
             null);
-    note.runAll(authenticationInfo, true);
+    try {
+      note.runAll(authenticationInfo, true);
+    } catch (Exception e) {
+      logger.warn("Fail to run note", e);
+    }
   }
 }
