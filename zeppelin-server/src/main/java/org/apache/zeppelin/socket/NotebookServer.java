@@ -543,6 +543,7 @@ public class NotebookServer extends WebSocketServlet
   }
 
   public void saveInterpreterBindings(NotebookSocket conn, Message fromMessage) throws IOException {
+    List<InterpreterSettingsList> settingList = new ArrayList<>();
     String noteId = (String) fromMessage.data.get("noteId");
     Note note = getNotebook().getNote(noteId);
     if (note != null) {
@@ -552,7 +553,15 @@ public class NotebookServer extends WebSocketServlet
       if (!settingIdList.isEmpty()) {
         note.setDefaultInterpreterGroup(settingIdList.get(0));
       }
+      List<InterpreterSetting> bindedSettings = note.getBindedInterpreterSettings();
+      for (InterpreterSetting setting : bindedSettings) {
+        settingList.add(new InterpreterSettingsList(setting.getId(), setting.getName(),
+                setting.getInterpreterInfos(), true));
+      }
     }
+
+    conn.send(serializeMessage(
+            new Message(OP.INTERPRETER_BINDINGS).put("interpreterBindings", settingList)));
   }
 
   public void broadcastNote(Note note) {

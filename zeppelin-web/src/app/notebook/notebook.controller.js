@@ -1254,7 +1254,7 @@ function NotebookCtrl($scope, $route, $routeParams, $location, $rootScope,
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
     } else {
-      return false;
+      return true;
     }
   };
 
