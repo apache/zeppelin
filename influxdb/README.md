@@ -8,11 +8,11 @@ Provide InfluxDB Interpreter for Zeppelin.
 ## Build
 
 ```
-mvn -pl zeppelin-interpreter,zeppelin-display,influxdb -DskipTests package
+mvn -pl influxdb -am -DskipTests package
 ```
 
 ## Test
 
 ```
-mvn -pl influxdb,zeppelin-display,zeppelin-interpreter -Dtest='org.apache.zeppelin.influxdb.*' -DfailIfNoTests=false test
+mvn -pl influxdb -am -Dtest='org.apache.zeppelin.influxdb.*' -DfailIfNoTests=false test
 ```
