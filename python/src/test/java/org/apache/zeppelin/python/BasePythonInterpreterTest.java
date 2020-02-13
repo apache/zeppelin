@@ -301,13 +301,14 @@ public abstract class BasePythonInterpreterTest extends ConcurrentTestCase {
     // Pandas DataFrame
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +
-        "df = pd.DataFrame({'id':[1,2,3], 'name':['a','b','c']})\nz.show(df)", context);
+        "df = pd.DataFrame({'id':[1,2,3], 'name':['a\ta','b\\nb','c\\r\\nc']})\nz.show(df)",
+            context);
     assertEquals(context.out.toInterpreterResultMessage().toString(),
             InterpreterResult.Code.SUCCESS, result.code());
     interpreterResultMessages = context.out.toInterpreterResultMessage();
     assertEquals(1, interpreterResultMessages.size());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResultMessages.get(0).getType());
-    assertEquals("id\tname\n1\ta\n2\tb\n3\tc\n", interpreterResultMessages.get(0).getData());
+    assertEquals("id\tname\n1\ta a\n2\tb b\n3\tc c\n", interpreterResultMessages.get(0).getData());
 
     context = getInterpreterContext();
     result = interpreter.interpret("import pandas as pd\n" +

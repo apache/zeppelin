@@ -185,7 +185,10 @@ class PyZeppelinContext(object):
             self.show_dataframe(p, **kwargs)
         else:
             print(str(p))
-            
+
+    def normalizeColumn(self, column):
+        return column.replace("\t", " ").replace("\r\n", " ").replace("\n", " ")
+
     def show_dataframe(self, df, show_index=False, **kwargs):
         """Pretty prints DF using Table Display System
         """
@@ -193,11 +196,11 @@ class PyZeppelinContext(object):
         header_buf = StringIO("")
         if show_index:
             idx_name = str(df.index.name) if df.index.name is not None else ""
-            header_buf.write(idx_name + "\t")
-        header_buf.write(str(df.columns[0]))
+            header_buf.write(self.normalizeColumn(idx_name) + "\t")
+        header_buf.write(self.normalizeColumn(str(df.columns[0])))
         for col in df.columns[1:]:
             header_buf.write("\t")
-            header_buf.write(str(col))
+            header_buf.write(self.normalizeColumn(str(col)))
         header_buf.write("\n")
 
         body_buf = StringIO("")
@@ -208,10 +211,10 @@ class PyZeppelinContext(object):
             if show_index:
                 body_buf.write("%html <strong>{}</strong>".format(idx))
                 body_buf.write("\t")
-            body_buf.write(str(row[0]))
+            body_buf.write(self.normalizeColumn(str(row[0])))
             for cell in row[1:]:
                 body_buf.write("\t")
-                body_buf.write(str(cell))
+                body_buf.write(self.normalizeColumn(str(cell)))
             # don't print '\n' after the last row
             if idx != (rowNumber - 1):
                 body_buf.write("\n")
