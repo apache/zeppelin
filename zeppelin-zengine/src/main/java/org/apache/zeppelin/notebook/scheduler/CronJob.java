@@ -41,6 +41,7 @@ public class CronJob implements org.quartz.Job {
 
     Notebook notebook = (Notebook) jobDataMap.get("notebook");
     String noteId = jobDataMap.getString("noteId");
+    logger.info("Start cron job of note: " + noteId);
     Note note = null;
     try {
       note = notebook.getNote(noteId);
