@@ -385,6 +385,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       setReturn(intpResult, e);
       setStatus(Job.Status.ERROR);
       return false;
+    } catch (Throwable e) {
+      InterpreterResult intpResult =
+              new InterpreterResult(InterpreterResult.Code.ERROR,
+                      "Unexpected exception: " + ExceptionUtils.getStackTrace(e));
+      setReturn(intpResult, e);
+      setStatus(Job.Status.ERROR);
+      return false;
     }
   }
 
