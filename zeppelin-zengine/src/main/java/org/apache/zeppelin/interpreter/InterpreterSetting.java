@@ -885,7 +885,7 @@ public class InterpreterSetting {
 
           // load dependencies
           List<Dependency> deps = getDependencies();
-          if (deps != null) {
+          if (deps != null && !deps.isEmpty()) {
             LOGGER.info("Start to download dependencies for interpreter: " + name);
             for (Dependency d : deps) {
               File destDir = new File(

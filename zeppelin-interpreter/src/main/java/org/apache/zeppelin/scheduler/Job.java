@@ -178,13 +178,13 @@ public abstract class Job<T> {
     }
   }
 
-  private synchronized void completeWithSuccess(T result) {
+  private void completeWithSuccess(T result) {
     setResult(result);
     exception = null;
     errorMessage = null;
   }
 
-  private synchronized void completeWithError(Throwable error) {
+  private void completeWithError(Throwable error) {
     setException(error);
     errorMessage = getJobExceptionStack(error);
   }
@@ -201,11 +201,11 @@ public abstract class Job<T> {
     }
   }
 
-  public synchronized Throwable getException() {
+  public Throwable getException() {
     return exception;
   }
 
-  protected synchronized void setException(Throwable t) {
+  protected void setException(Throwable t) {
     exception = t;
   }
 

@@ -33,28 +33,27 @@ import org.slf4j.LoggerFactory;
 
 /** Cron task for the note. */
 public class CronJob implements org.quartz.Job {
-  private static final Logger logger = LoggerFactory.getLogger(CronJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CronJob.class);
 
   @Override
   public void execute(JobExecutionContext context) {
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
-
     Notebook notebook = (Notebook) jobDataMap.get("notebook");
     String noteId = jobDataMap.getString("noteId");
-    logger.info("Start cron job of note: " + noteId);
+    LOGGER.info("Start cron job of note: " + noteId);
     Note note = null;
     try {
       note = notebook.getNote(noteId);
       if (note == null) {
-        logger.warn("Note " + noteId + " not found");
+        LOGGER.warn("Skip cron job of note: " + noteId + ", because it is not found");
         return;
       }
     } catch (IOException e) {
-      logger.warn("Fail to get note: " + noteId, e);
+      LOGGER.warn("Skip cron job of note: " + noteId + ", because fail to get it", e);
       return;
     }
     if (note.haveRunningOrPendingParagraphs()) {
-      logger.warn(
+      LOGGER.warn(
           "execution of the cron job is skipped because there is a running or pending "
               + "paragraph (note id: {})",
           noteId);
@@ -62,7 +61,7 @@ public class CronJob implements org.quartz.Job {
     }
 
     if (!note.isCronSupported(notebook.getConf())) {
-      logger.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
+      LOGGER.warn("execution of the cron job is skipped cron is not enabled from Zeppelin server");
       return;
     }
 
@@ -70,19 +69,17 @@ public class CronJob implements org.quartz.Job {
 
     boolean releaseResource = false;
     String cronExecutingUser = null;
-    try {
-      Map<String, Object> config = note.getConfig();
-      if (config != null) {
-        if (config.containsKey("releaseresource")) {
-          releaseResource = (boolean) config.get("releaseresource");
-        }
-        cronExecutingUser = (String) config.get("cronExecutingUser");
+    Map<String, Object> config = note.getConfig();
+    if (config != null) {
+      if (config.containsKey("releaseresource")) {
+        releaseResource = (boolean) config.get("releaseresource");
       }
-    } catch (ClassCastException e) {
-      logger.error(e.getMessage(), e);
+      cronExecutingUser = (String) config.get("cronExecutingUser");
     }
+
     if (releaseResource) {
-      for (InterpreterSetting setting : note.getBindedInterpreterSettings()) {
+      LOGGER.info("Releasing interpreters used by this note: " + noteId);
+      for (InterpreterSetting setting : note.getUsedInterpreterSettings()) {
         try {
           notebook
               .getInterpreterSettingManager()
@@ -91,7 +88,7 @@ public class CronJob implements org.quartz.Job {
                   noteId,
                   cronExecutingUser != null ? cronExecutingUser : "anonymous");
         } catch (InterpreterException e) {
-          logger.error("Fail to restart interpreter: " + setting.getId(), e);
+          LOGGER.error("Fail to restart interpreter: " + setting.getId(), e);
         }
       }
     }
@@ -111,7 +108,7 @@ public class CronJob implements org.quartz.Job {
     try {
       note.runAll(authenticationInfo, true);
     } catch (Exception e) {
-      logger.warn("Fail to run note", e);
+      LOGGER.warn("Fail to run note: " + note.getName(), e);
     }
   }
 }
