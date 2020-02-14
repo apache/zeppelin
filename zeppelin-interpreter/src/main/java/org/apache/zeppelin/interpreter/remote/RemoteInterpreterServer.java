@@ -239,48 +239,53 @@ public class RemoteInterpreterServer extends Thread
 
   @Override
   public void shutdown() throws TException {
-    logger.info("Shutting down...");
-    // delete interpreter cluster meta
-    deleteClusterMeta();
+    Thread shutDownThread = new Thread(() -> {
+      logger.info("Shutting down...");
+      // delete interpreter cluster meta
+      deleteClusterMeta();
 
-    if (interpreterGroup != null) {
-      synchronized (interpreterGroup) {
-        for (List<Interpreter> session : interpreterGroup.values()) {
-          for (Interpreter interpreter : session) {
-            try {
-              interpreter.close();
-            } catch (InterpreterException e) {
-              logger.warn("Fail to close interpreter", e);
+      if (interpreterGroup != null) {
+        synchronized (interpreterGroup) {
+          for (List<Interpreter> session : interpreterGroup.values()) {
+            for (Interpreter interpreter : session) {
+              try {
+                interpreter.close();
+              } catch (InterpreterException e) {
+                logger.warn("Fail to close interpreter", e);
+              }
             }
           }
         }
       }
-    }
-    if (!isTest) {
-      SchedulerFactory.singleton().destroy();
-    }
-    server.stop();
-
-    // server.stop() does not always finish server.serve() loop
-    // sometimes server.serve() is hanging even after server.stop() call.
-    // this case, need to force kill the process
-
-    long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
-        server.isServing()) {
-      try {
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+      if (!isTest) {
+        SchedulerFactory.singleton().destroy();
       }
-    }
 
-    if (server.isServing()) {
-      logger.info("Force shutting down");
-      System.exit(0);
-    }
+      server.stop();
 
-    logger.info("Shutting down");
+      // server.stop() does not always finish server.serve() loop
+      // sometimes server.serve() is hanging even after server.stop() call.
+      // this case, need to force kill the process
+
+      long startTime = System.currentTimeMillis();
+      while (System.currentTimeMillis() - startTime < DEFAULT_SHUTDOWN_TIMEOUT &&
+              server.isServing()) {
+        try {
+          Thread.sleep(300);
+        } catch (InterruptedException e) {
+          logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
+        }
+      }
+
+      if (server.isServing()) {
+        logger.info("Force shutting down");
+        System.exit(0);
+      }
+
+      logger.info("Shutting down");
+    }, "Shutdown-Thread");
+
+    shutDownThread.start();
   }
 
   public int getPort() {
