@@ -17,21 +17,13 @@
 
 package org.apache.zeppelin.notebook;
 
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterResultMessage;
-import org.apache.zeppelin.interpreter.InterpreterResultMessageOutput;
 import org.apache.zeppelin.scheduler.JobListener;
 
-import java.util.List;
 
 /**
- * Listen paragraph update
+ * Listener for Paragraph Job.
  */
 public interface ParagraphJobListener extends JobListener<Paragraph> {
-  void onOutputAppend(Paragraph paragraph, int idx, String output);
-  void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage msg);
-  void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs);
-
   //TODO(savalek) Temporary solution. Need to refactor cron to be able to notify frontend directly.
   void noteRunningStatusChange(String noteId, boolean newStatus);
 }

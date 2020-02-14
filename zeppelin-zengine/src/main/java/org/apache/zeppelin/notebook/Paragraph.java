@@ -292,7 +292,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       return new ArrayList<>();
     }
     cursor = calculateCursorPosition(buffer, cursor);
-    InterpreterContext interpreterContext = getInterpreterContext(null);
+    InterpreterContext interpreterContext = getInterpreterContext();
 
     try {
       return this.interpreter.completion(this.scriptText, cursor, interpreterContext);
@@ -323,7 +323,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   public int progress() {
     try {
       if (this.interpreter != null) {
-        return this.interpreter.getProgress(getInterpreterContext(null));
+        return this.interpreter.getProgress(getInterpreterContext());
       } else {
         return 0;
       }
@@ -486,17 +486,13 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
           return getReturn();
         }
 
-        context.out.flush();
-        List<InterpreterResultMessage> resultMessages = context.out.toInterpreterResultMessage();
-        resultMessages.addAll(ret.message());
-        InterpreterResult res = new InterpreterResult(ret.code(), resultMessages);
         Paragraph p = getUserParagraph(getUser());
         if (null != p) {
-          p.setResult(res);
+          p.setResult(ret);
           p.settings.setParams(settings.getParams());
         }
 
-        return res;
+        return ret;
       } finally {
         InterpreterContext.remove();
       }
@@ -511,7 +507,7 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
       return true;
     }
     try {
-      interpreter.cancel(getInterpreterContext(null));
+      interpreter.cancel(getInterpreterContext());
     } catch (InterpreterException e) {
       throw new RuntimeException(e);
     }
@@ -520,55 +516,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
   }
 
   private InterpreterContext getInterpreterContext() {
-    final Paragraph self = this;
-
-    return getInterpreterContext(
-        new InterpreterOutput(
-            new InterpreterOutputListener() {
-              ParagraphJobListener paragraphJobListener = (ParagraphJobListener) getListener();
-
-              @Override
-              public void onAppend(int index, InterpreterResultMessageOutput out, byte[] line) {
-                if (null != paragraphJobListener) {
-                  paragraphJobListener.onOutputAppend(self, index, new String(line));
-                }
-              }
-
-              @Override
-              public void onUpdate(int index, InterpreterResultMessageOutput out) {
-                try {
-                  if (null != paragraphJobListener) {
-                    paragraphJobListener.onOutputUpdate(
-                        self, index, out.toInterpreterResultMessage());
-                  }
-                } catch (IOException e) {
-                  LOGGER.error(e.getMessage(), e);
-                }
-              }
-
-              @Override
-              public void onUpdateAll(InterpreterOutput out) {
-                try {
-                  List<InterpreterResultMessage> messages = out.toInterpreterResultMessage();
-                  if (null != paragraphJobListener) {
-                    paragraphJobListener.onOutputUpdateAll(self, messages);
-                  }
-                  updateParagraphResult(messages);
-                  outputBuffer.clear();
-                } catch (IOException e) {
-                  LOGGER.error(e.getMessage(), e);
-                }
-              }
-
-      private void updateParagraphResult(List<InterpreterResultMessage> msgs) {
-        // update paragraph results
-        InterpreterResult result = new InterpreterResult(Code.SUCCESS, msgs);
-        setReturn(result, null);
-      }
-    }));
-  }
-
-  private InterpreterContext getInterpreterContext(InterpreterOutput output) {
     AngularObjectRegistry registry = null;
     ResourcePool resourcePool = null;
 
@@ -599,7 +546,6 @@ public class Paragraph extends JobWithProgressPoller<InterpreterResult> implemen
             .setNoteGUI(getNoteGui())
             .setAngularObjectRegistry(registry)
             .setResourcePool(resourcePool)
-            .setInterpreterOut(output)
             .build();
     return interpreterContext;
   }

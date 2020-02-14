@@ -1908,34 +1908,6 @@ public class NotebookServer extends WebSocketServlet
     }
   }
 
-
-  /**
-   * This callback is for paragraph that runs on RemoteInterpreterProcess.
-   */
-  @Override
-  public void onOutputAppend(Paragraph paragraph, int idx, String output) {
-    Message msg =
-        new Message(OP.PARAGRAPH_APPEND_OUTPUT).put("noteId", paragraph.getNote().getId())
-            .put("paragraphId", paragraph.getId()).put("data", output);
-    connectionManager.broadcast(paragraph.getNote().getId(), msg);
-  }
-
-  /**
-   * This callback is for paragraph that runs on RemoteInterpreterProcess.
-   */
-  @Override
-  public void onOutputUpdate(Paragraph paragraph, int idx, InterpreterResultMessage result) {
-    Message msg =
-        new Message(OP.PARAGRAPH_UPDATE_OUTPUT).put("noteId", paragraph.getNote().getId())
-            .put("paragraphId", paragraph.getId()).put("data", result.getData());
-    connectionManager.broadcast(paragraph.getNote().getId(), msg);
-  }
-
-  @Override
-  public void onOutputUpdateAll(Paragraph paragraph, List<InterpreterResultMessage> msgs) {
-    // TODO
-  }
-
   @Override
   public void checkpointOutput(String noteId, String paragraphId) {
     try {
