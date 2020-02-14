@@ -149,11 +149,7 @@ public class LoginRestApi {
     Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
-        String name = realm.getClass().getName();
-
-        LOG.debug("RealmClass.getName: {}", name);
-
-        if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
+        if (realm instanceof KnoxJwtRealm) {
           return (KnoxJwtRealm) realm;
         }
       }
@@ -165,9 +161,7 @@ public class LoginRestApi {
     Collection<Realm> realmsList = authenticationService.getRealmsList();
     if (realmsList != null) {
       for (Realm realm : realmsList) {
-        String name = realm.getClass().getName();
-        LOG.debug("RealmClass.getName: {}", name);
-        if (name.equals("org.apache.zeppelin.realm.jwt.KnoxJwtRealm")) {
+        if (realm instanceof KnoxJwtRealm) {
           return true;
         }
       }
