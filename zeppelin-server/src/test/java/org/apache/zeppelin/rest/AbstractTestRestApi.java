@@ -596,4 +596,8 @@ public abstract class AbstractTestRestApi {
   protected Matcher<? super HttpMethodBase> isNotAllowed() {
     return responsesWith(405);
   }
+
+  protected Matcher<? super HttpMethodBase> isExpectationFailed() {
+    return responsesWith(417);
+  }
 }
