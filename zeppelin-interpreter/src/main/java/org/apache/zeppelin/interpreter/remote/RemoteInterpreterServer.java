@@ -894,9 +894,7 @@ public class RemoteInterpreterServer extends Thread
 
       for (Interpreter intp : interpreters) {
         Job job = intp.getScheduler().getJob(jobId);
-        logger.info("job:" + job);
         if (job != null) {
-          logger.info("getStatus: " + job.getStatus().name());
           return job.getStatus().name();
         }
       }
