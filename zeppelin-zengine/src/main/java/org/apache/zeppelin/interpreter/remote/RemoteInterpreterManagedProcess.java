@@ -140,6 +140,7 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess {
       } catch (Exception e) {
         LOGGER.warn("ignore the exception when shutting down", e);
       }
+
       this.interpreterProcessLauncher.stop();
     }
 
